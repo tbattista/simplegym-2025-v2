@@ -1,0 +1,29 @@
+[build]
+builder = "dockerfile"
+dockerfilePath = "Dockerfile"
+
+[deploy]
+healthcheckPath = "/health"
+healthcheckTimeout = 300
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 10
+
+[[deploy.environmentVariables]]
+name = "PORT"
+value = "3000"
+
+[[deploy.environmentVariables]]
+name = "GOTENBERG_API_TIMEOUT"
+value = "30s"
+
+[[deploy.environmentVariables]]
+name = "GOTENBERG_API_ROOT_PATH"
+value = "/"
+
+[[deploy.environmentVariables]]
+name = "GOTENBERG_CHROMIUM_DISABLE_WEB_SECURITY"
+value = "true"
+
+[[deploy.environmentVariables]]
+name = "GOTENBERG_CHROMIUM_IGNORE_CERTIFICATE_ERRORS"
+value = "true"
