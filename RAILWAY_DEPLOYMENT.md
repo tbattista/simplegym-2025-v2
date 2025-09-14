@@ -1,6 +1,6 @@
-# Railway Deployment Guide - Ghost Gym V2
+# Railway Deployment Guide - Ghost Gym V3
 
-This guide will help you deploy Ghost Gym V2 to Railway.
+This guide will help you deploy Ghost Gym V3 (with V2 compatibility) to Railway.
 
 ## Prerequisites
 
@@ -8,14 +8,32 @@ This guide will help you deploy Ghost Gym V2 to Railway.
 2. **Git Repository**: The V2 project is already initialized with git
 3. **GitHub Account**: To connect your repository to Railway
 
-## Step 1: Push to GitHub
+## Step 1: Push V3 Update to GitHub
 
-1. Create a new repository on GitHub (e.g., `ghost-gym-v2`)
-2. Add the remote and push:
+If you already have a repository, update it with the V3 changes:
 
 ```bash
-cd ../simplegym_v2
-git remote add origin https://github.com/YOUR_USERNAME/ghost-gym-v2.git
+# Add all new V3 files
+git add .
+
+# Commit the V3 dashboard update
+git commit -m "feat: Add V3 Program Manager Dashboard
+
+- Add hierarchical Programs → Workouts → Exercises structure
+- New dashboard interface at /dashboard
+- Multi-workout document generation
+- Drag-and-drop program organization
+- Workout library with reusable templates
+- Import/export functionality
+- Maintain V2 compatibility at /"
+
+# Push to GitHub
+git push origin main
+```
+
+If this is a new repository:
+```bash
+git remote add origin https://github.com/YOUR_USERNAME/ghost-gym-v3.git
 git branch -M main
 git push -u origin main
 ```
@@ -34,9 +52,8 @@ npm install -g @railway/cli
 railway login
 ```
 
-3. Deploy from the V2 directory:
+3. Deploy the V3 update:
 ```bash
-cd ../simplegym_v2
 railway deploy
 ```
 
@@ -45,7 +62,7 @@ railway deploy
 1. Go to [railway.app](https://railway.app)
 2. Click "New Project"
 3. Select "Deploy from GitHub repo"
-4. Choose your `ghost-gym-v2` repository
+4. Choose your `ghost-gym-v3` repository
 5. Railway will automatically detect the configuration
 
 ## Step 3: Configuration
@@ -89,23 +106,35 @@ Once deployed, Railway will provide you with a URL like:
 `https://your-app-name.railway.app`
 
 Test the following endpoints:
-- `/` - Main application
+- `/` - V2 Single workout interface (legacy)
+- `/dashboard` - V3 Program Manager Dashboard (new!)
 - `/api/health` - Health check
 - `/api/status` - System status
+- `/api/v3/stats` - V3 statistics
 - `/docs` - API documentation
 
 ## Features Available After Deployment
 
-✅ **Working Features**:
-- Modern V2 interface with dark theme
-- HTML document generation and download
-- Instant HTML preview
-- All V2 API endpoints
-- Responsive design
+✅ **V3 Dashboard Features**:
+- Program Manager Dashboard at `/dashboard`
+- Hierarchical Programs → Workouts → Exercises
+- Drag-and-drop workout organization
+- Multi-workout document generation
+- Workout library with templates
+- Import/export functionality
+- Real-time search and filtering
+- Mobile-responsive design
+
+✅ **V2 Legacy Features** (still available at `/`):
+- Single workout interface
+- HTML document generation
+- Instant preview
+- All original V2 functionality
 
 ⚠️ **Limited Features** (without Gotenberg):
 - PDF generation will show "service unavailable" message
 - HTML generation works perfectly as fallback
+- All other features work normally
 
 ## Troubleshooting
 
@@ -142,6 +171,32 @@ railway logs
 
 ---
 
-**Ready to Deploy!** 🚀
+**Ready to Deploy V3!** 🚀
 
-Your Ghost Gym V2 application is fully prepared for Railway deployment with all necessary configuration files in place.
+Your Ghost Gym V3 application with the new Program Manager Dashboard is fully prepared for Railway deployment. The V2 interface remains available for backward compatibility.
+
+## V3 New Features After Deployment
+
+🎯 **Program Management**:
+- Create and organize workout programs
+- Drag workouts from library into programs
+- Reorder workouts within programs
+- Generate multi-page program documents
+
+💪 **Workout Library**:
+- Create reusable workout templates
+- Tag and search workouts
+- Duplicate and modify existing workouts
+- Import/export workout collections
+
+📄 **Enhanced Documents**:
+- Multi-workout program documents
+- Professional cover pages and table of contents
+- Individual workout pages with progress tracking
+- A5 format optimized for printing
+
+🔄 **Data Management**:
+- JSON-based data storage
+- Automatic backup creation
+- Import/export programs and workouts
+- Full backward compatibility with V2

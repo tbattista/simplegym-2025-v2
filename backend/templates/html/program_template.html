@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ program_name }} - Training Program</title>
+    <style>
+        @page {
+            size: A5;
+            margin: 0.4in 0.3in 0.4in 0.3in;
+        }
+        
+        body {
+            font-family: Calibri, sans-serif;
+            font-size: 9pt;
+            line-height: 1.0;
+            margin: 0;
+            padding: 0;
+            color: #000;
+        }
+        
+        .header {
+            text-align: left;
+            margin-bottom: 8px;
+            font-size: 10pt;
+        }
+        
+        .page-container {
+            width: 100%;
+        }
+        
+        /* Cover Page Styles */
+        .cover-section {
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            page-break-after: always;
+            text-align: center;
+        }
+        
+        .cover-title {
+            font-size: 28pt;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #000;
+        }
+        
+        .cover-subtitle {
+            font-size: 18pt;
+            font-weight: normal;
+            margin-bottom: 30px;
+            color: #333;
+        }
+        
+        .cover-details {
+            font-size: 12pt;
+            line-height: 1.4;
+            color: #666;
+        }
+        
+        .cover-details .detail-item {
+            margin-bottom: 8px;
+        }
+        
+        .cover-details .detail-label {
+            font-weight: bold;
+            color: #000;
+        }
+        
+        /* Table of Contents Styles */
+        .toc-section {
+            width: 100%;
+            page-break-after: always;
+            padding: 20px 0;
+        }
+        
+        .toc-title {
+            font-size: 20pt;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-align: center;
+            color: #000;
+        }
+        
+        .toc-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11pt;
+        }
+        
+        .toc-table td {
+            padding: 8px 12px;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .toc-workout-name {
+            font-weight: bold;
+            color: #000;
+        }
+        
+        .toc-page-number {
+            text-align: right;
+            font-weight: bold;
+            color: #666;
+        }
+        
+        /* Workout Section Styles */
+        .workout-section {
+            width: 100%;
+            page-break-after: always;
+        }
+        
+        .workout-section:last-of-type {
+            page-break-after: auto;
+        }
+        
+        .progress-section {
+            width: 100%;
+            page-break-before: always;
+        }
+        
+        /* Main workout table styles */
+        .workout-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 10pt;
+        }
+        
+        .workout-table td,
+        .workout-table th {
+            border: 1px solid #000;
+            padding: 4px 6px;
+            vertical-align: top;
+            text-align: left;
+        }
+        
+        .workout-table th {
+            background-color: #D0CECE;
+            font-weight: bold;
+            text-align: center;
+            height: 22px;
+        }
+        
+        .header-row {
+            background-color: #F2F2F2;
+            font-weight: bold;
+            text-align: center;
+            height: 22px;
+        }
+        
+        .warm-up-header {
+            background-color: #D0CECE;
+            font-weight: bold;
+            color: black;
+            text-align: left;
+            height: 22px;
+        }
+        
+        .workout-name-header {
+            background-color: #D0CECE;
+            font-weight: bold;
+            color: black;
+            text-align: left;
+            height: 22px;
+        }
+        
+        .date-cell {
+            background-color: #F2F2F2;
+            text-align: right;
+            font-size: 10pt;
+            color: black;
+        }
+        
+        .exercise-cell {
+            width: 140px;
+            padding: 4px;
+            line-height: 1.1;
+            font-size: 8pt;
+        }
+        
+        .sets-cell {
+            width: 24px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 8pt;
+        }
+        
+        .reps-cell {
+            width: 45px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 8pt;
+        }
+        
+        .rest-cell {
+            width: 22px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 8pt;
+        }
+        
+        .wt-cell {
+            width: 30px;
+            text-align: center;
+            font-size: 8pt;
+        }
+        
+        .reps-track-cell {
+            width: 30px;
+            text-align: center;
+            font-size: 8pt;
+        }
+        
+        .exercise-list {
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+        
+        .exercise-list li {
+            margin-bottom: 2px;
+        }
+        
+        .bonus-exercise {
+            padding: 6px;
+        }
+        
+        .mets-row {
+            background-color: #D0CECE;
+            text-align: right;
+            font-size: 10pt;
+            color: black;
+            height: 22px;
+        }
+        
+        .notes-row {
+            background-color: #F2F2F2;
+            height: 65px;
+            vertical-align: top;
+            padding: 6px;
+        }
+        
+        /* Progress tracking table styles */
+        .progress-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 10pt;
+            margin-top: 20px;
+        }
+        
+        .progress-table td,
+        .progress-table th {
+            border: 1px solid #000;
+            padding: 4px;
+            vertical-align: top;
+            text-align: center;
+        }
+        
+        .progress-table th {
+            background-color: #F2F2F2;
+            font-weight: bold;
+            height: 22px;
+        }
+        
+        .progress-header {
+            background-color: #D0CECE;
+            height: 22px;
+        }
+        
+        .week-cell {
+            width: 25%;
+            height: 20px;
+            background-color: #F2F2F2;
+            font-weight: bold;
+            font-size: 9pt;
+        }
+        
+        .progress-cell {
+            height: 22px;
+            background-color: white;
+            position: relative;
+        }
+        
+        .abc-row {
+            height: 22px;
+            background-color: white;
+            border-bottom: 1px solid #D9D9D9;
+            color: #D9D9D9;
+            font-size: 8pt;
+        }
+        
+        .empty-row {
+            height: 22px;
+            background-color: white;
+        }
+        
+        .final-notes {
+            height: 65px;
+            background-color: #F2F2F2;
+            vertical-align: top;
+        }
+        
+        /* Program-specific styles */
+        .program-info {
+            background-color: #E8F4FD;
+            padding: 8px;
+            margin-bottom: 10px;
+            border-left: 4px solid #2196F3;
+            font-size: 9pt;
+        }
+        
+        .workout-number {
+            background-color: #2196F3;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 8pt;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+        
+        @media print {
+            body {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            
+            .page-container {
+                height: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="page-container">
+        
+        {% if include_cover_page %}
+        <!-- Cover Page -->
+        <div class="cover-section">
+            <div class="cover-title">{{ program_name }}</div>
+            <div class="cover-subtitle">Training Program</div>
+            <div class="cover-details">
+                <div class="detail-item">
+                    <span class="detail-label">Total Workouts:</span> {{ total_workouts }}
+                </div>
+                {% if program_duration_weeks != 'Not specified' %}
+                <div class="detail-item">
+                    <span class="detail-label">Duration:</span> {{ program_duration_weeks }} weeks
+                </div>
+                {% endif %}
+                <div class="detail-item">
+                    <span class="detail-label">Difficulty:</span> {{ program_difficulty }}
+                </div>
+                {% if program_description %}
+                <div class="detail-item" style="margin-top: 15px;">
+                    <span class="detail-label">Description:</span><br>
+                    {{ program_description }}
+                </div>
+                {% endif %}
+                <div class="detail-item" style="margin-top: 20px;">
+                    <span class="detail-label">Generated:</span> {{ start_date }}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        {% if include_table_of_contents and table_of_contents %}
+        <!-- Table of Contents -->
+        <div class="toc-section">
+            <div class="toc-title">Table of Contents</div>
+            <table class="toc-table">
+                {% for toc_entry in table_of_contents %}
+                <tr>
+                    <td class="toc-workout-name">{{ toc_entry.name }}</td>
+                    <td class="toc-page-number">Page {{ toc_entry.page }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+        {% endif %}
+        
+        {% for workout in workouts %}
+        <!-- Workout {{ workout.index }}: {{ workout.workout_name }} -->
+        <div class="workout-section">
+            
+            <!-- Program Info Bar -->
+            <div class="program-info">
+                <span class="workout-number">{{ workout.index }}</span>
+                <strong>{{ workout.workout_name }}</strong>
+                {% if workout.workout_description %}
+                - {{ workout.workout_description }}
+                {% endif %}
+            </div>
+            
+            <table class="workout-table">
+                <!-- Warm Up Section -->
+                <tr>
+                    <td colspan="6" class="warm-up-header">Warm Up</td>
+                </tr>
+                <tr>
+                    <td colspan="3" class="exercise-cell">foam rolling, yoga, body priming – 5+ minute</td>
+                    <td class="wt-cell">&nbsp;</td>
+                    <td colspan="2" class="reps-track-cell">&nbsp;</td>
+                </tr>
+                
+                <!-- Workout Name Header -->
+                <tr>
+                    <td colspan="6" class="workout-name-header">{{ workout.workout_name }}</td>
+                </tr>
+                
+                <!-- Column Headers -->
+                <tr class="header-row">
+                    <td class="exercise-cell">exercise</td>
+                    <td class="sets-cell">sets</td>
+                    <td class="reps-cell">reps</td>
+                    <td class="rest-cell">rest</td>
+                    <td class="wt-cell"></td>
+                    <td class="reps-track-cell"></td>
+                </tr>
+                
+                <!-- Date Row -->
+                <tr>
+                    <td colspan="6" class="date-cell">
+                        {% if workout.workout_date %}
+                        date: {{ workout.workout_date }}
+                        {% else %}
+                        today's date:
+                        {% endif %}
+                    </td>
+                </tr>
+                
+                <!-- Exercise Groups -->
+                {% for group in workout.exercise_groups %}
+                <tr>
+                    <td class="exercise-cell">
+                        <ul class="exercise-list">
+                            {% for letter, exercise_name in group.exercises.items() %}
+                            <li>{{ letter }}) {{ exercise_name }}</li>
+                            {% endfor %}
+                        </ul>
+                    </td>
+                    <td class="sets-cell">{{ group.sets }}</td>
+                    <td class="reps-cell">{{ group.reps }}</td>
+                    <td class="rest-cell">{{ group.rest }}</td>
+                    <td class="wt-cell">wt</td>
+                    <td class="reps-track-cell">reps</td>
+                </tr>
+                {% endfor %}
+                
+                <!-- Bonus Exercises -->
+                {% for bonus in workout.bonus_exercises %}
+                <tr>
+                    <td class="bonus-exercise">{{ bonus.name }}</td>
+                    <td class="sets-cell">{{ bonus.sets }}</td>
+                    <td class="reps-cell">{{ bonus.reps }}</td>
+                    <td class="rest-cell">{{ bonus.rest }}</td>
+                    <td class="wt-cell">&nbsp;</td>
+                    <td class="reps-track-cell">&nbsp;</td>
+                </tr>
+                {% endfor %}
+                
+                <!-- Mets Row -->
+                <tr>
+                    <td colspan="6" class="mets-row">Mets (Time/Cals):</td>
+                </tr>
+                
+                <!-- Notes Row -->
+                <tr>
+                    <td colspan="6" class="notes-row"><strong>Notes:</strong></td>
+                </tr>
+            </table>
+        </div>
+        
+        {% if include_progress_tracking %}
+        <!-- Progress Tracking for Workout {{ workout.index }} -->
+        <div class="progress-section">
+            <div class="program-info">
+                <span class="workout-number">{{ workout.index }}</span>
+                <strong>{{ workout.workout_name }} - Progress Tracking</strong>
+            </div>
+            
+            <table class="progress-table">
+                <!-- Week Headers -->
+                <tr>
+                    <td class="week-cell">Week 1</td>
+                    <td class="week-cell">Week 2</td>
+                    <td class="week-cell">Week 3</td>
+                    <td class="week-cell">Week 4</td>
+                </tr>
+                
+                <!-- Progress tracking rows for each exercise group -->
+                {% for group in workout.exercise_groups %}
+                <tr>
+                    <td class="progress-cell">&nbsp;</td>
+                    <td class="progress-cell">&nbsp;</td>
+                    <td class="progress-cell">&nbsp;</td>
+                    <td class="progress-cell">&nbsp;</td>
+                </tr>
+                
+                <tr class="abc-row">
+                    <td>
+                        {% for letter in group.exercises.keys() %}{{ letter }}{% if not loop.last %} {% endif %}{% endfor %}
+                    </td>
+                    <td>
+                        {% for letter in group.exercises.keys() %}{{ letter }}{% if not loop.last %} {% endif %}{% endfor %}
+                    </td>
+                    <td>
+                        {% for letter in group.exercises.keys() %}{{ letter }}{% if not loop.last %} {% endif %}{% endfor %}
+                    </td>
+                    <td>
+                        {% for letter in group.exercises.keys() %}{{ letter }}{% if not loop.last %} {% endif %}{% endfor %}
+                    </td>
+                </tr>
+                {% endfor %}
+                
+                <!-- Fill remaining space with empty rows -->
+                {% set remaining_rows = 12 - (workout.exercise_groups|length * 2) %}
+                {% for i in range(remaining_rows) %}
+                <tr>
+                    <td class="empty-row">&nbsp;</td>
+                    <td class="empty-row">&nbsp;</td>
+                    <td class="empty-row">&nbsp;</td>
+                    <td class="empty-row">&nbsp;</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+        {% endif %}
+        
+        {% endfor %}
+        
+    </div>
+</body>
+</html>
