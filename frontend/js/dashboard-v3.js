@@ -1,4 +1,4 @@
-// Ghost Gym V3 Dashboard JavaScript
+// Ghost Gym V3 Dashboard JavaScript - Phase 2 Enhanced
 
 class GymDashboardV3 {
     constructor() {
@@ -8,6 +8,10 @@ class GymDashboardV3 {
         this.workouts = [];
         this.isEditing = false;
         this.editingId = null;
+        this.dataManager = null;
+        this.syncManager = null;
+        this.isAuthenticated = false;
+        this.currentUser = null;
         
         // Initialize the dashboard
         this.init();
@@ -16,9 +20,59 @@ class GymDashboardV3 {
     async init() {
         this.setupEventListeners();
         this.setupSortable();
+        
+        // Wait for data manager to be ready
+        await this.waitForDataManager();
+        
         await this.loadInitialData();
         this.updateUI();
         this.showAlert('Dashboard loaded successfully!', 'success');
+    }
+    
+    async waitForDataManager() {
+        // Wait for data manager to be available
+        let attempts = 0;
+        const maxAttempts = 50; // 5 seconds max wait
+        
+        while (!window.dataManager && attempts < maxAttempts) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+            attempts++;
+        }
+        
+        if (window.dataManager) {
+            this.dataManager = window.dataManager;
+            this.syncManager = window.syncManager;
+            
+            // Listen for auth state changes
+            window.addEventListener('authStateChanged', (event) => {
+                this.handleAuthStateChange(event.detail);
+            });
+            
+            console.log('✅ Dashboard connected to data manager');
+        } else {
+            console.warn('⚠️ Data manager not available - using fallback mode');
+        }
+    }
+    
+    handleAuthStateChange(authData) {
+        const { user, isAuthenticated } = authData;
+        this.isAuthenticated = isAuthenticated;
+        this.currentUser = user;
+        
+        console.log(`🔄 Dashboard auth state changed: ${isAuthenticated ? 'authenticated' : 'anonymous'}`);
+        
+        // Reload data when auth state changes
+        this.loadInitialData();
+        
+        // Update UI to show sync status
+        this.updateAuthUI();
+    }
+    
+    updateAuthUI() {
+        // Add sync status indicator if authenticated
+        if (this.isAuthenticated && window.migrationUI) {
+            window.migrationUI.addSyncStatusIndicator();
+        }
     }
 
     setupEventListeners() {
@@ -87,9 +141,24 @@ class GymDashboardV3 {
 
     async loadPrograms() {
         try {
-            const response = await fetch(`${this.apiBase}/api/v3/programs`);
-            const data = await response.json();
-            this.programs = data.programs || [];
+            if (this.dataManager) {
+                // Use data manager for unified storage
+                this.programs = await this.dataManager.getPrograms();
+            } else {
+                // Fallback to direct API call
+                const endpoint = this.isAuthenticated ? '/api/v3/user/programs' : '/api/v3/programs';
+                const headers = {};
+                
+                if (this.isAuthenticated && this.currentUser) {
+                    const token = await this.currentUser.getIdToken();
+                    headers['Authorization'] = `Bearer ${token}`;
+                }
+                
+                const response = await fetch(`${this.apiBase}${endpoint}`, { headers });
+                const data = await response.json();
+                this.programs = data.programs || [];
+            }
+            
             this.renderPrograms();
         } catch (error) {
             console.error('Error loading programs:', error);
@@ -99,9 +168,24 @@ class GymDashboardV3 {
 
     async loadWorkouts() {
         try {
-            const response = await fetch(`${this.apiBase}/api/v3/workouts`);
-            const data = await response.json();
-            this.workouts = data.workouts || [];
+            if (this.dataManager) {
+                // Use data manager for unified storage
+                this.workouts = await this.dataManager.getWorkouts();
+            } else {
+                // Fallback to direct API call
+                const endpoint = this.isAuthenticated ? '/api/v3/user/workouts' : '/api/v3/workouts';
+                const headers = {};
+                
+                if (this.isAuthenticated && this.currentUser) {
+                    const token = await this.currentUser.getIdToken();
+                    headers['Authorization'] = `Bearer ${token}`;
+                }
+                
+                const response = await fetch(`${this.apiBase}${endpoint}`, { headers });
+                const data = await response.json();
+                this.workouts = data.workouts || [];
+            }
+            
             this.renderWorkouts();
         } catch (error) {
             console.error('Error loading workouts:', error);
@@ -111,13 +195,47 @@ class GymDashboardV3 {
 
     async loadStats() {
         try {
-            const response = await fetch(`${this.apiBase}/api/v3/stats`);
-            const data = await response.json();
-            document.getElementById('statsDisplay').textContent = 
-                `${data.total_programs} programs • ${data.total_workouts} workouts`;
+            if (this.dataManager) {
+                // Use data manager for unified stats
+                const stats = await this.getUnifiedStats();
+                document.getElementById('statsDisplay').textContent =
+                    `${stats.total_programs} programs • ${stats.total_workouts} workouts`;
+            } else {
+                // Fallback to direct API call
+                const endpoint = this.isAuthenticated ? '/api/v3/user/stats' : '/api/v3/stats';
+                const headers = {};
+                
+                if (this.isAuthenticated && this.currentUser) {
+                    const token = await this.currentUser.getIdToken();
+                    headers['Authorization'] = `Bearer ${token}`;
+                }
+                
+                const response = await fetch(`${this.apiBase}${endpoint}`, { headers });
+                const data = await response.json();
+                document.getElementById('statsDisplay').textContent =
+                    `${data.total_programs} programs • ${data.total_workouts} workouts`;
+            }
         } catch (error) {
             console.error('Error loading stats:', error);
             document.getElementById('statsDisplay').textContent = 'Stats unavailable';
+        }
+    }
+    
+    async getUnifiedStats() {
+        try {
+            const endpoint = this.isAuthenticated ? '/api/v3/user/stats' : '/api/v3/stats';
+            const headers = {};
+            
+            if (this.isAuthenticated && this.currentUser) {
+                const token = await this.currentUser.getIdToken();
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+            
+            const response = await fetch(`${this.apiBase}${endpoint}`, { headers });
+            return await response.json();
+        } catch (error) {
+            console.error('Error getting unified stats:', error);
+            return { total_programs: 0, total_workouts: 0 };
         }
     }
 

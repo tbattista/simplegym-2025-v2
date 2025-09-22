@@ -1,10 +1,11 @@
-from fastapi import FastAPI, HTTPException, File, UploadFile, Query
+from fastapi import FastAPI, HTTPException, File, UploadFile, Query, Depends
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
 import os
 from pathlib import Path
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
+from dotenv import load_dotenv
 from .models import (
     WorkoutData, Program, WorkoutTemplate,
     CreateWorkoutRequest, UpdateWorkoutRequest,
@@ -14,6 +15,15 @@ from .models import (
 )
 from .services.v2.document_service_v2 import DocumentServiceV2
 from .services.data_service import DataService
+from .services.firebase_service import firebase_service
+from .services.auth_service import auth_service
+from .services.unified_data_service import unified_data_service
+from .services.migration_service import migration_service
+from .middleware.auth import get_current_user_optional, get_current_user, extract_user_id
+from .api.migration import router as migration_router
+
+# Load environment variables
+load_dotenv()
 
 # Initialize FastAPI app
 app = FastAPI(
@@ -34,6 +44,9 @@ app.add_middleware(
 # Initialize V2 document service and data service
 document_service_v2 = DocumentServiceV2()
 data_service = DataService()
+
+# Include Phase 2 migration router
+app.include_router(migration_router)
 
 # Create necessary directories
 os.makedirs("backend/uploads", exist_ok=True)
@@ -81,7 +94,16 @@ async def serve_v3_dashboard():
 @app.get("/api/health")
 async def health_check():
     """Health check endpoint"""
-    return {"status": "healthy", "message": "Ghost Gym V2 API is running", "version": "v2"}
+    firebase_status = "available" if firebase_service.is_available() else "unavailable"
+    auth_status = "available" if auth_service.is_available() else "unavailable"
+    
+    return {
+        "status": "healthy",
+        "message": "Ghost Gym V3 API is running",
+        "version": "v3",
+        "firebase_status": firebase_status,
+        "auth_status": auth_status
+    }
 
 @app.get("/api/debug/static")
 async def debug_static():
@@ -102,26 +124,37 @@ async def debug_static():
     }
 
 @app.get("/api/status")
-async def v2_status():
-    """Get V2 system status including Gotenberg availability"""
+async def v3_status():
+    """Get V3 system status including Firebase and Gotenberg availability"""
     try:
         gotenberg_available = document_service_v2.is_gotenberg_available()
+        firebase_available = firebase_service.is_available()
+        auth_available = auth_service.is_available()
+        
         return {
-            "version": "v2",
+            "version": "v3",
             "status": "available",
             "gotenberg_available": gotenberg_available,
+            "firebase_available": firebase_available,
+            "auth_available": auth_available,
             "features": {
                 "html_templates": True,
                 "pdf_generation": gotenberg_available,
-                "instant_preview": True
+                "instant_preview": True,
+                "user_authentication": auth_available,
+                "cloud_storage": firebase_available,
+                "multi_device_sync": firebase_available and auth_available,
+                "offline_support": True
             }
         }
     except Exception as e:
         return {
-            "version": "v2",
+            "version": "v3",
             "status": "error",
             "error": str(e),
-            "gotenberg_available": False
+            "gotenberg_available": False,
+            "firebase_available": False,
+            "auth_available": False
         }
 
 @app.get("/api/templates")
@@ -449,17 +482,26 @@ async def generate_program_html(program_id: str, request: GenerateProgramDocumen
 async def generate_program_pdf(program_id: str, request: GenerateProgramDocumentRequest):
     """Generate PDF document for entire program"""
     try:
+        logger.info(f"PDF generation requested for program {program_id}")
+        
         # Check if Gotenberg is available
-        if not document_service_v2.is_gotenberg_available():
+        gotenberg_available = document_service_v2.is_gotenberg_available()
+        logger.info(f"Gotenberg service availability: {gotenberg_available}")
+        
+        if not gotenberg_available:
+            logger.error("PDF generation failed: Gotenberg service is not running")
             raise HTTPException(
                 status_code=503,
-                detail="PDF generation is not available. Gotenberg service is not running."
+                detail="PDF generation is not available. Gotenberg service is not running. Please start the Gotenberg service or use HTML format instead."
             )
         
         # Get program with workout details
         program_data = data_service.get_program_with_workout_details(program_id)
         if not program_data:
+            logger.error(f"Program not found: {program_id}")
             raise HTTPException(status_code=404, detail="Program not found")
+        
+        logger.info(f"Generating PDF for program: {program_data['program'].name}")
         
         # Generate multi-page PDF document
         pdf_path = document_service_v2.generate_program_pdf_file(
@@ -470,6 +512,7 @@ async def generate_program_pdf(program_id: str, request: GenerateProgramDocument
         
         # Return the file for download
         filename = f"program_{program_data['program'].name.replace(' ', '_')}.pdf"
+        logger.info(f"PDF generated successfully: {filename}")
         
         return FileResponse(
             path=pdf_path,
@@ -477,7 +520,10 @@ async def generate_program_pdf(program_id: str, request: GenerateProgramDocument
             media_type="application/pdf"
         )
         
+    except HTTPException:
+        raise
     except Exception as e:
+        logger.error(f"Error generating program PDF: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error generating program PDF: {str(e)}")
 
 @app.post("/api/v3/programs/{program_id}/preview-html")
@@ -700,6 +746,240 @@ async def import_data(file: UploadFile = File(...)):
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error importing data: {str(e)}")
+
+# Firebase Authentication Endpoints
+
+@app.post("/api/v3/auth/migrate-data")
+async def migrate_anonymous_data(
+    migration_data: Dict[str, Any],
+    current_user: Dict[str, Any] = Depends(get_current_user)
+):
+    """Migrate anonymous user data to authenticated account"""
+    try:
+        user_id = extract_user_id(current_user)
+        if not user_id:
+            raise HTTPException(status_code=401, detail="User ID not found")
+        
+        programs_data = migration_data.get('programs', [])
+        workouts_data = migration_data.get('workouts', [])
+        
+        # Migrate data using Firebase service
+        success = await firebase_service.migrate_anonymous_data(user_id, programs_data, workouts_data)
+        
+        if not success:
+            raise HTTPException(status_code=500, detail="Failed to migrate data")
+        
+        return {
+            "message": "Data migrated successfully",
+            "migrated_programs": len(programs_data),
+            "migrated_workouts": len(workouts_data)
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error migrating anonymous data: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error migrating data: {str(e)}")
+
+@app.get("/api/v3/auth/user")
+async def get_current_user_info(current_user: Dict[str, Any] = Depends(get_current_user)):
+    """Get current authenticated user information"""
+    try:
+        user_id = extract_user_id(current_user)
+        if not user_id:
+            raise HTTPException(status_code=401, detail="User ID not found")
+        
+        # Get user profile from Firestore
+        user_profile = await firebase_service.get_user_profile(user_id)
+        
+        # Combine auth info with profile
+        user_info = {
+            "uid": current_user.get('uid'),
+            "email": current_user.get('email'),
+            "email_verified": current_user.get('email_verified', False),
+            "name": current_user.get('name'),
+            "picture": current_user.get('picture'),
+            "provider": current_user.get('provider'),
+            "profile": user_profile
+        }
+        
+        return user_info
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting user info: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error getting user info: {str(e)}")
+
+@app.post("/api/v3/auth/create-profile")
+async def create_user_profile(
+    profile_data: Dict[str, Any],
+    current_user: Dict[str, Any] = Depends(get_current_user)
+):
+    """Create user profile in Firestore"""
+    try:
+        user_id = extract_user_id(current_user)
+        if not user_id:
+            raise HTTPException(status_code=401, detail="User ID not found")
+        
+        # Create user profile
+        success = await firebase_service.create_user_profile(user_id, {
+            'email': current_user.get('email'),
+            'displayName': current_user.get('name'),
+            **profile_data
+        })
+        
+        if not success:
+            raise HTTPException(status_code=500, detail="Failed to create user profile")
+        
+        return {"message": "User profile created successfully"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error creating user profile: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error creating user profile: {str(e)}")
+
+# Firebase-enabled V3 Endpoints (with dual-mode support)
+
+@app.post("/api/v3/firebase/workouts", response_model=WorkoutTemplate)
+async def create_workout_firebase(
+    workout_request: CreateWorkoutRequest,
+    current_user: Optional[Dict[str, Any]] = Depends(get_current_user_optional)
+):
+    """Create a new workout template (Firebase-enabled with fallback)"""
+    try:
+        user_id = extract_user_id(current_user)
+        
+        if user_id and firebase_service.is_available():
+            # Authenticated user - use Firebase
+            workout = await firebase_service.create_workout(user_id, workout_request)
+            if workout:
+                return workout
+            else:
+                # Fallback to local storage
+                logger.warning("Firebase workout creation failed, falling back to local storage")
+        
+        # Anonymous user or Firebase unavailable - use local storage
+        workout = data_service.create_workout(workout_request)
+        return workout
+        
+    except Exception as e:
+        logger.error(f"Error creating workout: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error creating workout: {str(e)}")
+
+@app.get("/api/v3/firebase/workouts", response_model=WorkoutListResponse)
+async def get_workouts_firebase(
+    tags: Optional[List[str]] = Query(None),
+    page: int = Query(1, ge=1),
+    page_size: int = Query(50, ge=1, le=100),
+    search: Optional[str] = Query(None),
+    current_user: Optional[Dict[str, Any]] = Depends(get_current_user_optional)
+):
+    """Get workout templates (Firebase-enabled with fallback)"""
+    try:
+        user_id = extract_user_id(current_user)
+        
+        if user_id and firebase_service.is_available():
+            # Authenticated user - get from Firebase
+            workouts = await firebase_service.get_user_workouts(user_id, limit=page_size)
+            total_count = len(workouts)
+            
+            # Apply pagination
+            start_idx = (page - 1) * page_size
+            end_idx = start_idx + page_size
+            workouts = workouts[start_idx:end_idx]
+        else:
+            # Anonymous user or Firebase unavailable - use local storage
+            if search:
+                workouts = data_service.search_workouts(search)
+                total_count = len(workouts)
+                start_idx = (page - 1) * page_size
+                end_idx = start_idx + page_size
+                workouts = workouts[start_idx:end_idx]
+            else:
+                workouts = data_service.get_all_workouts(tags=tags, page=page, page_size=page_size)
+                total_count = data_service.get_workout_count()
+        
+        return WorkoutListResponse(
+            workouts=workouts,
+            total_count=total_count,
+            page=page,
+            page_size=page_size
+        )
+        
+    except Exception as e:
+        logger.error(f"Error retrieving workouts: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error retrieving workouts: {str(e)}")
+
+@app.post("/api/v3/firebase/programs", response_model=Program)
+async def create_program_firebase(
+    program_request: CreateProgramRequest,
+    current_user: Optional[Dict[str, Any]] = Depends(get_current_user_optional)
+):
+    """Create a new program (Firebase-enabled with fallback)"""
+    try:
+        user_id = extract_user_id(current_user)
+        
+        if user_id and firebase_service.is_available():
+            # Authenticated user - use Firebase
+            program = await firebase_service.create_program(user_id, program_request)
+            if program:
+                return program
+            else:
+                # Fallback to local storage
+                logger.warning("Firebase program creation failed, falling back to local storage")
+        
+        # Anonymous user or Firebase unavailable - use local storage
+        program = data_service.create_program(program_request)
+        return program
+        
+    except Exception as e:
+        logger.error(f"Error creating program: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error creating program: {str(e)}")
+
+@app.get("/api/v3/firebase/programs", response_model=ProgramListResponse)
+async def get_programs_firebase(
+    page: int = Query(1, ge=1),
+    page_size: int = Query(20, ge=1, le=100),
+    search: Optional[str] = Query(None),
+    current_user: Optional[Dict[str, Any]] = Depends(get_current_user_optional)
+):
+    """Get programs (Firebase-enabled with fallback)"""
+    try:
+        user_id = extract_user_id(current_user)
+        
+        if user_id and firebase_service.is_available():
+            # Authenticated user - get from Firebase
+            programs = await firebase_service.get_user_programs(user_id, limit=page_size)
+            total_count = len(programs)
+            
+            # Apply pagination
+            start_idx = (page - 1) * page_size
+            end_idx = start_idx + page_size
+            programs = programs[start_idx:end_idx]
+        else:
+            # Anonymous user or Firebase unavailable - use local storage
+            if search:
+                programs = data_service.search_programs(search)
+                total_count = len(programs)
+                start_idx = (page - 1) * page_size
+                end_idx = start_idx + page_size
+                programs = programs[start_idx:end_idx]
+            else:
+                programs = data_service.get_all_programs(page=page, page_size=page_size)
+                total_count = data_service.get_program_count()
+        
+        return ProgramListResponse(
+            programs=programs,
+            total_count=total_count,
+            page=page,
+            page_size=page_size
+        )
+        
+    except Exception as e:
+        logger.error(f"Error retrieving programs: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error retrieving programs: {str(e)}")
 
 if __name__ == "__main__":
     import uvicorn
