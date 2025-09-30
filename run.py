@@ -38,24 +38,24 @@ def main():
     # Check if Gotenberg service directory exists
     gotenberg_dir = Path('gotenberg-service')
     if gotenberg_dir.exists():
-        print(f"📦 Gotenberg service directory found: {gotenberg_dir}")
-        print("💡 To enable PDF generation, run Gotenberg service separately")
+        print(f"[INFO] Gotenberg service directory found: {gotenberg_dir}")
+        print("[INFO] To enable PDF generation, run Gotenberg service separately")
         print("   See gotenberg-service/README.md for instructions")
     else:
-        print("⚠️  Gotenberg service directory not found - PDF generation will be disabled")
+        print("[WARN] Gotenberg service directory not found - PDF generation will be disabled")
     
     print("\n" + "="*60)
-    print("👻  GHOST GYM V2 - ADVANCED LOG BOOK - DEVELOPMENT SERVER")
+    print("GHOST GYM V2 - ADVANCED LOG BOOK - DEVELOPMENT SERVER")
     print("="*60)
-    print(f"📁 Project Directory: {project_root}")
-    print(f"🌐 Server URL: http://localhost:8001")
-    print(f"📚 API Documentation: http://localhost:8001/docs")
-    print(f"🔄 Auto-reload: Enabled")
-    print(f"📄 Template Type: HTML (.html)")
-    print(f"🎨 Features: Instant HTML preview, PDF generation (if Gotenberg available)")
+    print(f"Project Directory: {project_root}")
+    print(f"Server URL: http://localhost:8001")
+    print(f"API Documentation: http://localhost:8001/docs")
+    print(f"Auto-reload: Enabled")
+    print(f"Template Type: HTML (.html)")
+    print(f"Features: Instant HTML preview, PDF generation (if Gotenberg available)")
     print("="*60)
-    print("\n🚀 Starting V2 server...")
-    print("💡 Press Ctrl+C to stop the server")
+    print("\n[INFO] Starting V2 server...")
+    print("[INFO] Press Ctrl+C to stop the server")
     print("\n")
     
     try:
@@ -76,9 +76,9 @@ def main():
             log_level="info"
         )
     except KeyboardInterrupt:
-        print("\n\n🛑 V2 Server stopped by user")
+        print("\n\n[INFO] V2 Server stopped by user")
     except Exception as e:
-        print(f"\n❌ Error starting V2 server: {e}")
+        print(f"\n[ERROR] Error starting V2 server: {e}")
         sys.exit(1)
 
 if __name__ == "__main__":
