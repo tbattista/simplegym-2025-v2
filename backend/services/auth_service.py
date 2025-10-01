@@ -18,6 +18,8 @@ except ImportError:
     firebase_admin = None
     auth = None
 
+from ..config.firebase_config import get_firebase_app, is_firebase_available
+
 logger = logging.getLogger(__name__)
 
 class AuthService:
@@ -25,29 +27,24 @@ class AuthService:
     
     def __init__(self):
         self._available = False
+        self.app = None
         self._initialize()
     
     def _initialize(self):
-        """Initialize Firebase Auth service"""
+        """Initialize Firebase Auth service using centralized config"""
         if not FIREBASE_AVAILABLE:
             logger.warning("Firebase Admin SDK not available - install firebase-admin package")
             return
         
         try:
-            # Check if Firebase is already initialized
-            if firebase_admin._apps:
-                self._available = True
-                logger.info("✅ Auth service connected to existing Firebase app")
-                return
-            
-            # Firebase should be initialized by firebase_service
-            # This service just uses the existing app
-            self._available = bool(firebase_admin._apps)
+            # Use centralized Firebase configuration
+            self.app = get_firebase_app()
+            self._available = self.app is not None
             
             if self._available:
-                logger.info("✅ Auth service initialized successfully")
+                logger.info("✅ Auth service connected successfully")
             else:
-                logger.warning("⚠️ Auth service waiting for Firebase initialization")
+                logger.warning("❌ Auth service not available - check Firebase configuration")
                 
         except Exception as e:
             logger.error(f"❌ Auth service initialization failed: {e}")
@@ -58,10 +55,12 @@ class AuthService:
         if not FIREBASE_AVAILABLE:
             return False
         
-        # Re-check Firebase app availability
-        if not self._available and firebase_admin._apps:
-            self._available = True
-            logger.info("✅ Auth service now available")
+        # Re-check Firebase app availability if not available
+        if not self._available:
+            self.app = get_firebase_app()
+            self._available = self.app is not None
+            if self._available:
+                logger.info("✅ Auth service now available")
         
         return self._available
     
@@ -72,8 +71,8 @@ class AuthService:
             return None
         
         try:
-            # Verify the ID token
-            decoded_token = auth.verify_id_token(id_token)
+            # Verify the ID token using the specific app
+            decoded_token = auth.verify_id_token(id_token, app=self.app)
             
             user_info = {
                 'uid': decoded_token.get('uid'),
@@ -103,7 +102,7 @@ class AuthService:
             return None
         
         try:
-            user_record = auth.get_user(uid)
+            user_record = auth.get_user(uid, app=self.app)
             
             user_info = {
                 'uid': user_record.uid,
@@ -131,7 +130,7 @@ class AuthService:
             return None
         
         try:
-            custom_token = auth.create_custom_token(uid, additional_claims)
+            custom_token = auth.create_custom_token(uid, additional_claims, app=self.app)
             logger.info(f"✅ Custom token created for user: {uid}")
             return custom_token.decode('utf-8')
             
@@ -145,7 +144,7 @@ class AuthService:
             return False
         
         try:
-            auth.set_custom_user_claims(uid, custom_claims)
+            auth.set_custom_user_claims(uid, custom_claims, app=self.app)
             logger.info(f"✅ Custom claims set for user: {uid}")
             return True
             
@@ -159,7 +158,7 @@ class AuthService:
             return False
         
         try:
-            auth.revoke_refresh_tokens(uid)
+            auth.revoke_refresh_tokens(uid, app=self.app)
             logger.info(f"✅ Refresh tokens revoked for user: {uid}")
             return True
             
@@ -178,7 +177,7 @@ class AuthService:
             if not self.is_available():
                 return None
             
-            decoded_token = auth.verify_id_token(id_token)
+            decoded_token = auth.verify_id_token(id_token, app=self.app)
             return decoded_token.get('uid')
             
         except Exception as e:

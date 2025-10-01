@@ -19,6 +19,8 @@ except ImportError:
     credentials = None
     firestore = None
 
+from ..config.firebase_config import get_firebase_app, is_firebase_available
+
 logger = logging.getLogger(__name__)
 
 class FirebaseService:
@@ -31,45 +33,25 @@ class FirebaseService:
         self._initialize()
     
     def _initialize(self):
-        """Initialize Firebase Admin SDK"""
+        """Initialize Firebase service using centralized config"""
         if not FIREBASE_AVAILABLE:
             logger.warning("Firebase Admin SDK not available - install firebase-admin package")
             return
         
         try:
-            # Check if Firebase is already initialized
-            if firebase_admin._apps:
-                self.app = firebase_admin.get_app()
-                self.db = firestore.client()
+            # Use centralized Firebase configuration
+            self.app = get_firebase_app()
+            
+            if self.app:
+                self.db = firestore.client(app=self.app)
                 self._available = True
-                logger.info("✅ Firebase service connected to existing app")
-                return
-            
-            # Initialize Firebase Admin SDK
-            service_account_path = os.getenv('FIREBASE_SERVICE_ACCOUNT_PATH')
-            project_id = os.getenv('FIREBASE_PROJECT_ID', 'ghost-gym-v3')
-            
-            if service_account_path and os.path.exists(service_account_path):
-                # Use service account file
-                cred = credentials.Certificate(service_account_path)
-                self.app = firebase_admin.initialize_app(cred, {
-                    'projectId': project_id
-                })
+                logger.info("✅ Firebase service connected successfully")
             else:
-                # Try to use environment variables or default credentials
-                try:
-                    # Use default credentials (for Railway deployment)
-                    self.app = firebase_admin.initialize_app()
-                except Exception as e:
-                    logger.warning(f"Could not initialize Firebase with default credentials: {e}")
-                    return
-            
-            self.db = firestore.client()
-            self._available = True
-            logger.info("✅ Firebase service initialized successfully")
+                logger.warning("❌ Firebase app not available - check configuration")
+                self._available = False
             
         except Exception as e:
-            logger.error(f"❌ Firebase initialization failed: {e}")
+            logger.error(f"❌ Firebase service initialization failed: {e}")
             self._available = False
     
     def is_available(self) -> bool:

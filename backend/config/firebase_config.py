@@ -51,8 +51,11 @@ def get_firebase_app() -> Optional[firebase_admin.App]:
         private_key = os.getenv('FIREBASE_PRIVATE_KEY')
         client_email = os.getenv('FIREBASE_CLIENT_EMAIL')
         
+        logger.info(f"Firebase config check - Project ID: {bool(project_id)}, Private Key: {bool(private_key)}, Client Email: {bool(client_email)}")
+        
         if not all([project_id, private_key, client_email]):
             logger.warning("Firebase environment variables not fully configured")
+            logger.warning(f"Missing: Project ID: {not project_id}, Private Key: {not private_key}, Client Email: {not client_email}")
             return None
         
         # Create credentials from environment variables
@@ -68,6 +71,9 @@ def get_firebase_app() -> Optional[firebase_admin.App]:
             "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
             "client_x509_cert_url": f"https://www.googleapis.com/robot/v1/metadata/x509/{client_email}"
         }
+        
+        # Remove None values from credential dict
+        cred_dict = {k: v for k, v in cred_dict.items() if v is not None}
         
         # Initialize Firebase with service account credentials
         cred = credentials.Certificate(cred_dict)

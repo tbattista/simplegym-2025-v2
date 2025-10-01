@@ -6,6 +6,10 @@ import os
 from pathlib import Path
 from typing import List, Optional, Dict, Any
 from dotenv import load_dotenv
+
+# Load environment variables FIRST before importing Firebase services
+load_dotenv()
+
 from .models import (
     WorkoutData, Program, WorkoutTemplate,
     CreateWorkoutRequest, UpdateWorkoutRequest,
@@ -21,9 +25,6 @@ from .services.unified_data_service import unified_data_service
 from .services.migration_service import migration_service
 from .middleware.auth import get_current_user_optional, get_current_user, extract_user_id
 from .api.migration import router as migration_router
-
-# Load environment variables
-load_dotenv()
 
 # Initialize FastAPI app
 app = FastAPI(
