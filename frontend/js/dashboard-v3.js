@@ -893,21 +893,60 @@ class GymDashboardV3 {
             if (this.dataManager) {
                 // Use data manager for unified storage (Firebase or localStorage)
                 if (this.isEditing) {
-                    console.log('🔍 DEBUG: Using direct API for editing workout');
-                    // For editing, we need to call the API directly since data manager doesn't have update method
-                    const url = `${this.apiBase}/api/v3/workouts/${this.editingId}`;
-                    const response = await fetch(url, {
-                        method: 'PUT',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(workoutData)
-                    });
+                    console.log('🔍 DEBUG: Editing workout - checking storage mode');
                     
-                    if (!response.ok) {
-                        const error = await response.json();
-                        throw new Error(error.detail || 'Failed to update workout');
+                    // FIX: Check if workout exists in current storage mode
+                    const existingWorkout = this.workouts.find(w => w.id === this.editingId);
+                    if (!existingWorkout) {
+                        throw new Error('Workout not found in current storage');
                     }
                     
-                    workout = await response.json();
+                    // FIX: Use data manager for editing if available, with proper fallback
+                    if (this.dataManager) {
+                        console.log('🔍 DEBUG: Attempting to update workout via data manager');
+                        
+                        // For now, we'll update the workout in localStorage directly since data manager doesn't have update method
+                        // This is a temporary solution until we implement proper update methods in data manager
+                        if (this.dataManager.storageMode === 'localStorage' || !this.isAuthenticated) {
+                            console.log('🔍 DEBUG: Updating workout in localStorage');
+                            workout = this.updateWorkoutInLocalStorage(this.editingId, workoutData);
+                        } else {
+                            console.log('🔍 DEBUG: Using Firebase API for authenticated user workout update');
+                            // For authenticated users with Firebase, use the Firebase endpoint
+                            const headers = {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${await this.currentUser.getIdToken()}`
+                            };
+                            const response = await fetch(`${this.apiBase}/api/v3/firebase/workouts/${this.editingId}`, {
+                                method: 'PUT',
+                                headers,
+                                body: JSON.stringify(workoutData)
+                            });
+                            
+                            if (!response.ok) {
+                                const error = await response.json();
+                                throw new Error(error.detail || 'Failed to update workout in Firebase');
+                            }
+                            
+                            workout = await response.json();
+                        }
+                    } else {
+                        console.log('🔍 DEBUG: Using direct API for editing workout (no data manager)');
+                        // Fallback to direct API call only if no data manager
+                        const url = `${this.apiBase}/api/v3/workouts/${this.editingId}`;
+                        const response = await fetch(url, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(workoutData)
+                        });
+                        
+                        if (!response.ok) {
+                            const error = await response.json();
+                            throw new Error(error.detail || 'Failed to update workout');
+                        }
+                        
+                        workout = await response.json();
+                    }
                 } else {
                     console.log('🔍 DEBUG: Using data manager for creating new workout');
                     // Use data manager for creating new workouts
@@ -1377,6 +1416,44 @@ class GymDashboardV3 {
             'info': 'info-circle-fill'
         };
         return icons[type] || 'info-circle-fill';
+    }
+
+    updateWorkoutInLocalStorage(workoutId, workoutData) {
+        try {
+            console.log('🔍 DEBUG: Updating workout in localStorage', { workoutId, workoutData });
+            
+            // Get existing workouts from localStorage
+            const stored = localStorage.getItem('gym_workouts');
+            const workouts = stored ? JSON.parse(stored) : [];
+            
+            // Find and update the workout
+            const workoutIndex = workouts.findIndex(w => w.id === workoutId);
+            if (workoutIndex === -1) {
+                throw new Error('Workout not found in localStorage');
+            }
+            
+            // Update the workout while preserving ID and timestamps
+            const existingWorkout = workouts[workoutIndex];
+            const updatedWorkout = {
+                ...existingWorkout,
+                ...workoutData,
+                id: workoutId, // Preserve original ID
+                created_date: existingWorkout.created_date, // Preserve creation date
+                modified_date: new Date().toISOString() // Update modification date
+            };
+            
+            workouts[workoutIndex] = updatedWorkout;
+            
+            // Save back to localStorage
+            localStorage.setItem('gym_workouts', JSON.stringify(workouts));
+            
+            console.log('✅ Workout updated successfully in localStorage');
+            return updatedWorkout;
+            
+        } catch (error) {
+            console.error('❌ Error updating workout in localStorage:', error);
+            throw error;
+        }
     }
 
     escapeHtml(text) {
