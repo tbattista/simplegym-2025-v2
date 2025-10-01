@@ -853,9 +853,11 @@ async def create_workout_firebase(
         user_id = extract_user_id(current_user)
         
         if user_id and firebase_service.is_available():
-            # Authenticated user - use Firebase
-            workout = await firebase_service.create_workout(user_id, workout_request)
+            # Authenticated user - use Firestore data service
+            from .services.firestore_data_service import firestore_data_service
+            workout = await firestore_data_service.create_workout(user_id, workout_request)
             if workout:
+                logger.info(f"✅ Workout created in Firestore: {workout.name}")
                 return workout
             else:
                 # Fallback to local storage
@@ -882,8 +884,13 @@ async def get_workouts_firebase(
         user_id = extract_user_id(current_user)
         
         if user_id and firebase_service.is_available():
-            # Authenticated user - get from Firebase
-            workouts = await firebase_service.get_user_workouts(user_id, limit=page_size)
+            # Authenticated user - get from Firestore
+            from .services.firestore_data_service import firestore_data_service
+            if search:
+                workouts = await firestore_data_service.search_workouts(user_id, search, limit=page_size)
+            else:
+                workouts = await firestore_data_service.get_user_workouts(user_id, limit=page_size, tags=tags)
+            
             total_count = len(workouts)
             
             # Apply pagination
@@ -923,9 +930,11 @@ async def create_program_firebase(
         user_id = extract_user_id(current_user)
         
         if user_id and firebase_service.is_available():
-            # Authenticated user - use Firebase
-            program = await firebase_service.create_program(user_id, program_request)
+            # Authenticated user - use Firestore data service
+            from .services.firestore_data_service import firestore_data_service
+            program = await firestore_data_service.create_program(user_id, program_request)
             if program:
+                logger.info(f"✅ Program created in Firestore: {program.name}")
                 return program
             else:
                 # Fallback to local storage
@@ -951,8 +960,13 @@ async def get_programs_firebase(
         user_id = extract_user_id(current_user)
         
         if user_id and firebase_service.is_available():
-            # Authenticated user - get from Firebase
-            programs = await firebase_service.get_user_programs(user_id, limit=page_size)
+            # Authenticated user - get from Firestore
+            from .services.firestore_data_service import firestore_data_service
+            if search:
+                programs = await firestore_data_service.search_programs(user_id, search, limit=page_size)
+            else:
+                programs = await firestore_data_service.get_user_programs(user_id, limit=page_size)
+            
             total_count = len(programs)
             
             # Apply pagination

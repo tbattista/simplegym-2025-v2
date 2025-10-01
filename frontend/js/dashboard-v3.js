@@ -511,45 +511,73 @@ class GymDashboardV3 {
         };
 
         try {
-            const url = this.isEditing 
-                ? `${this.apiBase}/api/v3/programs/${this.editingId}`
-                : `${this.apiBase}/api/v3/programs`;
+            let program;
             
-            const method = this.isEditing ? 'PUT' : 'POST';
-
-            const response = await fetch(url, {
-                method,
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(programData)
-            });
-
-            if (response.ok) {
-                const program = await response.json();
-                
+            if (this.dataManager) {
+                // Use data manager for unified storage (Firebase or localStorage)
                 if (this.isEditing) {
-                    const index = this.programs.findIndex(p => p.id === this.editingId);
-                    if (index !== -1) {
-                        this.programs[index] = program;
+                    // For editing, we need to call the API directly since data manager doesn't have update method
+                    const url = `${this.apiBase}/api/v3/programs/${this.editingId}`;
+                    const response = await fetch(url, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(programData)
+                    });
+                    
+                    if (!response.ok) {
+                        const error = await response.json();
+                        throw new Error(error.detail || 'Failed to update program');
                     }
-                    if (this.currentProgram?.id === this.editingId) {
-                        this.currentProgram = program;
-                    }
+                    
+                    program = await response.json();
                 } else {
-                    this.programs.unshift(program);
+                    // Use data manager for creating new programs
+                    program = await this.dataManager.createProgram(programData);
                 }
+            } else {
+                // Fallback to direct API call
+                const url = this.isEditing
+                    ? `${this.apiBase}/api/v3/programs/${this.editingId}`
+                    : `${this.apiBase}/api/v3/programs`;
+                
+                const method = this.isEditing ? 'PUT' : 'POST';
 
-                this.renderPrograms();
-                if (this.currentProgram?.id === program.id) {
-                    this.renderProgramDetails();
+                const response = await fetch(url, {
+                    method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(programData)
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Failed to save program');
                 }
                 
-                bootstrap.Modal.getInstance(document.getElementById('programModal')).hide();
-                this.showAlert(`Program ${this.isEditing ? 'updated' : 'created'} successfully!`, 'success');
-                this.loadStats();
-            } else {
-                const error = await response.json();
-                throw new Error(error.detail || 'Failed to save program');
+                program = await response.json();
             }
+
+            // Update local state
+            if (this.isEditing) {
+                const index = this.programs.findIndex(p => p.id === this.editingId);
+                if (index !== -1) {
+                    this.programs[index] = program;
+                }
+                if (this.currentProgram?.id === this.editingId) {
+                    this.currentProgram = program;
+                }
+            } else {
+                this.programs.unshift(program);
+            }
+
+            this.renderPrograms();
+            if (this.currentProgram?.id === program.id) {
+                this.renderProgramDetails();
+            }
+            
+            bootstrap.Modal.getInstance(document.getElementById('programModal')).hide();
+            this.showAlert(`Program ${this.isEditing ? 'updated' : 'created'} successfully!`, 'success');
+            this.loadStats();
+            
         } catch (error) {
             console.error('Error saving program:', error);
             this.showAlert(`Error ${this.isEditing ? 'updating' : 'creating'} program: ${error.message}`, 'danger');
@@ -790,38 +818,66 @@ class GymDashboardV3 {
         };
 
         try {
-            const url = this.isEditing 
-                ? `${this.apiBase}/api/v3/workouts/${this.editingId}`
-                : `${this.apiBase}/api/v3/workouts`;
+            let workout;
             
-            const method = this.isEditing ? 'PUT' : 'POST';
-
-            const response = await fetch(url, {
-                method,
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(workoutData)
-            });
-
-            if (response.ok) {
-                const workout = await response.json();
-                
+            if (this.dataManager) {
+                // Use data manager for unified storage (Firebase or localStorage)
                 if (this.isEditing) {
-                    const index = this.workouts.findIndex(w => w.id === this.editingId);
-                    if (index !== -1) {
-                        this.workouts[index] = workout;
+                    // For editing, we need to call the API directly since data manager doesn't have update method
+                    const url = `${this.apiBase}/api/v3/workouts/${this.editingId}`;
+                    const response = await fetch(url, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(workoutData)
+                    });
+                    
+                    if (!response.ok) {
+                        const error = await response.json();
+                        throw new Error(error.detail || 'Failed to update workout');
                     }
+                    
+                    workout = await response.json();
                 } else {
-                    this.workouts.unshift(workout);
+                    // Use data manager for creating new workouts
+                    workout = await this.dataManager.createWorkout(workoutData);
                 }
-
-                this.renderWorkouts();
-                bootstrap.Modal.getInstance(document.getElementById('workoutModal')).hide();
-                this.showAlert(`Workout ${this.isEditing ? 'updated' : 'created'} successfully!`, 'success');
-                this.loadStats();
             } else {
-                const error = await response.json();
-                throw new Error(error.detail || 'Failed to save workout');
+                // Fallback to direct API call
+                const url = this.isEditing
+                    ? `${this.apiBase}/api/v3/workouts/${this.editingId}`
+                    : `${this.apiBase}/api/v3/workouts`;
+                
+                const method = this.isEditing ? 'PUT' : 'POST';
+
+                const response = await fetch(url, {
+                    method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(workoutData)
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Failed to save workout');
+                }
+                
+                workout = await response.json();
             }
+
+            // Update local state
+            if (this.isEditing) {
+                const index = this.workouts.findIndex(w => w.id === this.editingId);
+                if (index !== -1) {
+                    this.workouts[index] = workout;
+                }
+            } else {
+                this.workouts.unshift(workout);
+            }
+
+            this.renderWorkouts();
+            bootstrap.Modal.getInstance(document.getElementById('workoutModal')).hide();
+            this.showAlert(`Workout ${this.isEditing ? 'updated' : 'created'} successfully!`, 'success');
+            this.loadStats();
+            
         } catch (error) {
             console.error('Error saving workout:', error);
             this.showAlert(`Error ${this.isEditing ? 'updating' : 'creating'} workout: ${error.message}`, 'danger');

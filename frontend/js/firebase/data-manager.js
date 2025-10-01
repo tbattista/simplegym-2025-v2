@@ -291,25 +291,36 @@ class FirebaseDataManager {
     }
     
     async createFirestoreProgram(programData) {
-        const response = await fetch(`${this.apiBase}/api/v3/firebase/programs`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${await this.getAuthToken()}`
-            },
-            body: JSON.stringify(programData)
-        });
-        
-        if (!response.ok) {
-            throw new Error('Failed to create program in Firestore');
+        try {
+            const response = await fetch(`${this.apiBase}/api/v3/firebase/programs`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${await this.getAuthToken()}`
+                },
+                body: JSON.stringify(programData)
+            });
+            
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                console.error('❌ Firestore program creation failed:', errorData);
+                throw new Error(errorData.detail || 'Failed to create program in Firestore');
+            }
+            
+            const program = await response.json();
+            console.log('✅ Program created in Firestore:', program.name);
+            return program;
+        } catch (error) {
+            console.error('❌ Error creating Firestore program:', error);
+            throw error;
         }
-        
-        return await response.json();
     }
     
     createLocalStorageProgram(programData) {
         try {
-            const programs = this.getLocalStoragePrograms({ page: 1, pageSize: 1000 });
+            // Get all existing programs from localStorage
+            const stored = localStorage.getItem('gym_programs');
+            const programs = stored ? JSON.parse(stored) : [];
             
             // Create new program with ID
             const newProgram = {
@@ -323,6 +334,7 @@ class FirebaseDataManager {
             programs.unshift(newProgram);
             localStorage.setItem('gym_programs', JSON.stringify(programs));
             
+            console.log('✅ Program created in localStorage:', newProgram.name);
             return newProgram;
         } catch (error) {
             console.error('❌ Error creating local program:', error);
@@ -428,25 +440,36 @@ class FirebaseDataManager {
     }
     
     async createFirestoreWorkout(workoutData) {
-        const response = await fetch(`${this.apiBase}/api/v3/firebase/workouts`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${await this.getAuthToken()}`
-            },
-            body: JSON.stringify(workoutData)
-        });
-        
-        if (!response.ok) {
-            throw new Error('Failed to create workout in Firestore');
+        try {
+            const response = await fetch(`${this.apiBase}/api/v3/firebase/workouts`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${await this.getAuthToken()}`
+                },
+                body: JSON.stringify(workoutData)
+            });
+            
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                console.error('❌ Firestore workout creation failed:', errorData);
+                throw new Error(errorData.detail || 'Failed to create workout in Firestore');
+            }
+            
+            const workout = await response.json();
+            console.log('✅ Workout created in Firestore:', workout.name);
+            return workout;
+        } catch (error) {
+            console.error('❌ Error creating Firestore workout:', error);
+            throw error;
         }
-        
-        return await response.json();
     }
     
     createLocalStorageWorkout(workoutData) {
         try {
-            const workouts = this.getLocalStorageWorkouts({ page: 1, pageSize: 1000 });
+            // Get all existing workouts from localStorage
+            const stored = localStorage.getItem('gym_workouts');
+            const workouts = stored ? JSON.parse(stored) : [];
             
             // Create new workout with ID
             const newWorkout = {
@@ -460,6 +483,7 @@ class FirebaseDataManager {
             workouts.unshift(newWorkout);
             localStorage.setItem('gym_workouts', JSON.stringify(workouts));
             
+            console.log('✅ Workout created in localStorage:', newWorkout.name);
             return newWorkout;
         } catch (error) {
             console.error('❌ Error creating local workout:', error);
