@@ -383,11 +383,37 @@ class GymDashboardV3 {
 
     async selectProgram(programId) {
         try {
-            const response = await fetch(`${this.apiBase}/api/v3/programs/${programId}/details`);
-            const data = await response.json();
+            let response, data;
+            
+            if (this.dataManager && this.isAuthenticated) {
+                // For authenticated users, try Firebase endpoint first
+                response = await fetch(`${this.apiBase}/api/v3/programs/${programId}/details`);
+                if (!response.ok) {
+                    // If Firebase endpoint fails, try to get program directly
+                    const programs = await this.dataManager.getPrograms();
+                    const program = programs.find(p => p.id === programId);
+                    if (program) {
+                        this.currentProgram = program;
+                        this.currentProgramWorkouts = []; // No workout details for now
+                        this.renderPrograms();
+                        this.renderProgramDetails();
+                        this.updateUI();
+                        return;
+                    }
+                    throw new Error('Program not found');
+                }
+                data = await response.json();
+            } else {
+                // For anonymous users, use regular endpoint
+                response = await fetch(`${this.apiBase}/api/v3/programs/${programId}/details`);
+                if (!response.ok) {
+                    throw new Error('Program not found');
+                }
+                data = await response.json();
+            }
             
             this.currentProgram = data.program;
-            this.currentProgramWorkouts = data.workout_details;
+            this.currentProgramWorkouts = data.workout_details || [];
             
             this.renderPrograms(); // Update active state
             this.renderProgramDetails();
