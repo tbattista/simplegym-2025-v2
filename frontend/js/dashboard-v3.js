@@ -905,19 +905,15 @@ class GymDashboardV3 {
                     if (this.dataManager) {
                         console.log('🔍 DEBUG: Attempting to update workout via data manager');
                         
-                        // FIX: Check if workout ID indicates localStorage origin
-                        const isLocalStorageWorkout = this.editingId.startsWith('workout-');
-                        
                         console.log('🔍 DEBUG: Storage mode analysis:', {
                             dataManagerStorageMode: this.dataManager.storageMode,
                             isAuthenticated: this.isAuthenticated,
-                            workoutId: this.editingId,
-                            isLocalStorageWorkout: isLocalStorageWorkout
+                            workoutId: this.editingId
                         });
                         
-                        // For now, we'll update the workout in localStorage directly since data manager doesn't have update method
-                        // This is a temporary solution until we implement proper update methods in data manager
-                        if (isLocalStorageWorkout || this.dataManager.storageMode === 'localStorage' || !this.isAuthenticated) {
+                        // FIX: Use actual storage mode, not ID format detection
+                        // The workout might have a localStorage-style ID but be stored in Firestore after migration
+                        if (this.dataManager.storageMode === 'localStorage' || !this.isAuthenticated) {
                             console.log('🔍 DEBUG: Updating workout in localStorage');
                             workout = this.updateWorkoutInLocalStorage(this.editingId, workoutData);
                         } else {

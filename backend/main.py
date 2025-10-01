@@ -927,6 +927,42 @@ async def get_workouts_firebase(
         logger.error(f"Error retrieving workouts: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error retrieving workouts: {str(e)}")
 
+@app.put("/api/v3/firebase/workouts/{workout_id}", response_model=WorkoutTemplate)
+async def update_workout_firebase(
+    workout_id: str,
+    workout_request: UpdateWorkoutRequest,
+    current_user: Optional[Dict[str, Any]] = Depends(get_current_user_optional)
+):
+    """Update a workout template (Firebase-enabled with fallback)"""
+    try:
+        user_id = extract_user_id(current_user)
+        logger.info(f"🔍 DEBUG: /api/v3/firebase/workouts/{workout_id} PUT called, user_id: {user_id}")
+        
+        if user_id and firebase_service.is_available():
+            logger.info(f"🔍 DEBUG: Using Firestore for authenticated user workout update")
+            # Authenticated user - use Firestore data service
+            from .services.firestore_data_service import firestore_data_service
+            workout = await firestore_data_service.update_workout(user_id, workout_id, workout_request)
+            if workout:
+                logger.info(f"✅ Workout updated in Firestore: {workout.name} with ID: {workout.id}")
+                return workout
+            else:
+                logger.warning("🔍 DEBUG: Firebase workout update failed, falling back to local storage")
+        
+        # Anonymous user or Firebase unavailable - use local storage
+        logger.info(f"🔍 DEBUG: Using local storage for workout update")
+        workout = data_service.update_workout(workout_id, workout_request)
+        if not workout:
+            raise HTTPException(status_code=404, detail="Workout not found")
+        logger.info(f"🔍 DEBUG: Workout updated in local storage with ID: {workout.id}")
+        return workout
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"🔍 DEBUG: Error updating workout: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error updating workout: {str(e)}")
+
 @app.post("/api/v3/firebase/programs", response_model=Program)
 async def create_program_firebase(
     program_request: CreateProgramRequest,
