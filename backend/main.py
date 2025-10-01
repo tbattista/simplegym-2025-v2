@@ -278,9 +278,12 @@ async def get_template_info_v2():
 async def create_workout(workout_request: CreateWorkoutRequest):
     """Create a new workout template"""
     try:
+        logger.info(f"🔍 DEBUG: /api/v3/workouts POST called for workout: {workout_request.name}")
         workout = data_service.create_workout(workout_request)
+        logger.info(f"🔍 DEBUG: Workout created successfully with ID: {workout.id}")
         return workout
     except Exception as e:
+        logger.error(f"🔍 DEBUG: Error creating workout: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error creating workout: {str(e)}")
 
 @app.get("/api/v3/workouts", response_model=WorkoutListResponse)
@@ -851,24 +854,28 @@ async def create_workout_firebase(
     """Create a new workout template (Firebase-enabled with fallback)"""
     try:
         user_id = extract_user_id(current_user)
+        logger.info(f"🔍 DEBUG: /api/v3/firebase/workouts POST called for workout: {workout_request.name}, user_id: {user_id}")
         
         if user_id and firebase_service.is_available():
             # Authenticated user - use Firestore data service
+            logger.info(f"🔍 DEBUG: Using Firestore for authenticated user")
             from .services.firestore_data_service import firestore_data_service
             workout = await firestore_data_service.create_workout(user_id, workout_request)
             if workout:
-                logger.info(f"✅ Workout created in Firestore: {workout.name}")
+                logger.info(f"✅ Workout created in Firestore: {workout.name} with ID: {workout.id}")
                 return workout
             else:
                 # Fallback to local storage
-                logger.warning("Firebase workout creation failed, falling back to local storage")
+                logger.warning("🔍 DEBUG: Firebase workout creation failed, falling back to local storage")
         
         # Anonymous user or Firebase unavailable - use local storage
+        logger.info(f"🔍 DEBUG: Using local storage for workout creation")
         workout = data_service.create_workout(workout_request)
+        logger.info(f"🔍 DEBUG: Workout created in local storage with ID: {workout.id}")
         return workout
         
     except Exception as e:
-        logger.error(f"Error creating workout: {str(e)}")
+        logger.error(f"🔍 DEBUG: Error creating workout: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error creating workout: {str(e)}")
 
 @app.get("/api/v3/firebase/workouts", response_model=WorkoutListResponse)

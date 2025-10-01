@@ -43,6 +43,12 @@ class GymDashboardV3 {
             this.dataManager = window.dataManager;
             this.syncManager = window.syncManager;
             
+            console.log('🔍 DEBUG: Data manager details:', {
+                hasCreateWorkout: typeof this.dataManager.createWorkout === 'function',
+                dataManagerType: this.dataManager.constructor.name,
+                methods: Object.getOwnPropertyNames(Object.getPrototypeOf(this.dataManager))
+            });
+            
             // Listen for auth state changes
             window.addEventListener('authStateChanged', (event) => {
                 this.handleAuthStateChange(event.detail);
@@ -76,6 +82,17 @@ class GymDashboardV3 {
     }
 
     setupEventListeners() {
+        console.log('🔍 DEBUG: setupEventListeners() called');
+        
+        // Check if listeners are already attached (potential double binding)
+        const saveWorkoutBtn = document.getElementById('saveWorkoutBtn');
+        if (saveWorkoutBtn._listenerCount) {
+            console.warn('⚠️ DEBUG: Save workout button already has listeners! Potential double binding detected.');
+            saveWorkoutBtn._listenerCount++;
+        } else {
+            saveWorkoutBtn._listenerCount = 1;
+        }
+        
         // Program management
         document.getElementById('newProgramBtn').addEventListener('click', () => this.showProgramModal());
         document.getElementById('createFirstProgramBtn').addEventListener('click', () => this.showProgramModal());
@@ -87,7 +104,10 @@ class GymDashboardV3 {
         // Workout management
         document.getElementById('newWorkoutBtn').addEventListener('click', () => this.showWorkoutModal());
         document.getElementById('createFirstWorkoutBtn').addEventListener('click', () => this.showWorkoutModal());
-        document.getElementById('saveWorkoutBtn').addEventListener('click', () => this.saveWorkout());
+        document.getElementById('saveWorkoutBtn').addEventListener('click', () => {
+            console.log('🔍 DEBUG: Save workout button clicked');
+            this.saveWorkout();
+        });
         document.getElementById('addExerciseGroupBtn').addEventListener('click', () => this.addExerciseGroup());
         document.getElementById('addBonusExerciseBtn').addEventListener('click', () => this.addBonusExercise());
 
@@ -563,8 +583,17 @@ class GymDashboardV3 {
                 } else {
                     // Use data manager for creating new programs
                     program = await this.dataManager.createProgram(programData);
+                    
+                    // FIX: Ensure we have a valid program from data manager
+                    if (!program) {
+                        console.error('⚠️ DEBUG: Data manager returned falsy program result, throwing error to prevent duplicate API call');
+                        throw new Error('Data manager failed to create program');
+                    }
                 }
-            } else {
+            }
+            
+            // FIX: Only use fallback API call if data manager is not available
+            if (!this.dataManager) {
                 // Fallback to direct API call
                 const url = this.isEditing
                     ? `${this.apiBase}/api/v3/programs/${this.editingId}`
@@ -850,9 +879,16 @@ class GymDashboardV3 {
         try {
             let workout;
             
+            console.log('🔍 DEBUG: saveWorkout() called', {
+                isEditing: this.isEditing,
+                hasDataManager: !!this.dataManager,
+                workoutName: workoutData.name
+            });
+            
             if (this.dataManager) {
                 // Use data manager for unified storage (Firebase or localStorage)
                 if (this.isEditing) {
+                    console.log('🔍 DEBUG: Using direct API for editing workout');
                     // For editing, we need to call the API directly since data manager doesn't have update method
                     const url = `${this.apiBase}/api/v3/workouts/${this.editingId}`;
                     const response = await fetch(url, {
@@ -868,10 +904,22 @@ class GymDashboardV3 {
                     
                     workout = await response.json();
                 } else {
+                    console.log('🔍 DEBUG: Using data manager for creating new workout');
                     // Use data manager for creating new workouts
                     workout = await this.dataManager.createWorkout(workoutData);
+                    console.log('🔍 DEBUG: Data manager result:', workout);
+                    
+                    // FIX: Ensure we have a valid workout from data manager
+                    if (!workout) {
+                        console.error('⚠️ DEBUG: Data manager returned falsy result, throwing error to prevent duplicate API call');
+                        throw new Error('Data manager failed to create workout');
+                    }
                 }
-            } else {
+            }
+            
+            // FIX: Only use fallback API call if data manager is not available
+            if (!this.dataManager) {
+                console.log('🔍 DEBUG: Using fallback direct API call');
                 // Fallback to direct API call
                 const url = this.isEditing
                     ? `${this.apiBase}/api/v3/workouts/${this.editingId}`
@@ -891,6 +939,7 @@ class GymDashboardV3 {
                 }
                 
                 workout = await response.json();
+                console.log('🔍 DEBUG: Direct API call result:', workout);
             }
 
             // Update local state
