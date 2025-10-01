@@ -394,6 +394,11 @@ class GymDashboardV3 {
                 e.preventDefault();
                 programWorkouts.classList.remove('sortable-drag-over');
                 const workoutId = e.dataTransfer.getData('text/plain');
+                console.log('🔍 DEBUG: Drop event triggered', {
+                    workoutId,
+                    hasCurrentProgram: !!this.currentProgram,
+                    timestamp: new Date().toISOString()
+                });
                 if (workoutId && this.currentProgram) {
                     this.addWorkoutToProgram(workoutId);
                 }
@@ -1027,11 +1032,31 @@ class GymDashboardV3 {
     async addWorkoutToProgram(workoutId) {
         if (!this.currentProgram) return;
 
+        // FIX: Prevent duplicate calls with debouncing
+        const callKey = `${this.currentProgram.id}-${workoutId}`;
+        if (this._addWorkoutInProgress && this._addWorkoutInProgress.has(callKey)) {
+            console.warn('🔍 DEBUG: Duplicate addWorkoutToProgram call prevented', { workoutId, programId: this.currentProgram.id });
+            return;
+        }
+
+        if (!this._addWorkoutInProgress) {
+            this._addWorkoutInProgress = new Set();
+        }
+        this._addWorkoutInProgress.add(callKey);
+
+        console.log('🔍 DEBUG: addWorkoutToProgram() called', {
+            workoutId,
+            currentProgramId: this.currentProgram.id,
+            isAuthenticated: this.isAuthenticated,
+            hasDataManager: !!this.dataManager
+        });
+
         try {
             let response;
             const requestBody = { workout_id: workoutId };
             
             if (this.dataManager && this.isAuthenticated) {
+                console.log('🔍 DEBUG: Using Firebase endpoint for adding workout to program');
                 // For authenticated users, use Firebase endpoint
                 const headers = {
                     'Content-Type': 'application/json',
@@ -1043,6 +1068,7 @@ class GymDashboardV3 {
                     body: JSON.stringify(requestBody)
                 });
             } else {
+                console.log('🔍 DEBUG: Using regular endpoint for adding workout to program');
                 // For anonymous users, use regular endpoint
                 response = await fetch(`${this.apiBase}/api/v3/programs/${this.currentProgram.id}/workouts`, {
                     method: 'POST',
@@ -1051,8 +1077,15 @@ class GymDashboardV3 {
                 });
             }
 
+            console.log('🔍 DEBUG: Add workout API response status:', response.status);
+
             if (response.ok) {
                 const updatedProgram = await response.json();
+                console.log('🔍 DEBUG: Updated program received:', {
+                    programId: updatedProgram.id,
+                    workoutCount: updatedProgram.workouts?.length || 0
+                });
+                
                 this.currentProgram = updatedProgram;
                 
                 // Update the program in the list
@@ -1061,6 +1094,7 @@ class GymDashboardV3 {
                     this.programs[index] = updatedProgram;
                 }
 
+                console.log('🔍 DEBUG: About to reload program details via selectProgram()');
                 // Reload program details to get workout info
                 await this.selectProgram(this.currentProgram.id);
                 this.showAlert('Workout added to program!', 'success');
@@ -1071,6 +1105,9 @@ class GymDashboardV3 {
         } catch (error) {
             console.error('Error adding workout to program:', error);
             this.showAlert(`Error adding workout: ${error.message}`, 'danger');
+        } finally {
+            // FIX: Clear the debounce flag after operation completes
+            this._addWorkoutInProgress.delete(callKey);
         }
     }
 
