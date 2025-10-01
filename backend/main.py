@@ -996,6 +996,116 @@ async def get_programs_firebase(
         logger.error(f"Error retrieving programs: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error retrieving programs: {str(e)}")
 
+@app.get("/api/v3/firebase/programs/{program_id}/details", response_model=ProgramWithWorkoutsResponse)
+async def get_program_with_workouts_firebase(
+    program_id: str,
+    current_user: Optional[Dict[str, Any]] = Depends(get_current_user_optional)
+):
+    """Get a program with full workout details (Firebase-enabled with fallback)"""
+    try:
+        user_id = extract_user_id(current_user)
+        
+        if user_id and firebase_service.is_available():
+            # Authenticated user - get from Firestore
+            from .services.firestore_data_service import firestore_data_service
+            program_data = await firestore_data_service.get_program_with_workout_details(user_id, program_id)
+            if program_data:
+                return ProgramWithWorkoutsResponse(
+                    program=program_data["program"],
+                    workout_details=program_data["workout_details"]
+                )
+            else:
+                raise HTTPException(status_code=404, detail="Program not found")
+        else:
+            # Anonymous user or Firebase unavailable - use local storage
+            program_data = data_service.get_program_with_workout_details(program_id)
+            if not program_data:
+                raise HTTPException(status_code=404, detail="Program not found")
+            
+            return ProgramWithWorkoutsResponse(
+                program=program_data["program"],
+                workout_details=program_data["workout_details"]
+            )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error retrieving program details: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error retrieving program details: {str(e)}")
+
+@app.post("/api/v3/firebase/programs/{program_id}/workouts", response_model=Program)
+async def add_workout_to_program_firebase(
+    program_id: str,
+    request: AddWorkoutToProgramRequest,
+    current_user: Optional[Dict[str, Any]] = Depends(get_current_user_optional)
+):
+    """Add a workout to a program (Firebase-enabled with fallback)"""
+    try:
+        user_id = extract_user_id(current_user)
+        
+        if user_id and firebase_service.is_available():
+            # Authenticated user - use Firestore
+            from .services.firestore_data_service import firestore_data_service
+            program = await firestore_data_service.add_workout_to_program(
+                user_id=user_id,
+                program_id=program_id,
+                workout_id=request.workout_id,
+                order_index=request.order_index,
+                custom_name=request.custom_name,
+                custom_date=request.custom_date
+            )
+            if not program:
+                raise HTTPException(status_code=404, detail="Program or workout not found")
+            return program
+        else:
+            # Anonymous user or Firebase unavailable - use local storage
+            program = data_service.add_workout_to_program(
+                program_id=program_id,
+                workout_id=request.workout_id,
+                order_index=request.order_index,
+                custom_name=request.custom_name,
+                custom_date=request.custom_date
+            )
+            if not program:
+                raise HTTPException(status_code=404, detail="Program or workout not found")
+            return program
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error adding workout to program: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error adding workout to program: {str(e)}")
+
+@app.delete("/api/v3/firebase/programs/{program_id}/workouts/{workout_id}")
+async def remove_workout_from_program_firebase(
+    program_id: str,
+    workout_id: str,
+    current_user: Optional[Dict[str, Any]] = Depends(get_current_user_optional)
+):
+    """Remove a workout from a program (Firebase-enabled with fallback)"""
+    try:
+        user_id = extract_user_id(current_user)
+        
+        if user_id and firebase_service.is_available():
+            # Authenticated user - use Firestore
+            from .services.firestore_data_service import firestore_data_service
+            program = await firestore_data_service.remove_workout_from_program(user_id, program_id, workout_id)
+            if not program:
+                raise HTTPException(status_code=404, detail="Program or workout not found")
+            return {"message": "Workout removed from program successfully"}
+        else:
+            # Anonymous user or Firebase unavailable - use local storage
+            program = data_service.remove_workout_from_program(program_id, workout_id)
+            if not program:
+                raise HTTPException(status_code=404, detail="Program or workout not found")
+            return {"message": "Workout removed from program successfully"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error removing workout from program: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error removing workout from program: {str(e)}")
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000, reload=True)

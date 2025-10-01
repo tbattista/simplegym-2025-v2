@@ -386,10 +386,14 @@ class GymDashboardV3 {
             let response, data;
             
             if (this.dataManager && this.isAuthenticated) {
-                // For authenticated users, try Firebase endpoint first
-                response = await fetch(`${this.apiBase}/api/v3/programs/${programId}/details`);
+                // For authenticated users, use Firebase endpoint
+                const headers = {
+                    'Authorization': `Bearer ${await this.currentUser.getIdToken()}`
+                };
+                response = await fetch(`${this.apiBase}/api/v3/firebase/programs/${programId}/details`, { headers });
+                
                 if (!response.ok) {
-                    // If Firebase endpoint fails, try to get program directly
+                    // If Firebase endpoint fails, try to get program directly from data manager
                     const programs = await this.dataManager.getPrograms();
                     const program = programs.find(p => p.id === programId);
                     if (program) {
@@ -975,11 +979,28 @@ class GymDashboardV3 {
         if (!this.currentProgram) return;
 
         try {
-            const response = await fetch(`${this.apiBase}/api/v3/programs/${this.currentProgram.id}/workouts`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ workout_id: workoutId })
-            });
+            let response;
+            const requestBody = { workout_id: workoutId };
+            
+            if (this.dataManager && this.isAuthenticated) {
+                // For authenticated users, use Firebase endpoint
+                const headers = {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${await this.currentUser.getIdToken()}`
+                };
+                response = await fetch(`${this.apiBase}/api/v3/firebase/programs/${this.currentProgram.id}/workouts`, {
+                    method: 'POST',
+                    headers,
+                    body: JSON.stringify(requestBody)
+                });
+            } else {
+                // For anonymous users, use regular endpoint
+                response = await fetch(`${this.apiBase}/api/v3/programs/${this.currentProgram.id}/workouts`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(requestBody)
+                });
+            }
 
             if (response.ok) {
                 const updatedProgram = await response.json();
@@ -1008,9 +1029,23 @@ class GymDashboardV3 {
         if (!this.currentProgram) return;
 
         try {
-            const response = await fetch(`${this.apiBase}/api/v3/programs/${this.currentProgram.id}/workouts/${workoutId}`, {
-                method: 'DELETE'
-            });
+            let response;
+            
+            if (this.dataManager && this.isAuthenticated) {
+                // For authenticated users, use Firebase endpoint
+                const headers = {
+                    'Authorization': `Bearer ${await this.currentUser.getIdToken()}`
+                };
+                response = await fetch(`${this.apiBase}/api/v3/firebase/programs/${this.currentProgram.id}/workouts/${workoutId}`, {
+                    method: 'DELETE',
+                    headers
+                });
+            } else {
+                // For anonymous users, use regular endpoint
+                response = await fetch(`${this.apiBase}/api/v3/programs/${this.currentProgram.id}/workouts/${workoutId}`, {
+                    method: 'DELETE'
+                });
+            }
 
             if (response.ok) {
                 // Reload program details
