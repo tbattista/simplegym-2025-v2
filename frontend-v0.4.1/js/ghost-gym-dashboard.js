@@ -1181,42 +1181,94 @@ async function generateDocument() {
         const includeToc = document.getElementById('includeToc')?.checked;
         const includeProgress = document.getElementById('includeProgress')?.checked;
         
+        console.log('🔍 DEBUG: Generation request:', {
+            programId: window.ghostGym.currentProgram.id,
+            format,
+            startDate,
+            includeCover,
+            includeToc,
+            includeProgress
+        });
+        
         // Show loading state
         const generateBtn = document.getElementById('confirmGenerateBtn');
         const originalText = generateBtn.innerHTML;
         generateBtn.innerHTML = '<i class="bx bx-loader-alt bx-spin me-1"></i>Generating...';
         generateBtn.disabled = true;
         
+        // Prepare request body with proper validation (matching GenerateProgramDocumentRequest model)
+        const requestBody = {
+            program_id: window.ghostGym.currentProgram.id,
+            start_date: startDate || null,
+            include_cover_page: includeCover !== false, // Default to true
+            include_table_of_contents: includeToc !== false,     // Default to true
+            include_progress_tracking: includeProgress !== false // Default to true
+        };
+        
+        console.log('🔍 DEBUG: Request body:', requestBody);
+        
+        // Get auth token
+        let authToken = null;
+        try {
+            if (window.dataManager && window.dataManager.getAuthToken) {
+                authToken = await window.dataManager.getAuthToken();
+                console.log('🔍 DEBUG: Auth token obtained:', authToken ? 'Yes' : 'No');
+            } else if (window.authService && window.authService.getIdToken) {
+                authToken = await window.authService.getIdToken();
+                console.log('🔍 DEBUG: Auth token from authService:', authToken ? 'Yes' : 'No');
+            }
+        } catch (authError) {
+            console.warn('⚠️ Could not get auth token:', authError.message);
+        }
+        
+        // Prepare headers
+        const headers = {
+            'Content-Type': 'application/json'
+        };
+        
+        if (authToken) {
+            headers['Authorization'] = `Bearer ${authToken}`;
+        }
+        
+        console.log('🔍 DEBUG: Request headers:', headers);
+        
         // Generate document
         const endpoint = format === 'pdf' ? 'generate-pdf' : 'generate-html';
-        const response = await fetch(`/api/v3/programs/${window.ghostGym.currentProgram.id}/${endpoint}`, {
+        const url = `/api/v3/programs/${window.ghostGym.currentProgram.id}/${endpoint}`;
+        
+        console.log('🔍 DEBUG: Making request to:', url);
+        
+        const response = await fetch(url, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${await window.dataManager.getAuthToken()}`
-            },
-            body: JSON.stringify({
-                start_date: startDate,
-                include_cover: includeCover,
-                include_toc: includeToc,
-                include_progress: includeProgress
-            })
+            headers: headers,
+            body: JSON.stringify(requestBody)
         });
         
+        console.log('🔍 DEBUG: Response status:', response.status);
+        console.log('🔍 DEBUG: Response headers:', Object.fromEntries(response.headers.entries()));
+        
         if (!response.ok) {
-            throw new Error('Failed to generate document');
+            let errorMessage = 'Failed to generate document';
+            try {
+                const errorData = await response.json();
+                errorMessage = errorData.detail || errorData.message || errorMessage;
+                console.error('🔍 DEBUG: Error response:', errorData);
+            } catch (e) {
+                console.error('🔍 DEBUG: Could not parse error response');
+            }
+            throw new Error(`${errorMessage} (Status: ${response.status})`);
         }
         
         // Download the file
         const blob = await response.blob();
-        const url = URL.createObjectURL(blob);
+        const downloadUrl = URL.createObjectURL(blob);
         const a = document.createElement('a');
-        a.href = url;
+        a.href = downloadUrl;
         a.download = `${window.ghostGym.currentProgram.name.replace(/[^a-z0-9]/gi, '_')}.${format}`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
-        URL.revokeObjectURL(url);
+        URL.revokeObjectURL(downloadUrl);
         
         // Close modal and show success
         const modal = bootstrap.Modal.getInstance(document.getElementById('generateModal'));
