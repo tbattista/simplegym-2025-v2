@@ -702,32 +702,829 @@ function showGenerateModal() {
     modal.show();
 }
 
-// Placeholder functions that will integrate with existing V3 functionality
-function saveProgram() { /* Integrate with existing saveProgram */ }
-function saveWorkout() { /* Integrate with existing saveWorkout */ }
-function editCurrentProgram() { /* Integrate with existing editProgram */ }
-function previewProgram() { /* Integrate with existing previewProgram */ }
-function generateDocument() { /* Integrate with existing generateDocument */ }
-function addExerciseGroup() { /* Integrate with existing addExerciseGroup */ }
-function addBonusExercise() { /* Integrate with existing addBonusExercise */ }
-function clearProgramForm() { /* Integrate with existing clearProgramForm */ }
-function clearWorkoutForm() { /* Integrate with existing clearWorkoutForm */ }
-function editProgram(id) { /* Integrate with existing editProgram */ }
-function duplicateProgram(id) { /* Integrate with existing duplicateProgram */ }
-function deleteProgram(id) { /* Integrate with existing deleteProgram */ }
-function editWorkout(id) { /* Integrate with existing editWorkout */ }
-function duplicateWorkout(id) { /* Integrate with existing duplicateWorkout */ }
-function deleteWorkout(id) { /* Integrate with existing deleteWorkout */ }
-function addWorkoutToProgram(programId, workoutId) { /* Integrate with existing addWorkoutToProgram */ }
-function removeWorkoutFromProgram(programId, workoutId) { /* Integrate with existing removeWorkoutFromProgram */ }
-function reorderProgramWorkouts(evt) { /* Integrate with existing reorderProgramWorkouts */ }
-function editProgramWorkout(programId, workoutId) { /* Integrate with existing editProgramWorkout */ }
-function signOut() { if (window.authService) window.authService.signOut(); }
-function updateAuthUI(user) { /* Integrate with existing updateAuthUI */ }
-function updateSyncStatus(status) { /* Integrate with existing updateSyncStatus */ }
-function focusProgramsPanel() { /* Focus on programs panel */ }
-function focusWorkoutsPanel() { /* Focus on workouts panel */ }
-function showBackupOptions() { /* Show backup/export options */ }
-function showSettings() { /* Show settings panel */ }
+// Integrated V3 functionality with Sneat UI
+
+/**
+ * Save program (integrated with existing V3 functionality)
+ */
+async function saveProgram() {
+    try {
+        const form = document.getElementById('programForm');
+        if (!form) return;
+        
+        // Collect form data
+        const programData = {
+            name: document.getElementById('programName')?.value?.trim(),
+            description: document.getElementById('programDescription')?.value?.trim(),
+            duration_weeks: parseInt(document.getElementById('programDuration')?.value) || null,
+            difficulty_level: document.getElementById('programDifficulty')?.value || 'intermediate',
+            tags: document.getElementById('programTags')?.value?.split(',').map(tag => tag.trim()).filter(tag => tag) || []
+        };
+        
+        // Validate required fields
+        if (!programData.name) {
+            showAlert('Program name is required', 'danger');
+            return;
+        }
+        
+        // Show loading state
+        const saveBtn = document.getElementById('saveProgramBtn');
+        const originalText = saveBtn.innerHTML;
+        saveBtn.innerHTML = '<i class="bx bx-loader-alt bx-spin me-1"></i>Saving...';
+        saveBtn.disabled = true;
+        
+        // Save using data manager
+        const savedProgram = await window.dataManager.createProgram(programData);
+        
+        // Update local state
+        window.ghostGym.programs.unshift(savedProgram);
+        renderPrograms();
+        updateStats();
+        
+        // Close modal and show success
+        const modal = bootstrap.Modal.getInstance(document.getElementById('programModal'));
+        modal.hide();
+        showAlert(`Program "${savedProgram.name}" created successfully!`, 'success');
+        
+        // Select the new program
+        selectProgram(savedProgram.id);
+        
+    } catch (error) {
+        console.error('❌ Error saving program:', error);
+        showAlert('Failed to save program: ' + error.message, 'danger');
+    } finally {
+        // Reset button state
+        const saveBtn = document.getElementById('saveProgramBtn');
+        if (saveBtn) {
+            saveBtn.innerHTML = 'Save Program';
+            saveBtn.disabled = false;
+        }
+    }
+}
+
+/**
+ * Save workout (integrated with existing V3 functionality)
+ */
+async function saveWorkout() {
+    try {
+        const form = document.getElementById('workoutForm');
+        if (!form) return;
+        
+        // Collect basic workout data
+        const workoutData = {
+            name: document.getElementById('workoutName')?.value?.trim(),
+            description: document.getElementById('workoutDescription')?.value?.trim(),
+            tags: document.getElementById('workoutTags')?.value?.split(',').map(tag => tag.trim()).filter(tag => tag) || [],
+            exercise_groups: collectExerciseGroups(),
+            bonus_exercises: collectBonusExercises()
+        };
+        
+        // Validate required fields
+        if (!workoutData.name) {
+            showAlert('Workout name is required', 'danger');
+            return;
+        }
+        
+        if (workoutData.exercise_groups.length === 0) {
+            showAlert('At least one exercise group is required', 'danger');
+            return;
+        }
+        
+        // Show loading state
+        const saveBtn = document.getElementById('saveWorkoutBtn');
+        const originalText = saveBtn.innerHTML;
+        saveBtn.innerHTML = '<i class="bx bx-loader-alt bx-spin me-1"></i>Saving...';
+        saveBtn.disabled = true;
+        
+        // Save using data manager
+        const savedWorkout = await window.dataManager.createWorkout(workoutData);
+        
+        // Update local state
+        window.ghostGym.workouts.unshift(savedWorkout);
+        renderWorkouts();
+        updateStats();
+        
+        // Close modal and show success
+        const modal = bootstrap.Modal.getInstance(document.getElementById('workoutModal'));
+        modal.hide();
+        showAlert(`Workout "${savedWorkout.name}" created successfully!`, 'success');
+        
+    } catch (error) {
+        console.error('❌ Error saving workout:', error);
+        showAlert('Failed to save workout: ' + error.message, 'danger');
+    } finally {
+        // Reset button state
+        const saveBtn = document.getElementById('saveWorkoutBtn');
+        if (saveBtn) {
+            saveBtn.innerHTML = 'Save Workout';
+            saveBtn.disabled = false;
+        }
+    }
+}
+
+/**
+ * Collect exercise groups from form
+ */
+function collectExerciseGroups() {
+    const groups = [];
+    const groupElements = document.querySelectorAll('#exerciseGroups .exercise-group');
+    
+    groupElements.forEach(groupEl => {
+        const exercises = {};
+        const exerciseInputs = groupEl.querySelectorAll('.exercise-input');
+        
+        exerciseInputs.forEach((input, index) => {
+            const value = input.value.trim();
+            if (value) {
+                const letter = String.fromCharCode(97 + index); // a, b, c, etc.
+                exercises[letter] = value;
+            }
+        });
+        
+        if (Object.keys(exercises).length > 0) {
+            groups.push({
+                exercises: exercises,
+                sets: groupEl.querySelector('.sets-input')?.value || '3',
+                reps: groupEl.querySelector('.reps-input')?.value || '8-12',
+                rest: groupEl.querySelector('.rest-input')?.value || '60s'
+            });
+        }
+    });
+    
+    return groups;
+}
+
+/**
+ * Collect bonus exercises from form
+ */
+function collectBonusExercises() {
+    const bonusExercises = [];
+    const bonusElements = document.querySelectorAll('#bonusExercises .bonus-exercise');
+    
+    bonusElements.forEach(bonusEl => {
+        const name = bonusEl.querySelector('.bonus-name-input')?.value?.trim();
+        if (name) {
+            bonusExercises.push({
+                name: name,
+                sets: bonusEl.querySelector('.bonus-sets-input')?.value || '2',
+                reps: bonusEl.querySelector('.bonus-reps-input')?.value || '15',
+                rest: bonusEl.querySelector('.bonus-rest-input')?.value || '30s'
+            });
+        }
+    });
+    
+    return bonusExercises;
+}
+
+/**
+ * Add exercise group to workout form
+ */
+function addExerciseGroup() {
+    const container = document.getElementById('exerciseGroups');
+    if (!container) return;
+    
+    const groupCount = container.children.length + 1;
+    const groupHtml = `
+        <div class="card mb-3 exercise-group">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h6 class="mb-0">Exercise Group ${groupCount}</h6>
+                <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeExerciseGroup(this)">
+                    <i class="bx bx-trash"></i>
+                </button>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Exercise A</label>
+                        <input type="text" class="form-control exercise-input" placeholder="e.g., Bench Press">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Exercise B (optional)</label>
+                        <input type="text" class="form-control exercise-input" placeholder="e.g., Incline Dumbbell Press">
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Exercise C (optional)</label>
+                        <input type="text" class="form-control exercise-input" placeholder="e.g., Dumbbell Flyes">
+                    </div>
+                    <div class="col-md-6">
+                        <button type="button" class="btn btn-outline-secondary btn-sm mt-4" onclick="addExerciseToGroup(this)">
+                            <i class="bx bx-plus me-1"></i>Add Exercise
+                        </button>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4">
+                        <label class="form-label">Sets</label>
+                        <input type="text" class="form-control sets-input" value="3" placeholder="e.g., 3">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Reps</label>
+                        <input type="text" class="form-control reps-input" value="8-12" placeholder="e.g., 8-12">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Rest</label>
+                        <input type="text" class="form-control rest-input" value="60s" placeholder="e.g., 60s">
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    container.insertAdjacentHTML('beforeend', groupHtml);
+}
+
+/**
+ * Add bonus exercise to workout form
+ */
+function addBonusExercise() {
+    const container = document.getElementById('bonusExercises');
+    if (!container) return;
+    
+    const bonusHtml = `
+        <div class="card mb-3 bonus-exercise">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h6 class="mb-0">Bonus Exercise</h6>
+                <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeBonusExercise(this)">
+                    <i class="bx bx-trash"></i>
+                </button>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-12">
+                        <label class="form-label">Exercise Name</label>
+                        <input type="text" class="form-control bonus-name-input" placeholder="e.g., Plank">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4">
+                        <label class="form-label">Sets</label>
+                        <input type="text" class="form-control bonus-sets-input" value="2" placeholder="e.g., 2">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Reps</label>
+                        <input type="text" class="form-control bonus-reps-input" value="15" placeholder="e.g., 15">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Rest</label>
+                        <input type="text" class="form-control bonus-rest-input" value="30s" placeholder="e.g., 30s">
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    container.insertAdjacentHTML('beforeend', bonusHtml);
+}
+
+/**
+ * Remove exercise group
+ */
+function removeExerciseGroup(button) {
+    const group = button.closest('.exercise-group');
+    if (group) {
+        group.remove();
+        // Renumber remaining groups
+        renumberExerciseGroups();
+    }
+}
+
+/**
+ * Remove bonus exercise
+ */
+function removeBonusExercise(button) {
+    const bonus = button.closest('.bonus-exercise');
+    if (bonus) {
+        bonus.remove();
+    }
+}
+
+/**
+ * Renumber exercise groups
+ */
+function renumberExerciseGroups() {
+    const groups = document.querySelectorAll('#exerciseGroups .exercise-group');
+    groups.forEach((group, index) => {
+        const header = group.querySelector('.card-header h6');
+        if (header) {
+            header.textContent = `Exercise Group ${index + 1}`;
+        }
+    });
+}
+
+/**
+ * Add exercise to existing group
+ */
+function addExerciseToGroup(button) {
+    const group = button.closest('.exercise-group');
+    const exerciseInputs = group.querySelectorAll('.exercise-input');
+    const nextLetter = String.fromCharCode(97 + exerciseInputs.length); // d, e, f, etc.
+    
+    if (exerciseInputs.length >= 6) {
+        showAlert('Maximum 6 exercises per group', 'warning');
+        return;
+    }
+    
+    const newExerciseHtml = `
+        <div class="col-md-6 mb-3">
+            <label class="form-label">Exercise ${nextLetter.toUpperCase()} (optional)</label>
+            <div class="input-group">
+                <input type="text" class="form-control exercise-input" placeholder="e.g., Exercise name">
+                <button type="button" class="btn btn-outline-danger" onclick="removeExerciseFromGroup(this)">
+                    <i class="bx bx-trash"></i>
+                </button>
+            </div>
+        </div>
+    `;
+    
+    const lastRow = group.querySelector('.row:last-of-type');
+    lastRow.insertAdjacentHTML('beforebegin', `<div class="row">${newExerciseHtml}</div>`);
+}
+
+/**
+ * Remove exercise from group
+ */
+function removeExerciseFromGroup(button) {
+    const exerciseDiv = button.closest('.col-md-6');
+    const row = exerciseDiv.parentElement;
+    
+    exerciseDiv.remove();
+    
+    // Remove row if empty
+    if (row.children.length === 0) {
+        row.remove();
+    }
+}
+
+/**
+ * Clear program form
+ */
+function clearProgramForm() {
+    const form = document.getElementById('programForm');
+    if (form) {
+        form.reset();
+        // Reset to default values
+        document.getElementById('programDifficulty').value = 'intermediate';
+    }
+}
+
+/**
+ * Clear workout form
+ */
+function clearWorkoutForm() {
+    const form = document.getElementById('workoutForm');
+    if (form) {
+        form.reset();
+        // Clear dynamic content
+        document.getElementById('exerciseGroups').innerHTML = '';
+        document.getElementById('bonusExercises').innerHTML = '';
+        // Add initial exercise group
+        addExerciseGroup();
+    }
+}
+
+/**
+ * Edit current program
+ */
+function editCurrentProgram() {
+    if (window.ghostGym.currentProgram) {
+        editProgram(window.ghostGym.currentProgram.id);
+    }
+}
+
+/**
+ * Edit program by ID
+ */
+function editProgram(id) {
+    const program = window.ghostGym.programs.find(p => p.id === id);
+    if (!program) return;
+    
+    // Populate form with program data
+    document.getElementById('programName').value = program.name || '';
+    document.getElementById('programDescription').value = program.description || '';
+    document.getElementById('programDuration').value = program.duration_weeks || '';
+    document.getElementById('programDifficulty').value = program.difficulty_level || 'intermediate';
+    document.getElementById('programTags').value = program.tags ? program.tags.join(', ') : '';
+    
+    // Update modal title
+    document.getElementById('programModalTitle').textContent = 'Edit Program';
+    
+    // Show modal
+    const modal = new bootstrap.Modal(document.getElementById('programModal'));
+    modal.show();
+}
+
+/**
+ * Preview program
+ */
+async function previewProgram() {
+    if (!window.ghostGym.currentProgram) {
+        showAlert('No program selected', 'warning');
+        return;
+    }
+    
+    try {
+        // Show preview modal
+        const modal = new bootstrap.Modal(document.getElementById('previewModal'));
+        modal.show();
+        
+        // Show loading
+        document.getElementById('previewLoading').classList.remove('d-none');
+        document.getElementById('previewFrame').classList.add('d-none');
+        
+        // Generate preview
+        const response = await fetch(`/api/v3/programs/${window.ghostGym.currentProgram.id}/preview-html`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${await window.dataManager.getAuthToken()}`
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error('Failed to generate preview');
+        }
+        
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        
+        // Show preview
+        document.getElementById('previewLoading').classList.add('d-none');
+        const frame = document.getElementById('previewFrame');
+        frame.src = url;
+        frame.classList.remove('d-none');
+        
+    } catch (error) {
+        console.error('❌ Error generating preview:', error);
+        showAlert('Failed to generate preview: ' + error.message, 'danger');
+        
+        // Hide loading
+        document.getElementById('previewLoading').classList.add('d-none');
+    }
+}
+
+/**
+ * Generate document
+ */
+async function generateDocument() {
+    if (!window.ghostGym.currentProgram) {
+        showAlert('No program selected', 'warning');
+        return;
+    }
+    
+    try {
+        // Get generation options
+        const format = document.querySelector('input[name="format"]:checked')?.value || 'html';
+        const startDate = document.getElementById('startDate')?.value;
+        const includeCover = document.getElementById('includeCover')?.checked;
+        const includeToc = document.getElementById('includeToc')?.checked;
+        const includeProgress = document.getElementById('includeProgress')?.checked;
+        
+        // Show loading state
+        const generateBtn = document.getElementById('confirmGenerateBtn');
+        const originalText = generateBtn.innerHTML;
+        generateBtn.innerHTML = '<i class="bx bx-loader-alt bx-spin me-1"></i>Generating...';
+        generateBtn.disabled = true;
+        
+        // Generate document
+        const endpoint = format === 'pdf' ? 'generate-pdf' : 'generate-html';
+        const response = await fetch(`/api/v3/programs/${window.ghostGym.currentProgram.id}/${endpoint}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${await window.dataManager.getAuthToken()}`
+            },
+            body: JSON.stringify({
+                start_date: startDate,
+                include_cover: includeCover,
+                include_toc: includeToc,
+                include_progress: includeProgress
+            })
+        });
+        
+        if (!response.ok) {
+            throw new Error('Failed to generate document');
+        }
+        
+        // Download the file
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${window.ghostGym.currentProgram.name.replace(/[^a-z0-9]/gi, '_')}.${format}`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        
+        // Close modal and show success
+        const modal = bootstrap.Modal.getInstance(document.getElementById('generateModal'));
+        modal.hide();
+        showAlert(`${format.toUpperCase()} document generated successfully!`, 'success');
+        
+    } catch (error) {
+        console.error('❌ Error generating document:', error);
+        showAlert('Failed to generate document: ' + error.message, 'danger');
+    } finally {
+        // Reset button state
+        const generateBtn = document.getElementById('confirmGenerateBtn');
+        if (generateBtn) {
+            generateBtn.innerHTML = '<i class="bx bx-download me-1"></i>Generate Document';
+            generateBtn.disabled = false;
+        }
+    }
+}
+
+/**
+ * Sign out user
+ */
+function signOut() {
+    if (window.authService) {
+        window.authService.signOut();
+    }
+}
+
+/**
+ * Update authentication UI
+ */
+function updateAuthUI(user) {
+    const signInBtn = document.getElementById('headerSignInBtn');
+    const userDropdown = document.querySelector('.auth-sign-out');
+    const userDisplayName = document.getElementById('userDisplayName');
+    const userEmailDisplay = document.getElementById('userEmailDisplay');
+    
+    if (user) {
+        // User is signed in
+        if (signInBtn) signInBtn.style.display = 'none';
+        if (userDropdown) userDropdown.classList.remove('d-none');
+        
+        if (userDisplayName) {
+            userDisplayName.textContent = user.displayName || user.email || 'User';
+        }
+        if (userEmailDisplay) {
+            userEmailDisplay.textContent = user.email || '';
+        }
+    } else {
+        // User is signed out
+        if (signInBtn) signInBtn.style.display = 'block';
+        if (userDropdown) userDropdown.classList.add('d-none');
+    }
+}
+
+/**
+ * Update sync status
+ */
+function updateSyncStatus(status) {
+    // Update sync status indicator if needed
+    console.log('Sync status:', status);
+}
+
+/**
+ * Focus on programs panel
+ */
+function focusProgramsPanel() {
+    document.getElementById('programSearch')?.focus();
+}
+
+/**
+ * Focus on workouts panel
+ */
+function focusWorkoutsPanel() {
+    document.getElementById('workoutSearch')?.focus();
+}
+
+/**
+ * Show backup/export options
+ */
+function showBackupOptions() {
+    showAlert('Backup & Export functionality coming soon!', 'info');
+}
+
+/**
+ * Show settings panel
+ */
+function showSettings() {
+    showAlert('Settings panel coming soon!', 'info');
+}
+
+// Additional helper functions for program management
+
+function duplicateProgram(id) {
+    const program = window.ghostGym.programs.find(p => p.id === id);
+    if (!program) return;
+    
+    // Create duplicate with new name
+    const duplicateData = {
+        ...program,
+        name: `${program.name} (Copy)`,
+        id: undefined, // Will be generated
+        created_date: undefined,
+        modified_date: undefined
+    };
+    
+    // Use the same save logic
+    window.dataManager.createProgram(duplicateData).then(savedProgram => {
+        window.ghostGym.programs.unshift(savedProgram);
+        renderPrograms();
+        updateStats();
+        showAlert(`Program duplicated as "${savedProgram.name}"`, 'success');
+    }).catch(error => {
+        showAlert('Failed to duplicate program: ' + error.message, 'danger');
+    });
+}
+
+function deleteProgram(id) {
+    const program = window.ghostGym.programs.find(p => p.id === id);
+    if (!program) return;
+    
+    if (confirm(`Are you sure you want to delete "${program.name}"? This action cannot be undone.`)) {
+        // Remove from local state (API integration would go here)
+        window.ghostGym.programs = window.ghostGym.programs.filter(p => p.id !== id);
+        
+        // Clear selection if this was the current program
+        if (window.ghostGym.currentProgram?.id === id) {
+            window.ghostGym.currentProgram = null;
+            showWelcomePanel();
+        }
+        
+        renderPrograms();
+        updateStats();
+        showAlert(`Program "${program.name}" deleted`, 'success');
+    }
+}
+
+function editWorkout(id) {
+    const workout = window.ghostGym.workouts.find(w => w.id === id);
+    if (!workout) return;
+    
+    // Populate form with workout data
+    document.getElementById('workoutName').value = workout.name || '';
+    document.getElementById('workoutDescription').value = workout.description || '';
+    document.getElementById('workoutTags').value = workout.tags ? workout.tags.join(', ') : '';
+    
+    // Clear and populate exercise groups
+    const exerciseGroupsContainer = document.getElementById('exerciseGroups');
+    exerciseGroupsContainer.innerHTML = '';
+    
+    if (workout.exercise_groups && workout.exercise_groups.length > 0) {
+        workout.exercise_groups.forEach(group => {
+            addExerciseGroup();
+            const lastGroup = exerciseGroupsContainer.lastElementChild;
+            
+            // Populate exercises
+            const exerciseInputs = lastGroup.querySelectorAll('.exercise-input');
+            Object.entries(group.exercises || {}).forEach(([key, value], index) => {
+                if (exerciseInputs[index]) {
+                    exerciseInputs[index].value = value;
+                }
+            });
+            
+            // Populate sets, reps, rest
+            lastGroup.querySelector('.sets-input').value = group.sets || '3';
+            lastGroup.querySelector('.reps-input').value = group.reps || '8-12';
+            lastGroup.querySelector('.rest-input').value = group.rest || '60s';
+        });
+    } else {
+        addExerciseGroup();
+    }
+    
+    // Clear and populate bonus exercises
+    const bonusExercisesContainer = document.getElementById('bonusExercises');
+    bonusExercisesContainer.innerHTML = '';
+    
+    if (workout.bonus_exercises && workout.bonus_exercises.length > 0) {
+        workout.bonus_exercises.forEach(bonus => {
+            addBonusExercise();
+            const lastBonus = bonusExercisesContainer.lastElementChild;
+            
+            lastBonus.querySelector('.bonus-name-input').value = bonus.name || '';
+            lastBonus.querySelector('.bonus-sets-input').value = bonus.sets || '2';
+            lastBonus.querySelector('.bonus-reps-input').value = bonus.reps || '15';
+            lastBonus.querySelector('.bonus-rest-input').value = bonus.rest || '30s';
+        });
+    }
+    
+    // Update modal title
+    document.getElementById('workoutModalTitle').textContent = 'Edit Workout';
+    
+    // Show modal
+    const modal = new bootstrap.Modal(document.getElementById('workoutModal'));
+    modal.show();
+}
+
+function duplicateWorkout(id) {
+    const workout = window.ghostGym.workouts.find(w => w.id === id);
+    if (!workout) return;
+    
+    // Create duplicate with new name
+    const duplicateData = {
+        ...workout,
+        name: `${workout.name} (Copy)`,
+        id: undefined, // Will be generated
+        created_date: undefined,
+        modified_date: undefined
+    };
+    
+    // Use the same save logic
+    window.dataManager.createWorkout(duplicateData).then(savedWorkout => {
+        window.ghostGym.workouts.unshift(savedWorkout);
+        renderWorkouts();
+        updateStats();
+        showAlert(`Workout duplicated as "${savedWorkout.name}"`, 'success');
+    }).catch(error => {
+        showAlert('Failed to duplicate workout: ' + error.message, 'danger');
+    });
+}
+
+function deleteWorkout(id) {
+    const workout = window.ghostGym.workouts.find(w => w.id === id);
+    if (!workout) return;
+    
+    if (confirm(`Are you sure you want to delete "${workout.name}"? This action cannot be undone.`)) {
+        // Remove from local state (API integration would go here)
+        window.ghostGym.workouts = window.ghostGym.workouts.filter(w => w.id !== id);
+        
+        renderWorkouts();
+        updateStats();
+        showAlert(`Workout "${workout.name}" deleted`, 'success');
+    }
+}
+
+function addWorkoutToProgram(programId, workoutId) {
+    const program = window.ghostGym.programs.find(p => p.id === programId);
+    const workout = window.ghostGym.workouts.find(w => w.id === workoutId);
+    
+    if (!program || !workout) return;
+    
+    // Check if workout is already in program
+    if (program.workouts && program.workouts.some(w => w.workout_id === workoutId)) {
+        showAlert('Workout is already in this program', 'warning');
+        return;
+    }
+    
+    // Add workout to program
+    if (!program.workouts) program.workouts = [];
+    program.workouts.push({
+        workout_id: workoutId,
+        order_index: program.workouts.length,
+        custom_name: null,
+        custom_date: null
+    });
+    
+    // Update UI
+    if (window.ghostGym.currentProgram?.id === programId) {
+        renderProgramWorkouts(program);
+    }
+    
+    showAlert(`"${workout.name}" added to "${program.name}"`, 'success');
+}
+
+function removeWorkoutFromProgram(programId, workoutId) {
+    const program = window.ghostGym.programs.find(p => p.id === programId);
+    if (!program || !program.workouts) return;
+    
+    const workout = window.ghostGym.workouts.find(w => w.id === workoutId);
+    const workoutName = workout ? workout.name : 'Workout';
+    
+    if (confirm(`Remove "${workoutName}" from this program?`)) {
+        program.workouts = program.workouts.filter(w => w.workout_id !== workoutId);
+        
+        // Update UI
+        if (window.ghostGym.currentProgram?.id === programId) {
+            renderProgramWorkouts(program);
+        }
+        
+        showAlert(`"${workoutName}" removed from program`, 'success');
+    }
+}
+
+function reorderProgramWorkouts(evt) {
+    if (!window.ghostGym.currentProgram) return;
+    
+    const program = window.ghostGym.currentProgram;
+    if (!program.workouts) return;
+    
+    // Update order based on new positions
+    const workoutElements = document.querySelectorAll('#programWorkouts .workout-item');
+    const newOrder = [];
+    
+    workoutElements.forEach((element, index) => {
+        const workoutId = element.dataset.workoutId;
+        const programWorkout = program.workouts.find(w => w.workout_id === workoutId);
+        if (programWorkout) {
+            programWorkout.order_index = index;
+            newOrder.push(programWorkout);
+        }
+    });
+    
+    program.workouts = newOrder;
+    showAlert('Workout order updated', 'success');
+}
+
+function editProgramWorkout(programId, workoutId) {
+    // This would open a modal to edit custom name/date for the workout in the program
+    showAlert('Edit program workout functionality coming soon!', 'info');
+}
 
 console.log('📦 Ghost Gym Dashboard JavaScript loaded');
