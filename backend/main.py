@@ -59,14 +59,23 @@ import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Check if frontend directory exists
+# Check if frontend directories exist
 frontend_path = Path("frontend")
+frontend_v041_path = Path("frontend-v0.4.1")
+
 if frontend_path.exists():
     logger.info(f"Frontend directory found: {frontend_path.absolute()}")
     logger.info(f"Frontend contents: {list(frontend_path.iterdir())}")
     app.mount("/static", StaticFiles(directory="frontend"), name="static")
 else:
     logger.error(f"Frontend directory not found at: {frontend_path.absolute()}")
+
+# Mount V0.4.1 frontend (Sneat-based)
+if frontend_v041_path.exists():
+    logger.info(f"Frontend V0.4.1 directory found: {frontend_v041_path.absolute()}")
+    app.mount("/v0.4.1", StaticFiles(directory="frontend-v0.4.1"), name="frontend_v041")
+else:
+    logger.error(f"Frontend V0.4.1 directory not found at: {frontend_v041_path.absolute()}")
 
 @app.get("/", response_class=HTMLResponse)
 async def serve_v2_frontend():
@@ -89,6 +98,18 @@ async def serve_v3_dashboard():
     except FileNotFoundError:
         return HTMLResponse(
             content="<h1>V3 Dashboard not found</h1><p>Please ensure frontend/dashboard.html exists</p>",
+            status_code=404
+        )
+
+@app.get("/v0.4.1", response_class=HTMLResponse)
+async def serve_v041_dashboard():
+    """Serve the V0.4.1 Sneat-based dashboard page"""
+    try:
+        with open("frontend-v0.4.1/dashboard.html", "r", encoding="utf-8") as f:
+            return HTMLResponse(content=f.read())
+    except FileNotFoundError:
+        return HTMLResponse(
+            content="<h1>V0.4.1 Dashboard not found</h1><p>Please ensure frontend-v0.4.1/dashboard.html exists</p>",
             status_code=404
         )
 
