@@ -1,0 +1,419 @@
+<!doctype html>
+
+<html
+  lang="en"
+  class="layout-menu-fixed layout-compact"
+  data-assets-path="/static/assets/"
+  data-template="vertical-menu-template-free">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+
+    <title>👻 Exercise Database - Ghost Gym V0.4.1</title>
+
+    <meta name="description" content="Browse and favorite exercises from our comprehensive database" />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/static/assets/img/favicon/favicon.ico" />
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap"
+      rel="stylesheet" />
+
+    <link rel="stylesheet" href="/static/assets/vendor/fonts/iconify-icons.css" />
+
+    <!-- Core CSS -->
+    <link rel="stylesheet" href="/static/assets/vendor/css/core.css" />
+    <link rel="stylesheet" href="/static/assets/css/demo.css" />
+
+    <!-- Vendors CSS -->
+    <link rel="stylesheet" href="/static/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css" />
+
+    <!-- Custom Ghost Gym CSS -->
+    <link rel="stylesheet" href="/static/assets/css/ghost-gym-custom.css" />
+    
+    <!-- Exercise Database CSS -->
+    <link rel="stylesheet" href="/static/assets/css/exercise-database.css" />
+
+    <!-- Helpers -->
+    <script src="/static/assets/vendor/js/helpers.js"></script>
+    <script src="/static/assets/js/config.js"></script>
+
+    <!-- Firebase SDK v9+ -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js';
+        import {
+            getAuth,
+            onAuthStateChanged
+        } from 'https://www.gstatic.com/firebasejs/10.5.0/firebase-auth.js';
+        
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDpG6XqRY8jkuxtEy-8avAXK510czrLRNs",
+            authDomain: "ghost-gym-v3.firebaseapp.com",
+            projectId: "ghost-gym-v3",
+            storageBucket: "ghost-gym-v3.firebasestorage.app",
+            messagingSenderId: "637224617538",
+            appId: "1:637224617538:web:ad149e591714a0b9b50fdb"
+        };
+        
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        
+        // Make Firebase services available globally
+        window.firebaseApp = app;
+        window.firebaseAuth = auth;
+        
+        // Make Firebase Auth functions available globally
+        window.firebaseAuthFunctions = {
+            onAuthStateChanged
+        };
+        
+        // Signal that Firebase is ready
+        window.firebaseReady = true;
+        window.dispatchEvent(new Event('firebaseReady'));
+    </script>
+  </head>
+
+  <body>
+    <!-- Layout wrapper -->
+    <div class="layout-wrapper layout-content-navbar">
+      <div class="layout-container">
+        <!-- Menu -->
+        <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
+          <div class="app-brand demo">
+            <a href="dashboard.html" class="app-brand-link">
+              <span class="app-brand-logo demo">
+                <span class="text-primary">👻</span>
+              </span>
+              <span class="app-brand-text demo menu-text fw-bold ms-2">Ghost Gym</span>
+            </a>
+
+            <a href="javascript:void(0);" class="layout-menu-toggle menu-link text-large ms-auto">
+              <i class="bx bx-chevron-left d-block d-xl-none align-middle"></i>
+            </a>
+          </div>
+
+          <div class="menu-divider mt-0"></div>
+          <div class="menu-inner-shadow"></div>
+
+          <ul class="menu-inner py-1">
+            <!-- Main Dashboard -->
+            <li class="menu-item">
+              <a href="dashboard.html" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-grid-alt"></i>
+                <div class="text-truncate">Dashboard</div>
+              </a>
+            </li>
+            
+            <!-- Program Management -->
+            <li class="menu-header small text-uppercase">
+              <span class="menu-header-text">Program Management</span>
+            </li>
+            <li class="menu-item">
+              <a href="dashboard.html#programs" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-folder"></i>
+                <div class="text-truncate">My Programs</div>
+              </a>
+            </li>
+            <li class="menu-item">
+              <a href="dashboard.html#workouts" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-dumbbell"></i>
+                <div class="text-truncate">Workout Library</div>
+              </a>
+            </li>
+            <li class="menu-item active">
+              <a href="exercise-database.html" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-book-content"></i>
+                <div class="text-truncate">Exercise Database</div>
+              </a>
+            </li>
+            
+            <!-- Tools & Settings -->
+            <li class="menu-header small text-uppercase">
+              <span class="menu-header-text">Tools & Settings</span>
+            </li>
+            <li class="menu-item">
+              <a href="javascript:void(0);" class="menu-link" id="menuBackup">
+                <i class="menu-icon tf-icons bx bx-cloud-upload"></i>
+                <div class="text-truncate">Backup & Export</div>
+              </a>
+            </li>
+            <li class="menu-item">
+              <a href="javascript:void(0);" class="menu-link" id="menuSettings">
+                <i class="menu-icon tf-icons bx bx-cog"></i>
+                <div class="text-truncate">Settings</div>
+              </a>
+            </li>
+          </ul>
+        </aside>
+        <!-- / Menu -->
+
+        <!-- Layout container -->
+        <div class="layout-page">
+          <!-- Navbar -->
+          <nav
+            class="layout-navbar container-xxl navbar-detached navbar navbar-expand-xl align-items-center bg-navbar-theme"
+            id="layout-navbar">
+            <div class="layout-menu-toggle navbar-nav align-items-xl-center me-4 me-xl-0 d-xl-none">
+              <a class="nav-item nav-link px-0 me-xl-6" href="javascript:void(0)">
+                <i class="icon-base bx bx-menu icon-md"></i>
+              </a>
+            </div>
+
+            <div class="navbar-nav-right d-flex align-items-center justify-content-end" id="navbar-collapse">
+              <!-- Search -->
+              <div class="navbar-nav align-items-center me-auto">
+                <div class="nav-item d-flex align-items-center">
+                  <span class="w-px-22 h-px-22"><i class="icon-base bx bx-search icon-md"></i></span>
+                  <input
+                    type="text"
+                    class="form-control border-0 shadow-none ps-1 ps-sm-2"
+                    placeholder="Search exercises..."
+                    aria-label="Search..." 
+                    id="globalSearch" />
+                </div>
+              </div>
+              <!-- /Search -->
+
+              <ul class="navbar-nav flex-row align-items-center ms-md-auto">
+                <!-- User Profile -->
+                <li class="nav-item" id="authContainer">
+                  <button type="button" class="btn btn-outline-primary btn-sm" id="headerSignInBtn">
+                    <i class="bx bx-user me-1"></i>
+                    Sign In
+                  </button>
+                </li>
+              </ul>
+            </div>
+          </nav>
+          <!-- / Navbar -->
+
+          <!-- Content wrapper -->
+          <div class="content-wrapper">
+            <!-- Content -->
+            <div class="container-xxl flex-grow-1 container-p-y">
+              
+              <!-- Page Header -->
+              <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                  <h4 class="mb-1">
+                    <i class="bx bx-book-content me-2"></i>
+                    Exercise Database
+                  </h4>
+                  <p class="text-muted mb-0">Browse and favorite from <span id="totalExercisesCount">2,583</span> exercises</p>
+                </div>
+                <div class="btn-group" role="group">
+                  <button type="button" class="btn btn-outline-primary" id="refreshExercisesBtn">
+                    <i class="bx bx-refresh"></i>
+                  </button>
+                  <button type="button" class="btn btn-primary" id="addCustomExerciseBtn">
+                    <i class="bx bx-plus me-1"></i>
+                    Add Custom
+                  </button>
+                </div>
+              </div>
+
+              <div class="row g-4">
+                <!-- Filters Sidebar -->
+                <div class="col-lg-3">
+                  <div class="card">
+                    <div class="card-header">
+                      <h5 class="mb-0">
+                        <i class="bx bx-filter-alt me-2"></i>
+                        Filters
+                      </h5>
+                    </div>
+                    <div class="card-body">
+                      
+                      <!-- Sort By -->
+                      <div class="mb-4">
+                        <label class="form-label fw-semibold">Sort By</label>
+                        <select class="form-select" id="sortBySelect">
+                          <option value="name">Alphabetical (A-Z)</option>
+                          <option value="popularity">Most Popular</option>
+                          <option value="favorites">My Favorites First</option>
+                        </select>
+                      </div>
+
+                      <!-- Muscle Group Filter -->
+                      <div class="mb-4">
+                        <label class="form-label fw-semibold">Muscle Group</label>
+                        <select class="form-select" id="muscleGroupFilter">
+                          <option value="">All Muscle Groups</option>
+                          <!-- Options loaded dynamically -->
+                        </select>
+                      </div>
+
+                      <!-- Equipment Filter -->
+                      <div class="mb-4">
+                        <label class="form-label fw-semibold">Equipment</label>
+                        <select class="form-select" id="equipmentFilter">
+                          <option value="">All Equipment</option>
+                          <!-- Options loaded dynamically -->
+                        </select>
+                      </div>
+
+                      <!-- Difficulty Filter -->
+                      <div class="mb-4">
+                        <label class="form-label fw-semibold">Difficulty</label>
+                        <select class="form-select" id="difficultyFilter">
+                          <option value="">All Levels</option>
+                          <option value="Beginner">Beginner</option>
+                          <option value="Intermediate">Intermediate</option>
+                          <option value="Advanced">Advanced</option>
+                        </select>
+                      </div>
+
+                      <!-- Show Options -->
+                      <div class="mb-3">
+                        <label class="form-label fw-semibold">Show</label>
+                        <div class="form-check">
+                          <input class="form-check-input" type="checkbox" id="showFavoritesOnly">
+                          <label class="form-check-label" for="showFavoritesOnly">
+                            My Favorites Only
+                          </label>
+                        </div>
+                        <div class="form-check">
+                          <input class="form-check-input" type="checkbox" id="showCustomOnly">
+                          <label class="form-check-label" for="showCustomOnly">
+                            Custom Exercises Only
+                          </label>
+                        </div>
+                      </div>
+
+                      <!-- Clear Filters -->
+                      <button type="button" class="btn btn-outline-secondary w-100" id="clearFiltersBtn">
+                        <i class="bx bx-x me-1"></i>
+                        Clear All Filters
+                      </button>
+
+                    </div>
+                  </div>
+
+                  <!-- Stats Card -->
+                  <div class="card mt-4">
+                    <div class="card-body">
+                      <h6 class="mb-3">Your Stats</h6>
+                      <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Favorites:</span>
+                        <span class="fw-semibold" id="favoritesCount">0</span>
+                      </div>
+                      <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Custom:</span>
+                        <span class="fw-semibold" id="customCount">0</span>
+                      </div>
+                      <div class="d-flex justify-content-between">
+                        <span class="text-muted">Showing:</span>
+                        <span class="fw-semibold" id="showingCount">0</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Exercise List -->
+                <div class="col-lg-9">
+                  <!-- Loading State -->
+                  <div id="loadingState" class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                      <span class="visually-hidden">Loading exercises...</span>
+                    </div>
+                    <p class="mt-3 text-muted">Loading exercises...</p>
+                  </div>
+
+                  <!-- Empty State -->
+                  <div id="emptyState" class="text-center py-5" style="display: none;">
+                    <i class="bx bx-search-alt display-1 text-muted"></i>
+                    <h5 class="mt-3">No exercises found</h5>
+                    <p class="text-muted">Try adjusting your filters or search query</p>
+                  </div>
+
+                  <!-- Exercise Grid -->
+                  <div id="exerciseGrid" class="row g-4" style="display: none;">
+                    <!-- Exercise cards will be inserted here -->
+                  </div>
+
+                  <!-- Load More Button -->
+                  <div class="text-center mt-4" id="loadMoreContainer" style="display: none;">
+                    <button type="button" class="btn btn-outline-primary" id="loadMoreBtn">
+                      <i class="bx bx-down-arrow-circle me-1"></i>
+                      Load More Exercises
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- / Content -->
+
+            <!-- Footer -->
+            <footer class="content-footer footer bg-footer-theme">
+              <div class="container-xxl">
+                <div
+                  class="footer-container d-flex align-items-center justify-content-between py-4 flex-md-row flex-column">
+                  <div class="mb-2 mb-md-0">
+                    ©
+                    <script>
+                      document.write(new Date().getFullYear());
+                    </script>
+                    , made with ❤️ by
+                    <strong>👻 Ghost Gym V0.4.1</strong>
+                  </div>
+                </div>
+              </div>
+            </footer>
+            <!-- / Footer -->
+
+            <div class="content-backdrop fade"></div>
+          </div>
+          <!-- Content wrapper -->
+        </div>
+        <!-- / Layout page -->
+      </div>
+
+      <!-- Overlay -->
+      <div class="layout-overlay layout-menu-toggle"></div>
+    </div>
+    <!-- / Layout wrapper -->
+
+    <!-- Exercise Detail Modal -->
+    <div class="modal fade" id="exerciseDetailModal" tabindex="-1">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exerciseDetailTitle">Exercise Details</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body" id="exerciseDetailBody">
+            <!-- Exercise details will be loaded here -->
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-primary" id="addToWorkoutBtn">
+              <i class="bx bx-plus me-1"></i>
+              Add to Workout
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Core JS -->
+    <script src="/static/assets/vendor/libs/jquery/jquery.js"></script>
+    <script src="/static/assets/vendor/libs/popper/popper.js"></script>
+    <script src="/static/assets/vendor/js/bootstrap.js"></script>
+    <script src="/static/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js"></script>
+    <script src="/static/assets/vendor/js/menu.js"></script>
+
+    <!-- Main JS -->
+    <script src="/static/assets/js/main.js"></script>
+
+    <!-- Exercise Database JS -->
+    <script src="/static/js/exercise-database.js"></script>
+  </body>
+</html>
