@@ -209,16 +209,24 @@ class FirebaseDataManager {
     async getPrograms(options = {}) {
         const { page = 1, pageSize = 20, search = null } = options;
         
+        console.log('🔍 DEBUG: getPrograms called with:', { storageMode: this.storageMode, isOnline: this.isOnline, options });
+        
         try {
             if (this.storageMode === 'firestore' && this.isOnline) {
-                return await this.getFirestorePrograms({ page, pageSize, search });
+                const programs = await this.getFirestorePrograms({ page, pageSize, search });
+                console.log('🔍 DEBUG: Got programs from Firestore:', programs.length);
+                return programs;
             } else {
-                return this.getLocalStoragePrograms({ page, pageSize, search });
+                const programs = this.getLocalStoragePrograms({ page, pageSize, search });
+                console.log('🔍 DEBUG: Got programs from localStorage:', programs.length);
+                return programs;
             }
         } catch (error) {
             console.error('❌ Error getting programs:', error);
             // Fallback to localStorage
-            return this.getLocalStoragePrograms({ page, pageSize, search });
+            const programs = this.getLocalStoragePrograms({ page, pageSize, search });
+            console.log('🔍 DEBUG: Fallback to localStorage programs:', programs.length);
+            return programs;
         }
     }
     
@@ -347,16 +355,24 @@ class FirebaseDataManager {
     async getWorkouts(options = {}) {
         const { page = 1, pageSize = 50, search = null, tags = null } = options;
         
+        console.log('🔍 DEBUG: getWorkouts called with:', { storageMode: this.storageMode, isOnline: this.isOnline, options });
+        
         try {
             if (this.storageMode === 'firestore' && this.isOnline) {
-                return await this.getFirestoreWorkouts({ page, pageSize, search, tags });
+                const workouts = await this.getFirestoreWorkouts({ page, pageSize, search, tags });
+                console.log('🔍 DEBUG: Got workouts from Firestore:', workouts.length);
+                return workouts;
             } else {
-                return this.getLocalStorageWorkouts({ page, pageSize, search, tags });
+                const workouts = this.getLocalStorageWorkouts({ page, pageSize, search, tags });
+                console.log('🔍 DEBUG: Got workouts from localStorage:', workouts.length);
+                return workouts;
             }
         } catch (error) {
             console.error('❌ Error getting workouts:', error);
             // Fallback to localStorage
-            return this.getLocalStorageWorkouts({ page, pageSize, search, tags });
+            const workouts = this.getLocalStorageWorkouts({ page, pageSize, search, tags });
+            console.log('🔍 DEBUG: Fallback to localStorage workouts:', workouts.length);
+            return workouts;
         }
     }
     

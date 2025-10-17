@@ -170,30 +170,44 @@ function initDataManagement() {
  */
 async function loadDashboardData() {
     try {
+        console.log('🔍 DEBUG: loadDashboardData called');
         showLoading(true);
         
         // Load programs and workouts using existing data manager
         if (window.dataManager) {
+            console.log('🔍 DEBUG: Using dataManager to load data');
             const [programs, workouts] = await Promise.all([
                 window.dataManager.getPrograms(),
                 window.dataManager.getWorkouts()
             ]);
             
+            console.log('🔍 DEBUG: Loaded from dataManager:', { programs: programs?.length, workouts: workouts?.length });
+            
             window.ghostGym.programs = programs || [];
             window.ghostGym.workouts = workouts || [];
         } else {
+            console.log('🔍 DEBUG: Fallback to localStorage');
             // Fallback to localStorage if data manager not available
             window.ghostGym.programs = JSON.parse(localStorage.getItem('gym_programs') || '[]');
             window.ghostGym.workouts = JSON.parse(localStorage.getItem('gym_workouts') || '[]');
         }
         
+        console.log('🔍 DEBUG: Final data counts:', {
+            programs: window.ghostGym.programs.length,
+            workouts: window.ghostGym.workouts.length
+        });
+        
         // Render data
+        console.log('🔍 DEBUG: Calling renderPrograms()');
         renderPrograms();
+        console.log('🔍 DEBUG: Calling renderWorkouts()');
         renderWorkouts();
+        console.log('🔍 DEBUG: Calling updateStats()');
         updateStats();
         
         // Show welcome panel if no data
         if (window.ghostGym.programs.length === 0 && window.ghostGym.workouts.length === 0) {
+            console.log('🔍 DEBUG: No data, showing welcome panel');
             showWelcomePanel();
         }
         
@@ -209,12 +223,17 @@ async function loadDashboardData() {
  * Render programs list
  */
 function renderPrograms() {
+    console.log('🔍 DEBUG: renderPrograms called with', window.ghostGym.programs.length, 'programs');
     const programsList = document.getElementById('programsList');
-    if (!programsList) return;
+    if (!programsList) {
+        console.log('❌ DEBUG: programsList element not found!');
+        return;
+    }
     
-    const filteredPrograms = window.ghostGym.programs.filter(program => 
+    const filteredPrograms = window.ghostGym.programs.filter(program =>
         program.name.toLowerCase().includes(window.ghostGym.searchFilters.programs.toLowerCase())
     );
+    console.log('🔍 DEBUG: Filtered to', filteredPrograms.length, 'programs');
     
     if (filteredPrograms.length === 0) {
         programsList.innerHTML = `
@@ -274,12 +293,17 @@ function renderPrograms() {
  * Render workouts list
  */
 function renderWorkouts() {
+    console.log('🔍 DEBUG: renderWorkouts called with', window.ghostGym.workouts.length, 'workouts');
     const workoutsList = document.getElementById('workoutsList');
-    if (!workoutsList) return;
+    if (!workoutsList) {
+        console.log('❌ DEBUG: workoutsList element not found!');
+        return;
+    }
     
-    const filteredWorkouts = window.ghostGym.workouts.filter(workout => 
+    const filteredWorkouts = window.ghostGym.workouts.filter(workout =>
         workout.name.toLowerCase().includes(window.ghostGym.searchFilters.workouts.toLowerCase())
     );
+    console.log('🔍 DEBUG: Filtered to', filteredWorkouts.length, 'workouts');
     
     if (filteredWorkouts.length === 0) {
         workoutsList.innerHTML = `
