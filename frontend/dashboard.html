@@ -39,6 +39,9 @@
     
     <!-- Exercise Autocomplete CSS -->
     <link rel="stylesheet" href="/static/assets/css/exercise-autocomplete.css" />
+    
+    <!-- Exercise Database CSS -->
+    <link rel="stylesheet" href="/static/assets/css/exercise-database.css" />
 
     <!-- Helpers -->
     <script src="/static/assets/vendor/js/helpers.js"></script>
@@ -153,7 +156,7 @@
               </a>
             </li>
             <li class="menu-item">
-              <a href="exercise-database.html" class="menu-link">
+              <a href="javascript:void(0);" class="menu-link" id="menuExercises">
                 <i class="menu-icon tf-icons bx bx-book-content"></i>
                 <div class="text-truncate">Exercise Database</div>
               </a>
@@ -199,7 +202,7 @@
                   <input
                     type="text"
                     class="form-control border-0 shadow-none ps-1 ps-sm-2 d-md-block d-none"
-                    placeholder="Search programs and workouts..."
+                    placeholder="Search programs, workouts, and exercises..."
                     aria-label="Search..." 
                     id="globalSearch" />
                 </div>
@@ -389,6 +392,175 @@
                   </div>
                 </div>
               </div>
+
+              <!-- Exercise Database Panel (initially hidden) -->
+              <div class="row g-6 mt-0" id="exerciseDatabasePanel" style="display: none;">
+                <div class="col-12">
+                  <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                      <div>
+                        <h5 class="mb-1">
+                          <i class="bx bx-book-content me-2"></i>Exercise Database
+                        </h5>
+                        <p class="text-muted mb-0 small">Browse and favorite from <span id="totalExercisesCount">2,583</span> exercises</p>
+                      </div>
+                      <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-outline-primary btn-sm" id="refreshExercisesBtn">
+                          <i class="bx bx-refresh"></i>
+                        </button>
+                        <button type="button" class="btn btn-primary btn-sm" id="addCustomExerciseBtn">
+                          <i class="bx bx-plus me-1"></i>
+                          Add Custom
+                        </button>
+                      </div>
+                    </div>
+                    <div class="card-body">
+                      <div class="row">
+                        <!-- Filters Sidebar -->
+                        <div class="col-lg-3 mb-4 mb-lg-0">
+                          <!-- Sort By -->
+                          <div class="mb-3">
+                            <label class="form-label fw-semibold small">Sort By</label>
+                            <select class="form-select form-select-sm" id="sortBySelect">
+                              <option value="name">Alphabetical (A-Z)</option>
+                              <option value="popularity">Most Popular</option>
+                              <option value="favorites">My Favorites First</option>
+                            </select>
+                          </div>
+
+                          <!-- Muscle Group Filter -->
+                          <div class="mb-3">
+                            <label class="form-label fw-semibold small">Muscle Group</label>
+                            <select class="form-select form-select-sm" id="muscleGroupFilter">
+                              <option value="">All Muscle Groups</option>
+                              <!-- Options loaded dynamically -->
+                            </select>
+                          </div>
+
+                          <!-- Equipment Filter -->
+                          <div class="mb-3">
+                            <label class="form-label fw-semibold small">Equipment</label>
+                            <select class="form-select form-select-sm" id="equipmentFilter">
+                              <option value="">All Equipment</option>
+                              <!-- Options loaded dynamically -->
+                            </select>
+                          </div>
+
+                          <!-- Difficulty Filter -->
+                          <div class="mb-3">
+                            <label class="form-label fw-semibold small">Difficulty</label>
+                            <select class="form-select form-select-sm" id="difficultyFilter">
+                              <option value="">All Levels</option>
+                              <option value="Beginner">Beginner</option>
+                              <option value="Intermediate">Intermediate</option>
+                              <option value="Advanced">Advanced</option>
+                            </select>
+                          </div>
+
+                          <!-- Show Options -->
+                          <div class="mb-3">
+                            <label class="form-label fw-semibold small">Show</label>
+                            <div class="form-check">
+                              <input class="form-check-input" type="checkbox" id="showFavoritesOnly">
+                              <label class="form-check-label small" for="showFavoritesOnly">
+                                My Favorites Only
+                              </label>
+                            </div>
+                            <div class="form-check">
+                              <input class="form-check-input" type="checkbox" id="showCustomOnly">
+                              <label class="form-check-label small" for="showCustomOnly">
+                                Custom Exercises Only
+                              </label>
+                            </div>
+                          </div>
+
+                          <!-- Clear Filters -->
+                          <button type="button" class="btn btn-outline-secondary btn-sm w-100" id="clearFiltersBtn">
+                            <i class="bx bx-x me-1"></i>
+                            Clear All Filters
+                          </button>
+
+                          <!-- Stats Card -->
+                          <div class="card mt-3 bg-label-primary">
+                            <div class="card-body p-3">
+                              <h6 class="mb-2 small">Your Stats</h6>
+                              <div class="d-flex justify-content-between mb-1">
+                                <span class="text-muted small">Favorites:</span>
+                                <span class="fw-semibold small" id="favoritesCount">0</span>
+                              </div>
+                              <div class="d-flex justify-content-between mb-1">
+                                <span class="text-muted small">Custom:</span>
+                                <span class="fw-semibold small" id="customCount">0</span>
+                              </div>
+                              <div class="d-flex justify-content-between">
+                                <span class="text-muted small">Showing:</span>
+                                <span class="fw-semibold small" id="showingCount">0</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <!-- Exercise Table -->
+                        <div class="col-lg-9">
+                          <!-- Search Bar -->
+                          <div class="mb-3">
+                            <div class="input-group">
+                              <span class="input-group-text">
+                                <i class="bx bx-search"></i>
+                              </span>
+                              <input type="text" class="form-control" id="exerciseSearch" placeholder="Search exercises by name, muscle group, or equipment...">
+                            </div>
+                          </div>
+
+                          <!-- Loading State -->
+                          <div id="exerciseLoadingState" class="text-center py-5">
+                            <div class="spinner-border text-primary" role="status">
+                              <span class="visually-hidden">Loading exercises...</span>
+                            </div>
+                            <p class="mt-3 text-muted">Loading exercises...</p>
+                          </div>
+
+                          <!-- Empty State -->
+                          <div id="exerciseEmptyState" class="text-center py-5" style="display: none;">
+                            <i class="bx bx-search-alt display-1 text-muted"></i>
+                            <h5 class="mt-3">No exercises found</h5>
+                            <p class="text-muted">Try adjusting your filters or search query</p>
+                          </div>
+
+                          <!-- Exercise Table -->
+                          <div id="exerciseTableContainer" class="table-responsive" style="display: none;">
+                            <table class="table table-hover">
+                              <thead>
+                                <tr>
+                                  <th>Exercise Name</th>
+                                  <th>Muscle Group</th>
+                                  <th>Equipment</th>
+                                  <th>Difficulty</th>
+                                  <th class="text-center">Favorite</th>
+                                  <th class="text-center">Actions</th>
+                                </tr>
+                              </thead>
+                              <tbody id="exerciseTableBody" class="table-border-bottom-0">
+                                <!-- Exercise rows will be inserted here -->
+                              </tbody>
+                            </table>
+                          </div>
+
+                          <!-- Load More Button -->
+                          <div class="text-center mt-4" id="exerciseLoadMoreContainer" style="display: none;">
+                            <button type="button" class="btn btn-outline-primary" id="exerciseLoadMoreBtn">
+                              <i class="bx bx-down-arrow-circle me-1"></i>
+                              Load More Exercises
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!-- / Exercise Database Panel -->
+
             </div>
             <!-- / Content -->
 
@@ -837,6 +1009,28 @@
                 </div>
             </div>
         </div>
+    </div>
+
+    <!-- Exercise Detail Modal -->
+    <div class="modal fade" id="exerciseDetailModal" tabindex="-1">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exerciseDetailTitle">Exercise Details</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body" id="exerciseDetailBody">
+            <!-- Exercise details will be loaded here -->
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-primary" id="addToWorkoutFromDetailBtn">
+              <i class="bx bx-plus me-1"></i>
+              Add to Workout
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Custom Exercise Modal -->

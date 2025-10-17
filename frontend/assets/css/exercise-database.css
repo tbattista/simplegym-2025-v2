@@ -216,4 +216,127 @@
 .exercise-card:nth-child(3) { animation-delay: 0.15s; }
 .exercise-card:nth-child(4) { animation-delay: 0.2s; }
 .exercise-card:nth-child(5) { animation-delay: 0.25s; }
+
+/* Table-specific styles for integrated dashboard view */
+.table-hover tbody tr {
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.table th {
+    font-weight: 600;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--bs-heading-color);
+    border-bottom: 2px solid var(--bs-border-color);
+}
+
+.table td {
+    vertical-align: middle;
+    font-size: 0.875rem;
+}
+
+/* Favorite button in table */
+.table .favorite-btn {
+    width: 2rem;
+    height: 2rem;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    background: transparent;
+    color: var(--bs-secondary);
+    transition: all 0.2s ease;
+}
+
+.table .favorite-btn:hover {
+    color: #ff6b6b;
+    transform: scale(1.2);
+}
+
+.table .favorite-btn.favorited {
+    color: #ff6b6b;
+}
+
+.table .favorite-btn.favorited:hover {
+    color: var(--bs-secondary);
+}
+
+.table .favorite-btn i {
+    font-size: 1.25rem;
+}
+
+/* Actions dropdown in table */
+.table .dropdown-toggle {
+    color: var(--bs-body-color);
+}
+
+.table .dropdown-toggle:hover {
+    color: var(--bs-primary);
+}
+
+/* Badge adjustments for table */
+.table .badge {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+}
+
+/* Responsive table */
+@media (max-width: 991.98px) {
+    .table th,
+    .table td {
+        font-size: 0.8rem;
+        padding: 0.75rem 0.5rem;
+    }
+    
+    .table .badge {
+        font-size: 0.7rem;
+        padding: 0.2rem 0.4rem;
+    }
+}
+
+/* Exercise Database Panel specific */
+#exerciseDatabasePanel .card-header h5 {
+    font-size: 1.25rem;
+}
+
+#exerciseDatabasePanel .card-header p {
+    font-size: 0.875rem;
+}
+
+/* Filter sidebar in Exercise Database */
+#exerciseDatabasePanel .form-select-sm {
+    font-size: 0.875rem;
+}
+
+#exerciseDatabasePanel .form-check-label {
+    font-size: 0.875rem;
+}
+
+/* Stats card in Exercise Database */
+#exerciseDatabasePanel .bg-label-primary {
+    background-color: rgba(var(--bs-primary-rgb), 0.1) !important;
+}
+
+/* Table row hover effect */
+#exerciseTableBody tr:hover {
+    background-color: rgba(var(--bs-primary-rgb), 0.05);
+}
+
+/* Loading and empty states for table view */
+#exerciseLoadingState,
+#exerciseEmptyState {
+    min-height: 300px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+#exerciseEmptyState i {
+    font-size: 3rem;
+    opacity: 0.5;
+}
 .exercise-card:nth-child(6) { animation-delay: 0.3s; }

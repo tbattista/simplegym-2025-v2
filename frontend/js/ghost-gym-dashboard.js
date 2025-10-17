@@ -14,6 +14,25 @@ window.ghostGym = {
     searchFilters: {
         programs: '',
         workouts: ''
+    },
+    // Exercise Database state
+    exercises: {
+        all: [],
+        favorites: new Set(),
+        custom: [],
+        filtered: [],
+        displayed: [],
+        currentPage: 1,
+        pageSize: 50,
+        filters: {
+            search: '',
+            muscleGroup: '',
+            equipment: '',
+            difficulty: '',
+            sortBy: 'name',
+            favoritesOnly: false,
+            customOnly: false
+        }
     }
 };
 
@@ -109,8 +128,21 @@ function initEventListeners() {
     // Menu navigation
     document.getElementById('menuPrograms')?.addEventListener('click', focusProgramsPanel);
     document.getElementById('menuWorkouts')?.addEventListener('click', focusWorkoutsPanel);
+    document.getElementById('menuExercises')?.addEventListener('click', showExerciseDatabasePanel);
     document.getElementById('menuBackup')?.addEventListener('click', showBackupOptions);
     document.getElementById('menuSettings')?.addEventListener('click', showSettings);
+    
+    // Exercise Database events
+    document.getElementById('exerciseSearch')?.addEventListener('input', debounce(filterExercises, 300));
+    document.getElementById('sortBySelect')?.addEventListener('change', filterExercises);
+    document.getElementById('muscleGroupFilter')?.addEventListener('change', filterExercises);
+    document.getElementById('equipmentFilter')?.addEventListener('change', filterExercises);
+    document.getElementById('difficultyFilter')?.addEventListener('change', filterExercises);
+    document.getElementById('showFavoritesOnly')?.addEventListener('change', filterExercises);
+    document.getElementById('showCustomOnly')?.addEventListener('change', filterExercises);
+    document.getElementById('clearFiltersBtn')?.addEventListener('click', clearExerciseFilters);
+    document.getElementById('refreshExercisesBtn')?.addEventListener('click', refreshExercises);
+    document.getElementById('exerciseLoadMoreBtn')?.addEventListener('click', loadMoreExercises);
     
     // Modal events
     document.getElementById('programModal')?.addEventListener('hidden.bs.modal', clearProgramForm);
@@ -1755,6 +1787,678 @@ function initializeExerciseAutocompletes() {
             initExerciseAutocomplete(input, {
                 minChars: 2,
                 maxResults: 20,
+
+// ============================================================================
+// EXERCISE DATABASE FUNCTIONALITY
+// ============================================================================
+
+/**
+ * Show Exercise Database Panel
+ */
+function showExerciseDatabasePanel() {
+    // Hide other panels
+    document.querySelector('.row.g-6:not(#exerciseDatabasePanel)')?.style.setProperty('display', 'none');
+    
+    // Show exercise database panel
+    const exercisePanel = document.getElementById('exerciseDatabasePanel');
+    if (exercisePanel) {
+        exercisePanel.style.display = 'flex';
+        
+        // Load exercises if not already loaded
+        if (window.ghostGym.exercises.all.length === 0) {
+            loadExercises();
+        }
+    }
+}
+
+/**
+ * Hide Exercise Database Panel and show main dashboard
+ */
+function hideExerciseDatabasePanel() {
+    const exercisePanel = document.getElementById('exerciseDatabasePanel');
+    if (exercisePanel) {
+        exercisePanel.style.display = 'none';
+    }
+    
+    // Show main dashboard panels
+    document.querySelector('.row.g-6:not(#exerciseDatabasePanel)')?.style.setProperty('display', 'flex');
+}
+
+/**
+ * Load all exercises from API
+ */
+async function loadExercises() {
+    showExerciseLoading(true);
+    
+    try {
+        // Check cache first
+        const cached = getExerciseCache();
+        if (cached && isExerciseCacheValid(cached)) {
+            window.ghostGym.exercises.all = cached.exercises;
+            console.log(`✅ Loaded ${window.ghostGym.exercises.all.length} exercises from cache`);
+            await loadExerciseFavorites();
+            await loadCustomExercises();
+            await loadExerciseFilterOptions();
+            filterExercises();
+            return;
+        }
+        
+        // Load from API
+        console.log('📡 Loading exercises from API...');
+        const PAGE_SIZE = 500;
+        let allExercises = [];
+        let page = 1;
+        let hasMore = true;
+        
+        while (hasMore) {
+            const response = await fetch(`/api/v3/exercises?page=${page}&page_size=${PAGE_SIZE}`);
+            
+            if (!response.ok) {
+                throw new Error(`Failed to load exercises (page ${page})`);
+            }
+            
+            const data = await response.json();
+            const exercises = data.exercises || [];
+            
+            allExercises = [...allExercises, ...exercises];
+            console.log(`📦 Loaded page ${page}: ${exercises.length} exercises (total: ${allExercises.length})`);
+            
+            hasMore = exercises.length === PAGE_SIZE;
+            page++;
+        }
+        
+        window.ghostGym.exercises.all = allExercises;
+        
+        // Cache the results
+        setExerciseCache(allExercises);
+        
+        // Update total count
+        const totalCount = document.getElementById('totalExercisesCount');
+        if (totalCount) {
+            totalCount.textContent = allExercises.length;
+        }
+        
+        console.log(`✅ Loaded ${allExercises.length} exercises from API`);
+        
+        // Load user-specific data
+        await loadExerciseFavorites();
+        await loadCustomExercises();
+        await loadExerciseFilterOptions();
+        
+        // Apply filters and render
+        filterExercises();
+        
+    } catch (error) {
+        console.error('❌ Error loading exercises:', error);
+        showAlert('Failed to load exercises. Please try again.', 'danger');
+    } finally {
+        showExerciseLoading(false);
+    }
+}
+
+/**
+ * Load user's favorite exercises
+ */
+async function loadExerciseFavorites() {
+    if (!window.firebaseAuth?.currentUser) {
+        window.ghostGym.exercises.favorites.clear();
+        return;
+    }
+    
+    try {
+        const token = await window.firebaseAuth.currentUser.getIdToken();
+        const response = await fetch('/api/v3/users/me/favorites', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            window.ghostGym.exercises.favorites = new Set(data.favorites.map(f => f.exerciseId));
+            console.log(`✅ Loaded ${window.ghostGym.exercises.favorites.size} favorites`);
+            
+            // Update stats
+            const favCount = document.getElementById('favoritesCount');
+            if (favCount) {
+                favCount.textContent = window.ghostGym.exercises.favorites.size;
+            }
+        }
+    } catch (error) {
+        console.warn('⚠️ Could not load favorites:', error.message);
+    }
+}
+
+/**
+ * Load user's custom exercises
+ */
+async function loadCustomExercises() {
+    if (!window.firebaseAuth?.currentUser) {
+        window.ghostGym.exercises.custom = [];
+        return;
+    }
+    
+    try {
+        const token = await window.firebaseAuth.currentUser.getIdToken();
+        const response = await fetch('/api/v3/users/me/exercises', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            window.ghostGym.exercises.custom = data.exercises || [];
+            console.log(`✅ Loaded ${window.ghostGym.exercises.custom.length} custom exercises`);
+            
+            // Update stats
+            const customCount = document.getElementById('customCount');
+            if (customCount) {
+                customCount.textContent = window.ghostGym.exercises.custom.length;
+            }
+        }
+    } catch (error) {
+        console.warn('⚠️ Could not load custom exercises:', error.message);
+    }
+}
+
+/**
+ * Load filter options dynamically
+ */
+async function loadExerciseFilterOptions() {
+    try {
+        // Get unique muscle groups
+        const muscleGroups = [...new Set(window.ghostGym.exercises.all
+            .map(e => e.targetMuscleGroup)
+            .filter(m => m))]
+            .sort();
+        
+        const muscleGroupSelect = document.getElementById('muscleGroupFilter');
+        if (muscleGroupSelect) {
+            // Clear existing options except first
+            while (muscleGroupSelect.options.length > 1) {
+                muscleGroupSelect.remove(1);
+            }
+            
+            muscleGroups.forEach(group => {
+                const option = document.createElement('option');
+                option.value = group;
+                option.textContent = group;
+                muscleGroupSelect.appendChild(option);
+            });
+        }
+        
+        // Get unique equipment
+        const equipment = [...new Set(window.ghostGym.exercises.all
+            .map(e => e.primaryEquipment)
+            .filter(e => e))]
+            .sort();
+        
+        const equipmentSelect = document.getElementById('equipmentFilter');
+        if (equipmentSelect) {
+            // Clear existing options except first
+            while (equipmentSelect.options.length > 1) {
+                equipmentSelect.remove(1);
+            }
+            
+            equipment.forEach(equip => {
+                const option = document.createElement('option');
+                option.value = equip;
+                option.textContent = equip;
+                equipmentSelect.appendChild(option);
+            });
+        }
+        
+        console.log('✅ Filter options loaded');
+        
+    } catch (error) {
+        console.error('❌ Error loading filter options:', error);
+    }
+}
+
+/**
+ * Filter exercises based on current filters
+ */
+function filterExercises() {
+    // Update filter state from UI
+    const searchInput = document.getElementById('exerciseSearch');
+    const sortSelect = document.getElementById('sortBySelect');
+    const muscleGroupSelect = document.getElementById('muscleGroupFilter');
+    const equipmentSelect = document.getElementById('equipmentFilter');
+    const difficultySelect = document.getElementById('difficultyFilter');
+    const favoritesCheckbox = document.getElementById('showFavoritesOnly');
+    const customCheckbox = document.getElementById('showCustomOnly');
+    
+    window.ghostGym.exercises.filters = {
+        search: searchInput?.value?.trim() || '',
+        muscleGroup: muscleGroupSelect?.value || '',
+        equipment: equipmentSelect?.value || '',
+        difficulty: difficultySelect?.value || '',
+        sortBy: sortSelect?.value || 'name',
+        favoritesOnly: favoritesCheckbox?.checked || false,
+        customOnly: customCheckbox?.checked || false
+    };
+    
+    // Combine global and custom exercises
+    let allExercises = [...window.ghostGym.exercises.all, ...window.ghostGym.exercises.custom];
+    
+    // Apply search filter
+    if (window.ghostGym.exercises.filters.search) {
+        const searchLower = window.ghostGym.exercises.filters.search.toLowerCase();
+        allExercises = allExercises.filter(exercise => {
+            return exercise.name.toLowerCase().includes(searchLower) ||
+                   (exercise.targetMuscleGroup && exercise.targetMuscleGroup.toLowerCase().includes(searchLower)) ||
+                   (exercise.primaryEquipment && exercise.primaryEquipment.toLowerCase().includes(searchLower));
+        });
+    }
+    
+    // Apply muscle group filter
+    if (window.ghostGym.exercises.filters.muscleGroup) {
+        allExercises = allExercises.filter(e => e.targetMuscleGroup === window.ghostGym.exercises.filters.muscleGroup);
+    }
+    
+    // Apply equipment filter
+    if (window.ghostGym.exercises.filters.equipment) {
+        allExercises = allExercises.filter(e => e.primaryEquipment === window.ghostGym.exercises.filters.equipment);
+    }
+    
+    // Apply difficulty filter
+    if (window.ghostGym.exercises.filters.difficulty) {
+        allExercises = allExercises.filter(e => e.difficultyLevel === window.ghostGym.exercises.filters.difficulty);
+    }
+    
+    // Apply favorites only filter
+    if (window.ghostGym.exercises.filters.favoritesOnly) {
+        allExercises = allExercises.filter(e => window.ghostGym.exercises.favorites.has(e.id));
+    }
+    
+    // Apply custom only filter
+    if (window.ghostGym.exercises.filters.customOnly) {
+        allExercises = allExercises.filter(e => !e.isGlobal);
+    }
+    
+    // Apply sorting
+    allExercises = sortExercises(allExercises);
+    
+    window.ghostGym.exercises.filtered = allExercises;
+    window.ghostGym.exercises.currentPage = 1;
+    
+    // Update stats
+    const showingCount = document.getElementById('showingCount');
+    if (showingCount) {
+        showingCount.textContent = window.ghostGym.exercises.filtered.length;
+    }
+    
+    // Render first page
+    renderExerciseTable();
+}
+
+/**
+ * Sort exercises based on current sort option
+ */
+function sortExercises(exercises) {
+    const sorted = [...exercises];
+    
+    switch (window.ghostGym.exercises.filters.sortBy) {
+        case 'name':
+            sorted.sort((a, b) => a.name.localeCompare(b.name));
+            break;
+        
+        case 'popularity':
+            sorted.sort((a, b) => {
+                const scoreA = a.popularityScore || 50;
+                const scoreB = b.popularityScore || 50;
+                return scoreB - scoreA; // Descending
+            });
+            break;
+        
+        case 'favorites':
+            sorted.sort((a, b) => {
+                const aFav = window.ghostGym.exercises.favorites.has(a.id) ? 1 : 0;
+                const bFav = window.ghostGym.exercises.favorites.has(b.id) ? 1 : 0;
+                if (aFav !== bFav) return bFav - aFav;
+                return a.name.localeCompare(b.name);
+            });
+            break;
+    }
+    
+    return sorted;
+}
+
+/**
+ * Render exercise table
+ */
+function renderExerciseTable() {
+    const tableBody = document.getElementById('exerciseTableBody');
+    const tableContainer = document.getElementById('exerciseTableContainer');
+    const emptyState = document.getElementById('exerciseEmptyState');
+    const loadMoreContainer = document.getElementById('exerciseLoadMoreContainer');
+    
+    if (!tableBody) return;
+    
+    // Calculate which exercises to display
+    const startIndex = 0;
+    const endIndex = window.ghostGym.exercises.currentPage * window.ghostGym.exercises.pageSize;
+    window.ghostGym.exercises.displayed = window.ghostGym.exercises.filtered.slice(startIndex, endIndex);
+    
+    // Show/hide empty state
+    if (window.ghostGym.exercises.filtered.length === 0) {
+        tableContainer.style.display = 'none';
+        emptyState.style.display = 'block';
+        loadMoreContainer.style.display = 'none';
+        return;
+    }
+    
+    emptyState.style.display = 'none';
+    tableContainer.style.display = 'block';
+    
+    // Clear table
+    tableBody.innerHTML = '';
+    
+    // Render exercise rows
+    window.ghostGym.exercises.displayed.forEach(exercise => {
+        const row = createExerciseTableRow(exercise);
+        tableBody.appendChild(row);
+    });
+    
+    // Show/hide load more button
+    if (window.ghostGym.exercises.displayed.length < window.ghostGym.exercises.filtered.length) {
+        loadMoreContainer.style.display = 'block';
+    } else {
+        loadMoreContainer.style.display = 'none';
+    }
+}
+
+/**
+ * Create an exercise table row
+ */
+function createExerciseTableRow(exercise) {
+    const tr = document.createElement('tr');
+    
+    const isFavorited = window.ghostGym.exercises.favorites.has(exercise.id);
+    const isCustom = !exercise.isGlobal;
+    const popularityScore = exercise.popularityScore || 50;
+    
+    // Determine popularity badge
+    let popularityBadge = '';
+    if (popularityScore >= 90) {
+        popularityBadge = '<span class="badge bg-warning ms-1"><i class="bx bxs-star"></i> Essential</span>';
+    } else if (popularityScore >= 70) {
+        popularityBadge = '<span class="badge bg-info ms-1"><i class="bx bx-star"></i> Popular</span>';
+    }
+    
+    tr.innerHTML = `
+        <td>
+            ${isCustom ? '<i class="bx bx-user text-primary me-2"></i>' : ''}
+            <span class="fw-medium">${escapeHtml(exercise.name)}</span>
+            ${popularityBadge}
+        </td>
+        <td>
+            ${exercise.targetMuscleGroup ? `<span class="badge bg-label-primary">${escapeHtml(exercise.targetMuscleGroup)}</span>` : '<span class="text-muted">-</span>'}
+        </td>
+        <td>
+            ${exercise.primaryEquipment ? `<span class="badge bg-label-secondary">${escapeHtml(exercise.primaryEquipment)}</span>` : '<span class="text-muted">-</span>'}
+        </td>
+        <td>
+            ${exercise.difficultyLevel ? `<span class="badge bg-label-info">${escapeHtml(exercise.difficultyLevel)}</span>` : '<span class="text-muted">-</span>'}
+        </td>
+        <td class="text-center">
+            <button class="btn btn-sm btn-icon favorite-btn ${isFavorited ? 'favorited' : ''}" 
+                    data-exercise-id="${exercise.id}"
+                    title="${isFavorited ? 'Remove from favorites' : 'Add to favorites'}">
+                <i class="bx ${isFavorited ? 'bxs-heart text-danger' : 'bx-heart'}"></i>
+            </button>
+        </td>
+        <td class="text-center">
+            <div class="dropdown">
+                <button type="button" class="btn btn-sm p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
+                    <i class="bx bx-dots-vertical-rounded"></i>
+                </button>
+                <div class="dropdown-menu dropdown-menu-end">
+                    <a class="dropdown-item view-details-link" href="javascript:void(0);" data-exercise-id="${exercise.id}">
+                        <i class="bx bx-info-circle me-2"></i>View Details
+                    </a>
+                    <a class="dropdown-item add-to-workout-link" href="javascript:void(0);" 
+                       data-exercise-id="${exercise.id}" data-exercise-name="${escapeHtml(exercise.name)}">
+                        <i class="bx bx-plus me-2"></i>Add to Workout
+                    </a>
+                </div>
+            </div>
+        </td>
+    `;
+    
+    // Add event listeners
+    const favoriteBtn = tr.querySelector('.favorite-btn');
+    favoriteBtn.addEventListener('click', () => toggleExerciseFavorite(exercise.id));
+    
+    const viewDetailsLink = tr.querySelector('.view-details-link');
+    viewDetailsLink.addEventListener('click', () => showExerciseDetails(exercise.id));
+    
+    const addToWorkoutLink = tr.querySelector('.add-to-workout-link');
+    addToWorkoutLink.addEventListener('click', () => addExerciseToWorkout(exercise));
+    
+    return tr;
+}
+
+/**
+ * Toggle exercise favorite status
+ */
+async function toggleExerciseFavorite(exerciseId) {
+    if (!window.firebaseAuth?.currentUser) {
+        showAlert('Please sign in to favorite exercises', 'warning');
+        showAuthModal();
+        return;
+    }
+    
+    const isFavorited = window.ghostGym.exercises.favorites.has(exerciseId);
+    
+    try {
+        const token = await window.firebaseAuth.currentUser.getIdToken();
+        
+        if (isFavorited) {
+            // Remove favorite
+            const response = await fetch(`/api/v3/users/me/favorites/${exerciseId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            
+            if (response.ok) {
+                window.ghostGym.exercises.favorites.delete(exerciseId);
+                console.log('✅ Removed from favorites');
+            }
+        } else {
+            // Add favorite
+            const response = await fetch('/api/v3/users/me/favorites', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ exerciseId })
+            });
+            
+            if (response.ok) {
+                window.ghostGym.exercises.favorites.add(exerciseId);
+                console.log('✅ Added to favorites');
+            }
+        }
+        
+        // Update stats
+        const favCount = document.getElementById('favoritesCount');
+        if (favCount) {
+            favCount.textContent = window.ghostGym.exercises.favorites.size;
+        }
+        
+        // Re-render to update UI
+        renderExerciseTable();
+        
+    } catch (error) {
+        console.error('❌ Error toggling favorite:', error);
+        showAlert('Failed to update favorite. Please try again.', 'danger');
+    }
+}
+
+/**
+ * Show exercise details modal
+ */
+function showExerciseDetails(exerciseId) {
+    const exercise = [...window.ghostGym.exercises.all, ...window.ghostGym.exercises.custom]
+        .find(e => e.id === exerciseId);
+    
+    if (!exercise) return;
+    
+    const modal = new bootstrap.Modal(document.getElementById('exerciseDetailModal'));
+    document.getElementById('exerciseDetailTitle').textContent = exercise.name;
+    
+    const detailsHtml = `
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <strong>Muscle Group:</strong><br>
+                ${exercise.targetMuscleGroup || 'N/A'}
+            </div>
+            <div class="col-md-6 mb-3">
+                <strong>Equipment:</strong><br>
+                ${exercise.primaryEquipment || 'N/A'}
+            </div>
+            <div class="col-md-6 mb-3">
+                <strong>Difficulty:</strong><br>
+                ${exercise.difficultyLevel || 'N/A'}
+            </div>
+            <div class="col-md-6 mb-3">
+                <strong>Mechanics:</strong><br>
+                ${exercise.mechanics || 'N/A'}
+            </div>
+            ${exercise.popularityScore ? `
+            <div class="col-md-6 mb-3">
+                <strong>Popularity Score:</strong><br>
+                <div class="progress" style="height: 20px;">
+                    <div class="progress-bar" role="progressbar" style="width: ${exercise.popularityScore}%"
+                         aria-valuenow="${exercise.popularityScore}" aria-valuemin="0" aria-valuemax="100">
+                        ${exercise.popularityScore}/100
+                    </div>
+                </div>
+            </div>
+            ` : ''}
+            ${!exercise.isGlobal ? `
+            <div class="col-12">
+                <span class="badge bg-label-primary">
+                    <i class="bx bx-user me-1"></i>Custom Exercise
+                </span>
+            </div>
+            ` : ''}
+        </div>
+    `;
+    
+    document.getElementById('exerciseDetailBody').innerHTML = detailsHtml;
+    modal.show();
+}
+
+/**
+ * Add exercise to workout (placeholder)
+ */
+function addExerciseToWorkout(exercise) {
+    showAlert(`Adding "${exercise.name}" to workout - This feature will be integrated with the workout builder!`, 'info');
+}
+
+/**
+ * Load more exercises
+ */
+function loadMoreExercises() {
+    window.ghostGym.exercises.currentPage++;
+    renderExerciseTable();
+}
+
+/**
+ * Clear all exercise filters
+ */
+function clearExerciseFilters() {
+    window.ghostGym.exercises.filters = {
+        search: '',
+        muscleGroup: '',
+        equipment: '',
+        difficulty: '',
+        sortBy: 'name',
+        favoritesOnly: false,
+        customOnly: false
+    };
+    
+    // Reset UI
+    const searchInput = document.getElementById('exerciseSearch');
+    const sortSelect = document.getElementById('sortBySelect');
+    const muscleGroupSelect = document.getElementById('muscleGroupFilter');
+    const equipmentSelect = document.getElementById('equipmentFilter');
+    const difficultySelect = document.getElementById('difficultyFilter');
+    const favoritesCheckbox = document.getElementById('showFavoritesOnly');
+    const customCheckbox = document.getElementById('showCustomOnly');
+    
+    if (searchInput) searchInput.value = '';
+    if (sortSelect) sortSelect.value = 'name';
+    if (muscleGroupSelect) muscleGroupSelect.value = '';
+    if (equipmentSelect) equipmentSelect.value = '';
+    if (difficultySelect) difficultySelect.value = '';
+    if (favoritesCheckbox) favoritesCheckbox.checked = false;
+    if (customCheckbox) customCheckbox.checked = false;
+    
+    filterExercises();
+}
+
+/**
+ * Refresh exercises from API
+ */
+async function refreshExercises() {
+    localStorage.removeItem('exercise_cache');
+    await loadExercises();
+}
+
+/**
+ * Show/hide exercise loading state
+ */
+function showExerciseLoading(show) {
+    const loadingState = document.getElementById('exerciseLoadingState');
+    const tableContainer = document.getElementById('exerciseTableContainer');
+    
+    if (show) {
+        if (loadingState) loadingState.style.display = 'block';
+        if (tableContainer) tableContainer.style.display = 'none';
+    } else {
+        if (loadingState) loadingState.style.display = 'none';
+    }
+}
+
+/**
+ * Exercise cache management
+ */
+function getExerciseCache() {
+    try {
+        const cached = localStorage.getItem('exercise_cache');
+        return cached ? JSON.parse(cached) : null;
+    } catch (error) {
+        console.error('Error reading exercise cache:', error);
+        return null;
+    }
+}
+
+function setExerciseCache(exercises) {
+    try {
+        const cacheData = {
+            exercises: exercises,
+            timestamp: Date.now(),
+            version: '1.1'
+        };
+        localStorage.setItem('exercise_cache', JSON.stringify(cacheData));
+    } catch (error) {
+        console.error('Error setting exercise cache:', error);
+    }
+}
+
+function isExerciseCacheValid(cached) {
+    if (cached.version !== '1.1') return false;
+    const CACHE_DURATION = 7 * 24 * 60 * 60 * 1000; // 7 days
+    return (Date.now() - cached.timestamp) < CACHE_DURATION;
+}
+
                 debounceMs: 300,
                 showMuscleGroup: true,
                 showEquipment: true,
