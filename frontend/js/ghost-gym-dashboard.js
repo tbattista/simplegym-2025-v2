@@ -2042,13 +2042,21 @@ function filterExercises() {
     // Combine global and custom exercises
     let allExercises = [...window.ghostGym.exercises.all, ...window.ghostGym.exercises.custom];
     
-    // Apply search filter
+    // Apply search filter with fuzzy matching
     if (window.ghostGym.exercises.filters.search) {
-        const searchLower = window.ghostGym.exercises.filters.search.toLowerCase();
+        const searchTerms = window.ghostGym.exercises.filters.search
+            .toLowerCase()
+            .split(/\s+/)
+            .filter(term => term.length > 0);
+        
         allExercises = allExercises.filter(exercise => {
-            return exercise.name.toLowerCase().includes(searchLower) ||
-                   (exercise.targetMuscleGroup && exercise.targetMuscleGroup.toLowerCase().includes(searchLower)) ||
-                   (exercise.primaryEquipment && exercise.primaryEquipment.toLowerCase().includes(searchLower));
+            const exerciseName = exercise.name.toLowerCase();
+            const muscleGroup = (exercise.targetMuscleGroup || '').toLowerCase();
+            const equipment = (exercise.primaryEquipment || '').toLowerCase();
+            const searchableText = `${exerciseName} ${muscleGroup} ${equipment}`;
+            
+            // Check if all search terms are found in the searchable text
+            return searchTerms.every(term => searchableText.includes(term));
         });
     }
     
