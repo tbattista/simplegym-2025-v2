@@ -239,27 +239,32 @@ class ExerciseAutocomplete {
         // Combine global and custom exercises
         const allExercises = [...this.exercises, ...this.customExercises];
         
+        console.log(`🔍 Searching for "${query}" in ${allExercises.length} exercises`);
+        console.log('🔍 Sample exercise:', allExercises[0]);
+        
         // Filter exercises
         this.filteredResults = allExercises.filter(exercise => {
             // Search in name
-            if (exercise.name.toLowerCase().includes(queryLower)) {
+            if (exercise.name && exercise.name.toLowerCase().includes(queryLower)) {
                 return true;
             }
             
             // Search in muscle group
-            if (exercise.targetMuscleGroup && 
+            if (exercise.targetMuscleGroup &&
                 exercise.targetMuscleGroup.toLowerCase().includes(queryLower)) {
                 return true;
             }
             
             // Search in equipment
-            if (exercise.primaryEquipment && 
+            if (exercise.primaryEquipment &&
                 exercise.primaryEquipment.toLowerCase().includes(queryLower)) {
                 return true;
             }
             
             return false;
         });
+        
+        console.log(`✅ Found ${this.filteredResults.length} matching exercises`);
         
         // Limit results
         this.filteredResults = this.filteredResults.slice(0, this.options.maxResults);
