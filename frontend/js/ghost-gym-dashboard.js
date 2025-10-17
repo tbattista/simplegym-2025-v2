@@ -146,13 +146,26 @@ function initDataManagement() {
         
         // Set up auth state listener
         window.authService.onAuthStateChanged = function(user) {
+            console.log('🔍 DEBUG: Auth state changed in dashboard, user:', user ? 'authenticated' : 'not authenticated');
             updateAuthUI(user);
             if (user) {
-                // User signed in, reload data
+                // User signed in, reload data from Firestore
+                console.log('🔍 DEBUG: User authenticated, reloading dashboard data from Firestore');
                 loadDashboardData();
             }
         };
     }
+    
+    // Also listen for the authStateChanged event from data manager
+    window.addEventListener('authStateChanged', (event) => {
+        const { user, isAuthenticated } = event.detail;
+        console.log('🔍 DEBUG: authStateChanged event received, isAuthenticated:', isAuthenticated);
+        if (isAuthenticated && user) {
+            // User just authenticated, reload data from Firestore
+            console.log('🔍 DEBUG: Reloading data after authentication');
+            setTimeout(() => loadDashboardData(), 500); // Small delay to ensure storage mode is updated
+        }
+    });
     
     // Ensure sync manager is available
     if (window.syncManager) {
