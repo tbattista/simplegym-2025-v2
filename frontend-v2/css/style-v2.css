@@ -1,0 +1,665 @@
+/* Ghost Gym V2 - Custom Styles */
+
+:root {
+    /* Dark Theme Color Palette */
+    --dark-bg: #1a202c;
+    --dark-surface: #2d3748;
+    --dark-surface-light: #4a5568;
+    --dark-border: #718096;
+    --accent-blue: #3182ce;
+    --accent-blue-light: #4299e1;
+    --success-green: #38a169;
+    --text-primary: #f7fafc;
+    --text-secondary: #e2e8f0;
+    --text-muted: #a0aec0;
+    
+    /* Semantic Colors */
+    --primary: var(--accent-blue);
+    --secondary: var(--dark-surface-light);
+    --success: var(--success-green);
+    --info: var(--accent-blue-light);
+    --dark: var(--dark-surface);
+    
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, var(--accent-blue), var(--accent-blue-light));
+    --gradient-dark: linear-gradient(135deg, var(--dark-surface), var(--dark-surface-light));
+    --gradient-subtle: linear-gradient(135deg, var(--dark-bg), var(--dark-surface));
+}
+
+/* Global Styles */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: var(--gradient-subtle);
+    min-height: 100vh;
+    color: var(--text-primary);
+}
+
+/* Header Styles */
+.v2-header {
+    background: var(--gradient-dark);
+    color: var(--text-primary);
+    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    border-radius: 0 0 20px 20px;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    border-bottom: 2px solid var(--accent-blue);
+}
+
+.v2-header h1 {
+    font-weight: 700;
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.v2-header p {
+    font-size: 1.1rem;
+    opacity: 0.9;
+}
+
+/* Status Icon */
+.status-icon-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1050;
+}
+
+.status-icon {
+    position: relative;
+    width: 50px;
+    height: 50px;
+    background: var(--gradient-primary);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(49, 130, 206, 0.3);
+    transition: all 0.3s ease;
+    color: white;
+    font-size: 1.2rem;
+}
+
+.status-icon:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(49, 130, 206, 0.4);
+}
+
+.status-indicator {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 2px solid white;
+    animation: pulse 2s infinite;
+}
+
+.status-indicator.status-all-good {
+    background: var(--success-green);
+}
+
+.status-indicator.status-partial {
+    background: #ffc107;
+}
+
+.status-indicator.status-error {
+    background: #dc3545;
+}
+
+.status-indicator.status-checking {
+    background: var(--text-muted);
+    animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.1);
+        opacity: 0.7;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* Status Popover Content */
+.status-popover-content {
+    min-width: 280px;
+}
+
+.status-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--dark-border);
+    color: var(--text-secondary);
+}
+
+.status-item:last-child {
+    border-bottom: none;
+}
+
+.status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.status-badge.available {
+    background: var(--success-green);
+    color: white;
+}
+
+.status-badge.unavailable {
+    background: #dc3545;
+    color: white;
+}
+
+/* Custom popover styling for dark theme */
+.popover {
+    background: var(--dark-surface);
+    border: 1px solid var(--dark-border);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+}
+
+.popover .popover-header {
+    background: var(--gradient-primary);
+    color: white;
+    border-bottom: 1px solid var(--dark-border);
+    font-weight: 600;
+}
+
+.popover .popover-body {
+    background: var(--dark-surface);
+    color: var(--text-secondary);
+}
+
+.popover .popover-arrow::before {
+    border-bottom-color: var(--dark-surface);
+}
+
+.popover .popover-arrow::after {
+    border-bottom-color: var(--dark-surface);
+}
+
+/* Accordion Styles */
+.v2-accordion {
+    margin-bottom: 1.5rem;
+}
+
+.v2-accordion .accordion-item {
+    border: none;
+    border-radius: 15px !important;
+    margin-bottom: 1rem;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+.v2-accordion .accordion-header {
+    border-radius: 15px 15px 0 0;
+}
+
+.v2-accordion .accordion-button {
+    font-weight: 600;
+    font-size: 1.1rem;
+    border: none;
+    border-radius: 15px 15px 0 0;
+    padding: 1.25rem 1.5rem;
+    color: white;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+
+.v2-accordion .accordion-button:not(.collapsed) {
+    box-shadow: none;
+}
+
+.v2-accordion .accordion-button:focus {
+    box-shadow: 0 0 0 0.25rem rgba(247, 146, 86, 0.25);
+}
+
+/* Accordion Color Themes */
+.accordion-workout-details .accordion-button {
+    background: var(--gradient-primary);
+}
+
+.accordion-group-1 .accordion-button {
+    background: var(--dark-surface-light);
+    color: var(--text-primary);
+}
+
+.accordion-group-2 .accordion-button {
+    background: var(--dark-surface-light);
+    color: var(--text-primary);
+}
+
+.accordion-group-3 .accordion-button {
+    background: var(--dark-surface-light);
+    color: var(--text-primary);
+}
+
+.accordion-group-4 .accordion-button {
+    background: var(--dark-surface-light);
+    color: var(--text-primary);
+}
+
+.accordion-group-5 .accordion-button {
+    background: var(--dark-surface-light);
+    color: var(--text-primary);
+}
+
+.accordion-group-6 .accordion-button {
+    background: var(--dark-surface-light);
+    color: var(--text-primary);
+}
+
+.accordion-bonus .accordion-button {
+    background: var(--success-green);
+}
+
+.v2-accordion .accordion-body {
+    background: var(--dark-surface);
+    padding: 1.5rem;
+    color: var(--text-secondary);
+    border: 1px solid var(--dark-border);
+    border-top: none;
+}
+
+/* Form Styles */
+.form-label {
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 0.5rem;
+}
+
+.form-control, .form-select {
+    background: var(--dark-bg);
+    border: 2px solid var(--dark-border);
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    color: var(--text-primary);
+    transition: all 0.3s ease;
+}
+
+.form-control:focus, .form-select:focus {
+    background: var(--dark-bg);
+    border-color: var(--accent-blue);
+    box-shadow: 0 0 0 0.25rem rgba(49, 130, 206, 0.25);
+    color: var(--text-primary);
+}
+
+.form-control.is-valid {
+    border-color: var(--success-green);
+}
+
+.form-control.is-invalid {
+    border-color: #dc3545;
+}
+
+.form-control::placeholder {
+    color: var(--text-muted);
+}
+
+/* Exercise Number Labels */
+.exercise-number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.5rem;
+    height: 1.5rem;
+    background: var(--accent-blue);
+    color: white;
+    border-radius: 50%;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-align: center;
+    line-height: 1;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+/* Different colors for different contexts */
+.accordion-button .exercise-number {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    font-size: 0.8rem;
+}
+
+.exercise-inputs h6 .exercise-number {
+    background: var(--success-green);
+    font-size: 0.7rem;
+}
+
+.form-label .exercise-number {
+    background: var(--dark-surface-light);
+    color: var(--text-primary);
+    font-size: 0.65rem;
+    min-width: 1.2rem;
+    height: 1.2rem;
+}
+
+/* Bonus exercise numbers */
+.exercise-number:contains("B") {
+    background: var(--success-green);
+}
+
+/* Exercise Group Styles */
+.exercise-group-content {
+    background: var(--dark-bg);
+    border-radius: 10px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    border: 1px solid var(--dark-border);
+}
+
+.exercise-inputs {
+    background: var(--dark-surface);
+    border-radius: 10px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border: 1px solid var(--dark-border);
+}
+
+.exercise-inputs h6 {
+    color: var(--text-primary);
+    font-weight: 600;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--accent-blue);
+}
+
+.sets-reps-rest {
+    background: var(--dark-surface);
+    border-radius: 10px;
+    padding: 1rem;
+    border: 1px solid var(--dark-border);
+}
+
+.sets-reps-rest h6 {
+    color: var(--text-primary);
+    font-weight: 600;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--success-green);
+}
+
+/* Button Styles */
+.btn-v2-primary {
+    background: var(--gradient-primary);
+    border: none;
+    color: white;
+    font-weight: 600;
+    padding: 0.75rem 2rem;
+    border-radius: 25px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(49, 130, 206, 0.3);
+}
+
+.btn-v2-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(49, 130, 206, 0.4);
+    color: white;
+}
+
+.btn-v2-secondary {
+    background: var(--dark-surface-light);
+    border: none;
+    color: var(--text-primary);
+    font-weight: 600;
+    padding: 0.75rem 2rem;
+    border-radius: 25px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+}
+
+.btn-v2-secondary:hover {
+    background: var(--dark-surface);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+    color: var(--text-primary);
+}
+
+.btn-v2-outline {
+    background: transparent;
+    border: 2px solid var(--accent-blue);
+    color: var(--accent-blue);
+    font-weight: 600;
+    padding: 0.75rem 2rem;
+    border-radius: 25px;
+    transition: all 0.3s ease;
+}
+
+.btn-v2-outline:hover {
+    background: var(--accent-blue);
+    color: white;
+    transform: translateY(-2px);
+}
+
+/* Format Selection */
+.format-selection {
+    background: var(--dark-surface);
+    border-radius: 15px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    border: 1px solid var(--dark-border);
+}
+
+.format-selection h5 {
+    color: var(--text-primary);
+}
+
+.format-option {
+    background: var(--dark-bg);
+    border: 2px solid var(--dark-border);
+    border-radius: 10px;
+    padding: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+    color: var(--text-secondary);
+}
+
+.format-option:hover {
+    border-color: var(--accent-blue);
+    background: rgba(49, 130, 206, 0.1);
+    color: var(--text-primary);
+}
+
+.format-option.selected {
+    border-color: var(--accent-blue);
+    background: var(--accent-blue);
+    color: white;
+}
+
+.format-option i {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+/* Loading States */
+.loading-spinner {
+    text-align: center;
+    padding: 3rem;
+    color: var(--text-secondary);
+}
+
+.spinner-v2 {
+    width: 3rem;
+    height: 3rem;
+    border: 4px solid var(--dark-border);
+    border-top: 4px solid var(--accent-blue);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 1rem;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Alert Styles */
+.alert-v2 {
+    border: none;
+    border-radius: 15px;
+    padding: 1rem 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+}
+
+.alert-v2.alert-success {
+    background: linear-gradient(135deg, var(--success-green), rgba(56, 161, 105, 0.8));
+    color: white;
+}
+
+.alert-v2.alert-danger {
+    background: linear-gradient(135deg, #dc3545, rgba(220, 53, 69, 0.8));
+    color: white;
+}
+
+.alert-v2.alert-warning {
+    background: linear-gradient(135deg, #ffc107, rgba(255, 193, 7, 0.8));
+    color: var(--dark-surface);
+}
+
+.alert-v2.alert-info {
+    background: linear-gradient(135deg, var(--accent-blue-light), rgba(66, 153, 225, 0.8));
+    color: white;
+}
+
+/* Modal Styles */
+.modal-v2 .modal-content {
+    background: var(--dark-surface);
+    border: none;
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+}
+
+.modal-v2 .modal-header {
+    background: var(--gradient-primary);
+    color: white;
+    border: none;
+    border-radius: 20px 20px 0 0;
+    padding: 1.5rem;
+}
+
+.modal-v2 .modal-body {
+    background: var(--dark-surface);
+    color: var(--text-secondary);
+    padding: 2rem;
+}
+
+.modal-v2 .modal-footer {
+    background: var(--dark-surface);
+    border: none;
+    padding: 1.5rem;
+}
+
+/* Footer */
+.v2-footer {
+    background: var(--dark-surface);
+    color: var(--text-secondary);
+    text-align: center;
+    padding: 2rem 0;
+    margin-top: 3rem;
+    border-radius: 20px 20px 0 0;
+    border-top: 2px solid var(--accent-blue);
+}
+
+/* Animations */
+.fade-in {
+    animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.slide-in {
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from { opacity: 0; transform: translateX(-20px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .v2-header h1 {
+        font-size: 2rem;
+    }
+    
+    .v2-accordion .accordion-button {
+        padding: 1rem;
+        font-size: 1rem;
+    }
+    
+    .exercise-group-content,
+    .exercise-inputs,
+    .sets-reps-rest {
+        padding: 1rem;
+    }
+    
+    .btn-v2-primary,
+    .btn-v2-secondary,
+    .btn-v2-outline {
+        padding: 0.5rem 1.5rem;
+        font-size: 0.9rem;
+    }
+}
+
+/* Print Styles */
+@media print {
+    .v2-header,
+    .status-dashboard,
+    .format-selection,
+    .btn,
+    .v2-footer {
+        display: none !important;
+    }
+    
+    .v2-accordion .accordion-item {
+        box-shadow: none;
+        border: 1px solid #ddd;
+    }
+    
+    .v2-accordion .accordion-button {
+        background: #f8f9fa !important;
+        color: #333 !important;
+    }
+    
+    .v2-accordion .accordion-collapse {
+        display: block !important;
+    }
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+    :root {
+        --primary-orange: #d63384;
+        --light-peach: #f8f9fa;
+        --mint-green: #198754;
+        --teal-blue: #0dcaf0;
+        --navy-blue: #212529;
+    }
+}

@@ -61,8 +61,10 @@ logger = logging.getLogger(__name__)
 
 # Check if frontend directories exist
 frontend_path = Path("frontend")
-frontend_v041_path = Path("frontend-v0.4.1")
+frontend_v1_path = Path("frontend-v1")
+frontend_v2_path = Path("frontend-v2")
 
+# Mount main frontend (V0.4.1 Sneat-based)
 if frontend_path.exists():
     logger.info(f"Frontend directory found: {frontend_path.absolute()}")
     logger.info(f"Frontend contents: {list(frontend_path.iterdir())}")
@@ -70,46 +72,53 @@ if frontend_path.exists():
 else:
     logger.error(f"Frontend directory not found at: {frontend_path.absolute()}")
 
-# Mount V0.4.1 frontend (Sneat-based)
-if frontend_v041_path.exists():
-    logger.info(f"Frontend V0.4.1 directory found: {frontend_v041_path.absolute()}")
-    app.mount("/v0.4.1", StaticFiles(directory="frontend-v0.4.1"), name="frontend_v041")
+# Mount V1 frontend (simple log generator)
+if frontend_v1_path.exists():
+    logger.info(f"Frontend V1 directory found: {frontend_v1_path.absolute()}")
+    app.mount("/v1", StaticFiles(directory="frontend-v1"), name="frontend_v1")
 else:
-    logger.error(f"Frontend V0.4.1 directory not found at: {frontend_v041_path.absolute()}")
+    logger.error(f"Frontend V1 directory not found at: {frontend_v1_path.absolute()}")
+
+# Mount V2 frontend (V3 dashboard with Firebase)
+if frontend_v2_path.exists():
+    logger.info(f"Frontend V2 directory found: {frontend_v2_path.absolute()}")
+    app.mount("/v2", StaticFiles(directory="frontend-v2"), name="frontend_v2")
+else:
+    logger.error(f"Frontend V2 directory not found at: {frontend_v2_path.absolute()}")
 
 @app.get("/", response_class=HTMLResponse)
-async def serve_v2_frontend():
-    """Serve the V2 frontend page"""
-    try:
-        with open("frontend/index.html", "r", encoding="utf-8") as f:
-            return HTMLResponse(content=f.read())
-    except FileNotFoundError:
-        return HTMLResponse(
-            content="<h1>V2 Frontend not found</h1><p>Please ensure frontend/index.html exists</p>",
-            status_code=404
-        )
-
-@app.get("/dashboard", response_class=HTMLResponse)
-async def serve_v3_dashboard():
-    """Serve the V3 dashboard page"""
+async def serve_main_dashboard():
+    """Serve the main dashboard (V0.4.1 Sneat-based)"""
     try:
         with open("frontend/dashboard.html", "r", encoding="utf-8") as f:
             return HTMLResponse(content=f.read())
     except FileNotFoundError:
         return HTMLResponse(
-            content="<h1>V3 Dashboard not found</h1><p>Please ensure frontend/dashboard.html exists</p>",
+            content="<h1>Dashboard not found</h1><p>Please ensure frontend/dashboard.html exists</p>",
             status_code=404
         )
 
-@app.get("/v0.4.1", response_class=HTMLResponse)
-async def serve_v041_dashboard():
-    """Serve the V0.4.1 Sneat-based dashboard page"""
+@app.get("/v1", response_class=HTMLResponse)
+async def serve_v1_frontend():
+    """Serve the V1 simple log generator"""
     try:
-        with open("frontend-v0.4.1/dashboard.html", "r", encoding="utf-8") as f:
+        with open("frontend-v1/index.html", "r", encoding="utf-8") as f:
             return HTMLResponse(content=f.read())
     except FileNotFoundError:
         return HTMLResponse(
-            content="<h1>V0.4.1 Dashboard not found</h1><p>Please ensure frontend-v0.4.1/dashboard.html exists</p>",
+            content="<h1>V1 Frontend not found</h1><p>Please ensure frontend-v1/index.html exists</p>",
+            status_code=404
+        )
+
+@app.get("/v2", response_class=HTMLResponse)
+async def serve_v2_dashboard():
+    """Serve the V2 dashboard (V3 with Firebase)"""
+    try:
+        with open("frontend-v2/dashboard.html", "r", encoding="utf-8") as f:
+            return HTMLResponse(content=f.read())
+    except FileNotFoundError:
+        return HTMLResponse(
+            content="<h1>V2 Dashboard not found</h1><p>Please ensure frontend-v2/dashboard.html exists</p>",
             status_code=404
         )
 

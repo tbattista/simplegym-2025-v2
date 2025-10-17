@@ -1,46 +1,19 @@
-<!doctype html>
-
-<html
-  lang="en"
-  class="layout-menu-fixed layout-compact"
-  data-assets-path="/v0.4.1/assets/"
-  data-template="vertical-menu-template-free">
-  <head>
-    <meta charset="utf-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
-
-    <title>👻 Ghost Gym V0.4.1 - Program Manager Dashboard</title>
-
-    <meta name="description" content="Professional workout program management with Ghost Gym V0.4.1" />
-
-    <!-- Favicon -->
-    <link rel="icon" type="image/x-icon" href="/v0.4.1/assets/img/favicon/favicon.ico" />
-
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap"
-      rel="stylesheet" />
-
-    <link rel="stylesheet" href="/v0.4.1/assets/vendor/fonts/iconify-icons.css" />
-
-    <!-- Core CSS -->
-    <link rel="stylesheet" href="/v0.4.1/assets/vendor/css/core.css" />
-    <link rel="stylesheet" href="/v0.4.1/assets/css/demo.css" />
-
-    <!-- Vendors CSS -->
-    <link rel="stylesheet" href="/v0.4.1/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css" />
-
-    <!-- Custom Ghost Gym CSS -->
-    <link rel="stylesheet" href="/v0.4.1/assets/css/ghost-gym-custom.css" />
-
-    <!-- Helpers -->
-    <script src="/v0.4.1/assets/vendor/js/helpers.js"></script>
-    <script src="/v0.4.1/assets/js/config.js"></script>
-
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ghost Gym V3 - Program Manager Dashboard</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    
+    <!-- Sortable.js for drag and drop -->
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    
     <!-- Firebase SDK v9+ -->
     <script type="module">
         // Import Firebase modules
@@ -98,325 +71,241 @@
         window.firebaseReady = true;
         window.dispatchEvent(new Event('firebaseReady'));
     </script>
-  </head>
-
-  <body>
-    <!-- Layout wrapper -->
-    <div class="layout-wrapper layout-content-navbar">
-      <div class="layout-container">
-        <!-- Menu -->
-        <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
-          <div class="app-brand demo">
-            <a href="dashboard.html" class="app-brand-link">
-              <span class="app-brand-logo demo">
-                <span class="text-primary">
-                  👻
-                </span>
-              </span>
-              <span class="app-brand-text demo menu-text fw-bold ms-2">Ghost Gym</span>
-            </a>
-
-            <a href="javascript:void(0);" class="layout-menu-toggle menu-link text-large ms-auto">
-              <i class="bx bx-chevron-left d-block d-xl-none align-middle"></i>
-            </a>
-          </div>
-
-          <div class="menu-divider mt-0"></div>
-          <div class="menu-inner-shadow"></div>
-
-          <ul class="menu-inner py-1">
-            <!-- Main Dashboard -->
-            <li class="menu-item active">
-              <a href="dashboard.html" class="menu-link">
-                <i class="menu-icon tf-icons bx bx-grid-alt"></i>
-                <div class="text-truncate">Dashboard</div>
-              </a>
-            </li>
-            
-            <!-- Program Management -->
-            <li class="menu-header small text-uppercase">
-              <span class="menu-header-text">Program Management</span>
-            </li>
-            <li class="menu-item">
-              <a href="javascript:void(0);" class="menu-link" id="menuPrograms">
-                <i class="menu-icon tf-icons bx bx-folder"></i>
-                <div class="text-truncate">My Programs</div>
-              </a>
-            </li>
-            <li class="menu-item">
-              <a href="javascript:void(0);" class="menu-link" id="menuWorkouts">
-                <i class="menu-icon tf-icons bx bx-dumbbell"></i>
-                <div class="text-truncate">Workout Library</div>
-              </a>
-            </li>
-            
-            <!-- Tools & Settings -->
-            <li class="menu-header small text-uppercase">
-              <span class="menu-header-text">Tools & Settings</span>
-            </li>
-            <li class="menu-item">
-              <a href="javascript:void(0);" class="menu-link" id="menuBackup">
-                <i class="menu-icon tf-icons bx bx-cloud-upload"></i>
-                <div class="text-truncate">Backup & Export</div>
-              </a>
-            </li>
-            <li class="menu-item">
-              <a href="javascript:void(0);" class="menu-link" id="menuSettings">
-                <i class="menu-icon tf-icons bx bx-cog"></i>
-                <div class="text-truncate">Settings</div>
-              </a>
-            </li>
-          </ul>
-        </aside>
-        <!-- / Menu -->
-
-        <!-- Layout container -->
-        <div class="layout-page">
-          <!-- Navbar -->
-          <nav
-            class="layout-navbar container-xxl navbar-detached navbar navbar-expand-xl align-items-center bg-navbar-theme"
-            id="layout-navbar">
-            <div class="layout-menu-toggle navbar-nav align-items-xl-center me-4 me-xl-0 d-xl-none">
-              <a class="nav-item nav-link px-0 me-xl-6" href="javascript:void(0)">
-                <i class="icon-base bx bx-menu icon-md"></i>
-              </a>
-            </div>
-
-            <div class="navbar-nav-right d-flex align-items-center justify-content-end" id="navbar-collapse">
-              <!-- Search -->
-              <div class="navbar-nav align-items-center me-auto">
-                <div class="nav-item d-flex align-items-center">
-                  <span class="w-px-22 h-px-22"><i class="icon-base bx bx-search icon-md"></i></span>
-                  <input
-                    type="text"
-                    class="form-control border-0 shadow-none ps-1 ps-sm-2 d-md-block d-none"
-                    placeholder="Search programs and workouts..."
-                    aria-label="Search..." 
-                    id="globalSearch" />
-                </div>
-              </div>
-              <!-- /Search -->
-
-              <ul class="navbar-nav flex-row align-items-center ms-md-auto">
-                <!-- Authentication UI -->
-                <li class="nav-item" id="authContainer">
-                  <!-- Sign In Button (for anonymous users) -->
-                  <button type="button" class="btn btn-outline-primary btn-sm auth-sign-in me-3" id="headerSignInBtn">
-                    <i class="bx bx-user me-1"></i>
-                    Sign In
-                  </button>
-                  
-                  <!-- User Profile Dropdown (for authenticated users) -->
-                  <div class="dropdown auth-sign-out d-none">
-                    <a
-                      class="nav-link dropdown-toggle hide-arrow p-0"
-                      href="javascript:void(0);"
-                      data-bs-toggle="dropdown">
-                      <div class="avatar avatar-online">
-                        <img src="/v0.4.1/assets/img/avatars/1.png" alt class="w-px-40 h-auto rounded-circle" id="userAvatar" />
-                      </div>
-                    </a>
-                    <ul class="dropdown-menu dropdown-menu-end">
-                      <li>
-                        <a class="dropdown-item" href="#">
-                          <div class="d-flex">
-                            <div class="flex-shrink-0 me-3">
-                              <div class="avatar avatar-online">
-                                <img src="/v0.4.1/assets/img/avatars/1.png" alt class="w-px-40 h-auto rounded-circle" />
-                              </div>
-                            </div>
-                            <div class="flex-grow-1">
-                              <h6 class="mb-0" id="userDisplayName">User</h6>
-                              <small class="text-body-secondary" id="userEmailDisplay">user@example.com</small>
-                            </div>
-                          </div>
-                        </a>
-                      </li>
-                      <li>
-                        <div class="dropdown-divider my-1"></div>
-                      </li>
-                      <li>
-                        <a class="dropdown-item" href="#" id="profileSettingsBtn">
-                          <i class="icon-base bx bx-user icon-md me-3"></i><span>My Profile</span>
-                        </a>
-                      </li>
-                      <li>
-                        <a class="dropdown-item" href="#" id="dataExportBtn">
-                          <i class="icon-base bx bx-download icon-md me-3"></i><span>Export Data</span>
-                        </a>
-                      </li>
-                      <li>
-                        <div class="dropdown-divider my-1"></div>
-                      </li>
-                      <li>
-                        <a class="dropdown-item" href="javascript:void(0);" id="signOutBtn">
-                          <i class="icon-base bx bx-power-off icon-md me-3"></i><span>Log Out</span>
-                        </a>
-                      </li>
-                    </ul>
-                  </div>
-                </li>
-                <!--/ Authentication UI -->
-              </ul>
-            </div>
-          </nav>
-          <!-- / Navbar -->
-
-          <!-- Content wrapper -->
-          <div class="content-wrapper">
-            <!-- Content -->
-            <div class="container-xxl flex-grow-1 container-p-y">
-              
-              <!-- Alert Container -->
-              <div id="alertContainer" class="mb-3"></div>
-
-              <div class="row g-6">
-                <!-- Programs Panel -->
-                <div class="col-lg-4">
-                  <div class="card h-100">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                      <h5 class="mb-0">
-                        <i class="bx bx-folder me-2"></i>Programs
-                      </h5>
-                      <button class="btn btn-primary btn-sm" id="newProgramBtn">
-                        <i class="bx bx-plus"></i>
-                      </button>
+    
+    <!-- Custom V3 CSS -->
+    <link href="/v2/css/dashboard-v3.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container-fluid">
+        <!-- V3 Header -->
+        <header class="v3-header py-3 mb-4">
+            <div class="container-fluid">
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <h1 class="mb-1">
+                            <i class="bi bi-grid-3x3-gap me-3"></i>
+                            👻 Ghost Gym V3
+                        </h1>
+                        <p class="mb-0 text-muted">Program Manager Dashboard</p>
                     </div>
-                    <div class="card-body p-0">
-                      <!-- Search -->
-                      <div class="p-4 border-bottom">
-                        <div class="input-group">
-                          <span class="input-group-text">
-                            <i class="bx bx-search"></i>
-                          </span>
-                          <input type="text" class="form-control" id="programSearch" placeholder="Search programs...">
+                    <div class="col-md-6 text-md-end">
+                        <div class="btn-group me-3" role="group">
+                            <button type="button" class="btn btn-outline-light btn-sm" id="backupBtn">
+                                <i class="bi bi-cloud-arrow-up me-1"></i>
+                                Backup
+                            </button>
+                            <button type="button" class="btn btn-outline-light btn-sm" id="importBtn">
+                                <i class="bi bi-cloud-arrow-down me-1"></i>
+                                Import
+                            </button>
                         </div>
-                      </div>
-                      
-                      <!-- Programs List -->
-                      <div id="programsList" class="list-group list-group-flush">
-                        <!-- Programs will be rendered here -->
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                
-                <!-- Program Details Panel -->
-                <div class="col-lg-5">
-                  <!-- Program Details (shown when program selected) -->
-                  <div class="card h-100" id="programDetailsPanel" style="display: none;">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                      <h5 class="mb-0" id="programDetailsTitle">
-                        <i class="bx bx-folder-open me-2"></i>Program Details
-                      </h5>
-                      <div class="btn-group btn-group-sm">
-                        <button class="btn btn-outline-secondary" id="editProgramBtn">
-                          <i class="bx bx-edit"></i>
-                        </button>
-                        <button class="btn btn-outline-primary" id="previewProgramBtn">
-                          <i class="bx bx-show"></i>
-                        </button>
-                        <button class="btn btn-primary" id="generateProgramBtn">
-                          <i class="bx bx-download"></i>
-                        </button>
-                      </div>
-                    </div>
-                    <div class="card-body">
-                      <!-- Program info and workouts will be rendered here -->
-                      <div id="programInfo"></div>
-                      <div id="programWorkouts" class="mt-4"></div>
-                    </div>
-                  </div>
-
-                  <!-- Welcome Panel (default view) -->
-                  <div class="card h-100" id="welcomePanel">
-                    <div class="card-body text-center py-5">
-                      <div class="mb-4">
-                        <span style="font-size: 4rem;">👻</span>
-                      </div>
-                      <h3>Welcome to Ghost Gym V0.4.1</h3>
-                      <p class="text-muted mb-4">Create programs, organize workouts, and generate professional training documents with our modern interface.</p>
-                      <div class="d-grid gap-2 d-md-block">
-                        <button class="btn btn-primary" id="createFirstProgramBtn">
-                          <i class="bx bx-plus me-2"></i>
-                          Create Your First Program
-                        </button>
-                        <button class="btn btn-outline-secondary" id="createFirstWorkoutBtn">
-                          <i class="bx bx-plus-circle me-2"></i>
-                          Create Your First Workout
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                
-                <!-- Workout Library Panel -->
-                <div class="col-lg-3">
-                  <div class="card h-100">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                      <h5 class="mb-0">
-                        <i class="bx bx-collection me-2"></i>Workout Library
-                      </h5>
-                      <button class="btn btn-primary btn-sm" id="newWorkoutBtn">
-                        <i class="bx bx-plus"></i>
-                      </button>
-                    </div>
-                    <div class="card-body p-0">
-                      <!-- Search -->
-                      <div class="p-4 border-bottom">
-                        <div class="input-group">
-                          <span class="input-group-text">
-                            <i class="bx bx-search"></i>
-                          </span>
-                          <input type="text" class="form-control" id="workoutSearch" placeholder="Search workouts...">
+                        
+                        <!-- Authentication UI -->
+                        <div id="authContainer" class="d-inline-block me-3">
+                            <!-- Sign In Button (for anonymous users) -->
+                            <button type="button" class="btn btn-outline-light btn-sm auth-sign-in" id="headerSignInBtn">
+                                <i class="bi bi-person-circle me-1"></i>
+                                Sign In
+                            </button>
+                            
+                            <!-- User Profile Dropdown (for authenticated users) -->
+                            <div class="dropdown auth-sign-out d-none">
+                                <button class="btn btn-outline-light btn-sm dropdown-toggle" type="button"
+                                        id="userMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="bi bi-person-circle me-1"></i>
+                                    <span id="userDisplayName">User</span>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenuButton">
+                                    <li>
+                                        <h6 class="dropdown-header">
+                                            <i class="bi bi-person me-2"></i>
+                                            <span id="userEmailDisplay">user@example.com</span>
+                                        </h6>
+                                    </li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <a class="dropdown-item" href="#" id="profileSettingsBtn">
+                                            <i class="bi bi-gear me-2"></i>
+                                            Profile Settings
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="#" id="dataExportBtn">
+                                            <i class="bi bi-download me-2"></i>
+                                            Export Data
+                                        </a>
+                                    </li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <a class="dropdown-item text-danger" href="#" id="signOutBtn">
+                                            <i class="bi bi-box-arrow-right me-2"></i>
+                                            Sign Out
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
                         </div>
-                      </div>
-                      
-                      <!-- Workouts List -->
-                      <div id="workoutsList" class="list-group list-group-flush">
-                        <!-- Workouts will be rendered here -->
-                      </div>
+                        
+                        <span class="badge bg-success">V3 - Dashboard</span>
                     </div>
-                  </div>
                 </div>
-              </div>
             </div>
-            <!-- / Content -->
+        </header>
 
-            <!-- Footer -->
-            <footer class="content-footer footer bg-footer-theme">
-              <div class="container-xxl">
-                <div
-                  class="footer-container d-flex align-items-center justify-content-between py-4 flex-md-row flex-column">
-                  <div class="mb-2 mb-md-0">
-                    ©
-                    <script>
-                      document.write(new Date().getFullYear());
-                    </script>
-                    , made with ❤️ by
-                    <strong>👻 Ghost Gym V0.4.1</strong>
-                  </div>
-                  <div class="d-none d-lg-inline-block">
-                    <span id="statsDisplay" class="text-muted">Loading stats...</span>
-                  </div>
+        <!-- Alert Container -->
+        <div id="alertContainer" class="container-fluid mb-3"></div>
+
+        <!-- Main Dashboard Content -->
+        <div class="container-fluid">
+            <div class="row">
+                
+                <!-- Left Sidebar - Programs -->
+                <div class="col-lg-4 col-xl-3">
+                    <div class="dashboard-card programs-panel">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">
+                                <i class="bi bi-folder2 me-2"></i>
+                                Programs
+                            </h5>
+                            <button class="btn btn-primary btn-sm" id="newProgramBtn">
+                                <i class="bi bi-plus-lg"></i>
+                            </button>
+                        </div>
+                        <div class="card-body p-0">
+                            <!-- Search Programs -->
+                            <div class="p-3 border-bottom">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text">
+                                        <i class="bi bi-search"></i>
+                                    </span>
+                                    <input type="text" class="form-control" id="programSearch" placeholder="Search programs...">
+                                </div>
+                            </div>
+                            
+                            <!-- Programs List -->
+                            <div id="programsList" class="programs-list">
+                                <!-- Programs will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
                 </div>
-              </div>
-            </footer>
-            <!-- / Footer -->
 
-            <div class="content-backdrop fade"></div>
-          </div>
-          <!-- Content wrapper -->
+                <!-- Center Content - Program Details / Workout Library -->
+                <div class="col-lg-5 col-xl-6">
+                    
+                    <!-- Program Details Panel (shown when program selected) -->
+                    <div id="programDetailsPanel" class="dashboard-card d-none">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0" id="programDetailsTitle">
+                                <i class="bi bi-folder2-open me-2"></i>
+                                Program Details
+                            </h5>
+                            <div class="btn-group btn-group-sm">
+                                <button class="btn btn-outline-secondary" id="editProgramBtn">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button class="btn btn-outline-success" id="previewProgramBtn">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                                <button class="btn btn-success" id="generateProgramBtn">
+                                    <i class="bi bi-download"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <!-- Program Info -->
+                            <div id="programInfo" class="mb-4">
+                                <!-- Program details will be loaded here -->
+                            </div>
+                            
+                            <!-- Program Workouts -->
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h6 class="mb-0">Workouts in Program</h6>
+                                <small class="text-muted">Drag to reorder</small>
+                            </div>
+                            <div id="programWorkouts" class="program-workouts sortable-list">
+                                <!-- Program workouts will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Default View - Welcome Panel -->
+                    <div id="welcomePanel" class="dashboard-card">
+                        <div class="card-body text-center py-5">
+                            <i class="bi bi-grid-3x3-gap display-1 text-muted mb-3"></i>
+                            <h3>Welcome to Ghost Gym V3</h3>
+                            <p class="text-muted mb-4">Create programs, organize workouts, and generate professional training documents.</p>
+                            <div class="d-grid gap-2 d-md-block">
+                                <button class="btn btn-primary" id="createFirstProgramBtn">
+                                    <i class="bi bi-plus-lg me-2"></i>
+                                    Create Your First Program
+                                </button>
+                                <button class="btn btn-outline-secondary" id="createFirstWorkoutBtn">
+                                    <i class="bi bi-plus-circle me-2"></i>
+                                    Create Your First Workout
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Right Sidebar - Workout Library -->
+                <div class="col-lg-3 col-xl-3">
+                    <div class="dashboard-card workout-library">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">
+                                <i class="bi bi-collection me-2"></i>
+                                Workout Library
+                            </h5>
+                            <button class="btn btn-primary btn-sm" id="newWorkoutBtn">
+                                <i class="bi bi-plus-lg"></i>
+                            </button>
+                        </div>
+                        <div class="card-body p-0">
+                            <!-- Search Workouts -->
+                            <div class="p-3 border-bottom">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text">
+                                        <i class="bi bi-search"></i>
+                                    </span>
+                                    <input type="text" class="form-control" id="workoutSearch" placeholder="Search workouts...">
+                                </div>
+                            </div>
+                            
+                            <!-- Workouts List -->
+                            <div id="workoutsList" class="workouts-list">
+                                <!-- Workouts will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
         </div>
-        <!-- / Layout page -->
-      </div>
 
-      <!-- Overlay -->
-      <div class="layout-overlay layout-menu-toggle"></div>
+        <!-- Footer -->
+        <footer class="v3-footer mt-5">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p class="mb-0">
+                            <i class="bi bi-heart-fill text-danger me-2"></i>
+                            👻 Ghost Gym V3 - Program Manager
+                        </p>
+                    </div>
+                    <div class="col-md-6 text-md-end">
+                        <small class="text-muted">
+                            <span id="statsDisplay">Loading stats...</span>
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </footer>
+
     </div>
-    <!-- / Layout wrapper -->
 
-    <!-- Modals (preserved from original V3) -->
+    <!-- Modals -->
     
     <!-- Program Modal -->
     <div class="modal fade" id="programModal" tabindex="-1">
@@ -494,7 +383,7 @@
                             <div class="d-flex justify-content-between align-items-center mb-3">
                                 <h6 class="mb-0">Exercise Groups</h6>
                                 <button type="button" class="btn btn-outline-primary btn-sm" id="addExerciseGroupBtn">
-                                    <i class="bx bx-plus me-1"></i>
+                                    <i class="bi bi-plus-lg me-1"></i>
                                     Add Group
                                 </button>
                             </div>
@@ -508,7 +397,7 @@
                             <div class="d-flex justify-content-between align-items-center mb-3">
                                 <h6 class="mb-0">Bonus Exercises</h6>
                                 <button type="button" class="btn btn-outline-secondary btn-sm" id="addBonusExerciseBtn">
-                                    <i class="bx bx-plus me-1"></i>
+                                    <i class="bi bi-plus-lg me-1"></i>
                                     Add Bonus
                                 </button>
                             </div>
@@ -532,7 +421,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">
-                        <i class="bx bx-show me-2"></i>
+                        <i class="bi bi-eye me-2"></i>
                         Program Preview
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -551,7 +440,7 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                     <button type="button" class="btn btn-success" id="generateFromPreviewBtn">
-                        <i class="bx bx-download me-1"></i>
+                        <i class="bi bi-download me-1"></i>
                         Generate Document
                     </button>
                 </div>
@@ -574,12 +463,12 @@
                             <div class="btn-group w-100" role="group">
                                 <input type="radio" class="btn-check" name="format" id="formatHtml" value="html" checked>
                                 <label class="btn btn-outline-primary" for="formatHtml">
-                                    <i class="bx bx-code-slash me-1"></i>
+                                    <i class="bi bi-code-slash me-1"></i>
                                     HTML
                                 </label>
                                 <input type="radio" class="btn-check" name="format" id="formatPdf" value="pdf">
                                 <label class="btn btn-outline-primary" for="formatPdf">
-                                    <i class="bx bx-file-earmark-pdf me-1"></i>
+                                    <i class="bi bi-file-earmark-pdf me-1"></i>
                                     PDF
                                 </label>
                             </div>
@@ -613,7 +502,7 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="button" class="btn btn-success" id="confirmGenerateBtn">
-                        <i class="bx bx-download me-1"></i>
+                        <i class="bi bi-download me-1"></i>
                         Generate Document
                     </button>
                 </div>
@@ -627,7 +516,7 @@
             <div class="modal-content">
                 <div class="modal-header border-0">
                     <h5 class="modal-title" id="authModalLabel">
-                        <i class="bx bx-user me-2"></i>
+                        <i class="bi bi-person-circle me-2"></i>
                         <span id="authModalTitle">Sign In</span>
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -673,14 +562,14 @@
                                 </div>
                                 <div class="d-grid gap-2">
                                     <button type="submit" class="btn btn-primary" id="signinBtn">
-                                        <i class="bx bx-log-in me-2"></i>
+                                        <i class="bi bi-box-arrow-in-right me-2"></i>
                                         Sign In
                                     </button>
                                     <div class="text-center my-2">
                                         <small class="text-muted">or</small>
                                     </div>
                                     <button type="button" class="btn btn-outline-danger" id="googleSigninBtn">
-                                        <i class="bx bxl-google me-2"></i>
+                                        <i class="bi bi-google me-2"></i>
                                         Sign in with Google
                                     </button>
                                 </div>
@@ -720,14 +609,14 @@
                                 </div>
                                 <div class="d-grid gap-2">
                                     <button type="submit" class="btn btn-success" id="signupBtn">
-                                        <i class="bx bx-user-plus me-2"></i>
+                                        <i class="bi bi-person-plus me-2"></i>
                                         Create Account
                                     </button>
                                     <div class="text-center my-2">
                                         <small class="text-muted">or</small>
                                     </div>
                                     <button type="button" class="btn btn-outline-danger" id="googleSignupBtn">
-                                        <i class="bx bxl-google me-2"></i>
+                                        <i class="bi bi-google me-2"></i>
                                         Sign up with Google
                                     </button>
                                 </div>
@@ -745,13 +634,13 @@
                     
                     <!-- Error Alert -->
                     <div id="authError" class="alert alert-danger d-none" role="alert">
-                        <i class="bx bx-error me-2"></i>
+                        <i class="bi bi-exclamation-triangle me-2"></i>
                         <span id="authErrorMessage"></span>
                     </div>
                     
                     <!-- Success Alert -->
                     <div id="authSuccess" class="alert alert-success d-none" role="alert">
-                        <i class="bx bx-check-circle me-2"></i>
+                        <i class="bi bi-check-circle me-2"></i>
                         <span id="authSuccessMessage"></span>
                     </div>
                 </div>
@@ -760,7 +649,7 @@
                     <!-- Anonymous Option -->
                     <div class="w-100 text-center">
                         <button type="button" class="btn btn-link text-muted" id="continueAnonymousBtn">
-                            <i class="bx bx-user-x me-1"></i>
+                            <i class="bi bi-incognito me-1"></i>
                             Continue without account
                         </button>
                     </div>
@@ -775,7 +664,7 @@
             <div class="modal-content">
                 <div class="modal-header border-0">
                     <h5 class="modal-title" id="upgradeModalLabel">
-                        <i class="bx bx-cloud-upload me-2"></i>
+                        <i class="bi bi-cloud-arrow-up me-2"></i>
                         Save Your Work
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -783,7 +672,7 @@
                 
                 <div class="modal-body">
                     <div class="text-center mb-4">
-                        <i class="bx bx-error-circle text-warning display-4"></i>
+                        <i class="bi bi-exclamation-triangle text-warning display-4"></i>
                         <h6 class="mt-3">Your work is only saved locally</h6>
                         <p class="text-muted">
                             Create an account to save your programs and workouts to the cloud
@@ -793,26 +682,26 @@
                     
                     <div class="row text-center mb-4">
                         <div class="col-4">
-                            <i class="bx bx-cloud-check text-success display-6"></i>
+                            <i class="bi bi-cloud-check text-success display-6"></i>
                             <small class="d-block text-muted">Cloud Sync</small>
                         </div>
                         <div class="col-4">
-                            <i class="bx bx-mobile text-success display-6"></i>
+                            <i class="bi bi-phone text-success display-6"></i>
                             <small class="d-block text-muted">Multi-Device</small>
                         </div>
                         <div class="col-4">
-                            <i class="bx bx-shield-check text-success display-6"></i>
+                            <i class="bi bi-shield-check text-success display-6"></i>
                             <small class="d-block text-muted">Secure Backup</small>
                         </div>
                     </div>
                     
                     <div class="d-grid gap-2">
                         <button type="button" class="btn btn-primary" id="upgradeCreateAccountBtn">
-                            <i class="bx bx-user-plus me-2"></i>
+                            <i class="bi bi-person-plus me-2"></i>
                             Create Account & Save Data
                         </button>
                         <button type="button" class="btn btn-outline-secondary" id="upgradeSignInBtn">
-                            <i class="bx bx-log-in me-2"></i>
+                            <i class="bi bi-box-arrow-in-right me-2"></i>
                             I Already Have an Account
                         </button>
                     </div>
@@ -821,7 +710,7 @@
                 <div class="modal-footer border-0">
                     <div class="w-100 text-center">
                         <button type="button" class="btn btn-link text-muted" data-bs-dismiss="modal">
-                            <i class="bx bx-x me-1"></i>
+                            <i class="bi bi-x-circle me-1"></i>
                             Maybe Later
                         </button>
                     </div>
@@ -830,30 +719,20 @@
         </div>
     </div>
 
-    <!-- Core JS -->
-    <script src="/v0.4.1/assets/vendor/libs/jquery/jquery.js"></script>
-    <script src="/v0.4.1/assets/vendor/libs/popper/popper.js"></script>
-    <script src="/v0.4.1/assets/vendor/js/bootstrap.js"></script>
-    <script src="/v0.4.1/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js"></script>
-    <script src="/v0.4.1/assets/vendor/js/menu.js"></script>
-
-    <!-- Main JS -->
-    <script src="/v0.4.1/assets/js/main.js"></script>
-
-    <!-- Sortable.js for drag and drop -->
-    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
-    <!-- Firebase Modules (preserved from V3) -->
-    <script src="/v0.4.1/js/firebase/firebase-init.js"></script>
-    <script src="/v0.4.1/js/firebase/auth-service.js"></script>
-    <script src="/v0.4.1/js/firebase/auth-ui.js"></script>
+    <!-- Firebase Modules (modular approach) -->
+    <script src="/v2/js/firebase/firebase-init.js"></script>
+    <script src="/v2/js/firebase/auth-service.js"></script>
+    <script src="/v2/js/firebase/auth-ui.js"></script>
     
     <!-- Phase 2: Data Management and Sync -->
-    <script src="/v0.4.1/js/firebase/data-manager.js"></script>
-    <script src="/v0.4.1/js/firebase/sync-manager.js"></script>
-    <script src="/v0.4.1/js/firebase/migration-ui.js"></script>
+    <script src="/v2/js/firebase/data-manager.js"></script>
+    <script src="/v2/js/firebase/sync-manager.js"></script>
+    <script src="/v2/js/firebase/migration-ui.js"></script>
     
-    <!-- Custom Ghost Gym Dashboard JavaScript -->
-    <script src="/v0.4.1/js/ghost-gym-dashboard.js"></script>
-  </body>
+    <!-- Custom V3 JavaScript -->
+    <script src="/v2/js/dashboard-v3.js"></script>
+</body>
 </html>

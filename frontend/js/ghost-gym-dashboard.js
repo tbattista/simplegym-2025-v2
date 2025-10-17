@@ -183,8 +183,8 @@ async function loadDashboardData() {
             window.ghostGym.workouts = workouts || [];
         } else {
             // Fallback to localStorage if data manager not available
-            window.ghostGym.programs = JSON.parse(localStorage.getItem('ghost_gym_programs') || '[]');
-            window.ghostGym.workouts = JSON.parse(localStorage.getItem('ghost_gym_workouts') || '[]');
+            window.ghostGym.programs = JSON.parse(localStorage.getItem('gym_programs') || '[]');
+            window.ghostGym.workouts = JSON.parse(localStorage.getItem('gym_workouts') || '[]');
         }
         
         // Render data
