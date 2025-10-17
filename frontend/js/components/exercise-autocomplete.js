@@ -94,16 +94,32 @@ class ExerciseAutocomplete {
                 return;
             }
             
-            // Load from API
+            // Load from API in batches (respecting 500 max page_size limit)
             console.log('📡 Loading exercises from API...');
-            const response = await fetch('/api/v3/exercises?page=1&page_size=5000');
+            const PAGE_SIZE = 500;
+            let allExercises = [];
+            let page = 1;
+            let hasMore = true;
             
-            if (!response.ok) {
-                throw new Error('Failed to load exercises');
+            while (hasMore) {
+                const response = await fetch(`/api/v3/exercises?page=${page}&page_size=${PAGE_SIZE}`);
+                
+                if (!response.ok) {
+                    throw new Error(`Failed to load exercises (page ${page})`);
+                }
+                
+                const data = await response.json();
+                const exercises = data.exercises || [];
+                
+                allExercises = [...allExercises, ...exercises];
+                console.log(`📦 Loaded page ${page}: ${exercises.length} exercises (total: ${allExercises.length})`);
+                
+                // Check if there are more pages
+                hasMore = exercises.length === PAGE_SIZE;
+                page++;
             }
             
-            const data = await response.json();
-            this.exercises = data.exercises || [];
+            this.exercises = allExercises;
             
             // Cache the results
             this.setCache(this.exercises);
