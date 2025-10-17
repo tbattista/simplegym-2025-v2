@@ -15,7 +15,8 @@ from .models import (
     CreateWorkoutRequest, UpdateWorkoutRequest,
     CreateProgramRequest, UpdateProgramRequest,
     AddWorkoutToProgramRequest, GenerateProgramDocumentRequest,
-    WorkoutListResponse, ProgramListResponse, ProgramWithWorkoutsResponse
+    WorkoutListResponse, ProgramListResponse, ProgramWithWorkoutsResponse,
+    Exercise, CreateExerciseRequest, ExerciseListResponse, ExerciseSearchResponse
 )
 from .services.v2.document_service_v2 import DocumentServiceV2
 from .services.data_service import DataService
@@ -25,6 +26,7 @@ from .services.unified_data_service import unified_data_service
 from .services.migration_service import migration_service
 from .middleware.auth import get_current_user_optional, get_current_user, extract_user_id
 from .api.migration import router as migration_router
+from .services.exercise_service import exercise_service
 
 # Initialize FastAPI app
 app = FastAPI(
@@ -1178,6 +1180,185 @@ async def remove_workout_from_program_firebase(
     except Exception as e:
         logger.error(f"Error removing workout from program: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error removing workout from program: {str(e)}")
+
+# Exercise Database API Endpoints
+
+@app.get("/api/v3/exercises", response_model=ExerciseListResponse)
+async def get_all_exercises(
+    page: int = Query(1, ge=1),
+    page_size: int = Query(100, ge=1, le=500)
+):
+    """Get all global exercises with pagination"""
+    try:
+        if not exercise_service.is_available():
+            raise HTTPException(
+                status_code=503,
+                detail="Exercise service not available - Firebase not initialized"
+            )
+        
+        result = await exercise_service.get_all_exercises(limit=page_size, page=page)
+        return result
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error retrieving exercises: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error retrieving exercises: {str(e)}")
+
+@app.get("/api/v3/exercises/search", response_model=ExerciseSearchResponse)
+async def search_exercises(
+    q: str = Query(..., min_length=1, description="Search query"),
+    muscle_group: Optional[str] = Query(None, description="Filter by muscle group"),
+    equipment: Optional[str] = Query(None, description="Filter by equipment"),
+    difficulty: Optional[str] = Query(None, description="Filter by difficulty level"),
+    limit: int = Query(20, ge=1, le=100)
+):
+    """Search exercises by name and optional filters"""
+    try:
+        if not exercise_service.is_available():
+            raise HTTPException(
+                status_code=503,
+                detail="Exercise service not available - Firebase not initialized"
+            )
+        
+        filters = {}
+        if muscle_group:
+            filters['muscle_group'] = muscle_group
+        if equipment:
+            filters['equipment'] = equipment
+        if difficulty:
+            filters['difficulty'] = difficulty
+        
+        result = await exercise_service.search_exercises(
+            query=q,
+            filters=filters if filters else None,
+            limit=limit
+        )
+        return result
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error searching exercises: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error searching exercises: {str(e)}")
+
+@app.get("/api/v3/exercises/{exercise_id}", response_model=Exercise)
+async def get_exercise(exercise_id: str):
+    """Get a specific exercise by ID"""
+    try:
+        if not exercise_service.is_available():
+            raise HTTPException(
+                status_code=503,
+                detail="Exercise service not available - Firebase not initialized"
+            )
+        
+        exercise = await exercise_service.get_exercise_by_id(exercise_id)
+        if not exercise:
+            raise HTTPException(status_code=404, detail="Exercise not found")
+        
+        return exercise
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error retrieving exercise: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error retrieving exercise: {str(e)}")
+
+@app.get("/api/v3/exercises/filters/{field}")
+async def get_exercise_filter_values(field: str):
+    """Get unique values for a filter field (muscle groups, equipment, etc.)"""
+    try:
+        if not exercise_service.is_available():
+            raise HTTPException(
+                status_code=503,
+                detail="Exercise service not available - Firebase not initialized"
+            )
+        
+        # Validate field name
+        valid_fields = [
+            'targetMuscleGroup', 'primaryEquipment', 'difficultyLevel',
+            'bodyRegion', 'mechanics', 'classification'
+        ]
+        
+        if field not in valid_fields:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Invalid filter field. Must be one of: {', '.join(valid_fields)}"
+            )
+        
+        values = await exercise_service.get_unique_values(field)
+        return {
+            "field": field,
+            "values": values,
+            "count": len(values)
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error retrieving filter values: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error retrieving filter values: {str(e)}")
+
+# User Custom Exercise Endpoints
+
+@app.post("/api/v3/users/me/exercises", response_model=Exercise)
+async def create_custom_exercise(
+    exercise_request: CreateExerciseRequest,
+    current_user: Dict[str, Any] = Depends(get_current_user)
+):
+    """Create a custom exercise for the authenticated user"""
+    try:
+        user_id = extract_user_id(current_user)
+        if not user_id:
+            raise HTTPException(status_code=401, detail="User ID not found")
+        
+        if not exercise_service.is_available():
+            raise HTTPException(
+                status_code=503,
+                detail="Exercise service not available - Firebase not initialized"
+            )
+        
+        exercise = await exercise_service.create_custom_exercise(user_id, exercise_request)
+        if not exercise:
+            raise HTTPException(status_code=500, detail="Failed to create custom exercise")
+        
+        return exercise
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error creating custom exercise: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error creating custom exercise: {str(e)}")
+
+@app.get("/api/v3/users/me/exercises")
+async def get_user_custom_exercises(
+    current_user: Dict[str, Any] = Depends(get_current_user),
+    limit: int = Query(100, ge=1, le=500)
+):
+    """Get all custom exercises for the authenticated user"""
+    try:
+        user_id = extract_user_id(current_user)
+        if not user_id:
+            raise HTTPException(status_code=401, detail="User ID not found")
+        
+        if not exercise_service.is_available():
+            raise HTTPException(
+                status_code=503,
+                detail="Exercise service not available - Firebase not initialized"
+            )
+        
+        exercises = await exercise_service.get_user_custom_exercises(user_id, limit=limit)
+        
+        return {
+            "exercises": exercises,
+            "total_count": len(exercises)
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error retrieving custom exercises: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error retrieving custom exercises: {str(e)}")
 
 if __name__ == "__main__":
     import uvicorn

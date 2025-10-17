@@ -921,8 +921,10 @@ function addExerciseGroup() {
     if (!container) return;
     
     const groupCount = container.children.length + 1;
+    const groupId = `group-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    
     const groupHtml = `
-        <div class="card mb-3 exercise-group">
+        <div class="card mb-3 exercise-group" data-group-id="${groupId}">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h6 class="mb-0">Exercise Group ${groupCount}</h6>
                 <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeExerciseGroup(this)">
@@ -933,17 +935,20 @@ function addExerciseGroup() {
                 <div class="row mb-3">
                     <div class="col-md-6">
                         <label class="form-label">Exercise A</label>
-                        <input type="text" class="form-control exercise-input" placeholder="e.g., Bench Press">
+                        <input type="text" class="form-control exercise-input exercise-autocomplete-input"
+                               id="exercise-${groupId}-a" placeholder="Search exercises...">
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Exercise B (optional)</label>
-                        <input type="text" class="form-control exercise-input" placeholder="e.g., Incline Dumbbell Press">
+                        <input type="text" class="form-control exercise-input exercise-autocomplete-input"
+                               id="exercise-${groupId}-b" placeholder="Search exercises...">
                     </div>
                 </div>
                 <div class="row mb-3">
                     <div class="col-md-6">
                         <label class="form-label">Exercise C (optional)</label>
-                        <input type="text" class="form-control exercise-input" placeholder="e.g., Dumbbell Flyes">
+                        <input type="text" class="form-control exercise-input exercise-autocomplete-input"
+                               id="exercise-${groupId}-c" placeholder="Search exercises...">
                     </div>
                     <div class="col-md-6">
                         <button type="button" class="btn btn-outline-secondary btn-sm mt-4" onclick="addExerciseToGroup(this)">
@@ -970,6 +975,9 @@ function addExerciseGroup() {
     `;
     
     container.insertAdjacentHTML('beforeend', groupHtml);
+    
+    // Initialize autocomplete on new exercise inputs
+    initializeExerciseAutocompletes();
 }
 
 /**
@@ -979,8 +987,10 @@ function addBonusExercise() {
     const container = document.getElementById('bonusExercises');
     if (!container) return;
     
+    const bonusId = `bonus-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    
     const bonusHtml = `
-        <div class="card mb-3 bonus-exercise">
+        <div class="card mb-3 bonus-exercise" data-bonus-id="${bonusId}">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h6 class="mb-0">Bonus Exercise</h6>
                 <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeBonusExercise(this)">
@@ -991,7 +1001,8 @@ function addBonusExercise() {
                 <div class="row mb-3">
                     <div class="col-md-12">
                         <label class="form-label">Exercise Name</label>
-                        <input type="text" class="form-control bonus-name-input" placeholder="e.g., Plank">
+                        <input type="text" class="form-control bonus-name-input exercise-autocomplete-input"
+                               id="bonus-${bonusId}" placeholder="Search exercises...">
                     </div>
                 </div>
                 <div class="row">
@@ -1013,6 +1024,9 @@ function addBonusExercise() {
     `;
     
     container.insertAdjacentHTML('beforeend', bonusHtml);
+    
+    // Initialize autocomplete on new bonus exercise input
+    initializeExerciseAutocompletes();
 }
 
 /**
@@ -1063,11 +1077,15 @@ function addExerciseToGroup(button) {
         return;
     }
     
+    const groupId = group.dataset.groupId;
+    const exerciseId = `exercise-${groupId}-${nextLetter}`;
+    
     const newExerciseHtml = `
         <div class="col-md-6 mb-3">
             <label class="form-label">Exercise ${nextLetter.toUpperCase()} (optional)</label>
             <div class="input-group">
-                <input type="text" class="form-control exercise-input" placeholder="e.g., Exercise name">
+                <input type="text" class="form-control exercise-input exercise-autocomplete-input"
+                       id="${exerciseId}" placeholder="Search exercises...">
                 <button type="button" class="btn btn-outline-danger" onclick="removeExerciseFromGroup(this)">
                     <i class="bx bx-trash"></i>
                 </button>
@@ -1077,6 +1095,9 @@ function addExerciseToGroup(button) {
     
     const lastRow = group.querySelector('.row:last-of-type');
     lastRow.insertAdjacentHTML('beforebegin', `<div class="row">${newExerciseHtml}</div>`);
+    
+    // Initialize autocomplete on new input
+    initializeExerciseAutocompletes();
 }
 
 /**
@@ -1615,5 +1636,155 @@ function editProgramWorkout(programId, workoutId) {
     // This would open a modal to edit custom name/date for the workout in the program
     showAlert('Edit program workout functionality coming soon!', 'info');
 }
+
+/**
+ * Show custom exercise modal
+ */
+function showCustomExerciseModal(initialName = '') {
+    const modal = new bootstrap.Modal(document.getElementById('customExerciseModal'));
+    
+    // Pre-fill name if provided
+    if (initialName) {
+        document.getElementById('customExerciseName').value = initialName;
+    }
+    
+    modal.show();
+}
+
+/**
+ * Save custom exercise
+ */
+async function saveCustomExercise() {
+    try {
+        // Check if user is authenticated
+        if (!window.dataManager || !window.dataManager.isUserAuthenticated()) {
+            showAlert('Please sign in to create custom exercises', 'warning');
+            const modal = bootstrap.Modal.getInstance(document.getElementById('customExerciseModal'));
+            modal.hide();
+            showAuthModal();
+            return;
+        }
+        
+        // Collect form data
+        const exerciseData = {
+            name: document.getElementById('customExerciseName')?.value?.trim(),
+            targetMuscleGroup: document.getElementById('customMuscleGroup')?.value?.trim() || null,
+            primaryEquipment: document.getElementById('customEquipment')?.value?.trim() || null,
+            difficultyLevel: document.getElementById('customDifficulty')?.value || null,
+            mechanics: document.getElementById('customMechanics')?.value || null
+        };
+        
+        // Validate required fields
+        if (!exerciseData.name) {
+            showAlert('Exercise name is required', 'danger');
+            return;
+        }
+        
+        // Show loading state
+        const saveBtn = document.getElementById('saveCustomExerciseBtn');
+        const originalText = saveBtn.innerHTML;
+        saveBtn.innerHTML = '<i class="bx bx-loader-alt bx-spin me-1"></i>Saving...';
+        saveBtn.disabled = true;
+        
+        // Get auth token
+        const token = await window.dataManager.getAuthToken();
+        
+        // Create custom exercise via API
+        const response = await fetch('/api/v3/users/me/exercises', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(exerciseData)
+        });
+        
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.detail || 'Failed to create custom exercise');
+        }
+        
+        const savedExercise = await response.json();
+        
+        // Close modal and show success
+        const modal = bootstrap.Modal.getInstance(document.getElementById('customExerciseModal'));
+        modal.hide();
+        showAlert(`Custom exercise "${savedExercise.name}" created successfully!`, 'success');
+        
+        // Clear form
+        document.getElementById('customExerciseForm').reset();
+        
+        // Reload autocomplete data to include new custom exercise
+        Object.values(window.exerciseAutocompleteInstances || {}).forEach(instance => {
+            if (instance.loadExercises) {
+                instance.loadExercises();
+            }
+        });
+        
+    } catch (error) {
+        console.error('❌ Error saving custom exercise:', error);
+        showAlert('Failed to save custom exercise: ' + error.message, 'danger');
+    } finally {
+        // Reset button state
+        const saveBtn = document.getElementById('saveCustomExerciseBtn');
+        if (saveBtn) {
+            saveBtn.innerHTML = '<i class="bx bx-save me-1"></i>Save Exercise';
+            saveBtn.disabled = false;
+        }
+    }
+}
+
+// Make function globally available for autocomplete component
+window.showCustomExerciseModal = showCustomExerciseModal;
+
+/**
+ * Initialize exercise autocompletes on all exercise inputs
+ */
+function initializeExerciseAutocompletes() {
+    // Find all exercise inputs that don't have autocomplete yet
+    const inputs = document.querySelectorAll('.exercise-autocomplete-input');
+    
+    inputs.forEach(input => {
+        // Skip if already initialized
+        if (window.exerciseAutocompleteInstances && window.exerciseAutocompleteInstances[input.id]) {
+            return;
+        }
+        
+        // Initialize autocomplete
+        if (typeof initExerciseAutocomplete === 'function') {
+            initExerciseAutocomplete(input, {
+                minChars: 2,
+                maxResults: 20,
+                debounceMs: 300,
+                showMuscleGroup: true,
+                showEquipment: true,
+                showDifficulty: true,
+                allowCustom: true,
+                onSelect: (exercise) => {
+                    console.log('Exercise selected:', exercise.name);
+                }
+            });
+        }
+    });
+}
+
+/**
+ * Initialize autocompletes when workout modal is shown
+ */
+document.getElementById('workoutModal')?.addEventListener('shown.bs.modal', function() {
+    // Add initial exercise group if none exist
+    const exerciseGroups = document.getElementById('exerciseGroups');
+    if (exerciseGroups && exerciseGroups.children.length === 0) {
+        addExerciseGroup();
+    }
+    
+    // Initialize autocompletes
+    setTimeout(() => {
+        initializeExerciseAutocompletes();
+    }, 100);
+});
+
+// Set up custom exercise save button
+document.getElementById('saveCustomExerciseBtn')?.addEventListener('click', saveCustomExercise);
 
 console.log('📦 Ghost Gym Dashboard JavaScript loaded');

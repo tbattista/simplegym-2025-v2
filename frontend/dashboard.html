@@ -36,6 +36,9 @@
 
     <!-- Custom Ghost Gym CSS -->
     <link rel="stylesheet" href="/static/assets/css/ghost-gym-custom.css" />
+    
+    <!-- Exercise Autocomplete CSS -->
+    <link rel="stylesheet" href="/static/assets/css/exercise-autocomplete.css" />
 
     <!-- Helpers -->
     <script src="/static/assets/vendor/js/helpers.js"></script>
@@ -830,6 +833,65 @@
         </div>
     </div>
 
+    <!-- Custom Exercise Modal -->
+    <div class="modal fade" id="customExerciseModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bx bx-plus-circle me-2"></i>
+                        Add Custom Exercise
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="customExerciseForm">
+                        <div class="mb-3">
+                            <label for="customExerciseName" class="form-label">Exercise Name *</label>
+                            <input type="text" class="form-control" id="customExerciseName" required maxlength="200">
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="customMuscleGroup" class="form-label">Muscle Group</label>
+                                <input type="text" class="form-control" id="customMuscleGroup" placeholder="e.g., Chest">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="customEquipment" class="form-label">Equipment</label>
+                                <input type="text" class="form-control" id="customEquipment" placeholder="e.g., Dumbbells">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="customDifficulty" class="form-label">Difficulty</label>
+                                <select class="form-select" id="customDifficulty">
+                                    <option value="">Select...</option>
+                                    <option value="Beginner">Beginner</option>
+                                    <option value="Intermediate">Intermediate</option>
+                                    <option value="Advanced">Advanced</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="customMechanics" class="form-label">Type</label>
+                                <select class="form-select" id="customMechanics">
+                                    <option value="">Select...</option>
+                                    <option value="Compound">Compound</option>
+                                    <option value="Isolation">Isolation</option>
+                                </select>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="saveCustomExerciseBtn">
+                        <i class="bx bx-save me-1"></i>
+                        Save Exercise
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Core JS -->
     <script src="/static/assets/vendor/libs/jquery/jquery.js"></script>
     <script src="/static/assets/vendor/libs/popper/popper.js"></script>
@@ -852,6 +914,9 @@
     <script src="/static/js/firebase/data-manager.js"></script>
     <script src="/static/js/firebase/sync-manager.js"></script>
     <script src="/static/js/firebase/migration-ui.js"></script>
+    
+    <!-- Exercise Autocomplete Component -->
+    <script src="/static/js/components/exercise-autocomplete.js"></script>
     
     <!-- Custom Ghost Gym Dashboard JavaScript -->
     <script src="/static/js/ghost-gym-dashboard.js"></script>

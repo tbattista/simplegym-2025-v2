@@ -429,3 +429,256 @@ class ProgramWithWorkoutsResponse(BaseModel):
     
     program: Program = Field(..., description="Program information")
     workout_details: List[WorkoutTemplate] = Field(..., description="Full details of all workouts in the program")
+
+# Exercise Database Models
+
+class Exercise(BaseModel):
+    """Model for exercise in the global database"""
+    
+    id: str = Field(
+        default_factory=lambda: f"exercise-{uuid4().hex[:8]}",
+        description="Unique identifier for the exercise"
+    )
+    
+    # Core Information
+    name: str = Field(
+        ...,
+        description="Name of the exercise",
+        example="Barbell Bench Press"
+    )
+    
+    nameSearchTokens: List[str] = Field(
+        default_factory=list,
+        description="Tokenized name for search optimization",
+        example=["barbell", "bench", "press"]
+    )
+    
+    # Video Links
+    shortVideoUrl: Optional[str] = Field(
+        default=None,
+        description="URL to short demonstration video"
+    )
+    
+    detailedVideoUrl: Optional[str] = Field(
+        default=None,
+        description="URL to detailed explanation video"
+    )
+    
+    # Classification
+    difficultyLevel: Optional[str] = Field(
+        default=None,
+        description="Difficulty level of the exercise",
+        example="Beginner"
+    )
+    
+    targetMuscleGroup: Optional[str] = Field(
+        default=None,
+        description="Primary target muscle group",
+        example="Chest"
+    )
+    
+    primeMoverMuscle: Optional[str] = Field(
+        default=None,
+        description="Prime mover muscle",
+        example="Pectoralis Major"
+    )
+    
+    secondaryMuscle: Optional[str] = Field(
+        default=None,
+        description="Secondary muscle involved"
+    )
+    
+    tertiaryMuscle: Optional[str] = Field(
+        default=None,
+        description="Tertiary muscle involved"
+    )
+    
+    # Equipment
+    primaryEquipment: Optional[str] = Field(
+        default=None,
+        description="Primary equipment needed",
+        example="Barbell"
+    )
+    
+    primaryEquipmentCount: Optional[int] = Field(
+        default=None,
+        description="Number of primary equipment items needed"
+    )
+    
+    secondaryEquipment: Optional[str] = Field(
+        default=None,
+        description="Secondary equipment needed"
+    )
+    
+    secondaryEquipmentCount: Optional[int] = Field(
+        default=None,
+        description="Number of secondary equipment items needed"
+    )
+    
+    # Movement Details
+    posture: Optional[str] = Field(
+        default=None,
+        description="Body posture during exercise",
+        example="Supine"
+    )
+    
+    armType: Optional[str] = Field(
+        default=None,
+        description="Single or double arm movement",
+        example="Double Arm"
+    )
+    
+    armPattern: Optional[str] = Field(
+        default=None,
+        description="Continuous or alternating arm pattern",
+        example="Continuous"
+    )
+    
+    grip: Optional[str] = Field(
+        default=None,
+        description="Type of grip used",
+        example="Pronated"
+    )
+    
+    loadPosition: Optional[str] = Field(
+        default=None,
+        description="Position of load at end of movement"
+    )
+    
+    footElevation: Optional[str] = Field(
+        default=None,
+        description="Whether feet are elevated",
+        example="No Elevation"
+    )
+    
+    # Exercise Classification
+    combinationExercise: Optional[str] = Field(
+        default=None,
+        description="Whether exercise is single or combination",
+        example="Single Exercise"
+    )
+    
+    movementPattern1: Optional[str] = Field(
+        default=None,
+        description="Primary movement pattern",
+        example="Horizontal Push"
+    )
+    
+    movementPattern2: Optional[str] = Field(
+        default=None,
+        description="Secondary movement pattern"
+    )
+    
+    movementPattern3: Optional[str] = Field(
+        default=None,
+        description="Tertiary movement pattern"
+    )
+    
+    planeOfMotion1: Optional[str] = Field(
+        default=None,
+        description="Primary plane of motion",
+        example="Sagittal Plane"
+    )
+    
+    planeOfMotion2: Optional[str] = Field(
+        default=None,
+        description="Secondary plane of motion"
+    )
+    
+    planeOfMotion3: Optional[str] = Field(
+        default=None,
+        description="Tertiary plane of motion"
+    )
+    
+    # Categories
+    bodyRegion: Optional[str] = Field(
+        default=None,
+        description="Body region targeted",
+        example="Upper Body"
+    )
+    
+    forceType: Optional[str] = Field(
+        default=None,
+        description="Type of force applied",
+        example="Push"
+    )
+    
+    mechanics: Optional[str] = Field(
+        default=None,
+        description="Exercise mechanics type",
+        example="Compound"
+    )
+    
+    laterality: Optional[str] = Field(
+        default=None,
+        description="Laterality of movement",
+        example="Bilateral"
+    )
+    
+    classification: Optional[str] = Field(
+        default=None,
+        description="Primary exercise classification",
+        example="Strength"
+    )
+    
+    # Metadata
+    isGlobal: bool = Field(
+        default=True,
+        description="Whether this is a global exercise or user-specific"
+    )
+    
+    createdAt: datetime = Field(
+        default_factory=datetime.now,
+        description="When the exercise was created"
+    )
+    
+    updatedAt: datetime = Field(
+        default_factory=datetime.now,
+        description="When the exercise was last updated"
+    )
+
+class ExerciseReference(BaseModel):
+    """Reference to an exercise used in a workout"""
+    
+    exerciseId: str = Field(
+        ...,
+        description="ID of the exercise"
+    )
+    
+    exerciseName: str = Field(
+        ...,
+        description="Name of the exercise (denormalized for quick display)"
+    )
+    
+    isCustom: bool = Field(
+        default=False,
+        description="Whether this is a custom user exercise"
+    )
+
+# Request/Response Models for Exercise API
+
+class CreateExerciseRequest(BaseModel):
+    """Request model for creating a custom exercise"""
+    
+    name: str = Field(..., min_length=1, max_length=200)
+    difficultyLevel: Optional[str] = Field(None)
+    targetMuscleGroup: Optional[str] = Field(None)
+    primaryEquipment: Optional[str] = Field(None)
+    movementPattern1: Optional[str] = Field(None)
+    bodyRegion: Optional[str] = Field(None)
+    mechanics: Optional[str] = Field(None)
+
+class ExerciseListResponse(BaseModel):
+    """Response model for exercise list"""
+    
+    exercises: List[Exercise] = Field(..., description="List of exercises")
+    total_count: int = Field(..., description="Total number of exercises")
+    page: int = Field(default=1, description="Current page number")
+    page_size: int = Field(default=100, description="Number of items per page")
+
+class ExerciseSearchResponse(BaseModel):
+    """Response model for exercise search"""
+    
+    exercises: List[Exercise] = Field(..., description="Matching exercises")
+    query: str = Field(..., description="Search query used")
+    total_results: int = Field(..., description="Total number of results")
