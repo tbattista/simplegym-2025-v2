@@ -7,11 +7,34 @@
 
 /**
  * Get API URL with proper base path
- * Uses window.GHOST_GYM_API_URL if set, otherwise uses same-origin
+ * Uses the global getApiUrl function from data-manager.js which ensures HTTPS in production
  */
 function getApiUrl(path) {
-    const baseUrl = window.GHOST_GYM_API_URL || '';
-    return baseUrl + path;
+    // Use the global getApiUrl function if available (from data-manager.js)
+    if (window.getApiUrl && typeof window.getApiUrl === 'function') {
+        return window.getApiUrl(path);
+    }
+    
+    // Fallback: ensure HTTPS in production
+    if (!path.startsWith('/')) {
+        path = '/' + path;
+    }
+    
+    const hostname = window.location.hostname;
+    if (hostname === 'localhost' || hostname === '127.0.0.1') {
+        return `http://localhost:8001${path}`;
+    }
+    
+    // Production: always use HTTPS and same origin
+    const protocol = 'https:'; // Force HTTPS in production
+    const port = window.location.port;
+    let baseUrl = `${protocol}//${hostname}`;
+    
+    if (port && port !== '443' && port !== '80') {
+        baseUrl += `:${port}`;
+    }
+    
+    return `${baseUrl}${path}`;
 }
 
 // Global state management
