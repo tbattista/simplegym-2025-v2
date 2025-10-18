@@ -1224,7 +1224,7 @@ async function previewProgram() {
         document.getElementById('previewFrame').classList.add('d-none');
         
         // Generate preview
-        const response = await fetch(`/api/v3/programs/${window.ghostGym.currentProgram.id}/preview-html`, {
+        const response = await fetch(getApiUrl(`/api/v3/programs/${window.ghostGym.currentProgram.id}/preview-html`), {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -1328,7 +1328,7 @@ async function generateDocument() {
         
         console.log('🔍 DEBUG: Making request to:', url);
         
-        const response = await fetch(url, {
+        const response = await fetch(getApiUrl(url), {
             method: 'POST',
             headers: headers,
             body: JSON.stringify(requestBody)
@@ -1722,7 +1722,7 @@ async function saveCustomExercise() {
         const token = await window.dataManager.getAuthToken();
         
         // Create custom exercise via API
-        const response = await fetch('/api/v3/users/me/exercises', {
+        const response = await fetch(getApiUrl('/api/v3/users/me/exercises'), {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -1863,7 +1863,7 @@ async function loadExercises() {
         let hasMore = true;
         
         while (hasMore) {
-            const response = await fetch(`/api/v3/exercises?page=${page}&page_size=${PAGE_SIZE}`);
+            const response = await fetch(getApiUrl(`/api/v3/exercises?page=${page}&page_size=${PAGE_SIZE}`));
             
             if (!response.ok) {
                 throw new Error(`Failed to load exercises (page ${page})`);
@@ -1919,7 +1919,7 @@ async function loadExerciseFavorites() {
     
     try {
         const token = await window.firebaseAuth.currentUser.getIdToken();
-        const response = await fetch('/api/v3/users/me/favorites', {
+        const response = await fetch(getApiUrl('/api/v3/users/me/favorites'), {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -1952,7 +1952,7 @@ async function loadCustomExercises() {
     
     try {
         const token = await window.firebaseAuth.currentUser.getIdToken();
-        const response = await fetch('/api/v3/users/me/exercises', {
+        const response = await fetch(getApiUrl('/api/v3/users/me/exercises'), {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -2277,7 +2277,7 @@ async function toggleExerciseFavorite(exerciseId) {
         
         if (isFavorited) {
             // Remove favorite
-            const response = await fetch(`/api/v3/users/me/favorites/${exerciseId}`, {
+            const response = await fetch(getApiUrl(`/api/v3/users/me/favorites/${exerciseId}`), {
                 method: 'DELETE',
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -2290,7 +2290,7 @@ async function toggleExerciseFavorite(exerciseId) {
             }
         } else {
             // Add favorite
-            const response = await fetch('/api/v3/users/me/favorites', {
+            const response = await fetch(getApiUrl('/api/v3/users/me/favorites'), {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,

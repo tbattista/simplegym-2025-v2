@@ -135,7 +135,7 @@ class MigrationUIManager {
     async checkMigrationEligibility() {
         try {
             const token = await window.dataManager.getAuthToken();
-            const response = await fetch('/api/v3/migration/eligibility', {
+            const response = await fetch(getApiUrl('/api/v3/migration/eligibility'), {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -319,7 +319,7 @@ class MigrationUIManager {
     async executeMigrationAPI(programs, workouts) {
         try {
             const token = await window.dataManager.getAuthToken();
-            const response = await fetch('/api/v3/migration/execute', {
+            const response = await fetch(getApiUrl('/api/v3/migration/execute'), {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -354,10 +354,10 @@ class MigrationUIManager {
             const token = await window.dataManager.getAuthToken();
             
             const [programsResponse, workoutsResponse] = await Promise.all([
-                fetch('/api/v3/user/programs', {
+                fetch(getApiUrl('/api/v3/user/programs'), {
                     headers: { 'Authorization': `Bearer ${token}` }
                 }),
-                fetch('/api/v3/user/workouts', {
+                fetch(getApiUrl('/api/v3/user/workouts'), {
                     headers: { 'Authorization': `Bearer ${token}` }
                 })
             ]);
@@ -458,7 +458,7 @@ class MigrationUIManager {
             }
             
             const token = await window.dataManager.getAuthToken();
-            const response = await fetch('/api/v3/migration/status', {
+            const response = await fetch(getApiUrl('/api/v3/migration/status'), {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }

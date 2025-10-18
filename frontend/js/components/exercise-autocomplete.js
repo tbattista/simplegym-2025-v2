@@ -102,7 +102,7 @@ class ExerciseAutocomplete {
             let hasMore = true;
             
             while (hasMore) {
-                const response = await fetch(`/api/v3/exercises?page=${page}&page_size=${PAGE_SIZE}`);
+                const response = await fetch(getApiUrl(`/api/v3/exercises?page=${page}&page_size=${PAGE_SIZE}`));
                 
                 if (!response.ok) {
                     throw new Error(`Failed to load exercises (page ${page})`);
@@ -143,7 +143,7 @@ class ExerciseAutocomplete {
     async loadCustomExercises() {
         try {
             const token = await window.dataManager.getAuthToken();
-            const response = await fetch('/api/v3/users/me/exercises', {
+            const response = await fetch(getApiUrl('/api/v3/users/me/exercises'), {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }

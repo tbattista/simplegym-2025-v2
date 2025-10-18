@@ -201,7 +201,7 @@ class ExerciseDatabase {
             let hasMore = true;
             
             while (hasMore) {
-                const response = await fetch(`/api/v3/exercises?page=${page}&page_size=${PAGE_SIZE}`);
+                const response = await fetch(getApiUrl(`/api/v3/exercises?page=${page}&page_size=${PAGE_SIZE}`));
                 
                 if (!response.ok) {
                     throw new Error(`Failed to load exercises (page ${page})`);
@@ -249,7 +249,7 @@ class ExerciseDatabase {
         
         try {
             const token = await this.currentUser.getIdToken();
-            const response = await fetch('/api/v3/users/me/favorites', {
+            const response = await fetch(getApiUrl('/api/v3/users/me/favorites'), {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -279,7 +279,7 @@ class ExerciseDatabase {
         
         try {
             const token = await this.currentUser.getIdToken();
-            const response = await fetch('/api/v3/users/me/exercises', {
+            const response = await fetch(getApiUrl('/api/v3/users/me/exercises'), {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -554,7 +554,7 @@ class ExerciseDatabase {
             
             if (isFavorited) {
                 // Remove favorite
-                const response = await fetch(`/api/v3/users/me/favorites/${exerciseId}`, {
+                const response = await fetch(getApiUrl(`/api/v3/users/me/favorites/${exerciseId}`), {
                     method: 'DELETE',
                     headers: {
                         'Authorization': `Bearer ${token}`
@@ -567,7 +567,7 @@ class ExerciseDatabase {
                 }
             } else {
                 // Add favorite
-                const response = await fetch('/api/v3/users/me/favorites', {
+                const response = await fetch(getApiUrl('/api/v3/users/me/favorites'), {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${token}`,

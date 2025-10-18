@@ -3,6 +3,35 @@
  * Handles dual-storage architecture and real-time synchronization
  */
 
+/**
+ * Global API utility function to ensure HTTPS in production
+ * Use this for all fetch calls to avoid Mixed Content errors
+ */
+window.getApiUrl = function(path) {
+    // Ensure path starts with /
+    if (!path.startsWith('/')) {
+        path = '/' + path;
+    }
+    
+    // In development (localhost), use HTTP
+    const hostname = window.location.hostname;
+    if (hostname === 'localhost' || hostname === '127.0.0.1') {
+        return `http://localhost:8000${path}`;
+    }
+    
+    // In production, always use HTTPS
+    const protocol = 'https:';
+    const port = window.location.port;
+    let baseUrl = `${protocol}//${hostname}`;
+    
+    // Only add port if it's not standard HTTPS port
+    if (port && port !== '443' && port !== '80') {
+        baseUrl += `:${port}`;
+    }
+    
+    return `${baseUrl}${path}`;
+};
+
 class FirebaseDataManager {
     constructor() {
         this.isAuthenticated = false;
