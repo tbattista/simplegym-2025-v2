@@ -13,18 +13,19 @@ window.getApiUrl = function(path) {
         path = '/' + path;
     }
     
-    // In development (localhost), use HTTP
+    // In development (localhost), use HTTP with correct port
     const hostname = window.location.hostname;
     if (hostname === 'localhost' || hostname === '127.0.0.1') {
-        return `http://localhost:8000${path}`;
+        return `http://localhost:8001${path}`;
     }
     
-    // In production, always use HTTPS
-    const protocol = 'https:';
+    // In production, always use HTTPS and same origin
+    // This ensures we use the same protocol as the page itself
+    const protocol = window.location.protocol; // Will be 'https:' on Railway
     const port = window.location.port;
     let baseUrl = `${protocol}//${hostname}`;
     
-    // Only add port if it's not standard HTTPS port
+    // Only add port if it's not standard (443 for HTTPS, 80 for HTTP)
     if (port && port !== '443' && port !== '80') {
         baseUrl += `:${port}`;
     }
@@ -55,8 +56,8 @@ class FirebaseDataManager {
         const hostname = window.location.hostname;
         
         if (hostname === 'localhost' || hostname === '127.0.0.1') {
-            // Development: use localhost backend
-            return 'http://localhost:8000';
+            // Development: use localhost backend with correct port
+            return 'http://localhost:8001';
         }
         
         // Production: Check for configured API URL first
@@ -70,20 +71,20 @@ class FirebaseDataManager {
             return apiUrl;
         }
         
-        // Default: construct HTTPS URL from current location
-        // Always use HTTPS in production (Railway provides HTTPS)
-        const protocol = window.location.protocol;
+        // Default: use same origin (protocol + hostname + port)
+        // This ensures we match the page's protocol (HTTPS on Railway)
+        const protocol = window.location.protocol; // Will be 'https:' on Railway
         const port = window.location.port;
         
-        // Build URL with forced HTTPS
-        let baseUrl = `https://${hostname}`;
+        // Build URL using current protocol
+        let baseUrl = `${protocol}//${hostname}`;
         
-        // Only add port if it's not standard HTTPS port (443)
+        // Only add port if it's not standard (443 for HTTPS, 80 for HTTP)
         if (port && port !== '443' && port !== '80') {
             baseUrl += `:${port}`;
         }
         
-        console.log('🔍 DEBUG: URL construction:', {
+        console.log('🔍 DEBUG: API Base URL construction:', {
             protocol,
             hostname,
             port,
