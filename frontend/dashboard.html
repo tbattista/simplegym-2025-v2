@@ -124,7 +124,7 @@
         <!-- Menu -->
         <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
           <div class="app-brand demo">
-            <a href="dashboard.html" class="app-brand-link">
+            <a href="/" class="app-brand-link">
               <span class="app-brand-logo demo">
                 <span class="text-primary">
                   👻
@@ -143,8 +143,8 @@
 
           <ul class="menu-inner py-1">
             <!-- Main Dashboard -->
-            <li class="menu-item active">
-              <a href="dashboard.html" class="menu-link">
+            <li class="menu-item active" data-section="dashboard">
+              <a href="#dashboard" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-grid-alt"></i>
                 <div class="text-truncate">Dashboard</div>
               </a>
@@ -154,20 +154,20 @@
             <li class="menu-header small text-uppercase">
               <span class="menu-header-text">Program Management</span>
             </li>
-            <li class="menu-item">
-              <a href="javascript:void(0);" class="menu-link" id="menuPrograms">
+            <li class="menu-item" data-section="programs">
+              <a href="#programs" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-folder"></i>
                 <div class="text-truncate">My Programs</div>
               </a>
             </li>
-            <li class="menu-item">
-              <a href="javascript:void(0);" class="menu-link" id="menuWorkouts">
+            <li class="menu-item" data-section="workouts">
+              <a href="#workouts" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-dumbbell"></i>
                 <div class="text-truncate">Workout Library</div>
               </a>
             </li>
-            <li class="menu-item">
-              <a href="javascript:void(0);" class="menu-link" id="menuExercises">
+            <li class="menu-item" data-section="exercises">
+              <a href="#exercises" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-book-content"></i>
                 <div class="text-truncate">Exercise Database</div>
               </a>
@@ -177,14 +177,14 @@
             <li class="menu-header small text-uppercase">
               <span class="menu-header-text">Tools & Settings</span>
             </li>
-            <li class="menu-item">
-              <a href="javascript:void(0);" class="menu-link" id="menuBackup">
+            <li class="menu-item" data-section="backup">
+              <a href="#backup" class="menu-link" id="menuBackup">
                 <i class="menu-icon tf-icons bx bx-cloud-upload"></i>
                 <div class="text-truncate">Backup & Export</div>
               </a>
             </li>
-            <li class="menu-item">
-              <a href="javascript:void(0);" class="menu-link" id="menuSettings">
+            <li class="menu-item" data-section="settings">
+              <a href="#settings" class="menu-link" id="menuSettings">
                 <i class="menu-icon tf-icons bx bx-cog"></i>
                 <div class="text-truncate">Settings</div>
               </a>
@@ -1128,6 +1128,9 @@
     
     <!-- Exercise Autocomplete Component -->
     <script src="/static/js/components/exercise-autocomplete.js"></script>
+    
+    <!-- Menu Navigation System -->
+    <script src="/static/js/menu-navigation.js"></script>
     
     <!-- Custom Ghost Gym Dashboard JavaScript -->
     <script src="/static/js/ghost-gym-dashboard.js"></script>
