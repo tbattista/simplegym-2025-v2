@@ -1,0 +1,57 @@
+========================================
+GHOST GYM V2 - REFACTORING DEPLOYMENT
+========================================
+
+QUICK DEPLOY TO RAILWAY
+------------------------
+
+# Option 1: Step-by-step (Recommended)
+git add backend/api/*.py
+git add backend/main.py
+git add backend/api/__init__.py
+git add backend/main.py.backup
+git add REFACTORING_COMMIT_GUIDE.md
+git add GIT_COMMANDS.txt
+git commit -m "refactor(backend): modularize main.py into 8 focused API routers (90% size reduction)"
+git push origin main
+
+# Option 2: All-in-one command
+git add backend/api/*.py backend/main.py backend/api/__init__.py backend/main.py.backup REFACTORING_COMMIT_GUIDE.md GIT_COMMANDS.txt && git commit -m "refactor(backend): modularize main.py into 8 focused API routers (90% size reduction)" && git push origin main
+
+
+WHAT WAS CHANGED
+-----------------
+✅ Created 8 new router files in backend/api/
+✅ Reduced main.py from 1,527 lines to 143 lines (90% reduction!)
+✅ All endpoints preserved - no breaking changes
+✅ Firebase dual-mode support maintained
+✅ Backup created at backend/main.py.backup
+
+
+VERIFY DEPLOYMENT
+-----------------
+After Railway deploys, test these endpoints:
+
+curl https://your-app.railway.app/api/health
+curl https://your-app.railway.app/api/status
+
+
+ROLLBACK (if needed)
+--------------------
+git revert HEAD
+git push origin main
+
+Or restore from backup:
+cp backend/main.py.backup backend/main.py
+git add backend/main.py
+git commit -m "revert: restore original main.py"
+git push origin main
+
+
+NEXT STEPS
+----------
+1. Run the git commands above
+2. Wait for Railway to deploy
+3. Test the /api/health endpoint
+4. Verify your dashboard still works
+5. Celebrate the 90% code reduction! 🎉

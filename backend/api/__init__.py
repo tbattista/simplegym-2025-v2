@@ -1,8 +1,17 @@
 """
-API package for Ghost Gym V3
-Contains API routers and endpoint definitions
+API Routers Package
+Contains all API endpoint routers organized by domain
 """
 
-from .migration import router as migration_router
+from . import health, documents, workouts, programs, exercises, favorites, auth, data
 
-__all__ = ['migration_router']
+__all__ = [
+    'health',
+    'documents', 
+    'workouts',
+    'programs',
+    'exercises',
+    'favorites',
+    'auth',
+    'data'
+]
