@@ -5,6 +5,15 @@
  * while preserving all Firebase authentication, data management, and sync capabilities.
  */
 
+/**
+ * Get API URL with proper base path
+ * Uses window.GHOST_GYM_API_URL if set, otherwise uses same-origin
+ */
+function getApiUrl(path) {
+    const baseUrl = window.GHOST_GYM_API_URL || '';
+    return baseUrl + path;
+}
+
 // Global state management
 window.ghostGym = {
     currentProgram: null,
