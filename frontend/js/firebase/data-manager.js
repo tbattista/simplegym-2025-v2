@@ -40,7 +40,15 @@ class FirebaseDataManager {
         }
         
         // Default: assume backend is on same origin (Railway single service deployment)
-        return window.location.origin;
+        // Force HTTPS in production to avoid Mixed Content errors
+        let origin = window.location.origin;
+        
+        // Ensure HTTPS in production (Railway always provides HTTPS)
+        if (origin.startsWith('http://') && !hostname.includes('localhost')) {
+            origin = origin.replace('http://', 'https://');
+        }
+        
+        return origin;
     }
     
     async waitForFirebase() {
