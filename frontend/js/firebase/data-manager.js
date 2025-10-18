@@ -11,11 +11,36 @@ class FirebaseDataManager {
         this.syncListeners = new Map();
         this.offlineQueue = [];
         this.isOnline = navigator.onLine;
-        this.apiBase = '';
+        
+        // Set API base URL based on environment
+        this.apiBase = this.getApiBaseUrl();
+        console.log('🔗 API Base URL:', this.apiBase);
         
         // Initialize when Firebase is ready
         this.waitForFirebase();
         this.setupNetworkListeners();
+    }
+    
+    getApiBaseUrl() {
+        // Check if we're in development (localhost)
+        const hostname = window.location.hostname;
+        
+        if (hostname === 'localhost' || hostname === '127.0.0.1') {
+            // Development: use localhost backend
+            return 'http://localhost:8000';
+        }
+        
+        // Production: Check for Railway environment variable or use same origin
+        // Railway typically serves both frontend and backend from same domain
+        // If your backend is on a different Railway service, set VITE_API_URL or similar
+        const apiUrl = window.GHOST_GYM_API_URL || '';
+        
+        if (apiUrl) {
+            return apiUrl;
+        }
+        
+        // Default: assume backend is on same origin (Railway single service deployment)
+        return window.location.origin;
     }
     
     async waitForFirebase() {

@@ -47,6 +47,17 @@
     <script src="/static/assets/vendor/js/helpers.js"></script>
     <script src="/static/assets/js/config.js"></script>
 
+    <!-- Ghost Gym Configuration -->
+    <script>
+        // API Configuration for Railway deployment
+        // Set this to your backend Railway URL if frontend and backend are separate services
+        // Leave empty for same-origin deployment (default)
+        window.GHOST_GYM_API_URL = '';
+        
+        // For separate Railway services, uncomment and set your backend URL:
+        // window.GHOST_GYM_API_URL = 'https://your-backend-service.railway.app';
+    </script>
+
     <!-- Firebase SDK v9+ -->
     <script type="module">
         // Import Firebase modules
