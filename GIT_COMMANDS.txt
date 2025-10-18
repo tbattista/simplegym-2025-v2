@@ -11,12 +11,13 @@ git add backend/main.py
 git add backend/api/__init__.py
 git add backend/main.py.backup
 git add REFACTORING_COMMIT_GUIDE.md
+git add REFACTORING_SUMMARY.md
 git add GIT_COMMANDS.txt
-git commit -m "refactor(backend): modularize main.py into 8 focused API routers (90% size reduction)"
+git commit -m "refactor(backend): modularize main.py into 8 focused API routers (90% size reduction) - fixes Firebase endpoints"
 git push origin main
 
 # Option 2: All-in-one command
-git add backend/api/*.py backend/main.py backend/api/__init__.py backend/main.py.backup REFACTORING_COMMIT_GUIDE.md GIT_COMMANDS.txt && git commit -m "refactor(backend): modularize main.py into 8 focused API routers (90% size reduction)" && git push origin main
+git add backend/api/*.py backend/main.py backend/api/__init__.py backend/main.py.backup REFACTORING_COMMIT_GUIDE.md REFACTORING_SUMMARY.md GIT_COMMANDS.txt && git commit -m "refactor(backend): modularize main.py into 8 focused API routers (90% size reduction) - fixes Firebase endpoints" && git push origin main
 
 
 WHAT WAS CHANGED

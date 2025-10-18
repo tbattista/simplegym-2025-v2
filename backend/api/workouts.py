@@ -121,7 +121,10 @@ async def duplicate_workout(
 
 # Firebase Dual-Mode Endpoints
 
-@router.post("/firebase/workouts", response_model=WorkoutTemplate)
+# Create a separate router for firebase endpoints to avoid path conflicts
+firebase_router = APIRouter(prefix="/api/v3/firebase/workouts", tags=["Workouts"])
+
+@firebase_router.post("/", response_model=WorkoutTemplate)
 async def create_workout_firebase(
     workout_request: CreateWorkoutRequest,
     current_user: Optional[dict] = Depends(get_current_user_optional)
@@ -154,7 +157,7 @@ async def create_workout_firebase(
         raise HTTPException(status_code=500, detail=f"Error creating workout: {str(e)}")
 
 
-@router.get("/firebase/workouts", response_model=WorkoutListResponse)
+@firebase_router.get("/", response_model=WorkoutListResponse)
 async def get_workouts_firebase(
     tags: Optional[List[str]] = Query(None),
     page: int = Query(1, ge=1),
@@ -204,7 +207,7 @@ async def get_workouts_firebase(
         raise HTTPException(status_code=500, detail=f"Error retrieving workouts: {str(e)}")
 
 
-@router.put("/firebase/workouts/{workout_id}", response_model=WorkoutTemplate)
+@firebase_router.put("/{workout_id}", response_model=WorkoutTemplate)
 async def update_workout_firebase(
     workout_id: str,
     workout_request: UpdateWorkoutRequest,
@@ -239,3 +242,6 @@ async def update_workout_firebase(
     except Exception as e:
         logger.error(f"Error updating workout: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error updating workout: {str(e)}")
+
+# Export both routers
+__all__ = ['router', 'firebase_router']

@@ -286,7 +286,10 @@ async def preview_program_html(
 
 # Firebase Dual-Mode Endpoints
 
-@router.post("/firebase", response_model=Program)
+# Create a separate router for firebase endpoints to avoid path conflicts
+firebase_router = APIRouter(prefix="/api/v3/firebase/programs", tags=["Programs"])
+
+@firebase_router.post("/", response_model=Program)
 async def create_program_firebase(
     program_request: CreateProgramRequest,
     current_user: Optional[dict] = Depends(get_current_user_optional)
@@ -315,7 +318,7 @@ async def create_program_firebase(
         raise HTTPException(status_code=500, detail=f"Error creating program: {str(e)}")
 
 
-@router.get("/firebase", response_model=ProgramListResponse)
+@firebase_router.get("/", response_model=ProgramListResponse)
 async def get_programs_firebase(
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=100),
@@ -364,7 +367,7 @@ async def get_programs_firebase(
         raise HTTPException(status_code=500, detail=f"Error retrieving programs: {str(e)}")
 
 
-@router.get("/firebase/{program_id}/details", response_model=ProgramWithWorkoutsResponse)
+@firebase_router.get("/{program_id}/details", response_model=ProgramWithWorkoutsResponse)
 async def get_program_with_workouts_firebase(
     program_id: str,
     current_user: Optional[dict] = Depends(get_current_user_optional)
@@ -402,7 +405,7 @@ async def get_program_with_workouts_firebase(
         raise HTTPException(status_code=500, detail=f"Error retrieving program details: {str(e)}")
 
 
-@router.post("/firebase/{program_id}/workouts", response_model=Program)
+@firebase_router.post("/{program_id}/workouts", response_model=Program)
 async def add_workout_to_program_firebase(
     program_id: str,
     request: AddWorkoutToProgramRequest,
@@ -446,7 +449,7 @@ async def add_workout_to_program_firebase(
         raise HTTPException(status_code=500, detail=f"Error adding workout to program: {str(e)}")
 
 
-@router.delete("/firebase/{program_id}/workouts/{workout_id}")
+@firebase_router.delete("/{program_id}/workouts/{workout_id}")
 async def remove_workout_from_program_firebase(
     program_id: str,
     workout_id: str,
@@ -475,3 +478,6 @@ async def remove_workout_from_program_firebase(
     except Exception as e:
         logger.error(f"Error removing workout from program: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error removing workout from program: {str(e)}")
+
+# Export both routers
+__all__ = ['router', 'firebase_router']

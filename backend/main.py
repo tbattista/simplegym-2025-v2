@@ -42,14 +42,16 @@ app.add_middleware(
 app.include_router(health.router)
 app.include_router(documents.router)
 app.include_router(workouts.router)
+app.include_router(workouts.firebase_router)  # Firebase-specific workout endpoints
 app.include_router(programs.router)
+app.include_router(programs.firebase_router)  # Firebase-specific program endpoints
 app.include_router(exercises.router)
 app.include_router(favorites.router)
 app.include_router(auth.router)
 app.include_router(data.router)
 app.include_router(migration.router)
 
-logger.info("✅ All routers included successfully")
+logger.info("✅ All routers included successfully (11 routers total)")
 
 # Create necessary directories
 os.makedirs("backend/uploads", exist_ok=True)
