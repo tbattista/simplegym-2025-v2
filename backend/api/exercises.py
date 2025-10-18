@@ -24,7 +24,7 @@ async def get_all_exercises(
 ):
     """Get all global exercises with pagination"""
     try:
-        result = await exercise_service.get_all_exercises(limit=page_size, page=page)
+        result = exercise_service.get_all_exercises(limit=page_size, page=page)
         return result
         
     except HTTPException:
@@ -53,7 +53,7 @@ async def search_exercises(
         if difficulty:
             filters['difficulty'] = difficulty
         
-        result = await exercise_service.search_exercises(
+        result = exercise_service.search_exercises(
             query=q,
             filters=filters if filters else None,
             limit=limit
@@ -74,7 +74,7 @@ async def get_exercise(
 ):
     """Get a specific exercise by ID"""
     try:
-        exercise = await exercise_service.get_exercise_by_id(exercise_id)
+        exercise = exercise_service.get_exercise_by_id(exercise_id)
         if not exercise:
             raise HTTPException(status_code=404, detail="Exercise not found")
         
@@ -106,7 +106,7 @@ async def get_exercise_filter_values(
                 detail=f"Invalid filter field. Must be one of: {', '.join(valid_fields)}"
             )
         
-        values = await exercise_service.get_unique_values(field)
+        values = exercise_service.get_unique_values(field)
         return {
             "field": field,
             "values": values,
@@ -130,7 +130,7 @@ async def create_custom_exercise(
 ):
     """Create a custom exercise for the authenticated user"""
     try:
-        exercise = await exercise_service.create_custom_exercise(user_id, exercise_request)
+        exercise = exercise_service.create_custom_exercise(user_id, exercise_request)
         if not exercise:
             raise HTTPException(status_code=500, detail="Failed to create custom exercise")
         
@@ -151,7 +151,7 @@ async def get_user_custom_exercises(
 ):
     """Get all custom exercises for the authenticated user"""
     try:
-        exercises = await exercise_service.get_user_custom_exercises(user_id, limit=limit)
+        exercises = exercise_service.get_user_custom_exercises(user_id, limit=limit)
         
         return {
             "exercises": exercises,

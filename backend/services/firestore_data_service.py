@@ -140,7 +140,7 @@ class FirestoreDataService:
             
             # Save to Firestore
             workout_ref = self.db.collection('users').document(user_id).collection('workouts').document(workout.id)
-            workout_data = workout.dict()
+            workout_data = workout.model_dump()
             
             # Convert datetime objects to timestamps
             workout_data['created_date'] = firestore.SERVER_TIMESTAMP
@@ -240,7 +240,7 @@ class FirestoreDataService:
             current_version = current_data.get('version', 1)
             
             # Prepare update data
-            update_data = update_request.dict(exclude_unset=True)
+            update_data = update_request.model_dump(exclude_unset=True)
             update_data['modified_date'] = firestore.SERVER_TIMESTAMP
             update_data['version'] = current_version + 1
             update_data['sync_status'] = 'synced'
@@ -314,7 +314,7 @@ class FirestoreDataService:
             
             # Save to Firestore
             program_ref = self.db.collection('users').document(user_id).collection('programs').document(program.id)
-            program_data = program.dict()
+            program_data = program.model_dump()
             
             # Convert datetime objects to timestamps
             program_data['created_date'] = firestore.SERVER_TIMESTAMP
@@ -410,7 +410,7 @@ class FirestoreDataService:
             current_version = current_data.get('version', 1)
             
             # Prepare update data
-            update_data = update_request.dict(exclude_unset=True)
+            update_data = update_request.model_dump(exclude_unset=True)
             update_data['modified_date'] = firestore.SERVER_TIMESTAMP
             update_data['version'] = current_version + 1
             update_data['sync_status'] = 'synced'
@@ -573,7 +573,7 @@ class FirestoreDataService:
                                  .collection('workouts')
                                  .document(workout.id))
                     
-                    workout_dict = workout.dict()
+                    workout_dict = workout.model_dump()
                     workout_dict['created_date'] = firestore.SERVER_TIMESTAMP
                     workout_dict['modified_date'] = firestore.SERVER_TIMESTAMP
                     workout_dict['migrated_at'] = firestore.SERVER_TIMESTAMP
@@ -603,7 +603,7 @@ class FirestoreDataService:
                                  .collection('programs')
                                  .document(program.id))
                     
-                    program_dict = program.dict()
+                    program_dict = program.model_dump()
                     program_dict['created_date'] = firestore.SERVER_TIMESTAMP
                     program_dict['modified_date'] = firestore.SERVER_TIMESTAMP
                     program_dict['migrated_at'] = firestore.SERVER_TIMESTAMP

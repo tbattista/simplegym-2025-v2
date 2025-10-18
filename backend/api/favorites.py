@@ -20,7 +20,7 @@ async def get_user_favorites(
 ):
     """Get all favorite exercises for authenticated user"""
     try:
-        favorites = await favorites_service.get_user_favorites(user_id)
+        favorites = favorites_service.get_user_favorites(user_id)
         
         return FavoritesResponse(
             favorites=list(favorites.exercises.values()),
@@ -49,12 +49,12 @@ async def add_favorite(
             raise HTTPException(status_code=400, detail="exerciseId is required")
         
         # Get exercise details
-        exercise = await exercise_service.get_exercise_by_id(exercise_id)
+        exercise = exercise_service.get_exercise_by_id(exercise_id)
         if not exercise:
             raise HTTPException(status_code=404, detail="Exercise not found")
         
         # Check if already favorited
-        is_fav = await favorites_service.is_favorited(user_id, exercise_id)
+        is_fav = favorites_service.is_favorited(user_id, exercise_id)
         if is_fav:
             return {
                 "message": "Exercise already in favorites",
@@ -63,7 +63,7 @@ async def add_favorite(
             }
         
         # Add to favorites
-        success = await favorites_service.add_favorite(user_id, exercise_id, exercise)
+        success = favorites_service.add_favorite(user_id, exercise_id, exercise)
         if not success:
             raise HTTPException(status_code=500, detail="Failed to add favorite")
         
@@ -90,7 +90,7 @@ async def remove_favorite(
     """Remove exercise from favorites"""
     try:
         # Check if favorited
-        is_fav = await favorites_service.is_favorited(user_id, exercise_id)
+        is_fav = favorites_service.is_favorited(user_id, exercise_id)
         if not is_fav:
             return {
                 "message": "Exercise not in favorites",
@@ -99,7 +99,7 @@ async def remove_favorite(
             }
         
         # Remove from favorites
-        success = await favorites_service.remove_favorite(user_id, exercise_id)
+        success = favorites_service.remove_favorite(user_id, exercise_id)
         if not success:
             raise HTTPException(status_code=500, detail="Failed to remove favorite")
         
@@ -128,7 +128,7 @@ async def check_favorites(
         if not exercise_ids:
             raise HTTPException(status_code=400, detail="exerciseIds array is required")
         
-        favorites_map = await favorites_service.bulk_check_favorites(user_id, exercise_ids)
+        favorites_map = favorites_service.bulk_check_favorites(user_id, exercise_ids)
         
         return {"favorites": favorites_map}
         

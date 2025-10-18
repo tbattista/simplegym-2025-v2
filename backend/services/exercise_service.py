@@ -42,8 +42,8 @@ class ExerciseService:
     
     # Global Exercise Operations
     
-    async def get_all_exercises(
-        self, 
+    def get_all_exercises(
+        self,
         limit: int = 1000,
         page: int = 1
     ) -> ExerciseListResponse:
@@ -109,7 +109,7 @@ class ExerciseService:
                 page_size=limit
             )
     
-    async def search_exercises(
+    def search_exercises(
         self,
         query: str,
         filters: Optional[Dict[str, Any]] = None,
@@ -183,7 +183,7 @@ class ExerciseService:
                 total_results=0
             )
     
-    async def get_exercise_by_id(self, exercise_id: str) -> Optional[Exercise]:
+    def get_exercise_by_id(self, exercise_id: str) -> Optional[Exercise]:
         """
         Get a specific exercise by ID
         
@@ -213,7 +213,7 @@ class ExerciseService:
     
     # User Custom Exercise Operations
     
-    async def create_custom_exercise(
+    def create_custom_exercise(
         self,
         user_id: str,
         exercise_request: CreateExerciseRequest
@@ -252,7 +252,7 @@ class ExerciseService:
                           .collection('custom_exercises')
                           .document(exercise.id))
             
-            exercise_data = exercise.dict()
+            exercise_data = exercise.model_dump()
             exercise_data['createdAt'] = firestore.SERVER_TIMESTAMP
             exercise_data['updatedAt'] = firestore.SERVER_TIMESTAMP
             
@@ -265,7 +265,7 @@ class ExerciseService:
             logger.error(f"Failed to create custom exercise: {str(e)}")
             return None
     
-    async def get_user_custom_exercises(
+    def get_user_custom_exercises(
         self,
         user_id: str,
         limit: int = 100
@@ -330,7 +330,7 @@ class ExerciseService:
         
         return tokens
     
-    async def get_unique_values(self, field: str) -> List[str]:
+    def get_unique_values(self, field: str) -> List[str]:
         """
         Get unique values for a specific field (for filters)
         

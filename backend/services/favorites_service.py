@@ -40,7 +40,7 @@ class FavoritesService:
         """Check if Favorites service is available"""
         return self.available and self.db is not None
     
-    async def get_user_favorites(self, user_id: str) -> UserFavorites:
+    def get_user_favorites(self, user_id: str) -> UserFavorites:
         """
         Get all favorites for a user
         
@@ -87,7 +87,7 @@ class FavoritesService:
             logger.error(f"Error getting favorites for user {user_id}: {str(e)}")
             return UserFavorites()
     
-    async def add_favorite(self, user_id: str, exercise_id: str, exercise: Exercise) -> bool:
+    def add_favorite(self, user_id: str, exercise_id: str, exercise: Exercise) -> bool:
         """
         Add exercise to user's favorites
         
@@ -122,7 +122,7 @@ class FavoritesService:
             # Update favorites document using Firestore atomic operations
             doc_ref.set({
                 'exerciseIds': firestore.ArrayUnion([exercise_id]),
-                f'exercises.{exercise_id}': favorite.dict(),
+                f'exercises.{exercise_id}': favorite.model_dump(),
                 'lastUpdated': firestore.SERVER_TIMESTAMP,
                 'count': firestore.Increment(1)
             }, merge=True)
@@ -143,7 +143,7 @@ class FavoritesService:
             logger.error(f"Error adding favorite for user {user_id}: {str(e)}")
             return False
     
-    async def remove_favorite(self, user_id: str, exercise_id: str) -> bool:
+    def remove_favorite(self, user_id: str, exercise_id: str) -> bool:
         """
         Remove exercise from user's favorites
         
@@ -188,7 +188,7 @@ class FavoritesService:
             logger.error(f"Error removing favorite for user {user_id}: {str(e)}")
             return False
     
-    async def is_favorited(self, user_id: str, exercise_id: str) -> bool:
+    def is_favorited(self, user_id: str, exercise_id: str) -> bool:
         """
         Check if exercise is favorited by user
         
@@ -199,10 +199,10 @@ class FavoritesService:
         Returns:
             True if favorited, False otherwise
         """
-        favorites = await self.get_user_favorites(user_id)
+        favorites = self.get_user_favorites(user_id)
         return exercise_id in favorites.exerciseIds
     
-    async def bulk_check_favorites(self, user_id: str, exercise_ids: List[str]) -> Dict[str, bool]:
+    def bulk_check_favorites(self, user_id: str, exercise_ids: List[str]) -> Dict[str, bool]:
         """
         Check favorite status for multiple exercises at once
         
@@ -213,7 +213,7 @@ class FavoritesService:
         Returns:
             Dictionary mapping exercise IDs to favorite status
         """
-        favorites = await self.get_user_favorites(user_id)
+        favorites = self.get_user_favorites(user_id)
         return {
             exercise_id: exercise_id in favorites.exerciseIds
             for exercise_id in exercise_ids

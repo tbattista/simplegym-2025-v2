@@ -17,14 +17,19 @@ from ..middleware.auth import get_current_user, get_current_user_optional, extra
 
 # Service Dependencies
 
+# Create global service instances (singletons)
+_data_service = DataService()
+
 def get_data_service() -> DataService:
     """Get local data service instance"""
-    return DataService()
+    return _data_service
 
+
+_document_service = DocumentServiceV2()
 
 def get_document_service() -> DocumentServiceV2:
     """Get document service instance"""
-    return DocumentServiceV2()
+    return _document_service
 
 
 def get_exercise_service():
@@ -66,7 +71,7 @@ async def get_storage_service(
         }
     else:
         return {
-            'service': DataService(),
+            'service': _data_service,
             'user_id': None,
             'mode': 'local'
         }
