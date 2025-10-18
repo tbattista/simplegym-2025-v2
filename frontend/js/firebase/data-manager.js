@@ -30,25 +30,39 @@ class FirebaseDataManager {
             return 'http://localhost:8000';
         }
         
-        // Production: Check for Railway environment variable or use same origin
-        // Railway typically serves both frontend and backend from same domain
-        // If your backend is on a different Railway service, set VITE_API_URL or similar
+        // Production: Check for configured API URL first
         const apiUrl = window.GHOST_GYM_API_URL || '';
         
         if (apiUrl) {
+            // Ensure configured URL uses HTTPS
+            if (apiUrl.startsWith('http://')) {
+                return apiUrl.replace('http://', 'https://');
+            }
             return apiUrl;
         }
         
-        // Default: assume backend is on same origin (Railway single service deployment)
-        // Force HTTPS in production to avoid Mixed Content errors
-        let origin = window.location.origin;
+        // Default: construct HTTPS URL from current location
+        // Always use HTTPS in production (Railway provides HTTPS)
+        const protocol = window.location.protocol;
+        const port = window.location.port;
         
-        // Ensure HTTPS in production (Railway always provides HTTPS)
-        if (origin.startsWith('http://') && !hostname.includes('localhost')) {
-            origin = origin.replace('http://', 'https://');
+        // Build URL with forced HTTPS
+        let baseUrl = `https://${hostname}`;
+        
+        // Only add port if it's not standard HTTPS port (443)
+        if (port && port !== '443' && port !== '80') {
+            baseUrl += `:${port}`;
         }
         
-        return origin;
+        console.log('🔍 DEBUG: URL construction:', {
+            protocol,
+            hostname,
+            port,
+            origin: window.location.origin,
+            constructed: baseUrl
+        });
+        
+        return baseUrl;
     }
     
     async waitForFirebase() {
