@@ -1787,6 +1787,18 @@ function initializeExerciseAutocompletes() {
             initExerciseAutocomplete(input, {
                 minChars: 2,
                 maxResults: 20,
+                debounceMs: 300,
+                showMuscleGroup: true,
+                showEquipment: true,
+                showDifficulty: true,
+                allowCustom: true,
+                onSelect: (exercise) => {
+                    console.log('Exercise selected:', exercise.name);
+                }
+            });
+        }
+    });
+}
 
 // ============================================================================
 // EXERCISE DATABASE FUNCTIONALITY
@@ -2465,19 +2477,6 @@ function isExerciseCacheValid(cached) {
     if (cached.version !== '1.1') return false;
     const CACHE_DURATION = 7 * 24 * 60 * 60 * 1000; // 7 days
     return (Date.now() - cached.timestamp) < CACHE_DURATION;
-}
-
-                debounceMs: 300,
-                showMuscleGroup: true,
-                showEquipment: true,
-                showDifficulty: true,
-                allowCustom: true,
-                onSelect: (exercise) => {
-                    console.log('Exercise selected:', exercise.name);
-                }
-            });
-        }
-    });
 }
 
 /**
