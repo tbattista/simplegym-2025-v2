@@ -1,35 +1,49 @@
 /**
  * Ghost Gym Menu Navigation System
  * Handles SPA-style navigation between dashboard sections
+ * @version 2.0 - Enhanced with view/modal type distinction
  */
 
 class MenuNavigation {
     constructor() {
         this.currentSection = 'builder';
+        this.previousSection = null;
         this.sections = {
             builder: {
                 view: 'builderView',
-                title: 'Builder'
+                title: 'Builder',
+                type: 'view',
+                icon: 'bx-layer'
             },
             programs: {
                 view: 'programsView',
-                title: 'My Programs'
+                title: 'My Programs',
+                type: 'view',
+                icon: 'bx-folder'
             },
             workouts: {
                 view: 'workoutsView',
-                title: 'Workout Library'
+                title: 'Workout Library',
+                type: 'view',
+                icon: 'bx-dumbbell'
             },
             exercises: {
                 view: 'exercisesView',
-                title: 'Exercise Database'
+                title: 'Exercise Database',
+                type: 'view',
+                icon: 'bx-book-content'
             },
             backup: {
                 action: 'showBackupModal',
-                title: 'Backup & Export'
+                title: 'Backup & Export',
+                type: 'modal',
+                icon: 'bx-cloud-upload'
             },
             settings: {
                 action: 'showSettingsModal',
-                title: 'Settings'
+                title: 'Settings',
+                type: 'modal',
+                icon: 'bx-cog'
             }
         };
         
@@ -69,30 +83,70 @@ class MenuNavigation {
         
         const config = this.sections[section];
         
-        // Handle special actions (modals)
-        if (config.action) {
-            this[config.action]();
+        // Handle modal actions differently from views
+        if (config.type === 'modal') {
+            // Execute modal action without changing current view
+            if (config.action && typeof this[config.action] === 'function') {
+                this[config.action]();
+            } else {
+                console.warn(`Modal action not found: ${config.action}`);
+            }
+            // Don't update hash or current section for modals
             return;
         }
         
-        // Update current section
-        this.currentSection = section;
-        
-        // Update URL hash
-        if (updateHash) {
-            window.location.hash = section;
+        // Handle view navigation
+        if (config.type === 'view') {
+            // Store previous section for potential back navigation
+            this.previousSection = this.currentSection;
+            
+            // Update current section
+            this.currentSection = section;
+            
+            // Update URL hash only for views
+            if (updateHash) {
+                window.location.hash = section;
+            }
+            
+            // Update active menu item
+            this.updateActiveMenuItem(section);
+            
+            // Show view with transition
+            if (config.view && typeof showView === 'function') {
+                this.transitionToView(section);
+            }
+            
+            // Update page title
+            document.title = `${config.title} - Ghost Gym`;
+            
+            // Log navigation for debugging
+            console.log(`📍 Navigated to: ${section} (${config.title})`);
+        }
+    }
+    
+    transitionToView(section) {
+        // Add fade-out class to current view
+        const currentView = document.querySelector('.view-container:not([style*="display: none"])');
+        if (currentView) {
+            currentView.style.opacity = '0';
         }
         
-        // Update active menu item
-        this.updateActiveMenuItem(section);
-        
-        // Show view
-        if (config.view && typeof showView === 'function') {
-            showView(section);
-        }
-        
-        // Update page title
-        document.title = `${config.title} - Ghost Gym`;
+        // Show new view after brief delay
+        setTimeout(() => {
+            if (typeof showView === 'function') {
+                showView(section);
+            }
+            
+            // Fade in new view
+            const newView = document.getElementById(`${section}View`);
+            if (newView) {
+                newView.style.opacity = '0';
+                setTimeout(() => {
+                    newView.style.transition = 'opacity 0.3s ease-in';
+                    newView.style.opacity = '1';
+                }, 50);
+            }
+        }, 150);
     }
     
     updateActiveMenuItem(section) {
@@ -109,19 +163,77 @@ class MenuNavigation {
     }
     
     showBackupModal() {
-        // Trigger existing backup functionality
-        const backupBtn = document.getElementById('backupBtn');
-        if (backupBtn) {
-            backupBtn.click();
+        // Show backup & export modal
+        const backupModal = document.getElementById('backupModal');
+        if (backupModal) {
+            const modal = new bootstrap.Modal(backupModal);
+            modal.show();
+            console.log('📦 Opened Backup & Export modal');
         } else {
-            console.warn('Backup button not found');
+            // Fallback: trigger existing backup functionality if modal doesn't exist
+            const backupBtn = document.getElementById('backupBtn');
+            if (backupBtn) {
+                backupBtn.click();
+            } else {
+                console.warn('⚠️ Backup modal not found - will be implemented in Phase 4');
+                if (typeof showAlert === 'function') {
+                    showAlert('Backup & Export functionality coming soon!', 'info');
+                }
+            }
         }
     }
     
     showSettingsModal() {
-        // Create and show settings modal
-        // TODO: Implement settings modal
-        alert('Settings panel coming soon!');
+        // Show settings modal
+        const settingsModal = document.getElementById('settingsModal');
+        if (settingsModal) {
+            const modal = new bootstrap.Modal(settingsModal);
+            modal.show();
+            console.log('⚙️ Opened Settings modal');
+        } else {
+            console.warn('⚠️ Settings modal not found - will be implemented in Phase 5');
+            if (typeof showAlert === 'function') {
+                showAlert('Settings panel coming soon!', 'info');
+            }
+        }
+    }
+    
+    // Utility Methods
+    
+    getCurrentSection() {
+        return this.currentSection;
+    }
+    
+    getPreviousSection() {
+        return this.previousSection;
+    }
+    
+    getSectionConfig(section) {
+        return this.sections[section] || null;
+    }
+    
+    isViewSection(section) {
+        const config = this.sections[section];
+        return config && config.type === 'view';
+    }
+    
+    isModalSection(section) {
+        const config = this.sections[section];
+        return config && config.type === 'modal';
+    }
+    
+    goBack() {
+        if (this.previousSection && this.isViewSection(this.previousSection)) {
+            this.navigate(this.previousSection);
+        }
+    }
+    
+    getAllViews() {
+        return Object.keys(this.sections).filter(key => this.isViewSection(key));
+    }
+    
+    getAllModals() {
+        return Object.keys(this.sections).filter(key => this.isModalSection(key));
     }
 }
 
