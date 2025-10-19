@@ -1,9 +1,12 @@
 /**
  * Ghost Gym V0.4.1 - Sneat Dashboard Integration
- * 
+ *
  * This file integrates the existing V3 functionality with the new Sneat template
  * while preserving all Firebase authentication, data management, and sync capabilities.
+ * @version 20251019-02-HTTPS-FIX
  */
+
+console.log('📦 Dashboard Version: 20251019-02-HTTPS-FIX');
 
 /**
  * Get API URL with proper base path
