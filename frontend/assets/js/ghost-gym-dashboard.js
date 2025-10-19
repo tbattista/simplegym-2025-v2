@@ -153,10 +153,14 @@ function initEventListeners() {
     document.getElementById('menuSignInBtn')?.addEventListener('click', showAuthModal);
     document.getElementById('menuSignOutBtn')?.addEventListener('click', signOut);
     
-    // Menu navigation
-    document.getElementById('menuPrograms')?.addEventListener('click', focusProgramsPanel);
-    document.getElementById('menuWorkouts')?.addEventListener('click', focusWorkoutsPanel);
-    document.getElementById('menuExercises')?.addEventListener('click', showExerciseDatabasePanel);
+    // View-specific buttons
+    document.getElementById('programsViewNewBtn')?.addEventListener('click', showProgramModal);
+    document.getElementById('workoutsViewNewBtn')?.addEventListener('click', showWorkoutModal);
+    document.getElementById('programsViewSearch')?.addEventListener('input', debounce(filterProgramsView, 300));
+    document.getElementById('workoutsViewSearch')?.addEventListener('input', debounce(filterWorkoutsView, 300));
+    
+    // Menu navigation - handled by menu-navigation.js
+    // But we'll add fallbacks here
     document.getElementById('menuBackup')?.addEventListener('click', showBackupOptions);
     document.getElementById('menuSettings')?.addEventListener('click', showSettings);
     
@@ -271,11 +275,15 @@ async function loadDashboardData() {
             workouts: window.ghostGym.workouts.length
         });
         
-        // Render data
+        // Render data for all views
         console.log('🔍 DEBUG: Calling renderPrograms()');
-        renderPrograms();
+        renderPrograms(); // Builder view dropdown
+        renderProgramsView(); // Programs view list
+        
         console.log('🔍 DEBUG: Calling renderWorkouts()');
-        renderWorkouts();
+        renderWorkouts(); // Builder view grid
+        renderWorkoutsView(); // Workouts view grid
+        
         console.log('🔍 DEBUG: Calling updateStats()');
         updateStats();
         
@@ -691,6 +699,239 @@ function debounce(func, wait) {
 function filterWorkouts() {
     const searchInput = document.getElementById('workoutSearch');
     if (searchInput) {
+
+// ============================================================================
+// VIEW SWITCHING SYSTEM
+// ============================================================================
+
+/**
+ * Show specific view and hide others
+ */
+function showView(viewName) {
+    console.log(`🔍 Switching to view: ${viewName}`);
+    
+    // Hide all views
+    const views = ['builderView', 'programsView', 'workoutsView', 'exercisesView'];
+    views.forEach(view => {
+        const element = document.getElementById(view);
+        if (element) {
+            element.style.display = 'none';
+        }
+    });
+    
+    // Show selected view
+    const selectedView = document.getElementById(`${viewName}View`);
+    if (selectedView) {
+        selectedView.style.display = 'block';
+    }
+    
+    // Special handling for exercise database
+    if (viewName === 'exercises') {
+        const exercisePanel = document.getElementById('exerciseDatabasePanel');
+        if (exercisePanel) {
+            exercisePanel.style.display = 'flex';
+        }
+        // Load exercises if not already loaded
+        if (window.ghostGym.exercises.all.length === 0) {
+            loadExercises();
+        }
+    }
+    
+    // Render view-specific content
+    switch(viewName) {
+        case 'programs':
+            renderProgramsView();
+            break;
+        case 'workouts':
+            renderWorkoutsView();
+            break;
+        case 'builder':
+            // Builder view already rendered
+            break;
+    }
+    
+    // Update menu active state
+    updateMenuActiveState(viewName);
+}
+
+/**
+ * Update menu active state
+ */
+function updateMenuActiveState(viewName) {
+    // Remove active from all menu items
+    document.querySelectorAll('.menu-item').forEach(item => {
+        item.classList.remove('active');
+    });
+    
+    // Add active to selected menu item
+    const menuItem = document.querySelector(`.menu-item[data-section="${viewName}"]`);
+    if (menuItem) {
+        menuItem.classList.add('active');
+    }
+}
+
+/**
+ * Render Programs View (dedicated full-page list)
+ */
+function renderProgramsView() {
+    const programsList = document.getElementById('programsViewList');
+    if (!programsList) return;
+    
+    const searchInput = document.getElementById('programsViewSearch');
+    const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
+    
+    const filteredPrograms = window.ghostGym.programs.filter(program =>
+        program.name.toLowerCase().includes(searchTerm) ||
+        (program.description || '').toLowerCase().includes(searchTerm)
+    );
+    
+    if (filteredPrograms.length === 0) {
+        programsList.innerHTML = `
+            <div class="list-group-item text-center py-5">
+                <i class="bx bx-folder-open display-1 text-muted mb-3"></i>
+                <h5>No Programs Found</h5>
+                <p class="text-muted">Create your first program to get started</p>
+            </div>
+        `;
+        return;
+    }
+    
+    programsList.innerHTML = filteredPrograms.map(program => `
+        <div class="list-group-item program-view-item">
+            <div class="d-flex justify-content-between align-items-start">
+                <div class="flex-grow-1">
+                    <h5 class="mb-2">${escapeHtml(program.name)}</h5>
+                    <p class="text-muted mb-2">${escapeHtml(program.description || 'No description')}</p>
+                    <div class="d-flex gap-3 mb-2">
+                        <span class="badge bg-label-primary">
+                            <i class="bx bx-dumbbell me-1"></i>
+                            ${program.workouts?.length || 0} workouts
+                        </span>
+                        <span class="badge bg-label-info">
+                            <i class="bx bx-time me-1"></i>
+                            ${program.duration_weeks || 0} weeks
+                        </span>
+                        <span class="badge bg-label-secondary">
+                            <i class="bx bx-trending-up me-1"></i>
+                            ${program.difficulty_level || 'intermediate'}
+                        </span>
+                    </div>
+                    ${program.tags && program.tags.length > 0 ? `
+                        <div class="workout-tags">
+                            ${program.tags.map(tag => `<span class="workout-tag">${escapeHtml(tag)}</span>`).join('')}
+                        </div>
+                    ` : ''}
+                </div>
+                <div class="btn-group">
+                    <button class="btn btn-outline-secondary btn-sm" onclick="editProgram('${program.id}')">
+                        <i class="bx bx-edit me-1"></i>Edit
+                    </button>
+                    <button class="btn btn-outline-primary btn-sm" onclick="selectProgramAndGoToBuilder('${program.id}')">
+                        <i class="bx bx-layer me-1"></i>Open in Builder
+                    </button>
+                    <button class="btn btn-outline-danger btn-sm" onclick="deleteProgram('${program.id}')">
+                        <i class="bx bx-trash me-1"></i>Delete
+                    </button>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+/**
+ * Render Workouts View (dedicated full-page grid)
+ */
+function renderWorkoutsView() {
+    const workoutsGrid = document.getElementById('workoutsViewGrid');
+    const emptyState = document.getElementById('workoutsViewEmptyState');
+    if (!workoutsGrid) return;
+    
+    const searchInput = document.getElementById('workoutsViewSearch');
+    const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
+    
+    const filteredWorkouts = window.ghostGym.workouts.filter(workout =>
+        workout.name.toLowerCase().includes(searchTerm) ||
+        (workout.description || '').toLowerCase().includes(searchTerm) ||
+        (workout.tags || []).some(tag => tag.toLowerCase().includes(searchTerm))
+    );
+    
+    if (filteredWorkouts.length === 0) {
+        workoutsGrid.style.display = 'none';
+        emptyState.style.display = 'block';
+        return;
+    }
+    
+    workoutsGrid.style.display = 'grid';
+    emptyState.style.display = 'none';
+    
+    workoutsGrid.innerHTML = filteredWorkouts.map(workout => `
+        <div class="col-md-4 col-lg-3">
+            <div class="workout-card h-100">
+                <div class="workout-card-header">
+                    <h6 class="workout-card-title">${escapeHtml(workout.name)}</h6>
+                    <div class="workout-card-menu dropdown">
+                        <button class="btn btn-sm btn-ghost-secondary p-0" type="button" data-bs-toggle="dropdown">
+                            <i class="bx bx-dots-vertical-rounded"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="#" onclick="editWorkout('${workout.id}')">
+                                <i class="bx bx-edit me-2"></i>Edit
+                            </a></li>
+                            <li><a class="dropdown-item" href="#" onclick="duplicateWorkout('${workout.id}')">
+                                <i class="bx bx-copy me-2"></i>Duplicate
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="#" onclick="deleteWorkout('${workout.id}')">
+                                <i class="bx bx-trash me-2"></i>Delete
+                            </a></li>
+                        </ul>
+                    </div>
+                </div>
+                ${workout.description ? `
+                    <p class="workout-card-description">${escapeHtml(workout.description)}</p>
+                ` : ''}
+                <div class="workout-card-stats">
+                    <span class="workout-card-stat">
+                        <i class="bx bx-list-ul"></i>
+                        ${workout.exercise_groups?.length || 0} groups
+                    </span>
+                    <span class="workout-card-stat">
+                        <i class="bx bx-plus-circle"></i>
+                        ${workout.bonus_exercises?.length || 0} bonus
+                    </span>
+                </div>
+                ${workout.tags && workout.tags.length > 0 ? `
+                    <div class="workout-card-tags">
+                        ${workout.tags.map(tag => `<span class="workout-card-tag">${escapeHtml(tag)}</span>`).join('')}
+                    </div>
+                ` : ''}
+            </div>
+        </div>
+    `).join('');
+}
+
+/**
+ * Filter programs in Programs View
+ */
+function filterProgramsView() {
+    renderProgramsView();
+}
+
+/**
+ * Filter workouts in Workouts View
+ */
+function filterWorkoutsView() {
+    renderWorkoutsView();
+}
+
+/**
+ * Select program and switch to Builder view
+ */
+function selectProgramAndGoToBuilder(programId) {
+    selectProgram(programId);
+    showView('builder');
+}
+
         window.ghostGym.searchFilters.workouts = searchInput.value;
         renderWorkouts();
     }

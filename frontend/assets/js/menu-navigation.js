@@ -5,26 +5,23 @@
 
 class MenuNavigation {
     constructor() {
-        this.currentSection = 'dashboard';
+        this.currentSection = 'builder';
         this.sections = {
-            dashboard: {
-                panels: ['programsList', 'programDetailsPanel', 'workoutsList'],
-                title: 'Dashboard'
+            builder: {
+                view: 'builderView',
+                title: 'Builder'
             },
             programs: {
-                panels: ['programsList', 'programDetailsPanel'],
-                title: 'My Programs',
-                focusPanel: 'programsList'
+                view: 'programsView',
+                title: 'My Programs'
             },
             workouts: {
-                panels: ['workoutsList'],
-                title: 'Workout Library',
-                focusPanel: 'workoutsList'
+                view: 'workoutsView',
+                title: 'Workout Library'
             },
             exercises: {
-                panels: ['exerciseDatabasePanel'],
-                title: 'Exercise Database',
-                fullWidth: true
+                view: 'exercisesView',
+                title: 'Exercise Database'
             },
             backup: {
                 action: 'showBackupModal',
@@ -89,16 +86,13 @@ class MenuNavigation {
         // Update active menu item
         this.updateActiveMenuItem(section);
         
-        // Show/hide panels
-        this.updatePanels(config);
+        // Show view
+        if (config.view && typeof showView === 'function') {
+            showView(section);
+        }
         
         // Update page title
         document.title = `${config.title} - Ghost Gym`;
-        
-        // Focus specific panel if needed
-        if (config.focusPanel) {
-            this.focusPanel(config.focusPanel);
-        }
     }
     
     updateActiveMenuItem(section) {
@@ -111,52 +105,6 @@ class MenuNavigation {
         const activeItem = document.querySelector(`.menu-item[data-section="${section}"]`);
         if (activeItem) {
             activeItem.classList.add('active');
-        }
-    }
-    
-    updatePanels(config) {
-        const mainGrid = document.querySelector('.row.g-6');
-        const exercisePanel = document.getElementById('exerciseDatabasePanel');
-        
-        if (config.fullWidth) {
-            // Hide main dashboard grid, show full-width panel
-            if (mainGrid) mainGrid.style.display = 'none';
-            if (exercisePanel) {
-                exercisePanel.style.display = 'block';
-                
-                // Load exercises if showing exercise database
-                if (this.currentSection === 'exercises' && typeof loadExercises === 'function') {
-                    // Check if exercises are already loaded
-                    if (window.ghostGym && window.ghostGym.exercises.all.length === 0) {
-                        loadExercises();
-                    }
-                }
-            }
-        } else {
-            // Show main dashboard grid
-            if (mainGrid) mainGrid.style.display = 'flex';
-            if (exercisePanel) exercisePanel.style.display = 'none';
-            
-            // Show/hide specific panels within grid
-            const panelMap = {
-                'programsList': '.col-lg-4',
-                'programDetailsPanel': '.col-lg-5',
-                'workoutsList': '.col-lg-3'
-            };
-            
-            Object.entries(panelMap).forEach(([panelId, selector]) => {
-                const panel = document.querySelector(selector);
-                if (panel) {
-                    panel.style.display = config.panels.includes(panelId) ? 'block' : 'none';
-                }
-            });
-        }
-    }
-    
-    focusPanel(panelId) {
-        const panel = document.getElementById(panelId);
-        if (panel) {
-            panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
     }
     

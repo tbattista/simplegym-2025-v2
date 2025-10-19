@@ -717,3 +717,64 @@
   font-size: 0.7rem;
   opacity: 0.7;
 }
+
+
+/* ============================================
+   VIEW SYSTEM STYLES
+   ============================================ */
+
+.view-container {
+  width: 100%;
+}
+
+/* Programs View Styling */
+.program-view-item {
+  padding: 1.5rem;
+  border-bottom: 1px solid #e2e8f0;
+  transition: all 0.2s ease;
+}
+
+.program-view-item:hover {
+  background-color: rgba(105, 108, 255, 0.02);
+}
+
+.program-view-item:last-child {
+  border-bottom: none;
+}
+
+/* Workouts View Grid */
+#workoutsViewGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+
+#workoutsViewGrid .workout-card {
+  height: 100%;
+}
+
+/* View-specific responsive adjustments */
+@media (max-width: 992px) {
+  #workoutsViewGrid {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  #workoutsViewGrid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  }
+  
+  .program-view-item {
+    padding: 1rem;
+  }
+  
+  .program-view-item .btn-group {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .program-view-item .btn-group .btn {
+    width: 100%;
+  }
+}
