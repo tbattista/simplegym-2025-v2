@@ -25,7 +25,8 @@ function getApiUrl(path) {
     const port = window.location.port;
     let baseUrl = `${protocol}//${hostname}`;
     
-    if (port && port !== '443' && port !== '80') {
+    // Only add port if it exists and is not standard (443 for HTTPS, 80 for HTTP)
+    if (port && port !== '' && port !== '443' && port !== '80') {
         baseUrl += `:${port}`;
     }
     
