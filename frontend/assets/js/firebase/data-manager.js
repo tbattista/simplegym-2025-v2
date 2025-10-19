@@ -225,7 +225,10 @@ class FirebaseDataManager {
     
     async executeMigration(migrationData) {
         try {
-            const response = await fetch(`${this.apiBase}/api/v3/auth/migrate-data`, {
+            const url = window.getApiUrl('/api/v3/auth/migrate-data');
+            console.log('🔍 DEBUG: Migration URL:', url);
+            
+            const response = await fetch(url, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -309,7 +312,11 @@ class FirebaseDataManager {
             params.append('search', search);
         }
         
-        const response = await fetch(`${this.apiBase}/api/v3/firebase/programs?${params}`, {
+        // Always use getApiUrl to ensure HTTPS
+        const url = window.getApiUrl(`/api/v3/firebase/programs?${params}`);
+        console.log('🔍 DEBUG: Fetching programs from:', url);
+        
+        const response = await fetch(url, {
             headers: {
                 'Authorization': `Bearer ${await this.getAuthToken()}`
             }
@@ -367,7 +374,10 @@ class FirebaseDataManager {
     
     async createFirestoreProgram(programData) {
         try {
-            const response = await fetch(`${this.apiBase}/api/v3/firebase/programs`, {
+            const url = window.getApiUrl('/api/v3/firebase/programs');
+            console.log('🔍 DEBUG: Creating program at:', url);
+            
+            const response = await fetch(url, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -459,7 +469,11 @@ class FirebaseDataManager {
             tags.forEach(tag => params.append('tags', tag));
         }
         
-        const response = await fetch(`${this.apiBase}/api/v3/firebase/workouts?${params}`, {
+        // Always use getApiUrl to ensure HTTPS
+        const url = window.getApiUrl(`/api/v3/firebase/workouts?${params}`);
+        console.log('🔍 DEBUG: Fetching workouts from:', url);
+        
+        const response = await fetch(url, {
             headers: {
                 'Authorization': `Bearer ${await this.getAuthToken()}`
             }
@@ -524,7 +538,10 @@ class FirebaseDataManager {
     
     async createFirestoreWorkout(workoutData) {
         try {
-            const response = await fetch(`${this.apiBase}/api/v3/firebase/workouts`, {
+            const url = window.getApiUrl('/api/v3/firebase/workouts');
+            console.log('🔍 DEBUG: Creating workout at:', url);
+            
+            const response = await fetch(url, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
