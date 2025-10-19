@@ -688,3 +688,32 @@
     max-width: 100%;
   }
 }
+
+
+/* Menu Authentication Items - Ensure proper visibility */
+#menuAuthSignIn {
+  display: block !important;
+}
+
+#menuAuthSignIn.d-none {
+  display: none !important;
+}
+
+.menu-item.auth-sign-out {
+  display: none;
+}
+
+.menu-item.auth-sign-out:not(.d-none) {
+  display: block !important;
+}
+
+/* Menu user display styling */
+#menuUserDisplayName {
+  font-size: 0.9rem;
+  line-height: 1.2;
+}
+
+#menuUserEmailDisplay {
+  font-size: 0.7rem;
+  opacity: 0.7;
+}

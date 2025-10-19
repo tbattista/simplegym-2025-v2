@@ -101,17 +101,15 @@ function initializeGhostGym() {
  * Initialize Sneat-specific components
  */
 function initSneatComponents() {
-    // Initialize Perfect Scrollbar for lists
+    // Initialize Perfect Scrollbar for workout grid (if needed)
     if (typeof PerfectScrollbar !== 'undefined') {
-        new PerfectScrollbar('#programsList', {
-            wheelPropagation: false,
-            suppressScrollX: true
-        });
-        
-        new PerfectScrollbar('#workoutsList', {
-            wheelPropagation: false,
-            suppressScrollX: true
-        });
+        const workoutsGrid = document.querySelector('.card-body:has(#workoutsGrid)');
+        if (workoutsGrid) {
+            new PerfectScrollbar(workoutsGrid, {
+                wheelPropagation: false,
+                suppressScrollX: true
+            });
+        }
     }
     
     // Initialize tooltips
