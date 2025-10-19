@@ -739,6 +739,7 @@ function showView(viewName) {
         const element = document.getElementById(view);
         if (element) {
             element.style.display = 'none';
+            element.style.opacity = '1'; // Reset opacity for transitions
         }
     });
     
@@ -746,30 +747,41 @@ function showView(viewName) {
     const selectedView = document.getElementById(`${viewName}View`);
     if (selectedView) {
         selectedView.style.display = 'block';
+        console.log(`✅ Showing view: ${viewName}View`);
+    } else {
+        console.error(`❌ View not found: ${viewName}View`);
     }
     
-    // Special handling for exercise database
-    if (viewName === 'exercises') {
-        const exercisePanel = document.getElementById('exerciseDatabasePanel');
-        if (exercisePanel) {
-            exercisePanel.style.display = 'flex';
-        }
-        // Load exercises if not already loaded
-        if (window.ghostGym.exercises.all.length === 0) {
-            loadExercises();
-        }
-    }
-    
-    // Render view-specific content
+    // Load and render view-specific content
     switch(viewName) {
-        case 'programs':
-            renderProgramsView();
-            break;
-        case 'workouts':
-            renderWorkoutsView();
-            break;
         case 'builder':
-            // Builder view already rendered
+            // Builder view already rendered during loadDashboardData
+            console.log('📍 Builder view active');
+            break;
+            
+        case 'programs':
+            console.log('📍 Programs view active');
+            if (typeof renderProgramsView === 'function') {
+                renderProgramsView();
+            }
+            break;
+            
+        case 'workouts':
+            console.log('📍 Workouts view active');
+            if (typeof renderWorkoutsView === 'function') {
+                renderWorkoutsView();
+            }
+            break;
+            
+        case 'exercises':
+            console.log('📍 Exercise Database view active');
+            // Load exercises if not already loaded
+            if (window.ghostGym.exercises.all.length === 0) {
+                loadExercises();
+            } else {
+                // Just render the table if data already exists
+                renderExerciseTable();
+            }
             break;
     }
     
@@ -952,7 +964,12 @@ function filterWorkoutsView() {
  */
 function selectProgramAndGoToBuilder(programId) {
     selectProgram(programId);
-    showView('builder');
+    // Use menu navigation system if available
+    if (window.menuNavigation) {
+        window.menuNavigation.navigate('builder');
+    } else {
+        showView('builder');
+    }
 }
 
         window.ghostGym.searchFilters.workouts = searchInput.value;
@@ -2037,35 +2054,21 @@ function initializeExerciseAutocompletes() {
 // ============================================================================
 
 /**
- * Show Exercise Database Panel
+ * Show Exercise Database Panel (DEPRECATED - now handled by showView)
+ * Kept for backward compatibility
  */
 function showExerciseDatabasePanel() {
-    // Hide other panels
-    document.querySelector('.row.g-6:not(#exerciseDatabasePanel)')?.style.setProperty('display', 'none');
-    
-    // Show exercise database panel
-    const exercisePanel = document.getElementById('exerciseDatabasePanel');
-    if (exercisePanel) {
-        exercisePanel.style.display = 'flex';
-        
-        // Load exercises if not already loaded
-        if (window.ghostGym.exercises.all.length === 0) {
-            loadExercises();
-        }
-    }
+    console.warn('⚠️ showExerciseDatabasePanel is deprecated, use showView("exercises") instead');
+    showView('exercises');
 }
 
 /**
- * Hide Exercise Database Panel and show main dashboard
+ * Hide Exercise Database Panel (DEPRECATED - now handled by showView)
+ * Kept for backward compatibility
  */
 function hideExerciseDatabasePanel() {
-    const exercisePanel = document.getElementById('exerciseDatabasePanel');
-    if (exercisePanel) {
-        exercisePanel.style.display = 'none';
-    }
-    
-    // Show main dashboard panels
-    document.querySelector('.row.g-6:not(#exerciseDatabasePanel)')?.style.setProperty('display', 'flex');
+    console.warn('⚠️ hideExerciseDatabasePanel is deprecated, use showView("builder") instead');
+    showView('builder');
 }
 
 /**
