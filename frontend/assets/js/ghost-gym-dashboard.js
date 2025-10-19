@@ -153,8 +153,8 @@ function initEventListeners() {
     document.getElementById('generateFromPreviewBtn')?.addEventListener('click', showGenerateModal);
     
     // Authentication (preserve existing auth functionality)
-    document.getElementById('headerSignInBtn')?.addEventListener('click', showAuthModal);
-    document.getElementById('signOutBtn')?.addEventListener('click', signOut);
+    document.getElementById('menuSignInBtn')?.addEventListener('click', showAuthModal);
+    document.getElementById('menuSignOutBtn')?.addEventListener('click', signOut);
     
     // Menu navigation
     document.getElementById('menuPrograms')?.addEventListener('click', focusProgramsPanel);
@@ -1423,26 +1423,28 @@ function signOut() {
  * Update authentication UI
  */
 function updateAuthUI(user) {
-    const signInBtn = document.getElementById('headerSignInBtn');
-    const userDropdown = document.querySelector('.auth-sign-out');
-    const userDisplayName = document.getElementById('userDisplayName');
-    const userEmailDisplay = document.getElementById('userEmailDisplay');
+    // Menu-based auth UI
+    const menuSignIn = document.getElementById('menuAuthSignIn');
+    const menuAuthProfile = document.getElementById('menuAuthProfile');
+    const menuSignOutItems = document.querySelectorAll('.auth-sign-out');
+    const menuUserDisplayName = document.getElementById('menuUserDisplayName');
+    const menuUserEmailDisplay = document.getElementById('menuUserEmailDisplay');
     
     if (user) {
         // User is signed in
-        if (signInBtn) signInBtn.style.display = 'none';
-        if (userDropdown) userDropdown.classList.remove('d-none');
+        if (menuSignIn) menuSignIn.style.display = 'none';
+        menuSignOutItems.forEach(item => item.classList.remove('d-none'));
         
-        if (userDisplayName) {
-            userDisplayName.textContent = user.displayName || user.email || 'User';
+        if (menuUserDisplayName) {
+            menuUserDisplayName.textContent = user.displayName || user.email || 'User';
         }
-        if (userEmailDisplay) {
-            userEmailDisplay.textContent = user.email || '';
+        if (menuUserEmailDisplay) {
+            menuUserEmailDisplay.textContent = user.email || '';
         }
     } else {
         // User is signed out
-        if (signInBtn) signInBtn.style.display = 'block';
-        if (userDropdown) userDropdown.classList.add('d-none');
+        if (menuSignIn) menuSignIn.style.display = 'block';
+        menuSignOutItems.forEach(item => item.classList.add('d-none'));
     }
 }
 

@@ -192,6 +192,36 @@
                 <div class="text-truncate">Settings</div>
               </a>
             </li>
+            
+            <!-- User Authentication Section -->
+            <li class="menu-header small text-uppercase mt-auto">
+              <span class="menu-header-text">Account</span>
+            </li>
+            
+            <!-- Sign In Button (for anonymous users) -->
+            <li class="menu-item auth-sign-in" id="menuAuthSignIn">
+              <a href="javascript:void(0);" class="menu-link" id="menuSignInBtn">
+                <i class="menu-icon tf-icons bx bx-user"></i>
+                <div class="text-truncate">Sign In</div>
+              </a>
+            </li>
+            
+            <!-- User Profile (for authenticated users) -->
+            <li class="menu-item auth-sign-out d-none" id="menuAuthProfile">
+              <a href="javascript:void(0);" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-user-circle"></i>
+                <div class="text-truncate">
+                  <div id="menuUserDisplayName" class="fw-medium">User</div>
+                  <small class="text-muted" id="menuUserEmailDisplay">user@example.com</small>
+                </div>
+              </a>
+            </li>
+            <li class="menu-item auth-sign-out d-none">
+              <a href="javascript:void(0);" class="menu-link" id="menuSignOutBtn">
+                <i class="menu-icon tf-icons bx bx-power-off"></i>
+                <div class="text-truncate">Sign Out</div>
+              </a>
+            </li>
           </ul>
         </aside>
         <!-- / Menu -->
@@ -209,81 +239,7 @@
             </div>
 
             <div class="navbar-nav-right d-flex align-items-center justify-content-end" id="navbar-collapse">
-              <!-- Search -->
-              <div class="navbar-nav align-items-center me-auto">
-                <div class="nav-item d-flex align-items-center">
-                  <span class="w-px-22 h-px-22"><i class="icon-base bx bx-search icon-md"></i></span>
-                  <input
-                    type="text"
-                    class="form-control border-0 shadow-none ps-1 ps-sm-2 d-md-block d-none"
-                    placeholder="Search programs, workouts, and exercises..."
-                    aria-label="Search..." 
-                    id="globalSearch" />
-                </div>
-              </div>
-              <!-- /Search -->
-
-              <ul class="navbar-nav flex-row align-items-center ms-md-auto">
-                <!-- Authentication UI -->
-                <li class="nav-item" id="authContainer">
-                  <!-- Sign In Button (for anonymous users) -->
-                  <button type="button" class="btn btn-outline-primary btn-sm auth-sign-in me-3" id="headerSignInBtn">
-                    <i class="bx bx-user me-1"></i>
-                    Sign In
-                  </button>
-                  
-                  <!-- User Profile Dropdown (for authenticated users) -->
-                  <div class="dropdown auth-sign-out d-none">
-                    <a
-                      class="nav-link dropdown-toggle hide-arrow p-0"
-                      href="javascript:void(0);"
-                      data-bs-toggle="dropdown">
-                      <div class="avatar avatar-online">
-                        <img src="/static/assets/img/avatars/1.png" alt class="w-px-40 h-auto rounded-circle" id="userAvatar" />
-                      </div>
-                    </a>
-                    <ul class="dropdown-menu dropdown-menu-end">
-                      <li>
-                        <a class="dropdown-item" href="#">
-                          <div class="d-flex">
-                            <div class="flex-shrink-0 me-3">
-                              <div class="avatar avatar-online">
-                                <img src="/static/assets/img/avatars/1.png" alt class="w-px-40 h-auto rounded-circle" />
-                              </div>
-                            </div>
-                            <div class="flex-grow-1">
-                              <h6 class="mb-0" id="userDisplayName">User</h6>
-                              <small class="text-body-secondary" id="userEmailDisplay">user@example.com</small>
-                            </div>
-                          </div>
-                        </a>
-                      </li>
-                      <li>
-                        <div class="dropdown-divider my-1"></div>
-                      </li>
-                      <li>
-                        <a class="dropdown-item" href="#" id="profileSettingsBtn">
-                          <i class="icon-base bx bx-user icon-md me-3"></i><span>My Profile</span>
-                        </a>
-                      </li>
-                      <li>
-                        <a class="dropdown-item" href="#" id="dataExportBtn">
-                          <i class="icon-base bx bx-download icon-md me-3"></i><span>Export Data</span>
-                        </a>
-                      </li>
-                      <li>
-                        <div class="dropdown-divider my-1"></div>
-                      </li>
-                      <li>
-                        <a class="dropdown-item" href="javascript:void(0);" id="signOutBtn">
-                          <i class="icon-base bx bx-power-off icon-md me-3"></i><span>Log Out</span>
-                        </a>
-                      </li>
-                    </ul>
-                  </div>
-                </li>
-                <!--/ Authentication UI -->
-              </ul>
+              <!-- Empty navbar - user auth moved to menu -->
             </div>
           </nav>
           <!-- / Navbar -->
@@ -291,22 +247,22 @@
           <!-- Welcome Banner -->
           <div id="welcomeBanner" class="welcome-banner">
             <div class="container-xxl">
-              <div class="welcome-banner-content text-center">
-                <div class="welcome-banner-icon mb-3">
-                  <span style="font-size: 3.5rem;">👻</span>
+              <div class="welcome-banner-content">
+                <div class="welcome-banner-left">
+                  <span class="welcome-banner-icon">👻</span>
+                  <div class="welcome-banner-text">
+                    <h5 class="welcome-banner-title mb-0">Welcome to Ghost Gym V0.4.1</h5>
+                    <small class="welcome-banner-description">Create programs, organize workouts, and generate professional training documents</small>
+                  </div>
                 </div>
-                <h2 class="welcome-banner-title mb-2">Welcome to Ghost Gym V0.4.1</h2>
-                <p class="welcome-banner-description mb-4">
-                  Create programs, organize workouts, and generate professional training documents with our modern interface.
-                </p>
                 <div class="welcome-banner-actions">
-                  <button class="btn btn-primary btn-lg me-2 mb-2" id="bannerCreateProgramBtn">
-                    <i class="bx bx-plus me-2"></i>
-                    Create Your First Program
+                  <button class="btn btn-primary btn-sm" id="bannerCreateProgramBtn">
+                    <i class="bx bx-plus me-1"></i>
+                    Create Program
                   </button>
-                  <button class="btn btn-outline-primary btn-lg mb-2" id="bannerCreateWorkoutBtn">
-                    <i class="bx bx-plus-circle me-2"></i>
-                    Create Your First Workout
+                  <button class="btn btn-outline-primary btn-sm" id="bannerCreateWorkoutBtn">
+                    <i class="bx bx-plus-circle me-1"></i>
+                    Create Workout
                   </button>
                 </div>
               </div>
