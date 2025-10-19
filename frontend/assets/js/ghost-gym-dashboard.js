@@ -172,7 +172,8 @@ function initEventListeners() {
     document.getElementById('showFavoritesOnly')?.addEventListener('change', filterExercises);
     document.getElementById('showCustomOnly')?.addEventListener('change', filterExercises);
     document.getElementById('clearFiltersBtn')?.addEventListener('click', clearExerciseFilters);
-    document.getElementById('refreshExercisesBtn')?.addEventListener('click', refreshExercises);
+    document.getElementById('entriesPerPageSelect')?.addEventListener('change', handleEntriesPerPageChange);
+    document.getElementById('exportExercisesBtn')?.addEventListener('click', exportExercises);
     document.getElementById('exerciseLoadMoreBtn')?.addEventListener('click', loadMoreExercises);
     
     // Modal events
@@ -2177,31 +2178,38 @@ function sortExercises(exercises) {
 }
 
 /**
- * Render exercise table
+ * Render exercise table with pagination
  */
 function renderExerciseTable() {
     const tableBody = document.getElementById('exerciseTableBody');
     const tableContainer = document.getElementById('exerciseTableContainer');
     const emptyState = document.getElementById('exerciseEmptyState');
-    const loadMoreContainer = document.getElementById('exerciseLoadMoreContainer');
+    const paginationFooter = document.getElementById('exercisePaginationFooter');
     
     if (!tableBody) return;
     
+    // Get page size from dropdown
+    const entriesSelect = document.getElementById('entriesPerPageSelect');
+    if (entriesSelect) {
+        window.ghostGym.exercises.pageSize = parseInt(entriesSelect.value) || 50;
+    }
+    
     // Calculate which exercises to display
-    const startIndex = 0;
-    const endIndex = window.ghostGym.exercises.currentPage * window.ghostGym.exercises.pageSize;
+    const startIndex = (window.ghostGym.exercises.currentPage - 1) * window.ghostGym.exercises.pageSize;
+    const endIndex = startIndex + window.ghostGym.exercises.pageSize;
     window.ghostGym.exercises.displayed = window.ghostGym.exercises.filtered.slice(startIndex, endIndex);
     
     // Show/hide empty state
     if (window.ghostGym.exercises.filtered.length === 0) {
         tableContainer.style.display = 'none';
         emptyState.style.display = 'block';
-        loadMoreContainer.style.display = 'none';
+        paginationFooter.style.display = 'none';
         return;
     }
     
     emptyState.style.display = 'none';
     tableContainer.style.display = 'block';
+    paginationFooter.style.display = 'block';
     
     // Clear table
     tableBody.innerHTML = '';
@@ -2212,12 +2220,8 @@ function renderExerciseTable() {
         tableBody.appendChild(row);
     });
     
-    // Show/hide load more button
-    if (window.ghostGym.exercises.displayed.length < window.ghostGym.exercises.filtered.length) {
-        loadMoreContainer.style.display = 'block';
-    } else {
-        loadMoreContainer.style.display = 'none';
-    }
+    // Update pagination
+    updatePagination();
 }
 
 /**
@@ -2414,11 +2418,132 @@ function addExerciseToWorkout(exercise) {
 }
 
 /**
- * Load more exercises
+ * Update pagination controls
+ */
+function updatePagination() {
+    const paginationInfo = document.getElementById('paginationInfo');
+    const paginationControls = document.getElementById('paginationControls');
+    
+    if (!paginationInfo || !paginationControls) return;
+    
+    const totalExercises = window.ghostGym.exercises.filtered.length;
+    const pageSize = window.ghostGym.exercises.pageSize;
+    const currentPage = window.ghostGym.exercises.currentPage;
+    const totalPages = Math.ceil(totalExercises / pageSize);
+    
+    // Update info text
+    const startIndex = (currentPage - 1) * pageSize + 1;
+    const endIndex = Math.min(currentPage * pageSize, totalExercises);
+    paginationInfo.textContent = `Showing ${startIndex} to ${endIndex} of ${totalExercises.toLocaleString()} entries`;
+    
+    // Clear pagination controls
+    paginationControls.innerHTML = '';
+    
+    if (totalPages <= 1) {
+        return; // No pagination needed
+    }
+    
+    // Previous button
+    const prevLi = document.createElement('li');
+    prevLi.className = `page-item ${currentPage === 1 ? 'disabled' : ''}`;
+    prevLi.innerHTML = `
+        <a class="page-link" href="javascript:void(0);" aria-label="Previous">
+            <i class="bx bx-chevron-left"></i>
+        </a>
+    `;
+    if (currentPage > 1) {
+        prevLi.querySelector('.page-link').addEventListener('click', () => goToPage(currentPage - 1));
+    }
+    paginationControls.appendChild(prevLi);
+    
+    // Page numbers
+    const maxVisiblePages = 5;
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+    
+    // Adjust start if we're near the end
+    if (endPage - startPage < maxVisiblePages - 1) {
+        startPage = Math.max(1, endPage - maxVisiblePages + 1);
+    }
+    
+    // First page + ellipsis
+    if (startPage > 1) {
+        const firstLi = document.createElement('li');
+        firstLi.className = 'page-item';
+        firstLi.innerHTML = `<a class="page-link" href="javascript:void(0);">1</a>`;
+        firstLi.querySelector('.page-link').addEventListener('click', () => goToPage(1));
+        paginationControls.appendChild(firstLi);
+        
+        if (startPage > 2) {
+            const ellipsisLi = document.createElement('li');
+            ellipsisLi.className = 'page-item disabled';
+            ellipsisLi.innerHTML = `<span class="page-link">...</span>`;
+            paginationControls.appendChild(ellipsisLi);
+        }
+    }
+    
+    // Page number buttons
+    for (let i = startPage; i <= endPage; i++) {
+        const pageLi = document.createElement('li');
+        pageLi.className = `page-item ${i === currentPage ? 'active' : ''}`;
+        pageLi.innerHTML = `<a class="page-link" href="javascript:void(0);">${i}</a>`;
+        if (i !== currentPage) {
+            pageLi.querySelector('.page-link').addEventListener('click', () => goToPage(i));
+        }
+        paginationControls.appendChild(pageLi);
+    }
+    
+    // Ellipsis + last page
+    if (endPage < totalPages) {
+        if (endPage < totalPages - 1) {
+            const ellipsisLi = document.createElement('li');
+            ellipsisLi.className = 'page-item disabled';
+            ellipsisLi.innerHTML = `<span class="page-link">...</span>`;
+            paginationControls.appendChild(ellipsisLi);
+        }
+        
+        const lastLi = document.createElement('li');
+        lastLi.className = 'page-item';
+        lastLi.innerHTML = `<a class="page-link" href="javascript:void(0);">${totalPages}</a>`;
+        lastLi.querySelector('.page-link').addEventListener('click', () => goToPage(totalPages));
+        paginationControls.appendChild(lastLi);
+    }
+    
+    // Next button
+    const nextLi = document.createElement('li');
+    nextLi.className = `page-item ${currentPage === totalPages ? 'disabled' : ''}`;
+    nextLi.innerHTML = `
+        <a class="page-link" href="javascript:void(0);" aria-label="Next">
+            <i class="bx bx-chevron-right"></i>
+        </a>
+    `;
+    if (currentPage < totalPages) {
+        nextLi.querySelector('.page-link').addEventListener('click', () => goToPage(currentPage + 1));
+    }
+    paginationControls.appendChild(nextLi);
+}
+
+/**
+ * Go to specific page
+ */
+function goToPage(page) {
+    window.ghostGym.exercises.currentPage = page;
+    renderExerciseTable();
+    
+    // Scroll to top of table
+    const tableContainer = document.getElementById('exerciseTableContainer');
+    if (tableContainer) {
+        tableContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+}
+
+/**
+ * Load more exercises (legacy function - now handled by pagination)
  */
 function loadMoreExercises() {
-    window.ghostGym.exercises.currentPage++;
-    renderExerciseTable();
+    // This function is kept for backward compatibility
+    // but pagination now handles page navigation
+    goToPage(window.ghostGym.exercises.currentPage + 1);
 }
 
 /**
@@ -2530,3 +2655,59 @@ document.getElementById('workoutModal')?.addEventListener('shown.bs.modal', func
 document.getElementById('saveCustomExerciseBtn')?.addEventListener('click', saveCustomExercise);
 
 console.log('📦 Ghost Gym Dashboard JavaScript loaded');
+/**
+ * Handle entries per page change
+ */
+function handleEntriesPerPageChange() {
+    window.ghostGym.exercises.currentPage = 1; // Reset to first page
+    renderExerciseTable();
+}
+
+/**
+ * Export exercises to CSV
+ */
+function exportExercises() {
+    try {
+        const exercises = window.ghostGym.exercises.filtered;
+        
+        if (exercises.length === 0) {
+            showAlert('No exercises to export', 'warning');
+            return;
+        }
+        
+        // Create CSV header
+        const headers = ['Exercise Name', 'Muscle Group', 'Equipment', 'Difficulty', 'Mechanics', 'Popularity Score', 'Is Custom'];
+        let csv = headers.join(',') + '\n';
+        
+        // Add exercise data
+        exercises.forEach(exercise => {
+            const row = [
+                `"${(exercise.name || '').replace(/"/g, '""')}"`,
+                `"${(exercise.targetMuscleGroup || '').replace(/"/g, '""')}"`,
+                `"${(exercise.primaryEquipment || '').replace(/"/g, '""')}"`,
+                `"${(exercise.difficultyLevel || '').replace(/"/g, '""')}"`,
+                `"${(exercise.mechanics || '').replace(/"/g, '""')}"`,
+                exercise.popularityScore || '',
+                exercise.isGlobal ? 'No' : 'Yes'
+            ];
+            csv += row.join(',') + '\n';
+        });
+        
+        // Create download link
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `ghost_gym_exercises_${new Date().toISOString().split('T')[0]}.csv`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        
+        showAlert(`Exported ${exercises.length} exercises to CSV`, 'success');
+        
+    } catch (error) {
+        console.error('❌ Error exporting exercises:', error);
+        showAlert('Failed to export exercises: ' + error.message, 'danger');
+    }
+}
