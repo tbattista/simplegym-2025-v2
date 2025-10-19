@@ -121,7 +121,17 @@ class MenuNavigation {
         if (config.fullWidth) {
             // Hide main dashboard grid, show full-width panel
             if (mainGrid) mainGrid.style.display = 'none';
-            if (exercisePanel) exercisePanel.style.display = 'block';
+            if (exercisePanel) {
+                exercisePanel.style.display = 'block';
+                
+                // Load exercises if showing exercise database
+                if (this.currentSection === 'exercises' && typeof loadExercises === 'function') {
+                    // Check if exercises are already loaded
+                    if (window.ghostGym && window.ghostGym.exercises.all.length === 0) {
+                        loadExercises();
+                    }
+                }
+            }
         } else {
             // Show main dashboard grid
             if (mainGrid) mainGrid.style.display = 'flex';
