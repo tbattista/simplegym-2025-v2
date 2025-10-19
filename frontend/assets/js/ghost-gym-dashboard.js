@@ -13,16 +13,16 @@ console.log('📦 Dashboard Version: 20251019-02-HTTPS-FIX');
  * Uses the global getApiUrl function from data-manager.js which ensures HTTPS in production
  */
 function getApiUrl(path) {
-    // Use the global getApiUrl function if available (from data-manager.js)
-    if (window.getApiUrl && typeof window.getApiUrl === 'function') {
-        return window.getApiUrl(path);
-    }
+    // IMPORTANT: Use the global window.getApiUrl from data-manager.js
+    // data-manager.js loads first and sets window.getApiUrl
+    // This function is just a local wrapper that delegates to it
     
-    // Fallback: always use HTTPS
+    // Ensure path starts with /
     if (!path.startsWith('/')) {
         path = '/' + path;
     }
     
+    // Always use HTTPS
     const hostname = window.location.hostname;
     const protocol = 'https:';
     const port = window.location.port;
