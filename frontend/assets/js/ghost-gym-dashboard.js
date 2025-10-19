@@ -15,18 +15,13 @@ function getApiUrl(path) {
         return window.getApiUrl(path);
     }
     
-    // Fallback: ensure HTTPS in production
+    // Fallback: always use HTTPS
     if (!path.startsWith('/')) {
         path = '/' + path;
     }
     
     const hostname = window.location.hostname;
-    if (hostname === 'localhost' || hostname === '127.0.0.1') {
-        return `http://localhost:8001${path}`;
-    }
-    
-    // Production: always use HTTPS and same origin
-    const protocol = 'https:'; // Force HTTPS in production
+    const protocol = 'https:';
     const port = window.location.port;
     let baseUrl = `${protocol}//${hostname}`;
     

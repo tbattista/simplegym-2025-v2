@@ -13,19 +13,13 @@ window.getApiUrl = function(path) {
         path = '/' + path;
     }
     
-    // In development (localhost), use HTTP with correct port
+    // Always use HTTPS and same origin
     const hostname = window.location.hostname;
-    if (hostname === 'localhost' || hostname === '127.0.0.1') {
-        return `http://localhost:8001${path}`;
-    }
-    
-    // In production, always use HTTPS and same origin
-    // This ensures we use the same protocol as the page itself
-    const protocol = window.location.protocol; // Will be 'https:' on Railway
+    const protocol = 'https:';
     const port = window.location.port;
     let baseUrl = `${protocol}//${hostname}`;
     
-    // Only add port if it's not standard (443 for HTTPS, 80 for HTTP)
+    // Only add port if it's not standard (443 for HTTPS)
     if (port && port !== '443' && port !== '80') {
         baseUrl += `:${port}`;
     }
@@ -52,15 +46,9 @@ class FirebaseDataManager {
     }
     
     getApiBaseUrl() {
-        // Check if we're in development (localhost)
         const hostname = window.location.hostname;
         
-        if (hostname === 'localhost' || hostname === '127.0.0.1') {
-            // Development: use localhost backend with correct port
-            return 'http://localhost:8001';
-        }
-        
-        // Production: Check for configured API URL first
+        // Check for configured API URL first
         const apiUrl = window.GHOST_GYM_API_URL || '';
         
         if (apiUrl) {
@@ -71,15 +59,14 @@ class FirebaseDataManager {
             return apiUrl;
         }
         
-        // Default: use same origin (protocol + hostname + port)
-        // This ensures we match the page's protocol (HTTPS on Railway)
-        const protocol = window.location.protocol; // Will be 'https:' on Railway
+        // Default: always use HTTPS with same origin
+        const protocol = 'https:';
         const port = window.location.port;
         
-        // Build URL using current protocol
+        // Build URL using HTTPS protocol
         let baseUrl = `${protocol}//${hostname}`;
         
-        // Only add port if it's not standard (443 for HTTPS, 80 for HTTP)
+        // Only add port if it's not standard (443 for HTTPS)
         if (port && port !== '443' && port !== '80') {
             baseUrl += `:${port}`;
         }
