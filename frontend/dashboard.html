@@ -275,101 +275,105 @@
               <!-- Alert Container -->
               <div id="alertContainer" class="mb-3"></div>
 
-              <div class="row g-6">
-                <!-- Programs Panel -->
-                <div class="col-lg-4">
-                  <div class="card h-100">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                      <h5 class="mb-0">
-                        <i class="bx bx-folder me-2"></i>Programs
-                      </h5>
-                      <button class="btn btn-primary btn-sm" id="newProgramBtn">
-                        <i class="bx bx-plus"></i>
-                      </button>
-                    </div>
-                    <div class="card-body p-0">
-                      <!-- Search -->
-                      <div class="p-4 border-bottom">
-                        <div class="input-group">
-                          <span class="input-group-text">
-                            <i class="bx bx-search"></i>
-                          </span>
-                          <input type="text" class="form-control" id="programSearch" placeholder="Search programs...">
+              <!-- ROW 1: Programs Selector (Compact) -->
+              <div class="row g-3 mb-3">
+                <div class="col-12">
+                  <div class="card">
+                    <div class="card-body py-3">
+                      <div class="d-flex align-items-center gap-3">
+                        <div class="flex-shrink-0">
+                          <i class="bx bx-folder text-primary" style="font-size: 1.5rem;"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                          <select class="form-select" id="programSelector">
+                            <option value="">Select a program...</option>
+                            <!-- Programs will be populated here -->
+                          </select>
+                        </div>
+                        <div class="flex-shrink-0">
+                          <button class="btn btn-primary btn-sm" id="newProgramBtn">
+                            <i class="bx bx-plus me-1"></i>
+                            New Program
+                          </button>
                         </div>
                       </div>
-                      
-                      <!-- Programs List -->
-                      <div id="programsList" class="list-group list-group-flush">
-                        <!-- Programs will be rendered here -->
-                      </div>
                     </div>
                   </div>
                 </div>
-                
-                <!-- Program Details Panel -->
-                <div class="col-lg-5">
-                  <!-- Program Details (shown when program selected) -->
-                  <div class="card h-100" id="programDetailsPanel">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                      <h5 class="mb-0" id="programDetailsTitle">
-                        <i class="bx bx-folder-open me-2"></i>Program Details
-                      </h5>
-                      <div class="btn-group btn-group-sm">
-                        <button class="btn btn-outline-secondary" id="editProgramBtn">
-                          <i class="bx bx-edit"></i>
-                        </button>
-                        <button class="btn btn-outline-primary" id="previewProgramBtn">
-                          <i class="bx bx-show"></i>
-                        </button>
-                        <button class="btn btn-primary" id="generateProgramBtn">
-                          <i class="bx bx-download"></i>
-                        </button>
-                      </div>
-                    </div>
-                    <div class="card-body">
-                      <!-- Program info and workouts will be rendered here -->
-                      <div id="programInfo"></div>
-                      <div id="programWorkouts" class="mt-4"></div>
-                    </div>
-                  </div>
+              </div>
 
-                  <!-- Empty State (shown when no program selected) -->
-                  <div class="card h-100" id="emptyStatePanel">
-                    <div class="card-body text-center py-5">
-                      <div class="mb-4">
-                        <i class="bx bx-folder-open display-1 text-muted"></i>
-                      </div>
-                      <h5 class="mb-3">No Program Selected</h5>
-                      <p class="text-muted mb-4">Select a program from the left panel to view its details, or create a new program to get started.</p>
-                    </div>
-                  </div>
-                </div>
-                
-                <!-- Workout Library Panel -->
-                <div class="col-lg-3">
-                  <div class="card h-100">
-                    <div class="card-header d-flex justify-content-between align-items-center">
+              <!-- ROW 2: Workout Library (Main Focus) -->
+              <div class="row g-3 mb-3">
+                <div class="col-12">
+                  <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center py-3">
                       <h5 class="mb-0">
-                        <i class="bx bx-collection me-2"></i>Workout Library
+                        <i class="bx bx-dumbbell me-2"></i>Workout Library
                       </h5>
-                      <button class="btn btn-primary btn-sm" id="newWorkoutBtn">
-                        <i class="bx bx-plus"></i>
-                      </button>
-                    </div>
-                    <div class="card-body p-0">
-                      <!-- Search -->
-                      <div class="p-4 border-bottom">
-                        <div class="input-group">
+                      <div class="d-flex align-items-center gap-2">
+                        <div class="input-group input-group-sm" style="width: 250px;">
                           <span class="input-group-text">
                             <i class="bx bx-search"></i>
                           </span>
                           <input type="text" class="form-control" id="workoutSearch" placeholder="Search workouts...">
                         </div>
+                        <button class="btn btn-primary btn-sm" id="newWorkoutBtn">
+                          <i class="bx bx-plus me-1"></i>
+                          New Workout
+                        </button>
+                      </div>
+                    </div>
+                    <div class="card-body" style="min-height: 300px; max-height: 400px; overflow-y: auto;">
+                      <!-- Workouts Grid -->
+                      <div id="workoutsGrid" class="row g-3">
+                        <!-- Workout cards will be rendered here -->
+                      </div>
+                      <!-- Empty State -->
+                      <div id="workoutsEmptyState" class="text-center py-5" style="display: none;">
+                        <i class="bx bx-dumbbell display-1 text-muted"></i>
+                        <h5 class="mt-3">No Workouts Yet</h5>
+                        <p class="text-muted">Create your first workout to get started</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ROW 3: Program Details/View (Bottom) -->
+              <div class="row g-3">
+                <div class="col-12">
+                  <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center py-3">
+                      <h5 class="mb-0" id="programDetailsTitle">
+                        <i class="bx bx-folder-open me-2"></i>Program Details
+                      </h5>
+                      <div class="btn-group btn-group-sm">
+                        <button class="btn btn-outline-secondary" id="editProgramBtn">
+                          <i class="bx bx-edit me-1"></i>
+                          Edit
+                        </button>
+                        <button class="btn btn-outline-primary" id="previewProgramBtn">
+                          <i class="bx bx-show me-1"></i>
+                          Preview
+                        </button>
+                        <button class="btn btn-primary" id="generateProgramBtn">
+                          <i class="bx bx-download me-1"></i>
+                          Generate
+                        </button>
+                      </div>
+                    </div>
+                    <div class="card-body">
+                      <!-- Program Details Panel -->
+                      <div id="programDetailsPanel">
+                        <div id="programInfo"></div>
+                        <div id="programWorkouts" class="mt-3"></div>
                       </div>
                       
-                      <!-- Workouts List -->
-                      <div id="workoutsList" class="list-group list-group-flush">
-                        <!-- Workouts will be rendered here -->
+                      <!-- Empty State -->
+                      <div id="emptyStatePanel" class="text-center py-4">
+                        <i class="bx bx-folder-open display-4 text-muted"></i>
+                        <h5 class="mt-3">No Program Selected</h5>
+                        <p class="text-muted">Select a program from the dropdown above to view its details</p>
                       </div>
                     </div>
                   </div>

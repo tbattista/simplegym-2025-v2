@@ -131,6 +131,7 @@ function initEventListeners() {
     // Program management
     document.getElementById('newProgramBtn')?.addEventListener('click', showProgramModal);
     document.getElementById('bannerCreateProgramBtn')?.addEventListener('click', showProgramModal);
+    document.getElementById('programSelector')?.addEventListener('change', handleProgramSelection);
     document.getElementById('saveProgramBtn')?.addEventListener('click', saveProgram);
     document.getElementById('editProgramBtn')?.addEventListener('click', editCurrentProgram);
     document.getElementById('previewProgramBtn')?.addEventListener('click', previewProgram);
@@ -144,9 +145,7 @@ function initEventListeners() {
     document.getElementById('addBonusExerciseBtn')?.addEventListener('click', addBonusExercise);
     
     // Search functionality
-    document.getElementById('programSearch')?.addEventListener('input', debounce(filterPrograms, 300));
     document.getElementById('workoutSearch')?.addEventListener('input', debounce(filterWorkouts, 300));
-    document.getElementById('globalSearch')?.addEventListener('input', debounce(globalSearch, 300));
     
     // Generation and preview
     document.getElementById('confirmGenerateBtn')?.addEventListener('click', generateDocument);
@@ -297,83 +296,56 @@ async function loadDashboardData() {
 }
 
 /**
- * Render programs list
+ * Render programs in dropdown selector
  */
 function renderPrograms() {
     console.log('🔍 DEBUG: renderPrograms called with', window.ghostGym.programs.length, 'programs');
-    const programsList = document.getElementById('programsList');
-    if (!programsList) {
-        console.log('❌ DEBUG: programsList element not found!');
+    const programSelector = document.getElementById('programSelector');
+    if (!programSelector) {
+        console.log('❌ DEBUG: programSelector element not found!');
         return;
     }
     
-    const filteredPrograms = window.ghostGym.programs.filter(program =>
-        program.name.toLowerCase().includes(window.ghostGym.searchFilters.programs.toLowerCase())
-    );
-    console.log('🔍 DEBUG: Filtered to', filteredPrograms.length, 'programs');
+    // Clear existing options except the first one
+    programSelector.innerHTML = '<option value="">Select a program...</option>';
     
-    if (filteredPrograms.length === 0) {
-        programsList.innerHTML = `
-            <div class="list-group-item text-center py-4">
-                <i class="bx bx-folder-open display-4 text-muted mb-2"></i>
-                <p class="text-muted mb-0">No programs found</p>
-                <small class="text-muted">Create your first program to get started</small>
-            </div>
-        `;
-        return;
-    }
+    // Add program options
+    window.ghostGym.programs.forEach(program => {
+        const option = document.createElement('option');
+        option.value = program.id;
+        option.textContent = `${program.name} (${program.workouts?.length || 0} workouts)`;
+        if (window.ghostGym.currentProgram?.id === program.id) {
+            option.selected = true;
+        }
+        programSelector.appendChild(option);
+    });
     
-    programsList.innerHTML = filteredPrograms.map(program => `
-        <div class="list-group-item program-item" data-program-id="${program.id}" onclick="selectProgram('${program.id}')">
-            <div class="d-flex justify-content-between align-items-start">
-                <div class="flex-grow-1">
-                    <h6 class="mb-1">${escapeHtml(program.name)}</h6>
-                    <p class="mb-1 text-muted small">${escapeHtml(program.description || 'No description')}</p>
-                    <div class="program-stats">
-                        <span class="program-stat">
-                            <i class="bx bx-dumbbell"></i>
-                            ${program.workouts?.length || 0} workouts
-                        </span>
-                        <span class="program-stat">
-                            <i class="bx bx-time"></i>
-                            ${program.duration_weeks || 0} weeks
-                        </span>
-                        <span class="program-stat">
-                            <i class="bx bx-trending-up"></i>
-                            ${program.difficulty_level || 'intermediate'}
-                        </span>
-                    </div>
-                </div>
-                <div class="dropdown">
-                    <button class="btn btn-sm btn-ghost-secondary" type="button" data-bs-toggle="dropdown">
-                        <i class="bx bx-dots-vertical-rounded"></i>
-                    </button>
-                    <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="#" onclick="editProgram('${program.id}')">
-                            <i class="bx bx-edit me-2"></i>Edit
-                        </a></li>
-                        <li><a class="dropdown-item" href="#" onclick="duplicateProgram('${program.id}')">
-                            <i class="bx bx-copy me-2"></i>Duplicate
-                        </a></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item text-danger" href="#" onclick="deleteProgram('${program.id}')">
-                            <i class="bx bx-trash me-2"></i>Delete
-                        </a></li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    `).join('');
+    console.log('🔍 DEBUG: Rendered', window.ghostGym.programs.length, 'programs in selector');
 }
 
 /**
- * Render workouts list
+ * Handle program selection from dropdown
+ */
+function handleProgramSelection(event) {
+    const programId = event.target.value;
+    if (programId) {
+        selectProgram(programId);
+    } else {
+        window.ghostGym.currentProgram = null;
+        showEmptyStatePanel();
+    }
+}
+
+/**
+ * Render workouts in grid layout
  */
 function renderWorkouts() {
     console.log('🔍 DEBUG: renderWorkouts called with', window.ghostGym.workouts.length, 'workouts');
-    const workoutsList = document.getElementById('workoutsList');
-    if (!workoutsList) {
-        console.log('❌ DEBUG: workoutsList element not found!');
+    const workoutsGrid = document.getElementById('workoutsGrid');
+    const workoutsEmptyState = document.getElementById('workoutsEmptyState');
+    
+    if (!workoutsGrid) {
+        console.log('❌ DEBUG: workoutsGrid element not found!');
         return;
     }
     
@@ -383,43 +355,23 @@ function renderWorkouts() {
     console.log('🔍 DEBUG: Filtered to', filteredWorkouts.length, 'workouts');
     
     if (filteredWorkouts.length === 0) {
-        workoutsList.innerHTML = `
-            <div class="list-group-item text-center py-4">
-                <i class="bx bx-dumbbell display-4 text-muted mb-2"></i>
-                <p class="text-muted mb-0">No workouts found</p>
-                <small class="text-muted">Create your first workout template</small>
-            </div>
-        `;
+        workoutsGrid.style.display = 'none';
+        workoutsEmptyState.style.display = 'block';
         return;
     }
     
-    workoutsList.innerHTML = filteredWorkouts.map(workout => `
-        <div class="list-group-item workout-item" data-workout-id="${workout.id}" draggable="true">
-            <div class="d-flex justify-content-between align-items-start">
-                <div class="flex-grow-1">
-                    <h6 class="mb-1">${escapeHtml(workout.name)}</h6>
-                    <p class="mb-1 text-muted small">${escapeHtml(workout.description || 'No description')}</p>
-                    <div class="workout-stats">
-                        <span class="program-stat">
-                            <i class="bx bx-list-ul"></i>
-                            ${workout.exercise_groups?.length || 0} groups
-                        </span>
-                        <span class="program-stat">
-                            <i class="bx bx-plus-circle"></i>
-                            ${workout.bonus_exercises?.length || 0} bonus
-                        </span>
-                    </div>
-                    ${workout.tags && workout.tags.length > 0 ? `
-                        <div class="workout-tags">
-                            ${workout.tags.map(tag => `<span class="workout-tag">${escapeHtml(tag)}</span>`).join('')}
-                        </div>
-                    ` : ''}
-                </div>
-                <div class="dropdown">
-                    <button class="btn btn-sm btn-ghost-secondary" type="button" data-bs-toggle="dropdown">
+    workoutsGrid.style.display = 'grid';
+    workoutsEmptyState.style.display = 'none';
+    
+    workoutsGrid.innerHTML = filteredWorkouts.map(workout => `
+        <div class="workout-card" data-workout-id="${workout.id}" draggable="true">
+            <div class="workout-card-header">
+                <h6 class="workout-card-title">${escapeHtml(workout.name)}</h6>
+                <div class="workout-card-menu dropdown">
+                    <button class="btn btn-sm btn-ghost-secondary p-0" type="button" data-bs-toggle="dropdown">
                         <i class="bx bx-dots-vertical-rounded"></i>
                     </button>
-                    <ul class="dropdown-menu">
+                    <ul class="dropdown-menu dropdown-menu-end">
                         <li><a class="dropdown-item" href="#" onclick="editWorkout('${workout.id}')">
                             <i class="bx bx-edit me-2"></i>Edit
                         </a></li>
@@ -433,6 +385,24 @@ function renderWorkouts() {
                     </ul>
                 </div>
             </div>
+            ${workout.description ? `
+                <p class="workout-card-description">${escapeHtml(workout.description)}</p>
+            ` : ''}
+            <div class="workout-card-stats">
+                <span class="workout-card-stat">
+                    <i class="bx bx-list-ul"></i>
+                    ${workout.exercise_groups?.length || 0} groups
+                </span>
+                <span class="workout-card-stat">
+                    <i class="bx bx-plus-circle"></i>
+                    ${workout.bonus_exercises?.length || 0} bonus
+                </span>
+            </div>
+            ${workout.tags && workout.tags.length > 0 ? `
+                <div class="workout-card-tags">
+                    ${workout.tags.map(tag => `<span class="workout-card-tag">${escapeHtml(tag)}</span>`).join('')}
+                </div>
+            ` : ''}
         </div>
     `).join('');
     
@@ -449,11 +419,11 @@ function selectProgram(programId) {
     
     window.ghostGym.currentProgram = program;
     
-    // Update active state
-    document.querySelectorAll('.program-item').forEach(item => {
-        item.classList.remove('active');
-    });
-    document.querySelector(`[data-program-id="${programId}"]`)?.classList.add('active');
+    // Update dropdown selection
+    const programSelector = document.getElementById('programSelector');
+    if (programSelector) {
+        programSelector.value = programId;
+    }
     
     // Show program details panel
     showProgramDetails(program);
@@ -479,31 +449,25 @@ function showProgramDetails(program) {
         title.innerHTML = `<i class="bx bx-folder-open me-2"></i>${escapeHtml(program.name)}`;
     }
     
-    // Render program info
+    // Render program info (compact horizontal layout)
     const programInfo = document.getElementById('programInfo');
     if (programInfo) {
         programInfo.innerHTML = `
-            <div class="row">
-                <div class="col-md-6">
-                    <h6 class="text-muted mb-2">Description</h6>
-                    <p class="mb-3">${escapeHtml(program.description || 'No description provided')}</p>
-                </div>
-                <div class="col-md-6">
-                    <div class="row">
-                        <div class="col-6">
-                            <h6 class="text-muted mb-2">Duration</h6>
-                            <p class="mb-3">${program.duration_weeks || 0} weeks</p>
-                        </div>
-                        <div class="col-6">
-                            <h6 class="text-muted mb-2">Difficulty</h6>
-                            <p class="mb-3">${program.difficulty_level || 'intermediate'}</p>
-                        </div>
-                    </div>
-                </div>
+            <div>
+                <small class="text-muted d-block mb-1">Description</small>
+                <p class="mb-0">${escapeHtml(program.description || 'No description provided')}</p>
+            </div>
+            <div>
+                <small class="text-muted d-block mb-1">Duration</small>
+                <p class="mb-0">${program.duration_weeks || 0} weeks</p>
+            </div>
+            <div>
+                <small class="text-muted d-block mb-1">Difficulty</small>
+                <p class="mb-0">${program.difficulty_level || 'intermediate'}</p>
             </div>
             ${program.tags && program.tags.length > 0 ? `
-                <div class="mb-3">
-                    <h6 class="text-muted mb-2">Tags</h6>
+                <div>
+                    <small class="text-muted d-block mb-1">Tags</small>
                     <div class="workout-tags">
                         ${program.tags.map(tag => `<span class="workout-tag">${escapeHtml(tag)}</span>`).join('')}
                     </div>
@@ -517,7 +481,7 @@ function showProgramDetails(program) {
 }
 
 /**
- * Render program workouts
+ * Render program workouts as chips
  */
 function renderProgramWorkouts(program) {
     const programWorkouts = document.getElementById('programWorkouts');
@@ -525,10 +489,10 @@ function renderProgramWorkouts(program) {
     
     if (!program.workouts || program.workouts.length === 0) {
         programWorkouts.innerHTML = `
-            <div class="text-center py-4">
-                <i class="bx bx-dumbbell display-4 text-muted mb-2"></i>
-                <p class="text-muted mb-2">No workouts in this program</p>
-                <small class="text-muted">Drag workouts from the library to add them</small>
+            <div class="text-center py-3 w-100">
+                <i class="bx bx-dumbbell text-muted" style="font-size: 2rem;"></i>
+                <p class="text-muted mb-0 small">No workouts in this program</p>
+                <small class="text-muted">Drag workouts from the library above to add them</small>
             </div>
         `;
         return;
@@ -539,27 +503,10 @@ function renderProgramWorkouts(program) {
         if (!workout) return '';
         
         return `
-            <div class="workout-item" data-workout-id="${workout.id}" data-order="${index}">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div class="d-flex align-items-center">
-                        <i class="bx bx-menu me-3 text-muted" style="cursor: grab;"></i>
-                        <div>
-                            <h6 class="mb-1">${escapeHtml(programWorkout.custom_name || workout.name)}</h6>
-                            <small class="text-muted">
-                                ${workout.exercise_groups?.length || 0} groups, 
-                                ${workout.bonus_exercises?.length || 0} bonus exercises
-                            </small>
-                        </div>
-                    </div>
-                    <div class="btn-group btn-group-sm">
-                        <button class="btn btn-outline-secondary" onclick="editProgramWorkout('${program.id}', '${workout.id}')">
-                            <i class="bx bx-edit"></i>
-                        </button>
-                        <button class="btn btn-outline-danger" onclick="removeWorkoutFromProgram('${program.id}', '${workout.id}')">
-                            <i class="bx bx-trash"></i>
-                        </button>
-                    </div>
-                </div>
+            <div class="program-workout-chip" data-workout-id="${workout.id}" data-order="${index}">
+                <i class="bx bx-menu drag-handle"></i>
+                <span>${escapeHtml(programWorkout.custom_name || workout.name)}</span>
+                <i class="bx bx-x remove-btn" onclick="removeWorkoutFromProgram('${program.id}', '${workout.id}')"></i>
             </div>
         `;
     }).join('');
@@ -590,15 +537,15 @@ function initSortableWorkouts() {
  * Add workout drag listeners for adding to programs
  */
 function addWorkoutDragListeners() {
-    const workoutItems = document.querySelectorAll('.workout-item[draggable="true"]');
+    const workoutCards = document.querySelectorAll('.workout-card[draggable="true"]');
     
-    workoutItems.forEach(item => {
-        item.addEventListener('dragstart', function(e) {
+    workoutCards.forEach(card => {
+        card.addEventListener('dragstart', function(e) {
             e.dataTransfer.setData('text/plain', this.dataset.workoutId);
             this.classList.add('dragging');
         });
         
-        item.addEventListener('dragend', function(e) {
+        card.addEventListener('dragend', function(e) {
             this.classList.remove('dragging');
         });
     });
@@ -738,17 +685,6 @@ function debounce(func, wait) {
         clearTimeout(timeout);
         timeout = setTimeout(later, wait);
     };
-}
-
-/**
- * Filter programs
- */
-function filterPrograms() {
-    const searchInput = document.getElementById('programSearch');
-    if (searchInput) {
-        window.ghostGym.searchFilters.programs = searchInput.value;
-        renderPrograms();
-    }
 }
 
 /**

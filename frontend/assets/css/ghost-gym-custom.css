@@ -522,3 +522,169 @@
 .list-group-flush::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
+/* ============================================
+   HORIZONTAL 3-ROW LAYOUT STYLES
+   ============================================ */
+
+/* Empty State Panel Styling */
+#emptyStatePanel {
+  background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+  border: 2px dashed #cbd5e1;
+  border-radius: 8px;
+  padding: 2rem;
+}
+
+/* Program Selector Row */
+#programSelector {
+  max-width: 400px;
+}
+
+/* Workout Grid Styling */
+#workoutsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
+.workout-card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.workout-card:hover {
+  border-color: var(--ghost-primary);
+  box-shadow: 0 4px 12px rgba(105, 108, 255, 0.15);
+  transform: translateY(-2px);
+}
+
+.workout-card.dragging {
+  opacity: 0.5;
+  transform: rotate(2deg);
+}
+
+.workout-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  margin-bottom: 0.75rem;
+}
+
+.workout-card-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--ghost-dark);
+  margin: 0;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.workout-card-menu {
+  flex-shrink: 0;
+  margin-left: 0.5rem;
+}
+
+.workout-card-description {
+  font-size: 0.75rem;
+  color: #64748b;
+  margin-bottom: 0.75rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.workout-card-stats {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.7rem;
+  color: #64748b;
+  margin-bottom: 0.5rem;
+}
+
+.workout-card-stat {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.workout-card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+.workout-card-tag {
+  background: rgba(105, 108, 255, 0.1);
+  color: var(--ghost-primary);
+  padding: 0.125rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.625rem;
+  font-weight: 500;
+}
+
+/* Program Details Compact View */
+#programInfo {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+#programWorkouts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.program-workout-chip {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+}
+
+.program-workout-chip:hover {
+  background: #f1f5f9;
+  border-color: var(--ghost-primary);
+}
+
+.program-workout-chip .drag-handle {
+  cursor: grab;
+  color: #94a3b8;
+}
+
+.program-workout-chip .remove-btn {
+  cursor: pointer;
+  color: #ef4444;
+  margin-left: 0.25rem;
+}
+
+/* Responsive adjustments for horizontal layout */
+@media (max-width: 992px) {
+  #workoutsGrid {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  #workoutsGrid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  }
+  
+  #programSelector {
+    max-width: 100%;
+  }
+}
