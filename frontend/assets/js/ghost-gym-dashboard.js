@@ -94,6 +94,13 @@ function initializeGhostGym() {
     // Load initial data
     loadDashboardData();
     
+    // Show initial view (Builder)
+    setTimeout(() => {
+        if (typeof showView === 'function') {
+            showView('builder');
+        }
+    }, 100);
+    
     console.log('✅ Ghost Gym Dashboard initialized successfully');
 }
 
@@ -156,8 +163,16 @@ function initEventListeners() {
     // View-specific buttons
     document.getElementById('programsViewNewBtn')?.addEventListener('click', showProgramModal);
     document.getElementById('workoutsViewNewBtn')?.addEventListener('click', showWorkoutModal);
-    document.getElementById('programsViewSearch')?.addEventListener('input', debounce(filterProgramsView, 300));
-    document.getElementById('workoutsViewSearch')?.addEventListener('input', debounce(filterWorkoutsView, 300));
+    
+    // View-specific search (will be defined after view functions)
+    const programsViewSearch = document.getElementById('programsViewSearch');
+    const workoutsViewSearch = document.getElementById('workoutsViewSearch');
+    if (programsViewSearch) {
+        programsViewSearch.addEventListener('input', debounce(() => renderProgramsView(), 300));
+    }
+    if (workoutsViewSearch) {
+        workoutsViewSearch.addEventListener('input', debounce(() => renderWorkoutsView(), 300));
+    }
     
     // Menu navigation - handled by menu-navigation.js
     // But we'll add fallbacks here
@@ -195,9 +210,11 @@ function initDataManagement() {
             if (type === 'programs') {
                 window.ghostGym.programs = data;
                 renderPrograms();
+                renderProgramsView();
             } else if (type === 'workouts') {
                 window.ghostGym.workouts = data;
                 renderWorkouts();
+                renderWorkoutsView();
             }
             updateStats();
         };
