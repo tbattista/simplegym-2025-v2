@@ -40,10 +40,10 @@ class AuthUI {
     }
     
     setupEventListeners() {
-        // Header sign-in button
-        const headerSignInBtn = document.getElementById('headerSignInBtn');
-        if (headerSignInBtn) {
-            headerSignInBtn.addEventListener('click', () => this.showAuthModal('signin'));
+        // Menu sign-in button
+        const menuSignInBtn = document.getElementById('menuSignInBtn');
+        if (menuSignInBtn) {
+            menuSignInBtn.addEventListener('click', () => this.showAuthModal('signin'));
         }
         
         // Sign-in form
@@ -82,10 +82,16 @@ class AuthUI {
             continueAnonymousBtn.addEventListener('click', () => this.handleAnonymousSignIn());
         }
         
-        // Sign out
+        // Sign out (both menu and modal)
         const signOutBtn = document.getElementById('signOutBtn');
+        const menuSignOutBtn = document.getElementById('menuSignOutBtn');
+        
         if (signOutBtn) {
             signOutBtn.addEventListener('click', () => this.handleSignOut());
+        }
+        
+        if (menuSignOutBtn) {
+            menuSignOutBtn.addEventListener('click', () => this.handleSignOut());
         }
         
         // Tab switching
@@ -123,7 +129,7 @@ class AuthUI {
         });
         
         if (isAuthenticated && user) {
-            // Update user display
+            // Update user display in modal
             const userDisplayName = document.getElementById('userDisplayName');
             const userEmailDisplay = document.getElementById('userEmailDisplay');
             
@@ -133,6 +139,18 @@ class AuthUI {
             
             if (userEmailDisplay) {
                 userEmailDisplay.textContent = user.email || 'No email';
+            }
+            
+            // Update user display in menu
+            const menuUserDisplayName = document.getElementById('menuUserDisplayName');
+            const menuUserEmailDisplay = document.getElementById('menuUserEmailDisplay');
+            
+            if (menuUserDisplayName) {
+                menuUserDisplayName.textContent = user.displayName || user.email || 'User';
+            }
+            
+            if (menuUserEmailDisplay) {
+                menuUserEmailDisplay.textContent = user.email || 'No email';
             }
         }
     }
