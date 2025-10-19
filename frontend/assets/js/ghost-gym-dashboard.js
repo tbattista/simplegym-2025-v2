@@ -295,11 +295,17 @@ async function loadDashboardData() {
         // Render data for all views
         console.log('🔍 DEBUG: Calling renderPrograms()');
         renderPrograms(); // Builder view dropdown
-        renderProgramsView(); // Programs view list
         
         console.log('🔍 DEBUG: Calling renderWorkouts()');
         renderWorkouts(); // Builder view grid
-        renderWorkoutsView(); // Workouts view grid
+        
+        // Only render view-specific content if those views exist
+        if (typeof renderProgramsView === 'function') {
+            renderProgramsView(); // Programs view list
+        }
+        if (typeof renderWorkoutsView === 'function') {
+            renderWorkoutsView(); // Workouts view grid
+        }
         
         console.log('🔍 DEBUG: Calling updateStats()');
         updateStats();
