@@ -130,7 +130,7 @@ function initSneatComponents() {
 function initEventListeners() {
     // Program management
     document.getElementById('newProgramBtn')?.addEventListener('click', showProgramModal);
-    document.getElementById('createFirstProgramBtn')?.addEventListener('click', showProgramModal);
+    document.getElementById('bannerCreateProgramBtn')?.addEventListener('click', showProgramModal);
     document.getElementById('saveProgramBtn')?.addEventListener('click', saveProgram);
     document.getElementById('editProgramBtn')?.addEventListener('click', editCurrentProgram);
     document.getElementById('previewProgramBtn')?.addEventListener('click', previewProgram);
@@ -138,7 +138,7 @@ function initEventListeners() {
     
     // Workout management
     document.getElementById('newWorkoutBtn')?.addEventListener('click', showWorkoutModal);
-    document.getElementById('createFirstWorkoutBtn')?.addEventListener('click', showWorkoutModal);
+    document.getElementById('bannerCreateWorkoutBtn')?.addEventListener('click', showWorkoutModal);
     document.getElementById('saveWorkoutBtn')?.addEventListener('click', saveWorkout);
     document.getElementById('addExerciseGroupBtn')?.addEventListener('click', addExerciseGroup);
     document.getElementById('addBonusExerciseBtn')?.addEventListener('click', addBonusExercise);
@@ -282,10 +282,10 @@ async function loadDashboardData() {
         console.log('🔍 DEBUG: Calling updateStats()');
         updateStats();
         
-        // Show welcome panel if no data
-        if (window.ghostGym.programs.length === 0 && window.ghostGym.workouts.length === 0) {
-            console.log('🔍 DEBUG: No data, showing welcome panel');
-            showWelcomePanel();
+        // Show empty state panel if no program selected
+        if (window.ghostGym.programs.length === 0) {
+            console.log('🔍 DEBUG: No programs, showing empty state');
+            showEmptyStatePanel();
         }
         
     } catch (error) {
@@ -457,7 +457,7 @@ function selectProgram(programId) {
     
     // Show program details panel
     showProgramDetails(program);
-    hideWelcomePanel();
+    hideEmptyStatePanel();
 }
 
 /**
@@ -465,12 +465,12 @@ function selectProgram(programId) {
  */
 function showProgramDetails(program) {
     const detailsPanel = document.getElementById('programDetailsPanel');
-    const welcomePanel = document.getElementById('welcomePanel');
+    const emptyStatePanel = document.getElementById('emptyStatePanel');
     
     if (!detailsPanel) return;
     
-    // Hide welcome panel and show details
-    welcomePanel.style.display = 'none';
+    // Hide empty state panel and show details
+    if (emptyStatePanel) emptyStatePanel.style.display = 'none';
     detailsPanel.style.display = 'block';
     
     // Update title
@@ -641,22 +641,22 @@ function showLoading(show) {
 }
 
 /**
- * Show welcome panel
+ * Show empty state panel
  */
-function showWelcomePanel() {
-    const welcomePanel = document.getElementById('welcomePanel');
+function showEmptyStatePanel() {
+    const emptyStatePanel = document.getElementById('emptyStatePanel');
     const detailsPanel = document.getElementById('programDetailsPanel');
     
-    if (welcomePanel) welcomePanel.style.display = 'block';
+    if (emptyStatePanel) emptyStatePanel.style.display = 'block';
     if (detailsPanel) detailsPanel.style.display = 'none';
 }
 
 /**
- * Hide welcome panel
+ * Hide empty state panel
  */
-function hideWelcomePanel() {
-    const welcomePanel = document.getElementById('welcomePanel');
-    if (welcomePanel) welcomePanel.style.display = 'none';
+function hideEmptyStatePanel() {
+    const emptyStatePanel = document.getElementById('emptyStatePanel');
+    if (emptyStatePanel) emptyStatePanel.style.display = 'none';
 }
 
 /**
@@ -1519,7 +1519,7 @@ function deleteProgram(id) {
         // Clear selection if this was the current program
         if (window.ghostGym.currentProgram?.id === id) {
             window.ghostGym.currentProgram = null;
-            showWelcomePanel();
+            showEmptyStatePanel();
         }
         
         renderPrograms();

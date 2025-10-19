@@ -288,6 +288,32 @@
           </nav>
           <!-- / Navbar -->
 
+          <!-- Welcome Banner -->
+          <div id="welcomeBanner" class="welcome-banner">
+            <div class="container-xxl">
+              <div class="welcome-banner-content text-center">
+                <div class="welcome-banner-icon mb-3">
+                  <span style="font-size: 3.5rem;">👻</span>
+                </div>
+                <h2 class="welcome-banner-title mb-2">Welcome to Ghost Gym V0.4.1</h2>
+                <p class="welcome-banner-description mb-4">
+                  Create programs, organize workouts, and generate professional training documents with our modern interface.
+                </p>
+                <div class="welcome-banner-actions">
+                  <button class="btn btn-primary btn-lg me-2 mb-2" id="bannerCreateProgramBtn">
+                    <i class="bx bx-plus me-2"></i>
+                    Create Your First Program
+                  </button>
+                  <button class="btn btn-outline-primary btn-lg mb-2" id="bannerCreateWorkoutBtn">
+                    <i class="bx bx-plus-circle me-2"></i>
+                    Create Your First Workout
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- / Welcome Banner -->
+
           <!-- Content wrapper -->
           <div class="content-wrapper">
             <!-- Content -->
@@ -330,7 +356,7 @@
                 <!-- Program Details Panel -->
                 <div class="col-lg-5">
                   <!-- Program Details (shown when program selected) -->
-                  <div class="card h-100" id="programDetailsPanel" style="display: none;">
+                  <div class="card h-100" id="programDetailsPanel">
                     <div class="card-header d-flex justify-content-between align-items-center">
                       <h5 class="mb-0" id="programDetailsTitle">
                         <i class="bx bx-folder-open me-2"></i>Program Details
@@ -354,24 +380,14 @@
                     </div>
                   </div>
 
-                  <!-- Welcome Panel (default view) -->
-                  <div class="card h-100" id="welcomePanel">
+                  <!-- Empty State (shown when no program selected) -->
+                  <div class="card h-100" id="emptyStatePanel">
                     <div class="card-body text-center py-5">
                       <div class="mb-4">
-                        <span style="font-size: 4rem;">👻</span>
+                        <i class="bx bx-folder-open display-1 text-muted"></i>
                       </div>
-                      <h3>Welcome to Ghost Gym V0.4.1</h3>
-                      <p class="text-muted mb-4">Create programs, organize workouts, and generate professional training documents with our modern interface.</p>
-                      <div class="d-grid gap-2 d-md-block">
-                        <button class="btn btn-primary" id="createFirstProgramBtn">
-                          <i class="bx bx-plus me-2"></i>
-                          Create Your First Program
-                        </button>
-                        <button class="btn btn-outline-secondary" id="createFirstWorkoutBtn">
-                          <i class="bx bx-plus-circle me-2"></i>
-                          Create Your First Workout
-                        </button>
-                      </div>
+                      <h5 class="mb-3">No Program Selected</h5>
+                      <p class="text-muted mb-4">Select a program from the left panel to view its details, or create a new program to get started.</p>
                     </div>
                   </div>
                 </div>
