@@ -795,6 +795,9 @@ function showView(viewName) {
     updateMenuActiveState(viewName);
 }
 
+// Make showView globally accessible for menu-navigation.js
+window.showView = showView;
+
 /**
  * Update menu active state
  */
