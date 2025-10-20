@@ -1,0 +1,667 @@
+{
+  "inspected_at": "2025-10-20T15:48:16.552669",
+  "collections": {
+    "global_exercises": {
+      "collection": "global_exercises",
+      "total_docs_sampled": 3,
+      "documents": [
+        {
+          "id": "exercise-0012febe",
+          "fields": {
+            "mechanics": {
+              "type": "str",
+              "value": "Compound"
+            },
+            "tertiaryMuscle": {
+              "type": "NoneType",
+              "value": "null"
+            },
+            "planeOfMotion3": {
+              "type": "NoneType",
+              "value": "null"
+            },
+            "movementPattern3": {
+              "type": "NoneType",
+              "value": "null"
+            },
+            "id": {
+              "type": "str",
+              "value": "exercise-0012febe"
+            },
+            "footElevation": {
+              "type": "str",
+              "value": "No Elevation"
+            },
+            "primaryEquipmentCount": {
+              "type": "int",
+              "value": "1"
+            },
+            "secondaryEquipmentCount": {
+              "type": "int",
+              "value": "null"
+            },
+            "difficultyLevel": {
+              "type": "str",
+              "value": "Novice"
+            },
+            "movementPattern2": {
+              "type": "NoneType",
+              "value": "null"
+            },
+            "forceType": {
+              "type": "str",
+              "value": "Push"
+            },
+            "posture": {
+              "type": "str",
+              "value": "Standing"
+            },
+            "updatedAt": {
+              "type": "DatetimeWithNanoseconds",
+              "value": "2025-10-17 12:30:15.951000+00:00"
+            },
+            "loadPosition": {
+              "type": "str",
+              "value": "Order"
+            },
+            "armPattern": {
+              "type": "str",
+              "value": "Continuous"
+            },
+            "primeMoverMuscle": {
+              "type": "str",
+              "value": "Quadriceps Femoris"
+            },
+            "secondaryEquipment": {
+              "type": "NoneType",
+              "value": "null"
+            },
+            "bodyRegion": {
+              "type": "str",
+              "value": "Lower Body"
+            },
+            "planeOfMotion2": {
+              "type": "NoneType",
+              "value": "null"
+            },
+            "name": {
+              "type": "str",
+              "value": "Clubbell Order Alternating Forward Lunge"
+            },
+            "laterality": {
+              "type": "str",
+              "value": "Unilateral"
+            },
+            "favoriteCount": {
+              "type": "int",
+              "value": "null"
+            },
+            "secondaryMuscle": {
+              "type": "str",
+              "value": "Gluteus Maximus"
+            },
+            "grip": {
+              "type": "str",
+              "value": "Neutral"
+            },
+            "popularityScore": {
+              "type": "int",
+              "value": "50"
+            },
+            "planeOfMotion1": {
+              "type": "str",
+              "value": "Sagittal Plane"
+            },
+            "shortVideoUrl": {
+              "type": "NoneType",
+              "value": "null"
+            },
+            "armType": {
+              "type": "str",
+              "value": "Double Arm"
+            },
+            "targetMuscleGroup": {
+              "type": "str",
+              "value": "Quadriceps"
+            },
+            "movementPattern1": {
+              "type": "str",
+              "value": "Knee Dominant"
+            },
+            "createdAt": {
+              "type": "DatetimeWithNanoseconds",
+              "value": "2025-10-17 12:30:15.951000+00:00"
+            },
+            "combinationExercise": {
+              "type": "str",
+              "value": "Single Exercise"
+            },
+            "detailedVideoUrl": {
+              "type": "NoneType",
+              "value": "null"
+            },
+            "primaryEquipment": {
+              "type": "str",
+              "value": "Clubbell"
+            },
+            "isGlobal": {
+              "type": "bool",
+              "value": "True"
+            },
+            "classification": {
+              "type": "str",
+              "value": "Bodybuilding"
+            },
+            "nameSearchTokens": {
+              "type": "array",
+              "length": 5,
+              "sample": "['clubbell', 'order', 'alternating']"
+            }
+          },
+          "subcollections": {}
+        },
+        {
+          "id": "exercise-004518f5",
+          "fields": {
+            "mechanics": {
+              "type": "str",
+              "value": "Compound"
+            },
+            "tertiaryMuscle": {
+              "type": "NoneType",
+              "value": "null"
+            },
+            "planeOfMotion3": {
+              "type": "NoneType",
+              "value": "null"
+            },
+            "movementPattern3": {
+              "type": "NoneType",
+              "value": "null"
+            },
+            "id": {
+              "type": "str",
+              "value": "exercise-004518f5"
+            },
+            "footElevation": {
+              "type": "str",
+              "value": "Foot Elevated (Rear)"
+            },
+            "primaryEquipmentCount": {
+              "type": "int",
+              "value": "1"
+            },
+            "secondaryEquipmentCount": {
+              "type": "int",
+              "value": "1"
+            },
+            "difficultyLevel": {
+              "type": "str",
+              "value": "Intermediate"
+            },
+            "movementPattern2": {
+              "type": "NoneType",
+              "value": "null"
+            },
+            "forceType": {
+              "type": "str",
+              "value": "Push"
+            },
+            "posture": {
+              "type": "str",
+              "value": "Single Leg Supported"
+            },
+            "updatedAt": {
+              "type": "DatetimeWithNanoseconds",
+              "value": "2025-10-17 12:30:21.905000+00:00"
+            },
+            "loadPosition": {
+              "type": "str",
+              "value": "Overhead"
+            },
+            "armPattern": {
+              "type": "str",
+              "value": "Continuous"
+            },
+            "primeMoverMuscle": {
+              "type": "str",
+              "value": "Quadriceps Femoris"
+            },
+            "secondaryEquipment": {
+              "type": "str",
+              "value": "Bench (Flat)"
+            },
+            "bodyRegion": {
+              "type": "str",
+              "value": "Lower Body"
+            },
+            "planeOfMotion2": {
+              "type": "NoneType",
+              "value": "null"
+            },
+            "name": {
+              "type": "str",
+              "value": "Plate Overhead Bulgarian Split Squat"
+            },
+            "laterality": {
+              "type": "str",
+              "value": "Unilateral"
+            },
+            "favoriteCount": {
+              "type": "int",
+              "value": "null"
+            },
+            "secondaryMuscle": {
+              "type": "str",
+              "value": "Gluteus Maximus"
+            },
+            "grip": {
+              "type": "str",
+              "value": "Neutral"
+            },
+            "popularityScore": {
+              "type": "int",
+              "value": "50"
+            },
+            "planeOfMotion1": {
+              "type": "str",
+              "value": "Sagittal Plane"
+            },
+            "shortVideoUrl": {
+              "type": "NoneType",
+              "value": "null"
+            },
+            "armType": {
+              "type": "str",
+              "value": "Double Arm"
+            },
+            "targetMuscleGroup": {
+              "type": "str",
+              "value": "Quadriceps"
+            },
+            "movementPattern1": {
+              "type": "str",
+              "value": "Knee Dominant"
+            },
+            "createdAt": {
+              "type": "DatetimeWithNanoseconds",
+              "value": "2025-10-17 12:30:21.905000+00:00"
+            },
+            "combinationExercise": {
+              "type": "str",
+              "value": "Single Exercise"
+            },
+            "detailedVideoUrl": {
+              "type": "NoneType",
+              "value": "null"
+            },
+            "primaryEquipment": {
+              "type": "str",
+              "value": "Weight Plate"
+            },
+            "isGlobal": {
+              "type": "bool",
+              "value": "True"
+            },
+            "classification": {
+              "type": "str",
+              "value": "Bodybuilding"
+            },
+            "nameSearchTokens": {
+              "type": "array",
+              "length": 5,
+              "sample": "['plate', 'overhead', 'bulgarian']"
+            }
+          },
+          "subcollections": {}
+        },
+        {
+          "id": "exercise-0048d526",
+          "fields": {
+            "mechanics": {
+              "type": "str",
+              "value": "Compound"
+            },
+            "tertiaryMuscle": {
+              "type": "NoneType",
+              "value": "null"
+            },
+            "planeOfMotion3": {
+              "type": "NoneType",
+              "value": "null"
+            },
+            "movementPattern3": {
+              "type": "NoneType",
+              "value": "null"
+            },
+            "id": {
+              "type": "str",
+              "value": "exercise-0048d526"
+            },
+            "footElevation": {
+              "type": "str",
+              "value": "No Elevation"
+            },
+            "primaryEquipmentCount": {
+              "type": "int",
+              "value": "1"
+            },
+            "secondaryEquipmentCount": {
+              "type": "int",
+              "value": "null"
+            },
+            "difficultyLevel": {
+              "type": "str",
+              "value": "Novice"
+            },
+            "movementPattern2": {
+              "type": "NoneType",
+              "value": "null"
+            },
+            "forceType": {
+              "type": "str",
+              "value": "Push"
+            },
+            "posture": {
+              "type": "str",
+              "value": "Knee Over Toe Split Squat"
+            },
+            "updatedAt": {
+              "type": "DatetimeWithNanoseconds",
+              "value": "2025-10-17 12:30:21.905000+00:00"
+            },
+            "loadPosition": {
+              "type": "str",
+              "value": "Front Rack"
+            },
+            "armPattern": {
+              "type": "str",
+              "value": "Continuous"
+            },
+            "primeMoverMuscle": {
+              "type": "str",
+              "value": "Quadriceps Femoris"
+            },
+            "secondaryEquipment": {
+              "type": "NoneType",
+              "value": "null"
+            },
+            "bodyRegion": {
+              "type": "str",
+              "value": "Lower Body"
+            },
+            "planeOfMotion2": {
+              "type": "NoneType",
+              "value": "null"
+            },
+            "name": {
+              "type": "str",
+              "value": "Dumbbell Goblet Knee Over Toe Split Squat"
+            },
+            "laterality": {
+              "type": "str",
+              "value": "Unilateral"
+            },
+            "favoriteCount": {
+              "type": "int",
+              "value": "null"
+            },
+            "secondaryMuscle": {
+              "type": "str",
+              "value": "Gluteus Maximus"
+            },
+            "grip": {
+              "type": "str",
+              "value": "Goblet"
+            },
+            "popularityScore": {
+              "type": "int",
+              "value": "50"
+            },
+            "planeOfMotion1": {
+              "type": "str",
+              "value": "Sagittal Plane"
+            },
+            "shortVideoUrl": {
+              "type": "NoneType",
+              "value": "null"
+            },
+            "armType": {
+              "type": "str",
+              "value": "Double Arm"
+            },
+            "targetMuscleGroup": {
+              "type": "str",
+              "value": "Quadriceps"
+            },
+            "movementPattern1": {
+              "type": "str",
+              "value": "Knee Dominant"
+            },
+            "createdAt": {
+              "type": "DatetimeWithNanoseconds",
+              "value": "2025-10-17 12:30:21.905000+00:00"
+            },
+            "combinationExercise": {
+              "type": "str",
+              "value": "Single Exercise"
+            },
+            "detailedVideoUrl": {
+              "type": "NoneType",
+              "value": "null"
+            },
+            "primaryEquipment": {
+              "type": "str",
+              "value": "Dumbbell"
+            },
+            "isGlobal": {
+              "type": "bool",
+              "value": "True"
+            },
+            "classification": {
+              "type": "str",
+              "value": "Bodybuilding"
+            },
+            "nameSearchTokens": {
+              "type": "array",
+              "length": 7,
+              "sample": "['dumbbell', 'goblet', 'knee']"
+            }
+          },
+          "subcollections": {}
+        }
+      ]
+    },
+    "programs": {
+      "collection": "programs",
+      "total_docs_sampled": 3,
+      "documents": [
+        {
+          "id": "0qTqOtqEPDY1NJ45OuiT",
+          "fields": {
+            "updated_at": {
+              "type": "DatetimeWithNanoseconds",
+              "value": "2025-10-18 17:45:38.808000+00:00"
+            },
+            "migrated_at": {
+              "type": "DatetimeWithNanoseconds",
+              "value": "2025-10-18 17:45:38.808000+00:00"
+            },
+            "difficulty_level": {
+              "type": "str",
+              "value": "intermediate"
+            },
+            "description": {
+              "type": "str",
+              "value": "null"
+            },
+            "modified_date": {
+              "type": "str",
+              "value": "2025-10-18T03:43:15.650Z"
+            },
+            "id": {
+              "type": "str",
+              "value": "program-1760758995650-efnaqzkey"
+            },
+            "name": {
+              "type": "str",
+              "value": "Fall 2026"
+            },
+            "tags": {
+              "type": "array",
+              "length": 0,
+              "sample": "[]"
+            },
+            "created_date": {
+              "type": "str",
+              "value": "2025-10-18T03:43:15.650Z"
+            },
+            "duration_weeks": {
+              "type": "NoneType",
+              "value": "null"
+            },
+            "workouts": {
+              "type": "array",
+              "length": 0,
+              "sample": "[]"
+            },
+            "created_at": {
+              "type": "DatetimeWithNanoseconds",
+              "value": "2025-10-18 17:45:38.808000+00:00"
+            },
+            "user_id": {
+              "type": "str",
+              "value": "mnxaBMMr5NMRFAkylNr9O4QRo7j2"
+            }
+          },
+          "subcollections": {}
+        },
+        {
+          "id": "Oznmd9na0xJaXeQJW4I3",
+          "fields": {
+            "updated_at": {
+              "type": "DatetimeWithNanoseconds",
+              "value": "2025-10-18 23:36:14.985000+00:00"
+            },
+            "migrated_at": {
+              "type": "DatetimeWithNanoseconds",
+              "value": "2025-10-18 23:36:14.985000+00:00"
+            },
+            "difficulty_level": {
+              "type": "str",
+              "value": "intermediate"
+            },
+            "description": {
+              "type": "str",
+              "value": "null"
+            },
+            "modified_date": {
+              "type": "str",
+              "value": "2025-10-18T03:43:15.650Z"
+            },
+            "id": {
+              "type": "str",
+              "value": "program-1760758995650-efnaqzkey"
+            },
+            "name": {
+              "type": "str",
+              "value": "Fall 2026"
+            },
+            "tags": {
+              "type": "array",
+              "length": 0,
+              "sample": "[]"
+            },
+            "created_date": {
+              "type": "str",
+              "value": "2025-10-18T03:43:15.650Z"
+            },
+            "duration_weeks": {
+              "type": "NoneType",
+              "value": "null"
+            },
+            "user_id": {
+              "type": "str",
+              "value": "mnxaBMMr5NMRFAkylNr9O4QRo7j2"
+            },
+            "created_at": {
+              "type": "DatetimeWithNanoseconds",
+              "value": "2025-10-18 23:36:14.985000+00:00"
+            },
+            "workouts": {
+              "type": "array",
+              "length": 0,
+              "sample": "[]"
+            }
+          },
+          "subcollections": {}
+        },
+        {
+          "id": "gf6ivv6his2HKjuewb8t",
+          "fields": {
+            "updated_at": {
+              "type": "DatetimeWithNanoseconds",
+              "value": "2025-10-18 23:42:43.509000+00:00"
+            },
+            "migrated_at": {
+              "type": "DatetimeWithNanoseconds",
+              "value": "2025-10-18 23:42:43.509000+00:00"
+            },
+            "difficulty_level": {
+              "type": "str",
+              "value": "intermediate"
+            },
+            "description": {
+              "type": "str",
+              "value": "null"
+            },
+            "modified_date": {
+              "type": "str",
+              "value": "2025-10-18T03:43:15.650Z"
+            },
+            "id": {
+              "type": "str",
+              "value": "program-1760758995650-efnaqzkey"
+            },
+            "name": {
+              "type": "str",
+              "value": "Fall 2026"
+            },
+            "tags": {
+              "type": "array",
+              "length": 0,
+              "sample": "[]"
+            },
+            "created_date": {
+              "type": "str",
+              "value": "2025-10-18T03:43:15.650Z"
+            },
+            "user_id": {
+              "type": "str",
+              "value": "mnxaBMMr5NMRFAkylNr9O4QRo7j2"
+            },
+            "workouts": {
+              "type": "array",
+              "length": 0,
+              "sample": "[]"
+            },
+            "created_at": {
+              "type": "DatetimeWithNanoseconds",
+              "value": "2025-10-18 23:42:43.509000+00:00"
+            },
+            "duration_weeks": {
+              "type": "NoneType",
+              "value": "null"
+            }
+          },
+          "subcollections": {}
+        }
+      ]
+    },
+    "users": {
+      "collection": "users",
+      "total_docs_sampled": 0,
+      "documents": []
+    }
+  }
+}

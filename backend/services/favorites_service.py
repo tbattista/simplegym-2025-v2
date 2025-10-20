@@ -65,22 +65,36 @@ class FavoritesService:
             if doc.exists:
                 data = doc.to_dict()
                 logger.info(f"📦 Raw Firestore data keys: {list(data.keys())}")
-                logger.info(f"📦 Raw Firestore data: {data}")
                 
                 # Convert exercises dict to FavoriteExercise objects
                 exercises = {}
+                
+                # Handle both nested map structure AND dotted field paths (for backward compatibility)
                 exercises_data = data.get('exercises', {})
-                logger.info(f"📦 Exercises data type: {type(exercises_data)}, content: {exercises_data}")
                 
-                for ex_id, ex_data in exercises_data.items():
-                    try:
-                        logger.info(f"📦 Processing favorite: {ex_id} -> {ex_data}")
-                        exercises[ex_id] = FavoriteExercise(**ex_data)
-                    except Exception as e:
-                        logger.warning(f"Failed to parse favorite exercise {ex_id}: {str(e)}")
-                        continue
+                if exercises_data:
+                    # New structure: exercises is a nested map
+                    logger.info(f"✅ Found nested exercises map with {len(exercises_data)} items")
+                    for ex_id, ex_data in exercises_data.items():
+                        try:
+                            exercises[ex_id] = FavoriteExercise(**ex_data)
+                        except Exception as e:
+                            logger.warning(f"Failed to parse favorite exercise {ex_id}: {str(e)}")
+                            continue
+                else:
+                    # Old structure: exercises stored as dotted field paths
+                    logger.info("⚠️ Using legacy dotted field path structure")
+                    for key, value in data.items():
+                        if key.startswith('exercises.'):
+                            ex_id = key.replace('exercises.', '')
+                            try:
+                                exercises[ex_id] = FavoriteExercise(**value)
+                                logger.info(f"📦 Parsed legacy favorite: {ex_id}")
+                            except Exception as e:
+                                logger.warning(f"Failed to parse legacy favorite {ex_id}: {str(e)}")
+                                continue
                 
-                logger.info(f"📦 Parsed {len(exercises)} favorite exercises")
+                logger.info(f"✅ Parsed {len(exercises)} favorite exercises total")
                 
                 return UserFavorites(
                     exerciseIds=data.get('exerciseIds', []),
@@ -128,13 +142,27 @@ class FavoritesService:
                 favoritedAt=datetime.now()
             )
             
-            # Update favorites document using Firestore atomic operations
-            doc_ref.set({
-                'exerciseIds': firestore.ArrayUnion([exercise_id]),
-                f'exercises.{exercise_id}': favorite.model_dump(),
-                'lastUpdated': firestore.SERVER_TIMESTAMP,
-                'count': firestore.Increment(1)
-            }, merge=True)
+            # Get current document to check structure
+            current_doc = doc_ref.get()
+            
+            if current_doc.exists:
+                # Update existing document with nested structure
+                doc_ref.update({
+                    'exerciseIds': firestore.ArrayUnion([exercise_id]),
+                    f'exercises.{exercise_id}': favorite.model_dump(),
+                    'lastUpdated': firestore.SERVER_TIMESTAMP,
+                    'count': firestore.Increment(1)
+                })
+            else:
+                # Create new document with proper nested structure
+                doc_ref.set({
+                    'exerciseIds': [exercise_id],
+                    'exercises': {
+                        exercise_id: favorite.model_dump()
+                    },
+                    'lastUpdated': firestore.SERVER_TIMESTAMP,
+                    'count': 1
+                })
             
             # Optionally increment favorite count on the exercise itself
             try:
