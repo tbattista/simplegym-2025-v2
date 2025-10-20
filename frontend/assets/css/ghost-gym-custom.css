@@ -777,4 +777,253 @@
   .program-view-item .btn-group .btn {
     width: 100%;
   }
+
+/* ============================================
+   PHASE 3: VIEW TRANSITION ANIMATIONS
+   ============================================ */
+
+/* View Transition Animations */
+@keyframes viewFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes viewSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes cardFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Apply animations to view containers */
+.view-container {
+  animation: viewFadeIn 0.3s ease-in;
+}
+
+/* Staggered animations for program items */
+.program-view-item {
+  animation: viewSlideIn 0.4s ease-out;
+  animation-fill-mode: both;
+}
+
+.program-view-item:nth-child(1) { animation-delay: 0.05s; }
+.program-view-item:nth-child(2) { animation-delay: 0.1s; }
+.program-view-item:nth-child(3) { animation-delay: 0.15s; }
+.program-view-item:nth-child(4) { animation-delay: 0.2s; }
+.program-view-item:nth-child(5) { animation-delay: 0.25s; }
+
+/* Enhanced hover effects for program items */
+.program-view-item {
+  transition: all 0.3s ease;
+}
+
+.program-view-item:hover {
+  background-color: rgba(105, 108, 255, 0.04);
+  transform: translateX(4px);
+  box-shadow: 0 2px 8px rgba(105, 108, 255, 0.1);
+}
+
+/* Enhanced button group styling */
+.program-view-item .btn-group-vertical {
+  min-width: 140px;
+}
+
+.program-view-item .btn-group-vertical .btn {
+  transition: all 0.2s ease;
+}
+
+.program-view-item .btn-group-vertical .btn:hover {
+  transform: translateX(-2px);
+}
+
+/* Staggered animation for workout cards */
+#workoutsViewGrid .workout-card {
+  animation: cardFadeIn 0.4s ease-out;
+  animation-fill-mode: both;
+}
+
+#workoutsViewGrid .workout-card:nth-child(1) { animation-delay: 0.05s; }
+#workoutsViewGrid .workout-card:nth-child(2) { animation-delay: 0.1s; }
+#workoutsViewGrid .workout-card:nth-child(3) { animation-delay: 0.15s; }
+#workoutsViewGrid .workout-card:nth-child(4) { animation-delay: 0.2s; }
+#workoutsViewGrid .workout-card:nth-child(5) { animation-delay: 0.25s; }
+#workoutsViewGrid .workout-card:nth-child(6) { animation-delay: 0.3s; }
+
+/* Enhanced workout card hover effects */
+#workoutsViewGrid .workout-card:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 8px 20px rgba(105, 108, 255, 0.2);
+}
+
+/* Workout preview on hover */
+.workout-card-preview {
+  opacity: 0;
+  max-height: 0;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.workout-card:hover .workout-card-preview {
+  opacity: 1;
+  max-height: 50px;
+}
+
+/* Badge animations */
+.badge {
+  transition: all 0.2s ease;
+}
+
+.badge:hover {
+  transform: scale(1.05);
+}
+
+/* Enhanced empty states */
+.list-group-item.text-center,
+#workoutsViewEmptyState {
+  animation: viewFadeIn 0.5s ease-in;
+}
+
+/* ============================================
+   PHASE 3: ENHANCED RESPONSIVE BREAKPOINTS
+   ============================================ */
+
+/* Extra large screens */
+@media (min-width: 1400px) {
+  #workoutsViewGrid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  }
+}
+
+/* Large screens - tablets landscape */
+@media (max-width: 992px) {
+  #workoutsViewGrid {
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  }
+  
+  .program-view-item .btn-group-vertical {
+    min-width: 120px;
+  }
+}
+
+/* Medium screens - tablets portrait */
+@media (max-width: 768px) {
+  #workoutsViewGrid {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 1rem;
+  }
+  
+  .program-view-item {
+    padding: 1rem;
+  }
+  
+  .program-view-item .d-flex {
+    flex-direction: column;
+  }
+  
+  .program-view-item .btn-group-vertical {
+    width: 100%;
+    margin-top: 1rem;
+    margin-left: 0 !important;
+  }
+  
+  .program-view-item .btn-group-vertical .btn {
+    width: 100%;
+  }
+  
+  /* Disable hover transforms on mobile */
+  .program-view-item:hover {
+    transform: none;
+  }
+  
+  #workoutsViewGrid .workout-card:hover {
+    transform: translateY(-2px);
+  }
+}
+
+/* Small screens - mobile */
+@media (max-width: 576px) {
+  #workoutsViewGrid {
+    grid-template-columns: 1fr;
+  }
+  
+  .workout-card-preview {
+    display: none;
+  }
+}
+
+/* ============================================
+   PHASE 3: LOADING STATES & MICRO-INTERACTIONS
+   ============================================ */
+
+/* Loading state for views */
+.view-container.loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.view-container.loading::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--ghost-primary);
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+/* Smooth transitions for all interactive elements */
+button, .btn, a, .card, .list-group-item {
+  transition: all 0.2s ease;
+}
+
+/* Focus states for accessibility */
+button:focus-visible,
+.btn:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--ghost-primary);
+  outline-offset: 2px;
+}
+
+/* Pulse animation for important buttons */
+@keyframes pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(105, 108, 255, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba(105, 108, 255, 0);
+  }
+}
+
+.btn-primary:focus {
+  animation: pulse 1.5s infinite;
+}
 }

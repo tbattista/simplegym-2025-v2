@@ -14,7 +14,7 @@
     <!-- Force HTTPS for all requests -->
     <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
 
-    <title>👻 Ghost Gym V0.4.1 - Program Manager Dashboard</title>
+    <title>👻 Ghost Gym V0.4.1 - Program Manager Dashboard (v20251020-03)</title>
 
     <meta name="description" content="Professional workout program management with Ghost Gym V0.4.1" />
 
@@ -1164,6 +1164,119 @@
         </div>
     </div>
 
+    <!-- Backup & Export Modal -->
+    <div class="modal fade" id="backupModal" tabindex="-1" aria-labelledby="backupModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="backupModalLabel">
+                        <i class="bx bx-cloud-upload me-2"></i>
+                        Backup & Export
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                
+                <div class="modal-body">
+                    <div class="mb-4">
+                        <h6 class="mb-3">Export Data</h6>
+                        <div class="d-grid gap-2">
+                            <button type="button" class="btn btn-outline-primary" id="exportProgramsBtn">
+                                <i class="bx bx-folder me-2"></i>
+                                Export Programs (JSON)
+                            </button>
+                            <button type="button" class="btn btn-outline-primary" id="exportWorkoutsBtn">
+                                <i class="bx bx-dumbbell me-2"></i>
+                                Export Workouts (JSON)
+                            </button>
+                            <button type="button" class="btn btn-primary" id="exportAllBtn">
+                                <i class="bx bx-download me-2"></i>
+                                Export Everything (JSON)
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h6 class="mb-3">Import Data</h6>
+                        <div class="mb-3">
+                            <label for="importFileInput" class="form-label">Select JSON file to import:</label>
+                            <input type="file" class="form-control" id="importFileInput" accept=".json">
+                            <div class="form-text">Import programs and workouts from a JSON backup file</div>
+                        </div>
+                        <button type="button" class="btn btn-success w-100" id="importDataBtn" disabled>
+                            <i class="bx bx-upload me-2"></i>
+                            Import Data
+                        </button>
+                    </div>
+                    
+                    <div class="alert alert-info mb-0" role="alert">
+                        <i class="bx bx-info-circle me-2"></i>
+                        <strong>Cloud Sync:</strong> Sign in to automatically sync your data across devices.
+                    </div>
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="modal fade" id="settingsModal" tabindex="-1" aria-labelledby="settingsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="settingsModalLabel">
+                        <i class="bx bx-cog me-2"></i>
+                        Settings
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                
+                <div class="modal-body">
+                    <div class="mb-4">
+                        <h6 class="mb-3">Display Preferences</h6>
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" id="darkModeToggle" disabled>
+                            <label class="form-check-label" for="darkModeToggle">
+                                Dark Mode <span class="badge bg-label-secondary">Coming Soon</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h6 class="mb-3">Data Management</h6>
+                        <button type="button" class="btn btn-outline-danger w-100" id="clearLocalDataBtn">
+                            <i class="bx bx-trash me-2"></i>
+                            Clear Local Data
+                        </button>
+                        <div class="form-text mt-2">
+                            This will delete all programs and workouts stored locally. Cloud data will not be affected.
+                        </div>
+                    </div>
+                    
+                    <div class="mb-0">
+                        <h6 class="mb-3">About</h6>
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <p class="mb-2"><strong>Ghost Gym V0.4.1</strong></p>
+                                <p class="mb-2 small text-muted">Professional workout program management</p>
+                                <p class="mb-0 small">
+                                    <i class="bx bx-code-alt me-1"></i>
+                                    Version: <span id="appVersion">20251020-03</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Core JS -->
     <script src="/static/assets/vendor/libs/jquery/jquery.js"></script>
     <script src="/static/assets/vendor/libs/popper/popper.js"></script>
@@ -1178,22 +1291,22 @@
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     
     <!-- Firebase Modules (preserved from V3) -->
-    <script src="/static/assets/js/firebase/firebase-init.js?v=20251019-07"></script>
-    <script src="/static/assets/js/firebase/auth-service.js?v=20251019-07"></script>
-    <script src="/static/assets/js/firebase/auth-ui.js?v=20251019-07"></script>
+    <script src="/static/assets/js/firebase/firebase-init.js?v=20251020-03"></script>
+    <script src="/static/assets/js/firebase/auth-service.js?v=20251020-03"></script>
+    <script src="/static/assets/js/firebase/auth-ui.js?v=20251020-03"></script>
     
     <!-- Phase 2: Data Management and Sync -->
-    <script src="/static/assets/js/firebase/data-manager.js?v=20251019-07"></script>
-    <script src="/static/assets/js/firebase/sync-manager.js?v=20251019-07"></script>
-    <script src="/static/assets/js/firebase/migration-ui.js?v=20251019-07"></script>
+    <script src="/static/assets/js/firebase/data-manager.js?v=20251020-03"></script>
+    <script src="/static/assets/js/firebase/sync-manager.js?v=20251020-03"></script>
+    <script src="/static/assets/js/firebase/migration-ui.js?v=20251020-03"></script>
     
     <!-- Exercise Autocomplete Component -->
-    <script src="/static/assets/js/components/exercise-autocomplete.js?v=20251019-07"></script>
+    <script src="/static/assets/js/components/exercise-autocomplete.js?v=20251020-03"></script>
     
     <!-- Custom Ghost Gym Dashboard JavaScript (MUST load before menu-navigation) -->
-    <script src="/static/assets/js/ghost-gym-dashboard.js?v=20251020-02"></script>
+    <script src="/static/assets/js/ghost-gym-dashboard.js?v=20251020-03"></script>
     
     <!-- Menu Navigation System (loads after dashboard to access showView) -->
-    <script src="/static/assets/js/menu-navigation.js?v=20251020-02"></script>
+    <script src="/static/assets/js/menu-navigation.js?v=20251020-03"></script>
   </body>
 </html>
