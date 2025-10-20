@@ -3,10 +3,10 @@
  *
  * This file integrates the existing V3 functionality with the new Sneat template
  * while preserving all Firebase authentication, data management, and sync capabilities.
- * @version 20251019-02-HTTPS-FIX
+ * @version 20251020-03-PHASES-2-5
  */
 
-console.log('📦 Dashboard Version: 20251019-02-HTTPS-FIX');
+console.log('📦 Dashboard Version: 20251020-03-PHASES-2-5');
 
 /**
  * Get API URL with proper base path
