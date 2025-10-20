@@ -10,14 +10,17 @@ git add frontend/assets/js/services/exercise-cache-service.js
 git add frontend/assets/js/components/exercise-autocomplete.js
 git add frontend/assets/js/firebase/sync-manager.js
 git add frontend/assets/js/firebase/data-manager.js
+git add frontend/assets/js/dashboard/exercises.js
 git add frontend/dashboard.html
 git add PERFORMANCE_OPTIMIZATION_SUMMARY.md
+git add DEPLOY_PERFORMANCE_OPTIMIZATIONS.md
 ```
 
 ### Step 2: Commit Changes
 ```bash
-git commit -m "feat: Implement comprehensive performance optimizations
+git commit -m "feat: Implement comprehensive performance optimizations + fix favorites persistence
 
+Performance Optimizations:
 - Add global exercise cache service (singleton pattern)
 - Optimize exercise autocomplete to use shared cache
 - Implement adaptive polling in sync manager (83-92% reduction)
@@ -26,6 +29,11 @@ git commit -m "feat: Implement comprehensive performance optimizations
 - Reduce memory usage by 89% (~23MB -> ~2.5MB)
 - Improve load times by 75-85% (8-12s -> 1-2s)
 - Add performance metrics and monitoring
+
+Bug Fixes:
+- Fix favorites not persisting after page refresh
+- Add auth state listener to reload favorites on login
+- Improve error logging for favorites API calls
 
 Version: 20251020-05"
 ```
@@ -48,7 +56,7 @@ https://railway.app/dashboard
 If you prefer, run all commands at once:
 
 ```bash
-git add frontend/assets/js/services/exercise-cache-service.js frontend/assets/js/components/exercise-autocomplete.js frontend/assets/js/firebase/sync-manager.js frontend/assets/js/firebase/data-manager.js frontend/dashboard.html PERFORMANCE_OPTIMIZATION_SUMMARY.md && git commit -m "feat: Implement comprehensive performance optimizations - 90% reduction in API requests, 89% memory savings, 75-85% faster load times (v20251020-05)" && git push origin main
+git add frontend/assets/js/services/exercise-cache-service.js frontend/assets/js/components/exercise-autocomplete.js frontend/assets/js/firebase/sync-manager.js frontend/assets/js/firebase/data-manager.js frontend/assets/js/dashboard/exercises.js frontend/dashboard.html PERFORMANCE_OPTIMIZATION_SUMMARY.md DEPLOY_PERFORMANCE_OPTIMIZATIONS.md && git commit -m "feat: Performance optimizations + favorites fix - 90% reduction in API requests, 89% memory savings, 75-85% faster load times, favorites now persist correctly (v20251020-05)" && git push origin main
 ```
 
 ---

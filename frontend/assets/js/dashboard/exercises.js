@@ -81,13 +81,18 @@ async function loadExercises() {
  */
 async function loadExerciseFavorites() {
     if (!window.firebaseAuth?.currentUser) {
+        console.log('ℹ️ No user authenticated - clearing favorites');
         window.ghostGym.exercises.favorites.clear();
         return;
     }
     
     try {
+        console.log('📡 Loading favorites for user:', window.firebaseAuth.currentUser.email);
         const token = await window.firebaseAuth.currentUser.getIdToken();
-        const response = await fetch(getApiUrl('/api/v3/users/me/favorites'), {
+        const url = getApiUrl('/api/v3/users/me/favorites');
+        console.log('🔍 Fetching favorites from:', url);
+        
+        const response = await fetch(url, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -95,17 +100,25 @@ async function loadExerciseFavorites() {
         
         if (response.ok) {
             const data = await response.json();
+            console.log('📦 Favorites API response:', data);
+            
+            // Map favorites to Set of exercise IDs
             window.ghostGym.exercises.favorites = new Set(data.favorites.map(f => f.exerciseId));
-            console.log(`✅ Loaded ${window.ghostGym.exercises.favorites.size} favorites`);
+            console.log(`✅ Loaded ${window.ghostGym.exercises.favorites.size} favorites:`, Array.from(window.ghostGym.exercises.favorites));
             
             // Update stats
             const favCount = document.getElementById('favoritesCount');
             if (favCount) {
                 favCount.textContent = window.ghostGym.exercises.favorites.size;
             }
+        } else {
+            const errorText = await response.text();
+            console.error('❌ Failed to load favorites:', response.status, errorText);
+            window.ghostGym.exercises.favorites.clear();
         }
     } catch (error) {
-        console.warn('⚠️ Could not load favorites:', error.message);
+        console.error('❌ Error loading favorites:', error);
+        window.ghostGym.exercises.favorites.clear();
     }
 }
 
@@ -960,5 +973,34 @@ window.setExerciseCache = setExerciseCache;
 window.isExerciseCacheValid = isExerciseCacheValid;
 window.showExerciseDatabasePanel = showExerciseDatabasePanel;
 window.hideExerciseDatabasePanel = hideExerciseDatabasePanel;
+
+// Listen for authentication state changes to reload favorites
+window.addEventListener('authStateChanged', async (event) => {
+    const { user, isAuthenticated } = event.detail;
+    
+    if (isAuthenticated && user) {
+        console.log('🔄 Auth state changed - reloading favorites and custom exercises');
+        
+        // Reload favorites and custom exercises
+        await loadExerciseFavorites();
+        await loadCustomExercises();
+        
+        // Re-render if we're on the exercises view
+        const exercisesView = document.getElementById('exercisesView');
+        if (exercisesView && exercisesView.style.display !== 'none') {
+            filterExercises();
+        }
+    } else {
+        // User signed out - clear favorites and custom exercises
+        window.ghostGym.exercises.favorites.clear();
+        window.ghostGym.exercises.custom = [];
+        
+        // Re-render if we're on the exercises view
+        const exercisesView = document.getElementById('exercisesView');
+        if (exercisesView && exercisesView.style.display !== 'none') {
+            filterExercises();
+        }
+    }
+});
 
 console.log('📦 Exercise Database module loaded');
