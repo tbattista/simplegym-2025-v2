@@ -1,6 +1,7 @@
 /**
  * Real-time Sync Manager for Ghost Gym V3 Phase 2
  * Handles live data synchronization and conflict resolution
+ * @version 2.0.0 - Performance Optimized with Adaptive Polling
  */
 
 class SyncManager {
@@ -12,6 +13,19 @@ class SyncManager {
         this.conflictQueue = [];
         this.retryAttempts = new Map();
         this.maxRetries = 3;
+        
+        // Adaptive polling configuration
+        this.pollingIntervals = {
+            active: 30000,      // 30 seconds when user is active
+            idle: 120000,       // 2 minutes when idle (5+ min)
+            veryIdle: 300000,   // 5 minutes when very idle (15+ min)
+            hidden: null        // Pause when tab is hidden
+        };
+        
+        this.currentInterval = this.pollingIntervals.active;
+        this.lastActivityTime = Date.now();
+        this.isTabVisible = !document.hidden;
+        this.activityThrottleTimer = null;
         
         // Initialize when Firebase is ready
         this.waitForFirebase();
@@ -38,7 +52,13 @@ class SyncManager {
             // Set up network listeners
             this.setupNetworkListeners();
             
-            console.log('✅ Sync Manager initialized');
+            // Set up activity tracking
+            this.setupActivityTracking();
+            
+            // Set up visibility change detection
+            this.setupVisibilityTracking();
+            
+            console.log('✅ Sync Manager initialized with adaptive polling');
         } catch (error) {
             console.warn('⚠️ Sync Manager initialization failed:', error.message);
         }
@@ -103,62 +123,91 @@ class SyncManager {
     
     async setupRealtimeListeners(userId) {
         try {
-            // For now, we'll use polling as a fallback since we need to import Firebase modules properly
-            // In a full implementation, this would use onSnapshot from Firestore
+            // Set up adaptive polling for programs and workouts
+            this.setupAdaptivePolling(userId);
             
-            // Set up polling for programs
-            this.setupProgramPolling(userId);
-            
-            // Set up polling for workouts
-            this.setupWorkoutPolling(userId);
-            
-            console.log('📡 Real-time listeners set up (polling mode)');
+            console.log('📡 Real-time listeners set up (adaptive polling mode)');
         } catch (error) {
             console.error('❌ Error setting up real-time listeners:', error);
             throw error;
         }
     }
     
-    setupProgramPolling(userId) {
-        const pollInterval = 5000; // 5 seconds
-        
-        const pollPrograms = async () => {
-            if (!this.isActive || !this.currentUser) {
+    setupAdaptivePolling(userId) {
+        // Single unified polling function
+        const poll = async () => {
+            if (!this.isActive || !this.currentUser || !this.isTabVisible) {
                 return;
             }
             
             try {
-                const programs = await window.dataManager.getFirestorePrograms();
+                // Fetch both programs and workouts in parallel
+                const [programs, workouts] = await Promise.all([
+                    window.dataManager.getFirestorePrograms(),
+                    window.dataManager.getFirestoreWorkouts()
+                ]);
+                
                 this.handleProgramsUpdate(programs);
+                this.handleWorkoutsUpdate(workouts);
+                
             } catch (error) {
-                console.warn('⚠️ Program polling error:', error);
+                console.warn('⚠️ Polling error:', error);
                 this.handleSyncError(error);
             }
         };
         
-        const intervalId = setInterval(pollPrograms, pollInterval);
-        this.listeners.set('programs_poll', () => clearInterval(intervalId));
+        // Initial poll
+        poll();
+        
+        // Set up adaptive interval
+        const startPolling = () => {
+            // Clear existing interval
+            if (this.listeners.has('adaptive_poll')) {
+                const clearFn = this.listeners.get('adaptive_poll');
+                clearFn();
+            }
+            
+            // Determine interval based on activity
+            const interval = this.getAdaptiveInterval();
+            
+            if (interval === null) {
+                console.log('⏸️ Polling paused (tab hidden)');
+                return;
+            }
+            
+            console.log(`🔄 Polling interval set to ${interval / 1000}s`);
+            
+            const intervalId = setInterval(poll, interval);
+            this.listeners.set('adaptive_poll', () => clearInterval(intervalId));
+        };
+        
+        // Start initial polling
+        startPolling();
+        
+        // Store restart function for activity/visibility changes
+        this.restartPolling = startPolling;
     }
     
-    setupWorkoutPolling(userId) {
-        const pollInterval = 5000; // 5 seconds
+    getAdaptiveInterval() {
+        // If tab is hidden, pause polling
+        if (!this.isTabVisible) {
+            return null;
+        }
         
-        const pollWorkouts = async () => {
-            if (!this.isActive || !this.currentUser) {
-                return;
-            }
-            
-            try {
-                const workouts = await window.dataManager.getFirestoreWorkouts();
-                this.handleWorkoutsUpdate(workouts);
-            } catch (error) {
-                console.warn('⚠️ Workout polling error:', error);
-                this.handleSyncError(error);
-            }
-        };
+        const timeSinceActivity = Date.now() - this.lastActivityTime;
         
-        const intervalId = setInterval(pollWorkouts, pollInterval);
-        this.listeners.set('workouts_poll', () => clearInterval(intervalId));
+        // Active: < 5 minutes since last activity
+        if (timeSinceActivity < 5 * 60 * 1000) {
+            return this.pollingIntervals.active;
+        }
+        
+        // Idle: 5-15 minutes since last activity
+        if (timeSinceActivity < 15 * 60 * 1000) {
+            return this.pollingIntervals.idle;
+        }
+        
+        // Very idle: > 15 minutes since last activity
+        return this.pollingIntervals.veryIdle;
     }
     
     handleProgramsUpdate(programs) {
@@ -214,6 +263,89 @@ class SyncManager {
         }
     }
     
+    // Activity Tracking
+    
+    setupActivityTracking() {
+        const activityEvents = ['mousedown', 'keydown', 'scroll', 'touchstart'];
+        
+        const handleActivity = () => {
+            // Throttle activity updates to avoid excessive processing
+            if (this.activityThrottleTimer) {
+                return;
+            }
+            
+            this.activityThrottleTimer = setTimeout(() => {
+                this.activityThrottleTimer = null;
+            }, 1000); // Throttle to once per second
+            
+            const previousInterval = this.currentInterval;
+            this.lastActivityTime = Date.now();
+            this.currentInterval = this.getAdaptiveInterval();
+            
+            // Restart polling if interval changed
+            if (previousInterval !== this.currentInterval && this.restartPolling) {
+                this.restartPolling();
+            }
+        };
+        
+        activityEvents.forEach(event => {
+            document.addEventListener(event, handleActivity, { passive: true });
+        });
+    }
+    
+    setupVisibilityTracking() {
+        document.addEventListener('visibilitychange', () => {
+            const wasVisible = this.isTabVisible;
+            this.isTabVisible = !document.hidden;
+            
+            if (wasVisible !== this.isTabVisible) {
+                console.log(`👁️ Tab visibility changed: ${this.isTabVisible ? 'visible' : 'hidden'}`);
+                
+                if (this.isTabVisible) {
+                    // Tab became visible - resume polling and sync immediately
+                    console.log('🔄 Resuming sync after tab became visible');
+                    this.lastActivityTime = Date.now();
+                    
+                    if (this.isActive && this.restartPolling) {
+                        this.restartPolling();
+                        
+                        // Immediate sync when tab becomes visible
+                        this.performImmediateSync();
+                    }
+                } else {
+                    // Tab became hidden - pause polling
+                    console.log('⏸️ Pausing sync while tab is hidden');
+                    
+                    if (this.listeners.has('adaptive_poll')) {
+                        const clearFn = this.listeners.get('adaptive_poll');
+                        clearFn();
+                        this.listeners.delete('adaptive_poll');
+                    }
+                }
+            }
+        });
+    }
+    
+    async performImmediateSync() {
+        if (!this.isActive || !this.currentUser) {
+            return;
+        }
+        
+        try {
+            const [programs, workouts] = await Promise.all([
+                window.dataManager.getFirestorePrograms(),
+                window.dataManager.getFirestoreWorkouts()
+            ]);
+            
+            this.handleProgramsUpdate(programs);
+            this.handleWorkoutsUpdate(workouts);
+            
+            console.log('✅ Immediate sync completed');
+        } catch (error) {
+            console.warn('⚠️ Immediate sync error:', error);
+        }
+    }
+    
     // Network Management
     
     setupNetworkListeners() {
@@ -223,6 +355,10 @@ class SyncManager {
                 this.updateSyncStatus('syncing');
                 // Reset retry attempts
                 this.retryAttempts.clear();
+                // Restart polling
+                if (this.restartPolling) {
+                    this.restartPolling();
+                }
             }
         });
         

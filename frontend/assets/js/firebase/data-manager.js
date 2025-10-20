@@ -39,6 +39,11 @@ class FirebaseDataManager {
         this.offlineQueue = [];
         this.isOnline = navigator.onLine;
         
+        // Request deduplication
+        this.inFlightRequests = new Map();
+        this.requestCache = new Map();
+        this.CACHE_TTL = 5000; // 5 seconds cache for identical requests
+        
         // Set API base URL based on environment
         this.apiBase = this.getApiBaseUrl();
         console.log('🔗 API Base URL:', this.apiBase);
@@ -314,20 +319,24 @@ class FirebaseDataManager {
         
         // Always use getApiUrl to ensure HTTPS
         const url = window.getApiUrl(`/api/v3/firebase/programs?${params}`);
-        console.log('🔍 DEBUG: Fetching programs from:', url);
         
-        const response = await fetch(url, {
-            headers: {
-                'Authorization': `Bearer ${await this.getAuthToken()}`
+        // Use deduplicated fetch
+        return this.deduplicatedFetch(url, async () => {
+            console.log('🔍 DEBUG: Fetching programs from:', url);
+            
+            const response = await fetch(url, {
+                headers: {
+                    'Authorization': `Bearer ${await this.getAuthToken()}`
+                }
+            });
+            
+            if (!response.ok) {
+                throw new Error('Failed to fetch programs from Firestore');
             }
+            
+            const data = await response.json();
+            return data.programs || [];
         });
-        
-        if (!response.ok) {
-            throw new Error('Failed to fetch programs from Firestore');
-        }
-        
-        const data = await response.json();
-        return data.programs || [];
     }
     
     getLocalStoragePrograms(options = {}) {
@@ -471,20 +480,24 @@ class FirebaseDataManager {
         
         // Always use getApiUrl to ensure HTTPS
         const url = window.getApiUrl(`/api/v3/firebase/workouts?${params}`);
-        console.log('🔍 DEBUG: Fetching workouts from:', url);
         
-        const response = await fetch(url, {
-            headers: {
-                'Authorization': `Bearer ${await this.getAuthToken()}`
+        // Use deduplicated fetch
+        return this.deduplicatedFetch(url, async () => {
+            console.log('🔍 DEBUG: Fetching workouts from:', url);
+            
+            const response = await fetch(url, {
+                headers: {
+                    'Authorization': `Bearer ${await this.getAuthToken()}`
+                }
+            });
+            
+            if (!response.ok) {
+                throw new Error('Failed to fetch workouts from Firestore');
             }
+            
+            const data = await response.json();
+            return data.workouts || [];
         });
-        
-        if (!response.ok) {
-            throw new Error('Failed to fetch workouts from Firestore');
-        }
-        
-        const data = await response.json();
-        return data.workouts || [];
     }
     
     getLocalStorageWorkouts(options = {}) {
@@ -664,6 +677,61 @@ class FirebaseDataManager {
     async executeQueuedOperation(operation) {
         // Execute queued operations when back online
         console.log('⚡ Executing queued operation:', operation.type);
+    }
+    
+    // Request Deduplication
+    
+    /**
+     * Deduplicate concurrent requests to the same URL
+     * If a request is already in flight, return the existing promise
+     * If a recent cached result exists, return it
+     */
+    async deduplicatedFetch(url, fetchFn) {
+        // Check recent cache first
+        const cached = this.requestCache.get(url);
+        if (cached && Date.now() - cached.timestamp < this.CACHE_TTL) {
+            console.log(`⚡ Using cached result for: ${url}`);
+            return cached.data;
+        }
+        
+        // Check if request is already in flight
+        if (this.inFlightRequests.has(url)) {
+            console.log(`🔄 Reusing in-flight request for: ${url}`);
+            return this.inFlightRequests.get(url);
+        }
+        
+        // Create new request
+        const promise = fetchFn()
+            .then(data => {
+                // Cache the result
+                this.requestCache.set(url, {
+                    data,
+                    timestamp: Date.now()
+                });
+                
+                // Clean up in-flight tracking
+                this.inFlightRequests.delete(url);
+                
+                return data;
+            })
+            .catch(error => {
+                // Clean up in-flight tracking on error
+                this.inFlightRequests.delete(url);
+                throw error;
+            });
+        
+        // Track in-flight request
+        this.inFlightRequests.set(url, promise);
+        
+        return promise;
+    }
+    
+    /**
+     * Clear request cache
+     */
+    clearRequestCache() {
+        this.requestCache.clear();
+        console.log('🧹 Request cache cleared');
     }
     
     // Utility Methods

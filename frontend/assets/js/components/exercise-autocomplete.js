@@ -1,6 +1,8 @@
 /**
  * Exercise Autocomplete Component for Ghost Gym V2
  * Provides real-time exercise search with autocomplete functionality
+ * Now uses global ExerciseCacheService for shared data
+ * @version 2.0.0 - Performance Optimized
  */
 
 class ExerciseAutocomplete {
@@ -19,13 +21,14 @@ class ExerciseAutocomplete {
             ...options
         };
         
-        this.exercises = [];
-        this.customExercises = [];
+        // Use global cache service instead of local storage
+        this.cacheService = window.exerciseCacheService;
         this.filteredResults = [];
         this.selectedIndex = -1;
         this.isOpen = false;
         this.debounceTimer = null;
         this.dropdown = null;
+        this.cacheListener = null;
         
         this.init();
     }
@@ -44,10 +47,17 @@ class ExerciseAutocomplete {
         // Set up event listeners
         this.setupEventListeners();
         
-        // Load exercises
+        // Load exercises from global cache (lazy loading)
         this.loadExercises();
         
-        console.log('✅ Exercise autocomplete initialized');
+        // Listen for cache updates
+        this.cacheListener = this.cacheService.addListener((event, data) => {
+            if (event === 'loaded' || event === 'customLoaded') {
+                console.log(`🔄 Cache updated: ${event}`);
+            }
+        });
+        
+        console.log('✅ Exercise autocomplete initialized (using global cache)');
     }
     
     /**
@@ -82,81 +92,16 @@ class ExerciseAutocomplete {
     }
     
     /**
-     * Load exercises from API and cache
+     * Load exercises from global cache service
+     * This is now lazy and shared across all instances
      */
     async loadExercises() {
         try {
-            // Check cache first
-            const cached = this.getCache();
-            if (cached && this.isCacheValid(cached)) {
-                this.exercises = cached.exercises;
-                console.log(`✅ Loaded ${this.exercises.length} exercises from cache`);
-                return;
-            }
-            
-            // Load from API in batches (respecting 500 max page_size limit)
-            console.log('📡 Loading exercises from API...');
-            const PAGE_SIZE = 500;
-            let allExercises = [];
-            let page = 1;
-            let hasMore = true;
-            
-            while (hasMore) {
-                const response = await fetch(getApiUrl(`/api/v3/exercises?page=${page}&page_size=${PAGE_SIZE}`));
-                
-                if (!response.ok) {
-                    throw new Error(`Failed to load exercises (page ${page})`);
-                }
-                
-                const data = await response.json();
-                const exercises = data.exercises || [];
-                
-                allExercises = [...allExercises, ...exercises];
-                console.log(`📦 Loaded page ${page}: ${exercises.length} exercises (total: ${allExercises.length})`);
-                
-                // Check if there are more pages
-                hasMore = exercises.length === PAGE_SIZE;
-                page++;
-            }
-            
-            this.exercises = allExercises;
-            
-            // Cache the results
-            this.setCache(this.exercises);
-            
-            console.log(`✅ Loaded ${this.exercises.length} exercises from API`);
-            
-            // Load custom exercises if user is authenticated
-            if (window.dataManager && window.dataManager.isUserAuthenticated()) {
-                await this.loadCustomExercises();
-            }
-            
+            // Use global cache service - this will deduplicate requests
+            await this.cacheService.loadExercises();
+            console.log('✅ Exercises ready from global cache');
         } catch (error) {
             console.error('❌ Error loading exercises:', error);
-            this.exercises = [];
-        }
-    }
-    
-    /**
-     * Load user's custom exercises
-     */
-    async loadCustomExercises() {
-        try {
-            const token = await window.dataManager.getAuthToken();
-            const response = await fetch(getApiUrl('/api/v3/users/me/exercises'), {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-            
-            if (response.ok) {
-                const data = await response.json();
-                this.customExercises = data.exercises || [];
-                console.log(`✅ Loaded ${this.customExercises.length} custom exercises`);
-            }
-        } catch (error) {
-            console.warn('⚠️ Could not load custom exercises:', error.message);
-            this.customExercises = [];
         }
     }
     
@@ -226,7 +171,7 @@ class ExerciseAutocomplete {
     }
     
     /**
-     * Search exercises
+     * Search exercises using global cache service
      */
     search(query) {
         if (query.length < this.options.minChars) {
@@ -234,40 +179,13 @@ class ExerciseAutocomplete {
             return;
         }
         
-        const queryLower = query.toLowerCase();
-        
-        // Combine global and custom exercises
-        const allExercises = [...this.exercises, ...this.customExercises];
-        
-        console.log(`🔍 Searching for "${query}" in ${allExercises.length} exercises`);
-        console.log('🔍 Sample exercise:', allExercises[0]);
-        
-        // Filter exercises
-        this.filteredResults = allExercises.filter(exercise => {
-            // Search in name
-            if (exercise.name && exercise.name.toLowerCase().includes(queryLower)) {
-                return true;
-            }
-            
-            // Search in muscle group
-            if (exercise.targetMuscleGroup &&
-                exercise.targetMuscleGroup.toLowerCase().includes(queryLower)) {
-                return true;
-            }
-            
-            // Search in equipment
-            if (exercise.primaryEquipment &&
-                exercise.primaryEquipment.toLowerCase().includes(queryLower)) {
-                return true;
-            }
-            
-            return false;
+        // Use cache service for searching
+        this.filteredResults = this.cacheService.searchExercises(query, {
+            maxResults: this.options.maxResults,
+            includeCustom: true
         });
         
-        console.log(`✅ Found ${this.filteredResults.length} matching exercises`);
-        
-        // Limit results
-        this.filteredResults = this.filteredResults.slice(0, this.options.maxResults);
+        console.log(`🔍 Found ${this.filteredResults.length} exercises for "${query}"`);
         
         // Render results
         this.render();
@@ -464,38 +382,6 @@ class ExerciseAutocomplete {
     }
     
     /**
-     * Cache management
-     */
-    getCache() {
-        try {
-            const cached = localStorage.getItem('exercise_cache');
-            return cached ? JSON.parse(cached) : null;
-        } catch (error) {
-            console.error('Error reading exercise cache:', error);
-            return null;
-        }
-    }
-    
-    setCache(exercises) {
-        try {
-            const cacheData = {
-                exercises: exercises,
-                timestamp: Date.now(),
-                version: '1.0'
-            };
-            localStorage.setItem('exercise_cache', JSON.stringify(cacheData));
-        } catch (error) {
-            console.error('Error setting exercise cache:', error);
-        }
-    }
-    
-    isCacheValid(cached) {
-        const CACHE_DURATION = 7 * 24 * 60 * 60 * 1000; // 7 days
-        const age = Date.now() - cached.timestamp;
-        return age < CACHE_DURATION && cached.version === '1.0';
-    }
-    
-    /**
      * Utility: Escape HTML
      */
     escapeHtml(text) {
@@ -514,12 +400,22 @@ class ExerciseAutocomplete {
      * Destroy autocomplete instance
      */
     destroy() {
+        // Remove cache listener
+        if (this.cacheListener) {
+            this.cacheListener();
+            this.cacheListener = null;
+        }
+        
+        // Remove dropdown
         if (this.dropdown && this.dropdown.parentElement) {
             this.dropdown.parentElement.removeChild(this.dropdown);
         }
-        this.exercises = [];
-        this.customExercises = [];
+        
+        // Clear references
         this.filteredResults = [];
+        this.cacheService = null;
+        
+        console.log('🧹 Autocomplete instance destroyed');
     }
 }
 
