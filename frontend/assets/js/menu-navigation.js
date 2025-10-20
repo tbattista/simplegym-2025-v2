@@ -111,9 +111,11 @@ class MenuNavigation {
             // Update active menu item
             this.updateActiveMenuItem(section);
             
-            // Show view with transition
+            // Show view directly (transitions handled by showView)
             if (config.view && typeof showView === 'function') {
-                this.transitionToView(section);
+                showView(section);
+            } else {
+                console.error(`❌ showView function not available for section: ${section}`);
             }
             
             // Update page title
@@ -124,30 +126,6 @@ class MenuNavigation {
         }
     }
     
-    transitionToView(section) {
-        // Add fade-out class to current view
-        const currentView = document.querySelector('.view-container:not([style*="display: none"])');
-        if (currentView) {
-            currentView.style.opacity = '0';
-        }
-        
-        // Show new view after brief delay
-        setTimeout(() => {
-            if (typeof showView === 'function') {
-                showView(section);
-            }
-            
-            // Fade in new view
-            const newView = document.getElementById(`${section}View`);
-            if (newView) {
-                newView.style.opacity = '0';
-                setTimeout(() => {
-                    newView.style.transition = 'opacity 0.3s ease-in';
-                    newView.style.opacity = '1';
-                }, 50);
-            }
-        }, 150);
-    }
     
     updateActiveMenuItem(section) {
         // Remove active class from all menu items

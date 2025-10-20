@@ -731,7 +731,13 @@ function filterWorkouts() {
  * Show specific view and hide others
  */
 function showView(viewName) {
-    console.log(`🔍 Switching to view: ${viewName}`);
+    console.log(`🔍 showView() called with: ${viewName}`);
+    console.log(`🔍 Available view elements:`, {
+        builderView: !!document.getElementById('builderView'),
+        programsView: !!document.getElementById('programsView'),
+        workoutsView: !!document.getElementById('workoutsView'),
+        exercisesView: !!document.getElementById('exercisesView')
+    });
     
     // Hide all views
     const views = ['builderView', 'programsView', 'workoutsView', 'exercisesView'];
