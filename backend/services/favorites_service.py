@@ -64,14 +64,23 @@ class FavoritesService:
             
             if doc.exists:
                 data = doc.to_dict()
+                logger.info(f"📦 Raw Firestore data keys: {list(data.keys())}")
+                logger.info(f"📦 Raw Firestore data: {data}")
+                
                 # Convert exercises dict to FavoriteExercise objects
                 exercises = {}
-                for ex_id, ex_data in data.get('exercises', {}).items():
+                exercises_data = data.get('exercises', {})
+                logger.info(f"📦 Exercises data type: {type(exercises_data)}, content: {exercises_data}")
+                
+                for ex_id, ex_data in exercises_data.items():
                     try:
+                        logger.info(f"📦 Processing favorite: {ex_id} -> {ex_data}")
                         exercises[ex_id] = FavoriteExercise(**ex_data)
                     except Exception as e:
                         logger.warning(f"Failed to parse favorite exercise {ex_id}: {str(e)}")
                         continue
+                
+                logger.info(f"📦 Parsed {len(exercises)} favorite exercises")
                 
                 return UserFavorites(
                     exerciseIds=data.get('exerciseIds', []),
