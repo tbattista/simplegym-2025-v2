@@ -101,6 +101,7 @@ async function loadExerciseFavorites() {
         if (response.ok) {
             const data = await response.json();
             console.log('📦 Favorites API response:', data);
+            console.log('📦 Raw favorites array:', data.favorites);
             
             // Map favorites to Set of exercise IDs
             window.ghostGym.exercises.favorites = new Set(data.favorites.map(f => f.exerciseId));
@@ -110,6 +111,12 @@ async function loadExerciseFavorites() {
             const favCount = document.getElementById('favoritesCount');
             if (favCount) {
                 favCount.textContent = window.ghostGym.exercises.favorites.size;
+            }
+            
+            // Force re-render if exercises are already displayed
+            if (window.ghostGym.exercises.displayed && window.ghostGym.exercises.displayed.length > 0) {
+                console.log('🔄 Re-rendering exercise table with favorites loaded');
+                renderExerciseTable();
             }
         } else {
             const errorText = await response.text();
@@ -381,6 +388,14 @@ function createExerciseTableRow(exercise) {
     const isFavorited = window.ghostGym.exercises.favorites.has(exercise.id);
     const isCustom = !exercise.isGlobal;
     const popularityScore = exercise.popularityScore || 50;
+    
+    // Debug logging for first few exercises
+    if (window.ghostGym.exercises.displayed.indexOf(exercise) < 3) {
+        console.log(`🔍 Rendering exercise: "${exercise.name}" (ID: ${exercise.id})`);
+        console.log(`   - isFavorited: ${isFavorited}`);
+        console.log(`   - Favorites Set size: ${window.ghostGym.exercises.favorites.size}`);
+        console.log(`   - Favorites Set contains:`, Array.from(window.ghostGym.exercises.favorites).slice(0, 5));
+    }
     
     // Determine popularity badge
     let popularityBadge = '';
