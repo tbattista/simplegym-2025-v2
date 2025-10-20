@@ -1,10 +1,10 @@
 /**
  * Firebase Data Manager for Ghost Gym V3 Phase 2
  * Handles dual-storage architecture and real-time synchronization
- * @version 20251019-02-HTTPS-FIX
+ * @version 20251020-03-PHASES-2-5
  */
 
-console.log('📦 Data Manager Version: 20251019-02-HTTPS-FIX');
+console.log('📦 Data Manager Version: 20251020-03-PHASES-2-5');
 
 /**
  * Global API utility function to ensure HTTPS in production
