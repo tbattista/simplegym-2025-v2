@@ -94,9 +94,10 @@ function initializeGhostGym() {
     // Load initial data
     loadDashboardData();
     
-    // Show initial view (Builder)
+    // Show initial view (Builder) - only if no hash in URL
+    // menu-navigation.js will handle navigation if there's a hash
     setTimeout(() => {
-        if (typeof showView === 'function') {
+        if (!window.location.hash || window.location.hash === '#') {
             showView('builder');
         }
     }, 100);
@@ -795,7 +796,8 @@ function showView(viewName) {
     updateMenuActiveState(viewName);
 }
 
-// Make showView globally accessible for menu-navigation.js
+// CRITICAL: Make showView globally accessible IMMEDIATELY for menu-navigation.js
+// This must be done synchronously before menu-navigation.js initializes
 window.showView = showView;
 
 /**
