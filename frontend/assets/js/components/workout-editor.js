@@ -188,11 +188,11 @@ async function saveWorkoutFromEditor() {
         
         if (window.ghostGym.workoutBuilder.selectedWorkoutId) {
             // Update existing workout
-            workoutData.id = window.ghostGym.workoutBuilder.selectedWorkoutId;
-            savedWorkout = await window.dataManager.createWorkout(workoutData);
+            const workoutId = window.ghostGym.workoutBuilder.selectedWorkoutId;
+            savedWorkout = await window.dataManager.updateWorkout(workoutId, workoutData);
             
             // Update in local array
-            const index = window.ghostGym.workouts.findIndex(w => w.id === workoutData.id);
+            const index = window.ghostGym.workouts.findIndex(w => w.id === workoutId);
             if (index !== -1) {
                 window.ghostGym.workouts[index] = savedWorkout;
             }
@@ -385,6 +385,28 @@ function setupWorkoutEditorListeners() {
     const newBtn = document.getElementById('workoutsViewNewBtn');
     if (newBtn) {
         newBtn.addEventListener('click', createNewWorkoutInEditor);
+    }
+    
+    // Add Exercise Group button
+    const addGroupBtn = document.getElementById('addExerciseGroupBtn');
+    if (addGroupBtn) {
+        addGroupBtn.addEventListener('click', () => {
+            if (window.addExerciseGroup) {
+                window.addExerciseGroup();
+                markEditorDirty();
+            }
+        });
+    }
+    
+    // Add Bonus Exercise button
+    const addBonusBtn = document.getElementById('addBonusExerciseBtn');
+    if (addBonusBtn) {
+        addBonusBtn.addEventListener('click', () => {
+            if (window.addBonusExercise) {
+                window.addBonusExercise();
+                markEditorDirty();
+            }
+        });
     }
     
     // Warn on navigation if dirty
