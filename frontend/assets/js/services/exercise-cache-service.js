@@ -213,7 +213,9 @@ class ExerciseCacheService {
     searchExercises(query, options = {}) {
         const {
             maxResults = 20,
-            includeCustom = true
+            includeCustom = true,
+            preferFoundational = false,
+            tierFilter = null
         } = options;
         
         if (!query || query.length < 2) {
@@ -225,6 +227,11 @@ class ExerciseCacheService {
         
         // Filter exercises
         const filtered = allExercises.filter(exercise => {
+            // Apply tier filter if specified
+            if (tierFilter && exercise.exerciseTier !== tierFilter) {
+                return false;
+            }
+            
             // Search in name
             if (exercise.name && exercise.name.toLowerCase().includes(queryLower)) {
                 return true;
@@ -245,8 +252,59 @@ class ExerciseCacheService {
             return false;
         });
         
+        // Rank exercises
+        const ranked = this._rankExercises(filtered, queryLower, preferFoundational);
+        
         // Limit results
-        return filtered.slice(0, maxResults);
+        return ranked.slice(0, maxResults);
+    }
+    
+    _rankExercises(exercises, query, preferFoundational) {
+        // Calculate scores for each exercise
+        const scoredExercises = exercises.map(exercise => {
+            // Base relevance score (exact name match gets highest score)
+            let baseScore = 100;
+            if (exercise.name && exercise.name.toLowerCase().includes(query)) {
+                // Exact match gets higher score
+                const nameLower = exercise.name.toLowerCase();
+                if (nameLower === query) {
+                    baseScore = 100;
+                } else if (nameLower.startsWith(query)) {
+                    baseScore = 90;
+                } else {
+                    baseScore = 80;
+                }
+            } else {
+                // Matched on other fields
+                baseScore = 70;
+            }
+            
+            // Tier boost (increased to ensure proper tier prioritization)
+            let tierBoost = 0;
+            if (exercise.exerciseTier === 1) {  // Foundation
+                tierBoost = 50;
+            } else if (exercise.exerciseTier === 2) {  // Standard
+                tierBoost = 25;
+            }
+            // Tier 3 gets no boost
+            
+            // Popularity boost (0-25 points)
+            const popularityBoost = Math.min(25, (exercise.popularityScore || 0) / 4);
+            
+            // Foundational preference boost
+            const foundationalBoost = (preferFoundational && exercise.isFoundational) ? 20 : 0;
+            
+            // Calculate total score
+            const totalScore = baseScore + tierBoost + popularityBoost + foundationalBoost;
+            
+            return { exercise, score: totalScore };
+        });
+        
+        // Sort by score (descending)
+        scoredExercises.sort((a, b) => b.score - a.score);
+        
+        // Return sorted exercises
+        return scoredExercises.map(item => item.exercise);
     }
     
     /**

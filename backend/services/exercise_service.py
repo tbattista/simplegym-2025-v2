@@ -4,7 +4,7 @@ Handles exercise database operations including CSV import, search, and CRUD oper
 """
 
 import logging
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict, Any, Set
 from datetime import datetime
 from firebase_admin import firestore
 from ..config.firebase_config import get_firebase_app
@@ -113,18 +113,20 @@ class ExerciseService:
         self,
         query: str,
         filters: Optional[Dict[str, Any]] = None,
-        limit: int = 20
+        limit: int = 20,
+        user_id: Optional[str] = None
     ) -> ExerciseSearchResponse:
         """
-        Search exercises by name and optional filters
+        Search exercises by name and optional filters with smart ranking
         
         Args:
             query: Search query string
-            filters: Optional filters (muscle_group, equipment, difficulty)
+            filters: Optional filters (muscle_group, equipment, difficulty, tier)
             limit: Maximum number of results
+            user_id: Optional user ID for favorites-based ranking
             
         Returns:
-            ExerciseSearchResponse with matching exercises
+            ExerciseSearchResponse with ranked matching exercises
         """
         if not self.is_available():
             return ExerciseSearchResponse(
@@ -147,13 +149,16 @@ class ExerciseService:
                     exercises_ref = exercises_ref.where('primaryEquipment', '==', filters['equipment'])
                 if 'difficulty' in filters and filters['difficulty']:
                     exercises_ref = exercises_ref.where('difficultyLevel', '==', filters['difficulty'])
+                if 'tier' in filters and filters['tier']:
+                    exercises_ref = exercises_ref.where('exerciseTier', '==', filters['tier'])
             
             # Use array-contains for token-based search
             if query_lower:
                 exercises_ref = exercises_ref.where('nameSearchTokens', 'array_contains', query_lower)
             
-            # Limit results
-            exercises_ref = exercises_ref.limit(limit)
+            # Increase limit to allow for ranking
+            fetch_limit = min(limit * 3, 100)  # Fetch more to allow for ranking
+            exercises_ref = exercises_ref.limit(fetch_limit)
             
             docs = exercises_ref.stream()
             exercises = []
@@ -167,12 +172,27 @@ class ExerciseService:
                     logger.warning(f"Failed to parse exercise {doc.id}: {str(e)}")
                     continue
             
-            logger.info(f"Search '{query}' returned {len(exercises)} results")
+            # Get user favorites if user_id is provided
+            user_favorites = set()
+            if user_id and len(exercises) > 0:
+                from ..services.favorites_service import favorites_service
+                if favorites_service.is_available():
+                    exercise_ids = [ex.id for ex in exercises]
+                    favorites_dict = favorites_service.bulk_check_favorites(user_id, exercise_ids)
+                    user_favorites = {ex_id for ex_id, is_fav in favorites_dict.items() if is_fav}
+            
+            # Apply ranking algorithm
+            ranked_exercises = self._rank_exercises(exercises, query_lower, user_favorites)
+            
+            # Limit results after ranking
+            ranked_exercises = ranked_exercises[:limit]
+            
+            logger.info(f"Search '{query}' returned {len(ranked_exercises)} ranked results")
             
             return ExerciseSearchResponse(
-                exercises=exercises,
+                exercises=ranked_exercises,
                 query=query,
-                total_results=len(exercises)
+                total_results=len(ranked_exercises)
             )
             
         except Exception as e:
@@ -357,6 +377,67 @@ class ExerciseService:
         except Exception as e:
             logger.error(f"Failed to get unique values for {field}: {str(e)}")
             return []
+    
+    def _rank_exercises(
+        self,
+        exercises: List[Exercise],
+        query: str,
+        user_favorites: Set[str]
+    ) -> List[Exercise]:
+        """
+        Rank exercises based on multiple factors
+        
+        Args:
+            exercises: List of exercises to rank
+            query: Search query (lowercase)
+            user_favorites: Set of exercise IDs favorited by the user
+            
+        Returns:
+            Ranked list of exercises
+        """
+        # Calculate scores for each exercise
+        scored_exercises = []
+        
+        for exercise in exercises:
+            # Base relevance score (exact name match gets highest score)
+            base_score = 100
+            if exercise.name and query in exercise.name.lower():
+                # Exact match gets higher score
+                name_lower = exercise.name.lower()
+                if name_lower == query:
+                    base_score = 100
+                elif name_lower.startswith(query):
+                    base_score = 90
+                else:
+                    base_score = 80
+            else:
+                # Matched on tokens or other fields
+                base_score = 70
+            
+            # Tier boost (increased to ensure proper tier prioritization)
+            tier_boost = 0
+            if exercise.exerciseTier == 1:  # Foundation
+                tier_boost = 50
+            elif exercise.exerciseTier == 2:  # Standard
+                tier_boost = 25
+            # Tier 3 gets no boost
+            
+            # Favorite boost
+            favorite_boost = 25 if exercise.id in user_favorites else 0
+            
+            # Popularity boost (0-25 points)
+            popularity_boost = min(25, (exercise.popularityScore or 0) / 4)
+            
+            # Calculate total score
+            total_score = base_score + tier_boost + favorite_boost + popularity_boost
+            
+            scored_exercises.append((exercise, total_score))
+        
+        # Sort by score (descending)
+        scored_exercises.sort(key=lambda x: x[1], reverse=True)
+        
+        # Return sorted exercises
+        return [ex for ex, score in scored_exercises]
 
 # Global exercise service instance
 exercise_service = ExerciseService()

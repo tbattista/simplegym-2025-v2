@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 
 <html
   lang="en"
@@ -506,8 +506,19 @@
                         <div class="col-auto">
                           <select class="form-select form-select-sm" id="sortBySelect">
                             <option value="name">Sort: A-Z</option>
+                            <option value="foundational">Sort: Most Foundational</option>
                             <option value="popularity">Sort: Most Popular</option>
                             <option value="favorites">Sort: Favorites First</option>
+                          </select>
+                        </div>
+
+                        <!-- Tier Filter -->
+                        <div class="col-auto">
+                          <select class="form-select form-select-sm" id="tierFilter">
+                            <option value="">All Tiers</option>
+                            <option value="1">🌟 Foundation</option>
+                            <option value="2">⭐ Standard</option>
+                            <option value="3">✨ Specialized</option>
                           </select>
                         </div>
 
@@ -549,6 +560,12 @@
 
                         <!-- Filter Checkboxes -->
                         <div class="col-auto">
+                          <div class="form-check form-check-inline mb-0">
+                            <input class="form-check-input" type="checkbox" id="showFoundationalOnly">
+                            <label class="form-check-label small" for="showFoundationalOnly">
+                              <i class="bx bxs-star text-warning"></i> Foundation Only
+                            </label>
+                          </div>
                           <div class="form-check form-check-inline mb-0">
                             <input class="form-check-input" type="checkbox" id="showFavoritesOnly">
                             <label class="form-check-label small" for="showFavoritesOnly">

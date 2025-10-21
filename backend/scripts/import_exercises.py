@@ -39,16 +39,19 @@ class ExerciseImporter:
         'In-Depth YouTube Explanation': 'detailedVideoUrl',
         'Difficulty Level': 'difficultyLevel',
         'Target Muscle Group ': 'targetMuscleGroup',  # Note: space in CSV
+        'Target Muscle Group': 'targetMuscleGroup',  # Handle both with and without space
         'Prime Mover Muscle': 'primeMoverMuscle',
         'Secondary Muscle': 'secondaryMuscle',
         'Tertiary Muscle': 'tertiaryMuscle',
         'Primary Equipment ': 'primaryEquipment',  # Note: space in CSV
+        'Primary Equipment': 'primaryEquipment',  # Handle both with and without space
         '# Primary Items': 'primaryEquipmentCount',
         'Secondary Equipment': 'secondaryEquipment',
         '# Secondary Items': 'secondaryEquipmentCount',
         'Posture': 'posture',
         'Single or Double Arm': 'armType',
         'Continuous or Alternating Arms ': 'armPattern',  # Note: space in CSV
+        'Continuous or Alternating Arms': 'armPattern',  # Handle both
         'Grip': 'grip',
         'Load Position (Ending)': 'loadPosition',
         'Foot Elevation': 'footElevation',
@@ -63,7 +66,12 @@ class ExerciseImporter:
         'Force Type': 'forceType',
         'Mechanics': 'mechanics',
         'Laterality': 'laterality',
-        'Primary Exercise Classification': 'classification'
+        'Primary Exercise Classification': 'classification',
+        # NEW: Classification fields
+        'foundationalScore': 'foundationalScore',
+        'exerciseTier': 'exerciseTier',
+        'isFoundational': 'isFoundational',
+        'classificationTags': 'classificationTags'
     }
     
     def __init__(self, csv_path: str, batch_size: int = 500):
@@ -144,6 +152,23 @@ class ExerciseImporter:
             exercise_data['nameSearchTokens'] = self._generate_search_tokens(exercise_data['name'])
         else:
             exercise_data['nameSearchTokens'] = []
+        
+        # Parse classificationTags from comma-separated string to list
+        if 'classificationTags' in exercise_data and exercise_data['classificationTags']:
+            if isinstance(exercise_data['classificationTags'], str):
+                exercise_data['classificationTags'] = [
+                    tag.strip() for tag in exercise_data['classificationTags'].split(',')
+                    if tag.strip()
+                ]
+        else:
+            exercise_data['classificationTags'] = []
+        
+        # Ensure boolean fields are properly typed
+        if 'isFoundational' in exercise_data:
+            if isinstance(exercise_data['isFoundational'], str):
+                exercise_data['isFoundational'] = exercise_data['isFoundational'].lower() in ['true', '1', 'yes']
+            elif pd.isna(exercise_data['isFoundational']):
+                exercise_data['isFoundational'] = False
         
         # Set metadata
         exercise_data['isGlobal'] = True

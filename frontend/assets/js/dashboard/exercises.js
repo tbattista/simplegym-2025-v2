@@ -226,17 +226,21 @@ function filterExercises() {
     const muscleGroupSelect = document.getElementById('muscleGroupFilter');
     const equipmentSelect = document.getElementById('equipmentFilter');
     const difficultySelect = document.getElementById('difficultyFilter');
+    const tierSelect = document.getElementById('tierFilter');
     const favoritesCheckbox = document.getElementById('showFavoritesOnly');
     const customCheckbox = document.getElementById('showCustomOnly');
+    const foundationalCheckbox = document.getElementById('showFoundationalOnly');
     
     window.ghostGym.exercises.filters = {
         search: searchInput?.value?.trim() || '',
         muscleGroup: muscleGroupSelect?.value || '',
         equipment: equipmentSelect?.value || '',
         difficulty: difficultySelect?.value || '',
+        tier: tierSelect?.value || '',
         sortBy: sortSelect?.value || 'name',
         favoritesOnly: favoritesCheckbox?.checked || false,
-        customOnly: customCheckbox?.checked || false
+        customOnly: customCheckbox?.checked || false,
+        foundationalOnly: foundationalCheckbox?.checked || false
     };
     
     // Combine global and custom exercises
@@ -272,6 +276,17 @@ function filterExercises() {
     // Apply difficulty filter
     if (window.ghostGym.exercises.filters.difficulty) {
         allExercises = allExercises.filter(e => e.difficultyLevel === window.ghostGym.exercises.filters.difficulty);
+    }
+    
+    // Apply tier filter
+    if (window.ghostGym.exercises.filters.tier) {
+        const tierValue = parseInt(window.ghostGym.exercises.filters.tier);
+        allExercises = allExercises.filter(e => e.exerciseTier === tierValue);
+    }
+    
+    // Apply foundational only filter
+    if (window.ghostGym.exercises.filters.foundationalOnly) {
+        allExercises = allExercises.filter(e => e.isFoundational === true || e.exerciseTier === 1);
     }
     
     // Apply favorites only filter
@@ -316,6 +331,19 @@ function sortExercises(exercises) {
                 const scoreA = a.popularityScore || 50;
                 const scoreB = b.popularityScore || 50;
                 return scoreB - scoreA; // Descending
+            });
+            break;
+        
+        case 'foundational':
+            sorted.sort((a, b) => {
+                // Sort by tier first (1, 2, 3), then by foundational score
+                const tierA = a.exerciseTier || 2;
+                const tierB = b.exerciseTier || 2;
+                if (tierA !== tierB) return tierA - tierB;
+                
+                const scoreA = a.foundationalScore || 50;
+                const scoreB = b.foundationalScore || 50;
+                return scoreB - scoreA; // Descending within tier
             });
             break;
         
@@ -387,29 +415,32 @@ function createExerciseTableRow(exercise) {
     
     const isFavorited = window.ghostGym.exercises.favorites.has(exercise.id);
     const isCustom = !exercise.isGlobal;
-    const popularityScore = exercise.popularityScore || 50;
+    const foundationalScore = exercise.foundationalScore || exercise.popularityScore || 50;
+    const exerciseTier = exercise.exerciseTier || 2;
+    const isFoundational = exercise.isFoundational || false;
     
     // Debug logging for first few exercises
     if (window.ghostGym.exercises.displayed.indexOf(exercise) < 3) {
         console.log(`🔍 Rendering exercise: "${exercise.name}" (ID: ${exercise.id})`);
+        console.log(`   - Tier: ${exerciseTier}, Foundational: ${isFoundational}, Score: ${foundationalScore}`);
         console.log(`   - isFavorited: ${isFavorited}`);
-        console.log(`   - Favorites Set size: ${window.ghostGym.exercises.favorites.size}`);
-        console.log(`   - Favorites Set contains:`, Array.from(window.ghostGym.exercises.favorites).slice(0, 5));
     }
     
-    // Determine popularity badge
-    let popularityBadge = '';
-    if (popularityScore >= 90) {
-        popularityBadge = '<span class="badge bg-warning ms-1"><i class="bx bxs-star"></i> Essential</span>';
-    } else if (popularityScore >= 70) {
-        popularityBadge = '<span class="badge bg-info ms-1"><i class="bx bx-star"></i> Popular</span>';
+    // Determine tier badge
+    let tierBadge = '';
+    if (isFoundational || exerciseTier === 1) {
+        tierBadge = '<span class="badge bg-warning ms-1"><i class="bx bxs-star"></i> Foundation</span>';
+    } else if (exerciseTier === 2) {
+        tierBadge = '<span class="badge bg-info ms-1"><i class="bx bx-star"></i> Standard</span>';
+    } else if (exerciseTier === 3) {
+        tierBadge = '<span class="badge bg-secondary ms-1" style="opacity: 0.7;"><i class="bx bx-dots-horizontal-rounded"></i> Specialized</span>';
     }
     
     tr.innerHTML = `
         <td>
             ${isCustom ? '<i class="bx bx-user text-primary me-2"></i>' : ''}
             <span class="fw-medium">${escapeHtml(exercise.name)}</span>
-            ${popularityBadge}
+            ${tierBadge}
         </td>
         <td>
             ${exercise.targetMuscleGroup ? `<span class="badge bg-label-primary">${escapeHtml(exercise.targetMuscleGroup)}</span>` : '<span class="text-muted">-</span>'}
@@ -715,9 +746,11 @@ function clearExerciseFilters() {
         muscleGroup: '',
         equipment: '',
         difficulty: '',
+        tier: '',
         sortBy: 'name',
         favoritesOnly: false,
-        customOnly: false
+        customOnly: false,
+        foundationalOnly: false
     };
     
     // Reset UI
@@ -726,16 +759,20 @@ function clearExerciseFilters() {
     const muscleGroupSelect = document.getElementById('muscleGroupFilter');
     const equipmentSelect = document.getElementById('equipmentFilter');
     const difficultySelect = document.getElementById('difficultyFilter');
+    const tierSelect = document.getElementById('tierFilter');
     const favoritesCheckbox = document.getElementById('showFavoritesOnly');
     const customCheckbox = document.getElementById('showCustomOnly');
+    const foundationalCheckbox = document.getElementById('showFoundationalOnly');
     
     if (searchInput) searchInput.value = '';
     if (sortSelect) sortSelect.value = 'name';
     if (muscleGroupSelect) muscleGroupSelect.value = '';
     if (equipmentSelect) equipmentSelect.value = '';
     if (difficultySelect) difficultySelect.value = '';
+    if (tierSelect) tierSelect.value = '';
     if (favoritesCheckbox) favoritesCheckbox.checked = false;
     if (customCheckbox) customCheckbox.checked = false;
+    if (foundationalCheckbox) foundationalCheckbox.checked = false;
     
     filterExercises();
 }

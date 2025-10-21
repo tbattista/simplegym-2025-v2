@@ -16,6 +16,9 @@ class ExerciseAutocomplete {
             showMuscleGroup: true,
             showEquipment: true,
             showDifficulty: true,
+            showTier: true,  // New option to show tier
+            preferFoundational: false,  // New option to prefer foundational exercises
+            tierFilter: null,  // New option to filter by tier
             allowCustom: true,
             onSelect: null,
             ...options
@@ -182,7 +185,9 @@ class ExerciseAutocomplete {
         // Use cache service for searching
         this.filteredResults = this.cacheService.searchExercises(query, {
             maxResults: this.options.maxResults,
-            includeCustom: true
+            includeCustom: true,
+            preferFoundational: this.options.preferFoundational,
+            tierFilter: this.options.tierFilter
         });
         
         console.log(`🔍 Found ${this.filteredResults.length} exercises for "${query}"`);
@@ -209,21 +214,36 @@ class ExerciseAutocomplete {
         this.filteredResults.forEach((exercise, index) => {
             const isSelected = index === this.selectedIndex;
             const isCustom = !exercise.isGlobal;
+            const isFoundational = exercise.isFoundational;
+            const tier = exercise.exerciseTier || 2;
+            
+            let tierBadge = '';
+            if (this.options.showTier) {
+                if (tier === 1) {
+                    tierBadge = '<span class="badge bg-label-success">Foundation</span>';
+                } else if (tier === 2) {
+                    tierBadge = '<span class="badge bg-label-primary">Standard</span>';
+                } else if (tier === 3) {
+                    tierBadge = '<span class="badge bg-label-warning">Specialized</span>';
+                }
+            }
             
             html += `
-                <div class="exercise-autocomplete-item ${isSelected ? 'selected' : ''}" 
+                <div class="exercise-autocomplete-item ${isSelected ? 'selected' : ''} ${isFoundational ? 'is-foundational' : ''}"
                      data-index="${index}"
                      onclick="window.exerciseAutocompleteInstances['${this.input.id}'].selectExercise(${JSON.stringify(exercise).replace(/"/g, '&quot;')})">
                     <div class="exercise-name">
                         ${isCustom ? '<i class="bx bx-star text-warning me-1"></i>' : ''}
+                        ${isFoundational ? '<i class="bx bx-badge-check text-success me-1"></i>' : ''}
                         ${this.escapeHtml(exercise.name)}
                     </div>
                     <div class="exercise-meta">
-                        ${this.options.showMuscleGroup && exercise.targetMuscleGroup ? 
+                        ${tierBadge}
+                        ${this.options.showMuscleGroup && exercise.targetMuscleGroup ?
                             `<span class="badge bg-label-primary">${this.escapeHtml(exercise.targetMuscleGroup)}</span>` : ''}
-                        ${this.options.showEquipment && exercise.primaryEquipment ? 
+                        ${this.options.showEquipment && exercise.primaryEquipment ?
                             `<span class="badge bg-label-secondary">${this.escapeHtml(exercise.primaryEquipment)}</span>` : ''}
-                        ${this.options.showDifficulty && exercise.difficultyLevel ? 
+                        ${this.options.showDifficulty && exercise.difficultyLevel ?
                             `<span class="badge bg-label-info">${this.escapeHtml(exercise.difficultyLevel)}</span>` : ''}
                     </div>
                 </div>

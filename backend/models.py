@@ -641,6 +641,31 @@ class Exercise(BaseModel):
         description="Number of users who favorited this exercise"
     )
     
+    # NEW: Exercise Classification System
+    foundationalScore: Optional[int] = Field(
+        default=50,
+        ge=0,
+        le=100,
+        description="Foundational score (0-100). Higher = more foundational/standard. 90-100 = Tier 1 (Foundation)"
+    )
+    
+    exerciseTier: Optional[int] = Field(
+        default=2,
+        ge=1,
+        le=3,
+        description="Exercise tier: 1=Foundation (Essential), 2=Standard (Common), 3=Specialized (Advanced/Unique)"
+    )
+    
+    isFoundational: bool = Field(
+        default=False,
+        description="Quick flag for Tier 1 foundational exercises (score >= 90)"
+    )
+    
+    classificationTags: List[str] = Field(
+        default_factory=list,
+        description="Classification tags like 'big-5', 'compound', 'beginner-friendly', 'equipment-free'"
+    )
+    
     createdAt: datetime = Field(
         default_factory=datetime.now,
         description="When the exercise was created"

@@ -3,14 +3,14 @@ Exercise Database Management
 Handles global exercise database and user custom exercises
 """
 
-from fastapi import APIRouter, Depends, HTTPException, Query
-from typing import Optional
+from fastapi import APIRouter, Depends, HTTPException, Query, Header
+from typing import Optional, Set
 import logging
 from ..models import (
     Exercise, CreateExerciseRequest,
     ExerciseListResponse, ExerciseSearchResponse
 )
-from ..api.dependencies import get_exercise_service, require_auth
+from ..api.dependencies import get_exercise_service, require_auth, get_favorites_service, optional_auth
 
 router = APIRouter(prefix="/api/v3", tags=["Exercises"])
 logger = logging.getLogger(__name__)
@@ -40,10 +40,13 @@ async def search_exercises(
     muscle_group: Optional[str] = Query(None, description="Filter by muscle group"),
     equipment: Optional[str] = Query(None, description="Filter by equipment"),
     difficulty: Optional[str] = Query(None, description="Filter by difficulty level"),
+    tier: Optional[int] = Query(None, ge=1, le=3, description="Filter by exercise tier (1=Foundation, 2=Standard, 3=Specialized)"),
     limit: int = Query(20, ge=1, le=100),
-    exercise_service = Depends(get_exercise_service)
+    user_id: Optional[str] = Depends(optional_auth),
+    exercise_service = Depends(get_exercise_service),
+    favorites_service = Depends(get_favorites_service)
 ):
-    """Search exercises by name and optional filters"""
+    """Search exercises by name and optional filters with smart ranking"""
     try:
         filters = {}
         if muscle_group:
@@ -52,11 +55,14 @@ async def search_exercises(
             filters['equipment'] = equipment
         if difficulty:
             filters['difficulty'] = difficulty
+        if tier:
+            filters['tier'] = tier
         
         result = exercise_service.search_exercises(
             query=q,
             filters=filters if filters else None,
-            limit=limit
+            limit=limit,
+            user_id=user_id
         )
         return result
         

@@ -147,6 +147,46 @@
 }
 
 /* ============================================================================
+   TIER BADGES AND FOUNDATIONAL EXERCISE STYLING
+   ============================================================================ */
+
+.badge.bg-label-success {
+    background-color: rgba(40, 167, 69, 0.12) !important;
+    color: #28a745 !important;
+}
+
+.badge.bg-label-warning {
+    background-color: rgba(255, 193, 7, 0.12) !important;
+    color: #ffc107 !important;
+}
+
+/* Foundational exercise highlighting */
+.exercise-autocomplete-item.is-foundational {
+    background-color: rgba(40, 167, 69, 0.05);
+}
+
+/* Tier indicator in exercise list */
+.exercise-tier-indicator {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 6px;
+}
+
+.exercise-tier-1 {
+    background-color: #28a745;
+}
+
+.exercise-tier-2 {
+    background-color: #007bff;
+}
+
+.exercise-tier-3 {
+    background-color: #ffc107;
+}
+
+/* ============================================================================
    FAVORITE BUTTON
    ============================================================================ */
 
