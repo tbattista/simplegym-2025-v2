@@ -328,67 +328,7 @@
     </div>
     <!-- / Layout wrapper -->
 
-    <!-- Workout Modal -->
-    <div class="modal fade" id="workoutModal" tabindex="-1">
-        <div class="modal-dialog modal-xl">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="workoutModalTitle">Create Workout</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="workoutForm">
-                        <div class="row mb-3">
-                            <div class="col-md-8">
-                                <label for="workoutName" class="form-label">Workout Name *</label>
-                                <input type="text" class="form-control" id="workoutName" required maxlength="100">
-                            </div>
-                            <div class="col-md-4">
-                                <label for="workoutTags" class="form-label">Tags</label>
-                                <input type="text" class="form-control" id="workoutTags" placeholder="push, chest, etc.">
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <label for="workoutDescription" class="form-label">Description</label>
-                            <textarea class="form-control" id="workoutDescription" rows="2" maxlength="500"></textarea>
-                        </div>
-                        
-                        <!-- Exercise Groups -->
-                        <div class="mb-4">
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h6 class="mb-0">Exercise Groups</h6>
-                                <button type="button" class="btn btn-outline-primary btn-sm" id="addExerciseGroupBtn">
-                                    <i class="bx bx-plus me-1"></i>
-                                    Add Group
-                                </button>
-                            </div>
-                            <div id="exerciseGroups">
-                                <!-- Exercise groups will be added here -->
-                            </div>
-                        </div>
-
-                        <!-- Bonus Exercises -->
-                        <div class="mb-3">
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h6 class="mb-0">Bonus Exercises</h6>
-                                <button type="button" class="btn btn-outline-secondary btn-sm" id="addBonusExerciseBtn">
-                                    <i class="bx bx-plus me-1"></i>
-                                    Add Bonus
-                                </button>
-                            </div>
-                            <div id="bonusExercises">
-                                <!-- Bonus exercises will be added here -->
-                            </div>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary" id="saveWorkoutBtn">Save Workout</button>
-                </div>
-            </div>
-        </div>
-    </div>
+    <!-- Workout Modal removed - now using inline editor -->
 
     <!-- Exercise Detail Modal -->
     <div class="modal fade" id="exerciseDetailModal" tabindex="-1">
