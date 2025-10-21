@@ -167,8 +167,10 @@ function initEventListeners() {
     document.getElementById('muscleGroupFilter')?.addEventListener('change', filterExercises);
     document.getElementById('equipmentFilter')?.addEventListener('change', filterExercises);
     document.getElementById('difficultyFilter')?.addEventListener('change', filterExercises);
+    document.getElementById('tierFilter')?.addEventListener('change', filterExercises);
     document.getElementById('showFavoritesOnly')?.addEventListener('change', filterExercises);
     document.getElementById('showCustomOnly')?.addEventListener('change', filterExercises);
+    document.getElementById('showFoundationalOnly')?.addEventListener('change', filterExercises);
     document.getElementById('clearFiltersBtn')?.addEventListener('click', clearExerciseFilters);
     document.getElementById('entriesPerPageSelect')?.addEventListener('change', handleEntriesPerPageChange);
     document.getElementById('exportExercisesBtn')?.addEventListener('click', exportExercises);
