@@ -661,10 +661,53 @@
     <script src="/static/assets/js/dashboard/exercises.js?v=20251020-05"></script>
     <script src="/static/assets/js/dashboard/core.js?v=20251020-04"></script>
     
+    <!-- Component Registry System -->
+    <script src="/static/assets/js/core/component-registry.js"></script>
+    <script src="/static/assets/js/core/page-initializer.js"></script>
+    <script src="/static/assets/js/components/workout-components.js"></script>
+    
     <!-- Dashboard Orchestrator (minimal - just logs) -->
     <script src="/static/assets/js/ghost-gym-dashboard.js?v=20251020-04"></script>
     
     <!-- Menu Navigation System (loads after all modules) -->
     <script src="/static/assets/js/menu-navigation.js?v=20251020-04"></script>
+    
+    <!-- Initialize Builder with Component System -->
+    <script>
+        // Override core.js initialization to use component system for workouts
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('📄 Builder Page - Initializing with Component System');
+            
+            // Wait for Firebase and core initialization
+            const initBuilder = () => {
+                if (window.firebaseReady && window.componentRegistry) {
+                    console.log('🔧 Mounting workout components...');
+                    
+                    // Mount workoutCards component for builder view
+                    window.componentRegistry.mount('workoutCards', 'workoutsGrid', {
+                        draggable: true,
+                        compact: false
+                    }).then(() => {
+                        console.log('✅ Workout cards mounted successfully');
+                    }).catch(error => {
+                        console.error('❌ Error mounting workout cards:', error);
+                    });
+                    
+                    // Mount workoutModal component
+                    window.componentRegistry.mount('workoutModal', 'workoutModal').then(() => {
+                        console.log('✅ Workout modal mounted successfully');
+                    }).catch(error => {
+                        console.error('❌ Error mounting workout modal:', error);
+                    });
+                } else {
+                    console.log('⏳ Waiting for Firebase and Component Registry...');
+                    setTimeout(initBuilder, 100);
+                }
+            };
+            
+            // Start initialization
+            initBuilder();
+        });
+    </script>
   </body>
 </html>
