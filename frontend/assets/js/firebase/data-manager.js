@@ -604,6 +604,81 @@ class FirebaseDataManager {
         }
     }
     
+    async updateWorkout(workoutId, workoutData) {
+        try {
+            if (this.storageMode === 'firestore' && this.isOnline) {
+                return await this.updateFirestoreWorkout(workoutId, workoutData);
+            } else {
+                return this.updateLocalStorageWorkout(workoutId, workoutData);
+            }
+        } catch (error) {
+            console.error('❌ Error updating workout:', error);
+            // Fallback to localStorage
+            return this.updateLocalStorageWorkout(workoutId, workoutData);
+        }
+    }
+    
+    async updateFirestoreWorkout(workoutId, workoutData) {
+        try {
+            const url = window.getApiUrl(`/api/v3/firebase/workouts/${workoutId}`);
+            console.log('🔍 DEBUG: Updating workout at:', url);
+            
+            const response = await fetch(url, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${await this.getAuthToken()}`
+                },
+                body: JSON.stringify(workoutData)
+            });
+            
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                console.error('❌ Firestore workout update failed:', errorData);
+                throw new Error(errorData.detail || 'Failed to update workout in Firestore');
+            }
+            
+            const workout = await response.json();
+            console.log('✅ Workout updated in Firestore:', workout.name);
+            return workout;
+        } catch (error) {
+            console.error('❌ Error updating Firestore workout:', error);
+            throw error;
+        }
+    }
+    
+    updateLocalStorageWorkout(workoutId, workoutData) {
+        try {
+            // Get all existing workouts from localStorage
+            const stored = localStorage.getItem('gym_workouts');
+            const workouts = stored ? JSON.parse(stored) : [];
+            
+            // Find and update the workout
+            const index = workouts.findIndex(w => w.id === workoutId);
+            if (index === -1) {
+                throw new Error('Workout not found');
+            }
+            
+            // Update workout while preserving ID and created_date
+            const updatedWorkout = {
+                ...workouts[index],
+                ...workoutData,
+                id: workoutId,
+                created_date: workouts[index].created_date,
+                modified_date: new Date().toISOString()
+            };
+            
+            workouts[index] = updatedWorkout;
+            localStorage.setItem('gym_workouts', JSON.stringify(workouts));
+            
+            console.log('✅ Workout updated in localStorage:', updatedWorkout.name);
+            return updatedWorkout;
+        } catch (error) {
+            console.error('❌ Error updating local workout:', error);
+            throw error;
+        }
+    }
+    
     // Real-time Sync Management
     
     setupRealtimeListeners() {
