@@ -505,22 +505,64 @@
             }
         };
 
+        // Function to load workouts
+        async function loadWorkoutsData() {
+            const libraryScroll = document.getElementById('workoutLibraryScroll');
+            
+            try {
+                // Show loading state
+                if (libraryScroll) {
+                    libraryScroll.innerHTML = `
+                        <div class="text-center py-3" style="width: 100%;">
+                            <div class="spinner-border spinner-border-sm text-primary" role="status">
+                                <span class="visually-hidden">Loading workouts...</span>
+                            </div>
+                            <p class="mt-2 mb-0 text-muted small">Loading your workouts...</p>
+                        </div>
+                    `;
+                }
+                
+                // Load workouts from data manager
+                console.log('📡 Loading workouts from data manager...');
+                console.log('🔍 Storage mode:', window.dataManager.storageMode);
+                console.log('🔍 Is authenticated:', window.dataManager.isAuthenticated);
+                
+                const workouts = await window.dataManager.getWorkouts();
+                console.log(`✅ Loaded ${workouts.length} workouts from ${window.dataManager.storageMode}`);
+                
+                // Update global state
+                window.ghostGym.workouts = workouts;
+                
+                // Render workouts view
+                if (window.renderWorkoutsView) {
+                    window.renderWorkoutsView();
+                }
+                
+                console.log('✅ Workouts loaded and rendered!');
+                
+            } catch (error) {
+                console.error('❌ Failed to load workouts:', error);
+                if (libraryScroll) {
+                    libraryScroll.innerHTML = `
+                        <div class="text-center py-3" style="width: 100%;">
+                            <i class="bx bx-error-circle display-4 text-danger"></i>
+                            <h6 class="mt-2">Failed to Load Workouts</h6>
+                            <p class="text-muted small">${error.message}</p>
+                            <button class="btn btn-primary btn-sm mt-2" onclick="loadWorkoutsData()">
+                                <i class="bx bx-refresh me-1"></i>Retry
+                            </button>
+                        </div>
+                    `;
+                }
+            }
+        }
+        
+        // Make loadWorkoutsData globally available
+        window.loadWorkoutsData = loadWorkoutsData;
+        
         // Initialize page using component system
         document.addEventListener('DOMContentLoaded', async function() {
             console.log('📄 Workouts Page - DOM Ready');
-            
-            // Show loading state
-            const workoutsGrid = document.getElementById('workoutsViewGrid');
-            if (workoutsGrid) {
-                workoutsGrid.innerHTML = `
-                    <div class="col-12 text-center py-5">
-                        <div class="spinner-border text-primary" role="status">
-                            <span class="visually-hidden">Loading workouts...</span>
-                        </div>
-                        <p class="mt-3 text-muted">Loading your workouts...</p>
-                    </div>
-                `;
-            }
             
             // Wait for Firebase to be ready
             if (!window.firebaseReady) {
@@ -535,51 +577,26 @@
                 return;
             }
             
-            try {
-                // Load workouts from data manager
-                console.log('📡 Loading workouts from data manager...');
-                const workouts = await window.dataManager.getWorkouts();
-                console.log(`✅ Loaded ${workouts.length} workouts`);
-                
-                // Update global state
-                window.ghostGym.workouts = workouts;
-                
-                // Render workouts view
-                if (window.renderWorkoutsView) {
-                    window.renderWorkoutsView();
-                }
-                
-                console.log('✅ Workouts page ready!');
-                
-            } catch (error) {
-                console.error('❌ Failed to load workouts:', error);
-                if (workoutsGrid) {
-                    workoutsGrid.innerHTML = `
-                        <div class="col-12 text-center py-5">
-                            <i class="bx bx-error-circle display-1 text-danger"></i>
-                            <h5 class="mt-3">Failed to Load Workouts</h5>
-                            <p class="text-muted">${error.message}</p>
-                            <button class="btn btn-primary mt-3" onclick="location.reload()">
-                                <i class="bx bx-refresh me-1"></i>Retry
-                            </button>
-                        </div>
-                    `;
-                }
-            }
+            // Wait for auth state to settle (important for Firebase mode)
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            // Load workouts
+            await loadWorkoutsData();
+            
+            console.log('✅ Workouts page ready!');
         });
-
-        // Helper function for showing workout modal (called by button)
-        function showWorkoutModal() {
-            if (window.clearWorkoutForm) {
-                window.clearWorkoutForm();
-            }
-            document.getElementById('workoutModalTitle').textContent = 'Create Workout';
-            if (window.addExerciseGroup) {
-                window.addExerciseGroup(); // Add initial exercise group
-            }
-            const modal = new bootstrap.Modal(document.getElementById('workoutModal'));
-            modal.show();
-        }
+        
+        // Listen for auth state changes and reload workouts
+        window.addEventListener('authStateChanged', async (event) => {
+            const { user, isAuthenticated } = event.detail;
+            console.log('🔄 Auth state changed on workouts page, reloading workouts...');
+            
+            // Wait a moment for data manager to update its mode
+            await new Promise(resolve => setTimeout(resolve, 300));
+            
+            // Reload workouts with new auth state
+            await loadWorkoutsData();
+        });
         
         // Helper function for filtering workouts (called by search input)
         function filterWorkoutsView() {
