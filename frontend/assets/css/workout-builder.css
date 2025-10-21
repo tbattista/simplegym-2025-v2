@@ -344,18 +344,150 @@
    ============================================ */
 
 @media (max-width: 768px) {
+    /* Compact workout cards - smaller on mobile */
     .workout-card-compact {
         min-width: 240px;
         max-width: 240px;
+        padding: 0.75rem;
     }
     
+    .workout-card-compact-title {
+        font-size: 0.9rem;
+    }
+    
+    .workout-card-compact-description {
+        font-size: 0.7rem;
+    }
+    
+    /* Editor section - less padding on mobile */
     .workout-editor-section {
         padding: 1rem;
+        min-height: 400px;
     }
     
+    /* Form fields - stack vertically on mobile */
+    .workout-editor-form .row {
+        margin-left: 0;
+        margin-right: 0;
+    }
+    
+    .workout-editor-form .row > [class*='col-'] {
+        padding-left: 0;
+        padding-right: 0;
+        margin-bottom: 1rem;
+    }
+    
+    /* Sets/Reps/Rest - stack vertically on mobile */
     .sets-reps-rest-row {
         flex-direction: column;
         gap: 0.75rem;
+    }
+    
+    /* Exercise groups - less padding on mobile */
+    .exercise-group .card-body {
+        padding: 0.75rem;
+    }
+    
+    .exercise-group .card-header {
+        padding: 0.5rem 0.75rem;
+    }
+    
+    /* Bonus exercises - less padding on mobile */
+    .bonus-exercise .card-body {
+        padding: 0.75rem;
+    }
+    
+    .bonus-exercise .card-header {
+        padding: 0.5rem 0.75rem;
+    }
+    
+    /* Editor actions - stack buttons on mobile */
+    .editor-actions {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: stretch;
+    }
+    
+    .editor-actions .btn-group {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .editor-actions .btn-group .btn {
+        width: 100%;
+    }
+    
+    /* Save status - center on mobile */
+    .save-status {
+        justify-content: center;
+        order: -1;
+    }
+}
+
+@media (max-width: 576px) {
+    /* Extra small screens - even more compact */
+    .workout-card-compact {
+        min-width: 200px;
+        max-width: 200px;
+        padding: 0.5rem;
+    }
+    
+    .workout-card-compact-title {
+        font-size: 0.85rem;
+    }
+    
+    .workout-card-compact-stats {
+        font-size: 0.65rem;
+    }
+    
+    .workout-card-compact-tag {
+        font-size: 0.6rem;
+        padding: 0.1rem 0.3rem;
+    }
+    
+    /* Page header - smaller on mobile */
+    .container-xxl h4 {
+        font-size: 1.25rem;
+    }
+    
+    .container-xxl p {
+        font-size: 0.85rem;
+    }
+    
+    /* Form labels - smaller on mobile */
+    .form-label {
+        font-size: 0.85rem;
+    }
+    
+    /* Input fields - better touch targets */
+    .form-control,
+    .form-select {
+        font-size: 1rem;
+        padding: 0.5rem 0.75rem;
+    }
+    
+    /* Buttons - better touch targets */
+    .btn {
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+    }
+    
+    .btn-sm {
+        padding: 0.375rem 0.75rem;
+        font-size: 0.85rem;
+    }
+}
+
+/* Landscape mobile optimization */
+@media (max-width: 768px) and (orientation: landscape) {
+    .workout-editor-section {
+        min-height: 300px;
+    }
+    
+    .workout-editor-empty-state {
+        min-height: 250px;
     }
 }
 

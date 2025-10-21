@@ -278,6 +278,15 @@ async function deleteWorkoutFromEditor() {
     }
     
     try {
+        // Show deleting status
+        const deleteBtn = document.getElementById('deleteWorkoutBtn');
+        const originalText = deleteBtn.innerHTML;
+        deleteBtn.innerHTML = '<i class="bx bx-loader-alt bx-spin me-1"></i>Deleting...';
+        deleteBtn.disabled = true;
+        
+        // Delete from database
+        await window.dataManager.deleteWorkout(workoutId);
+        
         // Remove from local state
         window.ghostGym.workouts = window.ghostGym.workouts.filter(w => w.id !== workoutId);
         
@@ -296,6 +305,11 @@ async function deleteWorkoutFromEditor() {
     } catch (error) {
         console.error('❌ Error deleting workout:', error);
         showAlert('Failed to delete workout: ' + error.message, 'danger');
+        
+        // Reset button on error
+        const deleteBtn = document.getElementById('deleteWorkoutBtn');
+        deleteBtn.innerHTML = '<i class="bx bx-trash me-1"></i>Delete';
+        deleteBtn.disabled = false;
     }
 }
 

@@ -679,6 +679,69 @@ class FirebaseDataManager {
         }
     }
     
+    async deleteWorkout(workoutId) {
+        try {
+            if (this.storageMode === 'firestore' && this.isOnline) {
+                return await this.deleteFirestoreWorkout(workoutId);
+            } else {
+                return this.deleteLocalStorageWorkout(workoutId);
+            }
+        } catch (error) {
+            console.error('❌ Error deleting workout:', error);
+            // Fallback to localStorage
+            return this.deleteLocalStorageWorkout(workoutId);
+        }
+    }
+    
+    async deleteFirestoreWorkout(workoutId) {
+        try {
+            const url = window.getApiUrl(`/api/v3/firebase/workouts/${workoutId}`);
+            console.log('🔍 DEBUG: Deleting workout at:', url);
+            
+            const response = await fetch(url, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${await this.getAuthToken()}`
+                }
+            });
+            
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                console.error('❌ Firestore workout deletion failed:', errorData);
+                throw new Error(errorData.detail || 'Failed to delete workout from Firestore');
+            }
+            
+            console.log('✅ Workout deleted from Firestore');
+            return true;
+        } catch (error) {
+            console.error('❌ Error deleting Firestore workout:', error);
+            throw error;
+        }
+    }
+    
+    deleteLocalStorageWorkout(workoutId) {
+        try {
+            // Get all existing workouts from localStorage
+            const stored = localStorage.getItem('gym_workouts');
+            const workouts = stored ? JSON.parse(stored) : [];
+            
+            // Find and remove the workout
+            const index = workouts.findIndex(w => w.id === workoutId);
+            if (index === -1) {
+                throw new Error('Workout not found');
+            }
+            
+            workouts.splice(index, 1);
+            localStorage.setItem('gym_workouts', JSON.stringify(workouts));
+            
+            console.log('✅ Workout deleted from localStorage');
+            return true;
+        } catch (error) {
+            console.error('❌ Error deleting local workout:', error);
+            throw error;
+        }
+    }
+    
     // Real-time Sync Management
     
     setupRealtimeListeners() {
