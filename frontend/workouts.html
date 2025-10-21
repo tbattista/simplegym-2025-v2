@@ -418,7 +418,12 @@
     <script src="/static/assets/js/dashboard/exercises.js?v=20251020-05"></script>
     <script src="/static/assets/js/dashboard/views.js?v=20251020-04"></script>
 
-    <!-- Initialize Workouts Page -->
+    <!-- Component Registry System -->
+    <script src="/static/assets/js/core/component-registry.js"></script>
+    <script src="/static/assets/js/core/page-initializer.js"></script>
+    <script src="/static/assets/js/components/workout-components.js"></script>
+
+    <!-- Initialize Workouts Page with Component System -->
     <script>
         // Initialize global state for workouts
         window.ghostGym = window.ghostGym || {
@@ -450,63 +455,33 @@
             }
         };
 
-        // Initialize when Firebase is ready
+        // Initialize page using component system
         document.addEventListener('DOMContentLoaded', function() {
-            if (window.firebaseReady) {
-                initWorkoutsPage();
-            } else {
-                window.addEventListener('firebaseReady', initWorkoutsPage);
-            }
+            console.log('📄 Workouts Page - DOM Ready');
+            
+            // Create page initializer
+            const page = new PageInitializer('Workouts')
+                .addComponent('workoutGrid', 'workoutsViewGrid', {
+                    showSearch: true,
+                    showNewButton: true
+                })
+                .addComponent('workoutModal', 'workoutModal')
+                .configure({
+                    waitForFirebase: true,
+                    showLoadingState: true,
+                    onSuccess: () => {
+                        console.log('✅ Workouts page ready!');
+                    },
+                    onError: (error) => {
+                        console.error('❌ Failed to initialize workouts page:', error);
+                    }
+                });
+            
+            // Initialize the page
+            page.init();
         });
 
-        async function initWorkoutsPage() {
-            console.log('🚀 Initializing Workouts Page');
-            
-            // Set up event listeners
-            document.getElementById('workoutsViewSearch')?.addEventListener('input', filterWorkoutsView);
-            document.getElementById('workoutsViewNewBtn')?.addEventListener('click', showWorkoutModal);
-            document.getElementById('addExerciseGroupBtn')?.addEventListener('click', addExerciseGroup);
-            document.getElementById('addBonusExerciseBtn')?.addEventListener('click', addBonusExercise);
-            document.getElementById('saveWorkoutBtn')?.addEventListener('click', saveWorkout);
-            document.getElementById('saveCustomExerciseBtn')?.addEventListener('click', saveCustomExercise);
-            
-            // Load data using the correct methods
-            if (window.dataManager) {
-                try {
-                    // Load workouts - use getWorkouts() which exists
-                    const workouts = await window.dataManager.getWorkouts();
-                    window.ghostGym.workouts = workouts || [];
-                    console.log(`✅ Loaded ${window.ghostGym.workouts.length} workouts`);
-                    
-                    // Render workouts using the views module function
-                    if (window.renderWorkoutsView) {
-                        window.renderWorkoutsView();
-                    } else {
-                        console.error('❌ renderWorkoutsView function not found');
-                    }
-                } catch (error) {
-                    console.error('Error loading workouts:', error);
-                    window.ghostGym.workouts = [];
-                    if (window.renderWorkoutsView) {
-                        window.renderWorkoutsView(); // Render empty state
-                    }
-                }
-                
-                try {
-                    // Load programs - use getPrograms() which exists
-                    const programs = await window.dataManager.getPrograms();
-                    window.ghostGym.programs = programs || [];
-                    console.log(`✅ Loaded ${window.ghostGym.programs.length} programs`);
-                } catch (error) {
-                    console.error('Error loading programs:', error);
-                    window.ghostGym.programs = [];
-                }
-            }
-            
-            console.log('✅ Workouts Page initialized');
-        }
-
-        // Show workout modal
+        // Helper function for showing workout modal (called by button)
         function showWorkoutModal() {
             if (window.clearWorkoutForm) {
                 window.clearWorkoutForm();
@@ -519,7 +494,7 @@
             modal.show();
         }
         
-        // Filter workouts view
+        // Helper function for filtering workouts (called by search input)
         function filterWorkoutsView() {
             const searchTerm = document.getElementById('workoutsViewSearch')?.value.toLowerCase() || '';
             window.ghostGym.searchFilters.workouts = searchTerm;
