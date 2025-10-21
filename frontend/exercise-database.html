@@ -102,71 +102,7 @@
       <div class="layout-container">
         <!-- Menu -->
         <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
-          <div class="app-brand demo">
-            <a href="builder.html" class="app-brand-link">
-              <span class="app-brand-logo demo">
-                <span class="text-primary">👻</span>
-              </span>
-              <span class="app-brand-text demo menu-text fw-bold ms-2">Ghost Gym</span>
-            </a>
-
-            <a href="javascript:void(0);" class="layout-menu-toggle menu-link text-large ms-auto">
-              <i class="bx bx-chevron-left d-block d-xl-none align-middle"></i>
-            </a>
-          </div>
-
-          <div class="menu-divider mt-0"></div>
-          <div class="menu-inner-shadow"></div>
-
-          <ul class="menu-inner py-1">
-            <!-- Builder -->
-            <li class="menu-item">
-              <a href="builder.html" class="menu-link">
-                <i class="menu-icon tf-icons bx bx-layer"></i>
-                <div class="text-truncate">Builder</div>
-              </a>
-            </li>
-            
-            <!-- Program Management -->
-            <li class="menu-header small text-uppercase">
-              <span class="menu-header-text">Program Management</span>
-            </li>
-            <li class="menu-item">
-              <a href="programs.html" class="menu-link">
-                <i class="menu-icon tf-icons bx bx-folder"></i>
-                <div class="text-truncate">My Programs</div>
-              </a>
-            </li>
-            <li class="menu-item">
-              <a href="workouts.html" class="menu-link">
-                <i class="menu-icon tf-icons bx bx-dumbbell"></i>
-                <div class="text-truncate">Workout Library</div>
-              </a>
-            </li>
-            <li class="menu-item active">
-              <a href="exercise-database.html" class="menu-link">
-                <i class="menu-icon tf-icons bx bx-book-content"></i>
-                <div class="text-truncate">Exercise Database</div>
-              </a>
-            </li>
-            
-            <!-- Tools & Settings -->
-            <li class="menu-header small text-uppercase">
-              <span class="menu-header-text">Tools & Settings</span>
-            </li>
-            <li class="menu-item">
-              <a href="javascript:void(0);" class="menu-link" id="menuBackup">
-                <i class="menu-icon tf-icons bx bx-cloud-upload"></i>
-                <div class="text-truncate">Backup & Export</div>
-              </a>
-            </li>
-            <li class="menu-item">
-              <a href="javascript:void(0);" class="menu-link" id="menuSettings">
-                <i class="menu-icon tf-icons bx bx-cog"></i>
-                <div class="text-truncate">Settings</div>
-              </a>
-            </li>
-          </ul>
+          <!-- Menu will be injected by menu-injection-service.js -->
         </aside>
         <!-- / Menu -->
 
@@ -533,18 +469,24 @@
     <!-- Main JS -->
     <script src="/static/assets/js/main.js"></script>
 
+    <!-- Load templates FIRST -->
+    <script src="/static/assets/js/components/menu-template.js"></script>
+    <script src="/static/assets/js/components/auth-modals-template.js"></script>
+    
+    <!-- Inject components SECOND -->
+    <script src="/static/assets/js/services/menu-injection-service.js"></script>
+
+    <!-- Firebase Services -->
+    <script src="/static/assets/js/firebase/firebase-init.js?v=20251020-03"></script>
+    <script src="/static/assets/js/firebase/auth-service.js?v=20251020-03"></script>
+    <script src="/static/assets/js/firebase/auth-ui.js?v=20251020-03"></script>
+    <script src="/static/assets/js/firebase/data-manager.js?v=20251020-05"></script>
+
     <!-- Exercise Cache Service (Global Singleton) -->
     <script src="/static/assets/js/services/exercise-cache-service.js?v=20251020-05"></script>
     
     <!-- Exercise Database JS -->
     <script src="/static/assets/js/dashboard/exercises.js?v=20251020-05"></script>
-  </body>
-</html>
-
-    <!-- Firebase Services -->
-    <script src="/static/assets/js/firebase/firebase-init.js?v=20251020-03"></script>
-    <script src="/static/assets/js/firebase/auth-service.js?v=20251020-03"></script>
-    <script src="/static/assets/js/firebase/data-manager.js?v=20251020-05"></script>
 
     <!-- UI Helpers -->
     <script src="/static/assets/js/dashboard/ui-helpers.js?v=20251020-04"></script>

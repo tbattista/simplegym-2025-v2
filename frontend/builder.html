@@ -126,103 +126,7 @@
       <div class="layout-container">
         <!-- Menu -->
         <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
-          <div class="app-brand demo">
-            <a href="/" class="app-brand-link">
-              <span class="app-brand-logo demo">
-                <span class="text-primary">
-                  👻
-                </span>
-              </span>
-              <span class="app-brand-text demo menu-text fw-bold ms-2">Ghost Gym</span>
-            </a>
-
-            <a href="javascript:void(0);" class="layout-menu-toggle menu-link text-large ms-auto">
-              <i class="bx bx-chevron-left d-block d-xl-none align-middle"></i>
-            </a>
-          </div>
-
-          <div class="menu-divider mt-0"></div>
-          <div class="menu-inner-shadow"></div>
-
-          <ul class="menu-inner py-1">
-            <!-- Builder (Main View) -->
-            <li class="menu-item active" data-section="builder">
-              <a href="#builder" class="menu-link">
-                <i class="menu-icon tf-icons bx bx-layer"></i>
-                <div class="text-truncate">Builder</div>
-              </a>
-            </li>
-            
-            <!-- Data Management -->
-            <li class="menu-header small text-uppercase">
-              <span class="menu-header-text">Data Management</span>
-            </li>
-            <li class="menu-item">
-              <a href="programs.html" class="menu-link">
-                <i class="menu-icon tf-icons bx bx-folder"></i>
-                <div class="text-truncate">My Programs</div>
-              </a>
-            </li>
-            <li class="menu-item">
-              <a href="workouts.html" class="menu-link">
-                <i class="menu-icon tf-icons bx bx-dumbbell"></i>
-                <div class="text-truncate">Workout Library</div>
-              </a>
-            </li>
-            <li class="menu-item">
-              <a href="exercise-database.html" class="menu-link">
-                <i class="menu-icon tf-icons bx bx-book-content"></i>
-                <div class="text-truncate">Exercise Database</div>
-              </a>
-            </li>
-            
-            <!-- Tools & Settings -->
-            <li class="menu-header small text-uppercase">
-              <span class="menu-header-text">Tools & Settings</span>
-            </li>
-            <li class="menu-item" data-section="backup">
-              <a href="#backup" class="menu-link" id="menuBackup">
-                <i class="menu-icon tf-icons bx bx-cloud-upload"></i>
-                <div class="text-truncate">Backup & Export</div>
-              </a>
-            </li>
-            <li class="menu-item" data-section="settings">
-              <a href="#settings" class="menu-link" id="menuSettings">
-                <i class="menu-icon tf-icons bx bx-cog"></i>
-                <div class="text-truncate">Settings</div>
-              </a>
-            </li>
-            
-            <!-- User Authentication Section -->
-            <li class="menu-header small text-uppercase mt-auto">
-              <span class="menu-header-text">Account</span>
-            </li>
-            
-            <!-- Sign In Button (for anonymous users) -->
-            <li class="menu-item auth-sign-in" id="menuAuthSignIn">
-              <a href="javascript:void(0);" class="menu-link" id="menuSignInBtn">
-                <i class="menu-icon tf-icons bx bx-user"></i>
-                <div class="text-truncate">Sign In</div>
-              </a>
-            </li>
-            
-            <!-- User Profile (for authenticated users) -->
-            <li class="menu-item auth-sign-out d-none" id="menuAuthProfile">
-              <a href="javascript:void(0);" class="menu-link">
-                <i class="menu-icon tf-icons bx bx-user-circle"></i>
-                <div class="text-truncate">
-                  <div id="menuUserDisplayName" class="fw-medium">User</div>
-                  <small class="text-muted" id="menuUserEmailDisplay">user@example.com</small>
-                </div>
-              </a>
-            </li>
-            <li class="menu-item auth-sign-out d-none">
-              <a href="javascript:void(0);" class="menu-link" id="menuSignOutBtn">
-                <i class="menu-icon tf-icons bx bx-power-off"></i>
-                <div class="text-truncate">Sign Out</div>
-              </a>
-            </li>
-          </ul>
+          <!-- Menu will be injected by menu-injection-service.js -->
         </aside>
         <!-- / Menu -->
 
@@ -628,8 +532,9 @@
         </div>
     </div>
 
-    <!-- Authentication Modal -->
-    <div class="modal fade" id="authModal" tabindex="-1" aria-labelledby="authModalLabel" aria-hidden="true">
+    <!-- Authentication modals will be injected by menu-injection-service.js -->
+    
+    <!-- Exercise Detail Modal -->
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header border-0">
@@ -774,10 +679,6 @@
                 </div>
             </div>
         </div>
-    </div>
-
-    <!-- Account Upgrade Prompt Modal -->
-    <div class="modal fade" id="upgradeModal" tabindex="-1" aria-labelledby="upgradeModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header border-0">
@@ -835,9 +736,6 @@
                 </div>
             </div>
         </div>
-    </div>
-
-    <!-- Exercise Detail Modal -->
     <div class="modal fade" id="exerciseDetailModal" tabindex="-1">
       <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -916,10 +814,6 @@
                 </div>
             </div>
         </div>
-    </div>
-
-    <!-- Backup & Export Modal -->
-    <div class="modal fade" id="backupModal" tabindex="-1" aria-labelledby="backupModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
@@ -973,10 +867,6 @@
                 </div>
             </div>
         </div>
-    </div>
-
-    <!-- Settings Modal -->
-    <div class="modal fade" id="settingsModal" tabindex="-1" aria-labelledby="settingsModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
@@ -1029,8 +919,6 @@
                 </div>
             </div>
         </div>
-    </div>
-
     <!-- Core JS -->
     <script src="/static/assets/vendor/libs/jquery/jquery.js"></script>
     <script src="/static/assets/vendor/libs/popper/popper.js"></script>
@@ -1043,6 +931,13 @@
 
     <!-- Sortable.js for drag and drop -->
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    
+    <!-- Load templates FIRST -->
+    <script src="/static/assets/js/components/menu-template.js"></script>
+    <script src="/static/assets/js/components/auth-modals-template.js"></script>
+    
+    <!-- Inject components SECOND -->
+    <script src="/static/assets/js/services/menu-injection-service.js"></script>
     
     <!-- Firebase Modules (preserved from V3) -->
     <script src="/static/assets/js/firebase/firebase-init.js?v=20251020-03"></script>
