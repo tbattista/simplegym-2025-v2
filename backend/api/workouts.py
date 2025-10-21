@@ -243,5 +243,41 @@ async def update_workout_firebase(
         logger.error(f"Error updating workout: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error updating workout: {str(e)}")
 
+
+@firebase_router.delete("/{workout_id}")
+async def delete_workout_firebase(
+    workout_id: str,
+    current_user: Optional[dict] = Depends(get_current_user_optional)
+):
+    """Delete a workout template (Firebase-enabled with fallback)"""
+    try:
+        user_id = extract_user_id(current_user)
+        logger.info(f"Deleting workout {workout_id}, user_id: {user_id}")
+        
+        if user_id and firebase_service.is_available():
+            logger.info("Using Firestore for authenticated user workout deletion")
+            # Authenticated user - use Firestore data service
+            success = await firestore_data_service.delete_workout(user_id, workout_id)
+            if success:
+                logger.info(f"✅ Workout deleted from Firestore: {workout_id}")
+                return {"message": "Workout deleted successfully"}
+            else:
+                logger.warning("Firebase workout deletion failed, falling back to local storage")
+        
+        # Anonymous user or Firebase unavailable - use local storage
+        logger.info("Using local storage for workout deletion")
+        data_service = DataService()
+        success = data_service.delete_workout(workout_id)
+        if not success:
+            raise HTTPException(status_code=404, detail="Workout not found")
+        logger.info(f"Workout deleted from local storage: {workout_id}")
+        return {"message": "Workout deleted successfully"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error deleting workout: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error deleting workout: {str(e)}")
+
 # Export both routers
 __all__ = ['router', 'firebase_router']
