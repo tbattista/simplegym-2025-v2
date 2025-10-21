@@ -466,15 +466,15 @@
     <script src="/static/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js"></script>
     <script src="/static/assets/vendor/js/menu.js"></script>
 
-    <!-- Main JS -->
-    <script src="/static/assets/js/main.js"></script>
-
-    <!-- Load templates FIRST -->
+    <!-- Load templates FIRST (before main.js) -->
     <script src="/static/assets/js/components/menu-template.js"></script>
     <script src="/static/assets/js/components/auth-modals-template.js"></script>
     
-    <!-- Inject components SECOND -->
+    <!-- Inject components SECOND (before main.js) -->
     <script src="/static/assets/js/services/menu-injection-service.js"></script>
+
+    <!-- Main JS -->
+    <script src="/static/assets/js/main.js"></script>
 
     <!-- Firebase Services -->
     <script src="/static/assets/js/firebase/firebase-init.js?v=20251020-03"></script>
