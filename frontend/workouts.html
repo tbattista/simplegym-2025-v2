@@ -154,15 +154,7 @@
               </div>
               <!-- /Search -->
 
-              <ul class="navbar-nav flex-row align-items-center ms-md-auto">
-                <!-- User Profile -->
-                <li class="nav-item" id="authContainer">
-                  <button type="button" class="btn btn-outline-primary btn-sm" id="headerSignInBtn">
-                    <i class="bx bx-user me-1"></i>
-                    Sign In
-                  </button>
-                </li>
-              </ul>
+              <!-- No auth buttons in navbar - auth is in sidebar menu only -->
             </div>
           </nav>
           <!-- / Navbar -->
@@ -485,11 +477,19 @@
                     const workouts = await window.dataManager.getWorkouts();
                     window.ghostGym.workouts = workouts || [];
                     console.log(`✅ Loaded ${window.ghostGym.workouts.length} workouts`);
-                    renderWorkoutsView();
+                    
+                    // Render workouts using the views module function
+                    if (window.renderWorkoutsView) {
+                        window.renderWorkoutsView();
+                    } else {
+                        console.error('❌ renderWorkoutsView function not found');
+                    }
                 } catch (error) {
                     console.error('Error loading workouts:', error);
                     window.ghostGym.workouts = [];
-                    renderWorkoutsView(); // Render empty state
+                    if (window.renderWorkoutsView) {
+                        window.renderWorkoutsView(); // Render empty state
+                    }
                 }
                 
                 try {
@@ -508,11 +508,24 @@
 
         // Show workout modal
         function showWorkoutModal() {
-            clearWorkoutForm();
+            if (window.clearWorkoutForm) {
+                window.clearWorkoutForm();
+            }
             document.getElementById('workoutModalTitle').textContent = 'Create Workout';
-            addExerciseGroup(); // Add initial exercise group
+            if (window.addExerciseGroup) {
+                window.addExerciseGroup(); // Add initial exercise group
+            }
             const modal = new bootstrap.Modal(document.getElementById('workoutModal'));
             modal.show();
+        }
+        
+        // Filter workouts view
+        function filterWorkoutsView() {
+            const searchTerm = document.getElementById('workoutsViewSearch')?.value.toLowerCase() || '';
+            window.ghostGym.searchFilters.workouts = searchTerm;
+            if (window.renderWorkoutsView) {
+                window.renderWorkoutsView();
+            }
         }
     </script>
   </body>
