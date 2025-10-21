@@ -34,9 +34,60 @@ class MenuInjectionService {
             this.injectMenu();
             this.injectModals();
             console.log('✅ Menu and modals injected successfully');
+            
+            // Re-initialize menu functionality after injection
+            this.reinitializeMenu();
         } catch (error) {
             console.error('❌ Error injecting components:', error);
         }
+    }
+    
+    /**
+     * Re-initialize menu functionality after injection
+     * This must happen after main.js has loaded but after menu content exists
+     */
+    reinitializeMenu() {
+        // Dispatch custom event that main.js can listen for
+        window.dispatchEvent(new CustomEvent('menuContentInjected'));
+        
+        // Also manually re-initialize if main.js already ran
+        setTimeout(() => {
+            if (typeof Menu !== 'undefined' && typeof window.Helpers !== 'undefined') {
+                const layoutMenuEl = document.querySelectorAll('#layout-menu');
+                layoutMenuEl.forEach(function (element) {
+                    // Only initialize if not already initialized
+                    if (!element._menu) {
+                        try {
+                            const menu = new Menu(element, {
+                                orientation: 'vertical',
+                                closeChildren: false
+                            });
+                            window.Helpers.scrollToActive(false);
+                            window.Helpers.mainMenu = menu;
+                            console.log('✅ Menu class re-initialized');
+                        } catch (error) {
+                            console.warn('⚠️ Menu already initialized or error:', error);
+                        }
+                    }
+                });
+                
+                // Re-attach menu toggle listeners
+                const menuToggler = document.querySelectorAll('.layout-menu-toggle');
+                menuToggler.forEach(item => {
+                    // Remove old listeners by cloning
+                    const newItem = item.cloneNode(true);
+                    item.parentNode.replaceChild(newItem, item);
+                    
+                    // Add fresh listener
+                    newItem.addEventListener('click', event => {
+                        event.preventDefault();
+                        window.Helpers.toggleCollapsed();
+                    });
+                });
+                
+                console.log('✅ Menu toggle listeners re-attached');
+            }
+        }, 100); // Small delay to ensure main.js has run
     }
     
     /**
