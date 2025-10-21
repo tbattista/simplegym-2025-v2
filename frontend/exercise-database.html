@@ -44,6 +44,18 @@
     <script src="/static/assets/vendor/js/helpers.js"></script>
     <script src="/static/assets/js/config.js"></script>
 
+    <!-- Ghost Gym Configuration -->
+    <script>
+        // API Configuration for Railway deployment
+        window.GHOST_GYM_API_URL = '';
+        
+        // Helper function for API URLs
+        window.getApiUrl = function(path) {
+            const baseUrl = window.GHOST_GYM_API_URL || window.location.origin;
+            return baseUrl + path;
+        };
+    </script>
+
     <!-- Firebase SDK v9+ -->
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js';
@@ -319,32 +331,78 @@
 
                 <!-- Exercise List -->
                 <div class="col-lg-9">
-                  <!-- Loading State -->
-                  <div id="loadingState" class="text-center py-5">
-                    <div class="spinner-border text-primary" role="status">
-                      <span class="visually-hidden">Loading exercises...</span>
+                  <div class="card">
+                    <!-- Top Bar with Entries Per Page -->
+                    <div class="card-header d-flex justify-content-between align-items-center border-bottom">
+                      <h5 class="mb-0">
+                        <i class="bx bx-list-ul me-2"></i>Exercise List
+                      </h5>
+                      <div class="d-flex align-items-center gap-2">
+                        <label class="form-label mb-0 small">Show</label>
+                        <select class="form-select form-select-sm" id="entriesPerPageSelect" style="width: auto;">
+                          <option value="25">25</option>
+                          <option value="50" selected>50</option>
+                          <option value="100">100</option>
+                          <option value="250">250</option>
+                        </select>
+                        <span class="small text-muted">entries</span>
+                      </div>
                     </div>
-                    <p class="mt-3 text-muted">Loading exercises...</p>
-                  </div>
 
-                  <!-- Empty State -->
-                  <div id="emptyState" class="text-center py-5" style="display: none;">
-                    <i class="bx bx-search-alt display-1 text-muted"></i>
-                    <h5 class="mt-3">No exercises found</h5>
-                    <p class="text-muted">Try adjusting your filters or search query</p>
-                  </div>
+                    <!-- DataTable -->
+                    <div class="card-body p-0">
+                      <!-- Loading State -->
+                      <div id="exerciseLoadingState" class="text-center py-5">
+                        <div class="spinner-border text-primary" role="status">
+                          <span class="visually-hidden">Loading exercises...</span>
+                        </div>
+                        <p class="mt-3 text-muted">Loading exercises...</p>
+                      </div>
 
-                  <!-- Exercise Grid -->
-                  <div id="exerciseGrid" class="row g-4" style="display: none;">
-                    <!-- Exercise cards will be inserted here -->
-                  </div>
+                      <!-- Empty State -->
+                      <div id="exerciseEmptyState" class="text-center py-5" style="display: none;">
+                        <i class="bx bx-search-alt display-1 text-muted"></i>
+                        <h5 class="mt-3">No exercises found</h5>
+                        <p class="text-muted">Try adjusting your filters or search query</p>
+                      </div>
 
-                  <!-- Load More Button -->
-                  <div class="text-center mt-4" id="loadMoreContainer" style="display: none;">
-                    <button type="button" class="btn btn-outline-primary" id="loadMoreBtn">
-                      <i class="bx bx-down-arrow-circle me-1"></i>
-                      Load More Exercises
-                    </button>
+                      <!-- Exercise Table -->
+                      <div id="exerciseTableContainer" class="table-responsive" style="display: none;">
+                        <table class="table table-hover datatable-table mb-0">
+                          <thead class="table-light">
+                            <tr>
+                              <th class="ps-4">Exercise Name</th>
+                              <th>Muscle Group</th>
+                              <th>Equipment</th>
+                              <th>Difficulty</th>
+                              <th class="text-center" style="width: 80px;">Favorite</th>
+                              <th class="text-center pe-4" style="width: 80px;">Actions</th>
+                            </tr>
+                          </thead>
+                          <tbody id="exerciseTableBody">
+                            <!-- Exercise rows will be inserted here -->
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+
+                    <!-- Pagination Footer -->
+                    <div class="card-footer border-top py-3" id="exercisePaginationFooter" style="display: none;">
+                      <div class="row align-items-center">
+                        <div class="col-sm-6">
+                          <div class="text-muted small" id="paginationInfo">
+                            Showing 1 to 50 of 2,583 entries
+                          </div>
+                        </div>
+                        <div class="col-sm-6">
+                          <nav aria-label="Exercise pagination">
+                            <ul class="pagination pagination-sm justify-content-end mb-0" id="paginationControls">
+                              <!-- Pagination buttons will be inserted here -->
+                            </ul>
+                          </nav>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -402,6 +460,65 @@
         </div>
       </div>
     </div>
+    <!-- Custom Exercise Modal (shared with dashboard) -->
+    <div class="modal fade" id="customExerciseModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bx bx-plus-circle me-2"></i>
+                        Add Custom Exercise
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="customExerciseForm">
+                        <div class="mb-3">
+                            <label for="customExerciseName" class="form-label">Exercise Name *</label>
+                            <input type="text" class="form-control" id="customExerciseName" required maxlength="200">
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="customMuscleGroup" class="form-label">Muscle Group</label>
+                                <input type="text" class="form-control" id="customMuscleGroup" placeholder="e.g., Chest">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="customEquipment" class="form-label">Equipment</label>
+                                <input type="text" class="form-control" id="customEquipment" placeholder="e.g., Dumbbells">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="customDifficulty" class="form-label">Difficulty</label>
+                                <select class="form-select" id="customDifficulty">
+                                    <option value="">Select...</option>
+                                    <option value="Beginner">Beginner</option>
+                                    <option value="Intermediate">Intermediate</option>
+                                    <option value="Advanced">Advanced</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="customMechanics" class="form-label">Type</label>
+                                <select class="form-select" id="customMechanics">
+                                    <option value="">Select...</option>
+                                    <option value="Compound">Compound</option>
+                                    <option value="Isolation">Isolation</option>
+                                </select>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="saveCustomExerciseBtn">
+                        <i class="bx bx-save me-1"></i>
+                        Save Exercise
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 
     <!-- Core JS -->
     <script src="/static/assets/vendor/libs/jquery/jquery.js"></script>
@@ -420,3 +537,69 @@
     <script src="/static/assets/js/dashboard/exercises.js?v=20251020-05"></script>
   </body>
 </html>
+
+    <!-- Firebase Services -->
+    <script src="/static/assets/js/firebase/firebase-init.js?v=20251020-03"></script>
+    <script src="/static/assets/js/firebase/auth-service.js?v=20251020-03"></script>
+    <script src="/static/assets/js/firebase/data-manager.js?v=20251020-05"></script>
+
+    <!-- UI Helpers -->
+    <script src="/static/assets/js/dashboard/ui-helpers.js?v=20251020-04"></script>
+
+    <!-- Initialize Exercise Database -->
+    <script>
+        // Initialize global state for exercise database
+        window.ghostGym = window.ghostGym || {
+            exercises: {
+                all: [],
+                favorites: new Set(),
+                custom: [],
+                filtered: [],
+                displayed: [],
+                currentPage: 1,
+                pageSize: 50,
+                filters: {
+                    search: '',
+                    muscleGroup: '',
+                    equipment: '',
+                    difficulty: '',
+                    tier: '',
+                    sortBy: 'name',
+                    favoritesOnly: false,
+                    customOnly: false,
+                    foundationalOnly: false
+                }
+            }
+        };
+
+        // Initialize when Firebase is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            if (window.firebaseReady) {
+                initExerciseDatabase();
+            } else {
+                window.addEventListener('firebaseReady', initExerciseDatabase);
+            }
+        });
+
+        function initExerciseDatabase() {
+            console.log('🚀 Initializing Exercise Database Page');
+            
+            // Set up event listeners
+            document.getElementById('sortBySelect')?.addEventListener('change', filterExercises);
+            document.getElementById('muscleGroupFilter')?.addEventListener('change', filterExercises);
+            document.getElementById('equipmentFilter')?.addEventListener('change', filterExercises);
+            document.getElementById('difficultyFilter')?.addEventListener('change', filterExercises);
+            document.getElementById('showFavoritesOnly')?.addEventListener('change', filterExercises);
+            document.getElementById('showCustomOnly')?.addEventListener('change', filterExercises);
+            document.getElementById('clearFiltersBtn')?.addEventListener('click', clearExerciseFilters);
+            document.getElementById('entriesPerPageSelect')?.addEventListener('change', handleEntriesPerPageChange);
+            document.getElementById('refreshExercisesBtn')?.addEventListener('click', refreshExercises);
+            document.getElementById('addCustomExerciseBtn')?.addEventListener('click', () => showCustomExerciseModal());
+            document.getElementById('saveCustomExerciseBtn')?.addEventListener('click', saveCustomExercise);
+            
+            // Load exercises
+            loadExercises();
+            
+            console.log('✅ Exercise Database initialized');
+        }
+    </script>
