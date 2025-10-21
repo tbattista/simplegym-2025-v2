@@ -10,13 +10,19 @@ class MenuInjectionService {
     }
     
     /**
-     * Initialize the service
+     * Initialize the service - must run BEFORE DOMContentLoaded to inject menu before menu.js initializes
      */
     init() {
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', () => this.injectComponents());
-        } else {
+        // Inject immediately if DOM is already interactive or complete
+        if (document.readyState === 'interactive' || document.readyState === 'complete') {
             this.injectComponents();
+        } else {
+            // Otherwise inject as soon as DOM is interactive (before DOMContentLoaded)
+            document.addEventListener('readystatechange', () => {
+                if (document.readyState === 'interactive') {
+                    this.injectComponents();
+                }
+            });
         }
     }
     

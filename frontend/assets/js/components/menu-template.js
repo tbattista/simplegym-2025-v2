@@ -9,7 +9,7 @@
  * @param {string} activePage - The currently active page ('builder', 'programs', 'workouts', 'exercises')
  * @returns {string} Complete menu HTML
  */
-export function getMenuHTML(activePage = 'builder') {
+function getMenuHTML(activePage = 'builder') {
     return `
         <div class="app-brand demo">
             <a href="builder.html" class="app-brand-link">
@@ -111,7 +111,5 @@ export function getMenuHTML(activePage = 'builder') {
     `;
 }
 
-// Make globally available for non-module scripts
-if (typeof window !== 'undefined') {
-    window.getMenuHTML = getMenuHTML;
-}
+// Make globally available immediately
+window.getMenuHTML = getMenuHTML;

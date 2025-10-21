@@ -8,7 +8,7 @@
  * Generate all authentication-related modals HTML
  * @returns {string} Complete modals HTML
  */
-export function getAuthModalsHTML() {
+function getAuthModalsHTML() {
     return `
         <!-- Authentication Modal -->
         <div class="modal fade" id="authModal" tabindex="-1" aria-labelledby="authModalLabel" aria-hidden="true">
@@ -334,7 +334,5 @@ export function getAuthModalsHTML() {
     `;
 }
 
-// Make globally available for non-module scripts
-if (typeof window !== 'undefined') {
-    window.getAuthModalsHTML = getAuthModalsHTML;
-}
+// Make globally available immediately
+window.getAuthModalsHTML = getAuthModalsHTML;
