@@ -71,15 +71,16 @@ else:
 # Serve HTML pages
 
 @app.get("/", response_class=HTMLResponse)
-@app.get("/dashboard", response_class=HTMLResponse)
-async def serve_dashboard():
-    """Serve the Ghost Gym dashboard"""
+@app.get("/builder", response_class=HTMLResponse)
+@app.get("/builder.html", response_class=HTMLResponse)
+async def serve_builder():
+    """Serve the Ghost Gym builder page"""
     try:
-        with open("frontend/dashboard.html", "r", encoding="utf-8") as f:
+        with open("frontend/builder.html", "r", encoding="utf-8") as f:
             return HTMLResponse(content=f.read())
     except FileNotFoundError:
         return HTMLResponse(
-            content="<h1>Dashboard not found</h1><p>Please ensure frontend/dashboard.html exists</p>",
+            content="<h1>Builder page not found</h1><p>Please ensure frontend/builder.html exists</p>",
             status_code=404
         )
 

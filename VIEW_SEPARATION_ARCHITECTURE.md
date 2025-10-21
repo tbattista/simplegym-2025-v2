@@ -39,7 +39,7 @@ Following the successful Exercise Database refactoring, we have separated the **
 
 ```
 frontend/
-├── dashboard.html (1,152 lines)
+├── builder.html (1,152 lines)
 │   ├── Builder View
 │   ├── Programs View (embedded)
 │   └── Workouts View (embedded)
@@ -50,7 +50,7 @@ frontend/
 
 ```
 frontend/
-├── dashboard.html (~990 lines, -162 lines)
+├── builder.html (~990 lines, -162 lines)
 │   └── Builder View ONLY
 ├── programs.html (545 lines) ← NEW
 ├── workouts.html (577 lines) ← NEW
@@ -61,7 +61,7 @@ frontend/
 
 | File | Before | After | Change |
 |------|--------|-------|--------|
-| [`dashboard.html`](frontend/dashboard.html) | 1,152 lines | ~990 lines | -162 lines (-14%) |
+| [`builder.html`](frontend/builder.html) | 1,152 lines | ~990 lines | -162 lines (-14%) |
 | [`programs.html`](frontend/programs.html) | N/A | 545 lines | NEW |
 | [`workouts.html`](frontend/workouts.html) | N/A | 577 lines | NEW |
 | **Total** | 1,571 lines | 2,531 lines | +960 lines (+61%) |
@@ -76,7 +76,7 @@ frontend/
 
 ```
 frontend/
-├── dashboard.html              # Builder view (program assembly)
+├── builder.html                # Builder view (program assembly)
 ├── programs.html               # Program management
 ├── workouts.html               # Workout library
 ├── exercise-database.html      # Exercise database
@@ -115,7 +115,7 @@ backend/
 
 ## 📄 Page Specifications
 
-### 1. [`dashboard.html`](frontend/dashboard.html) - Builder View
+### 1. [`builder.html`](frontend/builder.html) - Builder View
 
 **Purpose:** Main program assembly interface (landing page)
 
@@ -297,7 +297,7 @@ function initWorkoutsPage() {
 └─────────────────────────────────────────────────────────┘
 
                     ┌──────────────────┐
-                    │  dashboard.html  │ ← Landing page
+                    │   builder.html   │ ← Landing page
                     │  (Builder View)  │
                     └────────┬─────────┘
                              │
@@ -314,7 +314,7 @@ function initWorkoutsPage() {
                                                   │
                                                   ▼
                                         ┌──────────────────┐
-                                        │  dashboard.html  │
+                                        │   builder.html   │
                                         │  (Builder View)  │
                                         └──────────────────┘
 ```
@@ -327,7 +327,7 @@ All pages share the same sidebar menu structure:
 <ul class="menu-inner py-1">
   <!-- Builder (Main View) -->
   <li class="menu-item">
-    <a href="dashboard.html" class="menu-link">
+    <a href="builder.html" class="menu-link">
       <i class="menu-icon tf-icons bx bx-layer"></i>
       <div class="text-truncate">Builder</div>
     </a>
@@ -409,7 +409,7 @@ async def serve_exercise_database():
 
 #### Page-Specific Dependencies
 
-**[`dashboard.html`](frontend/dashboard.html):**
+**[`builder.html`](frontend/builder.html):**
 - `dashboard/core.js` - Dashboard initialization
 - `dashboard/programs.js` - Program operations
 - `dashboard/workouts.js` - Workout operations
@@ -443,8 +443,8 @@ async def serve_exercise_database():
 
 **Old (hash-based navigation):**
 ```html
-<a href="dashboard.html#programs">My Programs</a>
-<a href="dashboard.html#workouts">Workout Library</a>
+<a href="builder.html#programs">My Programs</a>
+<a href="builder.html#workouts">Workout Library</a>
 ```
 
 **New (direct page links):**
@@ -474,8 +474,8 @@ window.location.href = 'workouts.html';
 function selectProgramAndGoToBuilder(programId) {
     // Store program ID in sessionStorage
     sessionStorage.setItem('selectedProgramId', programId);
-    // Navigate to dashboard
-    window.location.href = 'dashboard.html';
+    // Navigate to builder
+    window.location.href = 'builder.html';
 }
 ```
 
@@ -483,8 +483,8 @@ function selectProgramAndGoToBuilder(programId) {
 ```javascript
 function addWorkoutToProgramPrompt(workoutId) {
     // Show program selection modal
-    // After selection, navigate to dashboard
-    window.location.href = 'dashboard.html';
+    // After selection, navigate to builder
+    window.location.href = 'builder.html';
 }
 ```
 

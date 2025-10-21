@@ -1,91 +1,8 @@
 /**
- * Ghost Gym Dashboard - View Management System
- * Handles SPA-style view switching and rendering
- * @version 1.0.0
+ * Ghost Gym Dashboard - View Rendering System
+ * Handles rendering for Programs and Workouts views (now standalone pages)
+ * @version 2.0.0
  */
-
-/**
- * Show specific view and hide others
- * @param {string} viewName - Name of view to show (builder, programs, workouts, exercises)
- */
-function showView(viewName) {
-    console.log(`🔍 showView() called with: ${viewName}`);
-    console.log(`🔍 Available view elements:`, {
-        builderView: !!document.getElementById('builderView'),
-        programsView: !!document.getElementById('programsView'),
-        workoutsView: !!document.getElementById('workoutsView'),
-        exercisesView: !!document.getElementById('exercisesView')
-    });
-    
-    // Hide all views
-    const views = ['builderView', 'programsView', 'workoutsView', 'exercisesView'];
-    views.forEach(view => {
-        const element = document.getElementById(view);
-        if (element) {
-            element.style.display = 'none';
-            element.style.opacity = '1'; // Reset opacity for transitions
-        }
-    });
-    
-    // Show selected view
-    const selectedView = document.getElementById(`${viewName}View`);
-    if (selectedView) {
-        selectedView.style.display = 'block';
-        console.log(`✅ Showing view: ${viewName}View`);
-    } else {
-        console.error(`❌ View not found: ${viewName}View`);
-    }
-    
-    // Load and render view-specific content
-    switch(viewName) {
-        case 'builder':
-            console.log('📍 Builder view active');
-            break;
-            
-        case 'programs':
-            console.log('📍 Programs view active');
-            if (typeof renderProgramsView === 'function') {
-                renderProgramsView();
-            }
-            break;
-            
-        case 'workouts':
-            console.log('📍 Workouts view active');
-            if (typeof renderWorkoutsView === 'function') {
-                renderWorkoutsView();
-            }
-            break;
-            
-        case 'exercises':
-            console.log('📍 Exercise Database view active');
-            if (window.ghostGym && window.ghostGym.exercises.all.length === 0) {
-                loadExercises();
-            } else {
-                renderExerciseTable();
-            }
-            break;
-    }
-    
-    // Update menu active state
-    updateMenuActiveState(viewName);
-}
-
-/**
- * Update menu active state
- * @param {string} viewName - Name of active view
- */
-function updateMenuActiveState(viewName) {
-    // Remove active from all menu items
-    document.querySelectorAll('.menu-item').forEach(item => {
-        item.classList.remove('active');
-    });
-    
-    // Add active to selected menu item
-    const menuItem = document.querySelector(`.menu-item[data-section="${viewName}"]`);
-    if (menuItem) {
-        menuItem.classList.add('active');
-    }
-}
 
 /**
  * Render Programs View (dedicated full-page list)
@@ -333,27 +250,21 @@ function filterWorkoutsView() {
 }
 
 /**
- * Select program and switch to Builder view
+ * Select program and navigate to Builder view
  * @param {string} programId - ID of program to select
  */
 function selectProgramAndGoToBuilder(programId) {
-    selectProgram(programId);
-    // Use menu navigation system if available
-    if (window.menuNavigation) {
-        window.menuNavigation.navigate('builder');
-    } else {
-        showView('builder');
-    }
+    // Store program ID in sessionStorage for builder to pick up
+    sessionStorage.setItem('selectedProgramId', programId);
+    // Navigate to builder
+    window.location.href = 'builder.html';
 }
 
-// CRITICAL: Make showView globally accessible IMMEDIATELY for menu-navigation.js
-// This must be done synchronously before menu-navigation.js initializes
-window.showView = showView;
+// Make functions globally accessible for standalone pages
 window.renderProgramsView = renderProgramsView;
 window.renderWorkoutsView = renderWorkoutsView;
 window.filterProgramsView = filterProgramsView;
 window.filterWorkoutsView = filterWorkoutsView;
 window.selectProgramAndGoToBuilder = selectProgramAndGoToBuilder;
-window.updateMenuActiveState = updateMenuActiveState;
 
 console.log('📦 Views module loaded');
