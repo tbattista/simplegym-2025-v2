@@ -27,12 +27,6 @@ class MenuNavigation {
                 type: 'view',
                 icon: 'bx-dumbbell'
             },
-            exercises: {
-                view: 'exercisesView',
-                title: 'Exercise Database',
-                type: 'view',
-                icon: 'bx-book-content'
-            },
             backup: {
                 action: 'showBackupModal',
                 title: 'Backup & Export',
