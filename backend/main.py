@@ -83,6 +83,19 @@ async def serve_dashboard():
             status_code=404
         )
 
+@app.get("/exercise-database", response_class=HTMLResponse)
+@app.get("/exercise-database.html", response_class=HTMLResponse)
+async def serve_exercise_database():
+    """Serve the Exercise Database page"""
+    try:
+        with open("frontend/exercise-database.html", "r", encoding="utf-8") as f:
+            return HTMLResponse(content=f.read())
+    except FileNotFoundError:
+        return HTMLResponse(
+            content="<h1>Exercise Database not found</h1><p>Please ensure frontend/exercise-database.html exists</p>",
+            status_code=404
+        )
+
 
 if __name__ == "__main__":
     import uvicorn

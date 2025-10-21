@@ -1,8 +1,8 @@
 # Exercise Database Architecture Documentation
 ## Ghost Gym V2 - File Structure & Developer Guide
 
-**Last Updated:** October 21, 2024  
-**Version:** 1.0.0
+**Last Updated:** October 21, 2024
+**Version:** 1.0.1
 
 ---
 
@@ -64,6 +64,9 @@ frontend/
 │           ├── auth-service.js
 │           ├── data-manager.js
 │           └── sync-manager.js
+
+backend/
+└── main.py                         # FastAPI app with HTML routes
 ```
 
 ---
