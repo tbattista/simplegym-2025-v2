@@ -42,6 +42,9 @@
     
     <!-- Exercise Autocomplete CSS -->
     <link rel="stylesheet" href="/static/assets/css/exercise-autocomplete.css" />
+    
+    <!-- Workout Builder CSS -->
+    <link rel="stylesheet" href="/static/assets/css/workout-builder.css" />
 
     <!-- Helpers -->
     <script src="/static/assets/vendor/js/helpers.js"></script>
@@ -165,41 +168,131 @@
             <div class="container-xxl flex-grow-1 container-p-y">
               
               <!-- Page Header -->
-              <div class="d-flex justify-content-between align-items-center mb-4">
+              <div class="d-flex justify-content-between align-items-center mb-3">
                 <div>
                   <h4 class="mb-1">
                     <i class="bx bx-dumbbell me-2"></i>
-                    Workout Library
+                    Workout Builder
                   </h4>
-                  <p class="text-muted mb-0">Manage your workout templates</p>
+                  <p class="text-muted mb-0">Create and manage your workout templates</p>
                 </div>
-                <button type="button" class="btn btn-primary" id="workoutsViewNewBtn">
-                  <i class="bx bx-plus me-1"></i>
-                  New Workout
-                </button>
               </div>
 
-              <!-- Workouts Grid -->
-              <div class="row">
-                <div class="col-12">
-                  <div class="card">
-                    <div class="card-body" style="min-height: 500px;">
-                      <div id="workoutsViewGrid" class="row g-3">
-                        <!-- Workout cards will be rendered here -->
-                        <div class="col-12 text-center py-5">
-                          <div class="spinner-border text-primary" role="status">
-                            <span class="visually-hidden">Loading workouts...</span>
-                          </div>
-                          <p class="mt-3 text-muted">Loading workouts...</p>
-                        </div>
+              <!-- Workout Library Section (Top - Horizontal Scroll) -->
+              <div class="card mb-3" style="background: var(--bs-card-bg);">
+                <div class="card-body p-3">
+                  <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h6 class="mb-0">
+                      <i class="bx bx-folder me-1"></i>
+                      My Workouts
+                    </h6>
+                    <button type="button" class="btn btn-primary btn-sm" id="workoutsViewNewBtn">
+                      <i class="bx bx-plus me-1"></i>
+                      New Workout
+                    </button>
+                  </div>
+                  
+                  <!-- Horizontal Scrolling Workout Library -->
+                  <div id="workoutLibraryScroll" style="display: flex; gap: 1rem; overflow-x: auto; overflow-y: hidden; padding: 1rem 0; scroll-behavior: smooth;">
+                    <!-- Compact workout cards will be rendered here -->
+                    <div class="text-center py-3" style="width: 100%;">
+                      <div class="spinner-border spinner-border-sm text-primary" role="status">
+                        <span class="visually-hidden">Loading workouts...</span>
                       </div>
-                      <div id="workoutsViewEmptyState" class="text-center py-5" style="display: none;">
-                        <i class="bx bx-dumbbell display-1 text-muted"></i>
-                        <h5 class="mt-3">No Workouts Yet</h5>
-                        <p class="text-muted">Create your first workout template to get started</p>
-                      </div>
+                      <p class="mt-2 mb-0 text-muted small">Loading your workouts...</p>
                     </div>
                   </div>
+                </div>
+              </div>
+
+              <!-- Workout Editor Section (Bottom - Expandable) -->
+              <div class="card" style="background: var(--bs-card-bg);">
+                <div class="card-body p-4">
+                  
+                  <!-- Empty State (shown when no workout selected) -->
+                  <div id="workoutEditorEmptyState" class="text-center py-5">
+                    <i class="bx bx-dumbbell display-1 text-muted"></i>
+                    <h5 class="mt-3">Select a workout to edit</h5>
+                    <p class="text-muted">Click a workout card above or create a new workout to get started</p>
+                  </div>
+
+                  <!-- Editor Form (hidden initially) -->
+                  <div id="workoutEditorForm" style="display: none;">
+                    <form id="workoutForm">
+                      <!-- Workout Metadata -->
+                      <div class="row mb-3">
+                        <div class="col-md-6">
+                          <label for="workoutName" class="form-label">Workout Name *</label>
+                          <input type="text" class="form-control" id="workoutName" required maxlength="100" placeholder="e.g., Push Day - Upper Body">
+                        </div>
+                        <div class="col-md-6">
+                          <label for="workoutTags" class="form-label">Tags</label>
+                          <input type="text" class="form-control" id="workoutTags" placeholder="push, chest, shoulders">
+                        </div>
+                      </div>
+                      
+                      <div class="mb-4">
+                        <label for="workoutDescription" class="form-label">Description</label>
+                        <textarea class="form-control" id="workoutDescription" rows="2" maxlength="500" placeholder="Brief description of this workout..."></textarea>
+                      </div>
+                      
+                      <!-- Exercise Groups -->
+                      <div class="mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                          <h6 class="mb-0">
+                            <i class="bx bx-list-ul me-1"></i>
+                            Exercise Groups
+                          </h6>
+                          <button type="button" class="btn btn-outline-primary btn-sm" id="addExerciseGroupBtn">
+                            <i class="bx bx-plus me-1"></i>
+                            Add Group
+                          </button>
+                        </div>
+                        <div id="exerciseGroups">
+                          <!-- Exercise groups will be added here -->
+                        </div>
+                      </div>
+
+                      <!-- Bonus Exercises -->
+                      <div class="mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                          <h6 class="mb-0">
+                            <i class="bx bx-plus-circle me-1"></i>
+                            Bonus Exercises
+                          </h6>
+                          <button type="button" class="btn btn-outline-secondary btn-sm" id="addBonusExerciseBtn">
+                            <i class="bx bx-plus me-1"></i>
+                            Add Bonus
+                          </button>
+                        </div>
+                        <div id="bonusExercises">
+                          <!-- Bonus exercises will be added here -->
+                        </div>
+                      </div>
+
+                      <!-- Editor Actions -->
+                      <div class="d-flex justify-content-between align-items-center pt-3" style="border-top: 1px solid var(--bs-border-color);">
+                        <div>
+                          <span id="saveStatus" class="text-muted small"></span>
+                        </div>
+                        <div class="btn-group">
+                          <button type="button" class="btn btn-outline-secondary" id="cancelEditBtn">
+                            <i class="bx bx-x me-1"></i>
+                            Cancel
+                          </button>
+                          <button type="button" class="btn btn-outline-danger" id="deleteWorkoutBtn" style="display: none;">
+                            <i class="bx bx-trash me-1"></i>
+                            Delete
+                          </button>
+                          <button type="button" class="btn btn-primary" id="saveWorkoutBtn">
+                            <i class="bx bx-save me-1"></i>
+                            Save Workout
+                          </button>
+                        </div>
+                      </div>
+                    </form>
+                  </div>
+
                 </div>
               </div>
             </div>
@@ -422,6 +515,9 @@
     <script src="/static/assets/js/core/component-registry.js"></script>
     <script src="/static/assets/js/core/page-initializer.js"></script>
     <script src="/static/assets/js/components/workout-components.js"></script>
+    
+    <!-- Workout Editor Component -->
+    <script src="/static/assets/js/components/workout-editor.js"></script>
 
     <!-- Initialize Workouts Page with Component System -->
     <script>
@@ -431,6 +527,20 @@
             programs: [],
             searchFilters: {
                 workouts: ''
+            },
+            // Workout builder state
+            workoutBuilder: {
+                selectedWorkoutId: null,
+                isEditing: false,
+                isDirty: false,
+                currentWorkout: {
+                    id: null,
+                    name: '',
+                    description: '',
+                    tags: [],
+                    exercise_groups: [],
+                    bonus_exercises: []
+                }
             },
             // Add exercises structure for exercises.js compatibility
             exercises: {
@@ -456,29 +566,66 @@
         };
 
         // Initialize page using component system
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', async function() {
             console.log('📄 Workouts Page - DOM Ready');
             
-            // Create page initializer
-            const page = new PageInitializer('Workouts')
-                .addComponent('workoutGrid', 'workoutsViewGrid', {
-                    showSearch: true,
-                    showNewButton: true
-                })
-                .addComponent('workoutModal', 'workoutModal')
-                .configure({
-                    waitForFirebase: true,
-                    showLoadingState: true,
-                    onSuccess: () => {
-                        console.log('✅ Workouts page ready!');
-                    },
-                    onError: (error) => {
-                        console.error('❌ Failed to initialize workouts page:', error);
-                    }
-                });
+            // Show loading state
+            const workoutsGrid = document.getElementById('workoutsViewGrid');
+            if (workoutsGrid) {
+                workoutsGrid.innerHTML = `
+                    <div class="col-12 text-center py-5">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading workouts...</span>
+                        </div>
+                        <p class="mt-3 text-muted">Loading your workouts...</p>
+                    </div>
+                `;
+            }
             
-            // Initialize the page
-            page.init();
+            // Wait for Firebase to be ready
+            if (!window.firebaseReady) {
+                await new Promise(resolve => {
+                    window.addEventListener('firebaseReady', resolve, { once: true });
+                });
+            }
+            
+            // Wait for data manager to be ready
+            if (!window.dataManager) {
+                console.error('❌ Data manager not available');
+                return;
+            }
+            
+            try {
+                // Load workouts from data manager
+                console.log('📡 Loading workouts from data manager...');
+                const workouts = await window.dataManager.getWorkouts();
+                console.log(`✅ Loaded ${workouts.length} workouts`);
+                
+                // Update global state
+                window.ghostGym.workouts = workouts;
+                
+                // Render workouts view
+                if (window.renderWorkoutsView) {
+                    window.renderWorkoutsView();
+                }
+                
+                console.log('✅ Workouts page ready!');
+                
+            } catch (error) {
+                console.error('❌ Failed to load workouts:', error);
+                if (workoutsGrid) {
+                    workoutsGrid.innerHTML = `
+                        <div class="col-12 text-center py-5">
+                            <i class="bx bx-error-circle display-1 text-danger"></i>
+                            <h5 class="mt-3">Failed to Load Workouts</h5>
+                            <p class="text-muted">${error.message}</p>
+                            <button class="btn btn-primary mt-3" onclick="location.reload()">
+                                <i class="bx bx-refresh me-1"></i>Retry
+                            </button>
+                        </div>
+                    `;
+                }
+            }
         });
 
         // Helper function for showing workout modal (called by button)

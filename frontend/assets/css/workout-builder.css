@@ -1,0 +1,449 @@
+/**
+ * Ghost Gym - Workout Builder Styles
+ * Horizontal split-screen workout builder with inline editing
+ */
+
+/* ============================================
+   WORKOUT LIBRARY SECTION (Top)
+   ============================================ */
+
+.workout-library-scroll {
+    display: flex;
+    gap: 1rem;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 1rem 0;
+    scroll-behavior: smooth;
+    scrollbar-width: thin;
+    scrollbar-color: var(--bs-gray-400) var(--bs-gray-200);
+}
+
+.workout-library-scroll::-webkit-scrollbar {
+    height: 8px;
+}
+
+.workout-library-scroll::-webkit-scrollbar-track {
+    background: var(--bs-gray-200);
+    border-radius: 4px;
+}
+
+.workout-library-scroll::-webkit-scrollbar-thumb {
+    background: var(--bs-gray-400);
+    border-radius: 4px;
+    transition: background 0.2s;
+}
+
+.workout-library-scroll::-webkit-scrollbar-thumb:hover {
+    background: var(--bs-gray-500);
+}
+
+/* ============================================
+   COMPACT WORKOUT CARDS
+   ============================================ */
+
+.workout-card-compact {
+    min-width: 280px;
+    max-width: 280px;
+    background: var(--bs-body-bg);
+    border: 2px solid var(--bs-border-color);
+    border-radius: var(--bs-border-radius);
+    padding: 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+    position: relative;
+}
+
+.workout-card-compact:hover {
+    border-color: var(--bs-primary);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.workout-card-compact.selected {
+    border-color: var(--bs-primary);
+    border-width: 3px;
+    box-shadow: 0 0 0 3px rgba(var(--bs-primary-rgb), 0.15);
+    background: rgba(var(--bs-primary-rgb), 0.05);
+}
+
+.workout-card-compact-title {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--bs-heading-color);
+}
+
+.workout-card-compact.selected .workout-card-compact-title {
+    color: var(--bs-primary);
+}
+
+.workout-card-compact-description {
+    font-size: 0.75rem;
+    color: var(--bs-secondary);
+    margin-bottom: 0.75rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    line-height: 1.4;
+    min-height: 2.1rem;
+}
+
+.workout-card-compact-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    font-size: 0.7rem;
+    color: var(--bs-secondary);
+    margin-bottom: 0.5rem;
+}
+
+.workout-card-compact-stat {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.workout-card-compact-stat i {
+    font-size: 0.9rem;
+}
+
+.workout-card-compact-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    margin-top: 0.5rem;
+}
+
+.workout-card-compact-tag {
+    font-size: 0.65rem;
+    padding: 0.15rem 0.4rem;
+    background: var(--bs-gray-200);
+    color: var(--bs-gray-700);
+    border-radius: 0.25rem;
+    white-space: nowrap;
+}
+
+/* ============================================
+   WORKOUT EDITOR SECTION (Bottom)
+   ============================================ */
+
+.workout-editor-section {
+    background: var(--bs-card-bg);
+    border-radius: var(--bs-border-radius);
+    padding: 2rem;
+    min-height: 500px;
+}
+
+.workout-editor-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 400px;
+    color: var(--bs-secondary);
+}
+
+.workout-editor-empty-state i {
+    opacity: 0.5;
+}
+
+.workout-editor-form {
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ============================================
+   EXERCISE GROUP STYLING
+   ============================================ */
+
+.exercise-group {
+    position: relative;
+    margin-bottom: 1.5rem;
+    background: var(--bs-body-bg);
+    border: 1px solid var(--bs-border-color);
+    border-radius: var(--bs-border-radius);
+    transition: box-shadow 0.2s;
+}
+
+.exercise-group:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.exercise-group .card-header {
+    background: var(--bs-gray-100);
+    border-bottom: 1px solid var(--bs-border-color);
+    padding: 0.75rem 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.exercise-group .drag-handle {
+    cursor: move;
+    color: var(--bs-secondary);
+    margin-right: 0.5rem;
+    font-size: 1.2rem;
+}
+
+.exercise-group .drag-handle:hover {
+    color: var(--bs-primary);
+}
+
+.exercise-group.sortable-ghost {
+    opacity: 0.4;
+    background: var(--bs-gray-200);
+}
+
+.exercise-group.sortable-drag {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+/* ============================================
+   EXERCISE INPUTS
+   ============================================ */
+
+.exercise-input-wrapper {
+    position: relative;
+    margin-bottom: 1rem;
+}
+
+.exercise-input-label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+    color: var(--bs-gray-700);
+}
+
+.exercise-input {
+    width: 100%;
+}
+
+.exercise-input:focus {
+    border-color: var(--bs-primary);
+    box-shadow: 0 0 0 0.2rem rgba(var(--bs-primary-rgb), 0.25);
+}
+
+/* ============================================
+   SETS/REPS/REST INPUTS
+   ============================================ */
+
+.sets-reps-rest-row {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.sets-reps-rest-row .form-group {
+    flex: 1;
+}
+
+.sets-reps-rest-row input {
+    text-align: center;
+    font-weight: 500;
+}
+
+/* ============================================
+   BONUS EXERCISES
+   ============================================ */
+
+.bonus-exercise {
+    background: var(--bs-body-bg);
+    border: 1px solid var(--bs-border-color);
+    border-radius: var(--bs-border-radius);
+    margin-bottom: 1rem;
+    transition: box-shadow 0.2s;
+}
+
+.bonus-exercise:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.bonus-exercise .card-header {
+    background: rgba(var(--bs-secondary-rgb), 0.1);
+    border-bottom: 1px solid var(--bs-border-color);
+    padding: 0.75rem 1rem;
+}
+
+/* ============================================
+   EDITOR ACTIONS
+   ============================================ */
+
+.editor-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--bs-border-color);
+}
+
+.save-status {
+    font-size: 0.875rem;
+    color: var(--bs-secondary);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.save-status.dirty::before {
+    content: "●";
+    color: var(--bs-warning);
+    font-size: 1.2rem;
+    animation: pulse 2s infinite;
+}
+
+.save-status.saved::before {
+    content: "✓";
+    color: var(--bs-success);
+    font-size: 1.2rem;
+}
+
+.save-status.saving::before {
+    content: "";
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border: 2px solid var(--bs-primary);
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* ============================================
+   RESPONSIVE DESIGN
+   ============================================ */
+
+@media (max-width: 768px) {
+    .workout-card-compact {
+        min-width: 240px;
+        max-width: 240px;
+    }
+    
+    .workout-editor-section {
+        padding: 1rem;
+    }
+    
+    .sets-reps-rest-row {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+}
+
+/* ============================================
+   DARK THEME ADJUSTMENTS
+   ============================================ */
+
+[data-bs-theme="dark"] .workout-card-compact {
+    background: var(--bs-gray-900);
+    border-color: var(--bs-gray-700);
+}
+
+[data-bs-theme="dark"] .workout-card-compact:hover {
+    border-color: var(--bs-primary);
+    background: var(--bs-gray-800);
+}
+
+[data-bs-theme="dark"] .workout-card-compact.selected {
+    background: rgba(var(--bs-primary-rgb), 0.1);
+}
+
+[data-bs-theme="dark"] .exercise-group,
+[data-bs-theme="dark"] .bonus-exercise {
+    background: var(--bs-gray-900);
+    border-color: var(--bs-gray-700);
+}
+
+[data-bs-theme="dark"] .exercise-group .card-header {
+    background: var(--bs-gray-800);
+    border-color: var(--bs-gray-700);
+}
+
+/* ============================================
+   UTILITY CLASSES
+   ============================================ */
+
+.workout-builder-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+}
+
+.workout-builder-error {
+    padding: 2rem;
+    text-align: center;
+    color: var(--bs-danger);
+}
+
+.workout-builder-empty {
+    padding: 3rem;
+    text-align: center;
+    color: var(--bs-secondary);
+}
+
+/* ============================================
+   TRANSITIONS
+   ============================================ */
+
+.workout-card-compact,
+.exercise-group,
+.bonus-exercise {
+    transition: all 0.2s ease;
+}
+
+button {
+    transition: all 0.15s ease;
+}
+
+/* ============================================
+   SCROLLBAR STYLING (Global for builder)
+   ============================================ */
+
+.workout-builder-container ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.workout-builder-container ::-webkit-scrollbar-track {
+    background: var(--bs-gray-200);
+    border-radius: 4px;
+}
+
+.workout-builder-container ::-webkit-scrollbar-thumb {
+    background: var(--bs-gray-400);
+    border-radius: 4px;
+}
+
+.workout-builder-container ::-webkit-scrollbar-thumb:hover {
+    background: var(--bs-gray-500);
+}
