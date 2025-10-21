@@ -161,21 +161,6 @@ function initEventListeners() {
     document.getElementById('menuBackup')?.addEventListener('click', showBackupOptions);
     document.getElementById('menuSettings')?.addEventListener('click', showSettings);
     
-    // Exercise Database events
-    document.getElementById('exerciseSearch')?.addEventListener('input', debounce(filterExercises, 300));
-    document.getElementById('sortBySelect')?.addEventListener('change', filterExercises);
-    document.getElementById('muscleGroupFilter')?.addEventListener('change', filterExercises);
-    document.getElementById('equipmentFilter')?.addEventListener('change', filterExercises);
-    document.getElementById('difficultyFilter')?.addEventListener('change', filterExercises);
-    document.getElementById('tierFilter')?.addEventListener('change', filterExercises);
-    document.getElementById('showFavoritesOnly')?.addEventListener('change', filterExercises);
-    document.getElementById('showCustomOnly')?.addEventListener('change', filterExercises);
-    document.getElementById('showFoundationalOnly')?.addEventListener('change', filterExercises);
-    document.getElementById('clearFiltersBtn')?.addEventListener('click', clearExerciseFilters);
-    document.getElementById('entriesPerPageSelect')?.addEventListener('change', handleEntriesPerPageChange);
-    document.getElementById('exportExercisesBtn')?.addEventListener('click', exportExercises);
-    document.getElementById('exerciseLoadMoreBtn')?.addEventListener('click', loadMoreExercises);
-    
     // Modal events
     document.getElementById('programModal')?.addEventListener('hidden.bs.modal', clearProgramForm);
     document.getElementById('workoutModal')?.addEventListener('hidden.bs.modal', clearWorkoutForm);
