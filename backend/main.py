@@ -83,6 +83,32 @@ async def serve_dashboard():
             status_code=404
         )
 
+@app.get("/programs", response_class=HTMLResponse)
+@app.get("/programs.html", response_class=HTMLResponse)
+async def serve_programs():
+    """Serve the Programs Management page"""
+    try:
+        with open("frontend/programs.html", "r", encoding="utf-8") as f:
+            return HTMLResponse(content=f.read())
+    except FileNotFoundError:
+        return HTMLResponse(
+            content="<h1>Programs page not found</h1><p>Please ensure frontend/programs.html exists</p>",
+            status_code=404
+        )
+
+@app.get("/workouts", response_class=HTMLResponse)
+@app.get("/workouts.html", response_class=HTMLResponse)
+async def serve_workouts():
+    """Serve the Workouts Library page"""
+    try:
+        with open("frontend/workouts.html", "r", encoding="utf-8") as f:
+            return HTMLResponse(content=f.read())
+    except FileNotFoundError:
+        return HTMLResponse(
+            content="<h1>Workouts page not found</h1><p>Please ensure frontend/workouts.html exists</p>",
+            status_code=404
+        )
+
 @app.get("/exercise-database", response_class=HTMLResponse)
 @app.get("/exercise-database.html", response_class=HTMLResponse)
 async def serve_exercise_database():
