@@ -471,7 +471,13 @@
         window.ghostGym = window.ghostGym || {
             programs: [],
             workouts: [],
-            currentProgram: null
+            currentProgram: null,
+            // Add exercises structure for compatibility
+            exercises: {
+                all: [],
+                favorites: new Set(),
+                custom: []
+            }
         };
 
         // Initialize when Firebase is ready
@@ -483,7 +489,7 @@
             }
         });
 
-        function initProgramsPage() {
+        async function initProgramsPage() {
             console.log('🚀 Initializing Programs Page');
             
             // Set up event listeners
@@ -492,22 +498,29 @@
             document.getElementById('saveProgramBtn')?.addEventListener('click', saveProgram);
             document.getElementById('confirmGenerateBtn')?.addEventListener('click', generateDocument);
             
-            // Load programs from data manager
+            // Load data using the correct methods
             if (window.dataManager) {
-                window.dataManager.loadPrograms().then(programs => {
+                try {
+                    // Load programs - use getPrograms() which exists
+                    const programs = await window.dataManager.getPrograms();
                     window.ghostGym.programs = programs || [];
+                    console.log(`✅ Loaded ${window.ghostGym.programs.length} programs`);
                     renderProgramsView();
-                }).catch(error => {
+                } catch (error) {
                     console.error('Error loading programs:', error);
+                    window.ghostGym.programs = [];
                     renderProgramsView(); // Render empty state
-                });
+                }
                 
-                // Also load workouts for program details
-                window.dataManager.loadWorkouts().then(workouts => {
+                try {
+                    // Load workouts - use getWorkouts() which exists
+                    const workouts = await window.dataManager.getWorkouts();
                     window.ghostGym.workouts = workouts || [];
-                }).catch(error => {
+                    console.log(`✅ Loaded ${window.ghostGym.workouts.length} workouts`);
+                } catch (error) {
                     console.error('Error loading workouts:', error);
-                });
+                    window.ghostGym.workouts = [];
+                }
             }
             
             console.log('✅ Programs Page initialized');

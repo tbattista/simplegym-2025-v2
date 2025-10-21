@@ -490,6 +490,27 @@
             programs: [],
             searchFilters: {
                 workouts: ''
+            },
+            // Add exercises structure for exercises.js compatibility
+            exercises: {
+                all: [],
+                favorites: new Set(),
+                custom: [],
+                filtered: [],
+                displayed: [],
+                currentPage: 1,
+                pageSize: 50,
+                filters: {
+                    search: '',
+                    muscleGroup: '',
+                    equipment: '',
+                    difficulty: '',
+                    tier: '',
+                    sortBy: 'name',
+                    favoritesOnly: false,
+                    customOnly: false,
+                    foundationalOnly: false
+                }
             }
         };
 
@@ -502,7 +523,7 @@
             }
         });
 
-        function initWorkoutsPage() {
+        async function initWorkoutsPage() {
             console.log('🚀 Initializing Workouts Page');
             
             // Set up event listeners
@@ -513,22 +534,29 @@
             document.getElementById('saveWorkoutBtn')?.addEventListener('click', saveWorkout);
             document.getElementById('saveCustomExerciseBtn')?.addEventListener('click', saveCustomExercise);
             
-            // Load workouts from data manager
+            // Load data using the correct methods
             if (window.dataManager) {
-                window.dataManager.loadWorkouts().then(workouts => {
+                try {
+                    // Load workouts - use getWorkouts() which exists
+                    const workouts = await window.dataManager.getWorkouts();
                     window.ghostGym.workouts = workouts || [];
+                    console.log(`✅ Loaded ${window.ghostGym.workouts.length} workouts`);
                     renderWorkoutsView();
-                }).catch(error => {
+                } catch (error) {
                     console.error('Error loading workouts:', error);
+                    window.ghostGym.workouts = [];
                     renderWorkoutsView(); // Render empty state
-                });
+                }
                 
-                // Also load programs for "Add to Program" functionality
-                window.dataManager.loadPrograms().then(programs => {
+                try {
+                    // Load programs - use getPrograms() which exists
+                    const programs = await window.dataManager.getPrograms();
                     window.ghostGym.programs = programs || [];
-                }).catch(error => {
+                    console.log(`✅ Loaded ${window.ghostGym.programs.length} programs`);
+                } catch (error) {
                     console.error('Error loading programs:', error);
-                });
+                    window.ghostGym.programs = [];
+                }
             }
             
             console.log('✅ Workouts Page initialized');
