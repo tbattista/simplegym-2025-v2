@@ -75,12 +75,12 @@ class MenuInjectionService {
         }, 150); // Slightly longer delay to ensure Menu is fully initialized
     }
 
-    }
+    
     
     /**
      * Inject the menu into the layout-menu container
      */
-    injectMenu() 
+    injectMenu() {
         const menuContainer = document.getElementById('layout-menu');
         
         if (!menuContainer) {
