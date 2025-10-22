@@ -22,18 +22,24 @@ class Menu {
 
     el.classList.add('menu-vertical')
 
-    const PerfectScrollbarLib = _PS || window.PerfectScrollbar
+        const PerfectScrollbarLib = _PS || window.PerfectScrollbar
+    const menuInner = el.querySelector('.menu-inner')
 
-    if (PerfectScrollbarLib) {
-      this._scrollbar = new PerfectScrollbarLib(el.querySelector('.menu-inner'), {
+    if (PerfectScrollbarLib && menuInner) {
+      this._scrollbar = new PerfectScrollbarLib(menuInner, {
         suppressScrollX: true,
         wheelPropagation: !Menu._hasClass('layout-menu-fixed layout-menu-fixed-offcanvas')
       })
 
       window.Helpers.menuPsScroll = this._scrollbar
+    } else if (!menuInner) {
+      console.warn('⚠️ Menu inner element not found, skipping PerfectScrollbar initialization')
+      // Menu will work without PerfectScrollbar, just won't have custom scrolling
     } else {
-      el.querySelector('.menu-inner').classList.add('overflow-auto')
+      // PerfectScrollbar library not available, use regular scrolling
+      menuInner.classList.add('overflow-auto')
     }
+
 
     // Add data attribute for bg color class of menu
     const menuClassList = el.classList

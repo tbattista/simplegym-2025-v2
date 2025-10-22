@@ -44,50 +44,37 @@ class MenuInjectionService {
     
     /**
      * Re-initialize menu functionality after injection
-     * This must happen after main.js has loaded but after menu content exists
+     * Dispatches event for main.js to handle Menu class initialization
      */
     reinitializeMenu() {
-        // Dispatch custom event that main.js can listen for
+        // Dispatch event to notify that menu content is ready
         window.dispatchEvent(new CustomEvent('menuContentInjected'));
+        console.log('✅ Menu content injected, initialization event dispatched');
         
-        // Also manually re-initialize if main.js already ran
+        // Re-attach menu toggle listeners
+        // Small delay to ensure Menu class has initialized
         setTimeout(() => {
-            if (typeof Menu !== 'undefined' && typeof window.Helpers !== 'undefined') {
-                const layoutMenuEl = document.querySelectorAll('#layout-menu');
-                layoutMenuEl.forEach(function (element) {
-                    // Only initialize if not already initialized
-                    if (!element._menu) {
-                        try {
-                            const menu = new Menu(element, {
-                                orientation: 'vertical',
-                                closeChildren: false
-                            });
-                            window.Helpers.scrollToActive(false);
-                            window.Helpers.mainMenu = menu;
-                            console.log('✅ Menu class re-initialized');
-                        } catch (error) {
-                            console.warn('⚠️ Menu already initialized or error:', error);
-                        }
+            const menuToggler = document.querySelectorAll('.layout-menu-toggle');
+            menuToggler.forEach(item => {
+                // Remove old listeners by cloning
+                const newItem = item.cloneNode(true);
+                item.parentNode.replaceChild(newItem, item);
+                
+                // Add fresh listener
+                newItem.addEventListener('click', event => {
+                    event.preventDefault();
+                    if (window.Helpers && window.Helpers.toggleCollapsed) {
+                        window.Helpers.toggleCollapsed();
+                    } else {
+                        console.warn('⚠️ Helpers.toggleCollapsed not available');
                     }
                 });
-                
-                // Re-attach menu toggle listeners
-                const menuToggler = document.querySelectorAll('.layout-menu-toggle');
-                menuToggler.forEach(item => {
-                    // Remove old listeners by cloning
-                    const newItem = item.cloneNode(true);
-                    item.parentNode.replaceChild(newItem, item);
-                    
-                    // Add fresh listener
-                    newItem.addEventListener('click', event => {
-                        event.preventDefault();
-                        window.Helpers.toggleCollapsed();
-                    });
-                });
-                
-                console.log('✅ Menu toggle listeners re-attached');
-            }
-        }, 100); // Small delay to ensure main.js has run
+            });
+            
+            console.log('✅ Menu toggle listeners re-attached');
+        }, 150); // Slightly longer delay to ensure Menu is fully initialized
+    }
+
     }
     
     /**

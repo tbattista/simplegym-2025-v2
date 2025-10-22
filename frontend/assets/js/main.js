@@ -16,16 +16,38 @@ document.addEventListener('DOMContentLoaded', function () {
 (function () {
   // Initialize menu
   //-----------------
-
-  let layoutMenuEl = document.querySelectorAll('#layout-menu');
-  layoutMenuEl.forEach(function (element) {
-    menu = new Menu(element, {
-      orientation: 'vertical',
-      closeChildren: false
+  
+  function initializeMenu() {
+    let layoutMenuEl = document.querySelectorAll('#layout-menu');
+    layoutMenuEl.forEach(function (element) {
+      // Verify menu-inner exists before initializing
+      const menuInner = element.querySelector('.menu-inner');
+      if (menuInner) {
+        menu = new Menu(element, {
+          orientation: 'vertical',
+          closeChildren: false
+        });
+        // Change parameter to true if you want scroll animation
+        window.Helpers.scrollToActive((animate = false));
+        window.Helpers.mainMenu = menu;
+        console.log('✅ Menu initialized successfully');
+      } else {
+        console.warn('⚠️ Menu inner not found, skipping Menu initialization');
+      }
     });
-    // Change parameter to true if you want scroll animation
-    window.Helpers.scrollToActive((animate = false));
-    window.Helpers.mainMenu = menu;
+  }
+  
+  // Wait for menu content to be injected before initializing
+  window.addEventListener('menuContentInjected', initializeMenu);
+  
+  // Fallback: Initialize immediately if menu content already exists
+  // (This handles cases where injection happens before this script loads)
+  document.addEventListener('DOMContentLoaded', function() {
+    const menuInner = document.querySelector('#layout-menu .menu-inner');
+    if (menuInner && !window.Helpers.mainMenu) {
+      console.log('ℹ️ Menu content already present, initializing immediately');
+      initializeMenu();
+    }
   });
 
   // Initialize menu togglers and bind click on each
