@@ -199,6 +199,7 @@ function collectExerciseGroups() {
     
     groupElements.forEach(groupEl => {
         const exercises = {};
+        // Works with both accordion and card structures
         const exerciseInputs = groupEl.querySelectorAll('.exercise-input');
         
         exerciseInputs.forEach((input, index) => {
@@ -210,11 +211,13 @@ function collectExerciseGroups() {
         });
         
         if (Object.keys(exercises).length > 0) {
+            // Find inputs in either accordion-body or card-body
+            const bodyEl = groupEl.querySelector('.accordion-body') || groupEl.querySelector('.card-body');
             groups.push({
                 exercises: exercises,
-                sets: groupEl.querySelector('.sets-input')?.value || '3',
-                reps: groupEl.querySelector('.reps-input')?.value || '8-12',
-                rest: groupEl.querySelector('.rest-input')?.value || '60s'
+                sets: bodyEl?.querySelector('.sets-input')?.value || '3',
+                reps: bodyEl?.querySelector('.reps-input')?.value || '8-12',
+                rest: bodyEl?.querySelector('.rest-input')?.value || '60s'
             });
         }
     });
@@ -253,52 +256,74 @@ function addExerciseGroup() {
     
     const groupCount = container.children.length + 1;
     const groupId = `group-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const collapseId = `collapse-${groupId}`;
+    
+    // First group expanded, rest collapsed
+    const isExpanded = groupCount === 1;
+    const showClass = isExpanded ? 'show' : '';
+    const collapsedClass = isExpanded ? '' : 'collapsed';
     
     const groupHtml = `
-        <div class="card mb-3 exercise-group" data-group-id="${groupId}">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h6 class="mb-0">Exercise Group ${groupCount}</h6>
-                <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeExerciseGroup(this)">
-                    <i class="bx bx-trash"></i>
+        <div class="accordion-item exercise-group" data-group-id="${groupId}">
+            <h2 class="accordion-header" id="heading-${groupId}">
+                <button class="accordion-button ${collapsedClass}" type="button"
+                        data-bs-toggle="collapse" data-bs-target="#${collapseId}"
+                        aria-expanded="${isExpanded}" aria-controls="${collapseId}">
+                    <span class="group-title">Exercise Group ${groupCount}</span>
+                    <button type="button" class="btn btn-sm btn-outline-danger btn-remove-group"
+                            onclick="removeExerciseGroup(this); event.stopPropagation();"
+                            title="Remove group">
+                        <i class="bx bx-trash"></i>
+                    </button>
+                    <span class="drag-handle" title="Drag to reorder">
+                        <i class="bx bx-menu"></i>
+                    </span>
                 </button>
-            </div>
-            <div class="card-body">
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <label class="form-label">Exercise A</label>
-                        <input type="text" class="form-control exercise-input exercise-autocomplete-input"
-                               id="exercise-${groupId}-a" placeholder="Search exercises...">
+            </h2>
+            <div id="${collapseId}" class="accordion-collapse collapse ${showClass}"
+                 aria-labelledby="heading-${groupId}" data-bs-parent="#exerciseGroups">
+                <div class="accordion-body">
+                    <!-- Exercise inputs -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Exercise A</label>
+                            <input type="text" class="form-control exercise-input exercise-autocomplete-input"
+                                   id="exercise-${groupId}-a" placeholder="Search exercises...">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Exercise B (optional)</label>
+                            <input type="text" class="form-control exercise-input exercise-autocomplete-input"
+                                   id="exercise-${groupId}-b" placeholder="Search exercises...">
+                        </div>
                     </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Exercise B (optional)</label>
-                        <input type="text" class="form-control exercise-input exercise-autocomplete-input"
-                               id="exercise-${groupId}-b" placeholder="Search exercises...">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Exercise C (optional)</label>
+                            <input type="text" class="form-control exercise-input exercise-autocomplete-input"
+                                   id="exercise-${groupId}-c" placeholder="Search exercises...">
+                        </div>
+                        <div class="col-md-6">
+                            <button type="button" class="btn btn-outline-secondary btn-sm mt-4"
+                                    onclick="addExerciseToGroup(this)">
+                                <i class="bx bx-plus me-1"></i>Add Exercise
+                            </button>
+                        </div>
                     </div>
-                </div>
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <label class="form-label">Exercise C (optional)</label>
-                        <input type="text" class="form-control exercise-input exercise-autocomplete-input"
-                               id="exercise-${groupId}-c" placeholder="Search exercises...">
-                    </div>
-                    <div class="col-md-6">
-                        <button type="button" class="btn btn-outline-secondary btn-sm mt-4" onclick="addExerciseToGroup(this)">
-                            <i class="bx bx-plus me-1"></i>Add Exercise
-                        </button>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-4">
-                        <label class="form-label">Sets</label>
-                        <input type="text" class="form-control sets-input" value="3" placeholder="e.g., 3">
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label">Reps</label>
-                        <input type="text" class="form-control reps-input" value="8-12" placeholder="e.g., 8-12">
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label">Rest</label>
-                        <input type="text" class="form-control rest-input" value="60s" placeholder="e.g., 60s">
+                    
+                    <!-- Sets, Reps, Rest -->
+                    <div class="row">
+                        <div class="col-md-4">
+                            <label class="form-label">Sets</label>
+                            <input type="text" class="form-control sets-input" value="3" placeholder="e.g., 3">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Reps</label>
+                            <input type="text" class="form-control reps-input" value="8-12" placeholder="e.g., 8-12">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Rest</label>
+                            <input type="text" class="form-control rest-input" value="60s" placeholder="e.g., 60s">
+                        </div>
                     </div>
                 </div>
             </div>
@@ -307,8 +332,16 @@ function addExerciseGroup() {
     
     container.insertAdjacentHTML('beforeend', groupHtml);
     
+    // Initialize Sortable if not already done
+    initializeExerciseGroupSorting();
+    
     // Initialize autocomplete on new exercise inputs
     initializeExerciseAutocompletes();
+    
+    // Mark editor as dirty if function exists
+    if (window.markEditorDirty) {
+        window.markEditorDirty();
+    }
 }
 
 /**
@@ -382,14 +415,76 @@ function removeBonusExercise(button) {
 }
 
 /**
- * Renumber exercise groups after removal
+ * Initialize drag-and-drop sorting for exercise groups
+ */
+function initializeExerciseGroupSorting() {
+    const container = document.getElementById('exerciseGroups');
+    if (!container) return;
+    
+    // Check if already initialized
+    if (container.sortableInstance) {
+        return;
+    }
+    
+    // Initialize Sortable
+    container.sortableInstance = new Sortable(container, {
+        animation: 150,
+        handle: '.drag-handle',
+        ghostClass: 'sortable-ghost',
+        dragClass: 'sortable-drag',
+        chosenClass: 'sortable-chosen',
+        forceFallback: true,
+        fallbackTolerance: 3,
+        
+        onStart: function(evt) {
+            // Collapse all accordions during drag for cleaner UX
+            const accordions = container.querySelectorAll('.accordion-collapse.show');
+            accordions.forEach(acc => {
+                const currentItemCollapse = evt.item.querySelector('.accordion-collapse');
+                if (acc.id !== currentItemCollapse?.id) {
+                    const bsCollapse = bootstrap.Collapse.getInstance(acc);
+                    if (bsCollapse) {
+                        bsCollapse.hide();
+                    }
+                }
+            });
+        },
+        
+        onEnd: function(evt) {
+            // Renumber groups after reordering
+            renumberExerciseGroups();
+            
+            // Mark editor as dirty
+            if (window.markEditorDirty) {
+                window.markEditorDirty();
+            }
+            
+            console.log('✅ Exercise group reordered:', {
+                oldIndex: evt.oldIndex,
+                newIndex: evt.newIndex
+            });
+        }
+    });
+    
+    console.log('✅ Exercise group sorting initialized');
+}
+
+/**
+ * Renumber exercise groups after removal or reordering
  */
 function renumberExerciseGroups() {
     const groups = document.querySelectorAll('#exerciseGroups .exercise-group');
     groups.forEach((group, index) => {
-        const header = group.querySelector('.card-header h6');
-        if (header) {
-            header.textContent = `Exercise Group ${index + 1}`;
+        // Try accordion structure first
+        const accordionTitle = group.querySelector('.group-title');
+        if (accordionTitle) {
+            accordionTitle.textContent = `Exercise Group ${index + 1}`;
+        } else {
+            // Fallback to card structure
+            const cardHeader = group.querySelector('.card-header h6');
+            if (cardHeader) {
+                cardHeader.textContent = `Exercise Group ${index + 1}`;
+            }
         }
     });
 }
@@ -673,6 +768,7 @@ window.addExerciseGroup = addExerciseGroup;
 window.addBonusExercise = addBonusExercise;
 window.removeExerciseGroup = removeExerciseGroup;
 window.removeBonusExercise = removeBonusExercise;
+window.initializeExerciseGroupSorting = initializeExerciseGroupSorting;
 window.renumberExerciseGroups = renumberExerciseGroups;
 window.addExerciseToGroup = addExerciseToGroup;
 window.removeExerciseFromGroup = removeExerciseFromGroup;

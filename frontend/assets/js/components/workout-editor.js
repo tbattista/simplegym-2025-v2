@@ -88,6 +88,11 @@ function loadWorkoutIntoEditor(workoutId) {
         setTimeout(() => window.initializeExerciseAutocompletes(), 100);
     }
     
+    // Initialize Sortable for drag-and-drop
+    if (window.initializeExerciseGroupSorting) {
+        setTimeout(() => window.initializeExerciseGroupSorting(), 150);
+    }
+    
     console.log('✅ Workout loaded into editor');
 }
 
@@ -141,6 +146,11 @@ function createNewWorkoutInEditor() {
     // Initialize autocompletes
     if (window.initializeExerciseAutocompletes) {
         setTimeout(() => window.initializeExerciseAutocompletes(), 100);
+    }
+    
+    // Initialize Sortable for drag-and-drop
+    if (window.initializeExerciseGroupSorting) {
+        setTimeout(() => window.initializeExerciseGroupSorting(), 150);
     }
     
     // Focus on name input

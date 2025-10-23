@@ -168,10 +168,124 @@
 }
 
 /* ============================================
-   EXERCISE GROUP STYLING
+   EXERCISE GROUP STYLING - ACCORDION BASED
    ============================================ */
 
-.exercise-group {
+/* Accordion Container */
+.accordion-workout-groups {
+    --bs-accordion-border-radius: 0.5rem;
+    --bs-accordion-inner-border-radius: calc(0.5rem - 1px);
+}
+
+/* Accordion Item (Exercise Group) */
+.accordion-workout-groups .accordion-item {
+    margin-bottom: 1rem;
+    border: 1px solid var(--bs-border-color);
+    transition: all 0.2s ease;
+}
+
+.accordion-workout-groups .accordion-item:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* Accordion Header with Drag Handle */
+.accordion-workout-groups .accordion-button {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.25rem;
+    font-weight: 600;
+    background: var(--bs-gray-100);
+    position: relative;
+}
+
+.accordion-workout-groups .accordion-button:not(.collapsed) {
+    background: var(--bs-primary-bg-subtle);
+    color: var(--bs-primary);
+}
+
+.accordion-workout-groups .accordion-button:focus {
+    box-shadow: none;
+    border-color: var(--bs-primary);
+}
+
+/* Group Title */
+.accordion-workout-groups .group-title {
+    flex: 1;
+}
+
+/* Remove Button in Header */
+.accordion-workout-groups .btn-remove-group {
+    position: absolute;
+    right: 3.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    z-index: 10;
+    padding: 0.25rem 0.5rem;
+}
+
+.accordion-workout-groups .accordion-item:hover .btn-remove-group {
+    opacity: 1;
+}
+
+/* Drag Handle (Hidden by default, shown on hover) */
+.accordion-workout-groups .drag-handle {
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    cursor: move;
+    padding: 0.25rem 0.5rem;
+    margin-left: 1rem;
+    color: var(--bs-secondary);
+    display: flex;
+    align-items: center;
+    font-size: 1.2rem;
+}
+
+.accordion-workout-groups .accordion-item:hover .drag-handle {
+    opacity: 1;
+}
+
+.accordion-workout-groups .drag-handle:hover {
+    color: var(--bs-primary);
+}
+
+/* Chevron Arrow (Bootstrap default, rotates automatically) */
+.accordion-workout-groups .accordion-button::after {
+    margin-left: 0;
+    margin-right: auto;
+    order: -1;
+    margin-right: 0.75rem;
+}
+
+/* Sortable.js Drag States */
+.accordion-workout-groups .sortable-ghost {
+    opacity: 0.4;
+    background: var(--bs-gray-200);
+}
+
+.accordion-workout-groups .sortable-drag {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    transform: rotate(2deg);
+}
+
+.accordion-workout-groups .sortable-chosen {
+    cursor: grabbing;
+}
+
+.accordion-workout-groups .sortable-chosen .drag-handle {
+    opacity: 1;
+    color: var(--bs-primary);
+}
+
+/* Accordion Body */
+.accordion-workout-groups .accordion-body {
+    padding: 1.5rem;
+}
+
+/* Legacy card-based styling (for backward compatibility) */
+.exercise-group.card {
     position: relative;
     margin-bottom: 1.5rem;
     background: var(--bs-body-bg);
@@ -180,11 +294,11 @@
     transition: box-shadow 0.2s;
 }
 
-.exercise-group:hover {
+.exercise-group.card:hover {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
-.exercise-group .card-header {
+.exercise-group.card .card-header {
     background: var(--bs-gray-100);
     border-bottom: 1px solid var(--bs-border-color);
     padding: 0.75rem 1rem;
@@ -193,23 +307,23 @@
     align-items: center;
 }
 
-.exercise-group .drag-handle {
+.exercise-group.card .drag-handle {
     cursor: move;
     color: var(--bs-secondary);
     margin-right: 0.5rem;
     font-size: 1.2rem;
 }
 
-.exercise-group .drag-handle:hover {
+.exercise-group.card .drag-handle:hover {
     color: var(--bs-primary);
 }
 
-.exercise-group.sortable-ghost {
+.exercise-group.card.sortable-ghost {
     opacity: 0.4;
     background: var(--bs-gray-200);
 }
 
-.exercise-group.sortable-drag {
+.exercise-group.card.sortable-drag {
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
 }
 
@@ -383,12 +497,37 @@
         gap: 0.75rem;
     }
     
-    /* Exercise groups - less padding on mobile */
-    .exercise-group .card-body {
+    /* Accordion groups - mobile optimizations */
+    .accordion-workout-groups .accordion-button {
+        padding: 1.25rem 1rem;
+        font-size: 0.95rem;
+    }
+    
+    .accordion-workout-groups .accordion-body {
+        padding: 1rem;
+    }
+    
+    /* Always show drag handle on mobile for better UX */
+    .accordion-workout-groups .drag-handle {
+        opacity: 1;
+    }
+    
+    .accordion-workout-groups .btn-remove-group {
+        opacity: 1;
+        right: 3rem;
+    }
+    
+    /* Stack exercise inputs vertically */
+    .accordion-workout-groups .accordion-body .row > [class*='col-'] {
+        margin-bottom: 1rem;
+    }
+    
+    /* Exercise groups - less padding on mobile (legacy card style) */
+    .exercise-group.card .card-body {
         padding: 0.75rem;
     }
     
-    .exercise-group .card-header {
+    .exercise-group.card .card-header {
         padding: 0.5rem 0.75rem;
     }
     
