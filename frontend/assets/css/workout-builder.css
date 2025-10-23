@@ -458,19 +458,113 @@
    ============================================ */
 
 @media (max-width: 768px) {
-    /* Compact workout cards - smaller on mobile */
+    /* ============================================
+       MOBILE NAVBAR OPTIMIZATIONS
+       ============================================ */
+    
+    /* Navbar title - smaller and responsive */
+    .layout-navbar h4 {
+        font-size: 1rem;
+        font-weight: 600;
+    }
+    
+    .layout-navbar h4 i {
+        font-size: 1.1rem;
+    }
+    
+    /* Navbar padding adjustments */
+    .layout-navbar {
+        padding: 0.75rem 1rem;
+    }
+    
+    /* ============================================
+       MOBILE WORKOUT LIBRARY SECTION
+       ============================================ */
+    
+    /* Workout library card - less padding */
+    .card-body {
+        padding: 1rem !important;
+    }
+    
+    /* Workout library header - stack on mobile */
+    .card-body .d-flex.justify-content-between {
+        flex-direction: column;
+        gap: 0.75rem;
+        align-items: stretch !important;
+    }
+    
+    /* Search and button container */
+    .card-body .d-flex.gap-2 {
+        width: 100%;
+        flex-direction: column;
+        gap: 0.5rem !important;
+    }
+    
+    /* Search input - full width with better touch target */
+    .card-body .input-group {
+        width: 100% !important;
+    }
+    
+    .card-body .input-group .form-control {
+        font-size: 1rem;
+        padding: 0.625rem 0.75rem;
+        min-height: 44px; /* iOS recommended touch target */
+    }
+    
+    .card-body .input-group-text {
+        padding: 0.625rem 0.75rem;
+    }
+    
+    /* New Workout button - full width with better touch target */
+    .card-body .btn {
+        width: 100%;
+        padding: 0.625rem 1rem;
+        min-height: 44px; /* iOS recommended touch target */
+        font-size: 1rem;
+    }
+    
+    /* Section title */
+    .card-body h6 {
+        font-size: 0.95rem;
+        margin-bottom: 0 !important;
+    }
+    
+    /* ============================================
+       MOBILE WORKOUT CARDS
+       ============================================ */
+    
+    /* Compact workout cards - optimized for mobile */
     .workout-card-compact {
-        min-width: 240px;
-        max-width: 240px;
-        padding: 0.75rem;
+        min-width: 220px;
+        max-width: 220px;
+        padding: 0.875rem;
     }
     
     .workout-card-compact-title {
-        font-size: 0.9rem;
+        font-size: 0.95rem;
+        margin-bottom: 0.375rem;
     }
     
     .workout-card-compact-description {
+        font-size: 0.75rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .workout-card-compact-stats {
         font-size: 0.7rem;
+        gap: 0.375rem;
+    }
+    
+    .workout-card-compact-tag {
+        font-size: 0.65rem;
+        padding: 0.125rem 0.375rem;
+    }
+    
+    /* Workout library scroll - better mobile scrolling */
+    .workout-library-scroll {
+        padding: 0.75rem 0;
+        gap: 0.75rem;
+        -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
     }
     
     /* Editor section - less padding on mobile */
@@ -497,29 +591,77 @@
         gap: 0.75rem;
     }
     
-    /* Accordion groups - mobile optimizations */
+    /* ============================================
+       MOBILE ACCORDION OPTIMIZATIONS
+       ============================================ */
+    
+    /* Accordion button - better touch targets */
     .accordion-workout-groups .accordion-button {
-        padding: 1.25rem 1rem;
+        padding: 1rem 0.875rem;
         font-size: 0.95rem;
+        min-height: 56px; /* Better touch target */
     }
     
+    /* Accordion body - optimized padding */
     .accordion-workout-groups .accordion-body {
-        padding: 1rem;
+        padding: 1rem 0.875rem;
+    }
+    
+    /* Group title - better sizing */
+    .accordion-workout-groups .group-title {
+        font-size: 0.95rem;
+        font-weight: 600;
     }
     
     /* Always show drag handle on mobile for better UX */
     .accordion-workout-groups .drag-handle {
         opacity: 1;
+        font-size: 1.3rem;
+        padding: 0.5rem;
+        margin-left: 0.5rem;
     }
     
+    /* Always show remove button on mobile */
     .accordion-workout-groups .btn-remove-group {
         opacity: 1;
-        right: 3rem;
+        right: 3.5rem;
+        padding: 0.375rem 0.5rem;
+        min-height: 36px;
+        min-width: 36px;
     }
     
     /* Stack exercise inputs vertically */
     .accordion-workout-groups .accordion-body .row > [class*='col-'] {
         margin-bottom: 1rem;
+        padding-left: 0;
+        padding-right: 0;
+    }
+    
+    /* Form inputs - better touch targets */
+    .accordion-workout-groups .form-control {
+        font-size: 1rem;
+        padding: 0.625rem 0.75rem;
+        min-height: 44px;
+    }
+    
+    /* Form labels - better readability */
+    .accordion-workout-groups .form-label {
+        font-size: 0.875rem;
+        margin-bottom: 0.375rem;
+        font-weight: 500;
+    }
+    
+    /* Buttons in accordion - better touch targets */
+    .accordion-workout-groups .btn {
+        padding: 0.625rem 1rem;
+        min-height: 44px;
+        font-size: 0.95rem;
+    }
+    
+    .accordion-workout-groups .btn-sm {
+        padding: 0.5rem 0.875rem;
+        min-height: 40px;
+        font-size: 0.9rem;
     }
     
     /* Exercise groups - less padding on mobile (legacy card style) */
@@ -531,37 +673,85 @@
         padding: 0.5rem 0.75rem;
     }
     
-    /* Bonus exercises - less padding on mobile */
+    /* ============================================
+       MOBILE BONUS EXERCISES
+       ============================================ */
+    
+    /* Bonus exercises - optimized padding */
+    .bonus-exercise {
+        margin-bottom: 0.875rem;
+    }
+    
     .bonus-exercise .card-body {
-        padding: 0.75rem;
+        padding: 1rem 0.875rem;
     }
     
     .bonus-exercise .card-header {
-        padding: 0.5rem 0.75rem;
+        padding: 0.75rem 0.875rem;
+        min-height: 52px;
     }
+    
+    .bonus-exercise .card-header h6 {
+        font-size: 0.95rem;
+    }
+    
+    /* ============================================
+       MOBILE EDITOR ACTIONS
+       ============================================ */
     
     /* Editor actions - stack buttons on mobile */
     .editor-actions {
         flex-direction: column;
         gap: 1rem;
         align-items: stretch;
+        padding-top: 1.25rem;
+        margin-top: 1.5rem;
     }
     
     .editor-actions .btn-group {
         width: 100%;
         display: flex;
         flex-direction: column;
-        gap: 0.5rem;
+        gap: 0.625rem;
     }
     
     .editor-actions .btn-group .btn {
         width: 100%;
+        padding: 0.75rem 1rem;
+        min-height: 48px;
+        font-size: 1rem;
     }
     
     /* Save status - center on mobile */
     .save-status {
         justify-content: center;
         order: -1;
+        font-size: 0.9rem;
+        padding: 0.5rem;
+    }
+    
+    /* ============================================
+       MOBILE CONTENT SPACING
+       ============================================ */
+    
+    /* Container padding */
+    .container-xxl {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+    
+    /* Card spacing */
+    .card {
+        margin-bottom: 1rem;
+    }
+    
+    /* Section spacing */
+    .mb-3 {
+        margin-bottom: 0.875rem !important;
+    }
+    
+    .mb-4 {
+        margin-bottom: 1.25rem !important;
     }
 }
 

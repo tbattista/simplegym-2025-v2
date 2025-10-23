@@ -142,20 +142,15 @@
               </a>
             </div>
 
-            <div class="navbar-nav-right d-flex align-items-center justify-content-end w-100" id="navbar-collapse">
-              <!-- Search -->
-              <div class="navbar-nav align-items-center me-auto">
-                <div class="nav-item d-flex align-items-center">
-                  <span class="w-px-22 h-px-22"><i class="icon-base bx bx-search icon-md"></i></span>
-                  <input
-                    type="text"
-                    class="form-control border-0 shadow-none ps-1 ps-sm-2"
-                    placeholder="Search workouts..."
-                    aria-label="Search..." 
-                    id="workoutsViewSearch" />
-                </div>
+            <div class="navbar-nav-right d-flex align-items-center justify-content-between w-100" id="navbar-collapse">
+              <!-- Page Title -->
+              <div class="navbar-nav align-items-center">
+                <h4 class="mb-0">
+                  <i class="bx bx-dumbbell me-2"></i>
+                  Workout Builder
+                </h4>
               </div>
-              <!-- /Search -->
+              <!-- /Page Title -->
 
               <!-- No auth buttons in navbar - auth is in sidebar menu only -->
             </div>
@@ -167,29 +162,31 @@
             <!-- Content -->
             <div class="container-xxl flex-grow-1 container-p-y">
               
-              <!-- Page Header -->
-              <div class="d-flex justify-content-between align-items-center mb-3">
-                <div>
-                  <h4 class="mb-1">
-                    <i class="bx bx-dumbbell me-2"></i>
-                    Workout Builder
-                  </h4>
-                  <p class="text-muted mb-0">Create and manage your workout templates</p>
-                </div>
-              </div>
-
               <!-- Workout Library Section (Top - Horizontal Scroll) -->
               <div class="card mb-3" style="background: var(--bs-card-bg);">
                 <div class="card-body p-3">
-                  <div class="d-flex justify-content-between align-items-center mb-2">
+                  <div class="d-flex justify-content-between align-items-center mb-3">
                     <h6 class="mb-0">
                       <i class="bx bx-folder me-1"></i>
                       My Workouts
                     </h6>
-                    <button type="button" class="btn btn-primary btn-sm" id="workoutsViewNewBtn">
-                      <i class="bx bx-plus me-1"></i>
-                      New Workout
-                    </button>
+                    <div class="d-flex align-items-center gap-2">
+                      <!-- Search -->
+                      <div class="input-group input-group-sm" style="width: 250px;">
+                        <span class="input-group-text"><i class="bx bx-search"></i></span>
+                        <input
+                          type="text"
+                          class="form-control"
+                          placeholder="Search workouts..."
+                          aria-label="Search workouts"
+                          id="workoutsViewSearch" />
+                      </div>
+                      <!-- New Workout Button -->
+                      <button type="button" class="btn btn-primary btn-sm" id="workoutsViewNewBtn">
+                        <i class="bx bx-plus me-1"></i>
+                        New Workout
+                      </button>
+                    </div>
                   </div>
                   
                   <!-- Horizontal Scrolling Workout Library -->
