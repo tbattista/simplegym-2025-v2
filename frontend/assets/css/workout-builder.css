@@ -216,18 +216,20 @@
 
 /* Remove Button in Header */
 .accordion-workout-groups .btn-remove-group {
-    position: absolute;
-    right: 3.5rem;
-    top: 50%;
-    transform: translateY(-50%);
     opacity: 0;
     transition: opacity 0.2s ease;
-    z-index: 10;
     padding: 0.25rem 0.5rem;
+    margin-left: 0.5rem;
+    margin-right: 0.5rem;
+    flex-shrink: 0;
 }
 
 .accordion-workout-groups .accordion-item:hover .btn-remove-group {
     opacity: 1;
+}
+
+.accordion-workout-groups .accordion-button {
+    position: relative;
 }
 
 /* Drag Handle (Hidden by default, shown on hover) */
