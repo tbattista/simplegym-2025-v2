@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Accordion</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="stylesheet" href="/static/assets/css/workout-builder.css">
+    <style>
+        body { padding: 2rem; }
+    </style>
+</head>
+<body>
+    <h2>Accordion Test</h2>
+    <div class="accordion accordion-workout-groups" id="testAccordion">
+        <div class="accordion-item exercise-group" data-group-id="test-1">
+            <h2 class="accordion-header" id="heading-test-1">
+                <button class="accordion-button" type="button"
+                        data-bs-toggle="collapse" data-bs-target="#collapse-test-1"
+                        aria-expanded="true" aria-controls="collapse-test-1">
+                    <div class="group-title-container">
+                        <span class="group-title">Exercise Group 1</span>
+                        <div class="group-exercises-preview">
+                            <span class="exercise-preview-main" data-exercise="a" style="display: block;">Bench Press</span>
+                            <div class="group-exercises-secondary-line">
+                                <span class="exercise-preview-secondary" data-exercise="b" data-label="Alt1:" style="display: block;">Dumbbell Press</span>
+                                <span class="exercise-preview-secondary" data-exercise="c" data-label="Alt2:" style="display: block;">Push-ups</span>
+                            </div>
+                        </div>
+                    </div>
+                </button>
+                <div class="group-actions">
+                    <button type="button" class="btn btn-sm btn-outline-danger btn-remove-group"
+                            title="Remove group">
+                        <i class="bx bx-trash"></i>
+                    </button>
+                    <span class="drag-handle" title="Drag to reorder">
+                        <i class="bx bx-menu"></i>
+                    </span>
+                </div>
+            </h2>
+            <div id="collapse-test-1" class="accordion-collapse collapse show"
+                 aria-labelledby="heading-test-1">
+                <div class="accordion-body">
+                    <p>This is the accordion body content.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -189,14 +189,19 @@
 }
 
 /* Accordion Header with Drag Handle */
+.accordion-workout-groups .accordion-header {
+    position: relative;
+}
+
 .accordion-workout-groups .accordion-button {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1rem 1.25rem;
+    padding: 1rem 5rem 1rem 1.25rem; /* Extra padding on right for buttons */
     font-weight: 600;
     background: var(--bs-gray-100);
     position: relative;
+    width: 100%;
 }
 
 .accordion-workout-groups .accordion-button:not(.collapsed) {
@@ -209,19 +214,81 @@
     border-color: var(--bs-primary);
 }
 
-/* Group Title */
-.accordion-workout-groups .group-title {
+/* Group Title Container */
+.accordion-workout-groups .group-title-container {
     flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    min-width: 0; /* Allow text truncation */
 }
 
+/* Group Actions Container - positioned absolutely on the right */
+.accordion-workout-groups .group-actions {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    z-index: 10;
+}
+
+/* Group Title - always hidden, exercises show instead */
+.accordion-workout-groups .group-title {
+    display: none;
+}
+
+/* Exercise Preview Container - always visible */
+.accordion-workout-groups .group-exercises-preview {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+
+/* Main Exercise Preview (Exercise A) */
+.accordion-workout-groups .exercise-preview-main {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--bs-heading-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: none; /* Hidden by default, shown via JS when populated */
+}
+
+/* Secondary Exercises Container - on same line */
+.accordion-workout-groups .group-exercises-secondary-line {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    font-size: 0.8rem;
+    color: var(--bs-secondary);
+}
+
+/* Secondary Exercise Previews (B, C, etc.) */
+.accordion-workout-groups .exercise-preview-secondary {
+    font-weight: 400;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: none; /* Hidden by default, shown via JS when populated */
+}
+
+/* Label for secondary exercises */
+.accordion-workout-groups .exercise-preview-secondary::before {
+    content: attr(data-label);
+    font-weight: 500;
+    margin-right: 0.25rem;
+}
 /* Remove Button in Header */
 .accordion-workout-groups .btn-remove-group {
     opacity: 0;
     transition: opacity 0.2s ease;
-    padding: 0.25rem 0.5rem;
-    margin-left: 0.5rem;
-    margin-right: 0.5rem;
+    padding: 0.375rem 0.5rem;
     flex-shrink: 0;
+    font-size: 1rem;
 }
 
 .accordion-workout-groups .accordion-item:hover .btn-remove-group {
@@ -238,7 +305,6 @@
     transition: opacity 0.2s ease;
     cursor: move;
     padding: 0.25rem 0.5rem;
-    margin-left: 1rem;
     color: var(--bs-secondary);
     display: flex;
     align-items: center;
@@ -607,6 +673,16 @@
     /* Accordion body - optimized padding */
     .accordion-workout-groups .accordion-body {
         padding: 1rem 0.875rem;
+    }
+    
+    /* Exercise previews - optimized for mobile */
+    .accordion-workout-groups .exercise-preview-main {
+        font-size: 0.85rem;
+    }
+    
+    .accordion-workout-groups .exercise-preview-secondary {
+        font-size: 0.7rem;
+        padding-left: 0.375rem;
     }
     
     /* Group title - better sizing */

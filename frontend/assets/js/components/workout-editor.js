@@ -93,6 +93,22 @@ function loadWorkoutIntoEditor(workoutId) {
         setTimeout(() => window.initializeExerciseGroupSorting(), 150);
     }
     
+    // Update exercise previews and add listeners
+    setTimeout(() => {
+        const groups = document.querySelectorAll('#exerciseGroups .exercise-group');
+        groups.forEach(group => {
+            if (window.updateExerciseGroupPreview) {
+                window.updateExerciseGroupPreview(group);
+            }
+            // Add input listeners
+            const exerciseInputs = group.querySelectorAll('.exercise-input');
+            exerciseInputs.forEach(input => {
+                input.addEventListener('input', () => window.updateExerciseGroupPreview(group));
+                input.addEventListener('change', () => window.updateExerciseGroupPreview(group));
+            });
+        });
+    }, 200);
+    
     console.log('✅ Workout loaded into editor');
 }
 

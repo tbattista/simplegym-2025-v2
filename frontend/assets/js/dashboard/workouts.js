@@ -269,7 +269,18 @@ function addExerciseGroup() {
                 <button class="accordion-button ${collapsedClass}" type="button"
                         data-bs-toggle="collapse" data-bs-target="#${collapseId}"
                         aria-expanded="${isExpanded}" aria-controls="${collapseId}">
-                    <span class="group-title">Exercise Group ${groupCount}</span>
+                    <div class="group-title-container">
+                        <span class="group-title">Exercise Group ${groupCount}</span>
+                        <div class="group-exercises-preview">
+                            <span class="exercise-preview-main" data-exercise="a"></span>
+                            <div class="group-exercises-secondary-line">
+                                <span class="exercise-preview-secondary" data-exercise="b" data-label="Alt1:"></span>
+                                <span class="exercise-preview-secondary" data-exercise="c" data-label="Alt2:"></span>
+                            </div>
+                        </div>
+                    </div>
+                </button>
+                <div class="group-actions">
                     <button type="button" class="btn btn-sm btn-outline-danger btn-remove-group"
                             onclick="removeExerciseGroup(this); event.stopPropagation();"
                             title="Remove group">
@@ -278,7 +289,7 @@ function addExerciseGroup() {
                     <span class="drag-handle" title="Drag to reorder">
                         <i class="bx bx-menu"></i>
                     </span>
-                </button>
+                </div>
             </h2>
             <div id="${collapseId}" class="accordion-collapse collapse ${showClass}"
                  aria-labelledby="heading-${groupId}" data-bs-parent="#exerciseGroups">
@@ -337,6 +348,14 @@ function addExerciseGroup() {
     
     // Initialize autocomplete on new exercise inputs
     initializeExerciseAutocompletes();
+    
+    // Add input event listeners to update preview
+    const newGroup = container.lastElementChild;
+    const exerciseInputs = newGroup.querySelectorAll('.exercise-input');
+    exerciseInputs.forEach(input => {
+        input.addEventListener('input', () => updateExerciseGroupPreview(newGroup));
+        input.addEventListener('change', () => updateExerciseGroupPreview(newGroup));
+    });
     
     // Mark editor as dirty if function exists
     if (window.markEditorDirty) {
@@ -490,6 +509,43 @@ function renumberExerciseGroups() {
 }
 
 /**
+ * Update exercise group preview in accordion header
+ */
+function updateExerciseGroupPreview(groupElement) {
+    if (!groupElement) return;
+    
+    const exerciseInputs = groupElement.querySelectorAll('.exercise-input');
+    const previewMain = groupElement.querySelector('.exercise-preview-main');
+    const previewSecondaries = groupElement.querySelectorAll('.exercise-preview-secondary');
+    
+    if (!previewMain) return;
+    
+    // Get exercise values
+    const exercises = Array.from(exerciseInputs).map(input => input.value.trim()).filter(v => v);
+    
+    // Update main exercise (Exercise A)
+    if (exercises.length > 0) {
+        previewMain.textContent = exercises[0];
+        previewMain.style.display = 'block';
+    } else {
+        previewMain.textContent = '';
+        previewMain.style.display = 'none';
+    }
+    
+    // Update secondary exercises (B, C, etc.)
+    previewSecondaries.forEach((preview, index) => {
+        const exerciseIndex = index + 1; // B is index 1, C is index 2
+        if (exercises.length > exerciseIndex) {
+            preview.textContent = exercises[exerciseIndex];
+            preview.style.display = 'block';
+        } else {
+            preview.textContent = '';
+            preview.style.display = 'none';
+        }
+    });
+}
+
+/**
  * Add exercise to existing group
  */
 function addExerciseToGroup(button) {
@@ -523,6 +579,9 @@ function addExerciseToGroup(button) {
     
     // Initialize autocomplete on new input
     initializeExerciseAutocompletes();
+    
+    // Update preview
+    updateExerciseGroupPreview(group);
 }
 
 /**
@@ -778,5 +837,6 @@ window.deleteWorkout = deleteWorkout;
 window.clearWorkoutForm = clearWorkoutForm;
 window.addWorkoutToProgramPrompt = addWorkoutToProgramPrompt;
 window.initializeExerciseAutocompletes = initializeExerciseAutocompletes;
+window.updateExerciseGroupPreview = updateExerciseGroupPreview;
 
 console.log('📦 Workouts module loaded');
