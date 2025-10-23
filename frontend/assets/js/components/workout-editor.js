@@ -93,6 +93,11 @@ function loadWorkoutIntoEditor(workoutId) {
         setTimeout(() => window.initializeExerciseGroupSorting(), 150);
     }
     
+    // Initialize reorder mode toggle
+    if (window.initializeReorderMode) {
+        setTimeout(() => window.initializeReorderMode(), 200);
+    }
+    
     // Update exercise previews and add listeners
     setTimeout(() => {
         const groups = document.querySelectorAll('#exerciseGroups .exercise-group');
@@ -167,6 +172,11 @@ function createNewWorkoutInEditor() {
     // Initialize Sortable for drag-and-drop
     if (window.initializeExerciseGroupSorting) {
         setTimeout(() => window.initializeExerciseGroupSorting(), 150);
+    }
+    
+    // Initialize reorder mode toggle
+    if (window.initializeReorderMode) {
+        setTimeout(() => window.initializeReorderMode(), 200);
     }
     
     // Focus on name input

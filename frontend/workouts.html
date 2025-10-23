@@ -237,10 +237,21 @@
                       <!-- Exercise Groups -->
                       <div class="mb-4">
                         <div class="d-flex justify-content-between align-items-center mb-3">
-                          <h6 class="mb-0">
-                            <i class="bx bx-list-ul me-1"></i>
-                            Exercise Groups
-                          </h6>
+                          <div class="d-flex align-items-center gap-3">
+                            <h6 class="mb-0">
+                              <i class="bx bx-list-ul me-1"></i>
+                              Exercise Groups
+                            </h6>
+                            <!-- Reorder Mode Toggle -->
+                            <div class="form-check form-switch mb-0">
+                              <input class="form-check-input" type="checkbox" role="switch"
+                                     id="reorderModeToggle" style="cursor: pointer;">
+                              <label class="form-check-label" for="reorderModeToggle" style="cursor: pointer;">
+                                <i class="bx bx-move me-1"></i>
+                                <span class="reorder-mode-label">Reorder</span>
+                              </label>
+                            </div>
+                          </div>
                           <button type="button" class="btn btn-outline-primary btn-sm" id="addExerciseGroupBtn">
                             <i class="bx bx-plus me-1"></i>
                             Add Group

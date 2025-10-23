@@ -839,4 +839,289 @@ window.addWorkoutToProgramPrompt = addWorkoutToProgramPrompt;
 window.initializeExerciseAutocompletes = initializeExerciseAutocompletes;
 window.updateExerciseGroupPreview = updateExerciseGroupPreview;
 
+/**
+ * ============================================
+ * REORDER MODE FUNCTIONALITY
+ * ============================================
+ */
+
+/**
+ * Initialize reorder mode toggle
+ */
+function initializeReorderMode() {
+    const toggle = document.getElementById('reorderModeToggle');
+    if (!toggle) return;
+    
+    toggle.addEventListener('change', function() {
+        if (this.checked) {
+            enterReorderMode();
+        } else {
+            exitReorderMode();
+        }
+    });
+    
+    console.log('✅ Reorder mode initialized');
+}
+
+/**
+ * Enter reorder mode
+ */
+function enterReorderMode() {
+    console.log('🔄 Entering reorder mode...');
+    
+    const container = document.getElementById('exerciseGroups');
+    const addGroupBtn = document.getElementById('addExerciseGroupBtn');
+    
+    if (!container) return;
+    
+    // Update state
+    window.ghostGym.workoutBuilder.reorderMode = window.ghostGym.workoutBuilder.reorderMode || {};
+    window.ghostGym.workoutBuilder.reorderMode.isActive = true;
+    window.ghostGym.workoutBuilder.reorderMode.originalOrder = collectExerciseGroupsOrder();
+    window.ghostGym.workoutBuilder.reorderMode.hasChanges = false;
+    
+    // Add reorder mode class to container
+    container.classList.add('reorder-mode-active');
+    
+    // Disable add group button
+    if (addGroupBtn) {
+        addGroupBtn.disabled = true;
+        addGroupBtn.classList.add('disabled');
+    }
+    
+    // Collapse all accordions
+    collapseAllAccordions();
+    
+    // Disable accordion toggle functionality
+    disableAccordionToggles();
+    
+    // Enable Sortable if not already enabled
+    if (!container.sortableInstance) {
+        initializeExerciseGroupSorting();
+    }
+    
+    // Update Sortable to track changes
+    updateSortableForReorderMode(true);
+    
+    // Show visual feedback
+    showToast('Reorder mode active - Drag groups to reorder', 'info');
+    
+    console.log('✅ Reorder mode active');
+}
+
+/**
+ * Exit reorder mode
+ */
+async function exitReorderMode() {
+    console.log('🔄 Exiting reorder mode...');
+    
+    const container = document.getElementById('exerciseGroups');
+    const addGroupBtn = document.getElementById('addExerciseGroupBtn');
+    
+    if (!container) return;
+    
+    // Check if order changed
+    const hasChanges = window.ghostGym.workoutBuilder.reorderMode?.hasChanges || false;
+    
+    // Remove reorder mode class
+    container.classList.remove('reorder-mode-active');
+    
+    // Re-enable add group button
+    if (addGroupBtn) {
+        addGroupBtn.disabled = false;
+        addGroupBtn.classList.remove('disabled');
+    }
+    
+    // Re-enable accordion toggles
+    enableAccordionToggles();
+    
+    // Update Sortable configuration
+    updateSortableForReorderMode(false);
+    
+    // Save order if changed
+    if (hasChanges) {
+        await saveExerciseGroupOrder();
+    }
+    
+    // Update state
+    if (window.ghostGym.workoutBuilder.reorderMode) {
+        window.ghostGym.workoutBuilder.reorderMode.isActive = false;
+        window.ghostGym.workoutBuilder.reorderMode.originalOrder = null;
+        window.ghostGym.workoutBuilder.reorderMode.hasChanges = false;
+    }
+    
+    console.log('✅ Reorder mode exited');
+}
+
+/**
+ * Collapse all accordions
+ */
+function collapseAllAccordions() {
+    const accordions = document.querySelectorAll('#exerciseGroups .accordion-collapse.show');
+    
+    accordions.forEach(accordion => {
+        const bsCollapse = bootstrap.Collapse.getInstance(accordion);
+        if (bsCollapse) {
+            bsCollapse.hide();
+        } else {
+            // Create instance and hide
+            new bootstrap.Collapse(accordion, { toggle: false }).hide();
+        }
+    });
+}
+
+/**
+ * Disable accordion toggle functionality
+ */
+function disableAccordionToggles() {
+    const buttons = document.querySelectorAll('#exerciseGroups .accordion-button');
+    
+    buttons.forEach(button => {
+        button.setAttribute('data-original-toggle', button.getAttribute('data-bs-toggle') || '');
+        button.removeAttribute('data-bs-toggle');
+        button.style.cursor = 'move';
+    });
+}
+
+/**
+ * Enable accordion toggle functionality
+ */
+function enableAccordionToggles() {
+    const buttons = document.querySelectorAll('#exerciseGroups .accordion-button');
+    
+    buttons.forEach(button => {
+        const originalToggle = button.getAttribute('data-original-toggle');
+        if (originalToggle) {
+            button.setAttribute('data-bs-toggle', originalToggle);
+            button.removeAttribute('data-original-toggle');
+        }
+        button.style.cursor = '';
+    });
+}
+
+/**
+ * Update Sortable configuration for reorder mode
+ */
+function updateSortableForReorderMode(isReorderMode) {
+    const container = document.getElementById('exerciseGroups');
+    if (!container || !container.sortableInstance) return;
+    
+    const sortable = container.sortableInstance;
+    
+    if (isReorderMode) {
+        // Make entire item draggable in reorder mode
+        sortable.option('handle', '.accordion-item');
+        sortable.option('animation', 200);
+        
+        // Add change tracking
+        sortable.option('onEnd', function(evt) {
+            if (window.ghostGym.workoutBuilder.reorderMode) {
+                window.ghostGym.workoutBuilder.reorderMode.hasChanges = true;
+            }
+            renumberExerciseGroups();
+            console.log('📝 Order changed:', {
+                oldIndex: evt.oldIndex,
+                newIndex: evt.newIndex
+            });
+        });
+    } else {
+        // Restore original configuration
+        sortable.option('handle', '.drag-handle');
+        sortable.option('animation', 150);
+        
+        // Restore original onEnd handler
+        sortable.option('onEnd', function(evt) {
+            renumberExerciseGroups();
+            if (window.markEditorDirty) {
+                window.markEditorDirty();
+            }
+        });
+    }
+}
+
+/**
+ * Collect current exercise group order
+ */
+function collectExerciseGroupsOrder() {
+    const groups = document.querySelectorAll('#exerciseGroups .exercise-group');
+    return Array.from(groups).map(group => group.getAttribute('data-group-id'));
+}
+
+/**
+ * Save exercise group order to database
+ */
+async function saveExerciseGroupOrder() {
+    const workoutId = window.ghostGym.workoutBuilder.selectedWorkoutId;
+    if (!workoutId) {
+        console.warn('⚠️ No workout selected, cannot save order');
+        return;
+    }
+    
+    try {
+        // Show saving indicator
+        showToast('Saving new order...', 'info');
+        
+        // Collect current workout data with new order
+        const workoutData = {
+            id: workoutId,
+            exercise_groups: collectExerciseGroups(),
+            bonus_exercises: collectBonusExercises(),
+            name: document.getElementById('workoutName')?.value,
+            description: document.getElementById('workoutDescription')?.value,
+            tags: document.getElementById('workoutTags')?.value?.split(',').map(t => t.trim()).filter(t => t) || []
+        };
+        
+        // Update workout in database
+        if (window.dataManager && window.dataManager.updateWorkout) {
+            await window.dataManager.updateWorkout(workoutId, workoutData);
+        } else {
+            console.warn('⚠️ dataManager.updateWorkout not available, using createWorkout');
+            // Fallback: treat as update by recreating
+            await window.dataManager.createWorkout(workoutData);
+        }
+        
+        // Update local state
+        const workoutIndex = window.ghostGym.workouts.findIndex(w => w.id === workoutId);
+        if (workoutIndex !== -1) {
+            window.ghostGym.workouts[workoutIndex] = {
+                ...window.ghostGym.workouts[workoutIndex],
+                ...workoutData
+            };
+        }
+        
+        // Show success
+        showToast('Exercise group order saved!', 'success');
+        
+        console.log('✅ Exercise group order saved to database');
+        
+    } catch (error) {
+        console.error('❌ Failed to save exercise group order:', error);
+        showToast('Failed to save order: ' + error.message, 'danger');
+    }
+}
+
+/**
+ * Show toast notification
+ */
+function showToast(message, type = 'info') {
+    // Use existing toast system or create simple alert
+    if (window.showAlert) {
+        window.showAlert(message, type);
+    } else {
+        console.log(`[${type.toUpperCase()}] ${message}`);
+    }
+}
+
+// Make reorder mode functions globally available
+window.initializeReorderMode = initializeReorderMode;
+window.enterReorderMode = enterReorderMode;
+window.exitReorderMode = exitReorderMode;
+window.collapseAllAccordions = collapseAllAccordions;
+window.disableAccordionToggles = disableAccordionToggles;
+window.enableAccordionToggles = enableAccordionToggles;
+window.updateSortableForReorderMode = updateSortableForReorderMode;
+window.collectExerciseGroupsOrder = collectExerciseGroupsOrder;
+window.saveExerciseGroupOrder = saveExerciseGroupOrder;
+window.showToast = showToast;
+
 console.log('📦 Workouts module loaded');
