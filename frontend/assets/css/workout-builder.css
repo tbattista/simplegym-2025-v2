@@ -177,11 +177,12 @@
     --bs-accordion-inner-border-radius: calc(0.5rem - 1px);
 }
 
-/* Accordion Item (Exercise Group) */
+/* Accordion Item (Exercise Group) - minimal styling in edit mode */
 .accordion-workout-groups .accordion-item {
-    margin-bottom: 1rem;
+    margin-bottom: 0.75rem;
     border: 1px solid var(--bs-border-color);
     transition: all 0.2s ease;
+    background: transparent; /* No background in edit mode */
 }
 
 .accordion-workout-groups .accordion-item:hover {
@@ -197,16 +198,16 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1rem 5rem 1rem 1.25rem; /* Extra padding on right for buttons */
+    padding: 0.75rem 5rem 0.75rem 1rem !important; /* Extra padding on right for buttons */
     font-weight: 600;
-    background: var(--bs-gray-100);
+    background: transparent; /* No background in edit mode */
     position: relative;
     width: 100%;
 }
 
 .accordion-workout-groups .accordion-button:not(.collapsed) {
-    background: var(--bs-primary-bg-subtle);
-    color: var(--bs-primary);
+    background: transparent; /* Keep transparent even when expanded */
+    color: var(--bs-heading-color);
 }
 
 .accordion-workout-groups .accordion-button:focus {
@@ -299,24 +300,14 @@
     position: relative;
 }
 
-/* Drag Handle (Hidden by default, shown on hover) */
+/* Drag Handle (Hidden in edit mode, only visible in reorder mode) */
 .accordion-workout-groups .drag-handle {
-    opacity: 0;
-    transition: opacity 0.2s ease;
+    display: none; /* Completely hidden in edit mode */
     cursor: move;
     padding: 0.25rem 0.5rem;
     color: var(--bs-secondary);
-    display: flex;
     align-items: center;
     font-size: 1.2rem;
-}
-
-.accordion-workout-groups .accordion-item:hover .drag-handle {
-    opacity: 1;
-}
-
-.accordion-workout-groups .drag-handle:hover {
-    color: var(--bs-primary);
 }
 
 /* Chevron Arrow (Bootstrap default, rotates automatically) */
@@ -349,7 +340,7 @@
 
 /* Accordion Body */
 .accordion-workout-groups .accordion-body {
-    padding: 1.5rem;
+    padding: 1rem !important;
 }
 
 /* Legacy card-based styling (for backward compatibility) */
@@ -665,14 +656,14 @@
     
     /* Accordion button - better touch targets */
     .accordion-workout-groups .accordion-button {
-        padding: 1rem 0.875rem;
+        padding: 0.75rem 0.75rem !important;
         font-size: 0.95rem;
         min-height: 56px; /* Better touch target */
     }
     
     /* Accordion body - optimized padding */
     .accordion-workout-groups .accordion-body {
-        padding: 1rem 0.875rem;
+        padding: 0.75rem !important;
     }
     
     /* Exercise previews - optimized for mobile */
@@ -1002,26 +993,22 @@ button {
     font-weight: 600;
 }
 
-.form-check-input:checked ~ .form-check-label .bx-move {
-    animation: shake 0.5s ease;
-}
-
-@keyframes shake {
-    0%, 100% { transform: translateX(0); }
-    25% { transform: translateX(-3px); }
-    75% { transform: translateX(3px); }
-}
-
 /* ============================================
    REORDER MODE ACTIVE STATE
    ============================================ */
 
-/* Container in reorder mode */
+/* Container - no styling in normal mode */
+.accordion-workout-groups {
+    /* No background, border, or padding in edit mode */
+}
+
+/* Container in reorder mode - add bounding box */
 .accordion-workout-groups.reorder-mode-active {
     background: rgba(var(--bs-info-rgb), 0.05);
     border: 2px dashed var(--bs-info);
     border-radius: var(--bs-border-radius);
-    padding: 1rem;
+    padding: 0.75rem;
+    margin-top: 0.5rem;
 }
 
 /* Exercise groups in reorder mode */
@@ -1055,8 +1042,9 @@ button {
     display: none;
 }
 
-/* Always show drag handle in reorder mode */
+/* Show drag handle in reorder mode */
 .accordion-workout-groups.reorder-mode-active .drag-handle {
+    display: flex !important; /* Show in reorder mode */
     opacity: 1 !important;
     color: var(--bs-info);
     font-size: 1.5rem;
