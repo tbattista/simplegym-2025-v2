@@ -349,6 +349,12 @@
     padding: 1rem;
 }
 
+/* Delete button in accordion body - always visible */
+.accordion-workout-groups .accordion-body .btn-remove-group {
+    display: inline-flex !important;
+    opacity: 1 !important;
+}
+
 /* ============================================
    LEGACY CARD-BASED STYLING
    (For backward compatibility)

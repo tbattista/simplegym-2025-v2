@@ -281,11 +281,6 @@ function addExerciseGroup() {
                     </div>
                 </button>
                 <div class="group-actions">
-                    <button type="button" class="btn btn-sm btn-outline-danger btn-remove-group"
-                            onclick="removeExerciseGroup(this); event.stopPropagation();"
-                            title="Remove group">
-                        <i class="bx bx-trash"></i>
-                    </button>
                     <span class="drag-handle" title="Drag to reorder">
                         <i class="bx bx-menu"></i>
                     </span>
@@ -313,27 +308,36 @@ function addExerciseGroup() {
                             <input type="text" class="form-control exercise-input exercise-autocomplete-input"
                                    id="exercise-${groupId}-c" placeholder="Search exercises...">
                         </div>
-                        <div class="col-md-6">
-                            <button type="button" class="btn btn-outline-secondary btn-sm mt-4"
-                                    onclick="addExerciseToGroup(this)">
-                                <i class="bx bx-plus me-1"></i>Add Exercise
-                            </button>
-                        </div>
                     </div>
                     
                     <!-- Sets, Reps, Rest -->
-                    <div class="row">
-                        <div class="col-md-4">
-                            <label class="form-label">Sets</label>
-                            <input type="text" class="form-control sets-input" value="3" placeholder="e.g., 3">
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <div class="d-flex align-items-end gap-2">
+                                <div style="width: 80px;">
+                                    <label class="form-label small mb-1">Sets</label>
+                                    <input type="text" class="form-control form-control-sm sets-input text-center" value="3" placeholder="3" maxlength="3">
+                                </div>
+                                <div style="width: 80px;">
+                                    <label class="form-label small mb-1">Reps</label>
+                                    <input type="text" class="form-control form-control-sm reps-input text-center" value="8-12" placeholder="8-12" maxlength="6">
+                                </div>
+                                <div style="flex: 1;">
+                                    <label class="form-label small mb-1">Rest</label>
+                                    <input type="text" class="form-control form-control-sm rest-input text-center" value="60s" placeholder="60s" maxlength="10">
+                                </div>
+                            </div>
                         </div>
-                        <div class="col-md-4">
-                            <label class="form-label">Reps</label>
-                            <input type="text" class="form-control reps-input" value="8-12" placeholder="e.g., 8-12">
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label">Rest</label>
-                            <input type="text" class="form-control rest-input" value="60s" placeholder="e.g., 60s">
+                    </div>
+                    
+                    <!-- Delete Button -->
+                    <div class="row mt-3">
+                        <div class="col-12 d-flex justify-content-end">
+                            <button type="button" class="btn btn-sm btn-outline-danger btn-remove-group"
+                                    onclick="removeExerciseGroup(this); event.stopPropagation();"
+                                    title="Delete group">
+                                <i class="bx bx-trash me-1"></i>Delete
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -931,7 +935,7 @@ function enterEditMode() {
     // Update label if needed
     const label = document.querySelector('.edit-mode-label');
     if (label) {
-        label.textContent = 'Edit';
+        label.textContent = 'Reorder';
     }
     
     // Disable add group button
