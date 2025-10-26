@@ -60,13 +60,35 @@ class MenuInjectionService {
                 const newItem = item.cloneNode(true);
                 item.parentNode.replaceChild(newItem, item);
                 
-                // Add fresh listener
+                // Add fresh listener with mobile support
                 newItem.addEventListener('click', event => {
                     event.preventDefault();
-                    if (window.Helpers && window.Helpers.toggleCollapsed) {
+                    
+                    // On mobile, toggle menu and overlay
+                    if (window.Helpers && window.Helpers.isSmallScreen && window.Helpers.isSmallScreen()) {
+                        const layoutMenu = document.getElementById('layout-menu');
+                        const layoutOverlay = document.querySelector('.layout-overlay');
+                        
+                        if (layoutMenu && layoutOverlay) {
+                            const isOpen = layoutMenu.classList.contains('menu-open');
+                            
+                            if (isOpen) {
+                                // Close menu
+                                layoutMenu.classList.remove('menu-open');
+                                layoutOverlay.classList.remove('active');
+                                document.body.style.overflow = '';
+                            } else {
+                                // Open menu
+                                layoutMenu.classList.add('menu-open');
+                                layoutOverlay.classList.add('active');
+                                document.body.style.overflow = 'hidden';
+                            }
+                        }
+                    } else if (window.Helpers && window.Helpers.toggleCollapsed) {
+                        // Desktop behavior
                         window.Helpers.toggleCollapsed();
                     } else {
-                        console.warn('⚠️ Helpers.toggleCollapsed not available');
+                        console.warn('⚠️ Helpers not available');
                     }
                 });
             });

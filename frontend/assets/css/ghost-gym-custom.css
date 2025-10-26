@@ -393,8 +393,212 @@
   color: white;
 }
 
+/* ============================================
+   MOBILE MENU & NAVBAR IMPROVEMENTS
+   ============================================ */
+
+/* Floating Hamburger Menu Button */
+.mobile-menu-toggle {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 1060;
+  width: 48px;
+  height: 48px;
+  background: var(--bs-primary);
+  border: none;
+  border-radius: 8px;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.mobile-menu-toggle:hover {
+  background: var(--bs-primary-dark, #5855eb);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  transform: translateY(-1px);
+}
+
+.mobile-menu-toggle:active {
+  transform: translateY(0);
+}
+
+.mobile-menu-toggle i {
+  font-size: 1.5rem;
+  color: white;
+}
+
+/* Show hamburger button on mobile */
+@media (max-width: 1199.98px) {
+  .mobile-menu-toggle {
+    display: flex;
+  }
+}
+
+/* Mobile Menu Overlay */
+.layout-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1040;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.layout-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Mobile Menu Slide Animation */
+@media (max-width: 1199.98px) {
+  .layout-menu {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 260px;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    z-index: 1050;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+  }
+  
+  .layout-menu.menu-open {
+    transform: translateX(0);
+  }
+  
+  /* Menu close button on mobile */
+  .layout-menu .layout-menu-toggle {
+    display: flex !important;
+    justify-content: flex-end;
+    padding: 1rem;
+  }
+  
+  .layout-menu .layout-menu-toggle .bx-chevron-left {
+    display: block !important;
+  }
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
+  /* Mobile Navbar - Flush with top and sides */
+  .layout-navbar {
+    padding: 0 !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08) !important;
+    position: sticky;
+    top: 0;
+    z-index: 1030;
+    min-height: 56px;
+    width: 100% !important;
+  }
+  
+  .layout-navbar.navbar-detached {
+    margin: 0 !important;
+    border-radius: 0 !important;
+    width: 100% !important;
+  }
+  
+  /* Ensure navbar container is full width and properly centered */
+  .layout-navbar .container-xxl {
+    max-width: 100% !important;
+    width: 100% !important;
+    padding: 0.5rem 1rem !important;
+    margin: 0 auto !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 0.75rem;
+    height: 100%;
+  }
+  
+  /* Ensure layout page takes full width */
+  .layout-page {
+    width: 100% !important;
+  }
+  
+  /* Content wrapper full width */
+  .content-wrapper {
+    width: 100% !important;
+  }
+  
+  /* Move menu toggle to the right */
+  .layout-menu-toggle {
+    order: 2;
+    margin: 0 !important;
+    flex-shrink: 0;
+    display: flex !important;
+    align-items: center !important;
+  }
+  
+  .layout-menu-toggle .nav-link {
+    padding: 0.5rem !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-width: 44px;
+    min-height: 44px;
+    margin: 0 !important;
+  }
+  
+  .layout-menu-toggle .icon-md {
+    font-size: 1.5rem;
+    line-height: 1;
+  }
+  
+  /* Navbar content on the left */
+  .navbar-nav-right {
+    order: 1;
+    flex: 1;
+    margin: 0 !important;
+    min-width: 0;
+    display: flex !important;
+    align-items: center !important;
+  }
+  
+  /* Style the search input in navbar */
+  .navbar-nav-right .input-group {
+    border: 1px solid var(--bs-border-color);
+    border-radius: 0.375rem;
+    overflow: hidden;
+    background: var(--bs-body-bg);
+    display: flex !important;
+    align-items: center !important;
+    height: 44px;
+  }
+  
+  .navbar-nav-right .input-group-text {
+    background: transparent;
+    border: none;
+    color: var(--bs-secondary);
+    padding: 0.5rem 0.75rem;
+    display: flex;
+    align-items: center;
+    height: 100%;
+  }
+  
+  .navbar-nav-right .input-group .form-control {
+    border: none;
+    background: transparent;
+    font-size: 0.9rem;
+    padding: 0.5rem 0.75rem;
+    height: 100%;
+    line-height: 1.5;
+  }
+  
+  .navbar-nav-right .input-group .form-control:focus {
+    box-shadow: none;
+  }
+  
   .exercise-inputs {
     grid-template-columns: 1fr;
     gap: 0.5rem;

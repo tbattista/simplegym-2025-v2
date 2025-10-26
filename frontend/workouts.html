@@ -121,6 +121,11 @@
   </head>
 
   <body>
+    <!-- Floating Hamburger Menu Button -->
+    <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Toggle menu">
+      <i class="bx bx-menu"></i>
+    </button>
+    
     <!-- Layout wrapper -->
     <div class="layout-wrapper layout-content-navbar">
       <div class="layout-container">
@@ -132,22 +137,6 @@
 
         <!-- Layout container -->
         <div class="layout-page">
-          <!-- Navbar -->
-          <nav
-            class="layout-navbar container-xxl navbar-detached navbar navbar-expand-xl align-items-center bg-navbar-theme"
-            id="layout-navbar">
-            <div class="layout-menu-toggle navbar-nav align-items-xl-center me-4 me-xl-0 d-xl-none">
-              <a class="nav-item nav-link px-0 me-xl-6" href="javascript:void(0)">
-                <i class="icon-base bx bx-menu icon-md"></i>
-              </a>
-            </div>
-
-            <div class="navbar-nav-right d-flex align-items-center justify-content-end w-100" id="navbar-collapse">
-              <!-- Search moved to content area -->
-              <!-- No auth buttons in navbar - auth is in sidebar menu only -->
-            </div>
-          </nav>
-          <!-- / Navbar -->
 
           <!-- Content wrapper -->
           <div class="content-wrapper">
@@ -160,11 +149,11 @@
                   <i class="bx bx-dumbbell me-2"></i>
                   Workout Builder
                 </h4>
-                <p class="text-muted mb-0">Create and manage your workout templates</p>
+                <p class="text-muted mb-0">Create and manage your workouts</p>
               </div>
 
               <!-- Workout Library Section (Top - Horizontal Scroll) -->
-              <div class="card mb-3" style="background: var(--bs-card-bg);">
+              <div class="card mb-3 workout-builder-page" style="background: var(--bs-card-bg);">
                 <div class="card-body p-3">
                   <div class="d-flex justify-content-between align-items-center mb-3">
                     <h6 class="mb-0">
@@ -172,21 +161,17 @@
                       My Workouts
                     </h6>
                     <div class="d-flex align-items-center gap-2">
-                      <!-- Search -->
-                      <div class="input-group input-group-sm" style="width: 250px;">
+                      <!-- Search - Desktop only -->
+                      <div class="input-group input-group-sm d-none d-md-flex" style="width: 250px;">
                         <span class="input-group-text"><i class="bx bx-search"></i></span>
                         <input
                           type="text"
                           class="form-control"
                           placeholder="Search workouts..."
                           aria-label="Search workouts"
-                          id="workoutsViewSearch" />
+                          id="workoutsViewSearch"
+                          oninput="filterWorkoutsView()" />
                       </div>
-                      <!-- New Workout Button -->
-                      <button type="button" class="btn btn-primary btn-sm" id="workoutsViewNewBtn">
-                        <i class="bx bx-plus me-1"></i>
-                        New Workout
-                      </button>
                     </div>
                   </div>
                   
@@ -199,6 +184,14 @@
                       </div>
                       <p class="mt-2 mb-0 text-muted small">Loading your workouts...</p>
                     </div>
+                  </div>
+                  
+                  <!-- New Workout Button -->
+                  <div class="text-center mt-3">
+                    <button type="button" class="btn btn-primary" id="workoutsViewNewBtn" onclick="createNewWorkoutInEditor()">
+                      <i class="bx bx-plus me-1"></i>
+                      New Workout
+                    </button>
                   </div>
                 </div>
               </div>
@@ -223,10 +216,12 @@
                           <label for="workoutName" class="form-label">Workout Name *</label>
                           <input type="text" class="form-control" id="workoutName" required maxlength="100" placeholder="e.g., Push Day - Upper Body">
                         </div>
+                        
                         <div class="col-md-6">
                           <label for="workoutTags" class="form-label">Tags</label>
                           <input type="text" class="form-control" id="workoutTags" placeholder="push, chest, shoulders">
                         </div>
+                        
                       </div>
                       
                       <div class="mb-4">
@@ -240,23 +235,23 @@
                           <i class="bx bx-list-ul me-1"></i>
                           Exercise Groups
                         </h6>
-                        <div class="d-flex align-items-center gap-2">
-                          <!-- Reorder Mode Toggle -->
-                          <div class="form-check form-switch mb-0">
-                            <input class="form-check-input" type="checkbox" role="switch"
-                                   id="reorderModeToggle" style="cursor: pointer;">
-                            <label class="form-check-label" for="reorderModeToggle" style="cursor: pointer;">
-                              <span class="reorder-mode-label">Reorder</span>
-                            </label>
-                          </div>
-                          <button type="button" class="btn btn-outline-primary btn-sm" id="addExerciseGroupBtn">
-                            <i class="bx bx-plus me-1"></i>
-                            Add Group
-                          </button>
+                        <div class="form-check form-switch mb-0">
+                          <input class="form-check-input" type="checkbox" role="switch"
+                                 id="editModeToggle" style="cursor: pointer;">
+                          <label class="form-check-label" for="editModeToggle" style="cursor: pointer;">
+                            <span class="edit-mode-label">Edit</span>
+                          </label>
                         </div>
                       </div>
-                      <div id="exerciseGroups" class="accordion accordion-workout-groups mb-4">
+                      <div id="exerciseGroups" class="accordion accordion-workout-groups mb-3">
                         <!-- Exercise groups will be added here as accordion items -->
+                      </div>
+                      <!-- Add Group Button (moved to bottom) -->
+                      <div class="mb-4">
+                        <button type="button" class="btn btn-outline-primary btn-sm" id="addExerciseGroupBtn">
+                          <i class="bx bx-plus me-1"></i>
+                          Add Group
+                        </button>
                       </div>
 
                       <!-- Bonus Exercises -->
@@ -330,7 +325,7 @@
       </div>
 
       <!-- Overlay -->
-      <div class="layout-overlay layout-menu-toggle"></div>
+      <div class="layout-overlay"></div>
     </div>
     <!-- / Layout wrapper -->
 
@@ -606,8 +601,21 @@
         
         // Helper function for filtering workouts (called by search input)
         function filterWorkoutsView() {
-            const searchTerm = document.getElementById('workoutsViewSearch')?.value.toLowerCase() || '';
+            // Get search term from either desktop or mobile search input
+            const desktopSearch = document.getElementById('workoutsViewSearch')?.value.toLowerCase() || '';
+            const mobileSearch = document.getElementById('workoutsViewSearchMobile')?.value.toLowerCase() || '';
+            const searchTerm = desktopSearch || mobileSearch;
+            
             window.ghostGym.searchFilters.workouts = searchTerm;
+            
+            // Sync both search inputs
+            if (desktopSearch && document.getElementById('workoutsViewSearchMobile')) {
+                document.getElementById('workoutsViewSearchMobile').value = desktopSearch;
+            }
+            if (mobileSearch && document.getElementById('workoutsViewSearch')) {
+                document.getElementById('workoutsViewSearch').value = mobileSearch;
+            }
+            
             if (window.renderWorkoutsView) {
                 window.renderWorkoutsView();
             }

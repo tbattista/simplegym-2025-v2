@@ -121,6 +121,11 @@
   </head>
 
   <body>
+    <!-- Floating Hamburger Menu Button -->
+    <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Toggle menu">
+      <i class="bx bx-menu"></i>
+    </button>
+    
     <!-- Layout wrapper -->
     <div class="layout-wrapper layout-content-navbar">
       <div class="layout-container">
@@ -132,44 +137,6 @@
 
         <!-- Layout container -->
         <div class="layout-page">
-          <!-- Navbar -->
-          <nav
-            class="layout-navbar container-xxl navbar-detached navbar navbar-expand-xl align-items-center bg-navbar-theme"
-            id="layout-navbar">
-            <div class="layout-menu-toggle navbar-nav align-items-xl-center me-4 me-xl-0 d-xl-none">
-              <a class="nav-item nav-link px-0 me-xl-6" href="javascript:void(0)">
-                <i class="icon-base bx bx-menu icon-md"></i>
-              </a>
-            </div>
-
-            <div class="navbar-nav-right d-flex align-items-center justify-content-between w-100" id="navbar-collapse">
-              <!-- Welcome Text in Navbar -->
-              <div class="navbar-nav align-items-center">
-                <div class="nav-item d-flex align-items-center">
-                  <span class="navbar-welcome-icon me-2">👻</span>
-                  <div class="navbar-welcome-text">
-                    <h6 class="navbar-welcome-title mb-0">Welcome to Ghost Gym V0.4.1</h6>
-                    <small class="navbar-welcome-description d-none d-md-block">Create programs, organize workouts, and generate professional training documents</small>
-                  </div>
-                </div>
-              </div>
-              
-              <!-- Action Buttons in Navbar -->
-              <div class="navbar-nav align-items-center">
-                <div class="nav-item d-flex align-items-center gap-2">
-                  <button class="btn btn-primary btn-sm" id="bannerCreateProgramBtn">
-                    <i class="bx bx-plus me-1"></i>
-                    Create Program
-                  </button>
-                  <button class="btn btn-outline-primary btn-sm" id="bannerCreateWorkoutBtn">
-                    <i class="bx bx-plus-circle me-1"></i>
-                    Create Workout
-                  </button>
-                </div>
-              </div>
-            </div>
-          </nav>
-          <!-- / Navbar -->
 
           <!-- Content wrapper -->
           <div class="content-wrapper">
@@ -241,7 +208,17 @@
                         <i class="bx bx-dumbbell display-1 text-muted"></i>
                         <h5 class="mt-3">No Workouts Yet</h5>
                         <p class="text-muted">Create your first workout to get started</p>
+                        <button class="btn btn-primary mt-3" id="createFirstWorkoutBtn">
+                          <i class="bx bx-plus me-1"></i>
+                          Create Your First Workout
+                        </button>
                       </div>
+                    </div>
+                    <div class="card-footer text-center py-3">
+                      <button class="btn btn-primary" id="addNewWorkoutBtn">
+                        <i class="bx bx-plus me-1"></i>
+                        New Workout
+                      </button>
                     </div>
                   </div>
                 </div>

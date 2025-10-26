@@ -93,9 +93,9 @@ function loadWorkoutIntoEditor(workoutId) {
         setTimeout(() => window.initializeExerciseGroupSorting(), 150);
     }
     
-    // Initialize reorder mode toggle
-    if (window.initializeReorderMode) {
-        setTimeout(() => window.initializeReorderMode(), 200);
+    // Initialize edit mode toggle
+    if (window.initializeEditMode) {
+        setTimeout(() => window.initializeEditMode(), 200);
     }
     
     // Update exercise previews and add listeners
@@ -174,9 +174,9 @@ function createNewWorkoutInEditor() {
         setTimeout(() => window.initializeExerciseGroupSorting(), 150);
     }
     
-    // Initialize reorder mode toggle
-    if (window.initializeReorderMode) {
-        setTimeout(() => window.initializeReorderMode(), 200);
+    // Initialize edit mode toggle
+    if (window.initializeEditMode) {
+        setTimeout(() => window.initializeEditMode(), 200);
     }
     
     // Focus on name input

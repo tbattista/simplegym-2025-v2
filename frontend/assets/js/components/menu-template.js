@@ -6,13 +6,13 @@
 
 /**
  * Generate the complete menu HTML with authentication UI
- * @param {string} activePage - The currently active page ('builder', 'programs', 'workouts', 'exercises')
+ * @param {string} activePage - The currently active page ('home', 'programs', 'workouts', 'exercises')
  * @returns {string} Complete menu HTML
  */
-function getMenuHTML(activePage = 'builder') {
+function getMenuHTML(activePage = 'home') {
     return `
         <div class="app-brand demo">
-            <a href="builder.html" class="app-brand-link">
+            <a href="index.html" class="app-brand-link">
                 <span class="app-brand-logo demo">
                     <span class="text-primary">
                         👻
@@ -20,21 +20,17 @@ function getMenuHTML(activePage = 'builder') {
                 </span>
                 <span class="app-brand-text demo menu-text fw-bold ms-2">Ghost Gym</span>
             </a>
-
-            <a href="javascript:void(0);" class="layout-menu-toggle menu-link text-large ms-auto">
-                <i class="bx bx-chevron-left d-block d-xl-none align-middle"></i>
-            </a>
         </div>
 
         <div class="menu-divider mt-0"></div>
         <div class="menu-inner-shadow"></div>
 
         <ul class="menu-inner py-1">
-            <!-- Builder (Main View) -->
-            <li class="menu-item ${activePage === 'builder' ? 'active' : ''}" data-section="builder">
-                <a href="builder.html" class="menu-link">
-                    <i class="menu-icon tf-icons bx bx-layer"></i>
-                    <div class="text-truncate">Builder</div>
+            <!-- Home (Dashboard) -->
+            <li class="menu-item ${activePage === 'home' ? 'active' : ''}" data-section="home">
+                <a href="index.html" class="menu-link">
+                    <i class="menu-icon tf-icons bx bx-home"></i>
+                    <div class="text-truncate">Home</div>
                 </a>
             </li>
             

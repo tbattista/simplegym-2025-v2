@@ -357,6 +357,18 @@ function addExerciseGroup() {
         input.addEventListener('change', () => updateExerciseGroupPreview(newGroup));
     });
     
+    // Add listeners for sets, reps, rest to update preview
+    const setsInput = newGroup.querySelector('.sets-input');
+    const repsInput = newGroup.querySelector('.reps-input');
+    const restInput = newGroup.querySelector('.rest-input');
+    
+    [setsInput, repsInput, restInput].forEach(input => {
+        if (input) {
+            input.addEventListener('input', () => updateExerciseGroupPreview(newGroup));
+            input.addEventListener('change', () => updateExerciseGroupPreview(newGroup));
+        }
+    });
+    
     // Mark editor as dirty if function exists
     if (window.markEditorDirty) {
         window.markEditorDirty();
@@ -413,13 +425,38 @@ function addBonusExercise() {
 }
 
 /**
- * Remove exercise group
+ * Remove exercise group with confirmation
  */
 function removeExerciseGroup(button) {
+    // Get the group element
     const group = button.closest('.exercise-group');
-    if (group) {
+    if (!group) return;
+    
+    // Get exercise names for confirmation message
+    const exerciseInputs = group.querySelectorAll('.exercise-input');
+    const exerciseNames = Array.from(exerciseInputs)
+        .map(input => input.value.trim())
+        .filter(name => name);
+    
+    // Create confirmation message
+    let confirmMessage = 'Are you sure you want to delete this exercise group?';
+    if (exerciseNames.length > 0) {
+        confirmMessage += '\n\nExercises in this group:\n• ' + exerciseNames.join('\n• ');
+    }
+    confirmMessage += '\n\nThis action cannot be undone.';
+    
+    // Show confirmation dialog
+    if (confirm(confirmMessage)) {
         group.remove();
         renumberExerciseGroups();
+        
+        // Mark editor as dirty
+        if (window.markEditorDirty) {
+            window.markEditorDirty();
+        }
+        
+        // Show success message
+        showToast('Exercise group deleted', 'success');
     }
 }
 
@@ -523,9 +560,15 @@ function updateExerciseGroupPreview(groupElement) {
     // Get exercise values
     const exercises = Array.from(exerciseInputs).map(input => input.value.trim()).filter(v => v);
     
-    // Update main exercise (Exercise A)
+    // Get sets, reps, rest values
+    const bodyEl = groupElement.querySelector('.accordion-body') || groupElement.querySelector('.card-body');
+    const sets = bodyEl?.querySelector('.sets-input')?.value || '3';
+    const reps = bodyEl?.querySelector('.reps-input')?.value || '8-12';
+    const rest = bodyEl?.querySelector('.rest-input')?.value || '60s';
+    
+    // Update main exercise (Exercise A) with sets/reps/rest at the end
     if (exercises.length > 0) {
-        previewMain.textContent = exercises[0];
+        previewMain.textContent = `${exercises[0]} • ${sets}×${reps} • Rest: ${rest}`;
         previewMain.style.display = 'block';
     } else {
         previewMain.textContent = '';
@@ -841,47 +884,55 @@ window.updateExerciseGroupPreview = updateExerciseGroupPreview;
 
 /**
  * ============================================
- * REORDER MODE FUNCTIONALITY
+ * EDIT MODE FUNCTIONALITY
  * ============================================
  */
 
 /**
- * Initialize reorder mode toggle
+ * Initialize edit mode toggle
  */
-function initializeReorderMode() {
-    const toggle = document.getElementById('reorderModeToggle');
+function initializeEditMode() {
+    const toggle = document.getElementById('editModeToggle');
     if (!toggle) return;
     
     toggle.addEventListener('change', function() {
         if (this.checked) {
-            enterReorderMode();
+            enterEditMode();
         } else {
-            exitReorderMode();
+            exitEditMode();
         }
     });
     
-    console.log('✅ Reorder mode initialized');
+    console.log('✅ Edit mode initialized');
 }
 
 /**
- * Enter reorder mode
+ * Enter edit mode
  */
-function enterReorderMode() {
-    console.log('🔄 Entering reorder mode...');
+function enterEditMode() {
+    console.log('🔄 Entering edit mode...');
     
     const container = document.getElementById('exerciseGroups');
     const addGroupBtn = document.getElementById('addExerciseGroupBtn');
+    const toggle = document.getElementById('editModeToggle');
     
     if (!container) return;
     
     // Update state
-    window.ghostGym.workoutBuilder.reorderMode = window.ghostGym.workoutBuilder.reorderMode || {};
-    window.ghostGym.workoutBuilder.reorderMode.isActive = true;
-    window.ghostGym.workoutBuilder.reorderMode.originalOrder = collectExerciseGroupsOrder();
-    window.ghostGym.workoutBuilder.reorderMode.hasChanges = false;
+    window.ghostGym.workoutBuilder.editMode = window.ghostGym.workoutBuilder.editMode || {};
+    window.ghostGym.workoutBuilder.editMode.isActive = true;
+    window.ghostGym.workoutBuilder.editMode.originalOrder = collectExerciseGroupsOrder();
+    window.ghostGym.workoutBuilder.editMode.hasChanges = false;
     
-    // Add reorder mode class to container
-    container.classList.add('reorder-mode-active');
+    // Add edit mode class to container
+    container.classList.add('edit-mode-active');
+    
+    // Toggle is already checked by user interaction
+    // Update label if needed
+    const label = document.querySelector('.edit-mode-label');
+    if (label) {
+        label.textContent = 'Edit';
+    }
     
     // Disable add group button
     if (addGroupBtn) {
@@ -901,30 +952,34 @@ function enterReorderMode() {
     }
     
     // Update Sortable to track changes
-    updateSortableForReorderMode(true);
+    updateSortableForEditMode(true);
     
     // Show visual feedback
-    showToast('Reorder mode active - Drag groups to reorder', 'info');
+    showToast('Edit mode active - Drag to reorder or delete groups', 'warning');
     
-    console.log('✅ Reorder mode active');
+    console.log('✅ Edit mode active');
 }
 
 /**
- * Exit reorder mode
+ * Exit edit mode
  */
-async function exitReorderMode() {
-    console.log('🔄 Exiting reorder mode...');
+async function exitEditMode() {
+    console.log('🔄 Exiting edit mode...');
     
     const container = document.getElementById('exerciseGroups');
     const addGroupBtn = document.getElementById('addExerciseGroupBtn');
+    const toggle = document.getElementById('editModeToggle');
     
     if (!container) return;
     
     // Check if order changed
-    const hasChanges = window.ghostGym.workoutBuilder.reorderMode?.hasChanges || false;
+    const hasChanges = window.ghostGym.workoutBuilder.editMode?.hasChanges || false;
     
-    // Remove reorder mode class
-    container.classList.remove('reorder-mode-active');
+    // Remove edit mode class
+    container.classList.remove('edit-mode-active');
+    
+    // Toggle is already unchecked by user interaction
+    // Label remains as 'Edit'
     
     // Re-enable add group button
     if (addGroupBtn) {
@@ -936,7 +991,7 @@ async function exitReorderMode() {
     enableAccordionToggles();
     
     // Update Sortable configuration
-    updateSortableForReorderMode(false);
+    updateSortableForEditMode(false);
     
     // Save order if changed
     if (hasChanges) {
@@ -944,13 +999,13 @@ async function exitReorderMode() {
     }
     
     // Update state
-    if (window.ghostGym.workoutBuilder.reorderMode) {
-        window.ghostGym.workoutBuilder.reorderMode.isActive = false;
-        window.ghostGym.workoutBuilder.reorderMode.originalOrder = null;
-        window.ghostGym.workoutBuilder.reorderMode.hasChanges = false;
+    if (window.ghostGym.workoutBuilder.editMode) {
+        window.ghostGym.workoutBuilder.editMode.isActive = false;
+        window.ghostGym.workoutBuilder.editMode.originalOrder = null;
+        window.ghostGym.workoutBuilder.editMode.hasChanges = false;
     }
     
-    console.log('✅ Reorder mode exited');
+    console.log('✅ Edit mode exited');
 }
 
 /**
@@ -1000,23 +1055,23 @@ function enableAccordionToggles() {
 }
 
 /**
- * Update Sortable configuration for reorder mode
+ * Update Sortable configuration for edit mode
  */
-function updateSortableForReorderMode(isReorderMode) {
+function updateSortableForEditMode(isEditMode) {
     const container = document.getElementById('exerciseGroups');
     if (!container || !container.sortableInstance) return;
     
     const sortable = container.sortableInstance;
     
-    if (isReorderMode) {
-        // Make entire item draggable in reorder mode
+    if (isEditMode) {
+        // Make entire item draggable in edit mode
         sortable.option('handle', '.accordion-item');
         sortable.option('animation', 200);
         
         // Add change tracking
         sortable.option('onEnd', function(evt) {
-            if (window.ghostGym.workoutBuilder.reorderMode) {
-                window.ghostGym.workoutBuilder.reorderMode.hasChanges = true;
+            if (window.ghostGym.workoutBuilder.editMode) {
+                window.ghostGym.workoutBuilder.editMode.hasChanges = true;
             }
             renumberExerciseGroups();
             console.log('📝 Order changed:', {
@@ -1112,14 +1167,14 @@ function showToast(message, type = 'info') {
     }
 }
 
-// Make reorder mode functions globally available
-window.initializeReorderMode = initializeReorderMode;
-window.enterReorderMode = enterReorderMode;
-window.exitReorderMode = exitReorderMode;
+// Make edit mode functions globally available
+window.initializeEditMode = initializeEditMode;
+window.enterEditMode = enterEditMode;
+window.exitEditMode = exitEditMode;
 window.collapseAllAccordions = collapseAllAccordions;
 window.disableAccordionToggles = disableAccordionToggles;
 window.enableAccordionToggles = enableAccordionToggles;
-window.updateSortableForReorderMode = updateSortableForReorderMode;
+window.updateSortableForEditMode = updateSortableForEditMode;
 window.collectExerciseGroupsOrder = collectExerciseGroupsOrder;
 window.saveExerciseGroupOrder = saveExerciseGroupOrder;
 window.showToast = showToast;

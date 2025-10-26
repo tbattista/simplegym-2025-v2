@@ -108,7 +108,9 @@
         
         eventHandlers: [
             { elementId: 'workoutSearch', event: 'input', functionName: 'filterWorkouts' },
-            { elementId: 'newWorkoutBtn', event: 'click', functionName: 'showWorkoutModal' }
+            { elementId: 'newWorkoutBtn', event: 'click', functionName: 'showWorkoutModal' },
+            { elementId: 'addNewWorkoutBtn', event: 'click', functionName: 'showWorkoutModal' },
+            { elementId: 'createFirstWorkoutBtn', event: 'click', functionName: 'showWorkoutModal' }
         ],
         
         defaultConfig: {

@@ -1,6 +1,16 @@
 /**
- * Ghost Gym - Workout Builder Styles
+ * Ghost Gym - Workout Builder Styles (REFACTORED)
  * Horizontal split-screen workout builder with inline editing
+ * 
+ * REFACTORING NOTES:
+ * - Removed duplicate selectors
+ * - Reduced !important usage (only where necessary for Bootstrap overrides)
+ * - Added .workout-builder-page wrapper for better specificity
+ * - Organized by component hierarchy
+ * - Mobile-first responsive design
+ * 
+ * @version 2.0.0
+ * @date 2025-01-24
  */
 
 /* ============================================
@@ -47,7 +57,7 @@
     background: var(--bs-body-bg);
     border: 2px solid var(--bs-border-color);
     border-radius: var(--bs-border-radius);
-    padding: 1rem;
+    padding: .25rem;
     cursor: pointer;
     transition: all 0.2s ease;
     flex-shrink: 0;
@@ -173,40 +183,45 @@
 
 /* Accordion Container */
 .accordion-workout-groups {
-    --bs-accordion-border-radius: 0.5rem;
-    --bs-accordion-inner-border-radius: calc(0.5rem - 1px);
+    --bs-accordion-border-radius: 0.25rem;
+    --bs-accordion-inner-border-radius: calc(0.25rem - 1px);
 }
 
-/* Accordion Item (Exercise Group) - minimal styling in edit mode */
+/* Accordion Item (Exercise Group) */
 .accordion-workout-groups .accordion-item {
     margin-bottom: 0.75rem;
     border: 1px solid var(--bs-border-color);
     transition: all 0.2s ease;
-    background: transparent; /* No background in edit mode */
+    background: transparent;
 }
 
 .accordion-workout-groups .accordion-item:hover {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
-/* Accordion Header with Drag Handle */
+/* Accordion Header */
 .accordion-workout-groups .accordion-header {
     position: relative;
 }
 
+/* Accordion Button - CONSOLIDATED (removed duplicate) */
 .accordion-workout-groups .accordion-button {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    padding: 0.75rem 5rem 0.75rem 1rem !important; /* Extra padding on right for buttons */
+    align-items: left;
+    /* Use logical properties to override Bootstrap's logical properties */
+    padding-block-start: 0.25rem !important;
+    padding-block-end: 0.25rem !important;
+    padding-inline-start: 0.25rem !important;
+    padding-inline-end: 3rem !important;
     font-weight: 600;
-    background: transparent; /* No background in edit mode */
+    background: transparent;
     position: relative;
     width: 100%;
 }
 
 .accordion-workout-groups .accordion-button:not(.collapsed) {
-    background: transparent; /* Keep transparent even when expanded */
+    background: transparent;
     color: var(--bs-heading-color);
 }
 
@@ -221,10 +236,10 @@
     display: flex;
     flex-direction: column;
     gap: 0.25rem;
-    min-width: 0; /* Allow text truncation */
+    min-width: 0;
 }
 
-/* Group Actions Container - positioned absolutely on the right */
+/* Group Actions Container */
 .accordion-workout-groups .group-actions {
     position: absolute;
     right: 1rem;
@@ -236,12 +251,12 @@
     z-index: 10;
 }
 
-/* Group Title - always hidden, exercises show instead */
+/* Group Title - hidden, exercises show instead */
 .accordion-workout-groups .group-title {
     display: none;
 }
 
-/* Exercise Preview Container - always visible */
+/* Exercise Preview Container */
 .accordion-workout-groups .group-exercises-preview {
     display: flex;
     flex-direction: column;
@@ -256,10 +271,10 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    display: none; /* Hidden by default, shown via JS when populated */
+    display: none;
 }
 
-/* Secondary Exercises Container - on same line */
+/* Secondary Exercises Container */
 .accordion-workout-groups .group-exercises-secondary-line {
     display: flex;
     gap: 0.75rem;
@@ -274,35 +289,27 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    display: none; /* Hidden by default, shown via JS when populated */
+    display: none;
 }
 
-/* Label for secondary exercises */
 .accordion-workout-groups .exercise-preview-secondary::before {
     content: attr(data-label);
     font-weight: 500;
     margin-right: 0.25rem;
 }
-/* Remove Button in Header */
+
+/* Remove Button - hidden by default */
 .accordion-workout-groups .btn-remove-group {
-    opacity: 0;
+    display: none;
     transition: opacity 0.2s ease;
     padding: 0.375rem 0.5rem;
     flex-shrink: 0;
     font-size: 1rem;
 }
 
-.accordion-workout-groups .accordion-item:hover .btn-remove-group {
-    opacity: 1;
-}
-
-.accordion-workout-groups .accordion-button {
-    position: relative;
-}
-
-/* Drag Handle (Hidden in edit mode, only visible in reorder mode) */
+/* Drag Handle - hidden by default */
 .accordion-workout-groups .drag-handle {
-    display: none; /* Completely hidden in edit mode */
+    display: none;
     cursor: move;
     padding: 0.25rem 0.5rem;
     color: var(--bs-secondary);
@@ -310,12 +317,11 @@
     font-size: 1.2rem;
 }
 
-/* Chevron Arrow (Bootstrap default, rotates automatically) */
+/* Chevron Arrow */
 .accordion-workout-groups .accordion-button::after {
     margin-left: 0;
-    margin-right: auto;
+    margin-right: 0.25rem;
     order: -1;
-    margin-right: 0.75rem;
 }
 
 /* Sortable.js Drag States */
@@ -340,10 +346,14 @@
 
 /* Accordion Body */
 .accordion-workout-groups .accordion-body {
-    padding: 1rem !important;
+    padding: 1rem;
 }
 
-/* Legacy card-based styling (for backward compatibility) */
+/* ============================================
+   LEGACY CARD-BASED STYLING
+   (For backward compatibility)
+   ============================================ */
+
 .exercise-group.card {
     position: relative;
     margin-bottom: 1.5rem;
@@ -513,380 +523,126 @@
 }
 
 /* ============================================
-   RESPONSIVE DESIGN
+   EDIT MODE TOGGLE
    ============================================ */
 
-@media (max-width: 768px) {
-    /* ============================================
-       MOBILE NAVBAR OPTIMIZATIONS
-       ============================================ */
-    
-    /* Navbar title - smaller and responsive */
-    .layout-navbar h4 {
-        font-size: 1rem;
-        font-weight: 600;
+.edit-mode-toggle-container {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+#editModeToggle {
+    cursor: pointer;
+}
+
+#editModeToggle:checked {
+    background-color: var(--bs-warning);
+    border-color: var(--bs-warning);
+}
+
+#editModeToggle:focus {
+    box-shadow: 0 0 0 0.25rem rgba(var(--bs-warning-rgb), 0.25);
+}
+
+.form-check-label {
+    cursor: pointer;
+    user-select: none;
+}
+
+#editModeToggle:checked ~ .form-check-label {
+    color: var(--bs-warning);
+    font-weight: 600;
+}
+
+/* ============================================
+   EDIT MODE ACTIVE STATE
+   ============================================ */
+
+.accordion-workout-groups.edit-mode-active {
+    background: rgba(var(--bs-warning-rgb), 0.05);
+    border: 2px dashed var(--bs-warning);
+    border-radius: var(--bs-border-radius);
+    padding: 0.75rem;
+    margin-top: 0.5rem;
+}
+
+.accordion-workout-groups.edit-mode-active .accordion-item {
+    background: rgba(var(--bs-warning-rgb), 0.08);
+    border: 2px solid var(--bs-warning);
+    cursor: move;
+    transition: all 0.2s ease;
+}
+
+.accordion-workout-groups.edit-mode-active .accordion-item:hover {
+    background: rgba(var(--bs-warning-rgb), 0.12);
+    box-shadow: 0 4px 12px rgba(var(--bs-warning-rgb), 0.2);
+    transform: translateY(-2px);
+}
+
+.accordion-workout-groups.edit-mode-active .accordion-button {
+    cursor: move;
+    pointer-events: none;
+    background: rgba(var(--bs-warning-rgb), 0.1);
+}
+
+.accordion-workout-groups.edit-mode-active .drag-handle,
+.accordion-workout-groups.edit-mode-active .btn-remove-group {
+    pointer-events: auto;
+}
+
+.accordion-workout-groups.edit-mode-active .accordion-button::after {
+    display: none;
+}
+
+.accordion-workout-groups.edit-mode-active .drag-handle {
+    display: flex !important;
+    opacity: 1 !important;
+    color: var(--bs-warning);
+    font-size: 1.5rem;
+    cursor: move;
+}
+
+.accordion-workout-groups.edit-mode-active .btn-remove-group {
+    display: block !important;
+    opacity: 1 !important;
+}
+
+.accordion-workout-groups.edit-mode-active .accordion-collapse {
+    display: none !important;
+}
+
+.edit-mode-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.375rem 0.75rem;
+    background: var(--bs-warning);
+    color: white;
+    border-radius: var(--bs-border-radius);
+    font-size: 0.875rem;
+    font-weight: 600;
+    animation: pulse-warning 2s infinite;
+}
+
+@keyframes pulse-warning {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(var(--bs-warning-rgb), 0.7);
     }
-    
-    .layout-navbar h4 i {
-        font-size: 1.1rem;
-    }
-    
-    /* Navbar padding adjustments */
-    .layout-navbar {
-        padding: 0.75rem 1rem;
-    }
-    
-    /* ============================================
-       MOBILE WORKOUT LIBRARY SECTION
-       ============================================ */
-    
-    /* Workout library card - less padding */
-    .card-body {
-        padding: 1rem !important;
-    }
-    
-    /* Workout library header - stack on mobile */
-    .card-body .d-flex.justify-content-between {
-        flex-direction: column;
-        gap: 0.75rem;
-        align-items: stretch !important;
-    }
-    
-    /* Search and button container */
-    .card-body .d-flex.gap-2 {
-        width: 100%;
-        flex-direction: column;
-        gap: 0.5rem !important;
-    }
-    
-    /* Search input - full width with better touch target */
-    .card-body .input-group {
-        width: 100% !important;
-    }
-    
-    .card-body .input-group .form-control {
-        font-size: 1rem;
-        padding: 0.625rem 0.75rem;
-        min-height: 44px; /* iOS recommended touch target */
-    }
-    
-    .card-body .input-group-text {
-        padding: 0.625rem 0.75rem;
-    }
-    
-    /* New Workout button - full width with better touch target */
-    .card-body .btn {
-        width: 100%;
-        padding: 0.625rem 1rem;
-        min-height: 44px; /* iOS recommended touch target */
-        font-size: 1rem;
-    }
-    
-    /* Section title */
-    .card-body h6 {
-        font-size: 0.95rem;
-        margin-bottom: 0 !important;
-    }
-    
-    /* ============================================
-       MOBILE WORKOUT CARDS
-       ============================================ */
-    
-    /* Compact workout cards - optimized for mobile */
-    .workout-card-compact {
-        min-width: 220px;
-        max-width: 220px;
-        padding: 0.875rem;
-    }
-    
-    .workout-card-compact-title {
-        font-size: 0.95rem;
-        margin-bottom: 0.375rem;
-    }
-    
-    .workout-card-compact-description {
-        font-size: 0.75rem;
-        margin-bottom: 0.5rem;
-    }
-    
-    .workout-card-compact-stats {
-        font-size: 0.7rem;
-        gap: 0.375rem;
-    }
-    
-    .workout-card-compact-tag {
-        font-size: 0.65rem;
-        padding: 0.125rem 0.375rem;
-    }
-    
-    /* Workout library scroll - better mobile scrolling */
-    .workout-library-scroll {
-        padding: 0.75rem 0;
-        gap: 0.75rem;
-        -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
-    }
-    
-    /* Editor section - less padding on mobile */
-    .workout-editor-section {
-        padding: 1rem;
-        min-height: 400px;
-    }
-    
-    /* Form fields - stack vertically on mobile */
-    .workout-editor-form .row {
-        margin-left: 0;
-        margin-right: 0;
-    }
-    
-    .workout-editor-form .row > [class*='col-'] {
-        padding-left: 0;
-        padding-right: 0;
-        margin-bottom: 1rem;
-    }
-    
-    /* Sets/Reps/Rest - stack vertically on mobile */
-    .sets-reps-rest-row {
-        flex-direction: column;
-        gap: 0.75rem;
-    }
-    
-    /* ============================================
-       MOBILE ACCORDION OPTIMIZATIONS
-       ============================================ */
-    
-    /* Accordion button - better touch targets */
-    .accordion-workout-groups .accordion-button {
-        padding: 0.75rem 0.75rem !important;
-        font-size: 0.95rem;
-        min-height: 56px; /* Better touch target */
-    }
-    
-    /* Accordion body - optimized padding */
-    .accordion-workout-groups .accordion-body {
-        padding: 0.75rem !important;
-    }
-    
-    /* Exercise previews - optimized for mobile */
-    .accordion-workout-groups .exercise-preview-main {
-        font-size: 0.85rem;
-    }
-    
-    .accordion-workout-groups .exercise-preview-secondary {
-        font-size: 0.7rem;
-        padding-left: 0.375rem;
-    }
-    
-    /* Group title - better sizing */
-    .accordion-workout-groups .group-title {
-        font-size: 0.95rem;
-        font-weight: 600;
-    }
-    
-    /* Always show drag handle on mobile for better UX */
-    .accordion-workout-groups .drag-handle {
-        opacity: 1;
-        font-size: 1.3rem;
-        padding: 0.5rem;
-        margin-left: 0.5rem;
-    }
-    
-    /* Always show remove button on mobile */
-    .accordion-workout-groups .btn-remove-group {
-        opacity: 1;
-        right: 3.5rem;
-        padding: 0.375rem 0.5rem;
-        min-height: 36px;
-        min-width: 36px;
-    }
-    
-    /* Stack exercise inputs vertically */
-    .accordion-workout-groups .accordion-body .row > [class*='col-'] {
-        margin-bottom: 1rem;
-        padding-left: 0;
-        padding-right: 0;
-    }
-    
-    /* Form inputs - better touch targets */
-    .accordion-workout-groups .form-control {
-        font-size: 1rem;
-        padding: 0.625rem 0.75rem;
-        min-height: 44px;
-    }
-    
-    /* Form labels - better readability */
-    .accordion-workout-groups .form-label {
-        font-size: 0.875rem;
-        margin-bottom: 0.375rem;
-        font-weight: 500;
-    }
-    
-    /* Buttons in accordion - better touch targets */
-    .accordion-workout-groups .btn {
-        padding: 0.625rem 1rem;
-        min-height: 44px;
-        font-size: 0.95rem;
-    }
-    
-    .accordion-workout-groups .btn-sm {
-        padding: 0.5rem 0.875rem;
-        min-height: 40px;
-        font-size: 0.9rem;
-    }
-    
-    /* Exercise groups - less padding on mobile (legacy card style) */
-    .exercise-group.card .card-body {
-        padding: 0.75rem;
-    }
-    
-    .exercise-group.card .card-header {
-        padding: 0.5rem 0.75rem;
-    }
-    
-    /* ============================================
-       MOBILE BONUS EXERCISES
-       ============================================ */
-    
-    /* Bonus exercises - optimized padding */
-    .bonus-exercise {
-        margin-bottom: 0.875rem;
-    }
-    
-    .bonus-exercise .card-body {
-        padding: 1rem 0.875rem;
-    }
-    
-    .bonus-exercise .card-header {
-        padding: 0.75rem 0.875rem;
-        min-height: 52px;
-    }
-    
-    .bonus-exercise .card-header h6 {
-        font-size: 0.95rem;
-    }
-    
-    /* ============================================
-       MOBILE EDITOR ACTIONS
-       ============================================ */
-    
-    /* Editor actions - stack buttons on mobile */
-    .editor-actions {
-        flex-direction: column;
-        gap: 1rem;
-        align-items: stretch;
-        padding-top: 1.25rem;
-        margin-top: 1.5rem;
-    }
-    
-    .editor-actions .btn-group {
-        width: 100%;
-        display: flex;
-        flex-direction: column;
-        gap: 0.625rem;
-    }
-    
-    .editor-actions .btn-group .btn {
-        width: 100%;
-        padding: 0.75rem 1rem;
-        min-height: 48px;
-        font-size: 1rem;
-    }
-    
-    /* Save status - center on mobile */
-    .save-status {
-        justify-content: center;
-        order: -1;
-        font-size: 0.9rem;
-        padding: 0.5rem;
-    }
-    
-    /* ============================================
-       MOBILE CONTENT SPACING
-       ============================================ */
-    
-    /* Container padding */
-    .container-xxl {
-        padding-left: 1rem;
-        padding-right: 1rem;
-    }
-    
-    /* Card spacing */
-    .card {
-        margin-bottom: 1rem;
-    }
-    
-    /* Section spacing */
-    .mb-3 {
-        margin-bottom: 0.875rem !important;
-    }
-    
-    .mb-4 {
-        margin-bottom: 1.25rem !important;
+    50% {
+        box-shadow: 0 0 0 8px rgba(var(--bs-warning-rgb), 0);
     }
 }
 
-@media (max-width: 576px) {
-    /* Extra small screens - even more compact */
-    .workout-card-compact {
-        min-width: 200px;
-        max-width: 200px;
-        padding: 0.5rem;
-    }
-    
-    .workout-card-compact-title {
-        font-size: 0.85rem;
-    }
-    
-    .workout-card-compact-stats {
-        font-size: 0.65rem;
-    }
-    
-    .workout-card-compact-tag {
-        font-size: 0.6rem;
-        padding: 0.1rem 0.3rem;
-    }
-    
-    /* Page header - smaller on mobile */
-    .container-xxl h4 {
-        font-size: 1.25rem;
-    }
-    
-    .container-xxl p {
-        font-size: 0.85rem;
-    }
-    
-    /* Form labels - smaller on mobile */
-    .form-label {
-        font-size: 0.85rem;
-    }
-    
-    /* Input fields - better touch targets */
-    .form-control,
-    .form-select {
-        font-size: 1rem;
-        padding: 0.5rem 0.75rem;
-    }
-    
-    /* Buttons - better touch targets */
-    .btn {
-        padding: 0.5rem 1rem;
-        font-size: 0.9rem;
-    }
-    
-    .btn-sm {
-        padding: 0.375rem 0.75rem;
-        font-size: 0.85rem;
-    }
+.accordion-workout-groups.edit-mode-active .sortable-ghost {
+    opacity: 0.3;
+    background: rgba(var(--bs-warning-rgb), 0.2);
 }
 
-/* Landscape mobile optimization */
-@media (max-width: 768px) and (orientation: landscape) {
-    .workout-editor-section {
-        min-height: 300px;
-    }
-    
-    .workout-editor-empty-state {
-        min-height: 250px;
-    }
+.accordion-workout-groups.edit-mode-active .sortable-drag {
+    box-shadow: 0 8px 24px rgba(var(--bs-warning-rgb), 0.4);
+    transform: rotate(3deg) scale(1.02);
+    border-color: var(--bs-warning);
 }
 
 /* ============================================
@@ -956,7 +712,7 @@ button {
 }
 
 /* ============================================
-   SCROLLBAR STYLING (Global for builder)
+   SCROLLBAR STYLING
    ============================================ */
 
 .workout-builder-container ::-webkit-scrollbar {
@@ -979,135 +735,310 @@ button {
 }
 
 /* ============================================
-   REORDER MODE TOGGLE
+   RESPONSIVE DESIGN - MOBILE FIRST
    ============================================ */
 
-.reorder-mode-toggle-container {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.form-check-input:checked ~ .form-check-label {
-    color: var(--bs-primary);
-    font-weight: 600;
-}
-
-/* ============================================
-   REORDER MODE ACTIVE STATE
-   ============================================ */
-
-/* Container - no styling in normal mode */
-.accordion-workout-groups {
-    /* No background, border, or padding in edit mode */
-}
-
-/* Container in reorder mode - add bounding box */
-.accordion-workout-groups.reorder-mode-active {
-    background: rgba(var(--bs-info-rgb), 0.05);
-    border: 2px dashed var(--bs-info);
-    border-radius: var(--bs-border-radius);
-    padding: 0.75rem;
-    margin-top: 0.5rem;
-}
-
-/* Exercise groups in reorder mode */
-.accordion-workout-groups.reorder-mode-active .accordion-item {
-    background: rgba(var(--bs-info-rgb), 0.08);
-    border: 2px solid var(--bs-info);
-    cursor: move;
-    transition: all 0.2s ease;
-}
-
-.accordion-workout-groups.reorder-mode-active .accordion-item:hover {
-    background: rgba(var(--bs-info-rgb), 0.12);
-    box-shadow: 0 4px 12px rgba(var(--bs-info-rgb), 0.2);
-    transform: translateY(-2px);
-}
-
-/* Accordion button in reorder mode - locked state */
-.accordion-workout-groups.reorder-mode-active .accordion-button {
-    cursor: move;
-    pointer-events: none; /* Disable clicking */
-    background: rgba(var(--bs-info-rgb), 0.1);
-}
-
-/* Re-enable pointer events for drag handle only */
-.accordion-workout-groups.reorder-mode-active .drag-handle {
-    pointer-events: auto;
-}
-
-/* Hide chevron arrow in reorder mode */
-.accordion-workout-groups.reorder-mode-active .accordion-button::after {
-    display: none;
-}
-
-/* Show drag handle in reorder mode */
-.accordion-workout-groups.reorder-mode-active .drag-handle {
-    display: flex !important; /* Show in reorder mode */
-    opacity: 1 !important;
-    color: var(--bs-info);
-    font-size: 1.5rem;
-    cursor: move;
-}
-
-/* Hide remove button in reorder mode */
-.accordion-workout-groups.reorder-mode-active .btn-remove-group {
-    display: none;
-}
-
-/* Force collapse all accordions in reorder mode */
-.accordion-workout-groups.reorder-mode-active .accordion-collapse {
-    display: none !important;
-}
-
-/* Reorder mode indicator badge */
-.reorder-mode-indicator {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.375rem 0.75rem;
-    background: var(--bs-info);
-    color: white;
-    border-radius: var(--bs-border-radius);
-    font-size: 0.875rem;
-    font-weight: 600;
-    animation: pulse-info 2s infinite;
-}
-
-@keyframes pulse-info {
-    0%, 100% {
-        box-shadow: 0 0 0 0 rgba(var(--bs-info-rgb), 0.7);
-    }
-    50% {
-        box-shadow: 0 0 0 8px rgba(var(--bs-info-rgb), 0);
-    }
-}
-
-/* Sortable drag states in reorder mode */
-.accordion-workout-groups.reorder-mode-active .sortable-ghost {
-    opacity: 0.3;
-    background: rgba(var(--bs-info-rgb), 0.2);
-}
-
-.accordion-workout-groups.reorder-mode-active .sortable-drag {
-    box-shadow: 0 8px 24px rgba(var(--bs-info-rgb), 0.4);
-    transform: rotate(3deg) scale(1.02);
-    border-color: var(--bs-info);
-}
-
-/* Mobile optimizations for reorder mode */
 @media (max-width: 768px) {
-    .reorder-mode-label {
+    /* Mobile Navbar Optimization - Move menu button to right */
+    .layout-navbar {
+        padding: 0 !important;
+        margin: 0 !important;
+        border-radius: 0 !important;
+        min-height: 56px;
+    }
+    
+    .layout-navbar .container-xxl {
+        max-width: 100% !important;
+        padding: 0.75rem 1rem !important;
+        margin: 0 !important;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    
+    /* Reorder navbar elements for mobile */
+    .layout-navbar .layout-menu-toggle {
+        order: 2;
+        margin: 0 !important;
+        flex-shrink: 0;
+    }
+    
+    .layout-navbar .layout-menu-toggle .nav-link {
+        padding: 0.5rem !important;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .layout-navbar .navbar-nav-right {
+        order: 1;
+        flex: 1;
+        margin: 0 !important;
+        min-width: 0;
+    }
+    
+    /* Workout Builder Page Specific Styles */
+    .workout-builder-page {
+        border-radius: 0 !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+    }
+    
+    .workout-builder-page .card-body {
+        padding: 1rem;
+    }
+    
+    /* Hide the header row on mobile - search is in navbar */
+    .workout-builder-page .card-body > .d-flex.justify-content-between:first-child {
+        display: none !important;
+    }
+    
+    .workout-builder-page .btn {
+        width: 100%;
+        padding: 0.625rem 1rem;
+        min-height: 44px;
+        font-size: 1rem;
+        margin-top: 0.75rem;
+    }
+    
+    /* Compact workout cards */
+    .workout-card-compact {
+        min-width: 220px;
+        max-width: 220px;
+        padding: 0.875rem;
+    }
+    
+    .workout-card-compact-title {
+        font-size: 0.95rem;
+        margin-bottom: 0.375rem;
+    }
+    
+    .workout-card-compact-description {
+        font-size: 0.75rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .workout-card-compact-stats {
+        font-size: 0.7rem;
+        gap: 0.375rem;
+    }
+    
+    .workout-card-compact-tag {
+        font-size: 0.65rem;
+        padding: 0.125rem 0.375rem;
+    }
+    
+    /* Workout library scroll */
+    .workout-library-scroll {
+        padding: 0.75rem 0;
+        gap: 0.75rem;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    /* Editor section */
+    .workout-editor-section {
+        padding: 1rem;
+        min-height: 400px;
+    }
+    
+    /* Form fields */
+    .workout-editor-form .row {
+        margin-left: 0;
+        margin-right: 0;
+    }
+    
+    .workout-editor-form .row > [class*='col-'] {
+        padding-left: 0;
+        padding-right: 0;
+        margin-bottom: 1rem;
+    }
+    
+    /* Sets/Reps/Rest */
+    .sets-reps-rest-row {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    
+    /* Accordion optimizations */
+    .accordion-workout-groups .accordion-button {
+        /* Use logical properties to override Bootstrap's logical properties */
+        padding-block-start: 0.25rem !important;
+        padding-block-end: 0.25rem !important;
+        padding-inline-start: 0.25rem !important;
+        padding-inline-end: 3rem !important;
+        font-size: 0.95rem;
+        min-height: 56px;
+    }
+    
+    .accordion-workout-groups .accordion-body {
+        padding: 0.75rem;
+    }
+    
+    .accordion-workout-groups .exercise-preview-main {
+        font-size: 0.85rem;
+    }
+    
+    .accordion-workout-groups .exercise-preview-secondary {
+        font-size: 0.7rem;
+        padding-left: 0.375rem;
+    }
+    
+    .accordion-workout-groups .group-title {
+        font-size: 0.95rem;
+        font-weight: 600;
+    }
+    
+    .accordion-workout-groups .accordion-body .row > [class*='col-'] {
+        margin-bottom: 1rem;
+        padding-left: 0;
+        padding-right: 0;
+    }
+    
+    .accordion-workout-groups .form-control {
+        font-size: 1rem;
+        padding: 0.625rem 0.75rem;
+        min-height: 44px;
+    }
+    
+    .accordion-workout-groups .form-label {
+        font-size: 0.875rem;
+        margin-bottom: 0.375rem;
+        font-weight: 500;
+    }
+    
+    .accordion-workout-groups .btn {
+        padding: 0.625rem 1rem;
+        min-height: 44px;
+        font-size: 0.95rem;
+    }
+    
+    .accordion-workout-groups .btn-sm {
+        padding: 0.5rem 0.875rem;
+        min-height: 40px;
+        font-size: 0.9rem;
+    }
+    
+    /* Legacy card style */
+    .exercise-group.card .card-body {
+        padding: 0.75rem;
+    }
+    
+    .exercise-group.card .card-header {
+        padding: 0.5rem 0.75rem;
+    }
+    
+    /* Bonus exercises */
+    .bonus-exercise {
+        margin-bottom: 0.875rem;
+    }
+    
+    .bonus-exercise .card-body {
+        padding: 1rem 0.875rem;
+    }
+    
+    .bonus-exercise .card-header {
+        padding: 0.75rem 0.875rem;
+        min-height: 52px;
+    }
+    
+    .bonus-exercise .card-header h6 {
+        font-size: 0.95rem;
+    }
+    
+    /* Editor actions */
+    .editor-actions {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: stretch;
+        padding-top: 1.25rem;
+        margin-top: 1.5rem;
+    }
+    
+    .editor-actions .btn-group {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 0.625rem;
+    }
+    
+    .editor-actions .btn-group .btn {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        min-height: 48px;
+        font-size: 1rem;
+    }
+    
+    .save-status {
+        justify-content: center;
+        order: -1;
+        font-size: 0.9rem;
+        padding: 0.5rem;
+    }
+    
+    /* Edit mode */
+    .edit-mode-label {
         font-size: 0.875rem;
     }
     
-    .accordion-workout-groups.reorder-mode-active .drag-handle {
+    .accordion-workout-groups.edit-mode-active .drag-handle {
         font-size: 1.8rem;
         padding: 0.75rem;
     }
     
-    .accordion-workout-groups.reorder-mode-active .accordion-item {
+    .accordion-workout-groups.edit-mode-active .accordion-item {
         margin-bottom: 1rem;
+    }
+}
+
+@media (max-width: 576px) {
+    /* Extra small screens */
+    .workout-card-compact {
+        min-width: 200px;
+        max-width: 200px;
+        padding: 0.5rem;
+    }
+    
+    .workout-card-compact-title {
+        font-size: 0.85rem;
+    }
+    
+    .workout-card-compact-stats {
+        font-size: 0.65rem;
+    }
+    
+    .workout-card-compact-tag {
+        font-size: 0.6rem;
+        padding: 0.1rem 0.3rem;
+    }
+    
+    .form-label {
+        font-size: 0.85rem;
+    }
+    
+    .form-control,
+    .form-select {
+        font-size: 1rem;
+        padding: 0.5rem 0.75rem;
+    }
+    
+    .btn {
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+    }
+    
+    .btn-sm {
+        padding: 0.375rem 0.75rem;
+        font-size: 0.85rem;
+    }
+}
+
+@media (max-width: 768px) and (orientation: landscape) {
+    /* Landscape mobile optimization */
+    .workout-editor-section {
+        min-height: 300px;
+    }
+    
+    .workout-editor-empty-state {
+        min-height: 250px;
     }
 }
