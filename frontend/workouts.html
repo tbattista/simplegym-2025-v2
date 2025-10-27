@@ -211,23 +211,33 @@
                   <div id="workoutEditorForm" style="display: none;">
                     <form id="workoutForm">
                       <!-- Workout Metadata -->
-                      <div class="row mb-3">
-                        <div class="col-md-6">
-                          <label for="workoutName" class="form-label">Workout Name *</label>
-                          <input type="text" class="form-control" id="workoutName" required maxlength="100" placeholder="e.g., Push Day - Upper Body">
-                        </div>
-                        
-                        <div class="col-md-6">
-                          <label for="workoutTags" class="form-label">Tags</label>
-                          <input type="text" class="form-control" id="workoutTags" placeholder="push, chest, shoulders">
-                        </div>
-                        
+                      <div class="mb-3">
+                        <label for="workoutName" class="form-label">Workout Name *</label>
+                        <input type="text" class="form-control" id="workoutName" required maxlength="100" placeholder="e.g., Push Day - Upper Body">
                       </div>
                       
-                      <div class="mb-4">
-                        <label for="workoutDescription" class="form-label">Description</label>
-                        <textarea class="form-control" id="workoutDescription" rows="2" maxlength="500" placeholder="Brief description of this workout..."></textarea>
+                      <!-- Compact Tags and Description Buttons -->
+                      <div class="d-flex gap-2 mb-4">
+                        <!-- Tags Button with Popover -->
+                        <button type="button" class="btn btn-sm btn-outline-secondary" id="tagsPopoverBtn"
+                                data-bs-toggle="popover" data-bs-placement="bottom" data-bs-html="true"
+                                data-bs-trigger="click" data-bs-custom-class="tags-popover">
+                          <i class="bx bx-purchase-tag me-1"></i>
+                          <span id="tagsButtonText">Add Tags</span>
+                        </button>
+                        
+                        <!-- Description Button with Popover -->
+                        <button type="button" class="btn btn-sm btn-outline-secondary" id="descriptionPopoverBtn"
+                                data-bs-toggle="popover" data-bs-placement="bottom" data-bs-html="true"
+                                data-bs-trigger="click" data-bs-custom-class="description-popover">
+                          <i class="bx bx-note me-1"></i>
+                          <span id="descriptionButtonText">Add Description</span>
+                        </button>
                       </div>
+                      
+                      <!-- Hidden inputs to store actual values -->
+                      <input type="hidden" id="workoutTags">
+                      <textarea style="display: none;" id="workoutDescription" maxlength="500"></textarea>
                       
                       <!-- Exercise Groups -->
                       <div class="d-flex justify-content-between align-items-center mb-3">
@@ -620,6 +630,212 @@
                 window.renderWorkoutsView();
             }
         }
+        
+        // Initialize popovers for tags and description
+        function initializeMetadataPopovers() {
+            // Tags Popover
+            const tagsBtn = document.getElementById('tagsPopoverBtn');
+            const tagsInput = document.getElementById('workoutTags');
+            const tagsButtonText = document.getElementById('tagsButtonText');
+            
+            if (tagsBtn) {
+                const tagsPopover = new bootstrap.Popover(tagsBtn, {
+                    content: function() {
+                        const currentTags = tagsInput.value || '';
+                        return `
+                            <div class="popover-edit-container">
+                                <label class="form-label small mb-1">Tags (comma-separated)</label>
+                                <input type="text" class="form-control form-control-sm" id="tagsPopoverInput"
+                                       value="${currentTags}" placeholder="push, chest, shoulders" maxlength="200">
+                                <div class="d-flex gap-1 mt-2">
+                                    <button class="btn btn-sm btn-primary flex-grow-1" onclick="saveTagsFromPopover()">
+                                        <i class="bx bx-check"></i> Save
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-secondary" onclick="closeTagsPopover()">
+                                        <i class="bx bx-x"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                    },
+                    sanitize: false
+                });
+                
+                // Update button text when tags change
+                tagsBtn.addEventListener('shown.bs.popover', function() {
+                    const input = document.getElementById('tagsPopoverInput');
+                    if (input) {
+                        input.focus();
+                        input.select();
+                    }
+                });
+            }
+            
+            // Description Popover
+            const descBtn = document.getElementById('descriptionPopoverBtn');
+            const descTextarea = document.getElementById('workoutDescription');
+            const descButtonText = document.getElementById('descriptionButtonText');
+            
+            if (descBtn) {
+                const descPopover = new bootstrap.Popover(descBtn, {
+                    content: function() {
+                        const currentDesc = descTextarea.value || '';
+                        return `
+                            <div class="popover-edit-container">
+                                <label class="form-label small mb-1">Description</label>
+                                <textarea class="form-control form-control-sm" id="descriptionPopoverInput"
+                                          rows="3" maxlength="500" placeholder="Brief description of this workout...">${currentDesc}</textarea>
+                                <div class="d-flex gap-1 mt-2">
+                                    <button class="btn btn-sm btn-primary flex-grow-1" onclick="saveDescriptionFromPopover()">
+                                        <i class="bx bx-check"></i> Save
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-secondary" onclick="closeDescriptionPopover()">
+                                        <i class="bx bx-x"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                    },
+                    sanitize: false
+                });
+                
+                // Update button text when description changes
+                descBtn.addEventListener('shown.bs.popover', function() {
+                    const textarea = document.getElementById('descriptionPopoverInput');
+                    if (textarea) {
+                        textarea.focus();
+                    }
+                });
+            }
+        }
+        
+        // Save tags from popover
+        window.saveTagsFromPopover = function() {
+            const input = document.getElementById('tagsPopoverInput');
+            const hiddenInput = document.getElementById('workoutTags');
+            const buttonText = document.getElementById('tagsButtonText');
+            const btn = document.getElementById('tagsPopoverBtn');
+            
+            if (input && hiddenInput) {
+                const tags = input.value.trim();
+                hiddenInput.value = tags;
+                
+                // Update button text
+                if (tags) {
+                    const tagArray = tags.split(',').map(t => t.trim()).filter(t => t);
+                    buttonText.textContent = tagArray.length === 1 ? '1 tag' : `${tagArray.length} tags`;
+                    btn.classList.remove('btn-outline-secondary');
+                    btn.classList.add('btn-outline-primary');
+                } else {
+                    buttonText.textContent = 'Add Tags';
+                    btn.classList.remove('btn-outline-primary');
+                    btn.classList.add('btn-outline-secondary');
+                }
+                
+                // Trigger autosave
+                if (window.markEditorDirty) {
+                    window.markEditorDirty();
+                }
+            }
+            
+            closeTagsPopover();
+        };
+        
+        // Close tags popover
+        window.closeTagsPopover = function() {
+            const btn = document.getElementById('tagsPopoverBtn');
+            if (btn) {
+                const popover = bootstrap.Popover.getInstance(btn);
+                if (popover) popover.hide();
+            }
+        };
+        
+        // Save description from popover
+        window.saveDescriptionFromPopover = function() {
+            const textarea = document.getElementById('descriptionPopoverInput');
+            const hiddenTextarea = document.getElementById('workoutDescription');
+            const buttonText = document.getElementById('descriptionButtonText');
+            const btn = document.getElementById('descriptionPopoverBtn');
+            
+            if (textarea && hiddenTextarea) {
+                const description = textarea.value.trim();
+                hiddenTextarea.value = description;
+                
+                // Update button text
+                if (description) {
+                    const preview = description.length > 30 ? description.substring(0, 30) + '...' : description;
+                    buttonText.textContent = preview;
+                    btn.classList.remove('btn-outline-secondary');
+                    btn.classList.add('btn-outline-primary');
+                } else {
+                    buttonText.textContent = 'Add Description';
+                    btn.classList.remove('btn-outline-primary');
+                    btn.classList.add('btn-outline-secondary');
+                }
+                
+                // Trigger autosave
+                if (window.markEditorDirty) {
+                    window.markEditorDirty();
+                }
+            }
+            
+            closeDescriptionPopover();
+        };
+        
+        // Close description popover
+        window.closeDescriptionPopover = function() {
+            const btn = document.getElementById('descriptionPopoverBtn');
+            if (btn) {
+                const popover = bootstrap.Popover.getInstance(btn);
+                if (popover) popover.hide();
+            }
+        };
+        
+        // Update button states when loading a workout
+        window.updateMetadataButtonStates = function() {
+            const tagsInput = document.getElementById('workoutTags');
+            const descTextarea = document.getElementById('workoutDescription');
+            const tagsBtn = document.getElementById('tagsPopoverBtn');
+            const descBtn = document.getElementById('descriptionPopoverBtn');
+            const tagsButtonText = document.getElementById('tagsButtonText');
+            const descButtonText = document.getElementById('descriptionButtonText');
+            
+            // Update tags button
+            if (tagsInput && tagsBtn && tagsButtonText) {
+                const tags = tagsInput.value.trim();
+                if (tags) {
+                    const tagArray = tags.split(',').map(t => t.trim()).filter(t => t);
+                    tagsButtonText.textContent = tagArray.length === 1 ? '1 tag' : `${tagArray.length} tags`;
+                    tagsBtn.classList.remove('btn-outline-secondary');
+                    tagsBtn.classList.add('btn-outline-primary');
+                } else {
+                    tagsButtonText.textContent = 'Add Tags';
+                    tagsBtn.classList.remove('btn-outline-primary');
+                    tagsBtn.classList.add('btn-outline-secondary');
+                }
+            }
+            
+            // Update description button
+            if (descTextarea && descBtn && descButtonText) {
+                const description = descTextarea.value.trim();
+                if (description) {
+                    const preview = description.length > 30 ? description.substring(0, 30) + '...' : description;
+                    descButtonText.textContent = preview;
+                    descBtn.classList.remove('btn-outline-secondary');
+                    descBtn.classList.add('btn-outline-primary');
+                } else {
+                    descButtonText.textContent = 'Add Description';
+                    descBtn.classList.remove('btn-outline-primary');
+                    descBtn.classList.add('btn-outline-secondary');
+                }
+            }
+        };
+        
+        // Initialize popovers when DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            // Wait a bit for other scripts to load
+            setTimeout(initializeMetadataPopovers, 500);
+        });
     </script>
   </body>
 </html>

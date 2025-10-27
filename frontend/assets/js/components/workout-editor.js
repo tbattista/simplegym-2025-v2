@@ -114,6 +114,11 @@ function loadWorkoutIntoEditor(workoutId) {
         });
     }, 200);
     
+    // Update metadata button states (tags and description)
+    if (window.updateMetadataButtonStates) {
+        setTimeout(() => window.updateMetadataButtonStates(), 250);
+    }
+    
     console.log('✅ Workout loaded into editor');
 }
 
@@ -181,6 +186,11 @@ function createNewWorkoutInEditor() {
     
     // Focus on name input
     document.getElementById('workoutName').focus();
+    
+    // Reset metadata button states
+    if (window.updateMetadataButtonStates) {
+        setTimeout(() => window.updateMetadataButtonStates(), 250);
+    }
     
     console.log('✅ New workout editor ready');
 }
