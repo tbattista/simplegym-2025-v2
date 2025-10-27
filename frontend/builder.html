@@ -357,7 +357,13 @@
         <div class="modal-dialog modal-xl">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="workoutModalTitle">Create Workout</h5>
+                    <div class="d-flex align-items-center gap-3 flex-grow-1">
+                        <h5 class="modal-title mb-0" id="workoutModalTitle">Create Workout</h5>
+                        <div id="autosaveIndicator" class="autosave-indicator">
+                            <i class="bx bx-save"></i>
+                            <span class="save-status-text"></span>
+                        </div>
+                    </div>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
