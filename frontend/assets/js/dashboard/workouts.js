@@ -450,19 +450,23 @@ function collectExerciseGroups() {
 
 /**
  * Collect bonus exercises from form
+ * Works with both accordion and card structures for backward compatibility
  */
 function collectBonusExercises() {
     const bonusExercises = [];
     const bonusElements = document.querySelectorAll('#bonusExercises .bonus-exercise');
     
     bonusElements.forEach(bonusEl => {
-        const name = bonusEl.querySelector('.bonus-name-input')?.value?.trim();
+        // Try accordion structure first, then fall back to card structure
+        const bodyEl = bonusEl.querySelector('.accordion-body') || bonusEl.querySelector('.card-body');
+        
+        const name = bodyEl?.querySelector('.bonus-name-input')?.value?.trim();
         if (name) {
             bonusExercises.push({
                 name: name,
-                sets: bonusEl.querySelector('.bonus-sets-input')?.value || '2',
-                reps: bonusEl.querySelector('.bonus-reps-input')?.value || '15',
-                rest: bonusEl.querySelector('.bonus-rest-input')?.value || '30s'
+                sets: bodyEl?.querySelector('.bonus-sets-input')?.value || '2',
+                reps: bodyEl?.querySelector('.bonus-reps-input')?.value || '15',
+                rest: bodyEl?.querySelector('.bonus-rest-input')?.value || '30s'
             });
         }
     });
@@ -604,42 +608,79 @@ function addExerciseGroup() {
 }
 
 /**
- * Add bonus exercise to workout form
+ * Add bonus exercise to workout form (accordion style)
  */
 function addBonusExercise() {
     const container = document.getElementById('bonusExercises');
     if (!container) return;
     
+    const bonusCount = container.children.length + 1;
     const bonusId = `bonus-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const collapseId = `collapse-${bonusId}`;
+    
+    // First bonus expanded, rest collapsed
+    const isExpanded = bonusCount === 1;
+    const showClass = isExpanded ? 'show' : '';
+    const collapsedClass = isExpanded ? '' : 'collapsed';
     
     const bonusHtml = `
-        <div class="card mb-3 bonus-exercise" data-bonus-id="${bonusId}">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h6 class="mb-0">Bonus Exercise</h6>
-                <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeBonusExercise(this)">
-                    <i class="bx bx-trash"></i>
+        <div class="accordion-item bonus-exercise" data-bonus-id="${bonusId}">
+            <h2 class="accordion-header" id="heading-${bonusId}">
+                <button class="accordion-button ${collapsedClass}" type="button"
+                        data-bs-toggle="collapse" data-bs-target="#${collapseId}"
+                        aria-expanded="${isExpanded}" aria-controls="${collapseId}">
+                    <div class="bonus-title-container">
+                        <span class="bonus-title">Bonus Exercise ${bonusCount}</span>
+                        <span class="bonus-preview"></span>
+                    </div>
                 </button>
-            </div>
-            <div class="card-body">
-                <div class="row mb-3">
-                    <div class="col-md-12">
-                        <label class="form-label">Exercise Name</label>
-                        <input type="text" class="form-control bonus-name-input exercise-autocomplete-input"
-                               id="bonus-${bonusId}" placeholder="Search exercises...">
-                    </div>
+                <div class="group-actions">
+                    <span class="drag-handle" title="Drag to reorder">
+                        <i class="bx bx-menu"></i>
+                    </span>
                 </div>
-                <div class="row">
-                    <div class="col-md-4">
-                        <label class="form-label">Sets</label>
-                        <input type="text" class="form-control bonus-sets-input" value="2" placeholder="e.g., 2">
+            </h2>
+            <div id="${collapseId}" class="accordion-collapse collapse ${showClass}"
+                 aria-labelledby="heading-${bonusId}" data-bs-parent="#bonusExercises">
+                <div class="accordion-body">
+                    <!-- Exercise Name -->
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <label class="form-label">Exercise Name</label>
+                            <input type="text" class="form-control bonus-name-input exercise-autocomplete-input"
+                                   id="bonus-${bonusId}" placeholder="Search exercises...">
+                        </div>
                     </div>
-                    <div class="col-md-4">
-                        <label class="form-label">Reps</label>
-                        <input type="text" class="form-control bonus-reps-input" value="15" placeholder="e.g., 15">
+                    
+                    <!-- Sets, Reps, Rest -->
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <div class="d-flex align-items-end gap-2">
+                                <div style="width: 80px;">
+                                    <label class="form-label small mb-1">Sets</label>
+                                    <input type="text" class="form-control form-control-sm bonus-sets-input text-center" value="2" placeholder="2" maxlength="3">
+                                </div>
+                                <div style="width: 80px;">
+                                    <label class="form-label small mb-1">Reps</label>
+                                    <input type="text" class="form-control form-control-sm bonus-reps-input text-center" value="15" placeholder="15" maxlength="6">
+                                </div>
+                                <div style="flex: 1;">
+                                    <label class="form-label small mb-1">Rest</label>
+                                    <input type="text" class="form-control form-control-sm bonus-rest-input text-center" value="30s" placeholder="30s" maxlength="10">
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="col-md-4">
-                        <label class="form-label">Rest</label>
-                        <input type="text" class="form-control bonus-rest-input" value="30s" placeholder="e.g., 30s">
+                    
+                    <!-- Delete Button -->
+                    <div class="row mt-3">
+                        <div class="col-12 d-flex justify-content-end">
+                            <button type="button" class="btn btn-sm btn-outline-danger"
+                                    onclick="removeBonusExercise(this); event.stopPropagation();"
+                                    title="Delete bonus exercise">
+                                <i class="bx bx-trash me-1"></i>Delete
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -651,8 +692,21 @@ function addBonusExercise() {
     // Initialize autocomplete on new bonus exercise input
     initializeExerciseAutocompletes();
     
-    // Add autosave listeners to the new bonus exercise
+    // Add input event listeners to update preview
     const newBonus = container.lastElementChild;
+    const nameInput = newBonus.querySelector('.bonus-name-input');
+    const setsInput = newBonus.querySelector('.bonus-sets-input');
+    const repsInput = newBonus.querySelector('.bonus-reps-input');
+    const restInput = newBonus.querySelector('.bonus-rest-input');
+    
+    [nameInput, setsInput, repsInput, restInput].forEach(input => {
+        if (input) {
+            input.addEventListener('input', () => updateBonusExercisePreview(newBonus));
+            input.addEventListener('change', () => updateBonusExercisePreview(newBonus));
+        }
+    });
+    
+    // Add autosave listeners to the new bonus exercise
     addAutosaveListenersToGroup(newBonus);
     
     // Mark editor as dirty
@@ -700,7 +754,56 @@ function removeBonusExercise(button) {
     const bonus = button.closest('.bonus-exercise');
     if (bonus) {
         bonus.remove();
+        renumberBonusExercises();
         markEditorDirty();
+    }
+}
+
+/**
+ * Renumber bonus exercises after removal or reordering
+ */
+function renumberBonusExercises() {
+    const bonuses = document.querySelectorAll('#bonusExercises .bonus-exercise');
+    bonuses.forEach((bonus, index) => {
+        const title = bonus.querySelector('.bonus-title');
+        if (title) {
+            title.textContent = `Bonus Exercise ${index + 1}`;
+        }
+    });
+}
+
+/**
+ * Update bonus exercise preview in accordion header
+ */
+function updateBonusExercisePreview(bonusElement) {
+    if (!bonusElement) return;
+    
+    const nameInput = bonusElement.querySelector('.bonus-name-input');
+    const setsInput = bonusElement.querySelector('.bonus-sets-input');
+    const repsInput = bonusElement.querySelector('.bonus-reps-input');
+    const restInput = bonusElement.querySelector('.bonus-rest-input');
+    const preview = bonusElement.querySelector('.bonus-preview');
+    const title = bonusElement.querySelector('.bonus-title');
+    
+    if (!preview || !title) return;
+    
+    const name = nameInput?.value?.trim() || '';
+    const sets = setsInput?.value || '2';
+    const reps = repsInput?.value || '15';
+    const rest = restInput?.value || '30s';
+    
+    if (name) {
+        // Update title to show exercise name
+        title.textContent = name;
+        // Show full details in preview
+        preview.textContent = `${sets}×${reps} • Rest: ${rest}`;
+        preview.style.display = 'block';
+    } else {
+        // Reset to default title when empty
+        const bonusNumber = Array.from(bonusElement.parentElement.children).indexOf(bonusElement) + 1;
+        title.textContent = `Bonus Exercise ${bonusNumber}`;
+        preview.textContent = '';
+        preview.style.display = 'none';
     }
 }
 
@@ -913,6 +1016,9 @@ function editWorkout(id) {
             lastGroup.querySelector('.sets-input').value = group.sets || '3';
             lastGroup.querySelector('.reps-input').value = group.reps || '8-12';
             lastGroup.querySelector('.rest-input').value = group.rest || '60s';
+            
+            // Update preview after populating
+            updateExerciseGroupPreview(lastGroup);
         });
     } else {
         addExerciseGroup();
@@ -931,6 +1037,9 @@ function editWorkout(id) {
             lastBonus.querySelector('.bonus-sets-input').value = bonus.sets || '2';
             lastBonus.querySelector('.bonus-reps-input').value = bonus.reps || '15';
             lastBonus.querySelector('.bonus-rest-input').value = bonus.rest || '30s';
+            
+            // Update preview after populating
+            updateBonusExercisePreview(lastBonus);
         });
     }
     
@@ -1134,6 +1243,8 @@ window.clearWorkoutForm = clearWorkoutForm;
 window.addWorkoutToProgramPrompt = addWorkoutToProgramPrompt;
 window.initializeExerciseAutocompletes = initializeExerciseAutocompletes;
 window.updateExerciseGroupPreview = updateExerciseGroupPreview;
+window.renumberBonusExercises = renumberBonusExercises;
+window.updateBonusExercisePreview = updateBonusExercisePreview;
 
 // Make autosave functions globally available
 window.markEditorDirty = markEditorDirty;

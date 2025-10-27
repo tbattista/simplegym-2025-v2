@@ -217,10 +217,10 @@ function filterWorkoutsView() {
  * @param {string} programId - ID of program to select
  */
 function selectProgramAndGoToBuilder(programId) {
-    // Store program ID in sessionStorage for builder to pick up
+    // Store program ID in sessionStorage for programs page to pick up
     sessionStorage.setItem('selectedProgramId', programId);
-    // Navigate to builder
-    window.location.href = 'builder.html';
+    // Navigate to programs page (builder.html is deprecated)
+    window.location.href = 'programs.html';
 }
 
 // Make functions globally accessible for standalone pages

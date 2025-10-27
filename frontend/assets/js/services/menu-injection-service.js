@@ -153,16 +153,16 @@ class MenuInjectionService {
         const path = window.location.pathname;
         
         // Extract filename from path
-        const filename = path.split('/').pop() || 'builder.html';
+        const filename = path.split('/').pop() || 'index.html';
         
         // Map filenames to page identifiers
-        if (filename.includes('builder')) return 'builder';
         if (filename.includes('programs')) return 'programs';
         if (filename.includes('workouts')) return 'workouts';
         if (filename.includes('exercise-database')) return 'exercises';
+        if (filename.includes('index') || filename === '') return 'home';
         
-        // Default to builder
-        return 'builder';
+        // Default to home
+        return 'home';
     }
 }
 
