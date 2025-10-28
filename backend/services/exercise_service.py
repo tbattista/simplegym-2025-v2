@@ -4,21 +4,25 @@ Handles exercise database operations including CSV import, search, and CRUD oper
 """
 
 import logging
+import traceback
 from typing import List, Optional, Dict, Any, Set
 from datetime import datetime
+
+# Set up logging
+logger = logging.getLogger(__name__)
 
 try:
     from firebase_admin import firestore
     FIRESTORE_AVAILABLE = True
-except ImportError:
+    logger.info("✅ Exercise service: firestore module imported successfully")
+except ImportError as e:
     FIRESTORE_AVAILABLE = False
     firestore = None
+    logger.error(f"❌ Exercise service: Failed to import firestore - {str(e)}")
+    logger.error(f"Traceback: {traceback.format_exc()}")
 
 from ..config.firebase_config import get_firebase_app
 from ..models import Exercise, CreateExerciseRequest, ExerciseListResponse, ExerciseSearchResponse
-
-# Set up logging
-logger = logging.getLogger(__name__)
 
 class ExerciseService:
     """
