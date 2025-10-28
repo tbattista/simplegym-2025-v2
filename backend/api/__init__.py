@@ -3,15 +3,16 @@ API Routers Package
 Contains all API endpoint routers organized by domain
 """
 
-from . import health, documents, workouts, programs, exercises, favorites, auth, data
+from . import health, documents, workouts, programs, exercises, favorites, auth, data, migration
 
 __all__ = [
     'health',
-    'documents', 
+    'documents',
     'workouts',
     'programs',
     'exercises',
     'favorites',
     'auth',
-    'data'
+    'data',
+    'migration'
 ]
