@@ -59,7 +59,7 @@ function getMenuHTML(activePage = 'home') {
             <li class="menu-item ${activePage === 'workout-database' ? 'active' : ''}">
                 <a href="workout-database.html" class="menu-link">
                     <i class="menu-icon tf-icons bx bx-library"></i>
-                    <div class="text-truncate">Workout Library</div>
+                    <div class="text-truncate">Workout Database</div>
                 </a>
             </li>
             

@@ -14,7 +14,7 @@
     <!-- Force HTTPS for all requests -->
     <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
 
-    <title>👻 Workout Library - Ghost Gym V0.4.1</title>
+    <title>👻 Workout Database - Ghost Gym V0.4.1</title>
 
     <meta name="description" content="Browse and manage your workout templates" />
 
@@ -81,7 +81,7 @@
               <div class="mb-4">
                 <h4 class="mb-1">
                   <i class="bx bx-library me-2"></i>
-                  Workout Library
+                  Workout Database
                 </h4>
                 <p class="text-muted mb-0">Browse and manage your <span id="totalWorkoutsCount">0</span> workout templates</p>
               </div>
@@ -328,13 +328,28 @@
             }
         };
 
-        // Initialize when Firebase is ready
+        // Initialize when Firebase auth is ready
         document.addEventListener('DOMContentLoaded', function() {
-            if (window.firebaseReady) {
-                initWorkoutDatabase();
-            } else {
-                window.addEventListener('firebaseReady', initWorkoutDatabase);
-            }
+            // Wait for both Firebase and auth to be ready
+            const checkAndInit = () => {
+                if (window.firebaseReady && window.dataManager?.isAuthenticated?.()) {
+                    initWorkoutDatabase();
+                } else if (window.firebaseReady) {
+                    // Firebase is ready but not authenticated yet, wait for auth
+                    console.log('⏳ Waiting for authentication...');
+                    window.addEventListener('authStateChanged', function handler() {
+                        if (window.dataManager?.isAuthenticated?.()) {
+                            window.removeEventListener('authStateChanged', handler);
+                            initWorkoutDatabase();
+                        }
+                    });
+                } else {
+                    // Firebase not ready yet
+                    window.addEventListener('firebaseReady', checkAndInit, { once: true });
+                }
+            };
+            
+            checkAndInit();
         });
 
         function initWorkoutDatabase() {
