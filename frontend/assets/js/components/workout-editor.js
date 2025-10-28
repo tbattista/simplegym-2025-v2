@@ -197,9 +197,10 @@ function createNewWorkoutInEditor() {
 
 /**
  * Save workout from editor
+ * @param {boolean} silent - If true, don't show alerts or update button (for autosave)
  */
-async function saveWorkoutFromEditor() {
-    console.log('💾 Saving workout from editor...');
+async function saveWorkoutFromEditor(silent = false) {
+    console.log('💾 Saving workout from editor...', silent ? '(autosave)' : '(manual)');
     
     const workoutData = {
         name: document.getElementById('workoutName').value.trim(),
@@ -212,23 +213,30 @@ async function saveWorkoutFromEditor() {
     
     // Validate
     if (!workoutData.name) {
-        showAlert('Workout name is required', 'danger');
-        document.getElementById('workoutName').focus();
+        if (!silent) {
+            showAlert('Workout name is required', 'danger');
+            document.getElementById('workoutName').focus();
+        }
         return;
     }
     
     if (workoutData.exercise_groups.length === 0) {
-        showAlert('At least one exercise group is required', 'danger');
+        if (!silent) {
+            showAlert('At least one exercise group is required', 'danger');
+        }
         return;
     }
     
     try {
         // Show saving status
         updateSaveStatus('saving');
+        
+        // Only update button for manual saves
         const saveBtn = document.getElementById('saveWorkoutBtn');
-        const originalText = saveBtn.innerHTML;
-        saveBtn.innerHTML = '<i class="bx bx-loader-alt bx-spin me-1"></i>Saving...';
-        saveBtn.disabled = true;
+        if (!silent && saveBtn) {
+            saveBtn.innerHTML = '<i class="bx bx-loader-alt bx-spin me-1"></i>Saving...';
+            saveBtn.disabled = true;
+        }
         
         let savedWorkout;
         
@@ -243,14 +251,18 @@ async function saveWorkoutFromEditor() {
                 window.ghostGym.workouts[index] = savedWorkout;
             }
             
-            showAlert(`Workout "${savedWorkout.name}" updated successfully!`, 'success');
+            if (!silent) {
+                showAlert(`Workout "${savedWorkout.name}" updated successfully!`, 'success');
+            }
         } else {
             // Create new workout
             savedWorkout = await window.dataManager.createWorkout(workoutData);
             window.ghostGym.workouts.unshift(savedWorkout);
             window.ghostGym.workoutBuilder.selectedWorkoutId = savedWorkout.id;
             
-            showAlert(`Workout "${savedWorkout.name}" created successfully!`, 'success');
+            if (!silent) {
+                showAlert(`Workout "${savedWorkout.name}" created successfully!`, 'success');
+            }
         }
         
         // Update state
@@ -272,13 +284,20 @@ async function saveWorkoutFromEditor() {
         
     } catch (error) {
         console.error('❌ Error saving workout:', error);
-        showAlert('Failed to save workout: ' + error.message, 'danger');
-        updateSaveStatus('');
+        if (!silent) {
+            showAlert('Failed to save workout: ' + error.message, 'danger');
+        }
+        updateSaveStatus('error');
+        throw error; // Re-throw for autosave error handling
     } finally {
-        // Reset button
-        const saveBtn = document.getElementById('saveWorkoutBtn');
-        saveBtn.innerHTML = '<i class="bx bx-save me-1"></i>Save Workout';
-        saveBtn.disabled = false;
+        // Reset button (only for manual saves)
+        if (!silent) {
+            const saveBtn = document.getElementById('saveWorkoutBtn');
+            if (saveBtn) {
+                saveBtn.innerHTML = '<i class="bx bx-save me-1"></i>Save Workout';
+                saveBtn.disabled = false;
+            }
+        }
     }
 }
 
@@ -361,17 +380,24 @@ async function deleteWorkoutFromEditor() {
 
 /**
  * Mark editor as dirty (has unsaved changes)
+ * Integrates with autosave system from workouts.js
  */
 function markEditorDirty() {
     if (!window.ghostGym.workoutBuilder.isEditing) return;
+    if (!window.ghostGym.workoutBuilder.selectedWorkoutId) return; // Don't autosave new workouts
     
     window.ghostGym.workoutBuilder.isDirty = true;
-    updateSaveStatus('dirty');
+    updateSaveStatus('unsaved');
+    
+    // Trigger autosave if available
+    if (window.scheduleAutosave) {
+        window.scheduleAutosave();
+    }
 }
 
 /**
  * Update save status indicator
- * @param {string} status - 'dirty', 'saving', 'saved', or ''
+ * @param {string} status - 'unsaved', 'saving', 'saved', 'error', or ''
  */
 function updateSaveStatus(status) {
     const saveStatus = document.getElementById('saveStatus');
@@ -380,6 +406,7 @@ function updateSaveStatus(status) {
     saveStatus.className = `save-status ${status}`;
     
     switch (status) {
+        case 'unsaved':
         case 'dirty':
             saveStatus.textContent = 'Unsaved changes';
             break;
@@ -388,6 +415,9 @@ function updateSaveStatus(status) {
             break;
         case 'saved':
             saveStatus.textContent = 'All changes saved';
+            break;
+        case 'error':
+            saveStatus.textContent = 'Save failed';
             break;
         default:
             saveStatus.textContent = '';

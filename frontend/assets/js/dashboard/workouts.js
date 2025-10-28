@@ -65,19 +65,22 @@ async function autoSaveWorkout() {
     
     try {
         window.ghostGym.workoutBuilder.isAutosaving = true;
-        updateSaveIndicator('saving');
         
-        await saveWorkout(true); // Pass true for silent mode
+        // Use saveWorkoutFromEditor if available (new inline editor)
+        if (window.saveWorkoutFromEditor) {
+            await window.saveWorkoutFromEditor(true); // Pass true for silent mode
+        } else {
+            // Fallback to old saveWorkout function
+            await saveWorkout(true);
+        }
         
         window.ghostGym.workoutBuilder.isDirty = false;
         lastSaveTime = new Date();
-        updateSaveIndicator('saved');
         
         console.log('✅ Workout auto-saved successfully');
         
     } catch (error) {
         console.error('❌ Autosave failed:', error);
-        updateSaveIndicator('error');
     } finally {
         window.ghostGym.workoutBuilder.isAutosaving = false;
     }
@@ -85,45 +88,36 @@ async function autoSaveWorkout() {
 
 /**
  * Update save status indicator
+ * Now uses saveStatus element from workout-editor
  */
 function updateSaveIndicator(status) {
-    const indicator = document.getElementById('autosaveIndicator');
+    // Delegate to workout-editor's updateSaveStatus if available
+    if (window.updateSaveStatus) {
+        window.updateSaveStatus(status);
+        return;
+    }
+    
+    // Fallback for old implementation
+    const indicator = document.getElementById('saveStatus');
     if (!indicator) return;
     
-    const icon = indicator.querySelector('i');
-    const text = indicator.querySelector('.save-status-text');
+    indicator.className = `save-status ${status}`;
     
     switch (status) {
         case 'saving':
-            icon.className = 'bx bx-loader-alt bx-spin';
-            text.textContent = 'Saving...';
-            indicator.className = 'autosave-indicator saving';
+            indicator.textContent = 'Saving...';
             break;
         case 'saved':
-            icon.className = 'bx bx-check-circle';
-            text.textContent = 'Saved';
-            indicator.className = 'autosave-indicator saved';
-            // Show relative time after a moment
-            setTimeout(() => {
-                if (lastSaveTime) {
-                    updateRelativeSaveTime();
-                }
-            }, 2000);
+            indicator.textContent = 'All changes saved';
             break;
         case 'unsaved':
-            icon.className = 'bx bx-edit';
-            text.textContent = 'Unsaved changes';
-            indicator.className = 'autosave-indicator unsaved';
+            indicator.textContent = 'Unsaved changes';
             break;
         case 'error':
-            icon.className = 'bx bx-error-circle';
-            text.textContent = 'Save failed';
-            indicator.className = 'autosave-indicator error';
+            indicator.textContent = 'Save failed';
             break;
         default:
-            icon.className = 'bx bx-save';
-            text.textContent = '';
-            indicator.className = 'autosave-indicator';
+            indicator.textContent = '';
     }
 }
 
@@ -133,22 +127,24 @@ function updateSaveIndicator(status) {
 function updateRelativeSaveTime() {
     if (!lastSaveTime) return;
     
-    const indicator = document.getElementById('autosaveIndicator');
+    const indicator = document.getElementById('saveStatus');
     if (!indicator) return;
     
-    const text = indicator.querySelector('.save-status-text');
     const now = new Date();
     const seconds = Math.floor((now - lastSaveTime) / 1000);
     
+    let timeText = '';
     if (seconds < 60) {
-        text.textContent = 'Saved just now';
+        timeText = 'Saved just now';
     } else if (seconds < 120) {
-        text.textContent = 'Saved 1 min ago';
+        timeText = 'Saved 1 min ago';
     } else if (seconds < 3600) {
-        text.textContent = `Saved ${Math.floor(seconds / 60)} mins ago`;
+        timeText = `Saved ${Math.floor(seconds / 60)} mins ago`;
     } else {
-        text.textContent = 'Saved';
+        timeText = 'Saved';
     }
+    
+    indicator.textContent = timeText;
 }
 
 // Update relative time every 30 seconds
