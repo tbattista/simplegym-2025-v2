@@ -86,14 +86,31 @@
                   </h4>
                   <p class="text-muted mb-0">Browse and favorite from <span id="totalExercisesCount">2,583</span> exercises</p>
                 </div>
-                <div class="btn-group" role="group">
-                  <button type="button" class="btn btn-outline-primary" id="refreshExercisesBtn">
-                    <i class="bx bx-refresh"></i>
-                  </button>
+                <div>
                   <button type="button" class="btn btn-primary" id="addCustomExerciseBtn">
                     <i class="bx bx-plus me-1"></i>
                     Add Custom
                   </button>
+                </div>
+              </div>
+
+              <!-- Search Bar -->
+              <div class="card mb-4">
+                <div class="card-body">
+                  <div class="input-group">
+                    <span class="input-group-text">
+                      <i class="bx bx-search"></i>
+                    </span>
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="exerciseSearch"
+                      placeholder="Search exercises by name, muscle group, or equipment..."
+                      autocomplete="off">
+                    <button class="btn btn-outline-secondary" type="button" id="clearSearchBtn" style="display: none;">
+                      <i class="bx bx-x"></i>
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -464,9 +481,40 @@
             document.getElementById('showCustomOnly')?.addEventListener('change', filterExercises);
             document.getElementById('clearFiltersBtn')?.addEventListener('click', clearExerciseFilters);
             document.getElementById('entriesPerPageSelect')?.addEventListener('change', handleEntriesPerPageChange);
-            document.getElementById('refreshExercisesBtn')?.addEventListener('click', refreshExercises);
             document.getElementById('addCustomExerciseBtn')?.addEventListener('click', () => showCustomExerciseModal());
             document.getElementById('saveCustomExerciseBtn')?.addEventListener('click', saveCustomExercise);
+            
+            // Set up search functionality
+            const searchInput = document.getElementById('exerciseSearch');
+            const clearSearchBtn = document.getElementById('clearSearchBtn');
+            
+            if (searchInput) {
+                // Real-time search with debouncing
+                let searchTimeout;
+                searchInput.addEventListener('input', function() {
+                    clearTimeout(searchTimeout);
+                    
+                    // Show/hide clear button
+                    if (clearSearchBtn) {
+                        clearSearchBtn.style.display = this.value.trim() ? 'block' : 'none';
+                    }
+                    
+                    // Debounce search by 300ms
+                    searchTimeout = setTimeout(() => {
+                        filterExercises();
+                    }, 300);
+                });
+                
+                // Clear search button
+                if (clearSearchBtn) {
+                    clearSearchBtn.addEventListener('click', function() {
+                        searchInput.value = '';
+                        this.style.display = 'none';
+                        filterExercises();
+                        searchInput.focus();
+                    });
+                }
+            }
             
             // Load exercises
             loadExercises();

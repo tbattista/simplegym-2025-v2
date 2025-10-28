@@ -755,6 +755,7 @@ function clearExerciseFilters() {
     
     // Reset UI
     const searchInput = document.getElementById('exerciseSearch');
+    const clearSearchBtn = document.getElementById('clearSearchBtn');
     const sortSelect = document.getElementById('sortBySelect');
     const muscleGroupSelect = document.getElementById('muscleGroupFilter');
     const equipmentSelect = document.getElementById('equipmentFilter');
@@ -765,6 +766,7 @@ function clearExerciseFilters() {
     const foundationalCheckbox = document.getElementById('showFoundationalOnly');
     
     if (searchInput) searchInput.value = '';
+    if (clearSearchBtn) clearSearchBtn.style.display = 'none';
     if (sortSelect) sortSelect.value = 'name';
     if (muscleGroupSelect) muscleGroupSelect.value = '';
     if (equipmentSelect) equipmentSelect.value = '';
