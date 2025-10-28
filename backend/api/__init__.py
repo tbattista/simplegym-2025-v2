@@ -13,5 +13,6 @@ __all__ = [
     'exercises',
     'favorites',
     'auth',
-    'data'
+    'data',
+    'migration'  # ← Added this
 ]
