@@ -4,31 +4,12 @@
  * @version 20251020-03-PHASES-2-5
  */
 
-console.log('📦 Data Manager Version: 20251020-03-PHASES-2-5');
+console.log('📦 Data Manager Version: 20251028-CENTRALIZED-CONFIG');
 
 /**
- * Global API utility function to ensure HTTPS in production
- * Use this for all fetch calls to avoid Mixed Content errors
+ * NOTE: Global API utility function is now in app-config.js
+ * This ensures consistent API URL handling across the entire application
  */
-window.getApiUrl = function(path) {
-    // Ensure path starts with /
-    if (!path.startsWith('/')) {
-        path = '/' + path;
-    }
-    
-    // Always use HTTPS and same origin
-    const hostname = window.location.hostname;
-    const protocol = 'https:';
-    const port = window.location.port;
-    let baseUrl = `${protocol}//${hostname}`;
-    
-    // Only add port if it exists and is not standard (443 for HTTPS, 80 for HTTP)
-    if (port && port !== '' && port !== '443' && port !== '80') {
-        baseUrl += `:${port}`;
-    }
-    
-    return `${baseUrl}${path}`;
-};
 
 class FirebaseDataManager {
     constructor() {
@@ -54,40 +35,15 @@ class FirebaseDataManager {
     }
     
     getApiBaseUrl() {
-        const hostname = window.location.hostname;
-        
-        // Check for configured API URL first
-        const apiUrl = window.GHOST_GYM_API_URL || '';
-        
-        if (apiUrl) {
-            // Ensure configured URL uses HTTPS
-            if (apiUrl.startsWith('http://')) {
-                return apiUrl.replace('http://', 'https://');
-            }
-            return apiUrl;
+        // Use centralized config from app-config.js
+        if (window.config?.api?.baseUrl) {
+            console.log('🔗 Using centralized API config:', window.config.api.baseUrl);
+            return window.config.api.baseUrl;
         }
         
-        // Default: always use HTTPS with same origin
-        const protocol = 'https:';
-        const port = window.location.port;
-        
-        // Build URL using HTTPS protocol
-        let baseUrl = `${protocol}//${hostname}`;
-        
-        // Only add port if it exists and is not standard (443 for HTTPS, 80 for HTTP)
-        if (port && port !== '' && port !== '443' && port !== '80') {
-            baseUrl += `:${port}`;
-        }
-        
-        console.log('🔍 DEBUG: API Base URL construction:', {
-            protocol,
-            hostname,
-            port,
-            origin: window.location.origin,
-            constructed: baseUrl
-        });
-        
-        return baseUrl;
+        // Fallback to current origin (Railway serves everything from same domain)
+        console.log('⚠️ Centralized config not found, using origin:', window.location.origin);
+        return window.location.origin;
     }
     
     async waitForFirebase() {
@@ -230,7 +186,7 @@ class FirebaseDataManager {
     
     async executeMigration(migrationData) {
         try {
-            const url = window.getApiUrl('/api/v3/auth/migrate-data');
+            const url = window.config.api.getUrl('/api/v3/auth/migrate-data');
             console.log('🔍 DEBUG: Migration URL:', url);
             
             const response = await fetch(url, {
@@ -317,8 +273,8 @@ class FirebaseDataManager {
             params.append('search', search);
         }
         
-        // Always use getApiUrl to ensure HTTPS
-        const url = window.getApiUrl(`/api/v3/firebase/programs?${params}`);
+        // Use centralized API config
+        const url = window.config.api.getUrl(`/api/v3/firebase/programs?${params}`);
         
         // Use deduplicated fetch
         return this.deduplicatedFetch(url, async () => {
@@ -383,7 +339,7 @@ class FirebaseDataManager {
     
     async createFirestoreProgram(programData) {
         try {
-            const url = window.getApiUrl('/api/v3/firebase/programs');
+            const url = window.config.api.getUrl('/api/v3/firebase/programs');
             console.log('🔍 DEBUG: Creating program at:', url);
             
             const response = await fetch(url, {
@@ -478,8 +434,8 @@ class FirebaseDataManager {
             tags.forEach(tag => params.append('tags', tag));
         }
         
-        // Always use getApiUrl to ensure HTTPS
-        const url = window.getApiUrl(`/api/v3/firebase/workouts?${params}`);
+        // Use centralized API config
+        const url = window.config.api.getUrl(`/api/v3/firebase/workouts?${params}`);
         
         // Use deduplicated fetch
         return this.deduplicatedFetch(url, async () => {
@@ -551,7 +507,7 @@ class FirebaseDataManager {
     
     async createFirestoreWorkout(workoutData) {
         try {
-            const url = window.getApiUrl('/api/v3/firebase/workouts');
+            const url = window.config.api.getUrl('/api/v3/firebase/workouts');
             console.log('🔍 DEBUG: Creating workout at:', url);
             
             const response = await fetch(url, {
@@ -620,7 +576,7 @@ class FirebaseDataManager {
     
     async updateFirestoreWorkout(workoutId, workoutData) {
         try {
-            const url = window.getApiUrl(`/api/v3/firebase/workouts/${workoutId}`);
+            const url = window.config.api.getUrl(`/api/v3/firebase/workouts/${workoutId}`);
             console.log('🔍 DEBUG: Updating workout at:', url);
             
             const response = await fetch(url, {
@@ -695,7 +651,7 @@ class FirebaseDataManager {
     
     async deleteFirestoreWorkout(workoutId) {
         try {
-            const url = window.getApiUrl(`/api/v3/firebase/workouts/${workoutId}`);
+            const url = window.config.api.getUrl(`/api/v3/firebase/workouts/${workoutId}`);
             console.log('🔍 DEBUG: Deleting workout at:', url);
             
             const response = await fetch(url, {

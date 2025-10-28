@@ -44,74 +44,11 @@
     <script src="/static/assets/vendor/js/helpers.js"></script>
     <script src="/static/assets/js/config.js"></script>
 
-    <!-- Ghost Gym Configuration -->
-    <script>
-        // API Configuration for Railway deployment
-        window.GHOST_GYM_API_URL = '';
-        
-        // Helper function for API URLs
-        window.getApiUrl = function(path) {
-            const baseUrl = window.GHOST_GYM_API_URL || window.location.origin;
-            return baseUrl + path;
-        };
-    </script>
-
-    <!-- Firebase SDK v9+ -->
-    <script type="module">
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js';
-        import {
-            getAuth,
-            signInWithEmailAndPassword,
-            createUserWithEmailAndPassword,
-            signInWithPopup,
-            GoogleAuthProvider,
-            signInAnonymously,
-            signOut,
-            onAuthStateChanged,
-            sendEmailVerification,
-            sendPasswordResetEmail,
-            updateProfile
-        } from 'https://www.gstatic.com/firebasejs/10.5.0/firebase-auth.js';
-        import { getFirestore } from 'https://www.gstatic.com/firebasejs/10.5.0/firebase-firestore.js';
-        
-        // Firebase configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyDpG6XqRY8jkuxtEy-8avAXK510czrLRNs",
-            authDomain: "ghost-gym-v3.firebaseapp.com",
-            projectId: "ghost-gym-v3",
-            storageBucket: "ghost-gym-v3.firebasestorage.app",
-            messagingSenderId: "637224617538",
-            appId: "1:637224617538:web:ad149e591714a0b9b50fdb"
-        };
-        
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        
-        // Make Firebase services available globally
-        window.firebaseApp = app;
-        window.firebaseAuth = auth;
-        window.firebaseDb = db;
-        
-        // Make Firebase Auth functions available globally
-        window.firebaseAuthFunctions = {
-            signInWithEmailAndPassword,
-            createUserWithEmailAndPassword,
-            signInWithPopup,
-            GoogleAuthProvider,
-            signInAnonymously,
-            signOut,
-            onAuthStateChanged,
-            sendEmailVerification,
-            sendPasswordResetEmail,
-            updateProfile
-        };
-        
-        // Signal that Firebase is ready
-        window.firebaseReady = true;
-        window.dispatchEvent(new Event('firebaseReady'));
-    </script>
+    <!-- Ghost Gym Centralized Configuration -->
+    <script src="/static/assets/js/app-config.js"></script>
+    
+    <!-- Firebase SDK Loader (Centralized) -->
+    <script type="module" src="/static/assets/js/firebase-loader.js"></script>
   </head>
 
   <body>
