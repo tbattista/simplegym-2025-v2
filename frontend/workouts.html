@@ -550,6 +550,21 @@
             // Load workouts
             await loadWorkoutsData();
             
+            // Check if we should auto-load a workout from workout database
+            const editWorkoutId = sessionStorage.getItem('editWorkoutId');
+            if (editWorkoutId) {
+                console.log('📝 Auto-loading workout from database:', editWorkoutId);
+                // Clear the session storage
+                sessionStorage.removeItem('editWorkoutId');
+                // Load the workout into the editor
+                if (window.loadWorkoutIntoEditor) {
+                    // Wait a bit for the workouts to be fully rendered
+                    setTimeout(() => {
+                        window.loadWorkoutIntoEditor(editWorkoutId);
+                    }, 500);
+                }
+            }
+            
             console.log('✅ Workouts page ready!');
         });
         
