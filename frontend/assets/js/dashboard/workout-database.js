@@ -17,24 +17,16 @@ async function loadWorkouts() {
     try {
         showWorkoutLoading();
         
-        console.log('📡 Loading workouts from API...');
+        console.log('📡 Loading workouts from data manager...');
+        console.log('🔍 Storage mode:', window.dataManager?.storageMode);
+        console.log('🔍 Is authenticated:', window.dataManager?.isAuthenticated);
         
-        // Use Firebase-enabled endpoint
-        const response = await fetch('/api/v3/firebase/workouts/', {
-            headers: {
-                'Authorization': window.dataManager?.getAuthToken ? 
-                    `Bearer ${window.dataManager.getAuthToken()}` : ''
-            }
-        });
+        // Use data manager like workout builder does
+        const workouts = await window.dataManager.getWorkouts();
+        console.log(`✅ Loaded ${workouts.length} workouts from ${window.dataManager.storageMode}`);
         
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        
-        window.ghostGym.workoutDatabase.all = data.workouts || [];
-        window.ghostGym.workoutDatabase.stats.total = data.total_count || data.workouts?.length || 0;
+        window.ghostGym.workoutDatabase.all = workouts;
+        window.ghostGym.workoutDatabase.stats.total = workouts.length;
         
         console.log(`✅ Loaded ${window.ghostGym.workoutDatabase.all.length} workouts`);
         
