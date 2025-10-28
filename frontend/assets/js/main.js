@@ -106,6 +106,31 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
+  // Close menu when clicking outside of it (anywhere on the page)
+  // Use capture phase to ensure this runs before other handlers
+  document.addEventListener('click', event => {
+    // Only handle on mobile/small screens when menu is open
+    if (window.Helpers.isSmallScreen()) {
+      const layoutMenu = document.getElementById('layout-menu');
+      const layoutOverlay = document.querySelector('.layout-overlay');
+      
+      if (layoutMenu && layoutMenu.classList.contains('menu-open')) {
+        // Check if click is outside the menu and not on a menu toggle button
+        const isClickInsideMenu = layoutMenu.contains(event.target);
+        const isClickOnToggle = event.target.closest('.layout-menu-toggle, .mobile-menu-toggle');
+        
+        if (!isClickInsideMenu && !isClickOnToggle) {
+          // Close menu
+          layoutMenu.classList.remove('menu-open');
+          if (layoutOverlay) {
+            layoutOverlay.classList.remove('active');
+          }
+          document.body.style.overflow = '';
+        }
+      }
+    }
+  }, true); // Use capture phase
+
   // Display menu toggle (layout-menu-toggle) on hover with delay
   let delay = function (elem, callback) {
     let timeout = null;
