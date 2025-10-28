@@ -328,28 +328,44 @@
             }
         };
 
-        // Initialize when Firebase auth is ready
-        document.addEventListener('DOMContentLoaded', function() {
-            // Wait for both Firebase and auth to be ready
-            const checkAndInit = () => {
-                if (window.firebaseReady && window.dataManager?.isAuthenticated?.()) {
-                    initWorkoutDatabase();
-                } else if (window.firebaseReady) {
-                    // Firebase is ready but not authenticated yet, wait for auth
-                    console.log('⏳ Waiting for authentication...');
-                    window.addEventListener('authStateChanged', function handler() {
-                        if (window.dataManager?.isAuthenticated?.()) {
-                            window.removeEventListener('authStateChanged', handler);
-                            initWorkoutDatabase();
-                        }
-                    });
-                } else {
-                    // Firebase not ready yet
-                    window.addEventListener('firebaseReady', checkAndInit, { once: true });
-                }
-            };
+        // Initialize page using same pattern as workout builder
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('📄 Workout Database Page - DOM Ready');
             
-            checkAndInit();
+            // Wait for Firebase to be ready
+            if (!window.firebaseReady) {
+                await new Promise(resolve => {
+                    window.addEventListener('firebaseReady', resolve, { once: true });
+                });
+            }
+            
+            // Wait for data manager to be ready
+            if (!window.dataManager) {
+                console.error('❌ Data manager not available');
+                return;
+            }
+            
+            // Wait for auth state to settle (important for Firebase mode)
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            // Initialize workout database
+            initWorkoutDatabase();
+            
+            console.log('✅ Workout Database page ready!');
+        });
+        
+        // Listen for auth state changes and reload workouts
+        window.addEventListener('authStateChanged', async (event) => {
+            const { user, isAuthenticated } = event.detail;
+            console.log('🔄 Auth state changed on workout database page, reloading workouts...');
+            
+            // Wait a moment for data manager to update its mode
+            await new Promise(resolve => setTimeout(resolve, 300));
+            
+            // Reload workouts with new auth state
+            if (window.loadWorkouts) {
+                await window.loadWorkouts();
+            }
         });
 
         function initWorkoutDatabase() {
