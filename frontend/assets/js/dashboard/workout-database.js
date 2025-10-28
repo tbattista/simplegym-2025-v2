@@ -17,18 +17,29 @@ async function loadWorkouts() {
     try {
         showWorkoutLoading();
         
-        console.log('📡 Loading workouts from data manager...');
-        console.log('🔍 Storage mode:', window.dataManager?.storageMode);
-        console.log('🔍 Is authenticated:', window.dataManager?.isAuthenticated);
+        console.log('📡 Loading workouts from shared global state...');
         
-        // Use data manager like workout builder does
-        const workouts = await window.dataManager.getWorkouts();
-        console.log(`✅ Loaded ${workouts.length} workouts from ${window.dataManager.storageMode}`);
+        // Use shared global workout data (loaded by workout builder or other pages)
+        // This ensures we have a single source of truth for workout data
+        if (!window.ghostGym || !window.ghostGym.workouts) {
+            console.log('⏳ Waiting for global workout data to be loaded...');
+            // If not loaded yet, load it now
+            if (window.dataManager && window.dataManager.getWorkouts) {
+                const workouts = await window.dataManager.getWorkouts();
+                window.ghostGym = window.ghostGym || {};
+                window.ghostGym.workouts = workouts;
+                console.log(`✅ Loaded ${workouts.length} workouts into global state`);
+            } else {
+                throw new Error('Data manager not available');
+            }
+        }
+        
+        // Use the shared global workout data
+        const workouts = window.ghostGym.workouts || [];
+        console.log(`✅ Using ${workouts.length} workouts from global state`);
         
         window.ghostGym.workoutDatabase.all = workouts;
         window.ghostGym.workoutDatabase.stats.total = workouts.length;
-        
-        console.log(`✅ Loaded ${window.ghostGym.workoutDatabase.all.length} workouts`);
         
         // Update total count display
         document.getElementById('totalWorkoutsCount').textContent = window.ghostGym.workoutDatabase.stats.total;
