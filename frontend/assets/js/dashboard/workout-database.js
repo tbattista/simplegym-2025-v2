@@ -17,32 +17,28 @@ async function loadWorkouts() {
     try {
         showWorkoutLoading();
         
-        console.log('📡 Loading workouts from shared global state...');
+        console.log('📡 Loading workouts from data manager...');
         
-        // Use shared global workout data (loaded by workout builder or other pages)
-        // This ensures we have a single source of truth for workout data
-        if (!window.ghostGym || !window.ghostGym.workouts) {
-            console.log('⏳ Waiting for global workout data to be loaded...');
-            // If not loaded yet, load it now
-            if (window.dataManager && window.dataManager.getWorkouts) {
-                const workouts = await window.dataManager.getWorkouts();
-                window.ghostGym = window.ghostGym || {};
-                window.ghostGym.workouts = workouts;
-                console.log(`✅ Loaded ${workouts.length} workouts into global state`);
-            } else {
-                throw new Error('Data manager not available');
-            }
+        // Always load fresh data from data manager to ensure we have the latest
+        if (!window.dataManager || !window.dataManager.getWorkouts) {
+            throw new Error('Data manager not available');
         }
         
-        // Use the shared global workout data
-        const workouts = window.ghostGym.workouts || [];
-        console.log(`✅ Using ${workouts.length} workouts from global state`);
+        // Load workouts directly from data manager
+        const workouts = await window.dataManager.getWorkouts();
+        console.log(`✅ Loaded ${workouts.length} workouts from data manager`);
         
+        // Update both global state and local state
+        window.ghostGym = window.ghostGym || {};
+        window.ghostGym.workouts = workouts;
         window.ghostGym.workoutDatabase.all = workouts;
         window.ghostGym.workoutDatabase.stats.total = workouts.length;
         
         // Update total count display
-        document.getElementById('totalWorkoutsCount').textContent = window.ghostGym.workoutDatabase.stats.total;
+        const totalCountEl = document.getElementById('totalWorkoutsCount');
+        if (totalCountEl) {
+            totalCountEl.textContent = window.ghostGym.workoutDatabase.stats.total;
+        }
         
         // Load tag options
         loadTagOptions();
