@@ -86,133 +86,46 @@
                   </h4>
                   <p class="text-muted mb-0">Browse and favorite from <span id="totalExercisesCount">2,583</span> exercises</p>
                 </div>
-                <div>
-                  <button type="button" class="btn btn-primary" id="addCustomExerciseBtn">
-                    <i class="bx bx-plus me-1"></i>
-                    Add Custom
-                  </button>
-                </div>
               </div>
 
-              <!-- Search Bar -->
+              <!-- Search Bar with Filter Button -->
               <div class="card mb-4">
                 <div class="card-body">
-                  <div class="input-group">
-                    <span class="input-group-text">
-                      <i class="bx bx-search"></i>
-                    </span>
-                    <input
-                      type="text"
-                      class="form-control"
-                      id="exerciseSearch"
-                      placeholder="Search exercises by name, muscle group, or equipment..."
-                      autocomplete="off">
-                    <button class="btn btn-outline-secondary" type="button" id="clearSearchBtn" style="display: none;">
-                      <i class="bx bx-x"></i>
-                    </button>
+                  <div class="row g-2">
+                    <div class="col">
+                      <div class="input-group">
+                        <span class="input-group-text">
+                          <i class="bx bx-search"></i>
+                        </span>
+                        <input
+                          type="text"
+                          class="form-control"
+                          id="exerciseSearch"
+                          placeholder="Search exercises by name, muscle group, or equipment..."
+                          autocomplete="off">
+                        <button class="btn btn-outline-secondary" type="button" id="clearSearchBtn" style="display: none;">
+                          <i class="bx bx-x"></i>
+                        </button>
+                      </div>
+                    </div>
+                    <div class="col-auto">
+                      <button
+                        class="btn btn-primary"
+                        type="button"
+                        data-bs-toggle="offcanvas"
+                        data-bs-target="#filtersOffcanvas"
+                        aria-controls="filtersOffcanvas">
+                        <i class="bx bx-filter-alt me-1"></i>
+                        Filters
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
 
               <div class="row g-4">
-                <!-- Filters Sidebar -->
-                <div class="col-lg-3">
-                  <div class="card">
-                    <div class="card-header">
-                      <h5 class="mb-0">
-                        <i class="bx bx-filter-alt me-2"></i>
-                        Filters
-                      </h5>
-                    </div>
-                    <div class="card-body">
-                      
-                      <!-- Sort By -->
-                      <div class="mb-4">
-                        <label class="form-label fw-semibold">Sort By</label>
-                        <select class="form-select" id="sortBySelect">
-                          <option value="name">Alphabetical (A-Z)</option>
-                          <option value="popularity">Most Popular</option>
-                          <option value="favorites">My Favorites First</option>
-                        </select>
-                      </div>
-
-                      <!-- Muscle Group Filter -->
-                      <div class="mb-4">
-                        <label class="form-label fw-semibold">Muscle Group</label>
-                        <select class="form-select" id="muscleGroupFilter">
-                          <option value="">All Muscle Groups</option>
-                          <!-- Options loaded dynamically -->
-                        </select>
-                      </div>
-
-                      <!-- Equipment Filter -->
-                      <div class="mb-4">
-                        <label class="form-label fw-semibold">Equipment</label>
-                        <select class="form-select" id="equipmentFilter">
-                          <option value="">All Equipment</option>
-                          <!-- Options loaded dynamically -->
-                        </select>
-                      </div>
-
-                      <!-- Difficulty Filter -->
-                      <div class="mb-4">
-                        <label class="form-label fw-semibold">Difficulty</label>
-                        <select class="form-select" id="difficultyFilter">
-                          <option value="">All Levels</option>
-                          <option value="Beginner">Beginner</option>
-                          <option value="Intermediate">Intermediate</option>
-                          <option value="Advanced">Advanced</option>
-                        </select>
-                      </div>
-
-                      <!-- Show Options -->
-                      <div class="mb-3">
-                        <label class="form-label fw-semibold">Show</label>
-                        <div class="form-check">
-                          <input class="form-check-input" type="checkbox" id="showFavoritesOnly">
-                          <label class="form-check-label" for="showFavoritesOnly">
-                            My Favorites Only
-                          </label>
-                        </div>
-                        <div class="form-check">
-                          <input class="form-check-input" type="checkbox" id="showCustomOnly">
-                          <label class="form-check-label" for="showCustomOnly">
-                            Custom Exercises Only
-                          </label>
-                        </div>
-                      </div>
-
-                      <!-- Clear Filters -->
-                      <button type="button" class="btn btn-outline-secondary w-100" id="clearFiltersBtn">
-                        <i class="bx bx-x me-1"></i>
-                        Clear All Filters
-                      </button>
-
-                    </div>
-                  </div>
-
-                  <!-- Stats Card -->
-                  <div class="card mt-4">
-                    <div class="card-body">
-                      <h6 class="mb-3">Your Stats</h6>
-                      <div class="d-flex justify-content-between mb-2">
-                        <span class="text-muted">Favorites:</span>
-                        <span class="fw-semibold" id="favoritesCount">0</span>
-                      </div>
-                      <div class="d-flex justify-content-between mb-2">
-                        <span class="text-muted">Custom:</span>
-                        <span class="fw-semibold" id="customCount">0</span>
-                      </div>
-                      <div class="d-flex justify-content-between">
-                        <span class="text-muted">Showing:</span>
-                        <span class="fw-semibold" id="showingCount">0</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Exercise List -->
-                <div class="col-lg-9">
+                <!-- Exercise List (Full Width) -->
+                <div class="col-12">
                   <div class="card">
                     <!-- Top Bar with Entries Per Page -->
                     <div class="card-header d-flex justify-content-between align-items-center border-bottom">
@@ -320,6 +233,113 @@
       <div class="layout-overlay layout-menu-toggle"></div>
     </div>
     <!-- / Layout wrapper -->
+
+    <!-- Filters Offcanvas (Bottom) -->
+    <div class="offcanvas offcanvas-bottom" tabindex="-1" id="filtersOffcanvas" aria-labelledby="filtersOffcanvasLabel" style="height: 70vh;">
+      <div class="offcanvas-header">
+        <h5 class="offcanvas-title" id="filtersOffcanvasLabel">
+          <i class="bx bx-filter-alt me-2"></i>
+          Filters
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+      </div>
+      <div class="offcanvas-body">
+        <div class="row">
+          <!-- Left Column -->
+          <div class="col-md-6">
+            <!-- Sort By -->
+            <div class="mb-4">
+              <label class="form-label fw-semibold">Sort By</label>
+              <select class="form-select" id="sortBySelect">
+                <option value="name">Alphabetical (A-Z)</option>
+                <option value="popularity">Most Popular</option>
+                <option value="favorites">My Favorites First</option>
+              </select>
+            </div>
+
+            <!-- Muscle Group Filter -->
+            <div class="mb-4">
+              <label class="form-label fw-semibold">Muscle Group</label>
+              <select class="form-select" id="muscleGroupFilter">
+                <option value="">All Muscle Groups</option>
+                <!-- Options loaded dynamically -->
+              </select>
+            </div>
+
+            <!-- Equipment Filter -->
+            <div class="mb-4">
+              <label class="form-label fw-semibold">Equipment</label>
+              <select class="form-select" id="equipmentFilter">
+                <option value="">All Equipment</option>
+                <!-- Options loaded dynamically -->
+              </select>
+            </div>
+          </div>
+
+          <!-- Right Column -->
+          <div class="col-md-6">
+            <!-- Difficulty Filter -->
+            <div class="mb-4">
+              <label class="form-label fw-semibold">Difficulty</label>
+              <select class="form-select" id="difficultyFilter">
+                <option value="">All Levels</option>
+                <option value="Beginner">Beginner</option>
+                <option value="Intermediate">Intermediate</option>
+                <option value="Advanced">Advanced</option>
+              </select>
+            </div>
+
+            <!-- Show Options -->
+            <div class="mb-4">
+              <label class="form-label fw-semibold">Show</label>
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="showFavoritesOnly">
+                <label class="form-check-label" for="showFavoritesOnly">
+                  My Favorites Only
+                </label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="showCustomOnly">
+                <label class="form-check-label" for="showCustomOnly">
+                  Custom Exercises Only
+                </label>
+              </div>
+            </div>
+
+            <!-- Stats -->
+            <div class="mb-4">
+              <label class="form-label fw-semibold">Your Stats</label>
+              <div class="d-flex justify-content-between mb-2">
+                <span class="text-muted">Favorites:</span>
+                <span class="fw-semibold" id="favoritesCount">0</span>
+              </div>
+              <div class="d-flex justify-content-between mb-2">
+                <span class="text-muted">Custom:</span>
+                <span class="fw-semibold" id="customCount">0</span>
+              </div>
+              <div class="d-flex justify-content-between">
+                <span class="text-muted">Showing:</span>
+                <span class="fw-semibold" id="showingCount">0</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="row mt-3">
+          <div class="col-12">
+            <button type="button" class="btn btn-outline-secondary w-100 mb-2" id="clearFiltersBtn">
+              <i class="bx bx-x me-1"></i>
+              Clear All Filters
+            </button>
+            <button type="button" class="btn btn-primary w-100" data-bs-dismiss="offcanvas">
+              <i class="bx bx-check me-1"></i>
+              Apply Filters
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <!-- Exercise Detail Modal -->
     <div class="modal fade" id="exerciseDetailModal" tabindex="-1">
@@ -481,7 +501,6 @@
             document.getElementById('showCustomOnly')?.addEventListener('change', filterExercises);
             document.getElementById('clearFiltersBtn')?.addEventListener('click', clearExerciseFilters);
             document.getElementById('entriesPerPageSelect')?.addEventListener('change', handleEntriesPerPageChange);
-            document.getElementById('addCustomExerciseBtn')?.addEventListener('click', () => showCustomExerciseModal());
             document.getElementById('saveCustomExerciseBtn')?.addEventListener('click', saveCustomExercise);
             
             // Set up search functionality
