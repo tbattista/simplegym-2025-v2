@@ -6,7 +6,14 @@ Handles complete CRUD operations for programs and workouts with real-time sync s
 import logging
 from typing import Dict, List, Optional, Any
 from datetime import datetime
-from firebase_admin import firestore
+
+try:
+    from firebase_admin import firestore
+    FIRESTORE_AVAILABLE = True
+except ImportError:
+    FIRESTORE_AVAILABLE = False
+    firestore = None
+
 from ..config.firebase_config import get_firebase_app
 from ..models import (
     Program, WorkoutTemplate, CreateWorkoutRequest, CreateProgramRequest,
@@ -24,6 +31,13 @@ class FirestoreDataService:
     
     def __init__(self):
         """Initialize Firestore data service"""
+        if not FIRESTORE_AVAILABLE:
+            logger.warning("Firebase Admin SDK not available - Firestore data service disabled")
+            self.db = None
+            self.available = False
+            self.app = None
+            return
+        
         try:
             self.app = get_firebase_app()
             if self.app:

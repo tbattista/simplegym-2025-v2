@@ -6,7 +6,14 @@ Handles exercise database operations including CSV import, search, and CRUD oper
 import logging
 from typing import List, Optional, Dict, Any, Set
 from datetime import datetime
-from firebase_admin import firestore
+
+try:
+    from firebase_admin import firestore
+    FIRESTORE_AVAILABLE = True
+except ImportError:
+    FIRESTORE_AVAILABLE = False
+    firestore = None
+
 from ..config.firebase_config import get_firebase_app
 from ..models import Exercise, CreateExerciseRequest, ExerciseListResponse, ExerciseSearchResponse
 
@@ -21,6 +28,13 @@ class ExerciseService:
     
     def __init__(self):
         """Initialize Exercise service"""
+        if not FIRESTORE_AVAILABLE:
+            logger.warning("Firebase Admin SDK not available - Exercise service disabled")
+            self.db = None
+            self.available = False
+            self.app = None
+            return
+        
         try:
             self.app = get_firebase_app()
             if self.app:
