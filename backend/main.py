@@ -122,6 +122,19 @@ async def serve_exercise_database():
             status_code=404
         )
 
+@app.get("/workout-database", response_class=HTMLResponse)
+@app.get("/workout-database.html", response_class=HTMLResponse)
+async def serve_workout_database():
+    """Serve the Workout Library page"""
+    try:
+        with open("frontend/workout-database.html", "r", encoding="utf-8") as f:
+            return HTMLResponse(content=f.read())
+    except FileNotFoundError:
+        return HTMLResponse(
+            content="<h1>Workout Library not found</h1><p>Please ensure frontend/workout-database.html exists</p>",
+            status_code=404
+        )
+
 
 if __name__ == "__main__":
     import uvicorn

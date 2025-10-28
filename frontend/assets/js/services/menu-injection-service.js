@@ -157,6 +157,7 @@ class MenuInjectionService {
         
         // Map filenames to page identifiers
         if (filename.includes('programs')) return 'programs';
+        if (filename.includes('workout-database')) return 'workout-database';
         if (filename.includes('workouts')) return 'workouts';
         if (filename.includes('exercise-database')) return 'exercises';
         if (filename.includes('index') || filename === '') return 'home';
