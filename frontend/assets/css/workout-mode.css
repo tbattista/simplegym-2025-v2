@@ -1,0 +1,471 @@
+/**
+ * Ghost Gym - Workout Mode Styles
+ * Clean workout execution interface with rest timers
+ * @version 1.0.0
+ * @date 2025-01-29
+ */
+
+/* ============================================
+   WORKOUT MODE HEADER
+   ============================================ */
+
+.workout-mode-header {
+    margin-bottom: 2rem;
+}
+
+.workout-mode-header h4 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--bs-heading-color);
+}
+
+.workout-mode-header #changeWorkoutLink {
+    text-decoration: none;
+    font-size: 0.875rem;
+    transition: color 0.2s ease;
+}
+
+.workout-mode-header #changeWorkoutLink:hover {
+    color: var(--bs-primary) !important;
+}
+
+/* ============================================
+   EXERCISE CARDS
+   ============================================ */
+
+.exercise-card {
+    margin-bottom: 1rem;
+    border: 2px solid var(--bs-border-color);
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.exercise-card:hover {
+    border-color: var(--bs-primary);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.exercise-card.expanded {
+    border-color: var(--bs-primary);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+    cursor: default;
+}
+
+.exercise-card-header {
+    padding: 1rem;
+    background: var(--bs-card-bg);
+    border-bottom: 1px solid var(--bs-border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background 0.2s ease;
+}
+
+.exercise-card:not(.expanded) .exercise-card-header:hover {
+    background: var(--bs-gray-100);
+}
+
+.exercise-card.expanded .exercise-card-header {
+    background: rgba(var(--bs-primary-rgb), 0.05);
+    cursor: default;
+}
+
+.exercise-card-summary {
+    flex: 1;
+}
+
+.exercise-card-summary h6 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--bs-heading-color);
+}
+
+.exercise-card.expanded .exercise-card-summary h6 {
+    color: var(--bs-primary);
+}
+
+.exercise-card-meta {
+    font-size: 0.9rem;
+    color: var(--bs-secondary);
+    margin-bottom: 0.25rem;
+}
+
+.exercise-card-alts {
+    font-size: 0.85rem;
+    color: var(--bs-secondary);
+    font-style: italic;
+}
+
+.exercise-card-alts span {
+    display: inline-block;
+    margin-right: 1rem;
+}
+
+.expand-icon {
+    font-size: 1.5rem;
+    color: var(--bs-secondary);
+    transition: transform 0.3s ease;
+}
+
+.exercise-card.expanded .expand-icon {
+    transform: rotate(180deg);
+    color: var(--bs-primary);
+}
+
+.exercise-card-body {
+    padding: 1.5rem;
+    animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Bonus Exercise Badge */
+.exercise-card.bonus-exercise .exercise-card-header {
+    background: rgba(var(--bs-success-rgb), 0.05);
+}
+
+.exercise-card.bonus-exercise .exercise-card-summary h6::before {
+    content: "🎁 BONUS: ";
+    color: var(--bs-success);
+}
+
+/* ============================================
+   REST TIMER COMPONENT
+   ============================================ */
+
+.rest-timer-container {
+    background: var(--bs-gray-100);
+    border-radius: var(--bs-border-radius);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.rest-timer {
+    text-align: center;
+}
+
+/* Timer Label */
+.rest-timer-label {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--bs-heading-color);
+}
+
+/* Timer Display */
+.rest-timer-display {
+    margin: 1rem 0;
+}
+
+.rest-timer-display .display-4 {
+    font-size: 3rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.05em;
+}
+
+/* Timer States */
+.rest-timer-ready .rest-timer-label {
+    color: var(--bs-primary);
+}
+
+.rest-timer-counting .rest-timer-display {
+    color: var(--bs-success);
+}
+
+.rest-timer-counting .rest-timer-display.warning {
+    color: var(--bs-warning);
+    animation: pulse 1s infinite;
+}
+
+.rest-timer-counting .rest-timer-display.danger {
+    color: var(--bs-danger);
+    animation: pulse 0.5s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.8;
+        transform: scale(1.05);
+    }
+}
+
+.rest-timer-paused .rest-timer-display {
+    color: var(--bs-warning);
+}
+
+.rest-timer-done .rest-timer-label {
+    color: var(--bs-success);
+    font-size: 1.2rem;
+}
+
+/* Timer Buttons */
+.rest-timer .btn-group {
+    gap: 0.5rem;
+}
+
+.rest-timer .btn {
+    min-width: 100px;
+}
+
+/* ============================================
+   STICKY BOTTOM BAR
+   ============================================ */
+
+.workout-mode-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--bs-body-bg);
+    border-top: 2px solid var(--bs-border-color);
+    padding: 1rem;
+    z-index: 1000;
+    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
+    
+    /* Adjust for sidebar on desktop */
+    margin-left: var(--layout-menu-width, 260px);
+    transition: margin-left 0.3s ease;
+}
+
+/* When menu is collapsed */
+.layout-menu-collapsed .workout-mode-footer {
+    margin-left: var(--layout-menu-collapsed-width, 80px);
+}
+
+/* Add padding to content to prevent overlap with sticky footer */
+.workout-mode-footer ~ .content-wrapper .container-xxl {
+    padding-bottom: 80px;
+}
+
+/* ============================================
+   EXERCISE DETAILS
+   ============================================ */
+
+.exercise-card-body h5 {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--bs-heading-color);
+}
+
+.exercise-card-body .badge {
+    font-size: 0.9rem;
+    padding: 0.5rem 0.75rem;
+}
+
+.exercise-card-body .alert {
+    font-size: 0.9rem;
+    padding: 0.75rem 1rem;
+}
+
+.exercise-card-body .text-muted.small {
+    font-size: 0.875rem;
+}
+
+/* ============================================
+   LOADING & ERROR STATES
+   ============================================ */
+
+#workoutLoadingState,
+#workoutErrorState {
+    min-height: 400px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+#workoutErrorState i {
+    font-size: 4rem;
+}
+
+/* ============================================
+   DARK THEME ADJUSTMENTS
+   ============================================ */
+
+[data-bs-theme="dark"] .exercise-card {
+    background: var(--bs-gray-900);
+    border-color: var(--bs-gray-700);
+}
+
+[data-bs-theme="dark"] .exercise-card:hover {
+    border-color: var(--bs-primary);
+    background: var(--bs-gray-800);
+}
+
+[data-bs-theme="dark"] .exercise-card-header {
+    background: var(--bs-gray-900);
+    border-color: var(--bs-gray-700);
+}
+
+[data-bs-theme="dark"] .exercise-card:not(.expanded) .exercise-card-header:hover {
+    background: var(--bs-gray-800);
+}
+
+[data-bs-theme="dark"] .rest-timer-container {
+    background: var(--bs-gray-800);
+}
+
+[data-bs-theme="dark"] .workout-mode-footer {
+    background: var(--bs-gray-900);
+    border-color: var(--bs-gray-700);
+}
+
+/* ============================================
+   MOBILE RESPONSIVE
+   ============================================ */
+
+@media (max-width: 1199px) {
+    /* Remove sidebar offset on mobile */
+    .workout-mode-footer {
+        margin-left: 0;
+    }
+}
+
+@media (max-width: 768px) {
+    /* Workout Mode Header */
+    .workout-mode-header h4 {
+        font-size: 1.25rem;
+    }
+    
+    .workout-mode-header #changeWorkoutLink {
+        font-size: 0.8rem;
+    }
+    
+    /* Exercise Cards */
+    .exercise-card {
+        margin-bottom: 0.75rem;
+    }
+    
+    .exercise-card-header {
+        padding: 0.875rem;
+    }
+    
+    .exercise-card-summary h6 {
+        font-size: 1rem;
+    }
+    
+    .exercise-card-meta {
+        font-size: 0.85rem;
+    }
+    
+    .exercise-card-alts {
+        font-size: 0.8rem;
+    }
+    
+    .exercise-card-alts span {
+        display: block;
+        margin-right: 0;
+        margin-bottom: 0.25rem;
+    }
+    
+    .exercise-card-body {
+        padding: 1rem;
+    }
+    
+    /* Rest Timer */
+    .rest-timer-container {
+        padding: 1rem;
+    }
+    
+    .rest-timer-display .display-4 {
+        font-size: 2.5rem;
+    }
+    
+    .rest-timer .btn {
+        min-width: 80px;
+        font-size: 0.875rem;
+    }
+    
+    /* Bottom Bar */
+    .workout-mode-footer {
+        padding: 0.75rem 1rem;
+    }
+    
+    .workout-mode-footer .btn {
+        font-size: 0.875rem;
+        padding: 0.5rem 0.75rem;
+    }
+    
+    /* Content padding */
+    .workout-mode-footer ~ .content-wrapper .container-xxl {
+        padding-bottom: 70px;
+    }
+}
+
+@media (max-width: 576px) {
+    /* Extra small screens */
+    .workout-mode-header h4 {
+        font-size: 1.1rem;
+    }
+    
+    .exercise-card-summary h6 {
+        font-size: 0.95rem;
+    }
+    
+    .rest-timer-display .display-4 {
+        font-size: 2rem;
+    }
+    
+    .workout-mode-footer .btn {
+        font-size: 0.8rem;
+        padding: 0.4rem 0.6rem;
+    }
+    
+    .workout-mode-footer .btn i {
+        font-size: 1rem;
+    }
+}
+
+/* ============================================
+   ACCESSIBILITY
+   ============================================ */
+
+/* Focus states */
+.exercise-card:focus-visible {
+    outline: 2px solid var(--bs-primary);
+    outline-offset: 2px;
+}
+
+.rest-timer .btn:focus-visible {
+    box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.5);
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    .exercise-card,
+    .expand-icon,
+    .exercise-card-body {
+        animation: none;
+        transition: none;
+    }
+    
+    .rest-timer-counting .rest-timer-display.warning,
+    .rest-timer-counting .rest-timer-display.danger {
+        animation: none;
+    }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+    .exercise-card {
+        border-width: 3px;
+    }
+    
+    .workout-mode-footer {
+        border-top-width: 3px;
+    }
+}

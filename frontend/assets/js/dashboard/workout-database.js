@@ -373,7 +373,7 @@ function createWorkoutTableRow(workout) {
                     <button class="btn btn-outline-primary" onclick="editWorkout('${workout.id}')" title="Edit Workout">
                         <i class="bx bx-edit"></i>
                     </button>
-                    <button class="btn btn-outline-secondary" onclick="doWorkout('${workout.id}')" title="Do Workout" disabled>
+                    <button class="btn btn-outline-secondary" onclick="doWorkout('${workout.id}')" title="Start Workout">
                         <i class="bx bx-play"></i>
                     </button>
                     <button class="btn btn-outline-info" onclick="viewWorkoutDetails('${workout.id}')" title="View Details">
@@ -501,17 +501,11 @@ function editWorkout(workoutId) {
 }
 
 /**
- * Do workout - Coming soon
+ * Do workout - Navigate to workout mode
  */
 function doWorkout(workoutId) {
-    if (window.showAlert) {
-        window.showAlert('Workout execution feature coming soon!', 'info');
-    } else {
-        alert('Workout execution feature coming soon!');
-    }
-    
-    console.log('🏋️ Do workout (coming soon):', workoutId);
-    // Future: Navigate to workout-do.html?id=${workoutId}
+    console.log('🏋️ Starting workout:', workoutId);
+    window.location.href = `workout-mode.html?id=${workoutId}`;
 }
 
 /**
@@ -643,6 +637,7 @@ function populateWorkoutDetailModal(workout) {
     };
     
     document.getElementById('doWorkoutFromModal').onclick = () => {
+        bootstrap.Modal.getInstance(document.getElementById('workoutDetailModal')).hide();
         doWorkout(workout.id);
     };
 }
