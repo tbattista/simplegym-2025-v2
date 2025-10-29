@@ -91,34 +91,29 @@
               <!-- Search Bar with Filter Button -->
               <div class="card mb-4">
                 <div class="card-body">
-                  <div class="row g-2">
-                    <div class="col">
-                      <div class="input-group">
-                        <span class="input-group-text">
-                          <i class="bx bx-search"></i>
-                        </span>
-                        <input
-                          type="text"
-                          class="form-control"
-                          id="exerciseSearch"
-                          placeholder="Search exercises by name, muscle group, or equipment..."
-                          autocomplete="off">
-                        <button class="btn btn-outline-secondary" type="button" id="clearSearchBtn" style="display: none;">
-                          <i class="bx bx-x"></i>
-                        </button>
-                      </div>
-                    </div>
-                    <div class="col-auto">
-                      <button
-                        class="btn btn-primary"
-                        type="button"
-                        data-bs-toggle="offcanvas"
-                        data-bs-target="#filtersOffcanvas"
-                        aria-controls="filtersOffcanvas">
-                        <i class="bx bx-filter-alt me-1"></i>
-                        Filters
-                      </button>
-                    </div>
+                  <div class="input-group" style="flex-wrap: nowrap;">
+                    <span class="input-group-text">
+                      <i class="bx bx-search"></i>
+                    </span>
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="exerciseSearch"
+                      placeholder="Search exercises by name, muscle group, or equipment..."
+                      autocomplete="off"
+                      style="min-width: 0;">
+                    <button class="btn btn-outline-secondary" type="button" id="clearSearchBtn" style="display: none;">
+                      <i class="bx bx-x"></i>
+                    </button>
+                    <button
+                      class="btn btn-primary"
+                      type="button"
+                      data-bs-toggle="offcanvas"
+                      data-bs-target="#filtersOffcanvas"
+                      aria-controls="filtersOffcanvas"
+                      title="Filters">
+                      <i class="bx bx-filter-alt"></i>
+                    </button>
                   </div>
                 </div>
               </div>

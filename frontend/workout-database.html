@@ -86,46 +86,37 @@
                 <p class="text-muted mb-0">Browse and manage your <span id="totalWorkoutsCount">0</span> workout templates</p>
               </div>
 
-              <div class="row g-4">
-                <!-- Compact Filters -->
-                <div class="col-12">
-                  <div class="card">
-                    <div class="card-body py-3">
-                      <div class="d-flex flex-wrap gap-2 align-items-center">
-                        <!-- Search Box -->
-                        <div class="flex-grow-1" style="min-width: 200px; max-width: 400px;">
-                          <input type="text" class="form-control" id="searchInput" placeholder="Search workouts...">
-                        </div>
-                        
-                        <!-- Sort By Button with Popover -->
-                        <button type="button" class="btn btn-outline-secondary" id="sortByBtn"
-                                data-bs-toggle="popover" data-bs-placement="bottom" data-bs-html="true"
-                                data-bs-trigger="click" data-bs-custom-class="sort-popover">
-                          <i class="bx bx-sort me-1"></i>
-                          <span id="sortByText">Recently Modified</span>
-                        </button>
-                        
-                        <!-- Tags Button with Popover -->
-                        <button type="button" class="btn btn-outline-secondary" id="tagsBtn"
-                                data-bs-toggle="popover" data-bs-placement="bottom" data-bs-html="true"
-                                data-bs-trigger="click" data-bs-custom-class="tags-popover">
-                          <i class="bx bx-purchase-tag me-1"></i>
-                          <span id="tagsText">All Tags</span>
-                        </button>
-                        
-                        <!-- Clear Filters -->
-                        <button type="button" class="btn btn-outline-secondary" id="clearFiltersBtn" title="Clear Filters">
-                          <i class="bx bx-x"></i>
-                        </button>
-                        
-                        <!-- Stats Display -->
-                        <div class="ms-auto text-muted small">
-                          Showing <span class="fw-semibold" id="showingCount">0</span> of <span class="fw-semibold" id="totalCount">0</span> workouts
-                        </div>
-                      </div>
-                    </div>
+              <!-- Search Bar with Filter Button -->
+              <div class="card mb-4">
+                <div class="card-body">
+                  <div class="input-group" style="flex-wrap: nowrap;">
+                    <span class="input-group-text">
+                      <i class="bx bx-search"></i>
+                    </span>
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="searchInput"
+                      placeholder="Search workouts by name or tags..."
+                      autocomplete="off"
+                      style="min-width: 0;">
+                    <button class="btn btn-outline-secondary" type="button" id="clearSearchBtn" style="display: none;">
+                      <i class="bx bx-x"></i>
+                    </button>
+                    <button
+                      class="btn btn-primary"
+                      type="button"
+                      data-bs-toggle="offcanvas"
+                      data-bs-target="#filtersOffcanvas"
+                      aria-controls="filtersOffcanvas"
+                      title="Filters">
+                      <i class="bx bx-filter-alt"></i>
+                    </button>
                   </div>
                 </div>
+              </div>
+
+              <div class="row g-4">
 
                 <!-- Workout List -->
                 <div class="col-12">
@@ -247,6 +238,73 @@
       <div class="layout-overlay layout-menu-toggle"></div>
     </div>
     <!-- / Layout wrapper -->
+
+    <!-- Filters Offcanvas (Bottom) -->
+    <div class="offcanvas offcanvas-bottom" tabindex="-1" id="filtersOffcanvas" aria-labelledby="filtersOffcanvasLabel" style="height: 60vh;">
+      <div class="offcanvas-header">
+        <h5 class="offcanvas-title" id="filtersOffcanvasLabel">
+          <i class="bx bx-filter-alt me-2"></i>
+          Filters
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+      </div>
+      <div class="offcanvas-body">
+        <div class="row">
+          <!-- Left Column -->
+          <div class="col-md-6">
+            <!-- Sort By -->
+            <div class="mb-4">
+              <label class="form-label fw-semibold">Sort By</label>
+              <select class="form-select" id="sortBySelect">
+                <option value="modified_date">Recently Modified</option>
+                <option value="created_date">Recently Created</option>
+                <option value="name">Name (A-Z)</option>
+                <option value="exercise_count">Most Exercises</option>
+              </select>
+            </div>
+
+            <!-- Tags Filter -->
+            <div class="mb-4">
+              <label class="form-label fw-semibold">Tags</label>
+              <div id="tagsFilterContainer">
+                <!-- Tags will be loaded dynamically -->
+                <p class="text-muted small">Loading tags...</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column -->
+          <div class="col-md-6">
+            <!-- Stats -->
+            <div class="mb-4">
+              <label class="form-label fw-semibold">Your Stats</label>
+              <div class="d-flex justify-content-between mb-2">
+                <span class="text-muted">Total Workouts:</span>
+                <span class="fw-semibold" id="totalCount">0</span>
+              </div>
+              <div class="d-flex justify-content-between">
+                <span class="text-muted">Showing:</span>
+                <span class="fw-semibold" id="showingCount">0</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="row mt-3">
+          <div class="col-12">
+            <button type="button" class="btn btn-outline-secondary w-100 mb-2" id="clearFiltersBtn">
+              <i class="bx bx-x me-1"></i>
+              Clear All Filters
+            </button>
+            <button type="button" class="btn btn-primary w-100" data-bs-dismiss="offcanvas">
+              <i class="bx bx-check me-1"></i>
+              Apply Filters
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <!-- Workout Detail Modal -->
     <div class="modal fade" id="workoutDetailModal" tabindex="-1">
@@ -372,13 +430,45 @@
             console.log('🚀 Initializing Workout Database Page');
             
             // Set up event listeners
-            document.getElementById('searchInput')?.addEventListener('input', filterWorkouts);
             document.getElementById('clearFiltersBtn')?.addEventListener('click', clearFilters);
             document.getElementById('entriesPerPageSelect')?.addEventListener('change', handleEntriesPerPageChange);
             document.getElementById('createWorkoutFromEmpty')?.addEventListener('click', createNewWorkout);
             document.getElementById('createNewWorkoutBtnBottom')?.addEventListener('click', createNewWorkout);
+            document.getElementById('sortBySelect')?.addEventListener('change', filterWorkouts);
             
-            // Load workouts (this will also initialize popovers)
+            // Set up search functionality
+            const searchInput = document.getElementById('searchInput');
+            const clearSearchBtn = document.getElementById('clearSearchBtn');
+            
+            if (searchInput) {
+                // Real-time search with debouncing
+                let searchTimeout;
+                searchInput.addEventListener('input', function() {
+                    clearTimeout(searchTimeout);
+                    
+                    // Show/hide clear button
+                    if (clearSearchBtn) {
+                        clearSearchBtn.style.display = this.value.trim() ? 'block' : 'none';
+                    }
+                    
+                    // Debounce search by 300ms
+                    searchTimeout = setTimeout(() => {
+                        filterWorkouts();
+                    }, 300);
+                });
+                
+                // Clear search button
+                if (clearSearchBtn) {
+                    clearSearchBtn.addEventListener('click', function() {
+                        searchInput.value = '';
+                        this.style.display = 'none';
+                        filterWorkouts();
+                        searchInput.focus();
+                    });
+                }
+            }
+            
+            // Load workouts
             loadWorkouts();
             
             console.log('✅ Workout Database initialized');
