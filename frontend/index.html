@@ -39,6 +39,9 @@
 
     <!-- Custom Ghost Gym CSS -->
     <link rel="stylesheet" href="/static/assets/css/ghost-gym-custom.css" />
+    
+    <!-- Landing Page CSS -->
+    <link rel="stylesheet" href="/static/assets/css/landing-page.css" />
 
     <!-- Helpers -->
     <script src="/static/assets/vendor/js/helpers.js"></script>
@@ -231,94 +234,95 @@
                 </div>
               </div>
 
-              <!-- Unauthenticated Welcome Page -->
+              <!-- Unauthenticated Landing Page -->
               <div id="unauthenticatedWelcome" style="display: none;">
-                <div class="row justify-content-center">
-                  <div class="col-lg-8">
-                    <!-- Hero Section -->
-                    <div class="card mb-4">
-                      <div class="card-body text-center py-5">
-                        <div class="mb-4">
-                          <i class="bx bx-dumbbell" style="font-size: 4rem; color: var(--bs-primary);"></i>
-                        </div>
-                        <h1 class="mb-3">Welcome to Ghost Gym</h1>
-                        <p class="lead text-muted mb-4">
-                          Your complete workout program management system
-                        </p>
-                        <div class="d-flex gap-2 justify-content-center flex-wrap">
-                          <button class="btn btn-primary btn-lg" onclick="showAuthModal('signin')">
-                            <i class="bx bx-log-in me-2"></i>Sign In
-                          </button>
-                          <button class="btn btn-outline-primary btn-lg" onclick="showAuthModal('signup')">
-                            <i class="bx bx-user-plus me-2"></i>Create Account
-                          </button>
-                        </div>
-                      </div>
-                    </div>
+                
+                <!-- Hero Card -->
+                <div class="card landing-hero-card mb-4">
+                  <div class="card-body text-center py-5">
+                    <h1 class="mb-2">
+                      <i class="bx bx-dumbbell me-2"></i>
+                      Ghost Gym
+                    </h1>
+                    <p class="text-muted mb-0">Create and manage your workout programs</p>
+                  </div>
+                </div>
 
-                    <!-- Features -->
-                    <div class="row g-3 mb-4">
-                      <div class="col-md-4">
-                        <div class="card h-100">
-                          <div class="card-body text-center">
-                            <div class="avatar avatar-lg mx-auto mb-3">
-                              <span class="avatar-initial rounded bg-label-primary">
-                                <i class="bx bx-dumbbell bx-lg"></i>
-                              </span>
-                            </div>
-                            <h5 class="mb-2">Build Workouts</h5>
-                            <p class="text-muted small mb-0">
-                              Create custom workout templates with exercise groups and alternatives
-                            </p>
+                <!-- Feature Steps Section -->
+                <div class="row g-4 mb-4">
+                  
+                  <!-- Step 1: Start with a workout (Clickable) -->
+                  <div class="col-12">
+                    <a href="workouts.html" class="card landing-feature-card landing-feature-link">
+                      <div class="card-body">
+                        <div class="landing-feature-content">
+                          <div class="landing-feature-text">
+                            <h5 class="mb-1">Start with a workout</h5>
+                            <p class="text-muted small mb-0">Create your first workout template with exercises, sets, and reps</p>
+                          </div>
+                          <div class="landing-feature-icon">
+                            <i class="bx bx-dumbbell"></i>
                           </div>
                         </div>
                       </div>
-                      <div class="col-md-4">
-                        <div class="card h-100">
-                          <div class="card-body text-center">
-                            <div class="avatar avatar-lg mx-auto mb-3">
-                              <span class="avatar-initial rounded bg-label-success">
-                                <i class="bx bx-folder bx-lg"></i>
-                              </span>
-                            </div>
-                            <h5 class="mb-2">Design Programs</h5>
-                            <p class="text-muted small mb-0">
-                              Assemble workouts into complete training programs
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                      <div class="col-md-4">
-                        <div class="card h-100">
-                          <div class="card-body text-center">
-                            <div class="avatar avatar-lg mx-auto mb-3">
-                              <span class="avatar-initial rounded bg-label-info">
-                                <i class="bx bx-list-ul bx-lg"></i>
-                              </span>
-                            </div>
-                            <h5 class="mb-2">Exercise Database</h5>
-                            <p class="text-muted small mb-0">
-                              Access a comprehensive library of exercises with details
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+                    </a>
+                  </div>
 
-                    <!-- Get Started -->
-                    <div class="card">
-                      <div class="card-body text-center py-4">
-                        <h5 class="mb-3">Ready to get started?</h5>
-                        <p class="text-muted mb-4">
-                          Sign in to start building your first workout program
-                        </p>
-                        <button class="btn btn-primary" onclick="showAuthModal('signin')">
-                          <i class="bx bx-log-in me-2"></i>Sign In to Continue
-                        </button>
+                  <!-- Step 2: Build into programs (Clickable) -->
+                  <div class="col-12">
+                    <a href="programs.html" class="card landing-feature-card landing-feature-link">
+                      <div class="card-body">
+                        <div class="landing-feature-content">
+                          <div class="landing-feature-text">
+                            <h5 class="mb-1">Build into programs</h5>
+                            <p class="text-muted small mb-0">Combine multiple workouts to create complete training programs</p>
+                          </div>
+                          <div class="landing-feature-icon">
+                            <i class="bx bx-folder"></i>
+                          </div>
+                        </div>
+                      </div>
+                    </a>
+                  </div>
+
+                  <!-- Step 3: Share with friends (Not clickable) -->
+                  <div class="col-12">
+                    <div class="card landing-feature-card">
+                      <div class="card-body">
+                        <div class="landing-feature-content">
+                          <div class="landing-feature-text">
+                            <h5 class="mb-1">Share with friends</h5>
+                            <p class="text-muted small mb-0">Export and share your programs with training partners</p>
+                          </div>
+                          <div class="landing-feature-icon">
+                            <i class="bx bx-share-alt"></i>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
+
                 </div>
+
+                <!-- CTA Card -->
+                <div class="card landing-cta-card">
+                  <div class="card-body text-center py-4">
+                    <h5 class="mb-3">Ready to start?</h5>
+                    <p class="text-muted mb-4">Sign in to save your workouts and access them anywhere</p>
+                    <button class="btn btn-primary" onclick="showAuthModal('signin')">
+                      <i class="bx bx-log-in me-2"></i>Sign In
+                    </button>
+                    <div class="mt-3">
+                      <small class="text-muted">
+                        Don't have an account?
+                        <a href="#" onclick="showAuthModal('signup'); return false;" class="text-decoration-none">
+                          <strong>Sign up free</strong>
+                        </a>
+                      </small>
+                    </div>
+                  </div>
+                </div>
+
               </div>
 
             </div>
