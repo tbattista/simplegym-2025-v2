@@ -1,0 +1,206 @@
+/**
+ * Landing Page Styles for Ghost Gym
+ * Matches existing card-based design system
+ */
+
+/* Hero Card */
+.landing-hero-card {
+  background: var(--bs-card-bg);
+  border: 1px solid var(--bs-border-color);
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+  margin-top: 4rem !important; /* Push entire card down to avoid menu button overlap */
+}
+
+.landing-hero-card h1 {
+  font-size: 2rem;
+  font-weight: 600;
+  color: var(--bs-heading-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.landing-hero-card h1 i {
+  color: #696cff;
+}
+
+.landing-hero-card p {
+  font-size: 1rem;
+}
+
+/* Feature Cards */
+.landing-feature-card {
+  background: var(--bs-card-bg);
+  border: 1px solid var(--bs-border-color);
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+  transition: all 0.3s ease;
+}
+
+/* Clickable feature cards */
+.landing-feature-link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+  cursor: pointer;
+}
+
+.landing-feature-link:hover {
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+  color: inherit;
+  text-decoration: none;
+}
+
+.landing-feature-link:hover .landing-feature-icon {
+  background: #696cff;
+}
+
+.landing-feature-link:hover .landing-feature-icon i {
+  color: white;
+}
+
+/* Non-clickable cards have subtle hover */
+.landing-feature-card:not(.landing-feature-link):hover {
+  box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1);
+}
+
+.landing-feature-content {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  justify-content: space-between;
+}
+
+.landing-feature-text {
+  flex: 1;
+}
+
+/* Card 2 - Reverse the order (icon on left) */
+.row .col-12:nth-child(2) .landing-feature-content {
+  flex-direction: row-reverse;
+}
+
+.landing-feature-text h5 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--bs-heading-color);
+}
+
+.landing-feature-text p {
+  line-height: 1.5;
+}
+
+.landing-feature-icon {
+  width: 80px;
+  height: 80px;
+  background: #f8f9fa;
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.3s ease;
+}
+
+.landing-feature-icon i {
+  font-size: 2.5rem;
+  color: #696cff;
+  transition: all 0.3s ease;
+}
+
+/* Step-specific colors */
+.landing-feature-card:nth-child(1) .landing-feature-icon i {
+  color: #696cff;
+}
+
+.row .col-12:nth-child(2) .landing-feature-icon i {
+  color: #71dd37;
+}
+
+.row .col-12:nth-child(2) .landing-feature-link:hover .landing-feature-icon {
+  background: #71dd37;
+}
+
+.row .col-12:nth-child(3) .landing-feature-icon i {
+  color: #03c3ec;
+}
+
+/* CTA Card */
+.landing-cta-card {
+  background: var(--bs-card-bg);
+  border: 1px solid var(--bs-border-color);
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.landing-cta-card h5 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--bs-heading-color);
+}
+
+/* Responsive Design */
+@media (max-width: 576px) {
+  .landing-hero-card h1 {
+    font-size: 1.5rem;
+  }
+  
+  .landing-feature-content {
+    gap: 1rem;
+  }
+  
+  .landing-feature-icon {
+    width: 60px;
+    height: 60px;
+  }
+  
+  .landing-feature-icon i {
+    font-size: 2rem;
+  }
+  
+  .landing-feature-text h5 {
+    font-size: 1rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .landing-hero-card h1 {
+    font-size: 2.5rem;
+  }
+  
+  .landing-feature-content {
+    gap: 2rem;
+  }
+  
+  .landing-feature-icon {
+    width: 100px;
+    height: 100px;
+  }
+  
+  .landing-feature-icon i {
+    font-size: 3rem;
+  }
+  
+  .landing-feature-text h5 {
+    font-size: 1.25rem;
+  }
+}
+
+/* Smooth transitions */
+.landing-feature-card,
+.landing-hero-card .btn,
+.landing-cta-card .btn {
+  transition: all 0.3s ease;
+}
+
+/* Button hover effects */
+.landing-hero-card .btn:hover,
+.landing-cta-card .btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0.5rem 1rem rgba(105, 108, 255, 0.3);
+}
+
+/* Accessibility */
+.landing-feature-card:focus-within {
+  outline: 2px solid #696cff;
+  outline-offset: 2px;
+}

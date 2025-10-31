@@ -6,18 +6,55 @@ Handles Firebase Admin SDK initialization with environment variables
 import os
 import json
 import logging
+import traceback
+import sys
 from typing import Optional
 
+logger = logging.getLogger(__name__)
+
+# Enhanced diagnostic import with detailed error logging
 try:
     import firebase_admin
     from firebase_admin import credentials
     FIREBASE_AVAILABLE = True
-except ImportError:
+    logger.info(f"✅ Firebase Admin SDK imported successfully (version: {getattr(firebase_admin, '__version__', 'unknown')})")
+except ImportError as e:
     FIREBASE_AVAILABLE = False
     firebase_admin = None
     credentials = None
-
-logger = logging.getLogger(__name__)
+    
+    # Log detailed error information for Railway debugging
+    logger.error("=" * 60)
+    logger.error("❌ FIREBASE IMPORT FAILED")
+    logger.error("=" * 60)
+    logger.error(f"Import Error: {str(e)}")
+    logger.error(f"Error Type: {type(e).__name__}")
+    logger.error("\nFull Traceback:")
+    logger.error(traceback.format_exc())
+    logger.error("\nPython Path:")
+    for path in sys.path:
+        logger.error(f"  - {path}")
+    logger.error("=" * 60)
+    
+    # Try to diagnose which specific package is missing
+    logger.error("\n🔍 Checking Firebase dependencies:")
+    dependencies = [
+        ('firebase_admin', 'firebase_admin'),
+        ('google-cloud-firestore', 'google.cloud.firestore'),
+        ('google-auth', 'google.auth'),
+        ('grpcio', 'grpcio'),
+        ('cryptography', 'cryptography'),
+        ('protobuf', 'google.protobuf')
+    ]
+    
+    for package_name, import_name in dependencies:
+        try:
+            __import__(import_name)
+            logger.error(f"  ✅ {package_name} - OK")
+        except ImportError as dep_error:
+            logger.error(f"  ❌ {package_name} - FAILED: {str(dep_error)}")
+    
+    logger.error("=" * 60)
 
 # Global Firebase app instance
 _firebase_app: Optional[firebase_admin.App] = None

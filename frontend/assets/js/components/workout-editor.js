@@ -23,6 +23,12 @@ function loadWorkoutIntoEditor(workoutId) {
     window.ghostGym.workoutBuilder.isDirty = false;
     window.ghostGym.workoutBuilder.currentWorkout = { ...workout };
     
+    // Show "Hide Workouts" button
+    const hideWorkoutsBtn = document.getElementById('hideWorkoutsBtn');
+    if (hideWorkoutsBtn) {
+        hideWorkoutsBtn.style.display = 'block';
+    }
+    
     // Populate form fields
     document.getElementById('workoutName').value = workout.name || '';
     document.getElementById('workoutDescription').value = workout.description || '';
@@ -83,6 +89,9 @@ function loadWorkoutIntoEditor(workoutId) {
     // Highlight selected card in library
     highlightSelectedWorkout(workoutId);
     
+    // Collapse workout library and show collapse button
+    collapseWorkoutLibrary(workout.name);
+    
     // Initialize autocompletes
     if (window.initializeExerciseAutocompletes) {
         setTimeout(() => window.initializeExerciseAutocompletes(), 100);
@@ -140,6 +149,15 @@ function createNewWorkoutInEditor() {
         exercise_groups: [],
         bonus_exercises: []
     };
+    
+    // Collapse workout library content
+    collapseWorkoutLibrary('New Workout');
+    
+    // Hide "Change Workout" button for new workouts
+    const changeWorkoutBtn = document.getElementById('changeWorkoutBtn');
+    if (changeWorkoutBtn) {
+        changeWorkoutBtn.style.display = 'none';
+    }
     
     // Clear form
     document.getElementById('workoutName').value = '';
@@ -316,6 +334,15 @@ function cancelEditWorkout() {
     window.ghostGym.workoutBuilder.isEditing = false;
     window.ghostGym.workoutBuilder.isDirty = false;
     
+    // Hide "Hide Workouts" button
+    const hideWorkoutsBtn = document.getElementById('hideWorkoutsBtn');
+    if (hideWorkoutsBtn) {
+        hideWorkoutsBtn.style.display = 'none';
+    }
+    
+    // Expand workout library content
+    expandWorkoutLibrary();
+    
     // Hide editor, show empty state
     document.getElementById('workoutEditorForm').style.display = 'none';
     document.getElementById('workoutEditorEmptyState').style.display = 'block';
@@ -441,6 +468,41 @@ function highlightSelectedWorkout(workoutId) {
 }
 
 /**
+ * Collapse workout library after selection
+ * @param {string} workoutName - Name of selected workout to display
+ */
+function collapseWorkoutLibrary(workoutName) {
+    const expandedContent = document.getElementById('workoutLibraryExpandedContent');
+    
+    // Hide the workout library content (search, cards)
+    if (expandedContent) {
+        expandedContent.style.display = 'none';
+    }
+    
+    console.log('✅ Workout library collapsed');
+}
+
+/**
+ * Expand workout library
+ */
+function expandWorkoutLibrary() {
+    const expandedContent = document.getElementById('workoutLibraryExpandedContent');
+    const hideWorkoutsBtn = document.getElementById('hideWorkoutsBtn');
+    
+    // Show the workout library content
+    if (expandedContent) {
+        expandedContent.style.display = 'block';
+    }
+    
+    // Hide "Hide Workouts" button when expanding (back to initial state)
+    if (hideWorkoutsBtn) {
+        hideWorkoutsBtn.style.display = 'none';
+    }
+    
+    console.log('✅ Workout library expanded');
+}
+
+/**
  * Setup event listeners for editor
  */
 function setupWorkoutEditorListeners() {
@@ -519,12 +581,14 @@ if (document.readyState === 'loading') {
 
 // Make functions globally available
 window.loadWorkoutIntoEditor = loadWorkoutIntoEditor;
-window.createNewWorkoutInEditor = createNewWorkoutInEditor;
+window.createNewWorkoutIntoEditor = createNewWorkoutInEditor;
 window.saveWorkoutFromEditor = saveWorkoutFromEditor;
 window.cancelEditWorkout = cancelEditWorkout;
 window.deleteWorkoutFromEditor = deleteWorkoutFromEditor;
 window.markEditorDirty = markEditorDirty;
 window.updateSaveStatus = updateSaveStatus;
 window.highlightSelectedWorkout = highlightSelectedWorkout;
+window.collapseWorkoutLibrary = collapseWorkoutLibrary;
+window.expandWorkoutLibrary = expandWorkoutLibrary;
 
 console.log('📦 Workout Editor component loaded');

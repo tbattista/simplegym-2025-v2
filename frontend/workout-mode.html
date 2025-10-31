@@ -1,0 +1,248 @@
+<!doctype html>
+
+<html
+  lang="en"
+  class="layout-menu-fixed layout-compact"
+  data-assets-path="/static/assets/"
+  data-template="vertical-menu-template-free">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+    
+    <!-- Force HTTPS for all requests -->
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+
+    <title>👻 Workout Mode - Ghost Gym V0.4.1</title>
+
+    <meta name="description" content="Execute your workout with rest timers and exercise tracking" />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/static/assets/img/favicon/favicon.ico" />
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap"
+      rel="stylesheet" />
+
+    <link rel="stylesheet" href="/static/assets/vendor/fonts/iconify-icons.css" />
+
+    <!-- Core CSS -->
+    <link rel="stylesheet" href="/static/assets/vendor/css/core.css" />
+    <link rel="stylesheet" href="/static/assets/css/demo.css" />
+
+    <!-- Vendors CSS -->
+    <link rel="stylesheet" href="/static/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css" />
+
+    <!-- Custom Ghost Gym CSS -->
+    <link rel="stylesheet" href="/static/assets/css/ghost-gym-custom.css" />
+    
+    <!-- Workout Mode CSS -->
+    <link rel="stylesheet" href="/static/assets/css/workout-mode.css" />
+
+    <!-- Helpers -->
+    <script src="/static/assets/vendor/js/helpers.js"></script>
+    <script src="/static/assets/js/config.js"></script>
+
+    <!-- Ghost Gym Centralized Configuration -->
+    <script src="/static/assets/js/app-config.js"></script>
+    
+    <!-- Firebase SDK Loader (Centralized) -->
+    <script type="module" src="/static/assets/js/firebase-loader.js"></script>
+  </head>
+
+  <body>
+    <!-- Floating Hamburger Menu Button -->
+    <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Toggle menu">
+      <i class="bx bx-menu"></i>
+    </button>
+    
+    <!-- Layout wrapper -->
+    <div class="layout-wrapper layout-content-navbar">
+      <div class="layout-container">
+        <!-- Menu -->
+        <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
+          <!-- Menu will be injected by menu-injection-service.js -->
+        </aside>
+        <!-- / Menu -->
+
+        <!-- Layout container -->
+        <div class="layout-page">
+
+          <!-- Content wrapper -->
+          <div class="content-wrapper">
+            <!-- Content -->
+            <div class="container-xxl flex-grow-1 container-p-y">
+              
+              <!-- Workout Mode Header (Custom - No standard app bar) -->
+              <div class="workout-mode-header">
+                <div class="d-flex align-items-center justify-content-center position-relative mb-4">
+                  <!-- Workout Title (Centered) -->
+                  <div class="text-center">
+                    <h4 class="mb-1" id="workoutModeTitle">
+                      <i class="bx bx-dumbbell me-2"></i>
+                      <span id="workoutName">Loading workout...</span>
+                    </h4>
+                    <a href="workouts.html" class="text-muted small" id="changeWorkoutLink">
+                      <i class="bx bx-refresh me-1"></i>Change workout
+                    </a>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Loading State -->
+              <div id="workoutLoadingState" class="text-center py-5">
+                <div class="spinner-border text-primary" role="status">
+                  <span class="visually-hidden">Loading workout...</span>
+                </div>
+                <p class="mt-3 text-muted">Loading your workout...</p>
+              </div>
+
+              <!-- Error State -->
+              <div id="workoutErrorState" class="text-center py-5" style="display: none;">
+                <i class="bx bx-error-circle display-1 text-danger"></i>
+                <h5 class="mt-3">Workout Not Found</h5>
+                <p class="text-muted">The workout you're looking for doesn't exist or has been deleted.</p>
+                <a href="workouts.html" class="btn btn-primary mt-2">
+                  <i class="bx bx-left-arrow-alt me-1"></i>Back to Workouts
+                </a>
+              </div>
+
+              <!-- Exercise Cards Container -->
+              <div id="exerciseCardsContainer" style="display: none;">
+                <!-- Cards will be rendered here by JavaScript -->
+              </div>
+
+            </div>
+            <!-- / Content -->
+
+            <!-- Footer -->
+            <footer class="content-footer footer bg-footer-theme">
+              <div class="container-xxl">
+                <div
+                  class="footer-container d-flex align-items-center justify-content-between py-4 flex-md-row flex-column">
+                  <div class="mb-2 mb-md-0">
+                    ©
+                    <script>
+                      document.write(new Date().getFullYear());
+                    </script>
+                    , made with ❤️ by
+                    <strong>👻 Ghost Gym V0.4.1</strong>
+                  </div>
+                </div>
+              </div>
+            </footer>
+            <!-- / Footer -->
+
+            <div class="content-backdrop fade"></div>
+          </div>
+          <!-- Content wrapper -->
+        </div>
+        <!-- / Layout page -->
+      </div>
+
+      <!-- Overlay -->
+      <div class="layout-overlay layout-menu-toggle"></div>
+    </div>
+    <!-- / Layout wrapper -->
+
+    <!-- Sticky Bottom Bar -->
+    <div class="workout-mode-footer" id="workoutModeFooter" style="display: none;">
+      <div class="d-flex justify-content-between align-items-center">
+        <button class="btn btn-outline-primary" id="shareWorkoutBtn">
+          <i class="bx bx-share-alt me-1"></i>Share
+        </button>
+        <button class="btn btn-outline-secondary" id="soundToggleBtn">
+          <i class="bx bx-volume-full me-1" id="soundIcon"></i>
+          Sound: <span id="soundStatus">On</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Core JS -->
+    <script src="/static/assets/vendor/libs/jquery/jquery.js"></script>
+    <script src="/static/assets/vendor/libs/popper/popper.js"></script>
+    <script src="/static/assets/vendor/js/bootstrap.js"></script>
+    <script src="/static/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js"></script>
+    <script src="/static/assets/vendor/js/menu.js"></script>
+
+    <!-- Load templates FIRST (before main.js) -->
+    <script src="/static/assets/js/components/menu-template.js"></script>
+    <script src="/static/assets/js/components/auth-modals-template.js"></script>
+    
+    <!-- Inject components SECOND (before main.js) -->
+    <script src="/static/assets/js/services/menu-injection-service.js"></script>
+
+    <!-- Main JS -->
+    <script src="/static/assets/js/main.js"></script>
+
+    <!-- Firebase Services -->
+    <script src="/static/assets/js/firebase/firebase-init.js?v=20251020-03"></script>
+    <script src="/static/assets/js/firebase/auth-service.js?v=20251020-03"></script>
+    <script src="/static/assets/js/firebase/auth-ui.js?v=20251020-03"></script>
+    <script src="/static/assets/js/firebase/data-manager.js?v=20251020-05"></script>
+
+    <!-- UI Helpers -->
+    <script src="/static/assets/js/dashboard/ui-helpers.js?v=20251020-04"></script>
+    
+    <!-- Workout Mode JS -->
+    <script src="/static/assets/js/workout-mode.js?v=20251029-01"></script>
+
+    <!-- Initialize Workout Mode -->
+    <script>
+        // Initialize global state for workout mode
+        window.ghostGym = window.ghostGym || {};
+        window.ghostGym.workoutMode = {
+            currentWorkout: null,
+            currentExerciseIndex: 0,
+            expandedCardIndex: null,
+            soundEnabled: localStorage.getItem('workoutSoundEnabled') !== 'false',
+            timers: {}
+        };
+
+        // Initialize page using same pattern as other pages
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('📄 Workout Mode Page - DOM Ready');
+            
+            // Wait for Firebase to be ready
+            if (!window.firebaseReady) {
+                await new Promise(resolve => {
+                    window.addEventListener('firebaseReady', resolve, { once: true });
+                });
+            }
+            
+            // Wait for data manager to be ready
+            if (!window.dataManager) {
+                console.error('❌ Data manager not available');
+                return;
+            }
+            
+            // Wait for auth state to settle (important for Firebase mode)
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            // Initialize workout mode
+            initWorkoutMode();
+            
+            console.log('✅ Workout Mode page ready!');
+        });
+        
+        // Listen for auth state changes
+        window.addEventListener('authStateChanged', async (event) => {
+            const { user, isAuthenticated } = event.detail;
+            console.log('🔄 Auth state changed on workout mode page');
+            
+            // Wait a moment for data manager to update its mode
+            await new Promise(resolve => setTimeout(resolve, 300));
+            
+            // Reload workout if needed
+            const workoutId = new URLSearchParams(window.location.search).get('id');
+            if (workoutId && window.loadWorkout) {
+                await window.loadWorkout(workoutId);
+            }
+        });
+    </script>
+  </body>
+</html>

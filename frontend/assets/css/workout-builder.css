@@ -14,9 +14,40 @@
  */
 
 /* ============================================
-   WORKOUT LIBRARY SECTION (Top)
+   WORKOUT LIBRARY SECTION (Collapsible)
    ============================================ */
 
+/* Workout Library Section States */
+.workout-library-expanded {
+    transition: all 0.3s ease-in-out;
+}
+
+.workout-library-collapsed {
+    transition: all 0.3s ease-in-out;
+}
+
+.workout-library-collapsed .card-body {
+    padding: 0.75rem 1rem !important;
+}
+
+/* Collapsed Header */
+.workout-library-collapsed-header {
+    animation: fadeIn 0.3s ease;
+}
+
+/* Expanded Content */
+.workout-library-content {
+    opacity: 1;
+    transition: opacity 0.2s ease;
+}
+
+.workout-library-collapsed .workout-library-content {
+    opacity: 0;
+    height: 0;
+    overflow: hidden;
+}
+
+/* Workout Library Scroll Container */
 .workout-library-scroll {
     display: flex;
     gap: 1rem;
@@ -45,6 +76,23 @@
 
 .workout-library-scroll::-webkit-scrollbar-thumb:hover {
     background: var(--bs-gray-500);
+}
+
+/* Current Workout Name in Collapsed State */
+#currentWorkoutName {
+    font-weight: 500;
+    color: var(--bs-heading-color);
+}
+
+/* Expand/Collapse Buttons */
+#expandWorkoutLibraryBtn,
+#collapseWorkoutLibraryBtn {
+    transition: all 0.2s ease;
+}
+
+#expandWorkoutLibraryBtn:hover,
+#collapseWorkoutLibraryBtn:hover {
+    transform: translateY(-1px);
 }
 
 /* ============================================
