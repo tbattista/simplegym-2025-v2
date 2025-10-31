@@ -1,0 +1,489 @@
+/**
+ * Exercise Database Page Styles - Modern DataTable Layout
+ * Ghost Gym V0.4.1 - Dark Theme Compatible
+ */
+
+/* ============================================================================
+   DATATABLE STYLES
+   ============================================================================ */
+
+/* DataTable Container */
+.datatable-table {
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+/* Table Header */
+.datatable-table thead th {
+    font-weight: 600;
+    font-size: 0.8125rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--bs-heading-color);
+    background-color: var(--bs-gray-100);
+    border-bottom: 2px solid var(--bs-border-color);
+    padding: 0.875rem 1rem;
+    white-space: nowrap;
+    vertical-align: middle;
+}
+
+.dark-style .datatable-table thead th {
+    background-color: rgba(255, 255, 255, 0.04);
+}
+
+/* Table Body */
+.datatable-table tbody td {
+    padding: 0.875rem 1rem;
+    vertical-align: middle;
+    font-size: 0.875rem;
+    border-bottom: 1px solid var(--bs-border-color);
+}
+
+.datatable-table tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+.datatable-table tbody tr:hover {
+    background-color: rgba(var(--bs-primary-rgb), 0.04);
+    cursor: pointer;
+}
+
+.dark-style .datatable-table tbody tr:hover {
+    background-color: rgba(255, 255, 255, 0.02);
+}
+
+/* Remove border from last row */
+.datatable-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* ============================================================================
+   FILTER BAR STYLES
+   ============================================================================ */
+
+/* Horizontal filter bar */
+.card-body.border-bottom {
+    background-color: var(--bs-body-bg);
+}
+
+/* Filter controls sizing */
+.form-select-sm {
+    min-width: 140px;
+    font-size: 0.8125rem;
+}
+
+#entriesPerPageSelect {
+    min-width: 70px;
+}
+
+#exerciseSearch {
+    min-width: 200px;
+}
+
+/* Filter checkboxes */
+.form-check-inline {
+    margin-right: 1rem;
+}
+
+.form-check-label.small {
+    font-size: 0.8125rem;
+    white-space: nowrap;
+}
+
+/* ============================================================================
+   EXERCISE NAME COLUMN
+   ============================================================================ */
+
+.datatable-table tbody td:first-child {
+    font-weight: 500;
+}
+
+/* Custom exercise indicator */
+.bx-user.text-primary {
+    color: var(--bs-primary) !important;
+    font-size: 1rem;
+}
+
+/* Popularity badges */
+.badge.bg-warning {
+    background-color: #FFB800 !important;
+    color: #000;
+    font-size: 0.7rem;
+    padding: 0.25rem 0.5rem;
+    vertical-align: middle;
+}
+
+.badge.bg-info {
+    background-color: #00CFE8 !important;
+    color: #000;
+    font-size: 0.7rem;
+    padding: 0.25rem 0.5rem;
+    vertical-align: middle;
+}
+
+/* ============================================================================
+   BADGE STYLES
+   ============================================================================ */
+
+.badge {
+    font-size: 0.75rem;
+    padding: 0.35rem 0.65rem;
+    font-weight: 500;
+}
+
+.badge.bg-label-primary {
+    background-color: rgba(var(--bs-primary-rgb), 0.12) !important;
+    color: var(--bs-primary) !important;
+}
+
+.badge.bg-label-secondary {
+    background-color: rgba(var(--bs-secondary-rgb), 0.12) !important;
+    color: var(--bs-secondary) !important;
+}
+
+.badge.bg-label-info {
+    background-color: rgba(var(--bs-info-rgb), 0.12) !important;
+    color: var(--bs-info) !important;
+}
+
+/* ============================================================================
+   TIER BADGES AND FOUNDATIONAL EXERCISE STYLING
+   ============================================================================ */
+
+.badge.bg-label-success {
+    background-color: rgba(40, 167, 69, 0.12) !important;
+    color: #28a745 !important;
+}
+
+.badge.bg-label-warning {
+    background-color: rgba(255, 193, 7, 0.12) !important;
+    color: #ffc107 !important;
+}
+
+/* Foundational exercise highlighting */
+.exercise-autocomplete-item.is-foundational {
+    background-color: rgba(40, 167, 69, 0.05);
+}
+
+/* Tier indicator in exercise list */
+.exercise-tier-indicator {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 6px;
+}
+
+.exercise-tier-1 {
+    background-color: #28a745;
+}
+
+.exercise-tier-2 {
+    background-color: #007bff;
+}
+
+.exercise-tier-3 {
+    background-color: #ffc107;
+}
+
+/* ============================================================================
+   FAVORITE BUTTON
+   ============================================================================ */
+
+.favorite-btn {
+    width: 2rem;
+    height: 2rem;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    background: transparent;
+    color: var(--bs-secondary);
+    transition: all 0.2s ease;
+}
+
+.favorite-btn:hover {
+    color: #ff6b6b;
+    transform: scale(1.15);
+    background: transparent;
+}
+
+.favorite-btn.favorited {
+    color: #ff6b6b;
+}
+
+.favorite-btn.favorited:hover {
+    color: var(--bs-secondary);
+}
+
+.favorite-btn i {
+    font-size: 1.25rem;
+}
+
+/* ============================================================================
+   ACTIONS DROPDOWN
+   ============================================================================ */
+
+.dropdown-toggle {
+    color: var(--bs-body-color);
+    padding: 0.25rem 0.5rem;
+}
+
+.dropdown-toggle:hover {
+    color: var(--bs-primary);
+}
+
+.dropdown-toggle::after {
+    display: none;
+}
+
+/* ============================================================================
+   PAGINATION STYLES
+   ============================================================================ */
+
+#exercisePaginationFooter {
+    background-color: var(--bs-body-bg);
+}
+
+.pagination-sm .page-link {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.8125rem;
+}
+
+.pagination .page-item.active .page-link {
+    background-color: var(--bs-primary);
+    border-color: var(--bs-primary);
+}
+
+.pagination .page-link {
+    color: var(--bs-body-color);
+    border-color: var(--bs-border-color);
+}
+
+.pagination .page-link:hover {
+    background-color: rgba(var(--bs-primary-rgb), 0.08);
+    border-color: var(--bs-border-color);
+}
+
+.dark-style .pagination .page-link {
+    background-color: var(--bs-body-bg);
+}
+
+.dark-style .pagination .page-link:hover {
+    background-color: rgba(255, 255, 255, 0.04);
+}
+
+/* Pagination info text */
+#paginationInfo {
+    font-size: 0.8125rem;
+    color: var(--bs-secondary);
+}
+
+/* ============================================================================
+   LOADING AND EMPTY STATES
+   ============================================================================ */
+
+#exerciseLoadingState,
+#exerciseEmptyState {
+    min-height: 400px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+#exerciseEmptyState i {
+    font-size: 4rem;
+    opacity: 0.3;
+    color: var(--bs-secondary);
+}
+
+.spinner-border {
+    width: 3rem;
+    height: 3rem;
+}
+
+/* ============================================================================
+   CARD HEADER AND FOOTER
+   ============================================================================ */
+
+.card-header.border-bottom {
+    padding: 1.25rem 1.5rem;
+    background-color: var(--bs-body-bg);
+}
+
+.card-footer.border-top {
+    background-color: var(--bs-body-bg);
+}
+
+/* ============================================================================
+   RESPONSIVE DESIGN
+   ============================================================================ */
+
+@media (max-width: 1399.98px) {
+    /* Stack filter controls on smaller screens */
+    .card-body.border-bottom .row {
+        row-gap: 0.75rem;
+    }
+    
+    .form-select-sm {
+        min-width: 120px;
+    }
+}
+
+@media (max-width: 991.98px) {
+    /* Adjust table for tablets */
+    .datatable-table thead th,
+    .datatable-table tbody td {
+        padding: 0.75rem 0.5rem;
+        font-size: 0.8rem;
+    }
+    
+    .badge {
+        font-size: 0.7rem;
+        padding: 0.25rem 0.5rem;
+    }
+    
+    /* Stack filter bar vertically */
+    .card-body.border-bottom .col-auto,
+    .card-body.border-bottom .col {
+        width: 100%;
+        max-width: 100%;
+    }
+    
+    .form-select-sm,
+    #exerciseSearch {
+        width: 100%;
+        min-width: 100%;
+    }
+}
+
+@media (max-width: 767.98px) {
+    /* Mobile optimizations */
+    .datatable-table {
+        font-size: 0.75rem;
+    }
+    
+    .datatable-table thead th {
+        font-size: 0.75rem;
+        padding: 0.625rem 0.5rem;
+    }
+    
+    .datatable-table tbody td {
+        padding: 0.625rem 0.5rem;
+    }
+    
+    /* Hide less important columns on mobile */
+    .datatable-table th:nth-child(3),
+    .datatable-table td:nth-child(3),
+    .datatable-table th:nth-child(4),
+    .datatable-table td:nth-child(4) {
+        display: none;
+    }
+    
+    /* Adjust button sizes */
+    .btn-sm {
+        font-size: 0.75rem;
+        padding: 0.375rem 0.75rem;
+    }
+    
+    /* Stack pagination */
+    #exercisePaginationFooter .row {
+        text-align: center;
+    }
+    
+    #exercisePaginationFooter .col-sm-6 {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+    
+    .pagination {
+        justify-content: center !important;
+    }
+}
+
+/* ============================================================================
+   SMOOTH TRANSITIONS
+   ============================================================================ */
+
+.datatable-table tbody tr,
+.favorite-btn,
+.btn,
+.dropdown-toggle,
+.page-link {
+    transition: all 0.2s ease;
+}
+
+/* ============================================================================
+   FOCUS STATES FOR ACCESSIBILITY
+   ============================================================================ */
+
+.favorite-btn:focus,
+.btn:focus,
+.dropdown-toggle:focus,
+.page-link:focus {
+    outline: 2px solid var(--bs-primary);
+    outline-offset: 2px;
+}
+
+.form-select:focus,
+.form-control:focus,
+.form-check-input:focus {
+    border-color: var(--bs-primary);
+    box-shadow: 0 0 0 0.2rem rgba(var(--bs-primary-rgb), 0.25);
+}
+
+/* ============================================================================
+   DARK THEME ADJUSTMENTS
+   ============================================================================ */
+
+.dark-style .card-header.border-bottom,
+.dark-style .card-footer.border-top,
+.dark-style .card-body.border-bottom {
+    background-color: var(--bs-body-bg);
+    border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+.dark-style .datatable-table tbody td {
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+.dark-style .form-select,
+.dark-style .form-control {
+    background-color: var(--bs-body-bg);
+    border-color: rgba(255, 255, 255, 0.12);
+    color: var(--bs-body-color);
+}
+
+.dark-style .input-group-text {
+    background-color: var(--bs-body-bg);
+    border-color: rgba(255, 255, 255, 0.12);
+    color: var(--bs-body-color);
+}
+
+/* ============================================================================
+   ANIMATION
+   ============================================================================ */
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.datatable-table tbody tr {
+    animation: fadeIn 0.3s ease;
+}
+
+/* Stagger animation for rows */
+.datatable-table tbody tr:nth-child(1) { animation-delay: 0.02s; }
+.datatable-table tbody tr:nth-child(2) { animation-delay: 0.04s; }
+.datatable-table tbody tr:nth-child(3) { animation-delay: 0.06s; }
+.datatable-table tbody tr:nth-child(4) { animation-delay: 0.08s; }
+.datatable-table tbody tr:nth-child(5) { animation-delay: 0.10s; }

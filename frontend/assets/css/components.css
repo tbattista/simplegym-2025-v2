@@ -1,0 +1,102 @@
+/**
+ * Ghost Gym - Component Styles Master File
+ * Imports all component CSS modules
+ * @version 1.0.0
+ * 
+ * Usage: Include this single file in your HTML to get all component styles
+ * <link rel="stylesheet" href="/static/assets/css/components.css" />
+ */
+
+/* Import all component styles */
+@import url('components/data-table.css');
+@import url('components/filter-bar.css');
+@import url('components/badges.css');
+
+/* ============================================================================
+   COMPONENT UTILITIES
+   ============================================================================ */
+
+/* Smooth transitions for all components */
+.component-transition {
+    transition: all 0.3s ease;
+}
+
+/* Component spacing */
+.component-spacing {
+    margin-bottom: 1.5rem;
+}
+
+/* Component card wrapper */
+.component-card {
+    background: var(--bs-card-bg);
+    border: 1px solid var(--bs-border-color);
+    border-radius: 0.375rem;
+    padding: 1.5rem;
+}
+
+/* ============================================================================
+   LOADING STATES
+   ============================================================================ */
+
+.component-loading {
+    position: relative;
+    min-height: 200px;
+}
+
+.component-loading::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(var(--bs-body-bg-rgb), 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+/* ============================================================================
+   COMPONENT ANIMATIONS
+   ============================================================================ */
+
+@keyframes componentFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.component-fade-in {
+    animation: componentFadeIn 0.4s ease;
+}
+
+/* ============================================================================
+   RESPONSIVE UTILITIES
+   ============================================================================ */
+
+@media (max-width: 767.98px) {
+    .component-card {
+        padding: 1rem;
+    }
+    
+    .component-spacing {
+        margin-bottom: 1rem;
+    }
+}
+
+/* ============================================================================
+   PRINT UTILITIES
+   ============================================================================ */
+
+@media print {
+    .component-card {
+        border: none;
+        box-shadow: none;
+    }
+}

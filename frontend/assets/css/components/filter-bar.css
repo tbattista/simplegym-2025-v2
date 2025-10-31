@@ -1,0 +1,231 @@
+/**
+ * Ghost Gym - FilterBar Component Styles
+ * Consolidated filter styles for all pages
+ * @version 1.0.0
+ */
+
+/* ============================================================================
+   FILTER BAR CONTAINER
+   ============================================================================ */
+
+.filter-bar {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+}
+
+.filter-bar.flex-column {
+    flex-direction: column;
+}
+
+/* ============================================================================
+   SEARCH INPUT
+   ============================================================================ */
+
+.filter-search {
+    flex: 1;
+    min-width: 200px;
+}
+
+.filter-search .input-group {
+    flex-wrap: nowrap;
+}
+
+.filter-search-input {
+    min-width: 0;
+    font-size: 0.875rem;
+}
+
+.filter-clear-search {
+    flex-shrink: 0;
+}
+
+.filter-search .input-group-text {
+    background-color: var(--bs-body-bg);
+    border-color: var(--bs-border-color);
+    color: var(--bs-body-color);
+}
+
+.dark-style .filter-search .input-group-text {
+    background-color: var(--bs-body-bg);
+    border-color: rgba(255, 255, 255, 0.12);
+}
+
+/* ============================================================================
+   FILTER CONTROLS
+   ============================================================================ */
+
+.filter-controls {
+    flex: 1;
+}
+
+.filter-controls .row {
+    row-gap: 1rem;
+}
+
+.filter-controls .form-label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--bs-heading-color);
+}
+
+.filter-controls .form-select,
+.filter-controls .form-control {
+    font-size: 0.875rem;
+}
+
+.filter-controls .form-check {
+    padding-left: 1.5rem;
+}
+
+.filter-controls .form-check-label {
+    font-size: 0.875rem;
+    cursor: pointer;
+}
+
+.filter-controls .form-check-input {
+    cursor: pointer;
+}
+
+/* ============================================================================
+   FILTER ACTIONS
+   ============================================================================ */
+
+.filter-actions {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.filter-clear-all {
+    white-space: nowrap;
+}
+
+/* ============================================================================
+   FORM CONTROLS
+   ============================================================================ */
+
+.form-select-sm {
+    min-width: 140px;
+    font-size: 0.8125rem;
+}
+
+.form-select:focus,
+.form-control:focus,
+.form-check-input:focus {
+    border-color: var(--bs-primary);
+    box-shadow: 0 0 0 0.2rem rgba(var(--bs-primary-rgb), 0.25);
+}
+
+.dark-style .form-select,
+.dark-style .form-control {
+    background-color: var(--bs-body-bg);
+    border-color: rgba(255, 255, 255, 0.12);
+    color: var(--bs-body-color);
+}
+
+/* ============================================================================
+   RESPONSIVE DESIGN
+   ============================================================================ */
+
+/* Tablet */
+@media (max-width: 991.98px) {
+    .filter-bar {
+        flex-direction: column;
+    }
+    
+    .filter-search {
+        width: 100%;
+    }
+    
+    .filter-controls {
+        width: 100%;
+    }
+    
+    .form-select-sm {
+        min-width: 120px;
+    }
+}
+
+/* Mobile */
+@media (max-width: 767.98px) {
+    .filter-bar {
+        gap: 0.75rem;
+    }
+    
+    .filter-search-input {
+        font-size: 0.8125rem;
+    }
+    
+    .filter-controls .form-label {
+        font-size: 0.8125rem;
+    }
+    
+    .filter-controls .form-select,
+    .filter-controls .form-control {
+        font-size: 0.8125rem;
+    }
+    
+    .filter-controls .form-check-label {
+        font-size: 0.8125rem;
+    }
+    
+    .form-select-sm {
+        width: 100%;
+        min-width: 100%;
+    }
+    
+    .filter-actions {
+        width: 100%;
+    }
+    
+    .filter-clear-all {
+        width: 100%;
+    }
+}
+
+/* ============================================================================
+   ANIMATIONS
+   ============================================================================ */
+
+.filter-bar {
+    transition: all 0.3s ease;
+}
+
+.form-select,
+.form-control,
+.btn {
+    transition: all 0.2s ease;
+}
+
+/* ============================================================================
+   ACCESSIBILITY
+   ============================================================================ */
+
+.form-select:focus,
+.form-control:focus,
+.form-check-input:focus,
+.btn:focus {
+    outline: 2px solid var(--bs-primary);
+    outline-offset: 2px;
+}
+
+/* ============================================================================
+   DARK MODE
+   ============================================================================ */
+
+.dark-style .filter-controls .form-label {
+    color: var(--bs-gray-200);
+}
+
+/* ============================================================================
+   PRINT STYLES
+   ============================================================================ */
+
+@media print {
+    .filter-bar,
+    .filter-actions {
+        display: none !important;
+    }
+}

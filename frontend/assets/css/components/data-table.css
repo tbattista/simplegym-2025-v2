@@ -1,0 +1,289 @@
+/**
+ * Ghost Gym - DataTable Component Styles
+ * Consolidated table styles for all pages
+ * @version 1.0.0
+ */
+
+/* ============================================================================
+   TABLE STRUCTURE
+   ============================================================================ */
+
+.datatable-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+/* Table Header */
+.datatable-table thead th {
+    background-color: var(--bs-gray-100);
+    font-weight: 600;
+    font-size: 0.8125rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--bs-heading-color);
+    border-bottom: 2px solid var(--bs-border-color);
+    padding: 0.875rem 1rem;
+    white-space: nowrap;
+    vertical-align: middle;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.dark-style .datatable-table thead th {
+    background-color: rgba(255, 255, 255, 0.04);
+}
+
+/* Sortable Headers */
+.datatable-table thead th[data-sort-key] {
+    cursor: pointer;
+    user-select: none;
+}
+
+.datatable-table thead th[data-sort-key]:hover {
+    background-color: rgba(var(--bs-primary-rgb), 0.08);
+}
+
+.datatable-table thead th .sort-indicator {
+    margin-left: 0.5rem;
+    opacity: 0.5;
+}
+
+/* Table Body */
+.datatable-table tbody td {
+    padding: 0.875rem 1rem;
+    vertical-align: middle;
+    font-size: 0.875rem;
+    border-bottom: 1px solid var(--bs-border-color);
+}
+
+.datatable-table tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+.datatable-table tbody tr:hover {
+    background-color: rgba(var(--bs-primary-rgb), 0.04);
+    cursor: pointer;
+}
+
+.dark-style .datatable-table tbody tr:hover {
+    background-color: rgba(255, 255, 255, 0.02);
+}
+
+.dark-style .datatable-table tbody td {
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+/* Remove border from last row */
+.datatable-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* ============================================================================
+   LOADING & EMPTY STATES
+   ============================================================================ */
+
+.datatable-loading,
+.datatable-empty {
+    min-height: 400px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.datatable-empty i {
+    font-size: 4rem;
+    opacity: 0.3;
+    color: var(--bs-secondary);
+}
+
+.datatable-loading .spinner-border {
+    width: 3rem;
+    height: 3rem;
+}
+
+/* ============================================================================
+   TABLE RESPONSIVE
+   ============================================================================ */
+
+.datatable-table-container {
+    position: relative;
+}
+
+.table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* ============================================================================
+   PAGINATION
+   ============================================================================ */
+
+.datatable-pagination {
+    background-color: var(--bs-body-bg);
+    border-top: 1px solid var(--bs-border-color);
+}
+
+.datatable-page-info {
+    font-size: 0.8125rem;
+    color: var(--bs-secondary);
+}
+
+.datatable-pagination-controls {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    gap: 0.25rem;
+}
+
+.pagination-sm .page-link {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.8125rem;
+}
+
+.pagination .page-item.active .page-link {
+    background-color: var(--bs-primary);
+    border-color: var(--bs-primary);
+}
+
+.pagination .page-link {
+    color: var(--bs-body-color);
+    border-color: var(--bs-border-color);
+    transition: all 0.2s ease;
+}
+
+.pagination .page-link:hover:not(.disabled) {
+    background-color: rgba(var(--bs-primary-rgb), 0.08);
+    border-color: var(--bs-border-color);
+}
+
+.dark-style .pagination .page-link {
+    background-color: var(--bs-body-bg);
+}
+
+.dark-style .pagination .page-link:hover {
+    background-color: rgba(255, 255, 255, 0.04);
+}
+
+/* ============================================================================
+   RESPONSIVE DESIGN
+   ============================================================================ */
+
+/* Tablet */
+@media (max-width: 991.98px) {
+    .datatable-table thead th,
+    .datatable-table tbody td {
+        padding: 0.75rem 0.5rem;
+        font-size: 0.8rem;
+    }
+    
+    .datatable-table thead th {
+        font-size: 0.75rem;
+    }
+}
+
+/* Mobile */
+@media (max-width: 767.98px) {
+    .datatable-table {
+        font-size: 0.75rem;
+    }
+    
+    .datatable-table thead th {
+        font-size: 0.7rem;
+        padding: 0.625rem 0.5rem;
+    }
+    
+    .datatable-table tbody td {
+        padding: 0.625rem 0.5rem;
+    }
+    
+    /* Stack pagination */
+    .datatable-pagination .row {
+        text-align: center;
+    }
+    
+    .datatable-pagination .col-sm-6 {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+    
+    .pagination {
+        justify-content: center !important;
+    }
+    
+    .pagination-sm .page-link {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
+    }
+}
+
+/* ============================================================================
+   ANIMATIONS
+   ============================================================================ */
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.datatable-table tbody tr {
+    animation: fadeIn 0.3s ease;
+}
+
+/* Stagger animation for rows */
+.datatable-table tbody tr:nth-child(1) { animation-delay: 0.02s; }
+.datatable-table tbody tr:nth-child(2) { animation-delay: 0.04s; }
+.datatable-table tbody tr:nth-child(3) { animation-delay: 0.06s; }
+.datatable-table tbody tr:nth-child(4) { animation-delay: 0.08s; }
+.datatable-table tbody tr:nth-child(5) { animation-delay: 0.10s; }
+
+/* ============================================================================
+   ACCESSIBILITY
+   ============================================================================ */
+
+.datatable-table thead th:focus,
+.pagination .page-link:focus {
+    outline: 2px solid var(--bs-primary);
+    outline-offset: 2px;
+}
+
+/* ============================================================================
+   DARK MODE
+   ============================================================================ */
+
+.dark-style .datatable-pagination {
+    background-color: var(--bs-body-bg);
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+.dark-style .datatable-table tbody td {
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+/* ============================================================================
+   PRINT STYLES
+   ============================================================================ */
+
+@media print {
+    .datatable-pagination,
+    .datatable-loading {
+        display: none !important;
+    }
+    
+    .datatable-table {
+        page-break-inside: avoid;
+    }
+    
+    .datatable-table tbody tr {
+        page-break-inside: avoid;
+    }
+}
