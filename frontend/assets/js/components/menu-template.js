@@ -34,15 +34,17 @@ function getMenuHTML(activePage = 'home') {
                 </a>
             </li>
             
-            <!-- Data Management -->
-            <li class="menu-header small text-uppercase">
-                <span class="menu-header-text">Data Management</span>
-            </li>
-            <li class="menu-item ${activePage === 'programs' ? 'active' : ''}">
-                <a href="programs.html" class="menu-link">
-                    <i class="menu-icon tf-icons bx bx-folder"></i>
-                    <div class="text-truncate">My Programs</div>
+            <!-- Workout Mode (Promoted to top level) -->
+            <li class="menu-item ${activePage === 'workout-mode' ? 'active' : ''}">
+                <a href="workout-mode.html" class="menu-link">
+                    <i class="menu-icon tf-icons bx bx-play-circle"></i>
+                    <div class="text-truncate">Workout Mode</div>
                 </a>
+            </li>
+            
+            <!-- Workout Management -->
+            <li class="menu-header small text-uppercase">
+                <span class="menu-header-text">Workout Management</span>
             </li>
             <li class="menu-item ${activePage === 'workouts' ? 'active' : ''}">
                 <a href="workouts.html" class="menu-link">
@@ -50,11 +52,16 @@ function getMenuHTML(activePage = 'home') {
                     <div class="text-truncate">Workout Builder</div>
                 </a>
             </li>
-            <li class="menu-item ${activePage === 'workout-mode' ? 'active' : ''}">
-                <a href="workout-mode.html" class="menu-link">
-                    <i class="menu-icon tf-icons bx bx-play-circle"></i>
-                    <div class="text-truncate">Workout Mode</div>
+            <li class="menu-item ${activePage === 'programs' ? 'active' : ''}">
+                <a href="programs.html" class="menu-link">
+                    <i class="menu-icon tf-icons bx bx-folder"></i>
+                    <div class="text-truncate">My Programs</div>
                 </a>
+            </li>
+            
+            <!-- Data Management -->
+            <li class="menu-header small text-uppercase">
+                <span class="menu-header-text">Data Management</span>
             </li>
             <li class="menu-item ${activePage === 'exercises' ? 'active' : ''}">
                 <a href="exercise-database.html" class="menu-link">
@@ -69,15 +76,21 @@ function getMenuHTML(activePage = 'home') {
                 </a>
             </li>
             
+            <!-- Public Workouts -->
+            <li class="menu-header small text-uppercase">
+                <span class="menu-header-text">Public Workouts</span>
+            </li>
+            <li class="menu-item ${activePage === 'public-workouts' ? 'active' : ''}">
+                <a href="public-workouts.html" class="menu-link">
+                    <i class="menu-icon tf-icons bx bx-globe"></i>
+                    <div class="text-truncate">Public Workouts</div>
+                    <span class="badge badge-center rounded-pill bg-label-info ms-auto">Soon</span>
+                </a>
+            </li>
+            
             <!-- Tools & Settings -->
             <li class="menu-header small text-uppercase">
                 <span class="menu-header-text">Tools & Settings</span>
-            </li>
-            <li class="menu-item" data-section="backup">
-                <a href="#backup" class="menu-link" id="menuBackup">
-                    <i class="menu-icon tf-icons bx bx-cloud-upload"></i>
-                    <div class="text-truncate">Backup & Export</div>
-                </a>
             </li>
             <li class="menu-item" data-section="settings">
                 <a href="#settings" class="menu-link" id="menuSettings">

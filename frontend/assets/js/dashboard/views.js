@@ -42,7 +42,7 @@ function renderProgramsView() {
     }
     
     // Enhanced program cards with statistics and actions
-    programsList.innerHTML = filteredPrograms.map(program => {
+    const programsHTML = filteredPrograms.map(program => {
         const workoutCount = program.workouts?.length || 0;
         const totalExercises = program.workouts?.reduce((sum, pw) => {
             const workout = window.ghostGym.workouts.find(w => w.id === pw.workout_id);
@@ -113,6 +113,18 @@ function renderProgramsView() {
             </div>
         </div>
     `}).join('');
+    
+    // Add "New Program" button at the bottom
+    const newProgramButton = `
+        <div class="list-group-item text-center py-4" style="border-top: 2px dashed #d9dee3;">
+            <button class="btn btn-primary" onclick="showProgramModal()" id="programsViewNewBtn">
+                <i class="bx bx-plus me-1"></i>
+                New Program
+            </button>
+        </div>
+    `;
+    
+    programsList.innerHTML = programsHTML + newProgramButton;
 }
 
 /**
