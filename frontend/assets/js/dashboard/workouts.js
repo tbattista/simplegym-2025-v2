@@ -432,11 +432,18 @@ function collectExerciseGroups() {
         if (Object.keys(exercises).length > 0) {
             // Find inputs in either accordion-body or card-body
             const bodyEl = groupEl.querySelector('.accordion-body') || groupEl.querySelector('.card-body');
+            
+            // Get selected weight unit
+            const activeUnitBtn = bodyEl?.querySelector('.weight-unit-btn.active');
+            const weightUnit = activeUnitBtn?.getAttribute('data-unit') || 'lbs';
+            
             groups.push({
                 exercises: exercises,
                 sets: bodyEl?.querySelector('.sets-input')?.value || '3',
                 reps: bodyEl?.querySelector('.reps-input')?.value || '8-12',
-                rest: bodyEl?.querySelector('.rest-input')?.value || '60s'
+                rest: bodyEl?.querySelector('.rest-input')?.value || '60s',
+                weight: bodyEl?.querySelector('.weight-input')?.value || '',
+                weight_unit: weightUnit
             });
         }
     });
@@ -497,11 +504,13 @@ function addExerciseGroup() {
                         <div class="group-exercises-preview">
                             <span class="exercise-preview-main" data-exercise="a"></span>
                             <div class="group-exercises-secondary-line">
-                                <span class="exercise-preview-secondary" data-exercise="b" data-label="Alt1:"></span>
-                                <span class="exercise-preview-secondary" data-exercise="c" data-label="Alt2:"></span>
+                                <span class="exercise-preview-secondary" data-exercise="b"></span>
+                                <span class="exercise-preview-secondary" data-exercise="c"></span>
+                                <span class="exercise-preview-info"></span>
                             </div>
                         </div>
                     </div>
+                    <span class="exercise-preview-weight"></span>
                 </button>
                 <div class="group-actions">
                     <span class="drag-handle" title="Drag to reorder">
@@ -513,55 +522,65 @@ function addExerciseGroup() {
                  aria-labelledby="heading-${groupId}" data-bs-parent="#exerciseGroups">
                 <div class="accordion-body">
                     <!-- Exercise inputs -->
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label class="form-label">Exercise A</label>
-                            <input type="text" class="form-control exercise-input exercise-autocomplete-input"
-                                   id="exercise-${groupId}-a" placeholder="Search exercises...">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Exercise B (optional)</label>
-                            <input type="text" class="form-control exercise-input exercise-autocomplete-input"
-                                   id="exercise-${groupId}-b" placeholder="Search exercises...">
-                        </div>
+                    <div class="mb-2">
+                        <label class="form-label small mb-1">Exercise</label>
+                        <input type="text" class="form-control form-control-sm exercise-input exercise-autocomplete-input"
+                               id="exercise-${groupId}-a" placeholder="Search exercises...">
                     </div>
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label class="form-label">Exercise C (optional)</label>
-                            <input type="text" class="form-control exercise-input exercise-autocomplete-input"
-                                   id="exercise-${groupId}-c" placeholder="Search exercises...">
+                    <div class="mb-2">
+                        <label class="form-label small mb-1">Alt</label>
+                        <input type="text" class="form-control form-control-sm exercise-input exercise-autocomplete-input"
+                               id="exercise-${groupId}-b" placeholder="Search exercises...">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small mb-1">Alt</label>
+                        <input type="text" class="form-control form-control-sm exercise-input exercise-autocomplete-input"
+                               id="exercise-${groupId}-c" placeholder="Search exercises...">
+                    </div>
+                    
+                    <!-- Sets, Reps, Rest - Grid Layout -->
+                    <div class="row g-2 mb-2">
+                        <div class="col-4">
+                            <label class="form-label small mb-1">Sets</label>
+                            <input type="text" class="form-control form-control-sm sets-input text-center" value="3" placeholder="3" maxlength="3">
+                        </div>
+                        <div class="col-4">
+                            <label class="form-label small mb-1">Reps</label>
+                            <input type="text" class="form-control form-control-sm reps-input text-center" value="8-12" placeholder="8-12" maxlength="6">
+                        </div>
+                        <div class="col-4">
+                            <label class="form-label small mb-1">Rest</label>
+                            <input type="text" class="form-control form-control-sm rest-input text-center" value="60s" placeholder="60s" maxlength="10">
                         </div>
                     </div>
                     
-                    <!-- Sets, Reps, Rest -->
-                    <div class="row mb-3">
-                        <div class="col-12">
-                            <div class="d-flex align-items-end gap-2">
-                                <div style="width: 80px;">
-                                    <label class="form-label small mb-1">Sets</label>
-                                    <input type="text" class="form-control form-control-sm sets-input text-center" value="3" placeholder="3" maxlength="3">
-                                </div>
-                                <div style="width: 80px;">
-                                    <label class="form-label small mb-1">Reps</label>
-                                    <input type="text" class="form-control form-control-sm reps-input text-center" value="8-12" placeholder="8-12" maxlength="6">
-                                </div>
-                                <div style="flex: 1;">
-                                    <label class="form-label small mb-1">Rest</label>
-                                    <input type="text" class="form-control form-control-sm rest-input text-center" value="60s" placeholder="60s" maxlength="10">
-                                </div>
-                            </div>
+                    <!-- Weight and Unit Buttons -->
+                    <div class="row g-2 mb-3">
+                        <div class="col-3">
+                            <label class="form-label small mb-1">Weight</label>
+                            <input type="text" class="form-control form-control-sm weight-input text-center" placeholder="0" maxlength="6">
+                        </div>
+                        <div class="col-3">
+                            <label class="form-label small mb-1">&nbsp;</label>
+                            <button type="button" class="btn btn-sm btn-outline-secondary w-100 weight-unit-btn" data-unit="lbs">lbs</button>
+                        </div>
+                        <div class="col-3">
+                            <label class="form-label small mb-1">&nbsp;</label>
+                            <button type="button" class="btn btn-sm btn-outline-secondary w-100 weight-unit-btn" data-unit="kg">kg</button>
+                        </div>
+                        <div class="col-3">
+                            <label class="form-label small mb-1">&nbsp;</label>
+                            <button type="button" class="btn btn-sm btn-outline-secondary w-100 weight-unit-btn" data-unit="other">other</button>
                         </div>
                     </div>
                     
                     <!-- Delete Button -->
-                    <div class="row mt-3">
-                        <div class="col-12 d-flex justify-content-end">
-                            <button type="button" class="btn btn-sm btn-outline-danger btn-remove-group"
-                                    onclick="removeExerciseGroup(this); event.stopPropagation();"
-                                    title="Delete group">
-                                <i class="bx bx-trash me-1"></i>Delete
-                            </button>
-                        </div>
+                    <div class="d-flex justify-content-end">
+                        <button type="button" class="btn btn-sm btn-outline-danger btn-remove-group"
+                                onclick="removeExerciseGroup(this); event.stopPropagation();"
+                                title="Delete group">
+                            <i class="bx bx-trash me-1"></i>Delete
+                        </button>
                     </div>
                 </div>
             </div>
@@ -599,8 +618,49 @@ function addExerciseGroup() {
     // Add autosave listeners to all inputs in the new group
     addAutosaveListenersToGroup(newGroup);
     
+    // Add weight unit button listeners
+    addWeightUnitButtonListeners(newGroup);
+    
     // Mark editor as dirty
     markEditorDirty();
+}
+
+/**
+ * Add weight unit button listeners to a group
+ */
+function addWeightUnitButtonListeners(groupElement) {
+    const unitButtons = groupElement.querySelectorAll('.weight-unit-btn');
+    
+    unitButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            // Remove active class from all buttons in this group
+            const allButtons = this.closest('.row').querySelectorAll('.weight-unit-btn');
+            allButtons.forEach(btn => {
+                btn.classList.remove('active');
+                btn.classList.add('btn-outline-secondary');
+                btn.classList.remove('btn-secondary');
+            });
+            
+            // Add active class to clicked button
+            this.classList.add('active');
+            this.classList.remove('btn-outline-secondary');
+            this.classList.add('btn-secondary');
+            
+            // Mark as dirty for autosave
+            markEditorDirty();
+        });
+    });
+    
+    // Set default active button (lbs)
+    const defaultButton = groupElement.querySelector('.weight-unit-btn[data-unit="lbs"]');
+    if (defaultButton) {
+        defaultButton.classList.add('active');
+        defaultButton.classList.remove('btn-outline-secondary');
+        defaultButton.classList.add('btn-secondary');
+    }
 }
 
 /**
@@ -887,6 +947,8 @@ function updateExerciseGroupPreview(groupElement) {
     const exerciseInputs = groupElement.querySelectorAll('.exercise-input');
     const previewMain = groupElement.querySelector('.exercise-preview-main');
     const previewSecondaries = groupElement.querySelectorAll('.exercise-preview-secondary');
+    const previewInfo = groupElement.querySelector('.exercise-preview-info');
+    const previewWeight = groupElement.querySelector('.exercise-preview-weight');
     
     if (!previewMain) return;
     
@@ -899,16 +961,16 @@ function updateExerciseGroupPreview(groupElement) {
     const reps = bodyEl?.querySelector('.reps-input')?.value || '8-12';
     const rest = bodyEl?.querySelector('.rest-input')?.value || '60s';
     
-    // Update main exercise (Exercise A) with sets/reps/rest at the end
+    // Update main exercise (Exercise A) - just the name
     if (exercises.length > 0) {
-        previewMain.textContent = `${exercises[0]} • ${sets}×${reps} • Rest: ${rest}`;
+        previewMain.textContent = exercises[0];
         previewMain.style.display = 'block';
     } else {
         previewMain.textContent = '';
         previewMain.style.display = 'none';
     }
     
-    // Update secondary exercises (B, C, etc.)
+    // Update secondary exercises (B, C, etc.) - show as "Alt" lines
     previewSecondaries.forEach((preview, index) => {
         const exerciseIndex = index + 1; // B is index 1, C is index 2
         if (exercises.length > exerciseIndex) {
@@ -919,6 +981,24 @@ function updateExerciseGroupPreview(groupElement) {
             preview.style.display = 'none';
         }
     });
+    
+    // Update info line (Reps Sets Rest)
+    if (previewInfo && exercises.length > 0) {
+        previewInfo.textContent = `${sets} Sets • ${reps} Reps • ${rest} Rest`;
+        previewInfo.style.display = 'block';
+    } else if (previewInfo) {
+        previewInfo.textContent = '';
+        previewInfo.style.display = 'none';
+    }
+    
+    // Update weight display (placeholder for now)
+    if (previewWeight && exercises.length > 0) {
+        previewWeight.textContent = 'Weight';
+        previewWeight.style.display = 'block';
+    } else if (previewWeight) {
+        previewWeight.textContent = '';
+        previewWeight.style.display = 'none';
+    }
 }
 
 /**
@@ -1241,6 +1321,7 @@ window.initializeExerciseAutocompletes = initializeExerciseAutocompletes;
 window.updateExerciseGroupPreview = updateExerciseGroupPreview;
 window.renumberBonusExercises = renumberBonusExercises;
 window.updateBonusExercisePreview = updateBonusExercisePreview;
+window.addWeightUnitButtonListeners = addWeightUnitButtonListeners;
 
 // Make autosave functions globally available
 window.markEditorDirty = markEditorDirty;
@@ -1414,10 +1495,9 @@ function enableAccordionToggles() {
     
     buttons.forEach(button => {
         const originalToggle = button.getAttribute('data-original-toggle');
-        if (originalToggle) {
-            button.setAttribute('data-bs-toggle', originalToggle);
-            button.removeAttribute('data-original-toggle');
-        }
+        // Always restore to 'collapse' since that's what accordion buttons use
+        button.setAttribute('data-bs-toggle', originalToggle || 'collapse');
+        button.removeAttribute('data-original-toggle');
         button.style.cursor = '';
     });
 }
