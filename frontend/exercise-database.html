@@ -91,27 +91,30 @@
               <!-- Search Bar with Filter Button -->
               <div class="card mb-4">
                 <div class="card-body">
-                  <div class="input-group" style="flex-wrap: nowrap;">
-                    <span class="input-group-text">
-                      <i class="bx bx-search"></i>
-                    </span>
-                    <input
-                      type="text"
-                      class="form-control"
-                      id="exerciseSearch"
-                      placeholder="Search exercises by name, muscle group, or equipment..."
-                      autocomplete="off"
-                      style="min-width: 0;">
-                    <button class="btn btn-sm btn-icon" type="button" id="clearSearchBtn" style="display: none;">
-                      <i class="bx bx-x"></i>
-                    </button>
+                  <div class="d-flex gap-2" style="flex-wrap: nowrap;">
+                    <div class="input-group flex-grow-1">
+                      <span class="input-group-text">
+                        <i class="bx bx-search"></i>
+                      </span>
+                      <input
+                        type="text"
+                        class="form-control"
+                        id="exerciseSearch"
+                        placeholder="Search exercises by name, muscle group, or equipment..."
+                        autocomplete="off"
+                        style="min-width: 0;">
+                      <button class="btn btn-sm btn-icon" type="button" id="clearSearchBtn" style="display: none;">
+                        <i class="bx bx-x"></i>
+                      </button>
+                    </div>
                     <button
                       class="btn btn-primary"
                       type="button"
                       data-bs-toggle="offcanvas"
                       data-bs-target="#filtersOffcanvas"
                       aria-controls="filtersOffcanvas"
-                      title="Filters">
+                      title="Filters"
+                      style="flex-shrink: 0;">
                       <i class="bx bx-filter-alt"></i>
                     </button>
                   </div>
@@ -175,31 +178,26 @@
         <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
       </div>
       <div class="offcanvas-body">
-        <!-- FilterBar component will inject filter controls here -->
-        <div id="filterBarContainer"></div>
-        
-        <!-- Stats Section -->
-        <div class="row mt-4">
-          <div class="col-12">
-            <div class="card">
-              <div class="card-body">
-                <h6 class="card-title">Your Stats</h6>
-                <div class="d-flex justify-content-between mb-2">
-                  <span class="text-muted">Favorites:</span>
-                  <span class="fw-semibold" id="favoritesCount">0</span>
-                </div>
-                <div class="d-flex justify-content-between mb-2">
-                  <span class="text-muted">Custom:</span>
-                  <span class="fw-semibold" id="customCount">0</span>
-                </div>
-                <div class="d-flex justify-content-between">
-                  <span class="text-muted">Showing:</span>
-                  <span class="fw-semibold" id="showingCount">0</span>
-                </div>
-              </div>
+        <!-- Stats Section - Compact Single Line -->
+        <div class="mb-3 pb-3 border-bottom">
+          <div class="d-flex justify-content-between align-items-center gap-3 flex-wrap" style="font-size: 0.875rem;">
+            <div class="d-flex align-items-center gap-1">
+              <span class="text-muted">Fav:</span>
+              <span class="fw-semibold" id="favoritesCount">0</span>
+            </div>
+            <div class="d-flex align-items-center gap-1">
+              <span class="text-muted">Custom:</span>
+              <span class="fw-semibold" id="customCount">0</span>
+            </div>
+            <div class="d-flex align-items-center gap-1">
+              <span class="text-muted">Showing:</span>
+              <span class="fw-semibold" id="showingCount">0</span>
             </div>
           </div>
         </div>
+        
+        <!-- FilterBar component will inject filter controls here -->
+        <div id="filterBarContainer"></div>
 
         <!-- Action Buttons -->
         <div class="row mt-3">

@@ -3,6 +3,32 @@
  * Consolidated filter styles for all pages
  * @version 1.0.0
  */
+/* ============================================================================
+   MOBILE-FRIENDLY TOOLTIPS
+   ============================================================================ */
+
+.tooltip-mobile-friendly {
+    font-size: 0.875rem;
+    max-width: 280px;
+}
+
+.tooltip-mobile-friendly .tooltip-inner {
+    padding: 0.5rem 0.75rem;
+    text-align: left;
+}
+
+/* Make tooltips easier to tap on mobile */
+[data-bs-toggle="tooltip"] {
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+}
+
+@media (max-width: 767.98px) {
+    .tooltip-mobile-friendly {
+        font-size: 0.8125rem;
+        max-width: 240px;
+    }
+}
+
 
 /* ============================================================================
    FILTER BAR CONTAINER
@@ -60,13 +86,13 @@
 }
 
 .filter-controls .row {
-    row-gap: 1rem;
+    row-gap: 0.5rem;
 }
 
 .filter-controls .form-label {
     font-size: 0.875rem;
     font-weight: 600;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.25rem;
     color: var(--bs-heading-color);
 }
 

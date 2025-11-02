@@ -53,10 +53,11 @@ async function initializeExerciseDatabase(page) {
         // Load all exercise data
         await loadAllExerciseData(page);
         
-        // Initialize FilterBar component
-        filterBar = new GhostGymFilterBar('filtersOffcanvas', {
-            searchInputId: 'exerciseSearch',
-            searchPlaceholder: 'Search exercises by name, muscle group, or equipment...',
+        // Initialize FilterBar component (without search in offcanvas)
+        // Note: Don't trigger onFilterChange during initialization
+        let isInitializing = true;
+        filterBar = new GhostGymFilterBar('filterBarContainer', {
+            showSearch: false, // Don't show search in offcanvas, use main search instead
             filters: [
                 {
                     key: 'sortBy',
@@ -68,6 +69,19 @@ async function initializeExerciseDatabase(page) {
                         { value: 'favorites', label: 'My Favorites First' }
                     ],
                     defaultValue: 'name'
+                },
+                {
+                    key: 'exerciseTier',
+                    label: 'Exercise Tier',
+                    type: 'select',
+                    options: [
+                        { value: '1', label: '⭐ Standard - Core foundational exercises' },
+                        { value: '2', label: '⭐ Standard - Common effective exercises' },
+                        { value: '3', label: '◦ Specialized - Advanced variations' }
+                    ],
+                    placeholder: 'All Tiers',
+                    defaultValue: '1',
+                    helpText: 'Standard exercises are recommended for most training programs'
                 },
                 {
                     key: 'muscleGroup',
@@ -102,86 +116,108 @@ async function initializeExerciseDatabase(page) {
                 }
             ],
             onFilterChange: (filters) => {
+                // Skip filter changes during initialization
+                if (isInitializing) {
+                    console.log('⏭️ Skipping filter change during initialization');
+                    return;
+                }
                 console.log('🔍 Filters changed:', filters);
                 applyFiltersAndRender(filters);
             }
         });
         
-        // Initialize DataTable component
+        // Mark initialization as complete
+        isInitializing = false;
+        
+        // Connect main search input to FilterBar
+        const mainSearchInput = document.getElementById('exerciseSearch');
+        const clearSearchBtn = document.getElementById('clearSearchBtn');
+        
+        if (mainSearchInput) {
+            let searchTimeout;
+            mainSearchInput.addEventListener('input', (e) => {
+                const value = e.target.value.trim();
+                
+                // Show/hide clear button
+                if (clearSearchBtn) {
+                    clearSearchBtn.style.display = value ? 'block' : 'none';
+                }
+                
+                // Debounce search
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => {
+                    const currentFilters = filterBar.getFilters();
+                    currentFilters.search = value;
+                    applyFiltersAndRender(currentFilters);
+                }, 300);
+            });
+        }
+        
+        if (clearSearchBtn) {
+            clearSearchBtn.addEventListener('click', () => {
+                mainSearchInput.value = '';
+                clearSearchBtn.style.display = 'none';
+                const currentFilters = filterBar.getFilters();
+                currentFilters.search = '';
+                applyFiltersAndRender(currentFilters);
+            });
+        }
+        
+        // Initialize DataTable component with card-style layout
         exerciseTable = new GhostGymDataTable('exerciseTableContainer', {
             columns: [
                 {
-                    key: 'name',
-                    label: 'Exercise Name',
-                    sortable: true,
+                    key: 'card',
+                    label: 'EXERCISE NAME',
+                    sortable: false,
                     render: (value, row) => {
                         const isCustom = !row.isGlobal;
-                        const tierBadge = getTierBadge(row);
-                        return `
-                            ${isCustom ? '<i class="bx bx-user text-primary me-2"></i>' : ''}
-                            <span class="fw-medium">${exercisePage.escapeHtml(value)}</span>
-                            ${tierBadge}
-                        `;
-                    }
-                },
-                {
-                    key: 'targetMuscleGroup',
-                    label: 'Muscle Group',
-                    render: (value) => value 
-                        ? `<span class="badge bg-label-primary">${exercisePage.escapeHtml(value)}</span>`
-                        : '<span class="text-muted">-</span>'
-                },
-                {
-                    key: 'primaryEquipment',
-                    label: 'Equipment',
-                    render: (value) => value
-                        ? `<span class="badge bg-label-secondary">${exercisePage.escapeHtml(value)}</span>`
-                        : '<span class="text-muted">-</span>'
-                },
-                {
-                    key: 'difficultyLevel',
-                    label: 'Difficulty',
-                    render: (value) => value
-                        ? `<span class="badge bg-label-info">${exercisePage.escapeHtml(value)}</span>`
-                        : '<span class="text-muted">-</span>'
-                },
-                {
-                    key: 'favorite',
-                    label: 'Favorite',
-                    className: 'text-center',
-                    width: '80px',
-                    render: (value, row) => {
+                        const tierBadge = getTierBadgeCompact(row);
                         const isFavorited = window.ghostGym.exercises.favorites.has(row.id);
+                        
+                        // Difficulty badge with popover
+                        const difficultyBadge = row.difficultyLevel ? getDifficultyBadgeWithPopover(row.difficultyLevel) : '';
+                        
                         return `
-                            <button class="btn btn-sm btn-icon favorite-btn ${isFavorited ? 'favorited' : ''}" 
-                                    data-exercise-id="${row.id}"
-                                    title="${isFavorited ? 'Remove from favorites' : 'Add to favorites'}">
-                                <i class="bx ${isFavorited ? 'bxs-heart text-danger' : 'bx-heart'}"></i>
-                            </button>
+                            <div class="exercise-card">
+                                <div class="exercise-card-single-line">
+                                    <div class="exercise-card-info">
+                                        <div class="exercise-card-title">
+                                            ${isCustom ? '<i class="bx bx-user text-primary me-1" style="font-size: 0.875rem;"></i>' : ''}
+                                            <span class="fw-semibold">${exercisePage.escapeHtml(row.name)}</span>
+                                        </div>
+                                        <div class="exercise-card-meta">
+                                            ${tierBadge}
+                                            ${difficultyBadge}
+                                            ${row.targetMuscleGroup ? `<span class="text-muted">${exercisePage.escapeHtml(row.targetMuscleGroup)}</span>` : ''}
+                                            ${row.primaryEquipment ? `<span class="text-muted">• ${exercisePage.escapeHtml(row.primaryEquipment)}</span>` : ''}
+                                        </div>
+                                    </div>
+                                    <div class="exercise-card-actions">
+                                        <button class="btn btn-sm btn-icon favorite-btn ${isFavorited ? 'favorited' : ''}"
+                                                data-exercise-id="${row.id}"
+                                                title="${isFavorited ? 'Remove from favorites' : 'Add to favorites'}">
+                                            <i class="bx ${isFavorited ? 'bxs-heart text-danger' : 'bx-heart'}"></i>
+                                        </button>
+                                        <div class="dropdown">
+                                            <button type="button" class="btn btn-sm btn-icon dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
+                                                <i class="bx bx-dots-vertical-rounded"></i>
+                                            </button>
+                                            <div class="dropdown-menu dropdown-menu-end">
+                                                <a class="dropdown-item view-details-link" href="javascript:void(0);" data-exercise-id="${row.id}">
+                                                    <i class="bx bx-info-circle me-2"></i>View Details
+                                                </a>
+                                                <a class="dropdown-item add-to-workout-link" href="javascript:void(0);"
+                                                   data-exercise-id="${row.id}" data-exercise-name="${exercisePage.escapeHtml(row.name)}">
+                                                    <i class="bx bx-plus me-2"></i>Add to Workout
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         `;
                     }
-                },
-                {
-                    key: 'actions',
-                    label: 'Actions',
-                    className: 'text-center',
-                    width: '80px',
-                    render: (value, row) => `
-                        <div class="dropdown">
-                            <button type="button" class="btn btn-sm p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
-                                <i class="bx bx-dots-vertical-rounded"></i>
-                            </button>
-                            <div class="dropdown-menu dropdown-menu-end">
-                                <a class="dropdown-item view-details-link" href="javascript:void(0);" data-exercise-id="${row.id}">
-                                    <i class="bx bx-info-circle me-2"></i>View Details
-                                </a>
-                                <a class="dropdown-item add-to-workout-link" href="javascript:void(0);" 
-                                   data-exercise-id="${row.id}" data-exercise-name="${exercisePage.escapeHtml(row.name)}">
-                                    <i class="bx bx-plus me-2"></i>Add to Workout
-                                </a>
-                            </div>
-                        </div>
-                    `
                 }
             ],
             data: [],
@@ -189,11 +225,15 @@ async function initializeExerciseDatabase(page) {
             pageSizeOptions: [25, 50, 100, 250],
             emptyMessage: 'No exercises found. Try adjusting your filters or search query.',
             loadingMessage: 'Loading exercises...',
-            onRowClick: null, // Disable row click, use action buttons instead
+            tableClass: 'table exercise-card-table mb-0',
+            onRowClick: null,
             onPageChange: (page, info) => {
                 console.log(`📄 Page ${page}: showing ${info.startIndex}-${info.endIndex} of ${info.totalItems}`);
             }
         });
+        
+        // Initialize popovers after table renders
+        setTimeout(() => initializePopovers(), 100);
         
         // Add event delegation for favorite buttons and action links
         document.getElementById('exerciseTableContainer').addEventListener('click', async (e) => {
@@ -349,6 +389,20 @@ function applyFiltersAndRender(filters) {
         allExercises = allExercises.filter(e => e.difficultyLevel === filters.difficulty);
     }
     
+    // Apply exercise tier filter
+    if (filters.exerciseTier) {
+        const tierValue = parseInt(filters.exerciseTier);
+        allExercises = allExercises.filter(e => {
+            const exerciseTier = e.exerciseTier || 2;
+            const isFoundational = e.isFoundational || false;
+            // Tier 1 includes both exerciseTier === 1 and isFoundational === true
+            if (tierValue === 1) {
+                return exerciseTier === 1 || isFoundational;
+            }
+            return exerciseTier === tierValue;
+        });
+    }
+    
     // Apply favorites only filter
     if (filters.favoritesOnly) {
         allExercises = allExercises.filter(e => window.ghostGym.exercises.favorites.has(e.id));
@@ -396,7 +450,83 @@ function sortExercises(exercises, sortBy) {
 }
 
 /**
- * Get tier badge HTML
+ * Get difficulty badge with popover
+ */
+function getDifficultyBadgeWithPopover(difficulty) {
+    if (!difficulty) return '';
+    
+    const difficultyInfo = {
+        'Beginner': {
+            color: 'success',
+            icon: 'bx-trending-up',
+            description: 'Perfect for those new to training. Focuses on learning proper form and building foundational strength.'
+        },
+        'Intermediate': {
+            color: 'warning',
+            icon: 'bx-bar-chart',
+            description: 'For those with training experience. Requires good form and moderate strength levels.'
+        },
+        'Advanced': {
+            color: 'danger',
+            icon: 'bx-trophy',
+            description: 'For experienced lifters. Demands excellent technique, strength, and body control.'
+        }
+    };
+    
+    const info = difficultyInfo[difficulty] || { color: 'secondary', icon: 'bx-info-circle', description: 'Difficulty level' };
+    
+    return `
+        <span class="badge badge-outline-${info.color} difficulty-badge"
+              style="font-size: 0.7rem; padding: 0.25rem 0.5rem; cursor: help; background: transparent;"
+              data-bs-toggle="popover"
+              data-bs-trigger="click hover focus"
+              data-bs-placement="top"
+              data-bs-custom-class="difficulty-popover"
+              data-bs-html="true"
+              data-bs-content="<div class='d-flex align-items-start gap-2'><i class='bx ${info.icon} mt-1'></i><div>${info.description}</div></div>"
+              title="${difficulty}">
+            ${difficulty}
+        </span>
+    `;
+}
+
+/**
+ * Get tier badge HTML (compact version)
+ */
+function getTierBadgeCompact(exercise) {
+    const exerciseTier = exercise.exerciseTier || 2;
+    const isFoundational = exercise.isFoundational || false;
+    
+    if (isFoundational || exerciseTier === 1) {
+        return '<span class="badge" style="font-size: 0.65rem; padding: 0.15rem 0.35rem; background: rgba(139, 92, 246, 0.1); color: #8b5cf6; border: 1px solid rgba(139, 92, 246, 0.25);"><i class="bx bxs-star" style="font-size: 0.7rem;"></i> Standard</span>';
+    } else if (exerciseTier === 3) {
+        return '<span class="badge bg-secondary" style="font-size: 0.65rem; padding: 0.15rem 0.35rem; opacity: 0.7;"><i class="bx bx-dots-horizontal-rounded" style="font-size: 0.7rem;"></i></span>';
+    }
+    return '';
+}
+
+/**
+ * Initialize popovers for difficulty badges
+ */
+function initializePopovers() {
+    const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]');
+    popoverTriggerList.forEach(popoverTriggerEl => {
+        // Dispose existing popover if any
+        const existingPopover = bootstrap.Popover.getInstance(popoverTriggerEl);
+        if (existingPopover) {
+            existingPopover.dispose();
+        }
+        
+        // Create new popover
+        new bootstrap.Popover(popoverTriggerEl, {
+            container: 'body',
+            html: true
+        });
+    });
+}
+
+/**
+ * Get tier badge HTML (original for modal)
  */
 function getTierBadge(exercise) {
     const exerciseTier = exercise.exerciseTier || 2;

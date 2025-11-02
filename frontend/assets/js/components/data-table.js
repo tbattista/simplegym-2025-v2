@@ -33,6 +33,7 @@ class GhostGymDataTable {
             emptyMessage: 'No data found',
             loadingMessage: 'Loading...',
             tableClass: 'table table-hover datatable-table mb-0',
+            rowHeight: 'normal', // 'normal' or 'compact'
             
             // Callbacks
             onRowClick: null,
@@ -90,7 +91,7 @@ class GhostGymDataTable {
                 <!-- Table Container -->
                 <div class="datatable-table-container" style="display: none;">
                     <div class="table-responsive">
-                        <table class="${this.options.tableClass}">
+                        <table class="${this.options.tableClass} ${this.options.rowHeight === 'compact' ? 'compact' : ''}">
                             <thead class="table-light">
                                 <tr class="datatable-header-row"></tr>
                             </thead>

@@ -53,6 +53,7 @@ class GhostGymFilterBar {
         this.createStructure();
         this.attachEventListeners();
         this.initializeFilters();
+        this.initializeTooltips();
     }
     
     createStructure() {
@@ -134,17 +135,30 @@ class GhostGymFilterBar {
     }
     
     createSelectFilterHTML(filter, colClass) {
+        const helpIcon = filter.helpText ? `
+            <i class="bx bx-info-circle text-muted ms-1"
+               style="font-size: 0.875rem; cursor: help;"
+               data-bs-toggle="tooltip"
+               data-bs-placement="top"
+               data-bs-custom-class="tooltip-mobile-friendly"
+               title="${filter.helpText}"></i>
+        ` : '';
+        
         return `
             <div class="${colClass}">
-                <label class="form-label fw-semibold">${filter.label}</label>
-                <select class="form-select" 
+                <label class="form-label fw-semibold">
+                    ${filter.label}
+                    ${helpIcon}
+                </label>
+                <select class="form-select"
                         data-filter-key="${filter.key}"
                         data-filter-type="select">
                     <option value="">${filter.placeholder || 'All'}</option>
                     ${(filter.options || []).map(opt => {
                         const value = typeof opt === 'object' ? opt.value : opt;
                         const label = typeof opt === 'object' ? opt.label : opt;
-                        return `<option value="${value}">${label}</option>`;
+                        const selected = filter.defaultValue && filter.defaultValue === value ? 'selected' : '';
+                        return `<option value="${value}" ${selected}>${label}</option>`;
                     }).join('')}
                 </select>
             </div>
@@ -253,13 +267,31 @@ class GhostGymFilterBar {
     }
     
     initializeFilters() {
-        // Initialize filter state
+        // Initialize filter state with default values
         this.options.filters.forEach(filter => {
             if (filter.type === 'checkbox') {
-                this.state.filters[filter.key] = false;
+                this.state.filters[filter.key] = filter.defaultValue || false;
             } else {
-                this.state.filters[filter.key] = '';
+                this.state.filters[filter.key] = filter.defaultValue || '';
             }
+        });
+        
+        // Trigger initial filter change if there are default values
+        const hasDefaults = this.options.filters.some(f => f.defaultValue);
+        if (hasDefaults) {
+            this.notifyChange();
+        }
+    }
+    
+    initializeTooltips() {
+        // Initialize Bootstrap tooltips for help icons
+        const tooltipTriggerList = this.container.querySelectorAll('[data-bs-toggle="tooltip"]');
+        tooltipTriggerList.forEach(tooltipTriggerEl => {
+            new bootstrap.Tooltip(tooltipTriggerEl, {
+                trigger: 'click hover focus', // Mobile-friendly: works on tap
+                html: false,
+                container: 'body'
+            });
         });
     }
     

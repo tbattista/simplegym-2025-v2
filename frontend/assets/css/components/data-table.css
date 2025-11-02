@@ -16,14 +16,14 @@
 
 /* Table Header */
 .datatable-table thead th {
-    background-color: var(--bs-gray-100);
+    background-color: transparent;
     font-weight: 600;
-    font-size: 0.8125rem;
+    font-size: 0.6875rem;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
-    color: var(--bs-heading-color);
-    border-bottom: 2px solid var(--bs-border-color);
-    padding: 0.875rem 1rem;
+    letter-spacing: 0.8px;
+    color: var(--bs-secondary);
+    border-bottom: 1px solid var(--bs-border-color);
+    padding: 0.625rem 0.75rem;
     white-space: nowrap;
     vertical-align: middle;
     position: sticky;
@@ -31,8 +31,15 @@
     z-index: 10;
 }
 
+.datatable-table.compact thead th {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.65rem;
+    letter-spacing: 1px;
+}
+
 .dark-style .datatable-table thead th {
-    background-color: rgba(255, 255, 255, 0.04);
+    background-color: transparent;
+    color: rgba(255, 255, 255, 0.5);
 }
 
 /* Sortable Headers */
@@ -56,6 +63,17 @@
     vertical-align: middle;
     font-size: 0.875rem;
     border-bottom: 1px solid var(--bs-border-color);
+}
+
+/* Compact Row Styling */
+.datatable-table.compact tbody td {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8125rem;
+}
+
+.datatable-table.compact thead th {
+    padding: 0.625rem 0.75rem;
+    font-size: 0.75rem;
 }
 
 .datatable-table tbody tr {
@@ -267,6 +285,162 @@
 
 .dark-style .datatable-table tbody td {
     border-color: rgba(255, 255, 255, 0.08);
+}
+
+/* ============================================================================
+   EXERCISE CARD LAYOUT
+   ============================================================================ */
+
+.exercise-card-table {
+    border-collapse: separate;
+    border-spacing: 0 0.5rem;
+}
+
+.exercise-card-table thead {
+    display: none; /* Hide header for card layout */
+}
+
+.exercise-card-table tbody tr {
+    background: transparent;
+    border: none;
+}
+
+.exercise-card-table tbody tr:hover {
+    background: transparent;
+    cursor: default;
+}
+
+.exercise-card-table tbody td {
+    padding: 0;
+    border: none;
+}
+
+.exercise-card {
+    background: var(--bs-card-bg);
+    border: 1px solid var(--bs-border-color);
+    border-radius: 0.5rem;
+    padding: 1rem 1.25rem;
+    margin: 0 0.75rem;
+    transition: all 0.2s ease;
+}
+
+.exercise-card:hover {
+    border-color: rgba(var(--bs-primary-rgb), 0.3);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.dark-style .exercise-card {
+    background: rgba(255, 255, 255, 0.02);
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+.dark-style .exercise-card:hover {
+    border-color: rgba(var(--bs-primary-rgb), 0.4);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Single-line layout */
+.exercise-card-single-line {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+}
+
+.exercise-card-info {
+    flex: 1;
+    min-width: 0; /* Allow text truncation */
+}
+
+.exercise-card-title {
+    font-size: 0.9375rem;
+    line-height: 1.4;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.25rem;
+}
+
+.exercise-card-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    font-size: 0.75rem;
+    color: var(--bs-secondary);
+}
+
+.exercise-card-meta .badge {
+    margin-right: 0;
+}
+
+.exercise-card-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-shrink: 0;
+    align-items: center;
+}
+
+.exercise-card-actions .btn-icon {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+}
+
+.exercise-card-actions .btn-icon i {
+    font-size: 1.25rem;
+}
+
+/* Outline badge styles with Ghost Gym colors */
+.badge-outline-success {
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.25);
+    background: rgba(16, 185, 129, 0.05);
+}
+
+.badge-outline-warning {
+    color: #06b6d4;
+    border: 1px solid rgba(6, 182, 212, 0.25);
+    background: rgba(6, 182, 212, 0.05);
+}
+
+.badge-outline-danger {
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.25);
+    background: rgba(239, 68, 68, 0.05);
+}
+
+.badge-outline-secondary {
+    color: #64748b;
+    border: 1px solid rgba(100, 116, 139, 0.25);
+    background: rgba(100, 116, 139, 0.05);
+}
+
+/* Difficulty popover styling */
+.difficulty-popover {
+    max-width: 300px;
+}
+
+.difficulty-popover .popover-body {
+    font-size: 0.8125rem;
+    line-height: 1.5;
+}
+
+@media (max-width: 767.98px) {
+    .exercise-card {
+        padding: 0.75rem;
+    }
+    
+    .exercise-card-title {
+        font-size: 0.875rem;
+    }
+    
+    .exercise-card-meta {
+        font-size: 0.75rem;
+    }
 }
 
 /* ============================================================================
