@@ -973,6 +973,7 @@
     padding: 1rem;
   }
   
+  /* Only affect button groups within program view items, not workout cards */
   .program-view-item .btn-group {
     flex-direction: column;
     width: 100%;
@@ -980,6 +981,12 @@
   
   .program-view-item .btn-group .btn {
     width: 100%;
+  }
+  
+  /* Keep workout card buttons horizontal on all screens */
+  .card .btn-group,
+  #workoutTableContainer .btn-group {
+    flex-direction: row !important;
   }
 
 /* ============================================

@@ -285,54 +285,201 @@ function clearFilters() {
  */
 
 /**
- * Render workout table with pagination
+ * Render workout cards with pagination
  */
 function renderWorkoutTable() {
-    const tableBody = document.getElementById('workoutTableBody');
-    const tableContainer = document.getElementById('workoutTableContainer');
-    const emptyState = document.getElementById('workoutEmptyState');
-    const loadingState = document.getElementById('workoutLoadingState');
-    const paginationFooter = document.getElementById('workoutPaginationFooter');
-    
-    if (!tableBody) return;
-    
-    // Hide loading
-    loadingState.style.display = 'none';
+    const container = document.getElementById('workoutTableContainer');
+    if (!container) return;
     
     const filtered = window.ghostGym.workoutDatabase.filtered;
     
+    // Update stats
+    updateStats(filtered.length);
+    
     // Show empty state if no workouts
     if (filtered.length === 0) {
-        tableContainer.style.display = 'none';
-        emptyState.style.display = 'block';
-        paginationFooter.style.display = 'none';
-        updateStats(0);
+        container.innerHTML = `
+            <div class="text-center py-5">
+                <i class="bx bx-dumbbell display-1 text-muted"></i>
+                <h5 class="mt-3">No workouts found</h5>
+                <p class="text-muted">Try adjusting your filters or create a new workout</p>
+                <button class="btn btn-primary mt-2" onclick="createNewWorkout()">
+                    <i class="bx bx-plus me-1"></i>Create Your First Workout
+                </button>
+            </div>
+        `;
         return;
     }
-    
-    // Show table
-    tableContainer.style.display = 'block';
-    emptyState.style.display = 'none';
-    paginationFooter.style.display = 'block';
     
     // Calculate pagination
     const pageSize = window.ghostGym.workoutDatabase.pageSize;
     const currentPage = window.ghostGym.workoutDatabase.currentPage;
+    const totalPages = Math.ceil(filtered.length / pageSize);
     const startIndex = (currentPage - 1) * pageSize;
     const endIndex = startIndex + pageSize;
     const pageWorkouts = filtered.slice(startIndex, endIndex);
     
-    // Store displayed workouts
-    window.ghostGym.workoutDatabase.displayed = pageWorkouts;
+    // Render workout cards
+    const cardsHTML = pageWorkouts.map(workout => createWorkoutCard(workout)).join('');
     
-    // Render rows
-    tableBody.innerHTML = pageWorkouts.map(workout => createWorkoutTableRow(workout)).join('');
+    // Render pagination
+    const paginationHTML = renderPaginationControls(filtered.length, currentPage, pageSize);
     
-    // Update pagination
-    updatePagination();
+    container.innerHTML = `
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 p-4">
+            ${cardsHTML}
+        </div>
+        ${paginationHTML}
+    `;
+}
+
+/**
+ * Create a single workout card
+ */
+function createWorkoutCard(workout) {
+    // Get exercise list (first 2 lines worth)
+    const exercises = getWorkoutExercisesList(workout);
+    const exercisesPreview = exercises.slice(0, 6).map(e => truncateText(e, 15)).join(', ');
     
-    // Update stats
-    updateStats(filtered.length);
+    // Get tags
+    const tags = workout.tags || [];
+    const groupCount = workout.exercise_groups?.length || 0;
+    const totalExercises = getTotalExerciseCount(workout);
+    
+    return `
+        <div class="col">
+            <div class="card h-100">
+                <div class="card-body p-3">
+                    <!-- Top Row: Name and Badges -->
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <h6 class="mb-0 me-2">${escapeHtml(workout.name)}</h6>
+                        <div class="d-flex gap-1 flex-shrink-0">
+                            <span class="badge bg-label-primary">${groupCount} groups</span>
+                            <span class="badge bg-label-info">${totalExercises} exercises</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Exercise Preview (1-2 lines) -->
+                    <div class="mb-2 small text-muted" style="line-height: 1.4; max-height: 2.8em; overflow: hidden;">
+                        ${exercisesPreview || 'No exercises yet'}
+                    </div>
+                    
+                    <!-- Tags (if any) -->
+                    ${tags.length > 0 ? `
+                        <div class="mb-2">
+                            ${tags.slice(0, 2).map(tag => `<span class="badge bg-label-secondary me-1 small">${escapeHtml(tag)}</span>`).join('')}
+                        </div>
+                    ` : ''}
+                    
+                    <!-- Action Buttons (Full Width Row) -->
+                    <div class="btn-group btn-group-sm w-100 mt-2" role="group">
+                        <button class="btn btn-primary" onclick="viewWorkoutDetails('${workout.id}')" title="View Details">
+                            <i class="bx bx-show me-1"></i>View
+                        </button>
+                        <button class="btn btn-outline-primary" onclick="editWorkout('${workout.id}')" title="Edit Workout">
+                            <i class="bx bx-edit me-1"></i>Edit
+                        </button>
+                        <button class="btn btn-outline-secondary" onclick="doWorkout('${workout.id}')" title="Start Workout">
+                            <i class="bx bx-play me-1"></i>Start
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+/**
+ * Get list of exercise names from workout
+ */
+function getWorkoutExercisesList(workout) {
+    const exercises = [];
+    
+    // Get exercises from groups
+    if (workout.exercise_groups) {
+        workout.exercise_groups.forEach(group => {
+            if (group.exercises) {
+                Object.values(group.exercises).forEach(name => {
+                    if (name) exercises.push(name);
+                });
+            }
+        });
+    }
+    
+    // Add bonus exercises
+    if (workout.bonus_exercises) {
+        workout.bonus_exercises.forEach(bonus => {
+            if (bonus.name) exercises.push(bonus.name);
+        });
+    }
+    
+    return exercises;
+}
+
+/**
+ * Truncate text to specified length
+ */
+function truncateText(text, maxLength) {
+    if (!text) return '';
+    return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
+}
+
+/**
+ * Render pagination controls
+ */
+function renderPaginationControls(totalItems, currentPage, pageSize) {
+    const totalPages = Math.ceil(totalItems / pageSize);
+    
+    if (totalPages <= 1) return '';
+    
+    let html = '<div class="d-flex justify-content-between align-items-center p-4 border-top">';
+    
+    // Info text
+    const startIndex = (currentPage - 1) * pageSize + 1;
+    const endIndex = Math.min(currentPage * pageSize, totalItems);
+    html += `<div class="text-muted small">Showing ${startIndex} to ${endIndex} of ${totalItems} workouts</div>`;
+    
+    // Pagination buttons
+    html += '<nav><ul class="pagination pagination-sm mb-0">';
+    
+    // Previous button
+    html += `
+        <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+            <a class="page-link" href="javascript:void(0);" onclick="goToPage(${currentPage - 1})">
+                <i class="bx bx-chevron-left"></i>
+            </a>
+        </li>
+    `;
+    
+    // Page numbers (show max 5 pages)
+    const maxPages = 5;
+    let startPage = Math.max(1, currentPage - Math.floor(maxPages / 2));
+    let endPage = Math.min(totalPages, startPage + maxPages - 1);
+    
+    if (endPage - startPage < maxPages - 1) {
+        startPage = Math.max(1, endPage - maxPages + 1);
+    }
+    
+    for (let i = startPage; i <= endPage; i++) {
+        html += `
+            <li class="page-item ${i === currentPage ? 'active' : ''}">
+                <a class="page-link" href="javascript:void(0);" onclick="goToPage(${i})">${i}</a>
+            </li>
+        `;
+    }
+    
+    // Next button
+    html += `
+        <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+            <a class="page-link" href="javascript:void(0);" onclick="goToPage(${currentPage + 1})">
+                <i class="bx bx-chevron-right"></i>
+            </a>
+        </li>
+    `;
+    
+    html += '</ul></nav></div>';
+    
+    return html;
 }
 
 /**
@@ -723,30 +870,36 @@ function escapeHtml(text) {
  * Show loading state
  */
 function showWorkoutLoading() {
-    document.getElementById('workoutLoadingState').style.display = 'block';
-    document.getElementById('workoutEmptyState').style.display = 'none';
-    document.getElementById('workoutTableContainer').style.display = 'none';
-    document.getElementById('workoutPaginationFooter').style.display = 'none';
+    const container = document.getElementById('workoutTableContainer');
+    if (container) {
+        container.innerHTML = `
+            <div class="text-center py-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading workouts...</span>
+                </div>
+                <p class="mt-3 text-muted">Loading workouts...</p>
+            </div>
+        `;
+    }
 }
 
 /**
  * Show error state
  */
 function showWorkoutError(message) {
-    const emptyState = document.getElementById('workoutEmptyState');
-    emptyState.innerHTML = `
-        <i class="bx bx-error-circle display-1 text-danger"></i>
-        <h5 class="mt-3">Error Loading Workouts</h5>
-        <p class="text-muted">${escapeHtml(message)}</p>
-        <button class="btn btn-primary mt-2" onclick="loadWorkouts()">
-            <i class="bx bx-refresh me-1"></i>Retry
-        </button>
-    `;
-    
-    document.getElementById('workoutLoadingState').style.display = 'none';
-    emptyState.style.display = 'block';
-    document.getElementById('workoutTableContainer').style.display = 'none';
-    document.getElementById('workoutPaginationFooter').style.display = 'none';
+    const container = document.getElementById('workoutTableContainer');
+    if (container) {
+        container.innerHTML = `
+            <div class="text-center py-5">
+                <i class="bx bx-error-circle display-1 text-danger"></i>
+                <h5 class="mt-3">Error Loading Workouts</h5>
+                <p class="text-muted">${escapeHtml(message)}</p>
+                <button class="btn btn-primary mt-2" onclick="loadWorkouts()">
+                    <i class="bx bx-refresh me-1"></i>Retry
+                </button>
+            </div>
+        `;
+    }
 }
 
 /**

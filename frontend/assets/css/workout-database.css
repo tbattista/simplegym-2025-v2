@@ -90,6 +90,40 @@
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
+/* Workout card button styling - horizontal layout on all screens */
+.card .btn-group {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+}
+
+.card .btn-group .btn {
+    flex: 1;
+    white-space: nowrap;
+}
+
+/* Button color hierarchy: View (dullest) < Edit (medium) < Start (boldest/filled) */
+.card .btn-group .btn:first-child {
+    /* View button - dullest (outline secondary) */
+    background: transparent;
+    border-color: var(--bs-secondary);
+    color: var(--bs-secondary);
+}
+
+.card .btn-group .btn:nth-child(2) {
+    /* Edit button - medium (outline primary) */
+    background: transparent;
+    border-color: var(--bs-primary);
+    color: var(--bs-primary);
+}
+
+.card .btn-group .btn:last-child {
+    /* Start button - boldest (filled primary) */
+    background: var(--bs-primary);
+    border-color: var(--bs-primary);
+    color: white;
+}
+
 /* ============================================
    COMPACT FILTER BAR
    ============================================ */
@@ -204,21 +238,167 @@
     max-width: 1140px;
 }
 
-.workout-detail-meta {
-    padding-bottom: 1rem;
+/* Modal header styling - compact */
+#workoutDetailModal .modal-header {
+    padding: 0.875rem 1rem;
     border-bottom: 1px solid var(--bs-border-color);
+}
+
+#workoutDetailModal .modal-title {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+#workoutDetailModal .modal-title i {
+    font-size: 1.125rem;
+}
+
+/* Modal body spacing - compact */
+#workoutDetailModal .modal-body {
+    padding: 1rem;
+    font-size: 0.875rem;
+}
+
+.workout-detail-meta {
+    padding-bottom: 0.625rem;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid var(--bs-border-color);
+}
+
+.workout-detail-meta p {
+    font-size: 0.8125rem;
+    margin-bottom: 0.5rem;
+}
+
+/* Created/Modified dates spacing - compact */
+.workout-detail-meta .d-flex {
+    margin-bottom: 0.5rem;
+    font-size: 0.75rem;
+}
+
+.workout-detail-meta .d-flex span {
+    font-size: 0.75rem;
+}
+
+/* Tags in metadata - compact */
+.workout-detail-meta .badge {
+    font-size: 0.6875rem;
+    padding: 0.25rem 0.5rem;
+}
+
+/* Exercise groups heading - compact */
+#workoutDetailModal .modal-body h6 {
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    margin-top: 0.5rem;
 }
 
 .exercise-list {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 0.375rem;
 }
 
 .exercise-list .d-flex {
-    padding: 0.5rem;
+    padding: 0.375rem 0.5rem;
     background-color: var(--bs-gray-50);
-    border-radius: 0.375rem;
+    border-radius: 0.25rem;
+    font-size: 0.8125rem;
+}
+
+/* Exercise group cards - compact */
+#workoutDetailModal .card {
+    margin-bottom: 0.75rem;
+}
+
+#workoutDetailModal .card-body {
+    padding: 0.75rem;
+}
+
+#workoutDetailModal .card-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+/* Exercise badges in groups - compact */
+#workoutDetailModal .badge {
+    font-size: 0.6875rem;
+    padding: 0.25rem 0.5rem;
+}
+
+/* Exercise letter badges - compact */
+#workoutDetailModal .badge.bg-primary {
+    font-size: 0.625rem;
+    padding: 0.1875rem 0.375rem;
+    min-width: 1.5rem;
+}
+
+/* Modal footer button styling - horizontal layout, compact */
+#workoutDetailModal .modal-footer {
+    padding: 0.75rem 1rem;
+    border-top: 1px solid var(--bs-border-color);
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+#workoutDetailModal .modal-footer .btn {
+    min-width: 100px;
+    margin: 0;
+    padding: 0.375rem 0.75rem;
+    font-size: 0.8125rem;
+}
+
+#workoutDetailModal .modal-footer .btn i {
+    font-size: 0.875rem;
+}
+
+/* Button hierarchy in modal footer: Close (secondary) < Edit (outline) < Start (primary filled) */
+#workoutDetailModal .modal-footer .btn-secondary {
+    background: var(--bs-secondary);
+    border-color: var(--bs-secondary);
+    color: white;
+}
+
+#workoutDetailModal .modal-footer .btn-outline-primary {
+    background: transparent;
+    border-color: var(--bs-primary);
+    color: var(--bs-primary);
+}
+
+#workoutDetailModal .modal-footer .btn-outline-primary:hover {
+    background: var(--bs-primary);
+    color: white;
+}
+
+#workoutDetailModal .modal-footer .btn-primary {
+    background: var(--bs-primary);
+    border-color: var(--bs-primary);
+    color: white;
+}
+
+/* Ensure buttons stay horizontal on mobile */
+@media (max-width: 767.98px) {
+    #workoutDetailModal .modal-footer {
+        flex-direction: row;
+        flex-wrap: wrap;
+        padding: 0.625rem 0.75rem;
+    }
+    
+    #workoutDetailModal .modal-footer .btn {
+        flex: 1;
+        min-width: 85px;
+        padding: 0.3125rem 0.625rem;
+        font-size: 0.75rem;
+    }
 }
 
 /* ============================================
@@ -287,17 +467,8 @@
         display: none;
     }
     
-    /* Stack action buttons vertically on mobile */
-    .btn-group {
-        flex-direction: column;
-        width: 100%;
-    }
-    
-    .btn-group .btn {
-        width: 100%;
-        border-radius: 0.375rem !important;
-        margin-bottom: 0.25rem;
-    }
+    /* Note: Workout card buttons should remain horizontal on all screen sizes */
+    /* The .btn-group in workout cards is intentionally kept horizontal for better UX */
     
     /* Adjust modal for mobile */
     .modal-xl {
