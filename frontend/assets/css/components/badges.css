@@ -253,12 +253,12 @@
    DARK MODE
    ============================================================================ */
 
-.dark-style .tag {
+[data-bs-theme=dark] .tag {
     background-color: rgba(255, 255, 255, 0.08);
     color: var(--bs-gray-300);
 }
 
-.dark-style .badge-clickable:hover {
+[data-bs-theme=dark] .badge-clickable:hover {
     box-shadow: 0 2px 4px rgba(255, 255, 255, 0.1);
 }
 

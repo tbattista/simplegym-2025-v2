@@ -749,29 +749,232 @@
    DARK THEME ADJUSTMENTS
    ============================================ */
 
+/* Workout Library Card - Light Mode */
+.workout-library-card {
+    background: var(--bs-card-bg);
+}
+
+/* Workout Search Card - Light Mode */
+.workout-search-card {
+    background: var(--bs-body-bg);
+    border: 1px solid var(--bs-border-color);
+}
+
+/* Workout Editor Card - Light Mode */
+.workout-editor-card {
+    background: var(--bs-card-bg);
+}
+
+/* Workout Cards */
 [data-bs-theme="dark"] .workout-card-compact {
-    background: var(--bs-gray-900);
-    border-color: var(--bs-gray-700);
+    background: #1e293b;
+    border-color: #475569;
+}
+
+/* Dark Mode - Workout Library Card */
+[data-bs-theme="dark"] .workout-library-card {
+    background: #1e293b !important;
+    border-color: #475569;
+}
+
+/* Dark Mode - Workout Search Card */
+[data-bs-theme="dark"] .workout-search-card {
+    background: #0f172a !important;
+    border-color: #475569 !important;
+}
+
+/* Dark Mode - Workout Editor Card */
+[data-bs-theme="dark"] .workout-editor-card {
+    background: #1e293b !important;
+    border-color: #475569;
 }
 
 [data-bs-theme="dark"] .workout-card-compact:hover {
     border-color: var(--bs-primary);
-    background: var(--bs-gray-800);
+    background: #334155;
 }
 
 [data-bs-theme="dark"] .workout-card-compact.selected {
-    background: rgba(var(--bs-primary-rgb), 0.1);
+    background: rgba(var(--bs-primary-rgb), 0.15);
+    border-color: var(--bs-primary);
 }
 
-[data-bs-theme="dark"] .exercise-group,
+[data-bs-theme="dark"] .workout-card-compact-title {
+    color: #f8fafc;
+}
+
+[data-bs-theme="dark"] .workout-card-compact-description {
+    color: #94a3b8;
+}
+
+[data-bs-theme="dark"] .workout-card-compact-stats {
+    color: #94a3b8;
+}
+
+[data-bs-theme="dark"] .workout-card-compact-tag {
+    background: #334155;
+    color: #cbd5e1;
+}
+
+/* Workout Library Section */
+[data-bs-theme="dark"] .workout-library-scroll::-webkit-scrollbar-track {
+    background: #1e293b;
+}
+
+[data-bs-theme="dark"] .workout-library-scroll::-webkit-scrollbar-thumb {
+    background: #475569;
+}
+
+[data-bs-theme="dark"] .workout-library-scroll::-webkit-scrollbar-thumb:hover {
+    background: #64748b;
+}
+
+[data-bs-theme="dark"] #currentWorkoutName {
+    color: #f8fafc;
+}
+
+/* Workout Editor Section */
+[data-bs-theme="dark"] .workout-editor-section {
+    background: #1e293b;
+    color: #f8fafc;
+}
+
+[data-bs-theme="dark"] .workout-editor-empty-state {
+    color: #94a3b8;
+}
+
+/* Accordion Items */
+[data-bs-theme="dark"] .accordion-workout-groups .accordion-item {
+    background: #1e293b;
+    border-color: #475569;
+}
+
+[data-bs-theme="dark"] .accordion-workout-groups .accordion-button {
+    background: #1e293b;
+    color: #f8fafc;
+}
+
+[data-bs-theme="dark"] .accordion-workout-groups .accordion-button:not(.collapsed) {
+    background: #334155;
+    color: #f8fafc;
+}
+
+[data-bs-theme="dark"] .accordion-workout-groups .accordion-button:hover {
+    background: #334155;
+}
+
+[data-bs-theme="dark"] .accordion-workout-groups .exercise-preview-main {
+    color: #f8fafc;
+}
+
+[data-bs-theme="dark"] .accordion-workout-groups .exercise-preview-secondary,
+[data-bs-theme="dark"] .accordion-workout-groups .exercise-preview-info,
+[data-bs-theme="dark"] .accordion-workout-groups .exercise-preview-weight {
+    color: #94a3b8;
+}
+
+[data-bs-theme="dark"] .accordion-workout-groups .accordion-body {
+    background: #334155;
+    color: #f8fafc;
+}
+
+[data-bs-theme="dark"] .accordion-workout-groups .drag-handle {
+    color: #94a3b8;
+}
+
+[data-bs-theme="dark"] .accordion-workout-groups .drag-handle:hover {
+    color: #c4b5fd;
+}
+
+/* Form Elements */
+[data-bs-theme="dark"] .exercise-input-label,
+[data-bs-theme="dark"] .form-label {
+    color: #f8fafc;
+}
+
+[data-bs-theme="dark"] .form-control,
+[data-bs-theme="dark"] .form-select {
+    background: #334155;
+    border-color: #475569;
+    color: #f8fafc;
+}
+
+[data-bs-theme="dark"] .form-control:focus,
+[data-bs-theme="dark"] .form-select:focus {
+    background: #334155;
+    border-color: var(--bs-primary);
+    color: #f8fafc;
+}
+
+[data-bs-theme="dark"] .form-control::placeholder {
+    color: #64748b;
+}
+
+/* Legacy Card Style */
+[data-bs-theme="dark"] .exercise-group.card,
 [data-bs-theme="dark"] .bonus-exercise {
-    background: var(--bs-gray-900);
-    border-color: var(--bs-gray-700);
+    background: #1e293b;
+    border-color: #475569;
 }
 
-[data-bs-theme="dark"] .exercise-group .card-header {
-    background: var(--bs-gray-800);
-    border-color: var(--bs-gray-700);
+[data-bs-theme="dark"] .exercise-group.card .card-header,
+[data-bs-theme="dark"] .bonus-exercise .card-header {
+    background: #334155;
+    border-color: #475569;
+    color: #f8fafc;
+}
+
+[data-bs-theme="dark"] .exercise-group.card .card-body,
+[data-bs-theme="dark"] .bonus-exercise .card-body {
+    background: #1e293b;
+    color: #f8fafc;
+}
+
+/* Bonus Exercise Specific */
+[data-bs-theme="dark"] .bonus-exercise .card-header {
+    background: rgba(16, 185, 129, 0.1);
+    border-color: rgba(16, 185, 129, 0.3);
+}
+
+/* Editor Actions */
+[data-bs-theme="dark"] .editor-actions {
+    border-top-color: #475569;
+}
+
+[data-bs-theme="dark"] .save-status {
+    color: #94a3b8;
+}
+
+/* Edit Mode Active State */
+[data-bs-theme="dark"] .accordion-workout-groups.edit-mode-active {
+    background: rgba(245, 158, 11, 0.1);
+    border-color: var(--bs-warning);
+}
+
+[data-bs-theme="dark"] .accordion-workout-groups.edit-mode-active .accordion-item {
+    background: rgba(245, 158, 11, 0.15);
+    border-color: var(--bs-warning);
+}
+
+[data-bs-theme="dark"] .accordion-workout-groups.edit-mode-active .accordion-button {
+    background: rgba(245, 158, 11, 0.2);
+}
+
+[data-bs-theme="dark"] .accordion-workout-groups.edit-mode-active .drag-handle {
+    color: var(--bs-warning);
+}
+
+/* Scrollbar */
+[data-bs-theme="dark"] .workout-builder-container ::-webkit-scrollbar-track {
+    background: #1e293b;
+}
+
+[data-bs-theme="dark"] .workout-builder-container ::-webkit-scrollbar-thumb {
+    background: #475569;
+}
+
+[data-bs-theme="dark"] .workout-builder-container ::-webkit-scrollbar-thumb:hover {
+    background: #64748b;
 }
 
 /* ============================================

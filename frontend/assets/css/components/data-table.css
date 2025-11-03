@@ -37,7 +37,7 @@
     letter-spacing: 1px;
 }
 
-.dark-style .datatable-table thead th {
+[data-bs-theme=dark] .datatable-table thead th {
     background-color: transparent;
     color: rgba(255, 255, 255, 0.5);
 }
@@ -85,11 +85,11 @@
     cursor: pointer;
 }
 
-.dark-style .datatable-table tbody tr:hover {
+[data-bs-theme=dark] .datatable-table tbody tr:hover {
     background-color: rgba(255, 255, 255, 0.02);
 }
 
-.dark-style .datatable-table tbody td {
+[data-bs-theme=dark] .datatable-table tbody td {
     border-color: rgba(255, 255, 255, 0.08);
 }
 
@@ -178,11 +178,11 @@
     border-color: var(--bs-border-color);
 }
 
-.dark-style .pagination .page-link {
+[data-bs-theme=dark] .pagination .page-link {
     background-color: var(--bs-body-bg);
 }
 
-.dark-style .pagination .page-link:hover {
+[data-bs-theme=dark] .pagination .page-link:hover {
     background-color: rgba(255, 255, 255, 0.04);
 }
 
@@ -278,12 +278,12 @@
    DARK MODE
    ============================================================================ */
 
-.dark-style .datatable-pagination {
+[data-bs-theme=dark] .datatable-pagination {
     background-color: var(--bs-body-bg);
     border-color: rgba(255, 255, 255, 0.08);
 }
 
-.dark-style .datatable-table tbody td {
+[data-bs-theme=dark] .datatable-table tbody td {
     border-color: rgba(255, 255, 255, 0.08);
 }
 
@@ -329,12 +329,12 @@
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
-.dark-style .exercise-card {
+[data-bs-theme=dark] .exercise-card {
     background: rgba(255, 255, 255, 0.02);
     border-color: rgba(255, 255, 255, 0.08);
 }
 
-.dark-style .exercise-card:hover {
+[data-bs-theme=dark] .exercise-card:hover {
     border-color: rgba(var(--bs-primary-rgb), 0.4);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }

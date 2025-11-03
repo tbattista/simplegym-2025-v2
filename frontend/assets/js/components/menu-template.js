@@ -88,14 +88,11 @@ function getMenuHTML(activePage = 'home') {
                 </a>
             </li>
             
-            <!-- Tools & Settings -->
-            <li class="menu-header small text-uppercase">
-                <span class="menu-header-text">Tools & Settings</span>
-            </li>
-            <li class="menu-item" data-section="settings">
-                <a href="#settings" class="menu-link" id="menuSettings">
-                    <i class="menu-icon tf-icons bx bx-cog"></i>
-                    <div class="text-truncate">Settings</div>
+            <!-- Dark Mode Toggle -->
+            <li class="menu-item" id="darkModeToggle">
+                <a href="javascript:void(0);" class="menu-link">
+                    <i class="menu-icon tf-icons bx bx-moon" id="themeIcon"></i>
+                    <div class="text-truncate" id="themeText">Dark Mode</div>
                 </a>
             </li>
             
@@ -134,3 +131,101 @@ function getMenuHTML(activePage = 'home') {
 
 // Make globally available immediately
 window.getMenuHTML = getMenuHTML;
+
+/**
+ * Initialize theme toggle functionality
+ * Call this after menu is injected into the DOM
+ */
+function initializeThemeToggle() {
+    // Wait for theme manager to be available
+    if (!window.themeManager) {
+        console.warn('⚠️ Theme manager not available yet, retrying...');
+        setTimeout(initializeThemeToggle, 100);
+        return;
+    }
+
+    console.log('🎨 Initializing theme toggle in menu...');
+
+    const toggleBtn = document.getElementById('darkModeToggle');
+    if (!toggleBtn) {
+        console.warn('⚠️ Dark mode toggle button not found');
+        return;
+    }
+
+    // Set up click handler for theme toggle
+    toggleBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        cycleTheme();
+    });
+
+    // Update button to show current theme
+    updateThemeButton();
+
+    // Listen for theme changes from other sources
+    window.addEventListener('themeChanged', () => {
+        updateThemeButton();
+    });
+
+    console.log('✅ Theme toggle initialized');
+}
+
+/**
+ * Cycle through theme options: auto → dark → light → auto
+ */
+function cycleTheme() {
+    if (!window.themeManager) return;
+
+    const currentPreference = window.themeManager.getPreference();
+    let nextTheme;
+
+    switch (currentPreference) {
+        case 'auto':
+            nextTheme = 'dark';
+            break;
+        case 'dark':
+            nextTheme = 'light';
+            break;
+        case 'light':
+            nextTheme = 'auto';
+            break;
+        default:
+            nextTheme = 'auto';
+    }
+
+    console.log('🎨 Cycling theme from', currentPreference, 'to', nextTheme);
+    window.themeManager.setPreference(nextTheme);
+    updateThemeButton();
+}
+
+/**
+ * Update theme button icon and text to show current theme
+ */
+function updateThemeButton() {
+    if (!window.themeManager) return;
+
+    const currentPreference = window.themeManager.getPreference();
+    const icon = document.getElementById('themeIcon');
+    const text = document.getElementById('themeText');
+
+    if (!icon || !text) return;
+
+    switch (currentPreference) {
+        case 'auto':
+            icon.className = 'menu-icon tf-icons bx bx-desktop';
+            text.textContent = 'Auto Theme';
+            break;
+        case 'dark':
+            icon.className = 'menu-icon tf-icons bx bx-moon';
+            text.textContent = 'Dark Mode';
+            break;
+        case 'light':
+            icon.className = 'menu-icon tf-icons bx bx-sun';
+            text.textContent = 'Light Mode';
+            break;
+    }
+}
+
+// Make globally available
+window.initializeThemeToggle = initializeThemeToggle;
+window.cycleTheme = cycleTheme;
+window.updateThemeButton = updateThemeButton;

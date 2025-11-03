@@ -37,9 +37,26 @@ class MenuInjectionService {
             
             // Re-initialize menu functionality after injection
             this.reinitializeMenu();
+            
+            // Initialize theme toggle functionality
+            this.initializeThemeToggle();
         } catch (error) {
             console.error('❌ Error injecting components:', error);
         }
+    }
+    
+    /**
+     * Initialize theme toggle functionality after menu injection
+     */
+    initializeThemeToggle() {
+        // Wait a bit for menu to be fully rendered
+        setTimeout(() => {
+            if (window.initializeThemeToggle) {
+                window.initializeThemeToggle();
+            } else {
+                console.warn('⚠️ initializeThemeToggle not available yet');
+            }
+        }, 200);
     }
     
     /**
