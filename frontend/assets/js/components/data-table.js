@@ -141,6 +141,7 @@ class GhostGymDataTable {
     setData(data) {
         this.options.data = data;
         this.filteredData = [...data];
+        this.currentPage = 1; // Reset to page 1 when data changes
         this.applySort();
         this.updatePagination();
         this.render();
@@ -309,8 +310,16 @@ class GhostGymDataTable {
         if (this.elements.pageInfo) {
             const startIndex = (this.currentPage - 1) * this.pageSize + 1;
             const endIndex = Math.min(this.currentPage * this.pageSize, totalItems);
-            this.elements.pageInfo.textContent = 
+            this.elements.pageInfo.textContent =
                 `Showing ${startIndex} to ${endIndex} of ${totalItems.toLocaleString()} entries`;
+        }
+        
+        // Clear pagination controls if only 1 page or less
+        if (this.elements.paginationControls) {
+            if (totalPages <= 1) {
+                this.elements.paginationControls.innerHTML = '';
+                return;
+            }
         }
         
         // Render pagination controls
