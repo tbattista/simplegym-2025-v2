@@ -88,17 +88,17 @@ function getMenuHTML(activePage = 'home') {
                 </a>
             </li>
             
+            <!-- Account and Settings Section -->
+            <li class="menu-header small text-uppercase mt-auto">
+                <span class="menu-header-text">Account and Settings</span>
+            </li>
+            
             <!-- Dark Mode Toggle -->
             <li class="menu-item" id="darkModeToggle">
                 <a href="javascript:void(0);" class="menu-link">
                     <i class="menu-icon tf-icons bx bx-moon" id="themeIcon"></i>
                     <div class="text-truncate" id="themeText">Dark Mode</div>
                 </a>
-            </li>
-            
-            <!-- User Authentication Section -->
-            <li class="menu-header small text-uppercase mt-auto">
-                <span class="menu-header-text">Account</span>
             </li>
             
             <!-- Sign In Button (for anonymous users) -->
