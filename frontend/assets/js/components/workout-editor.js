@@ -89,8 +89,12 @@ function loadWorkoutIntoEditor(workoutId) {
     // Highlight selected card in library
     highlightSelectedWorkout(workoutId);
     
-    // Collapse workout library and show collapse button
-    collapseWorkoutLibrary(workout.name);
+    // Collapse workout library using the same function as the button
+    // This ensures the button state updates correctly
+    const expandedContent = document.getElementById('workoutLibraryExpandedContent');
+    if (expandedContent && expandedContent.style.display !== 'none') {
+        toggleWorkoutLibraryContent();
+    }
     
     // Initialize autocompletes
     if (window.initializeExerciseAutocompletes) {
@@ -150,8 +154,11 @@ function createNewWorkoutInEditor() {
         bonus_exercises: []
     };
     
-    // Collapse workout library content
-    collapseWorkoutLibrary('New Workout');
+    // Collapse workout library using the same function as the button
+    const expandedContent = document.getElementById('workoutLibraryExpandedContent');
+    if (expandedContent && expandedContent.style.display !== 'none') {
+        toggleWorkoutLibraryContent();
+    }
     
     // Hide "Change Workout" button for new workouts
     const changeWorkoutBtn = document.getElementById('changeWorkoutBtn');
@@ -340,8 +347,11 @@ function cancelEditWorkout() {
         hideWorkoutsBtn.style.display = 'none';
     }
     
-    // Expand workout library content
-    expandWorkoutLibrary();
+    // Expand workout library using the same function as the button
+    const expandedContent = document.getElementById('workoutLibraryExpandedContent');
+    if (expandedContent && expandedContent.style.display === 'none') {
+        toggleWorkoutLibraryContent();
+    }
     
     // Hide editor, show empty state
     document.getElementById('workoutEditorForm').style.display = 'none';
@@ -469,37 +479,29 @@ function highlightSelectedWorkout(workoutId) {
 
 /**
  * Collapse workout library after selection
- * @param {string} workoutName - Name of selected workout to display
+ * Now uses toggleWorkoutLibraryContent() for consistent button state
+ * @param {string} workoutName - Name of selected workout to display (deprecated parameter)
+ * @deprecated Use toggleWorkoutLibraryContent() directly instead
  */
 function collapseWorkoutLibrary(workoutName) {
     const expandedContent = document.getElementById('workoutLibraryExpandedContent');
-    
-    // Hide the workout library content (search, cards)
-    if (expandedContent) {
-        expandedContent.style.display = 'none';
+    if (expandedContent && expandedContent.style.display !== 'none') {
+        toggleWorkoutLibraryContent();
     }
-    
-    console.log('✅ Workout library collapsed');
+    console.log('✅ Workout library collapsed via wrapper');
 }
 
 /**
  * Expand workout library
+ * Now uses toggleWorkoutLibraryContent() for consistent button state
+ * @deprecated Use toggleWorkoutLibraryContent() directly instead
  */
 function expandWorkoutLibrary() {
     const expandedContent = document.getElementById('workoutLibraryExpandedContent');
-    const hideWorkoutsBtn = document.getElementById('hideWorkoutsBtn');
-    
-    // Show the workout library content
-    if (expandedContent) {
-        expandedContent.style.display = 'block';
+    if (expandedContent && expandedContent.style.display === 'none') {
+        toggleWorkoutLibraryContent();
     }
-    
-    // Hide "Hide Workouts" button when expanding (back to initial state)
-    if (hideWorkoutsBtn) {
-        hideWorkoutsBtn.style.display = 'none';
-    }
-    
-    console.log('✅ Workout library expanded');
+    console.log('✅ Workout library expanded via wrapper');
 }
 
 /**
