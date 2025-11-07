@@ -249,6 +249,21 @@ async function initWorkoutMode() {
 }
 
 /**
+ * Get Firebase auth token
+ */
+async function getAuthToken() {
+    try {
+        if (!firebase || !firebase.auth || !firebase.auth().currentUser) {
+            return null;
+        }
+        return await firebase.auth().currentUser.getIdToken();
+    } catch (error) {
+        console.error('Error getting auth token:', error);
+        return null;
+    }
+}
+
+/**
  * Load workout data
  */
 async function loadWorkout(workoutId) {
@@ -649,6 +664,11 @@ function fallbackShare(shareData) {
         console.error('❌ Error copying to clipboard:', error);
         if (window.showAlert) {
             window.showAlert('Could not copy to clipboard', 'danger');
+        } else {
+            alert('Could not copy to clipboard');
+        }
+    });
+}
 /**
  * ============================================
  * SESSION MANAGEMENT (Phase 1)
@@ -957,21 +977,6 @@ function collectExerciseData() {
 }
 
 /**
- * Get Firebase auth token
- */
-async function getAuthToken() {
-    try {
-        if (!firebase || !firebase.auth || !firebase.auth().currentUser) {
-            return null;
-        }
-        return await firebase.auth().currentUser.getIdToken();
-    } catch (error) {
-        console.error('Error getting auth token:', error);
-        return null;
-    }
-}
-
-/**
  * Start session timer
  */
 function startSessionTimer() {
@@ -1044,10 +1049,6 @@ function showCompletionSummary(session) {
     setTimeout(() => {
         window.location.href = 'workouts.html';
     }, 3000);
-}
-
-        }
-    });
 }
 
 /**
