@@ -1,0 +1,1826 @@
+{
+  "inspected_at": "2025-11-06T10:52:40.143434",
+  "collections": {
+    "global_exercises": {
+      "total_docs_sampled": 3,
+      "sample_doc_ids": [
+        "exercise-0012febe",
+        "exercise-004518f5",
+        "exercise-0048d526"
+      ]
+    },
+    "users": {
+      "total_docs_sampled": 0,
+      "sample_doc_ids": []
+    }
+  },
+  "user_workouts": {
+    "total_count": 10,
+    "workouts": [
+      {
+        "id": "workout-06fad623",
+        "name": "Legs",
+        "fields": {
+          "description": {
+            "type": "str",
+            "value": "This is the best leg workout on the planet"
+          },
+          "modified_date": {
+            "type": "DatetimeWithNanoseconds",
+            "value": "<class 'google.api_core.datetime_helpers.DatetimeWithNanoseconds'>"
+          },
+          "id": {
+            "type": "str",
+            "value": "workout-06fad623"
+          },
+          "name": {
+            "type": "str",
+            "value": "Legs"
+          },
+          "sync_status": {
+            "type": "str",
+            "value": "synced"
+          },
+          "tags": {
+            "type": "list",
+            "value": "<class 'list'>"
+          },
+          "version": {
+            "type": "int",
+            "value": 19
+          },
+          "created_date": {
+            "type": "DatetimeWithNanoseconds",
+            "value": "<class 'google.api_core.datetime_helpers.DatetimeWithNanoseconds'>"
+          },
+          "is_template": {
+            "type": "bool",
+            "value": true
+          },
+          "bonus_exercises": {
+            "type": "list",
+            "value": "<class 'list'>"
+          },
+          "exercise_groups": {
+            "type": "list",
+            "value": "<class 'list'>"
+          }
+        }
+      },
+      {
+        "id": "workout-542be09e",
+        "name": "Push Day",
+        "fields": {
+          "description": {
+            "type": "str",
+            "value": ""
+          },
+          "modified_date": {
+            "type": "DatetimeWithNanoseconds",
+            "value": "<class 'google.api_core.datetime_helpers.DatetimeWithNanoseconds'>"
+          },
+          "id": {
+            "type": "str",
+            "value": "workout-542be09e"
+          },
+          "name": {
+            "type": "str",
+            "value": "Push Day"
+          },
+          "sync_status": {
+            "type": "str",
+            "value": "synced"
+          },
+          "tags": {
+            "type": "list",
+            "value": "<class 'list'>"
+          },
+          "version": {
+            "type": "int",
+            "value": 15
+          },
+          "created_date": {
+            "type": "DatetimeWithNanoseconds",
+            "value": "<class 'google.api_core.datetime_helpers.DatetimeWithNanoseconds'>"
+          },
+          "bonus_exercises": {
+            "type": "list",
+            "value": "<class 'list'>"
+          },
+          "is_template": {
+            "type": "bool",
+            "value": true
+          },
+          "exercise_groups": {
+            "type": "list",
+            "value": "<class 'list'>"
+          }
+        }
+      },
+      {
+        "id": "workout-6338cdee",
+        "name": "Chest Day",
+        "fields": {
+          "description": {
+            "type": "str",
+            "value": ""
+          },
+          "modified_date": {
+            "type": "DatetimeWithNanoseconds",
+            "value": "<class 'google.api_core.datetime_helpers.DatetimeWithNanoseconds'>"
+          },
+          "version": {
+            "type": "int",
+            "value": 1
+          },
+          "name": {
+            "type": "str",
+            "value": "Chest Day"
+          },
+          "id": {
+            "type": "str",
+            "value": "workout-6338cdee"
+          },
+          "tags": {
+            "type": "list",
+            "value": "<class 'list'>"
+          },
+          "sync_status": {
+            "type": "str",
+            "value": "synced"
+          },
+          "created_date": {
+            "type": "DatetimeWithNanoseconds",
+            "value": "<class 'google.api_core.datetime_helpers.DatetimeWithNanoseconds'>"
+          },
+          "bonus_exercises": {
+            "type": "list",
+            "value": "<class 'list'>"
+          },
+          "exercise_groups": {
+            "type": "list",
+            "value": "<class 'list'>"
+          },
+          "is_template": {
+            "type": "bool",
+            "value": true
+          }
+        }
+      },
+      {
+        "id": "workout-7eb8443b",
+        "name": "new new 4",
+        "fields": {
+          "description": {
+            "type": "str",
+            "value": "Test save"
+          },
+          "modified_date": {
+            "type": "DatetimeWithNanoseconds",
+            "value": "<class 'google.api_core.datetime_helpers.DatetimeWithNanoseconds'>"
+          },
+          "sync_status": {
+            "type": "str",
+            "value": "synced"
+          },
+          "name": {
+            "type": "str",
+            "value": "new new 4"
+          },
+          "id": {
+            "type": "str",
+            "value": "workout-7eb8443b"
+          },
+          "tags": {
+            "type": "list",
+            "value": "<class 'list'>"
+          },
+          "version": {
+            "type": "int",
+            "value": 19
+          },
+          "created_date": {
+            "type": "DatetimeWithNanoseconds",
+            "value": "<class 'google.api_core.datetime_helpers.DatetimeWithNanoseconds'>"
+          },
+          "is_template": {
+            "type": "bool",
+            "value": true
+          },
+          "bonus_exercises": {
+            "type": "list",
+            "value": "<class 'list'>"
+          },
+          "exercise_groups": {
+            "type": "list",
+            "value": "<class 'list'>"
+          }
+        }
+      },
+      {
+        "id": "workout-9a39855b",
+        "name": "Back & Biceps",
+        "fields": {
+          "description": {
+            "type": "str",
+            "value": ""
+          },
+          "modified_date": {
+            "type": "DatetimeWithNanoseconds",
+            "value": "<class 'google.api_core.datetime_helpers.DatetimeWithNanoseconds'>"
+          },
+          "id": {
+            "type": "str",
+            "value": "workout-9a39855b"
+          },
+          "name": {
+            "type": "str",
+            "value": "Back & Biceps"
+          },
+          "sync_status": {
+            "type": "str",
+            "value": "synced"
+          },
+          "tags": {
+            "type": "list",
+            "value": "<class 'list'>"
+          },
+          "version": {
+            "type": "int",
+            "value": 31
+          },
+          "created_date": {
+            "type": "DatetimeWithNanoseconds",
+            "value": "<class 'google.api_core.datetime_helpers.DatetimeWithNanoseconds'>"
+          },
+          "bonus_exercises": {
+            "type": "list",
+            "value": "<class 'list'>"
+          },
+          "is_template": {
+            "type": "bool",
+            "value": true
+          },
+          "exercise_groups": {
+            "type": "list",
+            "value": "<class 'list'>"
+          }
+        }
+      },
+      {
+        "id": "workout-a808ee17",
+        "name": "Push day - upper body focus",
+        "fields": {
+          "description": {
+            "type": "str",
+            "value": ""
+          },
+          "modified_date": {
+            "type": "DatetimeWithNanoseconds",
+            "value": "<class 'google.api_core.datetime_helpers.DatetimeWithNanoseconds'>"
+          },
+          "sync_status": {
+            "type": "str",
+            "value": "synced"
+          },
+          "name": {
+            "type": "str",
+            "value": "Push day - upper body focus"
+          },
+          "id": {
+            "type": "str",
+            "value": "workout-a808ee17"
+          },
+          "tags": {
+            "type": "list",
+            "value": "<class 'list'>"
+          },
+          "version": {
+            "type": "int",
+            "value": 2
+          },
+          "created_date": {
+            "type": "DatetimeWithNanoseconds",
+            "value": "<class 'google.api_core.datetime_helpers.DatetimeWithNanoseconds'>"
+          },
+          "is_template": {
+            "type": "bool",
+            "value": true
+          },
+          "bonus_exercises": {
+            "type": "list",
+            "value": "<class 'list'>"
+          },
+          "exercise_groups": {
+            "type": "list",
+            "value": "<class 'list'>"
+          }
+        }
+      },
+      {
+        "id": "workout-b3ce1709",
+        "name": "Push Day",
+        "fields": {
+          "description": {
+            "type": "str",
+            "value": ""
+          },
+          "modified_date": {
+            "type": "DatetimeWithNanoseconds",
+            "value": "<class 'google.api_core.datetime_helpers.DatetimeWithNanoseconds'>"
+          },
+          "sync_status": {
+            "type": "str",
+            "value": "synced"
+          },
+          "name": {
+            "type": "str",
+            "value": "Push Day"
+          },
+          "version": {
+            "type": "int",
+            "value": 1
+          },
+          "tags": {
+            "type": "list",
+            "value": "<class 'list'>"
+          },
+          "id": {
+            "type": "str",
+            "value": "workout-b3ce1709"
+          },
+          "created_date": {
+            "type": "DatetimeWithNanoseconds",
+            "value": "<class 'google.api_core.datetime_helpers.DatetimeWithNanoseconds'>"
+          },
+          "is_template": {
+            "type": "bool",
+            "value": true
+          },
+          "bonus_exercises": {
+            "type": "list",
+            "value": "<class 'list'>"
+          },
+          "exercise_groups": {
+            "type": "list",
+            "value": "<class 'list'>"
+          }
+        }
+      },
+      {
+        "id": "workout-da1d9a34",
+        "name": "Legs",
+        "fields": {
+          "description": {
+            "type": "str",
+            "value": ""
+          },
+          "modified_date": {
+            "type": "DatetimeWithNanoseconds",
+            "value": "<class 'google.api_core.datetime_helpers.DatetimeWithNanoseconds'>"
+          },
+          "id": {
+            "type": "str",
+            "value": "workout-da1d9a34"
+          },
+          "name": {
+            "type": "str",
+            "value": "Legs"
+          },
+          "sync_status": {
+            "type": "str",
+            "value": "synced"
+          },
+          "tags": {
+            "type": "list",
+            "value": "<class 'list'>"
+          },
+          "version": {
+            "type": "int",
+            "value": 32
+          },
+          "created_date": {
+            "type": "DatetimeWithNanoseconds",
+            "value": "<class 'google.api_core.datetime_helpers.DatetimeWithNanoseconds'>"
+          },
+          "bonus_exercises": {
+            "type": "list",
+            "value": "<class 'list'>"
+          },
+          "is_template": {
+            "type": "bool",
+            "value": true
+          },
+          "exercise_groups": {
+            "type": "list",
+            "value": "<class 'list'>"
+          }
+        }
+      },
+      {
+        "id": "workout-e3d3abcf",
+        "name": "Push Day",
+        "fields": {
+          "description": {
+            "type": "str",
+            "value": ""
+          },
+          "modified_date": {
+            "type": "DatetimeWithNanoseconds",
+            "value": "<class 'google.api_core.datetime_helpers.DatetimeWithNanoseconds'>"
+          },
+          "sync_status": {
+            "type": "str",
+            "value": "synced"
+          },
+          "name": {
+            "type": "str",
+            "value": "Push Day"
+          },
+          "version": {
+            "type": "int",
+            "value": 1
+          },
+          "tags": {
+            "type": "list",
+            "value": "<class 'list'>"
+          },
+          "id": {
+            "type": "str",
+            "value": "workout-e3d3abcf"
+          },
+          "created_date": {
+            "type": "DatetimeWithNanoseconds",
+            "value": "<class 'google.api_core.datetime_helpers.DatetimeWithNanoseconds'>"
+          },
+          "is_template": {
+            "type": "bool",
+            "value": true
+          },
+          "bonus_exercises": {
+            "type": "list",
+            "value": "<class 'list'>"
+          },
+          "exercise_groups": {
+            "type": "list",
+            "value": "<class 'list'>"
+          }
+        }
+      },
+      {
+        "id": "workout-e8c7e54b",
+        "name": "Squat Day",
+        "fields": {
+          "description": {
+            "type": "str",
+            "value": ""
+          },
+          "modified_date": {
+            "type": "DatetimeWithNanoseconds",
+            "value": "<class 'google.api_core.datetime_helpers.DatetimeWithNanoseconds'>"
+          },
+          "id": {
+            "type": "str",
+            "value": "workout-e8c7e54b"
+          },
+          "name": {
+            "type": "str",
+            "value": "Squat Day"
+          },
+          "sync_status": {
+            "type": "str",
+            "value": "synced"
+          },
+          "tags": {
+            "type": "list",
+            "value": "<class 'list'>"
+          },
+          "version": {
+            "type": "int",
+            "value": 28
+          },
+          "created_date": {
+            "type": "DatetimeWithNanoseconds",
+            "value": "<class 'google.api_core.datetime_helpers.DatetimeWithNanoseconds'>"
+          },
+          "is_template": {
+            "type": "bool",
+            "value": true
+          },
+          "bonus_exercises": {
+            "type": "list",
+            "value": "<class 'list'>"
+          },
+          "exercise_groups": {
+            "type": "list",
+            "value": "<class 'list'>"
+          }
+        }
+      }
+    ],
+    "field_analysis": {
+      "common_fields": [
+        "id",
+        "modified_date",
+        "tags",
+        "sync_status",
+        "version",
+        "is_template",
+        "bonus_exercises",
+        "created_date",
+        "exercise_groups",
+        "name",
+        "description"
+      ],
+      "optional_fields": "set()",
+      "field_types": {
+        "description": [
+          "str"
+        ],
+        "modified_date": [
+          "DatetimeWithNanoseconds"
+        ],
+        "id": [
+          "str"
+        ],
+        "name": [
+          "str"
+        ],
+        "sync_status": [
+          "str"
+        ],
+        "tags": [
+          "list"
+        ],
+        "version": [
+          "int"
+        ],
+        "created_date": [
+          "DatetimeWithNanoseconds"
+        ],
+        "is_template": [
+          "bool"
+        ],
+        "bonus_exercises": [
+          "list"
+        ],
+        "exercise_groups": [
+          "list"
+        ]
+      }
+    }
+  },
+  "user_programs": {
+    "total_count": 10,
+    "programs": [
+      {
+        "id": "program-076b2a0c",
+        "name": "Fall 2025 v6",
+        "workout_count": 0,
+        "fields": {
+          "difficulty_level": {
+            "type": "str",
+            "value": "intermediate"
+          },
+          "description": {
+            "type": "str",
+            "value": "Test Description"
+          },
+          "modified_date": {
+            "type": "DatetimeWithNanoseconds",
+            "value": "<class 'google.api_core.datetime_helpers.DatetimeWithNanoseconds'>"
+          },
+          "version": {
+            "type": "int",
+            "value": 1
+          },
+          "name": {
+            "type": "str",
+            "value": "Fall 2025 v6"
+          },
+          "sync_status": {
+            "type": "str",
+            "value": "synced"
+          },
+          "tags": {
+            "type": "list",
+            "value": "<class 'list'>"
+          },
+          "id": {
+            "type": "str",
+            "value": "program-076b2a0c"
+          },
+          "created_date": {
+            "type": "DatetimeWithNanoseconds",
+            "value": "<class 'google.api_core.datetime_helpers.DatetimeWithNanoseconds'>"
+          },
+          "duration_weeks": {
+            "type": "NoneType",
+            "value": "<class 'NoneType'>"
+          },
+          "workouts": {
+            "type": "list",
+            "value": "<class 'list'>"
+          }
+        }
+      },
+      {
+        "id": "program-1f5a9d66",
+        "name": "Fall 2025",
+        "workout_count": 0,
+        "fields": {
+          "difficulty_level": {
+            "type": "str",
+            "value": "intermediate"
+          },
+          "description": {
+            "type": "str",
+            "value": ""
+          },
+          "modified_date": {
+            "type": "DatetimeWithNanoseconds",
+            "value": "<class 'google.api_core.datetime_helpers.DatetimeWithNanoseconds'>"
+          },
+          "sync_status": {
+            "type": "str",
+            "value": "synced"
+          },
+          "name": {
+            "type": "str",
+            "value": "Fall 2025"
+          },
+          "version": {
+            "type": "int",
+            "value": 1
+          },
+          "tags": {
+            "type": "list",
+            "value": "<class 'list'>"
+          },
+          "id": {
+            "type": "str",
+            "value": "program-1f5a9d66"
+          },
+          "created_date": {
+            "type": "DatetimeWithNanoseconds",
+            "value": "<class 'google.api_core.datetime_helpers.DatetimeWithNanoseconds'>"
+          },
+          "duration_weeks": {
+            "type": "NoneType",
+            "value": "<class 'NoneType'>"
+          },
+          "workouts": {
+            "type": "list",
+            "value": "<class 'list'>"
+          }
+        }
+      },
+      {
+        "id": "program-29adc784",
+        "name": "Fall 2026",
+        "workout_count": 0,
+        "fields": {
+          "difficulty_level": {
+            "type": "str",
+            "value": "intermediate"
+          },
+          "description": {
+            "type": "str",
+            "value": ""
+          },
+          "modified_date": {
+            "type": "DatetimeWithNanoseconds",
+            "value": "<class 'google.api_core.datetime_helpers.DatetimeWithNanoseconds'>"
+          },
+          "id": {
+            "type": "str",
+            "value": "program-29adc784"
+          },
+          "name": {
+            "type": "str",
+            "value": "Fall 2026"
+          },
+          "sync_status": {
+            "type": "str",
+            "value": "synced"
+          },
+          "tags": {
+            "type": "list",
+            "value": "<class 'list'>"
+          },
+          "version": {
+            "type": "int",
+            "value": 1
+          },
+          "created_date": {
+            "type": "DatetimeWithNanoseconds",
+            "value": "<class 'google.api_core.datetime_helpers.DatetimeWithNanoseconds'>"
+          },
+          "duration_weeks": {
+            "type": "NoneType",
+            "value": "<class 'NoneType'>"
+          },
+          "workouts": {
+            "type": "list",
+            "value": "<class 'list'>"
+          }
+        }
+      },
+      {
+        "id": "program-2c5c1c98",
+        "name": "Fall 2025",
+        "workout_count": 0,
+        "fields": {
+          "difficulty_level": {
+            "type": "str",
+            "value": "intermediate"
+          },
+          "description": {
+            "type": "str",
+            "value": ""
+          },
+          "modified_date": {
+            "type": "DatetimeWithNanoseconds",
+            "value": "<class 'google.api_core.datetime_helpers.DatetimeWithNanoseconds'>"
+          },
+          "id": {
+            "type": "str",
+            "value": "program-2c5c1c98"
+          },
+          "name": {
+            "type": "str",
+            "value": "Fall 2025"
+          },
+          "sync_status": {
+            "type": "str",
+            "value": "synced"
+          },
+          "tags": {
+            "type": "list",
+            "value": "<class 'list'>"
+          },
+          "version": {
+            "type": "int",
+            "value": 1
+          },
+          "created_date": {
+            "type": "DatetimeWithNanoseconds",
+            "value": "<class 'google.api_core.datetime_helpers.DatetimeWithNanoseconds'>"
+          },
+          "duration_weeks": {
+            "type": "NoneType",
+            "value": "<class 'NoneType'>"
+          },
+          "workouts": {
+            "type": "list",
+            "value": "<class 'list'>"
+          }
+        }
+      },
+      {
+        "id": "program-2e3713ec",
+        "name": "Fall 2025 (Copy)",
+        "workout_count": 0,
+        "fields": {
+          "difficulty_level": {
+            "type": "str",
+            "value": "intermediate"
+          },
+          "description": {
+            "type": "str",
+            "value": ""
+          },
+          "modified_date": {
+            "type": "DatetimeWithNanoseconds",
+            "value": "<class 'google.api_core.datetime_helpers.DatetimeWithNanoseconds'>"
+          },
+          "id": {
+            "type": "str",
+            "value": "program-2e3713ec"
+          },
+          "name": {
+            "type": "str",
+            "value": "Fall 2025 (Copy)"
+          },
+          "version": {
+            "type": "int",
+            "value": 1
+          },
+          "tags": {
+            "type": "list",
+            "value": "<class 'list'>"
+          },
+          "sync_status": {
+            "type": "str",
+            "value": "synced"
+          },
+          "created_date": {
+            "type": "DatetimeWithNanoseconds",
+            "value": "<class 'google.api_core.datetime_helpers.DatetimeWithNanoseconds'>"
+          },
+          "workouts": {
+            "type": "list",
+            "value": "<class 'list'>"
+          },
+          "duration_weeks": {
+            "type": "NoneType",
+            "value": "<class 'NoneType'>"
+          }
+        }
+      },
+      {
+        "id": "program-2fd8346e",
+        "name": "Winter",
+        "workout_count": 2,
+        "fields": {
+          "difficulty_level": {
+            "type": "str",
+            "value": "intermediate"
+          },
+          "description": {
+            "type": "str",
+            "value": ""
+          },
+          "modified_date": {
+            "type": "DatetimeWithNanoseconds",
+            "value": "<class 'google.api_core.datetime_helpers.DatetimeWithNanoseconds'>"
+          },
+          "sync_status": {
+            "type": "str",
+            "value": "synced"
+          },
+          "name": {
+            "type": "str",
+            "value": "Winter"
+          },
+          "id": {
+            "type": "str",
+            "value": "program-2fd8346e"
+          },
+          "tags": {
+            "type": "list",
+            "value": "<class 'list'>"
+          },
+          "version": {
+            "type": "int",
+            "value": 8
+          },
+          "created_date": {
+            "type": "DatetimeWithNanoseconds",
+            "value": "<class 'google.api_core.datetime_helpers.DatetimeWithNanoseconds'>"
+          },
+          "duration_weeks": {
+            "type": "NoneType",
+            "value": "<class 'NoneType'>"
+          },
+          "workouts": {
+            "type": "array",
+            "length": 2,
+            "sample_item": {
+              "workout_id": "workout-e8c7e54b",
+              "custom_name": null,
+              "order_index": 0,
+              "custom_date": null
+            }
+          }
+        }
+      },
+      {
+        "id": "program-55847dc2",
+        "name": "New in gym program",
+        "workout_count": 0,
+        "fields": {
+          "difficulty_level": {
+            "type": "str",
+            "value": "intermediate"
+          },
+          "description": {
+            "type": "str",
+            "value": ""
+          },
+          "modified_date": {
+            "type": "DatetimeWithNanoseconds",
+            "value": "<class 'google.api_core.datetime_helpers.DatetimeWithNanoseconds'>"
+          },
+          "sync_status": {
+            "type": "str",
+            "value": "synced"
+          },
+          "name": {
+            "type": "str",
+            "value": "New in gym program"
+          },
+          "id": {
+            "type": "str",
+            "value": "program-55847dc2"
+          },
+          "tags": {
+            "type": "list",
+            "value": "<class 'list'>"
+          },
+          "version": {
+            "type": "int",
+            "value": 1
+          },
+          "created_date": {
+            "type": "DatetimeWithNanoseconds",
+            "value": "<class 'google.api_core.datetime_helpers.DatetimeWithNanoseconds'>"
+          },
+          "workouts": {
+            "type": "list",
+            "value": "<class 'list'>"
+          },
+          "duration_weeks": {
+            "type": "NoneType",
+            "value": "<class 'NoneType'>"
+          }
+        }
+      },
+      {
+        "id": "program-7285fed6",
+        "name": "Fall 2025",
+        "workout_count": 0,
+        "fields": {
+          "difficulty_level": {
+            "type": "str",
+            "value": "intermediate"
+          },
+          "description": {
+            "type": "str",
+            "value": ""
+          },
+          "modified_date": {
+            "type": "DatetimeWithNanoseconds",
+            "value": "<class 'google.api_core.datetime_helpers.DatetimeWithNanoseconds'>"
+          },
+          "sync_status": {
+            "type": "str",
+            "value": "synced"
+          },
+          "name": {
+            "type": "str",
+            "value": "Fall 2025"
+          },
+          "version": {
+            "type": "int",
+            "value": 1
+          },
+          "tags": {
+            "type": "list",
+            "value": "<class 'list'>"
+          },
+          "id": {
+            "type": "str",
+            "value": "program-7285fed6"
+          },
+          "created_date": {
+            "type": "DatetimeWithNanoseconds",
+            "value": "<class 'google.api_core.datetime_helpers.DatetimeWithNanoseconds'>"
+          },
+          "duration_weeks": {
+            "type": "NoneType",
+            "value": "<class 'NoneType'>"
+          },
+          "workouts": {
+            "type": "list",
+            "value": "<class 'list'>"
+          }
+        }
+      },
+      {
+        "id": "program-92442e6b",
+        "name": "Fall 2025",
+        "workout_count": 0,
+        "fields": {
+          "difficulty_level": {
+            "type": "str",
+            "value": "intermediate"
+          },
+          "description": {
+            "type": "str",
+            "value": ""
+          },
+          "modified_date": {
+            "type": "DatetimeWithNanoseconds",
+            "value": "<class 'google.api_core.datetime_helpers.DatetimeWithNanoseconds'>"
+          },
+          "sync_status": {
+            "type": "str",
+            "value": "synced"
+          },
+          "name": {
+            "type": "str",
+            "value": "Fall 2025"
+          },
+          "version": {
+            "type": "int",
+            "value": 1
+          },
+          "tags": {
+            "type": "list",
+            "value": "<class 'list'>"
+          },
+          "id": {
+            "type": "str",
+            "value": "program-92442e6b"
+          },
+          "created_date": {
+            "type": "DatetimeWithNanoseconds",
+            "value": "<class 'google.api_core.datetime_helpers.DatetimeWithNanoseconds'>"
+          },
+          "duration_weeks": {
+            "type": "NoneType",
+            "value": "<class 'NoneType'>"
+          },
+          "workouts": {
+            "type": "list",
+            "value": "<class 'list'>"
+          }
+        }
+      },
+      {
+        "id": "program-a0888a1d",
+        "name": "Fall 2026",
+        "workout_count": 0,
+        "fields": {
+          "difficulty_level": {
+            "type": "str",
+            "value": "intermediate"
+          },
+          "description": {
+            "type": "str",
+            "value": ""
+          },
+          "modified_date": {
+            "type": "DatetimeWithNanoseconds",
+            "value": "<class 'google.api_core.datetime_helpers.DatetimeWithNanoseconds'>"
+          },
+          "sync_status": {
+            "type": "str",
+            "value": "synced"
+          },
+          "name": {
+            "type": "str",
+            "value": "Fall 2026"
+          },
+          "version": {
+            "type": "int",
+            "value": 1
+          },
+          "tags": {
+            "type": "list",
+            "value": "<class 'list'>"
+          },
+          "id": {
+            "type": "str",
+            "value": "program-a0888a1d"
+          },
+          "created_date": {
+            "type": "DatetimeWithNanoseconds",
+            "value": "<class 'google.api_core.datetime_helpers.DatetimeWithNanoseconds'>"
+          },
+          "workouts": {
+            "type": "list",
+            "value": "<class 'list'>"
+          },
+          "duration_weeks": {
+            "type": "int",
+            "value": 12
+          }
+        }
+      }
+    ],
+    "field_analysis": {
+      "common_fields": [
+        "difficulty_level",
+        "id",
+        "duration_weeks",
+        "modified_date",
+        "tags",
+        "version",
+        "sync_status",
+        "workouts",
+        "created_date",
+        "name",
+        "description"
+      ],
+      "workout_reference_structure": {
+        "fields": [
+          "workout_id",
+          "custom_name",
+          "order_index",
+          "custom_date"
+        ],
+        "sample": {
+          "workout_id": "workout-e8c7e54b",
+          "custom_name": null,
+          "order_index": 0,
+          "custom_date": null
+        }
+      }
+    }
+  },
+  "global_exercises": {
+    "total_sampled": 100,
+    "sample_exercises": [
+      {
+        "id": "exercise-0012febe",
+        "name": "Clubbell Order Alternating Forward Lunge",
+        "fields": {
+          "mechanics": "str",
+          "tertiaryMuscle": "NoneType",
+          "planeOfMotion3": "NoneType",
+          "movementPattern3": "NoneType",
+          "id": "str",
+          "footElevation": "str",
+          "primaryEquipmentCount": "int",
+          "secondaryEquipmentCount": "int",
+          "difficultyLevel": "str",
+          "movementPattern2": "NoneType",
+          "forceType": "str",
+          "posture": "str",
+          "classificationTags": "list",
+          "updatedAt": "DatetimeWithNanoseconds",
+          "loadPosition": "str",
+          "armPattern": "str",
+          "primeMoverMuscle": "str",
+          "secondaryEquipment": "NoneType",
+          "bodyRegion": "str",
+          "planeOfMotion2": "NoneType",
+          "name": "str",
+          "laterality": "str",
+          "favoriteCount": "int",
+          "secondaryMuscle": "str",
+          "grip": "str",
+          "popularityScore": "int",
+          "planeOfMotion1": "str",
+          "shortVideoUrl": "NoneType",
+          "armType": "str",
+          "targetMuscleGroup": "str",
+          "movementPattern1": "str",
+          "exerciseTier": "int",
+          "createdAt": "DatetimeWithNanoseconds",
+          "foundationalScore": "int",
+          "combinationExercise": "str",
+          "detailedVideoUrl": "NoneType",
+          "isFoundational": "bool",
+          "primaryEquipment": "str",
+          "isGlobal": "bool",
+          "classification": "str",
+          "nameSearchTokens": "list"
+        }
+      },
+      {
+        "id": "exercise-004518f5",
+        "name": "Plate Overhead Bulgarian Split Squat",
+        "fields": {
+          "mechanics": "str",
+          "tertiaryMuscle": "NoneType",
+          "planeOfMotion3": "NoneType",
+          "movementPattern3": "NoneType",
+          "id": "str",
+          "footElevation": "str",
+          "primaryEquipmentCount": "int",
+          "secondaryEquipmentCount": "int",
+          "difficultyLevel": "str",
+          "movementPattern2": "NoneType",
+          "forceType": "str",
+          "posture": "str",
+          "classificationTags": "list",
+          "updatedAt": "DatetimeWithNanoseconds",
+          "loadPosition": "str",
+          "armPattern": "str",
+          "primeMoverMuscle": "str",
+          "secondaryEquipment": "str",
+          "bodyRegion": "str",
+          "planeOfMotion2": "NoneType",
+          "name": "str",
+          "laterality": "str",
+          "favoriteCount": "int",
+          "secondaryMuscle": "str",
+          "grip": "str",
+          "popularityScore": "int",
+          "planeOfMotion1": "str",
+          "shortVideoUrl": "NoneType",
+          "armType": "str",
+          "targetMuscleGroup": "str",
+          "movementPattern1": "str",
+          "exerciseTier": "int",
+          "createdAt": "DatetimeWithNanoseconds",
+          "foundationalScore": "int",
+          "combinationExercise": "str",
+          "detailedVideoUrl": "NoneType",
+          "isFoundational": "bool",
+          "primaryEquipment": "str",
+          "isGlobal": "bool",
+          "classification": "str",
+          "nameSearchTokens": "list"
+        }
+      },
+      {
+        "id": "exercise-0048d526",
+        "name": "Dumbbell Goblet Knee Over Toe Split Squat",
+        "fields": {
+          "mechanics": "str",
+          "tertiaryMuscle": "NoneType",
+          "planeOfMotion3": "NoneType",
+          "movementPattern3": "NoneType",
+          "id": "str",
+          "footElevation": "str",
+          "primaryEquipmentCount": "int",
+          "secondaryEquipmentCount": "int",
+          "difficultyLevel": "str",
+          "movementPattern2": "NoneType",
+          "forceType": "str",
+          "posture": "str",
+          "classificationTags": "list",
+          "updatedAt": "DatetimeWithNanoseconds",
+          "loadPosition": "str",
+          "armPattern": "str",
+          "primeMoverMuscle": "str",
+          "secondaryEquipment": "NoneType",
+          "bodyRegion": "str",
+          "planeOfMotion2": "NoneType",
+          "name": "str",
+          "laterality": "str",
+          "favoriteCount": "int",
+          "secondaryMuscle": "str",
+          "grip": "str",
+          "popularityScore": "int",
+          "planeOfMotion1": "str",
+          "shortVideoUrl": "NoneType",
+          "armType": "str",
+          "targetMuscleGroup": "str",
+          "movementPattern1": "str",
+          "exerciseTier": "int",
+          "createdAt": "DatetimeWithNanoseconds",
+          "foundationalScore": "int",
+          "combinationExercise": "str",
+          "detailedVideoUrl": "NoneType",
+          "isFoundational": "bool",
+          "primaryEquipment": "str",
+          "isGlobal": "bool",
+          "classification": "str",
+          "nameSearchTokens": "list"
+        }
+      },
+      {
+        "id": "exercise-004b7ac6",
+        "name": "Double Kettlebell Bottoms Up Overhead Curtsy Lunge",
+        "fields": {
+          "mechanics": "str",
+          "tertiaryMuscle": "NoneType",
+          "planeOfMotion3": "NoneType",
+          "movementPattern3": "NoneType",
+          "id": "str",
+          "footElevation": "str",
+          "primaryEquipmentCount": "int",
+          "secondaryEquipmentCount": "int",
+          "difficultyLevel": "str",
+          "movementPattern2": "NoneType",
+          "forceType": "str",
+          "posture": "str",
+          "classificationTags": "list",
+          "updatedAt": "DatetimeWithNanoseconds",
+          "loadPosition": "str",
+          "armPattern": "str",
+          "primeMoverMuscle": "str",
+          "secondaryEquipment": "NoneType",
+          "bodyRegion": "str",
+          "planeOfMotion2": "NoneType",
+          "name": "str",
+          "laterality": "str",
+          "favoriteCount": "int",
+          "secondaryMuscle": "str",
+          "grip": "str",
+          "popularityScore": "int",
+          "planeOfMotion1": "str",
+          "shortVideoUrl": "NoneType",
+          "armType": "str",
+          "targetMuscleGroup": "str",
+          "movementPattern1": "str",
+          "exerciseTier": "int",
+          "createdAt": "DatetimeWithNanoseconds",
+          "foundationalScore": "int",
+          "combinationExercise": "str",
+          "detailedVideoUrl": "NoneType",
+          "isFoundational": "bool",
+          "primaryEquipment": "str",
+          "isGlobal": "bool",
+          "classification": "str",
+          "nameSearchTokens": "list"
+        }
+      },
+      {
+        "id": "exercise-004d7bc4",
+        "name": "Single Arm Clubbell Single Leg Standing Bent Knee Contralateral Shield Cast",
+        "fields": {
+          "mechanics": "str",
+          "tertiaryMuscle": "NoneType",
+          "planeOfMotion3": "NoneType",
+          "movementPattern3": "NoneType",
+          "id": "str",
+          "footElevation": "str",
+          "primaryEquipmentCount": "int",
+          "secondaryEquipmentCount": "int",
+          "difficultyLevel": "str",
+          "movementPattern2": "NoneType",
+          "forceType": "str",
+          "posture": "str",
+          "classificationTags": "list",
+          "updatedAt": "DatetimeWithNanoseconds",
+          "loadPosition": "str",
+          "armPattern": "str",
+          "primeMoverMuscle": "str",
+          "secondaryEquipment": "NoneType",
+          "bodyRegion": "str",
+          "planeOfMotion2": "str",
+          "name": "str",
+          "laterality": "str",
+          "favoriteCount": "int",
+          "secondaryMuscle": "str",
+          "grip": "str",
+          "popularityScore": "int",
+          "planeOfMotion1": "str",
+          "shortVideoUrl": "NoneType",
+          "armType": "str",
+          "targetMuscleGroup": "str",
+          "movementPattern1": "str",
+          "exerciseTier": "int",
+          "createdAt": "DatetimeWithNanoseconds",
+          "foundationalScore": "int",
+          "combinationExercise": "str",
+          "detailedVideoUrl": "NoneType",
+          "isFoundational": "bool",
+          "primaryEquipment": "str",
+          "isGlobal": "bool",
+          "classification": "str",
+          "nameSearchTokens": "list"
+        }
+      },
+      {
+        "id": "exercise-00570ba0",
+        "name": "Double Dumbbell Floor Press",
+        "fields": {
+          "mechanics": "str",
+          "tertiaryMuscle": "NoneType",
+          "planeOfMotion3": "NoneType",
+          "movementPattern3": "NoneType",
+          "id": "str",
+          "footElevation": "str",
+          "primaryEquipmentCount": "int",
+          "secondaryEquipmentCount": "int",
+          "difficultyLevel": "str",
+          "movementPattern2": "NoneType",
+          "forceType": "str",
+          "posture": "str",
+          "classificationTags": "list",
+          "updatedAt": "DatetimeWithNanoseconds",
+          "loadPosition": "str",
+          "armPattern": "str",
+          "primeMoverMuscle": "str",
+          "secondaryEquipment": "NoneType",
+          "bodyRegion": "str",
+          "planeOfMotion2": "NoneType",
+          "name": "str",
+          "laterality": "str",
+          "favoriteCount": "int",
+          "secondaryMuscle": "str",
+          "grip": "str",
+          "popularityScore": "int",
+          "planeOfMotion1": "str",
+          "shortVideoUrl": "NoneType",
+          "armType": "str",
+          "targetMuscleGroup": "str",
+          "movementPattern1": "str",
+          "exerciseTier": "int",
+          "createdAt": "DatetimeWithNanoseconds",
+          "foundationalScore": "int",
+          "combinationExercise": "str",
+          "detailedVideoUrl": "NoneType",
+          "isFoundational": "bool",
+          "primaryEquipment": "str",
+          "isGlobal": "bool",
+          "classification": "str",
+          "nameSearchTokens": "list"
+        }
+      },
+      {
+        "id": "exercise-00684927",
+        "name": "Single Arm Kettlebell Suitcase Cyclist Squat",
+        "fields": {
+          "mechanics": "str",
+          "tertiaryMuscle": "NoneType",
+          "planeOfMotion3": "NoneType",
+          "movementPattern3": "NoneType",
+          "id": "str",
+          "footElevation": "str",
+          "primaryEquipmentCount": "int",
+          "secondaryEquipmentCount": "int",
+          "difficultyLevel": "str",
+          "movementPattern2": "NoneType",
+          "forceType": "str",
+          "posture": "str",
+          "classificationTags": "list",
+          "updatedAt": "DatetimeWithNanoseconds",
+          "loadPosition": "str",
+          "armPattern": "str",
+          "primeMoverMuscle": "str",
+          "secondaryEquipment": "str",
+          "bodyRegion": "str",
+          "planeOfMotion2": "NoneType",
+          "name": "str",
+          "laterality": "str",
+          "favoriteCount": "int",
+          "secondaryMuscle": "str",
+          "grip": "str",
+          "popularityScore": "int",
+          "planeOfMotion1": "str",
+          "shortVideoUrl": "NoneType",
+          "armType": "str",
+          "targetMuscleGroup": "str",
+          "movementPattern1": "str",
+          "exerciseTier": "int",
+          "createdAt": "DatetimeWithNanoseconds",
+          "foundationalScore": "int",
+          "combinationExercise": "str",
+          "detailedVideoUrl": "NoneType",
+          "isFoundational": "bool",
+          "primaryEquipment": "str",
+          "isGlobal": "bool",
+          "classification": "str",
+          "nameSearchTokens": "list"
+        }
+      },
+      {
+        "id": "exercise-006eff78",
+        "name": "Single Arm Resistance Band Chest Press",
+        "fields": {
+          "mechanics": "str",
+          "tertiaryMuscle": "str",
+          "planeOfMotion3": "NoneType",
+          "movementPattern3": "NoneType",
+          "id": "str",
+          "footElevation": "str",
+          "primaryEquipmentCount": "int",
+          "secondaryEquipmentCount": "int",
+          "difficultyLevel": "str",
+          "movementPattern2": "NoneType",
+          "forceType": "str",
+          "posture": "str",
+          "classificationTags": "list",
+          "updatedAt": "DatetimeWithNanoseconds",
+          "loadPosition": "str",
+          "armPattern": "str",
+          "primeMoverMuscle": "str",
+          "secondaryEquipment": "NoneType",
+          "bodyRegion": "str",
+          "planeOfMotion2": "NoneType",
+          "name": "str",
+          "laterality": "str",
+          "favoriteCount": "int",
+          "secondaryMuscle": "str",
+          "grip": "str",
+          "popularityScore": "int",
+          "planeOfMotion1": "str",
+          "shortVideoUrl": "NoneType",
+          "armType": "str",
+          "targetMuscleGroup": "str",
+          "movementPattern1": "str",
+          "exerciseTier": "int",
+          "createdAt": "DatetimeWithNanoseconds",
+          "foundationalScore": "int",
+          "combinationExercise": "str",
+          "detailedVideoUrl": "NoneType",
+          "isFoundational": "bool",
+          "primaryEquipment": "str",
+          "isGlobal": "bool",
+          "classification": "str",
+          "nameSearchTokens": "list"
+        }
+      },
+      {
+        "id": "exercise-0092dfcd",
+        "name": "Single Arm Kettlebell Front Rack Ipsilateral Pistol Squat",
+        "fields": {
+          "mechanics": "str",
+          "tertiaryMuscle": "NoneType",
+          "planeOfMotion3": "NoneType",
+          "movementPattern3": "NoneType",
+          "id": "str",
+          "footElevation": "str",
+          "primaryEquipmentCount": "int",
+          "secondaryEquipmentCount": "int",
+          "difficultyLevel": "str",
+          "movementPattern2": "NoneType",
+          "forceType": "str",
+          "posture": "str",
+          "classificationTags": "list",
+          "updatedAt": "DatetimeWithNanoseconds",
+          "loadPosition": "str",
+          "armPattern": "str",
+          "primeMoverMuscle": "str",
+          "secondaryEquipment": "NoneType",
+          "bodyRegion": "str",
+          "planeOfMotion2": "NoneType",
+          "name": "str",
+          "laterality": "str",
+          "favoriteCount": "int",
+          "secondaryMuscle": "str",
+          "grip": "str",
+          "popularityScore": "int",
+          "planeOfMotion1": "str",
+          "shortVideoUrl": "NoneType",
+          "armType": "str",
+          "targetMuscleGroup": "str",
+          "movementPattern1": "str",
+          "exerciseTier": "int",
+          "createdAt": "DatetimeWithNanoseconds",
+          "foundationalScore": "int",
+          "combinationExercise": "str",
+          "detailedVideoUrl": "NoneType",
+          "isFoundational": "bool",
+          "primaryEquipment": "str",
+          "isGlobal": "bool",
+          "classification": "str",
+          "nameSearchTokens": "list"
+        }
+      },
+      {
+        "id": "exercise-009fa71e",
+        "name": "Double Kettlebell Bottoms Up Overhead Low Switch Cossack Squat",
+        "fields": {
+          "mechanics": "str",
+          "tertiaryMuscle": "str",
+          "planeOfMotion3": "NoneType",
+          "movementPattern3": "NoneType",
+          "id": "str",
+          "footElevation": "str",
+          "primaryEquipmentCount": "int",
+          "secondaryEquipmentCount": "int",
+          "difficultyLevel": "str",
+          "movementPattern2": "NoneType",
+          "forceType": "str",
+          "posture": "str",
+          "classificationTags": "list",
+          "updatedAt": "DatetimeWithNanoseconds",
+          "loadPosition": "str",
+          "armPattern": "str",
+          "primeMoverMuscle": "str",
+          "secondaryEquipment": "NoneType",
+          "bodyRegion": "str",
+          "planeOfMotion2": "NoneType",
+          "name": "str",
+          "laterality": "str",
+          "favoriteCount": "int",
+          "secondaryMuscle": "str",
+          "grip": "str",
+          "popularityScore": "int",
+          "planeOfMotion1": "str",
+          "shortVideoUrl": "NoneType",
+          "armType": "str",
+          "targetMuscleGroup": "str",
+          "movementPattern1": "str",
+          "exerciseTier": "int",
+          "createdAt": "DatetimeWithNanoseconds",
+          "foundationalScore": "int",
+          "combinationExercise": "str",
+          "detailedVideoUrl": "NoneType",
+          "isFoundational": "bool",
+          "primaryEquipment": "str",
+          "isGlobal": "bool",
+          "classification": "str",
+          "nameSearchTokens": "list"
+        }
+      }
+    ],
+    "field_analysis": {
+      "all_fields": [
+        "armPattern",
+        "armType",
+        "bodyRegion",
+        "classification",
+        "classificationTags",
+        "combinationExercise",
+        "createdAt",
+        "detailedVideoUrl",
+        "difficultyLevel",
+        "exerciseTier",
+        "favoriteCount",
+        "footElevation",
+        "forceType",
+        "foundationalScore",
+        "grip",
+        "id",
+        "isFoundational",
+        "isGlobal",
+        "laterality",
+        "loadPosition",
+        "mechanics",
+        "movementPattern1",
+        "movementPattern2",
+        "movementPattern3",
+        "name",
+        "nameSearchTokens",
+        "planeOfMotion1",
+        "planeOfMotion2",
+        "planeOfMotion3",
+        "popularityScore",
+        "posture",
+        "primaryEquipment",
+        "primaryEquipmentCount",
+        "primeMoverMuscle",
+        "secondaryEquipment",
+        "secondaryEquipmentCount",
+        "secondaryMuscle",
+        "shortVideoUrl",
+        "targetMuscleGroup",
+        "tertiaryMuscle",
+        "updatedAt"
+      ],
+      "required_fields": [
+        "armPattern",
+        "armType",
+        "bodyRegion",
+        "classification",
+        "classificationTags",
+        "combinationExercise",
+        "createdAt",
+        "detailedVideoUrl",
+        "difficultyLevel",
+        "exerciseTier",
+        "favoriteCount",
+        "footElevation",
+        "forceType",
+        "foundationalScore",
+        "grip",
+        "id",
+        "isFoundational",
+        "isGlobal",
+        "laterality",
+        "loadPosition",
+        "mechanics",
+        "movementPattern1",
+        "movementPattern2",
+        "movementPattern3",
+        "name",
+        "nameSearchTokens",
+        "planeOfMotion1",
+        "planeOfMotion2",
+        "planeOfMotion3",
+        "popularityScore",
+        "posture",
+        "primaryEquipment",
+        "primaryEquipmentCount",
+        "primeMoverMuscle",
+        "secondaryEquipment",
+        "secondaryEquipmentCount",
+        "secondaryMuscle",
+        "shortVideoUrl",
+        "targetMuscleGroup",
+        "tertiaryMuscle",
+        "updatedAt"
+      ],
+      "optional_fields": [],
+      "field_types": {
+        "mechanics": [
+          "str"
+        ],
+        "tertiaryMuscle": [
+          "str",
+          "NoneType"
+        ],
+        "planeOfMotion3": [
+          "NoneType"
+        ],
+        "movementPattern3": [
+          "str",
+          "NoneType"
+        ],
+        "id": [
+          "str"
+        ],
+        "footElevation": [
+          "str"
+        ],
+        "primaryEquipmentCount": [
+          "int"
+        ],
+        "secondaryEquipmentCount": [
+          "int"
+        ],
+        "difficultyLevel": [
+          "str"
+        ],
+        "movementPattern2": [
+          "str",
+          "NoneType"
+        ],
+        "forceType": [
+          "str"
+        ],
+        "posture": [
+          "str"
+        ],
+        "classificationTags": [
+          "list"
+        ],
+        "updatedAt": [
+          "DatetimeWithNanoseconds"
+        ],
+        "loadPosition": [
+          "str"
+        ],
+        "armPattern": [
+          "str"
+        ],
+        "primeMoverMuscle": [
+          "str"
+        ],
+        "secondaryEquipment": [
+          "str",
+          "NoneType"
+        ],
+        "bodyRegion": [
+          "str"
+        ],
+        "planeOfMotion2": [
+          "str",
+          "NoneType"
+        ],
+        "name": [
+          "str"
+        ],
+        "laterality": [
+          "str"
+        ],
+        "favoriteCount": [
+          "int"
+        ],
+        "secondaryMuscle": [
+          "str",
+          "NoneType"
+        ],
+        "grip": [
+          "str",
+          "NoneType"
+        ],
+        "popularityScore": [
+          "int"
+        ],
+        "planeOfMotion1": [
+          "str"
+        ],
+        "shortVideoUrl": [
+          "NoneType"
+        ],
+        "armType": [
+          "str"
+        ],
+        "targetMuscleGroup": [
+          "str"
+        ],
+        "movementPattern1": [
+          "str",
+          "NoneType"
+        ],
+        "exerciseTier": [
+          "int"
+        ],
+        "createdAt": [
+          "DatetimeWithNanoseconds"
+        ],
+        "foundationalScore": [
+          "int"
+        ],
+        "combinationExercise": [
+          "str"
+        ],
+        "detailedVideoUrl": [
+          "NoneType"
+        ],
+        "isFoundational": [
+          "bool"
+        ],
+        "primaryEquipment": [
+          "str"
+        ],
+        "isGlobal": [
+          "bool"
+        ],
+        "classification": [
+          "str"
+        ],
+        "nameSearchTokens": [
+          "list"
+        ]
+      }
+    }
+  },
+  "logging_search": {
+    "collections_found": [],
+    "weight_fields_found": [],
+    "session_fields_found": [],
+    "users_checked": 0
+  }
+}

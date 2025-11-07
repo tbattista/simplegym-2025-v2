@@ -94,6 +94,23 @@
                     </a>
                   </div>
                 </div>
+                
+                <!-- Session Controls -->
+                <div class="session-controls text-center mt-3" id="sessionControls" style="display: none;">
+                  <button class="btn btn-lg btn-primary" id="startWorkoutBtn">
+                    <i class="bx bx-play-circle me-2"></i>Start Workout
+                  </button>
+                  <div id="sessionActiveIndicator" style="display: none;">
+                    <span class="badge bg-success">
+                      <i class="bx bx-time-five me-1"></i>
+                      <span id="sessionTimer">00:00</span>
+                    </span>
+                    <span class="badge bg-info ms-2">
+                      <i class="bx bx-save me-1"></i>
+                      <span id="autoSaveStatus">Ready</span>
+                    </span>
+                  </div>
+                </div>
               </div>
 
               <!-- Loading State -->
@@ -155,13 +172,28 @@
     <!-- Sticky Bottom Bar -->
     <div class="workout-mode-footer" id="workoutModeFooter" style="display: none;">
       <div class="d-flex justify-content-between align-items-center">
-        <button class="btn btn-outline-primary" id="shareWorkoutBtn">
-          <i class="bx bx-share-alt me-1"></i>Share
+        <!-- Left side: Session info -->
+        <div id="sessionInfo" style="display: none;">
+          <small class="text-muted">
+            <i class="bx bx-time-five me-1"></i>
+            <span id="footerSessionTimer">00:00</span>
+          </small>
+        </div>
+        
+        <!-- Center: Complete button -->
+        <button class="btn btn-success btn-lg flex-grow-1 mx-2" id="completeWorkoutBtn" style="display: none;">
+          <i class="bx bx-check-circle me-2"></i>Complete Workout
         </button>
-        <button class="btn btn-outline-secondary" id="soundToggleBtn">
-          <i class="bx bx-volume-full me-1" id="soundIcon"></i>
-          Sound: <span id="soundStatus">On</span>
-        </button>
+        
+        <!-- Right side: Controls -->
+        <div class="d-flex gap-2">
+          <button class="btn btn-outline-primary" id="shareWorkoutBtn">
+            <i class="bx bx-share-alt"></i>
+          </button>
+          <button class="btn btn-outline-secondary" id="soundToggleBtn">
+            <i class="bx bx-volume-full" id="soundIcon"></i>
+          </button>
+        </div>
       </div>
     </div>
 

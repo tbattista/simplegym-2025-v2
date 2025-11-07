@@ -1,8 +1,8 @@
 /**
  * Ghost Gym - Workout Mode JavaScript
- * Handles workout execution with rest timers and exercise navigation
- * @version 1.0.0
- * @date 2025-01-29
+ * Handles workout execution with rest timers, exercise navigation, and weight logging
+ * @version 2.0.0
+ * @date 2025-11-07
  */
 
 /**
@@ -242,6 +242,9 @@ async function initWorkoutMode() {
     // Initialize share button
     initializeShareButton();
     
+    // Initialize session controls
+    initializeSessionControls();
+    
     console.log('✅ Workout Mode initialized');
 }
 
@@ -269,12 +272,28 @@ async function loadWorkout(workoutId) {
         // Store workout
         window.ghostGym.workoutMode.currentWorkout = workout;
         
+        // Initialize exercise history cache
+        if (!window.ghostGym.workoutMode.exerciseHistory) {
+            window.ghostGym.workoutMode.exerciseHistory = {};
+        }
+        
         // Update page title
         document.getElementById('workoutName').textContent = workout.name;
         document.title = `👻 ${workout.name} - Workout Mode - Ghost Gym`;
         
         // Render exercise cards
         renderExerciseCards(workout);
+        
+        // Show Start Workout button (if authenticated)
+        const token = await getAuthToken();
+        if (token) {
+            const sessionControls = document.getElementById('sessionControls');
+            const startBtn = document.getElementById('startWorkoutBtn');
+            if (sessionControls && startBtn) {
+                sessionControls.style.display = 'block';
+                startBtn.style.display = 'inline-block';
+            }
+        }
         
         // Hide loading, show content
         document.getElementById('workoutLoadingState').style.display = 'none';
@@ -630,6 +649,403 @@ function fallbackShare(shareData) {
         console.error('❌ Error copying to clipboard:', error);
         if (window.showAlert) {
             window.showAlert('Could not copy to clipboard', 'danger');
+/**
+ * ============================================
+ * SESSION MANAGEMENT (Phase 1)
+ * ============================================
+ */
+
+/**
+ * Initialize session controls
+ */
+function initializeSessionControls() {
+    const startBtn = document.getElementById('startWorkoutBtn');
+    const completeBtn = document.getElementById('completeWorkoutBtn');
+    
+    if (startBtn) {
+        startBtn.addEventListener('click', handleStartWorkout);
+    }
+    
+    if (completeBtn) {
+        completeBtn.addEventListener('click', handleCompleteWorkout);
+    }
+}
+
+/**
+ * Handle start workout button click
+ */
+async function handleStartWorkout() {
+    const workout = window.ghostGym.workoutMode.currentWorkout;
+    if (!workout) {
+        console.error('No workout loaded');
+        return;
+    }
+    
+    await startWorkoutSession(workout.id, workout.name);
+}
+
+/**
+ * Handle complete workout button click
+ */
+async function handleCompleteWorkout() {
+    await completeWorkoutSession();
+}
+
+/**
+ * Start a new workout session
+ */
+async function startWorkoutSession(workoutId, workoutName) {
+    try {
+        console.log('🏋️ Starting workout session:', workoutName);
+        
+        // Show loading state
+        const startBtn = document.getElementById('startWorkoutBtn');
+        startBtn.disabled = true;
+        startBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Starting...';
+        
+        // Get auth token
+        const token = await getAuthToken();
+        if (!token) {
+            throw new Error('Authentication required. Please log in to track your workout.');
+        }
+        
+        // Create session via API
+        const response = await fetch('/api/v3/workout-sessions', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                workout_id: workoutId,
+                workout_name: workoutName,
+                started_at: new Date().toISOString()
+            })
+        });
+        
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.detail || `Failed to create session: ${response.statusText}`);
+        }
+        
+        const session = await response.json();
+        
+        // Update global state
+        if (!window.ghostGym.workoutMode.session) {
+            window.ghostGym.workoutMode.session = {};
+        }
+        
+        window.ghostGym.workoutMode.session = {
+            id: session.id,
+            workoutId: workoutId,
+            workoutName: workoutName,
+            startedAt: new Date(session.started_at),
+            status: 'in_progress',
+            exercises: {},
+            autoSaveTimer: null,
+            timerInterval: null
+        };
+        
+        // Fetch exercise history
+        await fetchExerciseHistory(workoutId);
+        
+        // Update UI
+        startBtn.style.display = 'none';
+        document.getElementById('sessionActiveIndicator').style.display = 'block';
+        document.getElementById('completeWorkoutBtn').style.display = 'block';
+        document.getElementById('sessionInfo').style.display = 'block';
+        
+        // Start session timer
+        startSessionTimer();
+        
+        console.log('✅ Workout session started:', session.id);
+        
+        if (window.showAlert) {
+            window.showAlert('Workout session started! 💪', 'success');
+        }
+        
+    } catch (error) {
+        console.error('❌ Error starting workout session:', error);
+        
+        // Reset button
+        const startBtn = document.getElementById('startWorkoutBtn');
+        startBtn.disabled = false;
+        startBtn.innerHTML = '<i class="bx bx-play-circle me-2"></i>Start Workout';
+        
+        if (window.showAlert) {
+            window.showAlert(error.message || 'Failed to start workout session. Please try again.', 'danger');
+        } else {
+            alert(error.message || 'Failed to start workout session. Please try again.');
+        }
+    }
+}
+
+/**
+ * Fetch exercise history for workout
+ */
+async function fetchExerciseHistory(workoutId) {
+    try {
+        console.log('📊 Fetching exercise history for workout:', workoutId);
+        
+        const token = await getAuthToken();
+        if (!token) {
+            console.warn('No auth token, skipping history fetch');
+            window.ghostGym.workoutMode.exerciseHistory = {};
+            return;
+        }
+        
+        const response = await fetch(`/api/v3/exercise-history/workout/${workoutId}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`Failed to fetch history: ${response.statusText}`);
+        }
+        
+        const historyData = await response.json();
+        
+        // Cache exercise history
+        window.ghostGym.workoutMode.exerciseHistory = historyData.exercises || {};
+        
+        console.log('✅ Exercise history loaded:', Object.keys(historyData.exercises || {}).length, 'exercises');
+        
+    } catch (error) {
+        console.error('❌ Error fetching exercise history:', error);
+        // Non-fatal error - continue without history
+        window.ghostGym.workoutMode.exerciseHistory = {};
+    }
+}
+
+/**
+ * Complete the current workout session
+ */
+async function completeWorkoutSession() {
+    try {
+        const session = window.ghostGym.workoutMode.session;
+        
+        if (!session || !session.id || session.status !== 'in_progress') {
+            throw new Error('No active session to complete');
+        }
+        
+        console.log('🏁 Completing workout session:', session.id);
+        
+        // Show loading state
+        const completeBtn = document.getElementById('completeWorkoutBtn');
+        completeBtn.disabled = true;
+        completeBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Completing...';
+        
+        // Collect all exercise data
+        const exercisesPerformed = collectExerciseData();
+        
+        // Get auth token
+        const token = await getAuthToken();
+        if (!token) {
+            throw new Error('Authentication required');
+        }
+        
+        // Complete session via API
+        const response = await fetch(`/api/v3/workout-sessions/${session.id}/complete`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                completed_at: new Date().toISOString(),
+                exercises_performed: exercisesPerformed,
+                notes: ''
+            })
+        });
+        
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.detail || `Failed to complete session: ${response.statusText}`);
+        }
+        
+        const completedSession = await response.json();
+        
+        // Update state
+        session.status = 'completed';
+        session.completedAt = new Date(completedSession.completed_at);
+        
+        // Stop session timer
+        stopSessionTimer();
+        
+        // Show success message
+        showCompletionSummary(completedSession);
+        
+        console.log('✅ Workout session completed:', session.id);
+        
+    } catch (error) {
+        console.error('❌ Error completing workout session:', error);
+        
+        // Reset button
+        const completeBtn = document.getElementById('completeWorkoutBtn');
+        completeBtn.disabled = false;
+        completeBtn.innerHTML = '<i class="bx bx-check-circle me-2"></i>Complete Workout';
+        
+        if (window.showAlert) {
+            window.showAlert(error.message || 'Failed to complete workout. Please try again.', 'danger');
+        } else {
+            alert(error.message || 'Failed to complete workout. Please try again.');
+        }
+    }
+}
+
+/**
+ * Collect all exercise data for session completion
+ */
+function collectExerciseData() {
+    const workout = window.ghostGym.workoutMode.currentWorkout;
+    const session = window.ghostGym.workoutMode.session;
+    const exercisesPerformed = [];
+    
+    let orderIndex = 0;
+    
+    // Collect from exercise groups
+    if (workout.exercise_groups) {
+        workout.exercise_groups.forEach((group, groupIndex) => {
+            const mainExercise = group.exercises?.a;
+            if (!mainExercise) return;
+            
+            const exerciseData = session.exercises[mainExercise] || {};
+            const history = window.ghostGym.workoutMode.exerciseHistory?.[mainExercise];
+            
+            exercisesPerformed.push({
+                exercise_name: mainExercise,
+                exercise_id: exerciseData.exercise_id || null,
+                group_id: group.group_id || `group-${groupIndex}`,
+                sets_completed: parseInt(group.sets) || 0,
+                target_sets: group.sets || '3',
+                target_reps: group.reps || '8-12',
+                weight: exerciseData.weight || 0,
+                weight_unit: exerciseData.weight_unit || 'lbs',
+                previous_weight: history?.last_weight || null,
+                weight_change: exerciseData.weight_change || 0,
+                order_index: orderIndex++,
+                is_bonus: false
+            });
+        });
+    }
+    
+    // Collect from bonus exercises
+    if (workout.bonus_exercises) {
+        workout.bonus_exercises.forEach((bonus, bonusIndex) => {
+            const exerciseData = session.exercises[bonus.name] || {};
+            const history = window.ghostGym.workoutMode.exerciseHistory?.[bonus.name];
+            
+            exercisesPerformed.push({
+                exercise_name: bonus.name,
+                exercise_id: bonus.exercise_id || null,
+                group_id: bonus.exercise_id || `bonus-${bonusIndex}`,
+                sets_completed: parseInt(bonus.sets) || 0,
+                target_sets: bonus.sets || '2',
+                target_reps: bonus.reps || '15',
+                weight: exerciseData.weight || 0,
+                weight_unit: exerciseData.weight_unit || 'lbs',
+                previous_weight: history?.last_weight || null,
+                weight_change: exerciseData.weight_change || 0,
+                order_index: orderIndex++,
+                is_bonus: true
+            });
+        });
+    }
+    
+    return exercisesPerformed;
+}
+
+/**
+ * Get Firebase auth token
+ */
+async function getAuthToken() {
+    try {
+        if (!firebase || !firebase.auth || !firebase.auth().currentUser) {
+            return null;
+        }
+        return await firebase.auth().currentUser.getIdToken();
+    } catch (error) {
+        console.error('Error getting auth token:', error);
+        return null;
+    }
+}
+
+/**
+ * Start session timer
+ */
+function startSessionTimer() {
+    const session = window.ghostGym.workoutMode.session;
+    
+    if (session.timerInterval) {
+        clearInterval(session.timerInterval);
+    }
+    
+    session.timerInterval = setInterval(() => {
+        const elapsed = Math.floor((Date.now() - session.startedAt.getTime()) / 1000);
+        const minutes = Math.floor(elapsed / 60);
+        const seconds = elapsed % 60;
+        const timeStr = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        
+        const sessionTimer = document.getElementById('sessionTimer');
+        const footerTimer = document.getElementById('footerSessionTimer');
+        
+        if (sessionTimer) sessionTimer.textContent = timeStr;
+        if (footerTimer) footerTimer.textContent = timeStr;
+    }, 1000);
+}
+
+/**
+ * Stop session timer
+ */
+function stopSessionTimer() {
+    const session = window.ghostGym.workoutMode.session;
+    
+    if (session && session.timerInterval) {
+        clearInterval(session.timerInterval);
+        session.timerInterval = null;
+    }
+}
+
+/**
+ * Show completion summary modal
+ */
+function showCompletionSummary(session) {
+    const duration = session.duration_minutes || 0;
+    const exerciseCount = session.exercises_performed?.length || 0;
+    
+    const message = `
+        <div class="text-center">
+            <i class="bx bx-trophy display-1 text-success mb-3"></i>
+            <h4>Workout Complete! 🎉</h4>
+            <p class="text-muted">Great job on completing your workout!</p>
+            <div class="mt-3">
+                <div class="d-flex justify-content-center gap-4">
+                    <div>
+                        <div class="h5 mb-0">${duration} min</div>
+                        <small class="text-muted">Duration</small>
+                    </div>
+                    <div>
+                        <div class="h5 mb-0">${exerciseCount}</div>
+                        <small class="text-muted">Exercises</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    if (window.showAlert) {
+        window.showAlert(message, 'success');
+    } else {
+        alert('Workout completed successfully!');
+    }
+    
+    // Redirect to workouts page after 3 seconds
+    setTimeout(() => {
+        window.location.href = 'workouts.html';
+    }, 3000);
+}
+
         }
     });
 }

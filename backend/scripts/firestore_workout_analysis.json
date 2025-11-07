@@ -1,0 +1,1116 @@
+{
+  "inspected_at": "2025-11-06T10:52:40.143434",
+  "user_id": "mnxaBMMr5NMRFAkylNr9O4QRo7j2",
+  "workouts": {
+    "total_count": 10,
+    "workouts": [
+      {
+        "id": "workout-06fad623",
+        "name": "Legs",
+        "fields": {
+          "description": {
+            "type": "str",
+            "value": "This is the best leg workout on the planet"
+          },
+          "modified_date": {
+            "type": "DatetimeWithNanoseconds",
+            "value": "<class 'google.api_core.datetime_helpers.DatetimeWithNanoseconds'>"
+          },
+          "id": {
+            "type": "str",
+            "value": "workout-06fad623"
+          },
+          "name": {
+            "type": "str",
+            "value": "Legs"
+          },
+          "sync_status": {
+            "type": "str",
+            "value": "synced"
+          },
+          "tags": {
+            "type": "list",
+            "value": "<class 'list'>"
+          },
+          "version": {
+            "type": "int",
+            "value": 19
+          },
+          "created_date": {
+            "type": "DatetimeWithNanoseconds",
+            "value": "<class 'google.api_core.datetime_helpers.DatetimeWithNanoseconds'>"
+          },
+          "is_template": {
+            "type": "bool",
+            "value": true
+          },
+          "bonus_exercises": {
+            "type": "list",
+            "value": "<class 'list'>"
+          },
+          "exercise_groups": {
+            "type": "list",
+            "value": "<class 'list'>"
+          }
+        }
+      },
+      {
+        "id": "workout-542be09e",
+        "name": "Push Day",
+        "fields": {
+          "description": {
+            "type": "str",
+            "value": ""
+          },
+          "modified_date": {
+            "type": "DatetimeWithNanoseconds",
+            "value": "<class 'google.api_core.datetime_helpers.DatetimeWithNanoseconds'>"
+          },
+          "id": {
+            "type": "str",
+            "value": "workout-542be09e"
+          },
+          "name": {
+            "type": "str",
+            "value": "Push Day"
+          },
+          "sync_status": {
+            "type": "str",
+            "value": "synced"
+          },
+          "tags": {
+            "type": "list",
+            "value": "<class 'list'>"
+          },
+          "version": {
+            "type": "int",
+            "value": 15
+          },
+          "created_date": {
+            "type": "DatetimeWithNanoseconds",
+            "value": "<class 'google.api_core.datetime_helpers.DatetimeWithNanoseconds'>"
+          },
+          "bonus_exercises": {
+            "type": "list",
+            "value": "<class 'list'>"
+          },
+          "is_template": {
+            "type": "bool",
+            "value": true
+          },
+          "exercise_groups": {
+            "type": "list",
+            "value": "<class 'list'>"
+          }
+        }
+      },
+      {
+        "id": "workout-6338cdee",
+        "name": "Chest Day",
+        "fields": {
+          "description": {
+            "type": "str",
+            "value": ""
+          },
+          "modified_date": {
+            "type": "DatetimeWithNanoseconds",
+            "value": "<class 'google.api_core.datetime_helpers.DatetimeWithNanoseconds'>"
+          },
+          "version": {
+            "type": "int",
+            "value": 1
+          },
+          "name": {
+            "type": "str",
+            "value": "Chest Day"
+          },
+          "id": {
+            "type": "str",
+            "value": "workout-6338cdee"
+          },
+          "tags": {
+            "type": "list",
+            "value": "<class 'list'>"
+          },
+          "sync_status": {
+            "type": "str",
+            "value": "synced"
+          },
+          "created_date": {
+            "type": "DatetimeWithNanoseconds",
+            "value": "<class 'google.api_core.datetime_helpers.DatetimeWithNanoseconds'>"
+          },
+          "bonus_exercises": {
+            "type": "list",
+            "value": "<class 'list'>"
+          },
+          "exercise_groups": {
+            "type": "list",
+            "value": "<class 'list'>"
+          },
+          "is_template": {
+            "type": "bool",
+            "value": true
+          }
+        }
+      },
+      {
+        "id": "workout-7eb8443b",
+        "name": "new new 4",
+        "fields": {
+          "description": {
+            "type": "str",
+            "value": "Test save"
+          },
+          "modified_date": {
+            "type": "DatetimeWithNanoseconds",
+            "value": "<class 'google.api_core.datetime_helpers.DatetimeWithNanoseconds'>"
+          },
+          "sync_status": {
+            "type": "str",
+            "value": "synced"
+          },
+          "name": {
+            "type": "str",
+            "value": "new new 4"
+          },
+          "id": {
+            "type": "str",
+            "value": "workout-7eb8443b"
+          },
+          "tags": {
+            "type": "list",
+            "value": "<class 'list'>"
+          },
+          "version": {
+            "type": "int",
+            "value": 19
+          },
+          "created_date": {
+            "type": "DatetimeWithNanoseconds",
+            "value": "<class 'google.api_core.datetime_helpers.DatetimeWithNanoseconds'>"
+          },
+          "is_template": {
+            "type": "bool",
+            "value": true
+          },
+          "bonus_exercises": {
+            "type": "list",
+            "value": "<class 'list'>"
+          },
+          "exercise_groups": {
+            "type": "list",
+            "value": "<class 'list'>"
+          }
+        }
+      },
+      {
+        "id": "workout-9a39855b",
+        "name": "Back & Biceps",
+        "fields": {
+          "description": {
+            "type": "str",
+            "value": ""
+          },
+          "modified_date": {
+            "type": "DatetimeWithNanoseconds",
+            "value": "<class 'google.api_core.datetime_helpers.DatetimeWithNanoseconds'>"
+          },
+          "id": {
+            "type": "str",
+            "value": "workout-9a39855b"
+          },
+          "name": {
+            "type": "str",
+            "value": "Back & Biceps"
+          },
+          "sync_status": {
+            "type": "str",
+            "value": "synced"
+          },
+          "tags": {
+            "type": "list",
+            "value": "<class 'list'>"
+          },
+          "version": {
+            "type": "int",
+            "value": 31
+          },
+          "created_date": {
+            "type": "DatetimeWithNanoseconds",
+            "value": "<class 'google.api_core.datetime_helpers.DatetimeWithNanoseconds'>"
+          },
+          "bonus_exercises": {
+            "type": "list",
+            "value": "<class 'list'>"
+          },
+          "is_template": {
+            "type": "bool",
+            "value": true
+          },
+          "exercise_groups": {
+            "type": "list",
+            "value": "<class 'list'>"
+          }
+        }
+      },
+      {
+        "id": "workout-a808ee17",
+        "name": "Push day - upper body focus",
+        "fields": {
+          "description": {
+            "type": "str",
+            "value": ""
+          },
+          "modified_date": {
+            "type": "DatetimeWithNanoseconds",
+            "value": "<class 'google.api_core.datetime_helpers.DatetimeWithNanoseconds'>"
+          },
+          "sync_status": {
+            "type": "str",
+            "value": "synced"
+          },
+          "name": {
+            "type": "str",
+            "value": "Push day - upper body focus"
+          },
+          "id": {
+            "type": "str",
+            "value": "workout-a808ee17"
+          },
+          "tags": {
+            "type": "list",
+            "value": "<class 'list'>"
+          },
+          "version": {
+            "type": "int",
+            "value": 2
+          },
+          "created_date": {
+            "type": "DatetimeWithNanoseconds",
+            "value": "<class 'google.api_core.datetime_helpers.DatetimeWithNanoseconds'>"
+          },
+          "is_template": {
+            "type": "bool",
+            "value": true
+          },
+          "bonus_exercises": {
+            "type": "list",
+            "value": "<class 'list'>"
+          },
+          "exercise_groups": {
+            "type": "list",
+            "value": "<class 'list'>"
+          }
+        }
+      },
+      {
+        "id": "workout-b3ce1709",
+        "name": "Push Day",
+        "fields": {
+          "description": {
+            "type": "str",
+            "value": ""
+          },
+          "modified_date": {
+            "type": "DatetimeWithNanoseconds",
+            "value": "<class 'google.api_core.datetime_helpers.DatetimeWithNanoseconds'>"
+          },
+          "sync_status": {
+            "type": "str",
+            "value": "synced"
+          },
+          "name": {
+            "type": "str",
+            "value": "Push Day"
+          },
+          "version": {
+            "type": "int",
+            "value": 1
+          },
+          "tags": {
+            "type": "list",
+            "value": "<class 'list'>"
+          },
+          "id": {
+            "type": "str",
+            "value": "workout-b3ce1709"
+          },
+          "created_date": {
+            "type": "DatetimeWithNanoseconds",
+            "value": "<class 'google.api_core.datetime_helpers.DatetimeWithNanoseconds'>"
+          },
+          "is_template": {
+            "type": "bool",
+            "value": true
+          },
+          "bonus_exercises": {
+            "type": "list",
+            "value": "<class 'list'>"
+          },
+          "exercise_groups": {
+            "type": "list",
+            "value": "<class 'list'>"
+          }
+        }
+      },
+      {
+        "id": "workout-da1d9a34",
+        "name": "Legs",
+        "fields": {
+          "description": {
+            "type": "str",
+            "value": ""
+          },
+          "modified_date": {
+            "type": "DatetimeWithNanoseconds",
+            "value": "<class 'google.api_core.datetime_helpers.DatetimeWithNanoseconds'>"
+          },
+          "id": {
+            "type": "str",
+            "value": "workout-da1d9a34"
+          },
+          "name": {
+            "type": "str",
+            "value": "Legs"
+          },
+          "sync_status": {
+            "type": "str",
+            "value": "synced"
+          },
+          "tags": {
+            "type": "list",
+            "value": "<class 'list'>"
+          },
+          "version": {
+            "type": "int",
+            "value": 32
+          },
+          "created_date": {
+            "type": "DatetimeWithNanoseconds",
+            "value": "<class 'google.api_core.datetime_helpers.DatetimeWithNanoseconds'>"
+          },
+          "bonus_exercises": {
+            "type": "list",
+            "value": "<class 'list'>"
+          },
+          "is_template": {
+            "type": "bool",
+            "value": true
+          },
+          "exercise_groups": {
+            "type": "list",
+            "value": "<class 'list'>"
+          }
+        }
+      },
+      {
+        "id": "workout-e3d3abcf",
+        "name": "Push Day",
+        "fields": {
+          "description": {
+            "type": "str",
+            "value": ""
+          },
+          "modified_date": {
+            "type": "DatetimeWithNanoseconds",
+            "value": "<class 'google.api_core.datetime_helpers.DatetimeWithNanoseconds'>"
+          },
+          "sync_status": {
+            "type": "str",
+            "value": "synced"
+          },
+          "name": {
+            "type": "str",
+            "value": "Push Day"
+          },
+          "version": {
+            "type": "int",
+            "value": 1
+          },
+          "tags": {
+            "type": "list",
+            "value": "<class 'list'>"
+          },
+          "id": {
+            "type": "str",
+            "value": "workout-e3d3abcf"
+          },
+          "created_date": {
+            "type": "DatetimeWithNanoseconds",
+            "value": "<class 'google.api_core.datetime_helpers.DatetimeWithNanoseconds'>"
+          },
+          "is_template": {
+            "type": "bool",
+            "value": true
+          },
+          "bonus_exercises": {
+            "type": "list",
+            "value": "<class 'list'>"
+          },
+          "exercise_groups": {
+            "type": "list",
+            "value": "<class 'list'>"
+          }
+        }
+      },
+      {
+        "id": "workout-e8c7e54b",
+        "name": "Squat Day",
+        "fields": {
+          "description": {
+            "type": "str",
+            "value": ""
+          },
+          "modified_date": {
+            "type": "DatetimeWithNanoseconds",
+            "value": "<class 'google.api_core.datetime_helpers.DatetimeWithNanoseconds'>"
+          },
+          "id": {
+            "type": "str",
+            "value": "workout-e8c7e54b"
+          },
+          "name": {
+            "type": "str",
+            "value": "Squat Day"
+          },
+          "sync_status": {
+            "type": "str",
+            "value": "synced"
+          },
+          "tags": {
+            "type": "list",
+            "value": "<class 'list'>"
+          },
+          "version": {
+            "type": "int",
+            "value": 28
+          },
+          "created_date": {
+            "type": "DatetimeWithNanoseconds",
+            "value": "<class 'google.api_core.datetime_helpers.DatetimeWithNanoseconds'>"
+          },
+          "is_template": {
+            "type": "bool",
+            "value": true
+          },
+          "bonus_exercises": {
+            "type": "list",
+            "value": "<class 'list'>"
+          },
+          "exercise_groups": {
+            "type": "list",
+            "value": "<class 'list'>"
+          }
+        }
+      }
+    ],
+    "field_analysis": {
+      "common_fields": [
+        "id",
+        "modified_date",
+        "tags",
+        "sync_status",
+        "version",
+        "is_template",
+        "bonus_exercises",
+        "created_date",
+        "exercise_groups",
+        "name",
+        "description"
+      ],
+      "optional_fields": "set()",
+      "field_types": {
+        "description": [
+          "str"
+        ],
+        "modified_date": [
+          "DatetimeWithNanoseconds"
+        ],
+        "id": [
+          "str"
+        ],
+        "name": [
+          "str"
+        ],
+        "sync_status": [
+          "str"
+        ],
+        "tags": [
+          "list"
+        ],
+        "version": [
+          "int"
+        ],
+        "created_date": [
+          "DatetimeWithNanoseconds"
+        ],
+        "is_template": [
+          "bool"
+        ],
+        "bonus_exercises": [
+          "list"
+        ],
+        "exercise_groups": [
+          "list"
+        ]
+      }
+    }
+  },
+  "programs": {
+    "total_count": 10,
+    "programs": [
+      {
+        "id": "program-076b2a0c",
+        "name": "Fall 2025 v6",
+        "workout_count": 0,
+        "fields": {
+          "difficulty_level": {
+            "type": "str",
+            "value": "intermediate"
+          },
+          "description": {
+            "type": "str",
+            "value": "Test Description"
+          },
+          "modified_date": {
+            "type": "DatetimeWithNanoseconds",
+            "value": "<class 'google.api_core.datetime_helpers.DatetimeWithNanoseconds'>"
+          },
+          "version": {
+            "type": "int",
+            "value": 1
+          },
+          "name": {
+            "type": "str",
+            "value": "Fall 2025 v6"
+          },
+          "sync_status": {
+            "type": "str",
+            "value": "synced"
+          },
+          "tags": {
+            "type": "list",
+            "value": "<class 'list'>"
+          },
+          "id": {
+            "type": "str",
+            "value": "program-076b2a0c"
+          },
+          "created_date": {
+            "type": "DatetimeWithNanoseconds",
+            "value": "<class 'google.api_core.datetime_helpers.DatetimeWithNanoseconds'>"
+          },
+          "duration_weeks": {
+            "type": "NoneType",
+            "value": "<class 'NoneType'>"
+          },
+          "workouts": {
+            "type": "list",
+            "value": "<class 'list'>"
+          }
+        }
+      },
+      {
+        "id": "program-1f5a9d66",
+        "name": "Fall 2025",
+        "workout_count": 0,
+        "fields": {
+          "difficulty_level": {
+            "type": "str",
+            "value": "intermediate"
+          },
+          "description": {
+            "type": "str",
+            "value": ""
+          },
+          "modified_date": {
+            "type": "DatetimeWithNanoseconds",
+            "value": "<class 'google.api_core.datetime_helpers.DatetimeWithNanoseconds'>"
+          },
+          "sync_status": {
+            "type": "str",
+            "value": "synced"
+          },
+          "name": {
+            "type": "str",
+            "value": "Fall 2025"
+          },
+          "version": {
+            "type": "int",
+            "value": 1
+          },
+          "tags": {
+            "type": "list",
+            "value": "<class 'list'>"
+          },
+          "id": {
+            "type": "str",
+            "value": "program-1f5a9d66"
+          },
+          "created_date": {
+            "type": "DatetimeWithNanoseconds",
+            "value": "<class 'google.api_core.datetime_helpers.DatetimeWithNanoseconds'>"
+          },
+          "duration_weeks": {
+            "type": "NoneType",
+            "value": "<class 'NoneType'>"
+          },
+          "workouts": {
+            "type": "list",
+            "value": "<class 'list'>"
+          }
+        }
+      },
+      {
+        "id": "program-29adc784",
+        "name": "Fall 2026",
+        "workout_count": 0,
+        "fields": {
+          "difficulty_level": {
+            "type": "str",
+            "value": "intermediate"
+          },
+          "description": {
+            "type": "str",
+            "value": ""
+          },
+          "modified_date": {
+            "type": "DatetimeWithNanoseconds",
+            "value": "<class 'google.api_core.datetime_helpers.DatetimeWithNanoseconds'>"
+          },
+          "id": {
+            "type": "str",
+            "value": "program-29adc784"
+          },
+          "name": {
+            "type": "str",
+            "value": "Fall 2026"
+          },
+          "sync_status": {
+            "type": "str",
+            "value": "synced"
+          },
+          "tags": {
+            "type": "list",
+            "value": "<class 'list'>"
+          },
+          "version": {
+            "type": "int",
+            "value": 1
+          },
+          "created_date": {
+            "type": "DatetimeWithNanoseconds",
+            "value": "<class 'google.api_core.datetime_helpers.DatetimeWithNanoseconds'>"
+          },
+          "duration_weeks": {
+            "type": "NoneType",
+            "value": "<class 'NoneType'>"
+          },
+          "workouts": {
+            "type": "list",
+            "value": "<class 'list'>"
+          }
+        }
+      },
+      {
+        "id": "program-2c5c1c98",
+        "name": "Fall 2025",
+        "workout_count": 0,
+        "fields": {
+          "difficulty_level": {
+            "type": "str",
+            "value": "intermediate"
+          },
+          "description": {
+            "type": "str",
+            "value": ""
+          },
+          "modified_date": {
+            "type": "DatetimeWithNanoseconds",
+            "value": "<class 'google.api_core.datetime_helpers.DatetimeWithNanoseconds'>"
+          },
+          "id": {
+            "type": "str",
+            "value": "program-2c5c1c98"
+          },
+          "name": {
+            "type": "str",
+            "value": "Fall 2025"
+          },
+          "sync_status": {
+            "type": "str",
+            "value": "synced"
+          },
+          "tags": {
+            "type": "list",
+            "value": "<class 'list'>"
+          },
+          "version": {
+            "type": "int",
+            "value": 1
+          },
+          "created_date": {
+            "type": "DatetimeWithNanoseconds",
+            "value": "<class 'google.api_core.datetime_helpers.DatetimeWithNanoseconds'>"
+          },
+          "duration_weeks": {
+            "type": "NoneType",
+            "value": "<class 'NoneType'>"
+          },
+          "workouts": {
+            "type": "list",
+            "value": "<class 'list'>"
+          }
+        }
+      },
+      {
+        "id": "program-2e3713ec",
+        "name": "Fall 2025 (Copy)",
+        "workout_count": 0,
+        "fields": {
+          "difficulty_level": {
+            "type": "str",
+            "value": "intermediate"
+          },
+          "description": {
+            "type": "str",
+            "value": ""
+          },
+          "modified_date": {
+            "type": "DatetimeWithNanoseconds",
+            "value": "<class 'google.api_core.datetime_helpers.DatetimeWithNanoseconds'>"
+          },
+          "id": {
+            "type": "str",
+            "value": "program-2e3713ec"
+          },
+          "name": {
+            "type": "str",
+            "value": "Fall 2025 (Copy)"
+          },
+          "version": {
+            "type": "int",
+            "value": 1
+          },
+          "tags": {
+            "type": "list",
+            "value": "<class 'list'>"
+          },
+          "sync_status": {
+            "type": "str",
+            "value": "synced"
+          },
+          "created_date": {
+            "type": "DatetimeWithNanoseconds",
+            "value": "<class 'google.api_core.datetime_helpers.DatetimeWithNanoseconds'>"
+          },
+          "workouts": {
+            "type": "list",
+            "value": "<class 'list'>"
+          },
+          "duration_weeks": {
+            "type": "NoneType",
+            "value": "<class 'NoneType'>"
+          }
+        }
+      },
+      {
+        "id": "program-2fd8346e",
+        "name": "Winter",
+        "workout_count": 2,
+        "fields": {
+          "difficulty_level": {
+            "type": "str",
+            "value": "intermediate"
+          },
+          "description": {
+            "type": "str",
+            "value": ""
+          },
+          "modified_date": {
+            "type": "DatetimeWithNanoseconds",
+            "value": "<class 'google.api_core.datetime_helpers.DatetimeWithNanoseconds'>"
+          },
+          "sync_status": {
+            "type": "str",
+            "value": "synced"
+          },
+          "name": {
+            "type": "str",
+            "value": "Winter"
+          },
+          "id": {
+            "type": "str",
+            "value": "program-2fd8346e"
+          },
+          "tags": {
+            "type": "list",
+            "value": "<class 'list'>"
+          },
+          "version": {
+            "type": "int",
+            "value": 8
+          },
+          "created_date": {
+            "type": "DatetimeWithNanoseconds",
+            "value": "<class 'google.api_core.datetime_helpers.DatetimeWithNanoseconds'>"
+          },
+          "duration_weeks": {
+            "type": "NoneType",
+            "value": "<class 'NoneType'>"
+          },
+          "workouts": {
+            "type": "array",
+            "length": 2,
+            "sample_item": {
+              "workout_id": "workout-e8c7e54b",
+              "custom_name": null,
+              "order_index": 0,
+              "custom_date": null
+            }
+          }
+        }
+      },
+      {
+        "id": "program-55847dc2",
+        "name": "New in gym program",
+        "workout_count": 0,
+        "fields": {
+          "difficulty_level": {
+            "type": "str",
+            "value": "intermediate"
+          },
+          "description": {
+            "type": "str",
+            "value": ""
+          },
+          "modified_date": {
+            "type": "DatetimeWithNanoseconds",
+            "value": "<class 'google.api_core.datetime_helpers.DatetimeWithNanoseconds'>"
+          },
+          "sync_status": {
+            "type": "str",
+            "value": "synced"
+          },
+          "name": {
+            "type": "str",
+            "value": "New in gym program"
+          },
+          "id": {
+            "type": "str",
+            "value": "program-55847dc2"
+          },
+          "tags": {
+            "type": "list",
+            "value": "<class 'list'>"
+          },
+          "version": {
+            "type": "int",
+            "value": 1
+          },
+          "created_date": {
+            "type": "DatetimeWithNanoseconds",
+            "value": "<class 'google.api_core.datetime_helpers.DatetimeWithNanoseconds'>"
+          },
+          "workouts": {
+            "type": "list",
+            "value": "<class 'list'>"
+          },
+          "duration_weeks": {
+            "type": "NoneType",
+            "value": "<class 'NoneType'>"
+          }
+        }
+      },
+      {
+        "id": "program-7285fed6",
+        "name": "Fall 2025",
+        "workout_count": 0,
+        "fields": {
+          "difficulty_level": {
+            "type": "str",
+            "value": "intermediate"
+          },
+          "description": {
+            "type": "str",
+            "value": ""
+          },
+          "modified_date": {
+            "type": "DatetimeWithNanoseconds",
+            "value": "<class 'google.api_core.datetime_helpers.DatetimeWithNanoseconds'>"
+          },
+          "sync_status": {
+            "type": "str",
+            "value": "synced"
+          },
+          "name": {
+            "type": "str",
+            "value": "Fall 2025"
+          },
+          "version": {
+            "type": "int",
+            "value": 1
+          },
+          "tags": {
+            "type": "list",
+            "value": "<class 'list'>"
+          },
+          "id": {
+            "type": "str",
+            "value": "program-7285fed6"
+          },
+          "created_date": {
+            "type": "DatetimeWithNanoseconds",
+            "value": "<class 'google.api_core.datetime_helpers.DatetimeWithNanoseconds'>"
+          },
+          "duration_weeks": {
+            "type": "NoneType",
+            "value": "<class 'NoneType'>"
+          },
+          "workouts": {
+            "type": "list",
+            "value": "<class 'list'>"
+          }
+        }
+      },
+      {
+        "id": "program-92442e6b",
+        "name": "Fall 2025",
+        "workout_count": 0,
+        "fields": {
+          "difficulty_level": {
+            "type": "str",
+            "value": "intermediate"
+          },
+          "description": {
+            "type": "str",
+            "value": ""
+          },
+          "modified_date": {
+            "type": "DatetimeWithNanoseconds",
+            "value": "<class 'google.api_core.datetime_helpers.DatetimeWithNanoseconds'>"
+          },
+          "sync_status": {
+            "type": "str",
+            "value": "synced"
+          },
+          "name": {
+            "type": "str",
+            "value": "Fall 2025"
+          },
+          "version": {
+            "type": "int",
+            "value": 1
+          },
+          "tags": {
+            "type": "list",
+            "value": "<class 'list'>"
+          },
+          "id": {
+            "type": "str",
+            "value": "program-92442e6b"
+          },
+          "created_date": {
+            "type": "DatetimeWithNanoseconds",
+            "value": "<class 'google.api_core.datetime_helpers.DatetimeWithNanoseconds'>"
+          },
+          "duration_weeks": {
+            "type": "NoneType",
+            "value": "<class 'NoneType'>"
+          },
+          "workouts": {
+            "type": "list",
+            "value": "<class 'list'>"
+          }
+        }
+      },
+      {
+        "id": "program-a0888a1d",
+        "name": "Fall 2026",
+        "workout_count": 0,
+        "fields": {
+          "difficulty_level": {
+            "type": "str",
+            "value": "intermediate"
+          },
+          "description": {
+            "type": "str",
+            "value": ""
+          },
+          "modified_date": {
+            "type": "DatetimeWithNanoseconds",
+            "value": "<class 'google.api_core.datetime_helpers.DatetimeWithNanoseconds'>"
+          },
+          "sync_status": {
+            "type": "str",
+            "value": "synced"
+          },
+          "name": {
+            "type": "str",
+            "value": "Fall 2026"
+          },
+          "version": {
+            "type": "int",
+            "value": 1
+          },
+          "tags": {
+            "type": "list",
+            "value": "<class 'list'>"
+          },
+          "id": {
+            "type": "str",
+            "value": "program-a0888a1d"
+          },
+          "created_date": {
+            "type": "DatetimeWithNanoseconds",
+            "value": "<class 'google.api_core.datetime_helpers.DatetimeWithNanoseconds'>"
+          },
+          "workouts": {
+            "type": "list",
+            "value": "<class 'list'>"
+          },
+          "duration_weeks": {
+            "type": "int",
+            "value": 12
+          }
+        }
+      }
+    ],
+    "field_analysis": {
+      "common_fields": [
+        "difficulty_level",
+        "id",
+        "duration_weeks",
+        "modified_date",
+        "tags",
+        "version",
+        "sync_status",
+        "workouts",
+        "created_date",
+        "name",
+        "description"
+      ],
+      "workout_reference_structure": {
+        "fields": [
+          "workout_id",
+          "custom_name",
+          "order_index",
+          "custom_date"
+        ],
+        "sample": {
+          "workout_id": "workout-e8c7e54b",
+          "custom_name": null,
+          "order_index": 0,
+          "custom_date": null
+        }
+      }
+    }
+  },
+  "logging_search": {
+    "collections_found": [],
+    "weight_fields_found": [],
+    "session_fields_found": [],
+    "users_checked": 0
+  }
+}
