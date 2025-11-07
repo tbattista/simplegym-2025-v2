@@ -1,7 +1,7 @@
 /**
  * Ghost Gym - Workout Mode JavaScript
  * Handles workout execution with rest timers, exercise navigation, and weight logging
- * @version 2.0.0
+ * @version 2.1.0
  * @date 2025-11-07
  */
 
@@ -824,6 +824,15 @@ async function startWorkoutSession(workoutId, workoutName) {
         
         // Start session timer
         startSessionTimer();
+        
+        // Re-render exercise cards to show weight inputs
+        const workout = window.ghostGym.workoutMode.currentWorkout;
+        if (workout) {
+            renderExerciseCards(workout);
+            
+            // Initialize weight input event listeners
+            initializeWeightInputs();
+        }
         
         console.log('✅ Workout session started:', session.id);
         
