@@ -253,10 +253,10 @@ async function initWorkoutMode() {
  */
 async function getAuthToken() {
     try {
-        if (!firebase || !firebase.auth || !firebase.auth().currentUser) {
+        if (!window.firebase || !window.firebase.auth || !window.firebase.auth().currentUser) {
             return null;
         }
-        return await firebase.auth().currentUser.getIdToken();
+        return await window.firebase.auth().currentUser.getIdToken();
     } catch (error) {
         console.error('Error getting auth token:', error);
         return null;
