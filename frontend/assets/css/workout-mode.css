@@ -101,6 +101,68 @@
 }
 
 /* ============================================
+   WEIGHT INPUT (Phase 2)
+   ============================================ */
+
+.weight-input-container {
+    background: var(--bs-gray-50);
+    border: 2px solid var(--bs-border-color);
+    border-radius: var(--bs-border-radius);
+    padding: 1rem;
+}
+
+.weight-input-container .form-label {
+    margin-bottom: 0.5rem;
+    font-size: 0.95rem;
+}
+
+.weight-input-container .input-group {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.weight-input {
+    font-size: 1.25rem;
+    font-weight: 600;
+    text-align: center;
+    border-right: none;
+}
+
+.weight-input:focus {
+    border-color: var(--bs-primary);
+    box-shadow: none;
+}
+
+.weight-unit-select {
+    font-weight: 600;
+    border-left: none;
+    border-right: none;
+}
+
+.weight-unit-select:focus {
+    border-color: var(--bs-primary);
+    box-shadow: none;
+}
+
+.save-indicator,
+.save-success {
+    font-size: 1.2rem;
+}
+
+.save-indicator {
+    color: var(--bs-primary);
+}
+
+.save-success {
+    color: var(--bs-success);
+}
+
+/* Weight input in collapsed header */
+.exercise-card-meta .weight-display {
+    font-weight: 600;
+    color: var(--bs-primary);
+}
+
+/* ============================================
    EXERCISE CARDS
    ============================================ */
 

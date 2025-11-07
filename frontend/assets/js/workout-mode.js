@@ -403,14 +403,29 @@ function renderExerciseCard(group, index, isBonus) {
     
     const bonusClass = isBonus ? 'bonus-exercise' : '';
     
+    // Check if session is active
+    const session = window.ghostGym.workoutMode.session;
+    const isSessionActive = session && session.status === 'in_progress';
+    
+    // Get exercise history for this exercise
+    const history = window.ghostGym.workoutMode.exerciseHistory?.[mainExercise];
+    const lastWeight = history?.last_weight || '';
+    const lastWeightUnit = history?.last_weight_unit || 'lbs';
+    const lastSessionDate = history?.last_session_date ? new Date(history.last_session_date).toLocaleDateString() : null;
+    
+    // Get current weight from session (if already entered)
+    const currentWeight = session?.exercises?.[mainExercise]?.weight || lastWeight;
+    const currentUnit = session?.exercises?.[mainExercise]?.weight_unit || lastWeightUnit;
+    
     return `
-        <div class="card exercise-card ${bonusClass}" data-exercise-index="${index}">
+        <div class="card exercise-card ${bonusClass}" data-exercise-index="${index}" data-exercise-name="${escapeHtml(mainExercise)}">
             <!-- Collapsed Header -->
             <div class="card-header exercise-card-header" onclick="toggleExerciseCard(${index})">
                 <div class="exercise-card-summary">
                     <h6 class="mb-1">${escapeHtml(mainExercise)}</h6>
                     <div class="exercise-card-meta text-muted small">
                         ${sets} × ${reps} • Rest: ${rest}
+                        ${isSessionActive && currentWeight ? ` • ${currentWeight} ${currentUnit}` : ''}
                     </div>
                     ${alternates.length > 0 ? `
                         <div class="exercise-card-alts text-muted small mt-1">
@@ -444,6 +459,38 @@ function renderExerciseCard(group, index, isBonus) {
                         </div>
                     ` : ''}
                 </div>
+                
+                <!-- Weight Input (Phase 2) -->
+                ${isSessionActive ? `
+                    <div class="weight-input-container mb-3">
+                        <label class="form-label fw-semibold">
+                            <i class="bx bx-dumbbell me-1"></i>Weight
+                        </label>
+                        <div class="input-group">
+                            <input
+                                type="number"
+                                class="form-control form-control-lg weight-input"
+                                data-exercise-name="${escapeHtml(mainExercise)}"
+                                value="${currentWeight}"
+                                placeholder="Enter weight"
+                                step="5"
+                                min="0">
+                            <select class="form-select weight-unit-select" data-exercise-name="${escapeHtml(mainExercise)}" style="max-width: 80px;">
+                                <option value="lbs" ${currentUnit === 'lbs' ? 'selected' : ''}>lbs</option>
+                                <option value="kg" ${currentUnit === 'kg' ? 'selected' : ''}>kg</option>
+                            </select>
+                            <span class="input-group-text">
+                                <i class="bx bx-loader-alt bx-spin save-indicator" style="display: none;"></i>
+                                <i class="bx bx-check text-success save-success" style="display: none;"></i>
+                            </span>
+                        </div>
+                        ${lastWeight && lastSessionDate ? `
+                            <small class="text-muted d-block mt-1">
+                                <i class="bx bx-history me-1"></i>Last: ${lastWeight} ${lastWeightUnit} (${lastSessionDate})
+                            </small>
+                        ` : ''}
+                    </div>
+                ` : ''}
                 
                 <!-- Rest Timer -->
                 <div class="rest-timer-container mb-3">
@@ -1049,6 +1096,232 @@ function showCompletionSummary(session) {
     setTimeout(() => {
         window.location.href = 'workouts.html';
     }, 3000);
+}
+
+/**
+ * ============================================
+ * WEIGHT INPUT & AUTO-SAVE (Phase 2)
+ * ============================================
+ */
+
+/**
+ * Initialize weight input event listeners
+ */
+function initializeWeightInputs() {
+    console.log('🏋️ Initializing weight inputs...');
+    
+    // Get all weight inputs
+    const weightInputs = document.querySelectorAll('.weight-input');
+    const unitSelects = document.querySelectorAll('.weight-unit-select');
+    
+    // Add event listeners to weight inputs
+    weightInputs.forEach(input => {
+        input.addEventListener('input', handleWeightChange);
+        input.addEventListener('blur', handleWeightBlur);
+    });
+    
+    // Add event listeners to unit selects
+    unitSelects.forEach(select => {
+        select.addEventListener('change', handleUnitChange);
+    });
+    
+    console.log('✅ Weight inputs initialized:', weightInputs.length, 'inputs');
+}
+
+/**
+ * Handle weight input change (debounced auto-save)
+ */
+function handleWeightChange(event) {
+    const input = event.target;
+    const exerciseName = input.getAttribute('data-exercise-name');
+    const weight = parseFloat(input.value) || 0;
+    
+    // Get unit
+    const card = input.closest('.exercise-card');
+    const unitSelect = card.querySelector('.weight-unit-select');
+    const unit = unitSelect ? unitSelect.value : 'lbs';
+    
+    // Update session state
+    updateExerciseWeight(exerciseName, weight, unit);
+    
+    // Show saving indicator
+    showSaveIndicator(card, 'saving');
+    
+    // Debounced auto-save (2 seconds)
+    const session = window.ghostGym.workoutMode.session;
+    if (session.autoSaveTimer) {
+        clearTimeout(session.autoSaveTimer);
+    }
+    
+    session.autoSaveTimer = setTimeout(async () => {
+        await autoSaveSession(card);
+    }, 2000);
+}
+
+/**
+ * Handle weight input blur (immediate save)
+ */
+function handleWeightBlur(event) {
+    const input = event.target;
+    const card = input.closest('.exercise-card');
+    
+    // Cancel debounced save and save immediately
+    const session = window.ghostGym.workoutMode.session;
+    if (session.autoSaveTimer) {
+        clearTimeout(session.autoSaveTimer);
+        session.autoSaveTimer = null;
+    }
+    
+    autoSaveSession(card);
+}
+
+/**
+ * Handle unit change
+ */
+function handleUnitChange(event) {
+    const select = event.target;
+    const exerciseName = select.getAttribute('data-exercise-name');
+    const unit = select.value;
+    
+    // Get weight
+    const card = select.closest('.exercise-card');
+    const weightInput = card.querySelector('.weight-input');
+    const weight = parseFloat(weightInput.value) || 0;
+    
+    // Update session state
+    updateExerciseWeight(exerciseName, weight, unit);
+    
+    // Show saving indicator
+    showSaveIndicator(card, 'saving');
+    
+    // Immediate save on unit change
+    autoSaveSession(card);
+}
+
+/**
+ * Update exercise weight in session state
+ */
+function updateExerciseWeight(exerciseName, weight, unit) {
+    const session = window.ghostGym.workoutMode.session;
+    if (!session || !session.exercises) {
+        session.exercises = {};
+    }
+    
+    // Get previous weight for change calculation
+    const history = window.ghostGym.workoutMode.exerciseHistory?.[exerciseName];
+    const previousWeight = history?.last_weight || 0;
+    const weightChange = weight - previousWeight;
+    
+    // Update session state
+    session.exercises[exerciseName] = {
+        weight: weight,
+        weight_unit: unit,
+        previous_weight: previousWeight,
+        weight_change: weightChange
+    };
+    
+    console.log('💪 Updated weight:', exerciseName, weight, unit);
+}
+
+/**
+ * Auto-save session progress
+ */
+async function autoSaveSession(card) {
+    try {
+        const session = window.ghostGym.workoutMode.session;
+        
+        if (!session || !session.id || session.status !== 'in_progress') {
+            console.warn('No active session to save');
+            return;
+        }
+        
+        console.log('💾 Auto-saving session...');
+        
+        // Get auth token
+        const token = await getAuthToken();
+        if (!token) {
+            throw new Error('Authentication required');
+        }
+        
+        // Collect exercise data
+        const exercisesPerformed = collectExerciseData();
+        
+        // Save via PATCH API
+        const response = await fetch(`/api/v3/workout-sessions/${session.id}`, {
+            method: 'PATCH',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                exercises_performed: exercisesPerformed
+            })
+        });
+        
+        if (!response.ok) {
+            throw new Error(`Failed to save: ${response.statusText}`);
+        }
+        
+        // Show success indicator
+        if (card) {
+            showSaveIndicator(card, 'success');
+        }
+        
+        // Update auto-save status in header
+        const autoSaveStatus = document.getElementById('autoSaveStatus');
+        if (autoSaveStatus) {
+            autoSaveStatus.textContent = 'Saved';
+            setTimeout(() => {
+                autoSaveStatus.textContent = 'Ready';
+            }, 2000);
+        }
+        
+        console.log('✅ Session auto-saved');
+        
+    } catch (error) {
+        console.error('❌ Error auto-saving session:', error);
+        
+        // Show error indicator
+        if (card) {
+            showSaveIndicator(card, 'error');
+        }
+        
+        // Show error message
+        if (window.showAlert) {
+            window.showAlert('Failed to save weight. Please try again.', 'warning');
+        }
+    }
+}
+
+/**
+ * Show save indicator in exercise card
+ */
+function showSaveIndicator(card, state) {
+    if (!card) return;
+    
+    const saveIndicator = card.querySelector('.save-indicator');
+    const saveSuccess = card.querySelector('.save-success');
+    
+    if (!saveIndicator || !saveSuccess) return;
+    
+    // Hide all indicators first
+    saveIndicator.style.display = 'none';
+    saveSuccess.style.display = 'none';
+    
+    switch (state) {
+        case 'saving':
+            saveIndicator.style.display = 'inline-block';
+            break;
+        case 'success':
+            saveSuccess.style.display = 'inline-block';
+            setTimeout(() => {
+                saveSuccess.style.display = 'none';
+            }, 2000);
+            break;
+        case 'error':
+            // Could add error icon here
+            break;
+    }
 }
 
 /**
