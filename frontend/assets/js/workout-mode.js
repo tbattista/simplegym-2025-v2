@@ -1,7 +1,7 @@
 /**
  * Ghost Gym - Workout Mode JavaScript
  * Handles workout execution with rest timers, exercise navigation, and weight logging
- * @version 2.1.0
+ * @version 2.2.0
  * @date 2025-11-07
  */
 
@@ -299,16 +299,8 @@ async function loadWorkout(workoutId) {
         // Render exercise cards
         renderExerciseCards(workout);
         
-        // Show Start Workout button (if authenticated)
-        const token = await getAuthToken();
-        if (token) {
-            const sessionControls = document.getElementById('sessionControls');
-            const startBtn = document.getElementById('startWorkoutBtn');
-            if (sessionControls && startBtn) {
-                sessionControls.style.display = 'block';
-                startBtn.style.display = 'inline-block';
-            }
-        }
+        // Initialize tooltips for Start Workout button
+        initializeStartButtonTooltip();
         
         // Hide loading, show content
         document.getElementById('workoutLoadingState').style.display = 'none';
@@ -739,6 +731,37 @@ function initializeSessionControls() {
 }
 
 /**
+ * Initialize tooltip for Start Workout button
+ */
+function initializeStartButtonTooltip() {
+    const startBtn = document.getElementById('startWorkoutBtn');
+    if (!startBtn) return;
+    
+    // Check if user is authenticated
+    const token = getAuthToken();
+    
+    // Update tooltip based on auth status
+    token.then(authToken => {
+        if (authToken) {
+            // User is logged in - show normal tooltip
+            startBtn.setAttribute('title', 'Start tracking your workout with weight logging');
+            startBtn.classList.remove('btn-outline-primary');
+            startBtn.classList.add('btn-primary');
+        } else {
+            // User is NOT logged in - show login prompt
+            startBtn.setAttribute('title', '🔒 Log in to track weights and save progress');
+            startBtn.classList.remove('btn-primary');
+            startBtn.classList.add('btn-outline-primary');
+        }
+        
+        // Initialize Bootstrap tooltip
+        if (window.bootstrap && window.bootstrap.Tooltip) {
+            new window.bootstrap.Tooltip(startBtn);
+        }
+    });
+}
+
+/**
  * Handle start workout button click
  */
 async function handleStartWorkout() {
@@ -748,7 +771,51 @@ async function handleStartWorkout() {
         return;
     }
     
+    // Check if user is authenticated
+    const token = await getAuthToken();
+    if (!token) {
+        // Show login prompt
+        showLoginPrompt();
+        return;
+    }
+    
     await startWorkoutSession(workout.id, workout.name);
+}
+
+/**
+ * Show login prompt when user tries to start workout without auth
+ */
+function showLoginPrompt() {
+    const message = `
+        <div class="text-center">
+            <i class="bx bx-lock-alt display-1 text-primary mb-3"></i>
+            <h4>Login Required</h4>
+            <p class="text-muted">You need to be logged in to track your workouts and save weight progress.</p>
+            <div class="mt-3">
+                <p class="mb-2"><strong>With an account you can:</strong></p>
+                <ul class="list-unstyled text-start" style="max-width: 300px; margin: 0 auto;">
+                    <li class="mb-2"><i class="bx bx-check text-success me-2"></i>Track weight progress</li>
+                    <li class="mb-2"><i class="bx bx-check text-success me-2"></i>Save workout history</li>
+                    <li class="mb-2"><i class="bx bx-check text-success me-2"></i>See personal records</li>
+                    <li class="mb-2"><i class="bx bx-check text-success me-2"></i>Auto-save during workouts</li>
+                </ul>
+            </div>
+        </div>
+    `;
+    
+    if (window.showAlert) {
+        window.showAlert(message, 'info');
+    } else {
+        alert('Please log in to track your workouts and save weight progress.');
+    }
+    
+    // Optionally trigger login modal if available
+    setTimeout(() => {
+        const loginBtn = document.querySelector('[data-bs-target="#loginModal"]');
+        if (loginBtn) {
+            loginBtn.click();
+        }
+    }, 2000);
 }
 
 /**

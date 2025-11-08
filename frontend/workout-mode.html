@@ -96,8 +96,13 @@
                 </div>
                 
                 <!-- Session Controls -->
-                <div class="session-controls text-center mt-3" id="sessionControls" style="display: none;">
-                  <button class="btn btn-lg btn-primary" id="startWorkoutBtn">
+                <div class="session-controls text-center mt-3" id="sessionControls">
+                  <button
+                    class="btn btn-lg btn-primary"
+                    id="startWorkoutBtn"
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="bottom"
+                    title="Start tracking your workout with weight logging">
                     <i class="bx bx-play-circle me-2"></i>Start Workout
                   </button>
                   <div id="sessionActiveIndicator" style="display: none;">
@@ -225,7 +230,7 @@
     <script src="/static/assets/js/dashboard/ui-helpers.js?v=20251020-04"></script>
     
     <!-- Workout Mode JS -->
-    <script src="/static/assets/js/workout-mode.js?v=20251107-04"></script>
+    <script src="/static/assets/js/workout-mode.js?v=20251107-05"></script>
 
     <!-- Initialize Workout Mode -->
     <script>
