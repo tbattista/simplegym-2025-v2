@@ -724,25 +724,75 @@ class WorkoutModeController {
      * Show login prompt
      */
     showLoginPrompt() {
-        const message = `
-            <div class="text-center">
-                <i class="bx bx-lock-alt display-1 text-primary mb-3"></i>
-                <h4>Login Required</h4>
-                <p class="text-muted">You need to be logged in to track your workouts and save weight progress.</p>
-                <div class="mt-3">
-                    <p class="mb-2"><strong>With an account you can:</strong></p>
-                    <ul class="list-unstyled text-start" style="max-width: 300px; margin: 0 auto;">
-                        <li class="mb-2"><i class="bx bx-check text-success me-2"></i>Track weight progress</li>
-                        <li class="mb-2"><i class="bx bx-check text-success me-2"></i>Save workout history</li>
-                        <li class="mb-2"><i class="bx bx-check text-success me-2"></i>See personal records</li>
-                        <li class="mb-2"><i class="bx bx-check text-success me-2"></i>Auto-save during workouts</li>
-                    </ul>
+        const modalHtml = `
+            <div class="modal fade" id="loginPromptModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header border-0 pb-0">
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body text-center pt-0">
+                            <div class="mb-4">
+                                <i class="bx bx-lock-alt" style="font-size: 4rem; color: var(--bs-primary);"></i>
+                            </div>
+                            <h4 class="mb-3">Login Required</h4>
+                            <p class="text-muted mb-4">You need to be logged in to track your workouts and save weight progress.</p>
+                            
+                            <div class="mb-4">
+                                <p class="mb-3"><strong>With an account you can:</strong></p>
+                                <ul class="list-unstyled text-start" style="max-width: 300px; margin: 0 auto;">
+                                    <li class="mb-2">
+                                        <i class="bx bx-check-circle text-success me-2"></i>
+                                        Track weight progress
+                                    </li>
+                                    <li class="mb-2">
+                                        <i class="bx bx-check-circle text-success me-2"></i>
+                                        Save workout history
+                                    </li>
+                                    <li class="mb-2">
+                                        <i class="bx bx-check-circle text-success me-2"></i>
+                                        See personal records
+                                    </li>
+                                    <li class="mb-2">
+                                        <i class="bx bx-check-circle text-success me-2"></i>
+                                        Auto-save during workouts
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="modal-footer border-0 justify-content-center">
+                            <button type="button" class="btn btn-primary" onclick="window.authService.showLoginModal(); bootstrap.Modal.getInstance(document.getElementById('loginPromptModal')).hide();">
+                                <i class="bx bx-log-in me-2"></i>Log In
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                                Maybe Later
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         `;
         
-        const modalManager = this.getModalManager();
-        modalManager.alert('Login Required', message, 'info');
+        // Remove existing modal if any
+        const existingModal = document.getElementById('loginPromptModal');
+        if (existingModal) {
+            existingModal.remove();
+        }
+        
+        // Add modal to body
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+        
+        // Initialize Bootstrap modal
+        const modalElement = document.getElementById('loginPromptModal');
+        const modal = new window.bootstrap.Modal(modalElement);
+        
+        // Cleanup modal on hide
+        modalElement.addEventListener('hidden.bs.modal', () => {
+            modalElement.remove();
+        });
+        
+        // Show modal
+        modal.show();
     }
     
     /**
