@@ -266,8 +266,21 @@
             // Wait for auth state to settle (important for Firebase mode)
             await new Promise(resolve => setTimeout(resolve, 1000));
             
-            // Initialize workout mode
-            initWorkoutMode();
+            // Controller auto-initializes via its own DOMContentLoaded listener
+            // No manual initialization needed - just wait for it
+            console.log('⏳ Waiting for controller to initialize...');
+            
+            // Wait for controller to be ready
+            if (!window.workoutModeController) {
+                await new Promise(resolve => {
+                    const checkController = setInterval(() => {
+                        if (window.workoutModeController) {
+                            clearInterval(checkController);
+                            resolve();
+                        }
+                    }, 100);
+                });
+            }
             
             console.log('✅ Workout Mode page ready!');
         });

@@ -946,7 +946,9 @@ class WorkoutModeController {
 
 // Initialize controller on page load
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('🎮 Controller DOMContentLoaded event fired');
     window.workoutModeController = new WorkoutModeController();
+    console.log('🎮 Controller instance created');
     window.workoutModeController.initialize();
 });
 
