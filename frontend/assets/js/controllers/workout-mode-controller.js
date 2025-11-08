@@ -30,16 +30,29 @@ class WorkoutModeController {
             console.warn('⚠️ Modal manager not available, using fallback');
             return {
                 confirm: (title, message, onConfirm) => {
-                    if (confirm(`${title}\n\n${message}`)) {
+                    // Strip HTML tags for plain text
+                    const plainMessage = this.stripHtml(message);
+                    if (confirm(`${title}\n\n${plainMessage}`)) {
                         onConfirm();
                     }
                 },
                 alert: (title, message, type) => {
-                    alert(`${title}\n\n${message}`);
+                    // Strip HTML tags for plain text
+                    const plainMessage = this.stripHtml(message);
+                    alert(`${title}\n\n${plainMessage}`);
                 }
             };
         }
         return window.ghostGymModalManager;
+    }
+    
+    /**
+     * Strip HTML tags from string
+     */
+    stripHtml(html) {
+        const tmp = document.createElement('div');
+        tmp.innerHTML = html;
+        return tmp.textContent || tmp.innerText || '';
     }
     
     /**
@@ -240,18 +253,41 @@ class WorkoutModeController {
                 </div>
                 
                 <div class="card-body exercise-card-body" style="display: none;">
-                    <!-- Exercise Title with Sets/Reps Badge -->
-                    <div class="d-flex justify-content-between align-items-start mb-3">
-                        <div>
-                            <h5 class="mb-1">${this.escapeHtml(mainExercise)}</h5>
-                            ${alternates.length > 0 ? `
-                                <div class="text-muted small">
-                                    <strong>Alternates:</strong><br>
-                                    ${alternates.map(alt => `${alt.label}: ${this.escapeHtml(alt.name)}`).join('<br>')}
-                                </div>
-                            ` : ''}
-                        </div>
-                        <span class="badge bg-label-primary" style="font-size: 0.95rem; padding: 0.5rem 0.75rem;">${sets} × ${reps}</span>
+                    <!-- COMPACT LAYOUT: Exercise name + Weight on same line -->
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h5 class="mb-0" style="font-size: 1.1rem; font-weight: 600;">${this.escapeHtml(mainExercise)}</h5>
+                        ${isSessionActive ? `
+                            <div class="d-flex align-items-center gap-2">
+                                <input
+                                    type="number"
+                                    class="form-control form-control-sm weight-input"
+                                    data-exercise-name="${this.escapeHtml(mainExercise)}"
+                                    value="${currentWeight}"
+                                    placeholder="135"
+                                    step="5"
+                                    min="0"
+                                    style="width: 70px; font-size: 1rem; font-weight: 600; text-align: center;">
+                                <select class="form-select form-select-sm weight-unit-select" data-exercise-name="${this.escapeHtml(mainExercise)}" style="width: 60px; font-size: 0.875rem; font-weight: 600;">
+                                    <option value="lbs" ${currentUnit === 'lbs' ? 'selected' : ''}>lbs</option>
+                                    <option value="kg" ${currentUnit === 'kg' ? 'selected' : ''}>kg</option>
+                                </select>
+                            </div>
+                        ` : ''}
+                    </div>
+                    
+                    <!-- Sets/Reps + Alternates -->
+                    <div class="mb-3">
+                        <div class="text-muted small mb-1">${sets} × ${reps} • Rest: ${rest}</div>
+                        ${alternates.length > 0 ? `
+                            <div class="text-muted small">
+                                ${alternates.map(alt => `${alt.label}: ${this.escapeHtml(alt.name)}`).join(' • ')}
+                            </div>
+                        ` : ''}
+                        ${lastWeight && lastSessionDate ? `
+                            <div class="text-muted small mt-1">
+                                <i class="bx bx-history me-1"></i>Last: ${lastWeight} ${lastWeightUnit} (${lastSessionDate})
+                            </div>
+                        ` : ''}
                     </div>
                     
                     ${notes ? `
@@ -261,43 +297,21 @@ class WorkoutModeController {
                         </div>
                     ` : ''}
                     
-                    ${isSessionActive ? `
-                        <div class="weight-input-container mb-3" style="background: transparent; border: none; padding: 0;">
-                            <label class="form-label fw-semibold mb-2" style="font-size: 0.9rem;">
-                                <i class="bx bx-dumbbell me-1"></i>Weight
-                            </label>
-                            <div class="input-group input-group-lg">
-                                <input
-                                    type="number"
-                                    class="form-control weight-input"
-                                    data-exercise-name="${this.escapeHtml(mainExercise)}"
-                                    value="${currentWeight}"
-                                    placeholder="135"
-                                    step="5"
-                                    min="0"
-                                    style="font-size: 1.5rem; font-weight: 600; text-align: center; border-right: 1px solid var(--bs-border-color);">
-                                <select class="form-select weight-unit-select" data-exercise-name="${this.escapeHtml(mainExercise)}" style="max-width: 90px; font-size: 1rem; font-weight: 600;">
-                                    <option value="lbs" ${currentUnit === 'lbs' ? 'selected' : ''}>lbs</option>
-                                    <option value="kg" ${currentUnit === 'kg' ? 'selected' : ''}>kg</option>
-                                </select>
+                    <!-- COMPACT: Rest timer + Buttons side by side -->
+                    <div class="d-flex gap-2 align-items-center">
+                        <div class="rest-timer-compact flex-shrink-0" style="min-width: 100px;">
+                            <div class="rest-timer" data-rest-seconds="${restSeconds}" data-timer-id="${timerId}">
                             </div>
-                            ${lastWeight && lastSessionDate ? `
-                                <small class="text-muted d-block mt-2" style="font-size: 0.8rem;">
-                                    <i class="bx bx-history me-1"></i>Last: ${lastWeight} ${lastWeightUnit} (${lastSessionDate})
-                                </small>
-                            ` : ''}
                         </div>
-                    ` : ''}
-                    
-                    <div class="rest-timer-container mb-3" style="background: var(--bs-gray-50); border-radius: var(--bs-border-radius); padding: 1.25rem;">
-                        <div class="rest-timer" data-rest-seconds="${restSeconds}" data-timer-id="${timerId}">
+                        <div class="d-flex gap-2 flex-grow-1">
+                            <button class="btn btn-outline-secondary btn-sm flex-grow-1" onclick="window.workoutModeController.stopExercise(${index})" style="font-size: 0.875rem;">
+                                <i class="bx bx-stop-circle"></i> Stop
+                            </button>
+                            <button class="btn btn-primary btn-sm flex-grow-1" onclick="window.workoutModeController.goToNextExercise(${index})" style="font-size: 0.875rem;">
+                                Next <i class="bx bx-right-arrow-alt"></i>
+                            </button>
                         </div>
                     </div>
-                    
-                    <button class="btn btn-primary btn-lg w-100" onclick="window.workoutModeController.goToNextExercise(${index})" style="font-size: 1rem; padding: 0.75rem;">
-                        <i class="bx bx-right-arrow-alt me-2"></i>
-                        Next Exercise
-                    </button>
                 </div>
             </div>
         `;
@@ -890,6 +904,16 @@ class WorkoutModeController {
         const body = card.querySelector('.exercise-card-body');
         if (body) {
             body.style.display = 'none';
+        }
+    }
+    
+    /**
+     * Stop current exercise (placeholder)
+     */
+    stopExercise(index) {
+        const card = document.querySelector(`.exercise-card[data-exercise-index="${index}"]`);
+        if (card) {
+            this.collapseCard(card);
         }
     }
     

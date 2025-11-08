@@ -295,6 +295,46 @@
     text-align: center;
 }
 
+/* Compact rest timer for side-by-side layout */
+.rest-timer-compact {
+    background: var(--bs-gray-50);
+    border-radius: var(--bs-border-radius);
+    padding: 0.75rem;
+    text-align: center;
+}
+
+.rest-timer-compact .rest-timer {
+    text-align: center;
+}
+
+.rest-timer-compact .rest-timer-label {
+    font-size: 0.75rem;
+    margin-bottom: 0.25rem;
+}
+
+.rest-timer-compact .rest-timer-display .display-4 {
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.rest-timer-compact .rest-timer-ready,
+.rest-timer-compact .rest-timer-counting,
+.rest-timer-compact .rest-timer-paused,
+.rest-timer-compact .rest-timer-done {
+    padding: 0.5rem 0;
+}
+
+.rest-timer-compact .btn {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    min-width: 60px;
+}
+
+.rest-timer-compact .btn-group {
+    gap: 0.25rem;
+    flex-wrap: wrap;
+}
+
 /* Timer Label */
 .rest-timer-label {
     font-size: 1rem;
@@ -627,6 +667,22 @@
         padding: 1rem;
     }
     
+    /* Compact layout adjustments for mobile */
+    .rest-timer-compact {
+        padding: 0.5rem;
+        min-width: 90px;
+    }
+    
+    .rest-timer-compact .rest-timer-display .display-4 {
+        font-size: 1.25rem;
+    }
+    
+    .rest-timer-compact .btn {
+        font-size: 0.7rem;
+        padding: 0.2rem 0.4rem;
+        min-width: 50px;
+    }
+    
     /* Rest Timer */
     .rest-timer-container {
         padding: 1rem;
@@ -682,6 +738,20 @@
     
     .rest-timer-display .display-4 {
         font-size: 2rem;
+    }
+    
+    /* Extra compact for very small screens */
+    .rest-timer-compact {
+        padding: 0.4rem;
+        min-width: 80px;
+    }
+    
+    .rest-timer-compact .rest-timer-display .display-4 {
+        font-size: 1.1rem;
+    }
+    
+    .rest-timer-compact .rest-timer-label {
+        font-size: 0.65rem;
     }
     
     .workout-mode-footer .btn {
