@@ -11,7 +11,6 @@ class WorkoutModeController {
         this.sessionService = window.workoutSessionService;
         this.authService = window.authService;
         this.dataManager = window.dataManager;
-        this.modalManager = window.ghostGymModalManager;
         
         // State
         this.currentWorkout = null;
@@ -20,6 +19,27 @@ class WorkoutModeController {
         this.autoSaveTimer = null;
         
         console.log('🎮 Workout Mode Controller initialized');
+        console.log('🔍 DEBUG: Modal manager available?', !!window.ghostGymModalManager);
+    }
+    
+    /**
+     * Get modal manager (lazy load to ensure it's available)
+     */
+    getModalManager() {
+        if (!window.ghostGymModalManager) {
+            console.warn('⚠️ Modal manager not available, using fallback');
+            return {
+                confirm: (title, message, onConfirm) => {
+                    if (confirm(`${title}\n\n${message}`)) {
+                        onConfirm();
+                    }
+                },
+                alert: (title, message, type) => {
+                    alert(`${title}\n\n${message}`);
+                }
+            };
+        }
+        return window.ghostGymModalManager;
     }
     
     /**
@@ -209,11 +229,10 @@ class WorkoutModeController {
                         <h6 class="mb-1">${this.escapeHtml(mainExercise)}</h6>
                         <div class="exercise-card-meta text-muted small">
                             ${sets} × ${reps} • Rest: ${rest}
-                            ${isSessionActive && currentWeight ? ` • ${currentWeight} ${currentUnit}` : ''}
                         </div>
                         ${alternates.length > 0 ? `
                             <div class="exercise-card-alts text-muted small mt-1">
-                                ${alternates.map(alt => `<span>${alt.label}: ${this.escapeHtml(alt.name)}</span>`).join('')}
+                                ${alternates.map(alt => `${alt.label}: ${this.escapeHtml(alt.name)}`).join(' • ')}
                             </div>
                         ` : ''}
                     </div>
@@ -221,65 +240,62 @@ class WorkoutModeController {
                 </div>
                 
                 <div class="card-body exercise-card-body" style="display: none;">
-                    <div class="mb-3">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <h5 class="mb-0">${this.escapeHtml(mainExercise)}</h5>
-                            <span class="badge bg-label-primary">${sets} × ${reps}</span>
+                    <!-- Exercise Title with Sets/Reps Badge -->
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <h5 class="mb-1">${this.escapeHtml(mainExercise)}</h5>
+                            ${alternates.length > 0 ? `
+                                <div class="text-muted small">
+                                    <strong>Alternates:</strong><br>
+                                    ${alternates.map(alt => `${alt.label}: ${this.escapeHtml(alt.name)}`).join('<br>')}
+                                </div>
+                            ` : ''}
                         </div>
-                        
-                        ${notes ? `
-                            <div class="alert alert-info mb-3">
-                                <i class="bx bx-info-circle me-1"></i>
-                                ${this.escapeHtml(notes)}
-                            </div>
-                        ` : ''}
-                        
-                        ${alternates.length > 0 ? `
-                            <div class="text-muted small mb-3">
-                                <strong>Alternates:</strong><br>
-                                ${alternates.map(alt => `${alt.label}: ${this.escapeHtml(alt.name)}`).join('<br>')}
-                            </div>
-                        ` : ''}
+                        <span class="badge bg-label-primary" style="font-size: 0.95rem; padding: 0.5rem 0.75rem;">${sets} × ${reps}</span>
                     </div>
                     
+                    ${notes ? `
+                        <div class="alert alert-info mb-3" style="font-size: 0.875rem; padding: 0.75rem;">
+                            <i class="bx bx-info-circle me-1"></i>
+                            ${this.escapeHtml(notes)}
+                        </div>
+                    ` : ''}
+                    
                     ${isSessionActive ? `
-                        <div class="weight-input-container mb-3">
-                            <label class="form-label fw-semibold">
+                        <div class="weight-input-container mb-3" style="background: transparent; border: none; padding: 0;">
+                            <label class="form-label fw-semibold mb-2" style="font-size: 0.9rem;">
                                 <i class="bx bx-dumbbell me-1"></i>Weight
                             </label>
-                            <div class="input-group">
+                            <div class="input-group input-group-lg">
                                 <input
                                     type="number"
-                                    class="form-control form-control-lg weight-input"
+                                    class="form-control weight-input"
                                     data-exercise-name="${this.escapeHtml(mainExercise)}"
                                     value="${currentWeight}"
-                                    placeholder="Enter weight"
+                                    placeholder="135"
                                     step="5"
-                                    min="0">
-                                <select class="form-select weight-unit-select" data-exercise-name="${this.escapeHtml(mainExercise)}" style="max-width: 80px;">
+                                    min="0"
+                                    style="font-size: 1.5rem; font-weight: 600; text-align: center; border-right: 1px solid var(--bs-border-color);">
+                                <select class="form-select weight-unit-select" data-exercise-name="${this.escapeHtml(mainExercise)}" style="max-width: 90px; font-size: 1rem; font-weight: 600;">
                                     <option value="lbs" ${currentUnit === 'lbs' ? 'selected' : ''}>lbs</option>
                                     <option value="kg" ${currentUnit === 'kg' ? 'selected' : ''}>kg</option>
                                 </select>
-                                <span class="input-group-text">
-                                    <i class="bx bx-loader-alt bx-spin save-indicator" style="display: none;"></i>
-                                    <i class="bx bx-check text-success save-success" style="display: none;"></i>
-                                </span>
                             </div>
                             ${lastWeight && lastSessionDate ? `
-                                <small class="text-muted d-block mt-1">
+                                <small class="text-muted d-block mt-2" style="font-size: 0.8rem;">
                                     <i class="bx bx-history me-1"></i>Last: ${lastWeight} ${lastWeightUnit} (${lastSessionDate})
                                 </small>
                             ` : ''}
                         </div>
                     ` : ''}
                     
-                    <div class="rest-timer-container mb-3">
+                    <div class="rest-timer-container mb-3" style="background: var(--bs-gray-50); border-radius: var(--bs-border-radius); padding: 1.25rem;">
                         <div class="rest-timer" data-rest-seconds="${restSeconds}" data-timer-id="${timerId}">
                         </div>
                     </div>
                     
-                    <button class="btn btn-primary w-100" onclick="window.workoutModeController.goToNextExercise(${index})">
-                        <i class="bx bx-right-arrow-alt me-1"></i>
+                    <button class="btn btn-primary btn-lg w-100" onclick="window.workoutModeController.goToNextExercise(${index})" style="font-size: 1rem; padding: 0.75rem;">
+                        <i class="bx bx-right-arrow-alt me-2"></i>
                         Next Exercise
                     </button>
                 </div>
@@ -638,7 +654,8 @@ class WorkoutModeController {
             </div>
         `;
         
-        this.modalManager.alert('Success', message, 'success');
+        const modalManager = this.getModalManager();
+        modalManager.alert('Success', message, 'success');
         
         // Redirect after delay
         setTimeout(() => {
@@ -667,7 +684,8 @@ class WorkoutModeController {
             </div>
         `;
         
-        this.modalManager.alert('Login Required', message, 'info');
+        const modalManager = this.getModalManager();
+        modalManager.alert('Login Required', message, 'info');
     }
     
     /**
@@ -888,7 +906,8 @@ class WorkoutModeController {
             }, 300);
         } else {
             // Last exercise - show completion message
-            this.modalManager.confirm(
+            const modalManager = this.getModalManager();
+            modalManager.confirm(
                 'Workout Complete! 🎉',
                 'Great job! Would you like to return to the workout list?',
                 () => {
