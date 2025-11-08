@@ -245,6 +245,59 @@
     display: inline;
 }
 
+/* Compact weight display in header */
+.weight-display-compact {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    margin-left: 0.75rem;
+    margin-right: 0.75rem;
+}
+
+.weight-icon-label {
+    font-size: 0.7rem;
+    color: var(--bs-secondary);
+    white-space: nowrap;
+    font-weight: 500;
+}
+
+.weight-icon-label i {
+    font-size: 0.85rem;
+}
+
+.weight-input-compact {
+    width: 50px !important;
+    height: 32px !important;
+    font-size: 1rem !important;
+    font-weight: 600 !important;
+    text-align: center !important;
+    padding: 0.25rem !important;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 6px !important;
+}
+
+.weight-input-compact:focus {
+    border-color: var(--bs-primary) !important;
+    box-shadow: 0 0 0 0.2rem rgba(105, 108, 255, 0.15) !important;
+}
+
+.weight-unit-compact {
+    width: 50px !important;
+    height: 28px !important;
+    font-size: 0.75rem !important;
+    font-weight: 600 !important;
+    text-align: center !important;
+    padding: 0.25rem !important;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 6px !important;
+}
+
+.weight-unit-compact:focus {
+    border-color: var(--bs-primary) !important;
+    box-shadow: 0 0 0 0.2rem rgba(105, 108, 255, 0.15) !important;
+}
+
 .expand-icon {
     font-size: 1.5rem;
     color: var(--bs-secondary);

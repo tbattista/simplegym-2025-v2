@@ -138,9 +138,11 @@ class ExerciseCacheService {
             while (hasMore) {
                 this.metrics.apiRequests++;
                 
-                const response = await fetch(
-                    window.getApiUrl(`/api/v3/exercises?page=${page}&page_size=${PAGE_SIZE}`)
-                );
+                const apiUrl = window.getApiUrl(`/api/v3/exercises?page=${page}&page_size=${PAGE_SIZE}`);
+                console.log('🔍 DEBUG: Fetching from URL:', apiUrl);
+                console.log('🔍 DEBUG: window.location.origin:', window.location.origin);
+                
+                const response = await fetch(apiUrl);
                 
                 if (!response.ok) {
                     throw new Error(`Failed to load exercises (page ${page}): ${response.statusText}`);
