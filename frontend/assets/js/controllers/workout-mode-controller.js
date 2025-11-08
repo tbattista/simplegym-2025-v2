@@ -194,10 +194,9 @@ class WorkoutModeController {
         // Initialize timers
         this.initializeTimers();
         
-        // Initialize weight inputs if session is active
-        if (this.sessionService.isSessionActive()) {
-            this.initializeWeightInputs();
-        }
+        // Initialize weight inputs and popovers
+        this.initializeWeightInputs();
+        this.initializeWeightPopovers();
     }
     
     /**
@@ -249,21 +248,6 @@ class WorkoutModeController {
                             </div>
                         ` : ''}
                     </div>
-                    <div class="weight-display-compact" onclick="event.stopPropagation();">
-                        <input
-                            type="number"
-                            class="form-control form-control-sm weight-input weight-input-compact"
-                            data-exercise-name="${this.escapeHtml(mainExercise)}"
-                            value="${currentWeight}"
-                            placeholder="135"
-                            step="5"
-                            min="0"
-                            ${!isSessionActive ? 'readonly disabled' : ''}>
-                        <select class="form-select form-select-sm weight-unit-select weight-unit-compact" data-exercise-name="${this.escapeHtml(mainExercise)}" ${!isSessionActive ? 'disabled' : ''}>
-                            <option value="lbs" ${currentUnit === 'lbs' ? 'selected' : ''}>lbs</option>
-                            <option value="kg" ${currentUnit === 'kg' ? 'selected' : ''}>kg</option>
-                        </select>
-                    </div>
                     <i class="bx bx-chevron-down expand-icon"></i>
                 </div>
                 
@@ -281,14 +265,51 @@ class WorkoutModeController {
                         </div>
                     ` : ''}
                     
-                    <!-- COMPACT: Rest timer + Buttons in a row (equal width) -->
-                    <div class="d-flex gap-2 align-items-stretch" style="margin-top: 1rem;">
-                        <div class="rest-timer-inline flex-fill">
+                    <!-- 2x2 Grid: Rest Timer | Start Button / Edit Weight | Next -->
+                    <div class="workout-button-grid">
+                        <div class="rest-timer-grid-item">
                             <div class="rest-timer" data-rest-seconds="${restSeconds}" data-timer-id="${timerId}">
                             </div>
                         </div>
-                        <button class="btn btn-primary flex-fill" onclick="window.workoutModeController.goToNextExercise(${index})" style="min-height: 100%;">
-                            Next Exercise<i class="bx bx-right-arrow-alt ms-1"></i>
+                        <button
+                            class="btn btn-outline-primary workout-grid-btn"
+                            data-bs-toggle="popover"
+                            data-bs-placement="top"
+                            data-bs-trigger="click"
+                            data-bs-html="true"
+                            data-bs-content='
+                                <div class="weight-popover-content">
+                                    <div class="mb-2">
+                                        <label class="form-label small mb-1"><i class="bx bx-dumbbell me-1"></i>Weight</label>
+                                        <div class="d-flex gap-2">
+                                            <input
+                                                type="number"
+                                                class="form-control form-control-sm weight-input weight-popover-input"
+                                                data-exercise-name="${this.escapeHtml(mainExercise)}"
+                                                value="${currentWeight}"
+                                                placeholder="135"
+                                                step="5"
+                                                min="0"
+                                                ${!isSessionActive ? 'readonly disabled' : ''}
+                                                style="width: 80px;">
+                                            <select class="form-select form-select-sm weight-unit-select" data-exercise-name="${this.escapeHtml(mainExercise)}" ${!isSessionActive ? 'disabled' : ''} style="width: 70px;">
+                                                <option value="lbs" ${currentUnit === 'lbs' ? 'selected' : ''}>lbs</option>
+                                                <option value="kg" ${currentUnit === 'kg' ? 'selected' : ''}>kg</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    ${lastWeight && lastSessionDate ? `
+                                        <div class="text-muted small">
+                                            <i class="bx bx-history me-1"></i>Last: ${lastWeight} ${lastWeightUnit} (${lastSessionDate})
+                                        </div>
+                                    ` : ''}
+                                </div>
+                            '
+                            onclick="event.stopPropagation();">
+                            <i class="bx bx-edit-alt me-1"></i>Edit Weight
+                        </button>
+                        <button class="btn btn-primary workout-grid-btn" onclick="window.workoutModeController.goToNextExercise(${index})">
+                            Next<i class="bx bx-right-arrow-alt ms-1"></i>
                         </button>
                     </div>
                 </div>
@@ -314,6 +335,31 @@ class WorkoutModeController {
     }
     
     /**
+     * Initialize weight popovers
+     */
+    initializeWeightPopovers() {
+        console.log('🏋️ Initializing weight popovers...');
+        
+        const popoverTriggers = document.querySelectorAll('[data-bs-toggle="popover"]');
+        
+        popoverTriggers.forEach(trigger => {
+            if (window.bootstrap && window.bootstrap.Popover) {
+                const popover = new window.bootstrap.Popover(trigger, {
+                    sanitize: false,
+                    html: true
+                });
+                
+                // Re-initialize weight inputs when popover is shown
+                trigger.addEventListener('shown.bs.popover', () => {
+                    this.initializeWeightInputs();
+                });
+            }
+        });
+        
+        console.log('✅ Weight popovers initialized:', popoverTriggers.length, 'popovers');
+    }
+    
+    /**
      * Initialize weight inputs
      */
     initializeWeightInputs() {
@@ -323,12 +369,20 @@ class WorkoutModeController {
         const unitSelects = document.querySelectorAll('.weight-unit-select');
         
         weightInputs.forEach(input => {
-            input.addEventListener('input', (e) => this.handleWeightChange(e));
-            input.addEventListener('blur', (e) => this.handleWeightBlur(e));
+            // Remove existing listeners to avoid duplicates
+            const newInput = input.cloneNode(true);
+            input.parentNode.replaceChild(newInput, input);
+            
+            newInput.addEventListener('input', (e) => this.handleWeightChange(e));
+            newInput.addEventListener('blur', (e) => this.handleWeightBlur(e));
         });
         
         unitSelects.forEach(select => {
-            select.addEventListener('change', (e) => this.handleUnitChange(e));
+            // Remove existing listeners to avoid duplicates
+            const newSelect = select.cloneNode(true);
+            select.parentNode.replaceChild(newSelect, select);
+            
+            newSelect.addEventListener('change', (e) => this.handleUnitChange(e));
         });
         
         console.log('✅ Weight inputs initialized:', weightInputs.length, 'inputs');

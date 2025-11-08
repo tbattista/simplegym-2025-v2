@@ -245,56 +245,63 @@
     display: inline;
 }
 
-/* Compact weight display in header */
-.weight-display-compact {
+/* 2x2 Grid Layout for workout buttons */
+.workout-button-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.rest-timer-grid-item {
+    grid-column: 1 / 2;
+    grid-row: 1 / 2;
+}
+
+.workout-grid-btn {
     display: flex;
-    flex-direction: column;
     align-items: center;
-    gap: 0.35rem;
-    margin-left: 0.75rem;
-    margin-right: 0.75rem;
+    justify-content: center;
+    font-size: 0.8125rem;
+    padding: 0.5rem;
+    font-weight: 500;
+    white-space: nowrap;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    min-height: 44px;
+    height: 44px;
 }
 
-.weight-input-compact {
-    width: 50px !important;
-    height: 32px !important;
-    font-size: 0.95rem !important;
-    font-weight: 600 !important;
-    text-align: center !important;
-    padding: 0.25rem !important;
-    border: 1px solid #cbd5e1 !important;
-    border-radius: 6px !important;
+.workout-grid-btn i {
+    font-size: 1rem;
+    flex-shrink: 0;
 }
 
-.weight-input-compact:focus {
-    border-color: var(--bs-primary) !important;
-    box-shadow: 0 0 0 0.2rem rgba(105, 108, 255, 0.15) !important;
+/* Rest timer in grid takes up first row, first column */
+.rest-timer-grid-item .rest-timer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--bs-primary);
+    text-align: center;
+    white-space: nowrap;
+    padding: 0.5rem;
+    background: rgba(105, 108, 255, 0.04);
+    border-radius: 8px;
+    border: 1px solid rgba(105, 108, 255, 0.1);
+    min-height: 44px;
+    height: 44px;
 }
 
-.weight-input-compact:disabled {
-    background-color: #f8fafc !important;
-    color: #94a3b8 !important;
-    cursor: not-allowed !important;
-    opacity: 0.7 !important;
+/* Weight popover styling */
+.weight-popover-content {
+    min-width: 200px;
 }
 
-.weight-unit-compact {
-    width: 50px !important;
-    height: 32px !important;
-    font-size: 0.75rem !important;
-    font-weight: 600 !important;
-    text-align: center !important;
-    padding: 0.25rem !important;
-    border: 1px solid #cbd5e1 !important;
-    border-radius: 6px !important;
-}
-
-.weight-unit-compact:focus {
-    border-color: var(--bs-primary) !important;
-    box-shadow: 0 0 0 0.2rem rgba(105, 108, 255, 0.15) !important;
-}
-
-.weight-unit-compact:disabled {
+.weight-popover-input:disabled {
     background-color: #f8fafc !important;
     color: #94a3b8 !important;
     cursor: not-allowed !important;
@@ -354,130 +361,67 @@
     text-align: center;
 }
 
-/* Inline rest timer for 3-column layout: Label | Button | Button */
-.rest-timer-inline {
-    display: contents !important;
-}
-
-.rest-timer-inline .rest-timer {
-    display: contents !important;
-}
-
-.rest-timer-label-col {
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: var(--bs-primary);
-    text-align: center;
-    white-space: nowrap;
-    padding: 0.5rem 0.5rem;
-    background: rgba(105, 108, 255, 0.04);
-    border-radius: 8px;
-    border: 1px solid rgba(105, 108, 255, 0.1);
-    min-height: 44px;
-    height: 44px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex: 1 1 33.333%;
-    min-width: 0;
-    max-width: 33.333%;
-}
-
-/* Timer display should match label size */
-.rest-timer-label-col span {
-    font-size: 0.875rem;
-    font-weight: 600;
-}
-
-/* Ensure all three columns stay side-by-side with equal widths */
-.exercise-card-body > .d-flex {
-    display: flex !important;
-    flex-direction: row !important;
-    flex-wrap: nowrap !important;
-    align-items: stretch !important;
-}
-
-/* Match workout database button styling - all buttons get equal 1/3 width */
-.exercise-card-body > .d-flex > .btn,
-.exercise-card-body > .d-flex .rest-timer > .btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.8125rem;
-    padding: 0.5rem 0.5rem;
-    font-weight: 500;
-    white-space: nowrap;
-    border-radius: 8px;
-    transition: all 0.2s ease;
-    min-height: 44px;
-    height: 44px;
-    flex: 1 1 33.333%;
-    min-width: 0;
-    max-width: 33.333%;
-}
-
-/* Primary button with gradient (matching workout database) */
-.exercise-card-body > .d-flex > .btn-primary {
+/* Button styling for grid buttons */
+.workout-grid-btn.btn-primary {
     background: linear-gradient(135deg, #6366f1, #8b5cf6);
     border: none;
     box-shadow: 0 2px 4px rgba(105, 108, 255, 0.3);
 }
 
-.exercise-card-body > .d-flex > .btn-primary:hover {
+.workout-grid-btn.btn-primary:hover {
     background: linear-gradient(135deg, #5855eb, #7c3aed);
     box-shadow: 0 4px 8px rgba(105, 108, 255, 0.4);
     transform: translateY(-1px);
 }
 
-/* Success button (Start Rest) - match the green from Start button in workout database */
-.exercise-card-body .btn-success,
-.rest-timer-inline .btn-success {
+.workout-grid-btn.btn-outline-primary {
+    border-color: #cbd5e1;
+    color: #6366f1;
+    background: transparent;
+}
+
+.workout-grid-btn.btn-outline-primary:hover {
+    background: rgba(105, 108, 255, 0.08);
+    border-color: #6366f1;
+    color: #5855eb;
+}
+
+/* Success button (Start Rest) in grid */
+.rest-timer-grid-item .btn-success {
     background: linear-gradient(135deg, #10b981, #059669) !important;
     border: none !important;
     box-shadow: 0 2px 4px rgba(16, 185, 129, 0.3) !important;
     font-size: 0.8125rem !important;
-    padding: 0.5rem 0.5rem !important;
+    padding: 0.5rem !important;
     font-weight: 500 !important;
     border-radius: 8px !important;
+    width: 100%;
+    height: 44px;
 }
 
-.exercise-card-body .btn-success:hover,
-.rest-timer-inline .btn-success:hover {
+.rest-timer-grid-item .btn-success:hover {
     background: linear-gradient(135deg, #059669, #047857) !important;
     box-shadow: 0 4px 8px rgba(16, 185, 129, 0.4) !important;
     transform: translateY(-1px);
 }
 
-/* Outline buttons (Stop, Reset) */
-.exercise-card-body .btn-outline-secondary,
-.rest-timer-inline .btn-outline-secondary {
+/* Outline buttons in grid */
+.rest-timer-grid-item .btn-outline-secondary {
     border-color: #cbd5e1 !important;
     color: #64748b !important;
     background: transparent !important;
     font-size: 0.8125rem !important;
-    padding: 0.5rem 0.5rem !important;
+    padding: 0.5rem !important;
     font-weight: 500 !important;
     border-radius: 8px !important;
+    width: 100%;
+    height: 44px;
 }
 
-.exercise-card-body .btn-outline-secondary:hover,
-.rest-timer-inline .btn-outline-secondary:hover {
+.rest-timer-grid-item .btn-outline-secondary:hover {
     background: #f1f5f9 !important;
     border-color: #94a3b8 !important;
     color: #475569 !important;
-}
-
-.exercise-card-body > .d-flex .btn i {
-    font-size: 1rem;
-    flex-shrink: 0;
-}
-
-/* Ensure icon is visible and centered in Next Exercise button */
-.exercise-card-body > .d-flex > .btn-primary {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.25rem;
 }
 
 /* Timer Label */
