@@ -1,7 +1,7 @@
 /**
  * Ghost Gym - Workout Mode JavaScript
  * Handles workout execution with rest timers, exercise navigation, and weight logging
- * @version 2.2.1
+ * @version 2.2.2
  * @date 2025-11-07
  */
 
@@ -253,12 +253,23 @@ async function initWorkoutMode() {
  */
 async function getAuthToken() {
     try {
-        if (!window.firebase || !window.firebase.auth || !window.firebase.auth().currentUser) {
+        // Wait for Firebase to be ready
+        if (!window.firebase || !window.firebase.auth) {
+            console.warn('⚠️ Firebase not ready yet');
             return null;
         }
-        return await window.firebase.auth().currentUser.getIdToken();
+        
+        const currentUser = window.firebase.auth().currentUser;
+        if (!currentUser) {
+            console.warn('⚠️ No current user');
+            return null;
+        }
+        
+        const token = await currentUser.getIdToken();
+        console.log('✅ Got auth token for user:', currentUser.email);
+        return token;
     } catch (error) {
-        console.error('Error getting auth token:', error);
+        console.error('❌ Error getting auth token:', error);
         return null;
     }
 }
@@ -1428,5 +1439,6 @@ window.initWorkoutMode = initWorkoutMode;
 window.loadWorkout = loadWorkout;
 window.toggleExerciseCard = toggleExerciseCard;
 window.goToNextExercise = goToNextExercise;
+window.initializeStartButtonTooltip = initializeStartButtonTooltip;
 
 console.log('📦 Workout Mode module loaded');

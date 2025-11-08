@@ -273,10 +273,15 @@
         // Listen for auth state changes
         window.addEventListener('authStateChanged', async (event) => {
             const { user, isAuthenticated } = event.detail;
-            console.log('🔄 Auth state changed on workout mode page');
+            console.log('🔄 Auth state changed on workout mode page, authenticated:', isAuthenticated);
             
             // Wait a moment for data manager to update its mode
             await new Promise(resolve => setTimeout(resolve, 300));
+            
+            // Reinitialize tooltip with new auth state
+            if (window.initializeStartButtonTooltip) {
+                await window.initializeStartButtonTooltip();
+            }
             
             // Reload workout if needed
             const workoutId = new URLSearchParams(window.location.search).get('id');
