@@ -254,9 +254,37 @@
     margin-top: 1rem;
 }
 
-.rest-timer-grid-item {
+/* Row 1, Column 1: Timer label styling */
+.rest-timer-grid-label {
     grid-column: 1 / 2;
     grid-row: 1 / 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--bs-primary);
+    text-align: center;
+    white-space: nowrap;
+    padding: 0.5rem;
+    background: rgba(105, 108, 255, 0.04);
+    border-radius: 8px;
+    border: 1px solid rgba(105, 108, 255, 0.1);
+    min-height: 44px;
+    height: 44px;
+}
+
+/* Row 1, Column 2: Timer button slot */
+.rest-timer-button-slot {
+    grid-column: 2 / 3;
+    grid-row: 1 / 2;
+    display: flex;
+    align-items: stretch;
+}
+
+/* Ensure buttons in the slot fill the space */
+.rest-timer-button-slot > button {
+    width: 100%;
 }
 
 .workout-grid-btn {
@@ -278,23 +306,6 @@
     flex-shrink: 0;
 }
 
-/* Rest timer in grid takes up first row, first column */
-.rest-timer-grid-item .rest-timer {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: var(--bs-primary);
-    text-align: center;
-    white-space: nowrap;
-    padding: 0.5rem;
-    background: rgba(105, 108, 255, 0.04);
-    border-radius: 8px;
-    border: 1px solid rgba(105, 108, 255, 0.1);
-    min-height: 44px;
-    height: 44px;
-}
 
 /* Weight popover styling */
 .weight-popover-content {
@@ -386,8 +397,8 @@
     color: #5855eb;
 }
 
-/* Success button (Start Rest) in grid */
-.rest-timer-grid-item .btn-success {
+/* Success button (Start Rest) in button slot */
+.rest-timer-button-slot .btn-success {
     background: linear-gradient(135deg, #10b981, #059669) !important;
     border: none !important;
     box-shadow: 0 2px 4px rgba(16, 185, 129, 0.3) !important;
@@ -399,14 +410,14 @@
     height: 44px;
 }
 
-.rest-timer-grid-item .btn-success:hover {
+.rest-timer-button-slot .btn-success:hover {
     background: linear-gradient(135deg, #059669, #047857) !important;
     box-shadow: 0 4px 8px rgba(16, 185, 129, 0.4) !important;
     transform: translateY(-1px);
 }
 
-/* Outline buttons in grid */
-.rest-timer-grid-item .btn-outline-secondary {
+/* Outline buttons in button slot */
+.rest-timer-button-slot .btn-outline-secondary {
     border-color: #cbd5e1 !important;
     color: #64748b !important;
     background: transparent !important;
@@ -418,7 +429,7 @@
     height: 44px;
 }
 
-.rest-timer-grid-item .btn-outline-secondary:hover {
+.rest-timer-button-slot .btn-outline-secondary:hover {
     background: #f1f5f9 !important;
     border-color: #94a3b8 !important;
     color: #475569 !important;

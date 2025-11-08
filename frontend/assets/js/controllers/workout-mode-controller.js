@@ -193,10 +193,6 @@ class WorkoutModeController {
         
         // Initialize timers
         this.initializeTimers();
-        
-        // Initialize weight inputs and popovers
-        this.initializeWeightInputs();
-        this.initializeWeightPopovers();
     }
     
     /**
@@ -267,47 +263,31 @@ class WorkoutModeController {
                     
                     <!-- 2x2 Grid: Rest Timer | Start Button / Edit Weight | Next -->
                     <div class="workout-button-grid">
-                        <div class="rest-timer-grid-item">
+                        <!-- Row 1, Column 1: Rest Timer Label -->
+                        <div class="rest-timer-grid-label">
                             <div class="rest-timer" data-rest-seconds="${restSeconds}" data-timer-id="${timerId}">
                             </div>
                         </div>
+                        
+                        <!-- Row 1, Column 2: Start Rest Button (will be rendered by timer) -->
+                        <div class="rest-timer-button-slot">
+                        </div>
+                        
+                        <!-- Row 2, Column 1: Edit Weight Button -->
                         <button
                             class="btn btn-outline-primary workout-grid-btn"
-                            data-bs-toggle="popover"
-                            data-bs-placement="top"
-                            data-bs-trigger="click"
-                            data-bs-html="true"
-                            data-bs-content='
-                                <div class="weight-popover-content">
-                                    <div class="mb-2">
-                                        <label class="form-label small mb-1"><i class="bx bx-dumbbell me-1"></i>Weight</label>
-                                        <div class="d-flex gap-2">
-                                            <input
-                                                type="number"
-                                                class="form-control form-control-sm weight-input weight-popover-input"
-                                                data-exercise-name="${this.escapeHtml(mainExercise)}"
-                                                value="${currentWeight}"
-                                                placeholder="135"
-                                                step="5"
-                                                min="0"
-                                                ${!isSessionActive ? 'readonly disabled' : ''}
-                                                style="width: 80px;">
-                                            <select class="form-select form-select-sm weight-unit-select" data-exercise-name="${this.escapeHtml(mainExercise)}" ${!isSessionActive ? 'disabled' : ''} style="width: 70px;">
-                                                <option value="lbs" ${currentUnit === 'lbs' ? 'selected' : ''}>lbs</option>
-                                                <option value="kg" ${currentUnit === 'kg' ? 'selected' : ''}>kg</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    ${lastWeight && lastSessionDate ? `
-                                        <div class="text-muted small">
-                                            <i class="bx bx-history me-1"></i>Last: ${lastWeight} ${lastWeightUnit} (${lastSessionDate})
-                                        </div>
-                                    ` : ''}
-                                </div>
-                            '
-                            onclick="event.stopPropagation();">
+                            data-exercise-name="${this.escapeHtml(mainExercise)}"
+                            data-current-weight="${currentWeight || ''}"
+                            data-current-unit="${currentUnit}"
+                            data-last-weight="${lastWeight || ''}"
+                            data-last-weight-unit="${lastWeightUnit || ''}"
+                            data-last-session-date="${lastSessionDate || ''}"
+                            data-is-session-active="${isSessionActive}"
+                            onclick="window.workoutModeController.handleWeightButtonClick(this); event.stopPropagation();">
                             <i class="bx bx-edit-alt me-1"></i>Edit Weight
                         </button>
+                        
+                        <!-- Row 2, Column 2: Next Button -->
                         <button class="btn btn-primary workout-grid-btn" onclick="window.workoutModeController.goToNextExercise(${index})">
                             Next<i class="bx bx-right-arrow-alt ms-1"></i>
                         </button>
@@ -335,117 +315,144 @@ class WorkoutModeController {
     }
     
     /**
-     * Initialize weight popovers
+     * Handle weight button click
      */
-    initializeWeightPopovers() {
-        console.log('🏋️ Initializing weight popovers...');
+    handleWeightButtonClick(button) {
+        const exerciseName = button.getAttribute('data-exercise-name');
+        const currentWeight = button.getAttribute('data-current-weight');
+        const currentUnit = button.getAttribute('data-current-unit');
+        const lastWeight = button.getAttribute('data-last-weight');
+        const lastWeightUnit = button.getAttribute('data-last-weight-unit');
+        const lastSessionDate = button.getAttribute('data-last-session-date');
+        const isSessionActive = button.getAttribute('data-is-session-active') === 'true';
         
-        const popoverTriggers = document.querySelectorAll('[data-bs-toggle="popover"]');
+        this.showWeightModal(exerciseName, currentWeight, currentUnit, lastWeight, lastWeightUnit, lastSessionDate, isSessionActive);
+    }
+    
+    /**
+     * Show weight modal
+     */
+    showWeightModal(exerciseName, currentWeight, currentUnit, lastWeight, lastWeightUnit, lastSessionDate, isSessionActive) {
+        const modalManager = this.getModalManager();
         
-        popoverTriggers.forEach(trigger => {
-            if (window.bootstrap && window.bootstrap.Popover) {
-                const popover = new window.bootstrap.Popover(trigger, {
-                    sanitize: false,
-                    html: true
-                });
+        const modalContent = `
+            <div class="weight-modal-content">
+                <div class="mb-3">
+                    <label class="form-label"><i class="bx bx-dumbbell me-2"></i>Weight</label>
+                    <div class="d-flex gap-2">
+                        <input
+                            type="number"
+                            class="form-control weight-input"
+                            id="modalWeightInput"
+                            data-exercise-name="${exerciseName}"
+                            value="${currentWeight || ''}"
+                            placeholder="135"
+                            step="5"
+                            min="0"
+                            ${!isSessionActive ? 'readonly disabled' : ''}
+                            style="flex: 1;">
+                        <select class="form-select weight-unit-select" id="modalWeightUnit" data-exercise-name="${exerciseName}" ${!isSessionActive ? 'disabled' : ''} style="width: 100px;">
+                            <option value="lbs" ${currentUnit === 'lbs' ? 'selected' : ''}>lbs</option>
+                            <option value="kg" ${currentUnit === 'kg' ? 'selected' : ''}>kg</option>
+                        </select>
+                    </div>
+                </div>
+                ${lastWeight && lastSessionDate ? `
+                    <div class="alert alert-info mb-0">
+                        <i class="bx bx-history me-2"></i>Last: ${lastWeight} ${lastWeightUnit} (${lastSessionDate})
+                    </div>
+                ` : ''}
+                ${!isSessionActive ? `
+                    <div class="alert alert-warning mb-0 mt-3">
+                        <i class="bx bx-lock-alt me-2"></i>Start workout to edit weights
+                    </div>
+                ` : ''}
+            </div>
+        `;
+        
+        // Create a custom modal using Bootstrap
+        const modalHtml = `
+            <div class="modal fade" id="weightEditModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">
+                                <i class="bx bx-edit-alt me-2"></i>Edit Weight
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <h6 class="mb-3">${exerciseName}</h6>
+                            ${modalContent}
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            ${isSessionActive ? '<button type="button" class="btn btn-primary" id="saveWeightBtn">Save</button>' : ''}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Remove existing modal if any
+        const existingModal = document.getElementById('weightEditModal');
+        if (existingModal) {
+            existingModal.remove();
+        }
+        
+        // Add modal to body
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+        
+        // Initialize Bootstrap modal
+        const modalElement = document.getElementById('weightEditModal');
+        const modal = new window.bootstrap.Modal(modalElement);
+        
+        // Setup event listeners
+        if (isSessionActive) {
+            const saveBtn = document.getElementById('saveWeightBtn');
+            const weightInput = document.getElementById('modalWeightInput');
+            const unitSelect = document.getElementById('modalWeightUnit');
+            
+            saveBtn.addEventListener('click', () => {
+                const weight = parseFloat(weightInput.value) || 0;
+                const unit = unitSelect.value;
                 
-                // Re-initialize weight inputs when popover is shown
-                trigger.addEventListener('shown.bs.popover', () => {
-                    this.initializeWeightInputs();
-                });
-            }
-        });
-        
-        console.log('✅ Weight popovers initialized:', popoverTriggers.length, 'popovers');
-    }
-    
-    /**
-     * Initialize weight inputs
-     */
-    initializeWeightInputs() {
-        console.log('🏋️ Initializing weight inputs...');
-        
-        const weightInputs = document.querySelectorAll('.weight-input');
-        const unitSelects = document.querySelectorAll('.weight-unit-select');
-        
-        weightInputs.forEach(input => {
-            // Remove existing listeners to avoid duplicates
-            const newInput = input.cloneNode(true);
-            input.parentNode.replaceChild(newInput, input);
+                // Update session service
+                this.sessionService.updateExerciseWeight(exerciseName, weight, unit);
+                
+                // Auto-save
+                this.autoSave(null);
+                
+                // Close modal
+                modal.hide();
+                
+                // Re-render workout to show updated weight
+                this.renderWorkout();
+            });
             
-            newInput.addEventListener('input', (e) => this.handleWeightChange(e));
-            newInput.addEventListener('blur', (e) => this.handleWeightBlur(e));
-        });
-        
-        unitSelects.forEach(select => {
-            // Remove existing listeners to avoid duplicates
-            const newSelect = select.cloneNode(true);
-            select.parentNode.replaceChild(newSelect, select);
+            // Also setup input listeners for real-time updates
+            weightInput.addEventListener('input', (e) => {
+                const weight = parseFloat(e.target.value) || 0;
+                const unit = unitSelect.value;
+                this.sessionService.updateExerciseWeight(exerciseName, weight, unit);
+            });
             
-            newSelect.addEventListener('change', (e) => this.handleUnitChange(e));
+            unitSelect.addEventListener('change', (e) => {
+                const weight = parseFloat(weightInput.value) || 0;
+                const unit = e.target.value;
+                this.sessionService.updateExerciseWeight(exerciseName, weight, unit);
+            });
+        }
+        
+        // Cleanup modal on hide
+        modalElement.addEventListener('hidden.bs.modal', () => {
+            modalElement.remove();
         });
         
-        console.log('✅ Weight inputs initialized:', weightInputs.length, 'inputs');
+        // Show modal
+        modal.show();
     }
     
-    /**
-     * Handle weight input change (debounced auto-save)
-     */
-    handleWeightChange(event) {
-        const input = event.target;
-        const exerciseName = input.getAttribute('data-exercise-name');
-        const weight = parseFloat(input.value) || 0;
-        
-        const card = input.closest('.exercise-card');
-        const unitSelect = card.querySelector('.weight-unit-select');
-        const unit = unitSelect ? unitSelect.value : 'lbs';
-        
-        // Update session service
-        this.sessionService.updateExerciseWeight(exerciseName, weight, unit);
-        
-        // Show saving indicator
-        this.showSaveIndicator(card, 'saving');
-        
-        // Debounced auto-save (2 seconds)
-        clearTimeout(this.autoSaveTimer);
-        this.autoSaveTimer = setTimeout(async () => {
-            await this.autoSave(card);
-        }, 2000);
-    }
-    
-    /**
-     * Handle weight input blur (immediate save)
-     */
-    handleWeightBlur(event) {
-        const input = event.target;
-        const card = input.closest('.exercise-card');
-        
-        // Cancel debounced save and save immediately
-        clearTimeout(this.autoSaveTimer);
-        this.autoSave(card);
-    }
-    
-    /**
-     * Handle unit change
-     */
-    handleUnitChange(event) {
-        const select = event.target;
-        const exerciseName = select.getAttribute('data-exercise-name');
-        const unit = select.value;
-        
-        const card = select.closest('.exercise-card');
-        const weightInput = card.querySelector('.weight-input');
-        const weight = parseFloat(weightInput.value) || 0;
-        
-        // Update session service
-        this.sessionService.updateExerciseWeight(exerciseName, weight, unit);
-        
-        // Show saving indicator
-        this.showSaveIndicator(card, 'saving');
-        
-        // Immediate save on unit change
-        this.autoSave(card);
-    }
     
     /**
      * Auto-save session

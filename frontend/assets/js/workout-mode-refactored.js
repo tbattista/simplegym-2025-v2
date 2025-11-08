@@ -123,13 +123,16 @@ class RestTimer {
         this.element = document.querySelector(`[data-timer-id="${this.timerId}"]`);
         if (!this.element) return;
         
+        // Check if we're in grid layout (parent has workout-button-grid class)
+        const isGridLayout = this.element.closest('.workout-button-grid') !== null;
+        
         let labelHtml = '';
         let buttonHtml = '';
         
         switch (this.state) {
             case 'ready':
                 labelHtml = `Rest: ${this.totalSeconds}s`;
-                buttonHtml = `<button class="btn btn-success flex-fill" onclick="window.startTimer('${this.timerId}')">
+                buttonHtml = `<button class="btn btn-success ${isGridLayout ? 'workout-grid-btn' : 'flex-fill'}" onclick="window.startTimer('${this.timerId}')">
                     <i class="bx bx-play me-1"></i>Start Rest
                 </button>`;
                 break;
@@ -138,33 +141,47 @@ class RestTimer {
                 const displayClass = this.remainingSeconds <= 5 ? 'text-danger' :
                                    this.remainingSeconds <= 10 ? 'text-warning' : 'text-success';
                 labelHtml = `<span class="${displayClass}">${this.formatTime(this.remainingSeconds)}</span>`;
-                buttonHtml = `<button class="btn btn-outline-secondary flex-fill" onclick="window.pauseTimer('${this.timerId}')">
+                buttonHtml = `<button class="btn btn-outline-secondary ${isGridLayout ? 'workout-grid-btn' : 'flex-fill'}" onclick="window.pauseTimer('${this.timerId}')">
                     <i class="bx bx-stop-circle me-1"></i>Stop
                 </button>`;
                 break;
                 
             case 'paused':
                 labelHtml = `<span class="text-warning">${this.formatTime(this.remainingSeconds)}</span>`;
-                buttonHtml = `<button class="btn btn-outline-secondary flex-fill" onclick="window.resetTimer('${this.timerId}')">
+                buttonHtml = `<button class="btn btn-outline-secondary ${isGridLayout ? 'workout-grid-btn' : 'flex-fill'}" onclick="window.resetTimer('${this.timerId}')">
                     <i class="bx bx-reset me-1"></i>Reset
                 </button>`;
                 break;
                 
             case 'done':
                 labelHtml = `<span class="text-success"><i class="bx bx-check-circle me-1"></i>Done!</span>`;
-                buttonHtml = `<button class="btn btn-success flex-fill" onclick="window.resetTimer('${this.timerId}')">
+                buttonHtml = `<button class="btn btn-success ${isGridLayout ? 'workout-grid-btn' : 'flex-fill'}" onclick="window.resetTimer('${this.timerId}')">
                     <i class="bx bx-refresh me-1"></i>Start
                 </button>`;
                 break;
         }
         
-        // Render as two separate elements that will be placed in flex row
-        this.element.innerHTML = `
-            <div class="rest-timer-label-col flex-fill d-flex align-items-center justify-content-center">
-                ${labelHtml}
-            </div>
-            ${buttonHtml}
-        `;
+        if (isGridLayout) {
+            // Grid layout: render label in timer container, button goes in separate grid cell
+            this.element.innerHTML = labelHtml;
+            
+            // Find the button slot - it's the next sibling of the timer's parent (.rest-timer-grid-label)
+            const timerLabel = this.element.closest('.rest-timer-grid-label');
+            if (timerLabel) {
+                const buttonSlot = timerLabel.nextElementSibling;
+                if (buttonSlot && buttonSlot.classList.contains('rest-timer-button-slot')) {
+                    buttonSlot.innerHTML = buttonHtml;
+                }
+            }
+        } else {
+            // Flex layout: render as two separate elements
+            this.element.innerHTML = `
+                <div class="rest-timer-label-col flex-fill d-flex align-items-center justify-content-center">
+                    ${labelHtml}
+                </div>
+                ${buttonHtml}
+            `;
+        }
     }
 }
 
