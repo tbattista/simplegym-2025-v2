@@ -123,73 +123,48 @@ class RestTimer {
         this.element = document.querySelector(`[data-timer-id="${this.timerId}"]`);
         if (!this.element) return;
         
-        let html = '';
+        let labelHtml = '';
+        let buttonHtml = '';
         
         switch (this.state) {
             case 'ready':
-                html = `
-                    <div class="rest-timer-ready text-center py-3">
-                        <div class="rest-timer-label mb-2">Rest: ${this.totalSeconds}s</div>
-                        <button class="btn btn-success" onclick="window.startTimer('${this.timerId}')">
-                            <i class="bx bx-play me-1"></i>Start Rest
-                        </button>
-                    </div>
-                `;
+                labelHtml = `Rest: ${this.totalSeconds}s`;
+                buttonHtml = `<button class="btn btn-success flex-fill" onclick="window.startTimer('${this.timerId}')">
+                    <i class="bx bx-play me-1"></i>Start Rest
+                </button>`;
                 break;
                 
             case 'counting':
-                const displayClass = this.remainingSeconds <= 5 ? 'danger' : 
-                                   this.remainingSeconds <= 10 ? 'warning' : '';
-                html = `
-                    <div class="rest-timer-counting text-center py-3">
-                        <div class="rest-timer-display ${displayClass} mb-2">
-                            <span class="display-4">${this.formatTime(this.remainingSeconds)}</span>
-                        </div>
-                        <div class="btn-group">
-                            <button class="btn btn-warning" onclick="window.pauseTimer('${this.timerId}')">
-                                <i class="bx bx-pause"></i> Pause
-                            </button>
-                            <button class="btn btn-outline-secondary" onclick="window.resetTimer('${this.timerId}')">
-                                <i class="bx bx-reset"></i> Reset
-                            </button>
-                        </div>
-                    </div>
-                `;
+                const displayClass = this.remainingSeconds <= 5 ? 'text-danger' :
+                                   this.remainingSeconds <= 10 ? 'text-warning' : 'text-success';
+                labelHtml = `<span class="${displayClass}">${this.formatTime(this.remainingSeconds)}</span>`;
+                buttonHtml = `<button class="btn btn-outline-secondary flex-fill" onclick="window.pauseTimer('${this.timerId}')">
+                    <i class="bx bx-stop-circle me-1"></i>Stop
+                </button>`;
                 break;
                 
             case 'paused':
-                html = `
-                    <div class="rest-timer-paused text-center py-3">
-                        <div class="rest-timer-display mb-2">
-                            <span class="display-4">${this.formatTime(this.remainingSeconds)}</span>
-                        </div>
-                        <div class="btn-group">
-                            <button class="btn btn-success" onclick="window.resumeTimer('${this.timerId}')">
-                                <i class="bx bx-play"></i> Resume
-                            </button>
-                            <button class="btn btn-outline-secondary" onclick="window.resetTimer('${this.timerId}')">
-                                <i class="bx bx-reset"></i> Reset
-                            </button>
-                        </div>
-                    </div>
-                `;
+                labelHtml = `<span class="text-warning">${this.formatTime(this.remainingSeconds)}</span>`;
+                buttonHtml = `<button class="btn btn-outline-secondary flex-fill" onclick="window.resetTimer('${this.timerId}')">
+                    <i class="bx bx-reset me-1"></i>Reset
+                </button>`;
                 break;
                 
             case 'done':
-                html = `
-                    <div class="rest-timer-done text-center py-3">
-                        <div class="rest-timer-label mb-2 text-success">
-                            <i class="bx bx-check-circle me-1"></i>Rest: Done ✓
-                        </div>
-                        <button class="btn btn-outline-success" onclick="window.resetTimer('${this.timerId}')">
-                            <i class="bx bx-refresh me-1"></i>Start Again
-                        </button>
-                    </div>
-                `;
+                labelHtml = `<span class="text-success"><i class="bx bx-check-circle me-1"></i>Done!</span>`;
+                buttonHtml = `<button class="btn btn-success flex-fill" onclick="window.resetTimer('${this.timerId}')">
+                    <i class="bx bx-refresh me-1"></i>Start
+                </button>`;
                 break;
         }
         
-        this.element.innerHTML = html;
+        // Render as two separate elements that will be placed in flex row
+        this.element.innerHTML = `
+            <div class="rest-timer-label-col flex-fill d-flex align-items-center justify-content-center">
+                ${labelHtml}
+            </div>
+            ${buttonHtml}
+        `;
     }
 }
 

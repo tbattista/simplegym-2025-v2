@@ -245,7 +245,7 @@ class WorkoutModeController {
                         </div>
                         ${alternates.length > 0 ? `
                             <div class="exercise-card-alts text-muted small mt-1">
-                                ${alternates.map(alt => `${alt.label}: ${this.escapeHtml(alt.name)}`).join(' • ')}
+                                ${alternates.map(alt => `<div>${alt.label}: ${this.escapeHtml(alt.name)}</div>`).join('')}
                             </div>
                         ` : ''}
                     </div>
@@ -253,11 +253,11 @@ class WorkoutModeController {
                 </div>
                 
                 <div class="card-body exercise-card-body" style="display: none;">
-                    <!-- COMPACT LAYOUT: Exercise name + Weight on same line -->
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <h5 class="mb-0" style="font-size: 1.1rem; font-weight: 600;">${this.escapeHtml(mainExercise)}</h5>
-                        ${isSessionActive ? `
+                    ${isSessionActive ? `
+                        <!-- Weight Input (only when session active) -->
+                        <div class="d-flex justify-content-end align-items-center mb-3">
                             <div class="d-flex align-items-center gap-2">
+                                <label class="mb-0 text-muted small"><i class="bx bx-dumbbell me-1"></i>Weight:</label>
                                 <input
                                     type="number"
                                     class="form-control form-control-sm weight-input"
@@ -272,23 +272,13 @@ class WorkoutModeController {
                                     <option value="kg" ${currentUnit === 'kg' ? 'selected' : ''}>kg</option>
                                 </select>
                             </div>
-                        ` : ''}
-                    </div>
-                    
-                    <!-- Sets/Reps + Alternates -->
-                    <div class="mb-3">
-                        <div class="text-muted small mb-1">${sets} × ${reps} • Rest: ${rest}</div>
-                        ${alternates.length > 0 ? `
-                            <div class="text-muted small">
-                                ${alternates.map(alt => `${alt.label}: ${this.escapeHtml(alt.name)}`).join(' • ')}
-                            </div>
-                        ` : ''}
+                        </div>
                         ${lastWeight && lastSessionDate ? `
-                            <div class="text-muted small mt-1">
+                            <div class="text-muted small mb-3 text-end">
                                 <i class="bx bx-history me-1"></i>Last: ${lastWeight} ${lastWeightUnit} (${lastSessionDate})
                             </div>
                         ` : ''}
-                    </div>
+                    ` : ''}
                     
                     ${notes ? `
                         <div class="alert alert-info mb-3" style="font-size: 0.875rem; padding: 0.75rem;">
@@ -297,20 +287,15 @@ class WorkoutModeController {
                         </div>
                     ` : ''}
                     
-                    <!-- COMPACT: Rest timer + Buttons side by side -->
-                    <div class="d-flex gap-2 align-items-center">
-                        <div class="rest-timer-compact flex-shrink-0" style="min-width: 100px;">
+                    <!-- COMPACT: Rest timer + Buttons in a row (equal width) -->
+                    <div class="d-flex gap-2 align-items-stretch" style="margin-top: 1rem;">
+                        <div class="rest-timer-inline flex-fill">
                             <div class="rest-timer" data-rest-seconds="${restSeconds}" data-timer-id="${timerId}">
                             </div>
                         </div>
-                        <div class="d-flex gap-2 flex-grow-1">
-                            <button class="btn btn-outline-secondary btn-sm flex-grow-1" onclick="window.workoutModeController.stopExercise(${index})" style="font-size: 0.875rem;">
-                                <i class="bx bx-stop-circle"></i> Stop
-                            </button>
-                            <button class="btn btn-primary btn-sm flex-grow-1" onclick="window.workoutModeController.goToNextExercise(${index})" style="font-size: 0.875rem;">
-                                Next <i class="bx bx-right-arrow-alt"></i>
-                            </button>
-                        </div>
+                        <button class="btn btn-primary flex-fill" onclick="window.workoutModeController.goToNextExercise(${index})" style="min-height: 100%;">
+                            Next Exercise<i class="bx bx-right-arrow-alt ms-1"></i>
+                        </button>
                     </div>
                 </div>
             </div>
