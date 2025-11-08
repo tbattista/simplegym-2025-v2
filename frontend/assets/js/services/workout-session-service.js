@@ -156,7 +156,7 @@ class WorkoutSessionService {
             const url = window.config.api.getUrl(`/api/v3/workout-sessions/${this.currentSession.id}`);
             
             const response = await fetch(url, {
-                method: 'PATCH',
+                method: 'PUT',
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
@@ -197,8 +197,8 @@ class WorkoutSessionService {
                 return this.exerciseHistory;
             }
             
-            // Use centralized API config
-            const url = window.config.api.getUrl(`/api/v3/exercise-history/workout/${workoutId}`);
+            // Use centralized API config - CORRECT endpoint path
+            const url = window.config.api.getUrl(`/api/v3/workout-sessions/history/workout/${workoutId}`);
             
             const response = await fetch(url, {
                 headers: {
