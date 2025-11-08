@@ -1,7 +1,7 @@
 /**
  * Ghost Gym - Workout Mode JavaScript
  * Handles workout execution with rest timers, exercise navigation, and weight logging
- * @version 2.2.0
+ * @version 2.2.1
  * @date 2025-11-07
  */
 
@@ -733,32 +733,40 @@ function initializeSessionControls() {
 /**
  * Initialize tooltip for Start Workout button
  */
-function initializeStartButtonTooltip() {
+async function initializeStartButtonTooltip() {
     const startBtn = document.getElementById('startWorkoutBtn');
     if (!startBtn) return;
     
-    // Check if user is authenticated
-    const token = getAuthToken();
+    // Destroy existing tooltip if any
+    const existingTooltip = window.bootstrap?.Tooltip?.getInstance(startBtn);
+    if (existingTooltip) {
+        existingTooltip.dispose();
+    }
     
-    // Update tooltip based on auth status
-    token.then(authToken => {
-        if (authToken) {
-            // User is logged in - show normal tooltip
-            startBtn.setAttribute('title', 'Start tracking your workout with weight logging');
-            startBtn.classList.remove('btn-outline-primary');
-            startBtn.classList.add('btn-primary');
-        } else {
-            // User is NOT logged in - show login prompt
-            startBtn.setAttribute('title', '🔒 Log in to track weights and save progress');
-            startBtn.classList.remove('btn-primary');
-            startBtn.classList.add('btn-outline-primary');
-        }
-        
-        // Initialize Bootstrap tooltip
-        if (window.bootstrap && window.bootstrap.Tooltip) {
-            new window.bootstrap.Tooltip(startBtn);
-        }
-    });
+    // Check if user is authenticated
+    const authToken = await getAuthToken();
+    
+    // Update button and tooltip based on auth status
+    if (authToken) {
+        // User is logged in - show normal tooltip
+        startBtn.setAttribute('data-bs-original-title', 'Start tracking your workout with weight logging');
+        startBtn.setAttribute('title', 'Start tracking your workout with weight logging');
+        startBtn.classList.remove('btn-outline-primary');
+        startBtn.classList.add('btn-primary');
+        console.log('✅ User authenticated - button ready');
+    } else {
+        // User is NOT logged in - show login prompt
+        startBtn.setAttribute('data-bs-original-title', '🔒 Log in to track weights and save progress');
+        startBtn.setAttribute('title', '🔒 Log in to track weights and save progress');
+        startBtn.classList.remove('btn-primary');
+        startBtn.classList.add('btn-outline-primary');
+        console.log('⚠️ User not authenticated - login required');
+    }
+    
+    // Initialize Bootstrap tooltip
+    if (window.bootstrap && window.bootstrap.Tooltip) {
+        new window.bootstrap.Tooltip(startBtn);
+    }
 }
 
 /**
