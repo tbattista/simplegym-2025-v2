@@ -599,7 +599,8 @@ class WorkoutModeController {
             
         } catch (error) {
             console.error('❌ Error starting workout:', error);
-            this.modalManager.alert('Error', error.message, 'danger');
+            const modalManager = this.getModalManager();
+            modalManager.alert('Error', error.message, 'danger');
         }
     }
     
@@ -607,8 +608,9 @@ class WorkoutModeController {
      * Handle complete workout
      */
     async handleCompleteWorkout() {
-        // Use existing modal manager for confirmation
-        this.modalManager.confirm(
+        // Use modal manager for confirmation
+        const modalManager = this.getModalManager();
+        modalManager.confirm(
             'Complete Workout?',
             'Are you sure you want to complete this workout?',
             async () => {
@@ -621,7 +623,8 @@ class WorkoutModeController {
                     
                 } catch (error) {
                     console.error('❌ Error completing workout:', error);
-                    this.modalManager.alert('Error', error.message, 'danger');
+                    const modalManager = this.getModalManager();
+                    modalManager.alert('Error', error.message, 'danger');
                 }
             }
         );
