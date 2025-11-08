@@ -27,6 +27,12 @@ class WorkoutModeController {
      */
     async initialize() {
         try {
+            console.log('🎮 Controller initialize() called');
+            console.log('🔍 DEBUG: Auth service exists?', !!this.authService);
+            console.log('🔍 DEBUG: Data manager exists?', !!this.dataManager);
+            console.log('🔍 DEBUG: Current storage mode:', this.dataManager?.storageMode);
+            console.log('🔍 DEBUG: Is authenticated?', this.authService?.isUserAuthenticated());
+            
             // Setup auth state listener (reuse existing service)
             this.authService.onAuthStateChange((user) => {
                 this.handleAuthStateChange(user);
@@ -38,6 +44,12 @@ class WorkoutModeController {
                 this.showError('No workout selected. Please select a workout to begin.');
                 return;
             }
+            
+            // IMPORTANT: Wait for auth state to settle before loading workout
+            // This ensures we're in the correct storage mode (localStorage vs firestore)
+            console.log('⏳ Waiting for auth state to settle...');
+            await new Promise(resolve => setTimeout(resolve, 1500));
+            console.log('✅ Auth state settled, storage mode:', this.dataManager.storageMode);
             
             // Load workout
             await this.loadWorkout(workoutId);
@@ -74,8 +86,17 @@ class WorkoutModeController {
             this.showLoadingState();
             
             // Use existing data manager
+            console.log('🔍 DEBUG: Calling dataManager.getWorkouts()...');
+            console.log('🔍 DEBUG: dataManager exists?', !!this.dataManager);
+            console.log('🔍 DEBUG: dataManager.getWorkouts exists?', !!this.dataManager?.getWorkouts);
+            
             const workouts = await this.dataManager.getWorkouts();
+            console.log('🔍 DEBUG: Got workouts:', workouts?.length || 0, 'workouts');
+            console.log('🔍 DEBUG: Looking for workout ID:', workoutId);
+            console.log('🔍 DEBUG: Available workout IDs:', workouts?.map(w => w.id) || []);
+            
             this.currentWorkout = workouts.find(w => w.id === workoutId);
+            console.log('🔍 DEBUG: Found workout?', !!this.currentWorkout);
             
             if (!this.currentWorkout) {
                 throw new Error('Workout not found');
