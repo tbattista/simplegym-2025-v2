@@ -249,25 +249,21 @@ class WorkoutModeController {
                             </div>
                         ` : ''}
                     </div>
-                    ${isSessionActive ? `
-                        <div class="weight-display-compact" onclick="event.stopPropagation();">
-                            <div class="weight-icon-label">
-                                <i class="bx bx-dumbbell"></i> Weight:
-                            </div>
-                            <input
-                                type="number"
-                                class="form-control form-control-sm weight-input weight-input-compact"
-                                data-exercise-name="${this.escapeHtml(mainExercise)}"
-                                value="${currentWeight}"
-                                placeholder="135"
-                                step="5"
-                                min="0">
-                            <select class="form-select form-select-sm weight-unit-select weight-unit-compact" data-exercise-name="${this.escapeHtml(mainExercise)}">
-                                <option value="lbs" ${currentUnit === 'lbs' ? 'selected' : ''}>lbs</option>
-                                <option value="kg" ${currentUnit === 'kg' ? 'selected' : ''}>kg</option>
-                            </select>
-                        </div>
-                    ` : ''}
+                    <div class="weight-display-compact" onclick="event.stopPropagation();">
+                        <input
+                            type="number"
+                            class="form-control form-control-sm weight-input weight-input-compact"
+                            data-exercise-name="${this.escapeHtml(mainExercise)}"
+                            value="${currentWeight}"
+                            placeholder="135"
+                            step="5"
+                            min="0"
+                            ${!isSessionActive ? 'readonly disabled' : ''}>
+                        <select class="form-select form-select-sm weight-unit-select weight-unit-compact" data-exercise-name="${this.escapeHtml(mainExercise)}" ${!isSessionActive ? 'disabled' : ''}>
+                            <option value="lbs" ${currentUnit === 'lbs' ? 'selected' : ''}>lbs</option>
+                            <option value="kg" ${currentUnit === 'kg' ? 'selected' : ''}>kg</option>
+                        </select>
+                    </div>
                     <i class="bx bx-chevron-down expand-icon"></i>
                 </div>
                 
