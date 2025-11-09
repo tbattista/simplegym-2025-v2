@@ -868,8 +868,6 @@ class WorkoutModeController {
                             <i class="bx bx-home me-1"></i>Dashboard
                         </button>
                     </div>
-                    
-                    <p class="text-center text-muted small mt-3 mb-0">Returning to workout selection in <span id="redirectCountdown">5</span> seconds...</p>
                 </div>
             </div>
         `;
@@ -894,19 +892,6 @@ class WorkoutModeController {
         
         // Show offcanvas
         offcanvas.show();
-        
-        // Countdown and redirect
-        let countdown = 5;
-        const countdownEl = document.getElementById('redirectCountdown');
-        const countdownInterval = setInterval(() => {
-            countdown--;
-            if (countdownEl) countdownEl.textContent = countdown;
-            
-            if (countdown <= 0) {
-                clearInterval(countdownInterval);
-                window.location.href = 'workout-mode.html';
-            }
-        }, 1000);
     }
     
     /**
