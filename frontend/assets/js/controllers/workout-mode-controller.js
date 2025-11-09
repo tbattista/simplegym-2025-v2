@@ -247,7 +247,7 @@ class WorkoutModeController {
                     <div class="exercise-card-summary">
                         <div class="d-flex justify-content-between align-items-start mb-1">
                             <h6 class="mb-0">${this.escapeHtml(mainExercise)}</h6>
-                            ${currentWeight ? `<span class="badge bg-primary">${currentWeight} ${currentUnit}</span>` : ''}
+                            ${currentWeight ? `<span class="badge bg-primary">${currentWeight}${currentUnit !== 'other' ? ' ' + currentUnit : ''}</span>` : ''}
                         </div>
                         <div class="exercise-card-meta text-muted small">
                             ${sets} × ${reps} • Rest: ${rest}
@@ -1015,8 +1015,7 @@ class WorkoutModeController {
         this.sessionTimerInterval = setInterval(() => {
             const elapsed = Math.floor((Date.now() - session.startedAt.getTime()) / 1000);
             const minutes = Math.floor(elapsed / 60);
-            const seconds = elapsed % 60;
-            const timeStr = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            const timeStr = `${minutes} min`;
             
             const sessionTimer = document.getElementById('sessionTimer');
             const footerTimer = document.getElementById('footerSessionTimer');
