@@ -56,6 +56,26 @@ function loadWorkoutIntoEditor(workoutId) {
             lastGroup.querySelector('.sets-input').value = group.sets || '3';
             lastGroup.querySelector('.reps-input').value = group.reps || '8-12';
             lastGroup.querySelector('.rest-input').value = group.rest || '60s';
+            
+            // Populate weight and weight unit
+            const weightInput = lastGroup.querySelector('.weight-input');
+            if (weightInput && group.default_weight) {
+                weightInput.value = group.default_weight;
+                console.log('🔍 DEBUG: Populated weight field:', group.default_weight);
+            }
+            
+            // Set weight unit button
+            const weightUnit = group.default_weight_unit || 'lbs';
+            const unitButtons = lastGroup.querySelectorAll('.weight-unit-btn');
+            unitButtons.forEach(btn => {
+                btn.classList.remove('active', 'btn-secondary');
+                btn.classList.add('btn-outline-secondary');
+                if (btn.getAttribute('data-unit') === weightUnit) {
+                    btn.classList.add('active', 'btn-secondary');
+                    btn.classList.remove('btn-outline-secondary');
+                    console.log('🔍 DEBUG: Set weight unit button to:', weightUnit);
+                }
+            });
         });
     } else {
         addExerciseGroup();
