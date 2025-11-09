@@ -360,6 +360,7 @@ class WorkoutModeController {
                         <select class="form-select weight-unit-select" id="modalWeightUnit" data-exercise-name="${exerciseName}" ${!isSessionActive ? 'disabled' : ''} style="width: 100px;">
                             <option value="lbs" ${currentUnit === 'lbs' ? 'selected' : ''}>lbs</option>
                             <option value="kg" ${currentUnit === 'kg' ? 'selected' : ''}>kg</option>
+                            <option value="other" ${currentUnit === 'other' ? 'selected' : ''}>other</option>
                         </select>
                     </div>
                     <small class="text-muted">Enter weight as number or description (e.g., "4x45 plates", "135", "BW+25")</small>
@@ -377,10 +378,10 @@ class WorkoutModeController {
             </div>
         `;
         
-        // Create a custom modal using Bootstrap
+        // Create a custom modal using Bootstrap (slides up from bottom)
         const modalHtml = `
             <div class="modal fade" id="weightEditModal" tabindex="-1" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-dialog modal-dialog-bottom">
                     <div class="modal-content">
                         <div class="modal-header">
                             <h5 class="modal-title">
