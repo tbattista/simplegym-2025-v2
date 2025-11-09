@@ -572,7 +572,7 @@ function addExerciseGroup() {
                             </label>
                         </div>
                     </div>
-                    <div class="row g-2 mb-2">
+                    <div class="row g-3 mb-2">
                         <div class="col-3">
                             <input type="text" class="form-control form-control-sm weight-input text-center" placeholder="0" maxlength="6">
                         </div>
