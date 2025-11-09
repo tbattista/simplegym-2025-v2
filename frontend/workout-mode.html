@@ -132,18 +132,22 @@
                       <input
                         type="text"
                         class="form-control"
-                        id="workoutModeSearch"
+                        id="searchInput"
                         placeholder="Search workouts..."
                         autocomplete="off">
-                      <button class="btn btn-icon" type="button" id="clearWorkoutModeSearch" style="display: none;">
+                      <button class="btn btn-icon" type="button" id="clearSearchBtn" style="display: none;">
                         <i class="bx bx-x"></i>
                       </button>
                     </div>
                   </div>
                 </div>
                 
-                <!-- Workout List Container -->
-                <div id="workoutModeListContainer"></div>
+                <!-- Workout List Container (same ID as workout-database.html) -->
+                <div class="card">
+                  <div class="card-body p-0">
+                    <div id="workoutTableContainer"></div>
+                  </div>
+                </div>
               </div>
 
               <!-- Error State -->
@@ -260,20 +264,22 @@
     <script src="/static/assets/js/firebase/auth-ui.js?v=20251020-03"></script>
     <script src="/static/assets/js/firebase/data-manager.js?v=20251020-05"></script>
 
-    <!-- Component Scripts (Required for workout list component) -->
+    <!-- Component Scripts -->
     <script src="/static/assets/js/components/base-page.js"></script>
+    <script src="/static/assets/js/components/data-table.js"></script>
+    <script src="/static/assets/js/components/filter-bar.js"></script>
     <script src="/static/assets/js/components/pagination.js"></script>
     <script src="/static/assets/js/components/modal-manager.js"></script>
+    
+    <!-- Workout Database JS (for workout list when no ID selected) -->
+    <script src="/static/assets/js/dashboard/workout-database.js?v=2.0.0"></script>
     
     <!-- UI Helpers -->
     <script src="/static/assets/js/dashboard/ui-helpers.js?v=20251020-04"></script>
     
-    <!-- Workout List Component (Required for workout selection) -->
-    <script src="/static/assets/js/components/workout-list-component.js?v=20251109-01"></script>
-    
     <!-- Workout Mode JS (Refactored) -->
     <script src="/static/assets/js/services/workout-session-service.js?v=1.0.0"></script>
-    <script src="/static/assets/js/controllers/workout-mode-controller.js?v=20251109-02"></script>
+    <script src="/static/assets/js/controllers/workout-mode-controller.js?v=20251109-03"></script>
     <script src="/static/assets/js/workout-mode-refactored.js?v=20251109-01"></script>
 
     <!-- Initialize Workout Mode -->

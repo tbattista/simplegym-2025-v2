@@ -1097,16 +1097,11 @@ class WorkoutModeController {
     
     /**
      * Show workout selection UI
+     * Uses the same approach as workout-database.html (PROVEN to work on Railway)
      */
     async showWorkoutSelection() {
         try {
             console.log('📋 Showing workout selection...');
-            
-            // Update loading message
-            const loadingMessage = document.getElementById('loadingMessage');
-            if (loadingMessage) {
-                loadingMessage.textContent = 'Initializing workout list...';
-            }
             
             // Wait for data manager with retry logic
             console.log('⏳ Waiting for data manager...');
@@ -1123,15 +1118,13 @@ class WorkoutModeController {
             }
             
             console.log('✅ Data manager ready');
-            console.log('🔍 Data manager has getWorkouts:', !!window.dataManager.getWorkouts);
             
-            // Check if WorkoutListComponent is available
-            if (typeof WorkoutListComponent === 'undefined') {
-                console.error('❌ WorkoutListComponent not loaded!');
-                throw new Error('WorkoutListComponent not available. Please refresh the page.');
+            // Check if loadWorkouts function is available (from workout-database.js)
+            if (typeof window.loadWorkouts !== 'function') {
+                throw new Error('loadWorkouts function not available. Please refresh the page.');
             }
             
-            console.log('✅ WorkoutListComponent available');
+            console.log('✅ loadWorkouts function available');
             
             // Hide other states
             const loadingState = document.getElementById('workoutLoadingState');
@@ -1160,33 +1153,29 @@ class WorkoutModeController {
             const changeLink = document.getElementById('changeWorkoutLink');
             if (changeLink) changeLink.style.display = 'none';
             
-            // Initialize workout list component
-            if (!this.workoutListComponent) {
-                console.log('📦 Creating new WorkoutListComponent...');
-                
-                this.workoutListComponent = new WorkoutListComponent({
-                    containerId: 'workoutModeListContainer',
-                    searchInputId: 'workoutModeSearch',
-                    clearSearchBtnId: 'clearWorkoutModeSearch',
-                    showActions: ['start'], // Only show Start button
-                    enablePagination: true,
-                    pageSize: 50,
-                    emptyMessage: 'No workouts found. Create one in the Workout Builder!',
-                    onWorkoutSelect: (workoutId, action) => {
-                        console.log('🎯 Workout selected from list:', workoutId, action);
-                        this.selectWorkout(workoutId);
-                    }
-                });
-                
-                console.log('⏳ Initializing WorkoutListComponent...');
-                await this.workoutListComponent.initialize();
-                console.log('✅ WorkoutListComponent initialized');
-            } else {
-                console.log('🔄 Refreshing existing WorkoutListComponent...');
-                await this.workoutListComponent.refresh();
-                console.log('✅ WorkoutListComponent refreshed');
-            }
+            // Initialize global state for workout database (required by workout-database.js)
+            window.ghostGym = window.ghostGym || {};
+            window.ghostGym.workoutDatabase = window.ghostGym.workoutDatabase || {
+                all: [],
+                filtered: [],
+                displayed: [],
+                currentPage: 1,
+                pageSize: 50,
+                filters: {
+                    search: '',
+                    tags: [],
+                    sortBy: 'modified_date',
+                    sortOrder: 'desc'
+                },
+                stats: {
+                    total: 0,
+                    showing: 0
+                }
+            };
             
+            // Use the PROVEN loadWorkouts function from workout-database.js
+            console.log('📡 Calling loadWorkouts() from workout-database.js...');
+            await window.loadWorkouts();
             console.log('✅ Workout selection ready');
             
         } catch (error) {
