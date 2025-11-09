@@ -876,9 +876,16 @@ class WorkoutModeController {
     /**
      * Handle auth state change
      */
-    handleAuthStateChange(user) {
+    async handleAuthStateChange(user) {
         console.log('🔄 Auth state changed:', user ? 'authenticated' : 'anonymous');
         this.initializeStartButtonTooltip();
+        
+        // If we're in workout selection mode and auth state changed, refresh the list
+        if (this.workoutListComponent && !this.getWorkoutIdFromUrl()) {
+            console.log('🔄 Refreshing workout list after auth change...');
+            await this.workoutListComponent.refresh();
+            console.log('✅ Workout list refreshed');
+        }
     }
     
     /**
