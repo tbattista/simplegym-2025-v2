@@ -437,14 +437,23 @@ function collectExerciseGroups() {
             const activeUnitBtn = bodyEl?.querySelector('.weight-unit-btn.active');
             const weightUnit = activeUnitBtn?.getAttribute('data-unit') || 'lbs';
             
-            groups.push({
+            const weight = bodyEl?.querySelector('.weight-input')?.value || '';
+            const groupData = {
                 exercises: exercises,
                 sets: bodyEl?.querySelector('.sets-input')?.value || '3',
                 reps: bodyEl?.querySelector('.reps-input')?.value || '8-12',
                 rest: bodyEl?.querySelector('.rest-input')?.value || '60s',
-                weight: bodyEl?.querySelector('.weight-input')?.value || '',
+                weight: weight,
+                weight_unit: weightUnit
+            };
+            
+            console.log('🔍 DEBUG: Collecting exercise group with weight:', {
+                exercises: Object.keys(exercises),
+                weight: weight,
                 weight_unit: weightUnit
             });
+            
+            groups.push(groupData);
         }
     });
     
@@ -603,12 +612,13 @@ function addExerciseGroup() {
         input.addEventListener('change', () => updateExerciseGroupPreview(newGroup));
     });
     
-    // Add listeners for sets, reps, rest to update preview
+    // Add listeners for sets, reps, rest, weight to update preview
     const setsInput = newGroup.querySelector('.sets-input');
     const repsInput = newGroup.querySelector('.reps-input');
     const restInput = newGroup.querySelector('.rest-input');
+    const weightInput = newGroup.querySelector('.weight-input');
     
-    [setsInput, repsInput, restInput].forEach(input => {
+    [setsInput, repsInput, restInput, weightInput].forEach(input => {
         if (input) {
             input.addEventListener('input', () => updateExerciseGroupPreview(newGroup));
             input.addEventListener('change', () => updateExerciseGroupPreview(newGroup));
@@ -991,9 +1001,19 @@ function updateExerciseGroupPreview(groupElement) {
         previewInfo.style.display = 'none';
     }
     
-    // Update weight display (placeholder for now)
+    // Update weight display with actual value
     if (previewWeight && exercises.length > 0) {
-        previewWeight.textContent = 'Weight';
+        const weightInput = bodyEl?.querySelector('.weight-input');
+        const weight = weightInput?.value?.trim();
+        const activeUnitBtn = bodyEl?.querySelector('.weight-unit-btn.active');
+        const weightUnit = activeUnitBtn?.getAttribute('data-unit') || 'lbs';
+        
+        if (weight) {
+            previewWeight.textContent = `${weight} ${weightUnit}`;
+            console.log('🔍 DEBUG: Updated weight preview:', `${weight} ${weightUnit}`);
+        } else {
+            previewWeight.textContent = 'Weight';
+        }
         previewWeight.style.display = 'block';
     } else if (previewWeight) {
         previewWeight.textContent = '';
@@ -1092,6 +1112,26 @@ function editWorkout(id) {
             lastGroup.querySelector('.sets-input').value = group.sets || '3';
             lastGroup.querySelector('.reps-input').value = group.reps || '8-12';
             lastGroup.querySelector('.rest-input').value = group.rest || '60s';
+            
+            // Populate weight and weight unit
+            const weightInput = lastGroup.querySelector('.weight-input');
+            if (weightInput && group.weight) {
+                weightInput.value = group.weight;
+                console.log('🔍 DEBUG: Populated weight field:', group.weight);
+            }
+            
+            // Set weight unit button
+            const weightUnit = group.weight_unit || 'lbs';
+            const unitButtons = lastGroup.querySelectorAll('.weight-unit-btn');
+            unitButtons.forEach(btn => {
+                btn.classList.remove('active', 'btn-secondary');
+                btn.classList.add('btn-outline-secondary');
+                if (btn.getAttribute('data-unit') === weightUnit) {
+                    btn.classList.add('active', 'btn-secondary');
+                    btn.classList.remove('btn-outline-secondary');
+                    console.log('🔍 DEBUG: Set weight unit button to:', weightUnit);
+                }
+            });
             
             // Update preview after populating
             updateExerciseGroupPreview(lastGroup);
