@@ -365,6 +365,7 @@
     font-weight: 500;
     white-space: nowrap;
     padding-right: 2rem;
+    text-align: right;
 }
 
 /* Remove Button - hidden by default */
