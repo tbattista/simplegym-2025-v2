@@ -85,9 +85,9 @@
               
               <!-- Workout Mode Header (Custom - No standard app bar) -->
               <div class="workout-mode-header">
-                <div class="d-flex align-items-center justify-content-center position-relative mb-4">
-                  <!-- Workout Title (Centered) -->
-                  <div class="text-center">
+                <div class="d-flex align-items-center justify-content-between mb-4">
+                  <!-- Workout Title (Left-aligned) -->
+                  <div>
                     <h4 class="mb-1" id="workoutModeTitle">
                       <i class="bx bx-dumbbell me-2"></i>
                       <span id="workoutName">Loading workout...</span>
@@ -96,18 +96,8 @@
                       <i class="bx bx-refresh me-1"></i>Change workout
                     </a>
                   </div>
-                </div>
-                
-                <!-- Session Controls -->
-                <div class="session-controls text-center mt-3" id="sessionControls">
-                  <button
-                    class="btn btn-lg btn-primary"
-                    id="startWorkoutBtn"
-                    data-bs-toggle="tooltip"
-                    data-bs-placement="bottom"
-                    title="Start tracking your workout with weight logging">
-                    <i class="bx bx-play-circle me-2"></i>Start Workout
-                  </button>
+                  
+                  <!-- Session Indicator (Right-aligned) -->
                   <div id="sessionActiveIndicator" style="display: none;">
                     <span class="badge bg-success">
                       <i class="bx bx-time-five me-1"></i>
@@ -210,29 +200,43 @@
 
     <!-- Sticky Bottom Bar -->
     <div class="workout-mode-footer" id="workoutModeFooter" style="display: none;">
-      <div class="d-flex justify-content-between align-items-center">
-        <!-- Left side: Session info -->
-        <div id="sessionInfo" style="display: none;">
-          <small class="text-muted">
-            <i class="bx bx-time-five me-1"></i>
-            <span id="footerSessionTimer">00:00</span>
-          </small>
-        </div>
+      <div class="d-flex flex-column gap-2">
+        <!-- Start Workout Button (shown when not started) -->
+        <button
+          class="btn btn-lg btn-primary w-100"
+          id="startWorkoutBtn"
+          data-bs-toggle="tooltip"
+          data-bs-placement="top"
+          title="Start tracking your workout with weight logging"
+          style="display: none;">
+          <i class="bx bx-play-circle me-2"></i>Start Workout
+        </button>
         
-        <!-- Center: Complete button -->
-        <button class="btn btn-success btn-lg flex-grow-1 mx-2" id="completeWorkoutBtn" style="display: none;">
+        <!-- Complete Workout Button (shown when started) -->
+        <button class="btn btn-success btn-lg w-100" id="completeWorkoutBtn" style="display: none;">
           <i class="bx bx-check-circle me-2"></i>Complete Workout
         </button>
         
-        <!-- Right side: Controls -->
-        <div class="d-flex gap-2">
-          <button class="btn btn-outline-primary" id="shareWorkoutBtn">
-            <i class="bx bx-share-alt"></i>
-          </button>
-          <button class="btn btn-outline-secondary" id="soundToggleBtn">
-            <i class="bx bx-volume-full me-1" id="soundIcon"></i>
-            <span id="soundStatus">On</span>
-          </button>
+        <!-- Bottom Controls Row -->
+        <div class="d-flex justify-content-between align-items-center">
+          <!-- Left side: Session info -->
+          <div id="sessionInfo" style="display: none;">
+            <small class="text-muted">
+              <i class="bx bx-time-five me-1"></i>
+              <span id="footerSessionTimer">00:00</span>
+            </small>
+          </div>
+          
+          <!-- Right side: Controls -->
+          <div class="d-flex gap-2 ms-auto">
+            <button class="btn btn-outline-primary" id="shareWorkoutBtn">
+              <i class="bx bx-share-alt"></i>
+            </button>
+            <button class="btn btn-outline-secondary" id="soundToggleBtn">
+              <i class="bx bx-volume-full me-1" id="soundIcon"></i>
+              <span id="soundStatus">On</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>

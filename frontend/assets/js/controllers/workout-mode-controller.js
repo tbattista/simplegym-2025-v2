@@ -227,16 +227,21 @@ class WorkoutModeController {
         const lastWeightUnit = history?.last_weight_unit || 'lbs';
         const lastSessionDate = history?.last_session_date ? new Date(history.last_session_date).toLocaleDateString() : null;
         
-        // Get current weight from session
+        // Get current weight from session OR from workout template
         const weightData = this.sessionService.getExerciseWeight(mainExercise);
-        const currentWeight = weightData?.weight || lastWeight;
-        const currentUnit = weightData?.weight_unit || lastWeightUnit;
+        const templateWeight = group.default_weight || '';
+        const templateUnit = group.default_weight_unit || 'lbs';
+        const currentWeight = weightData?.weight || templateWeight || lastWeight;
+        const currentUnit = weightData?.weight_unit || templateUnit || lastWeightUnit;
         
         return `
             <div class="card exercise-card ${bonusClass}" data-exercise-index="${index}" data-exercise-name="${this.escapeHtml(mainExercise)}">
                 <div class="card-header exercise-card-header" onclick="window.workoutModeController.toggleExerciseCard(${index})">
                     <div class="exercise-card-summary">
-                        <h6 class="mb-1">${this.escapeHtml(mainExercise)}</h6>
+                        <div class="d-flex justify-content-between align-items-start mb-1">
+                            <h6 class="mb-0">${this.escapeHtml(mainExercise)}</h6>
+                            ${currentWeight ? `<span class="badge bg-primary">${currentWeight} ${currentUnit}</span>` : ''}
+                        </div>
                         <div class="exercise-card-meta text-muted small">
                             ${sets} × ${reps} • Rest: ${rest}
                         </div>
@@ -812,6 +817,10 @@ class WorkoutModeController {
         const completeBtn = document.getElementById('completeWorkoutBtn');
         const sessionIndicator = document.getElementById('sessionActiveIndicator');
         const sessionInfo = document.getElementById('sessionInfo');
+        const footer = document.getElementById('workoutModeFooter');
+        
+        // Always show footer when workout is loaded
+        if (footer) footer.style.display = 'block';
         
         if (isActive) {
             if (startBtn) startBtn.style.display = 'none';
@@ -1069,6 +1078,10 @@ class WorkoutModeController {
         if (loading) loading.style.display = 'none';
         if (content) content.style.display = 'block';
         if (footer) footer.style.display = 'block';
+        
+        // Update session UI to show correct button
+        const isActive = this.sessionService.isSessionActive();
+        this.updateSessionUI(isActive);
     }
     
     /**
