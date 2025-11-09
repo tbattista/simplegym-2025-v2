@@ -564,22 +564,33 @@ function addExerciseGroup() {
                     </div>
                     
                     <!-- Weight and Unit Buttons -->
-                    <div class="row g-2 mb-3">
+                    <div class="row g-2 mb-2">
+                        <div class="col-12">
+                            <label class="form-label small mb-1">
+                                <i class="bx bx-info-circle me-1"></i>
+                                Target Weight (Optional - Reference Only)
+                            </label>
+                        </div>
+                    </div>
+                    <div class="row g-2 mb-2">
                         <div class="col-3">
-                            <label class="form-label small mb-1">Weight</label>
                             <input type="text" class="form-control form-control-sm weight-input text-center" placeholder="0" maxlength="6">
                         </div>
                         <div class="col-3">
-                            <label class="form-label small mb-1">&nbsp;</label>
                             <button type="button" class="btn btn-sm btn-outline-secondary w-100 weight-unit-btn" data-unit="lbs">lbs</button>
                         </div>
                         <div class="col-3">
-                            <label class="form-label small mb-1">&nbsp;</label>
                             <button type="button" class="btn btn-sm btn-outline-secondary w-100 weight-unit-btn" data-unit="kg">kg</button>
                         </div>
                         <div class="col-3">
-                            <label class="form-label small mb-1">&nbsp;</label>
                             <button type="button" class="btn btn-sm btn-outline-secondary w-100 weight-unit-btn" data-unit="other">other</button>
+                        </div>
+                    </div>
+                    <div class="row g-2 mb-3">
+                        <div class="col-12">
+                            <div class="alert alert-info py-1 px-2 mb-0" style="font-size: 0.7rem;">
+                                <i class="bx bx-bulb me-1"></i><strong>Tip:</strong> Actual weights are logged during workouts in Workout Mode
+                            </div>
                         </div>
                     </div>
                     
@@ -1100,11 +1111,12 @@ function editWorkout(id) {
             addExerciseGroup();
             const lastGroup = exerciseGroupsContainer.lastElementChild;
             
-            // Populate exercises
+            // Populate exercises in correct order (a, b, c, d, e, f)
             const exerciseInputs = lastGroup.querySelectorAll('.exercise-input');
-            Object.entries(group.exercises || {}).forEach(([key, value], index) => {
-                if (exerciseInputs[index]) {
-                    exerciseInputs[index].value = value;
+            const orderedKeys = ['a', 'b', 'c', 'd', 'e', 'f'];
+            orderedKeys.forEach((key, index) => {
+                if (group.exercises && group.exercises[key] && exerciseInputs[index]) {
+                    exerciseInputs[index].value = group.exercises[key];
                 }
             });
             

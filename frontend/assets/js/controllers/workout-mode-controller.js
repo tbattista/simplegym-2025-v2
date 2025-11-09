@@ -415,15 +415,22 @@ class WorkoutModeController {
             const weightInput = document.getElementById('modalWeightInput');
             const unitSelect = document.getElementById('modalWeightUnit');
             
-            saveBtn.addEventListener('click', () => {
+            saveBtn.addEventListener('click', async () => {
                 const weight = parseFloat(weightInput.value) || 0;
                 const unit = unitSelect.value;
                 
                 // Update session service
                 this.sessionService.updateExerciseWeight(exerciseName, weight, unit);
                 
-                // Auto-save
-                this.autoSave(null);
+                // Explicitly trigger auto-save and wait for it
+                try {
+                    await this.autoSave(null);
+                    console.log('✅ Weight saved successfully:', exerciseName, weight, unit);
+                } catch (error) {
+                    console.error('❌ Failed to save weight:', error);
+                    alert('Failed to save weight. Please try again.');
+                    return; // Don't close modal on error
+                }
                 
                 // Close modal
                 modal.hide();

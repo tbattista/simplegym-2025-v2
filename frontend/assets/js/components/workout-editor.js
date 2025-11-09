@@ -43,11 +43,12 @@ function loadWorkoutIntoEditor(workoutId) {
             addExerciseGroup();
             const lastGroup = exerciseGroupsContainer.lastElementChild;
             
-            // Populate exercises
+            // Populate exercises in correct order (a, b, c, d, e, f)
             const exerciseInputs = lastGroup.querySelectorAll('.exercise-input');
-            Object.entries(group.exercises || {}).forEach(([key, value], index) => {
-                if (exerciseInputs[index]) {
-                    exerciseInputs[index].value = value;
+            const orderedKeys = ['a', 'b', 'c', 'd', 'e', 'f'];
+            orderedKeys.forEach((key, index) => {
+                if (group.exercises && group.exercises[key] && exerciseInputs[index]) {
+                    exerciseInputs[index].value = group.exercises[key];
                 }
             });
             

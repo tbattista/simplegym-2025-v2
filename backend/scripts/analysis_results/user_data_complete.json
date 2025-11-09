@@ -1,0 +1,1531 @@
+[
+  {
+    "user_id": "mnxaBMMr5NMRFAkyINr9Q4QRo7j2",
+    "pulled_at": "2025-11-08T20:36:38.149436",
+    "user_document": null,
+    "subcollections": {
+      "workouts": [],
+      "programs": [],
+      "custom_exercises": [],
+      "data": [],
+      "workout_sessions": [
+        {
+          "id": "session-20251107-083456-516fde",
+          "data": {
+            "completed_at": null,
+            "workout_name": "Push Day",
+            "notes": null,
+            "status": "in_progress",
+            "id": "session-20251107-083456-516fde",
+            "version": 1,
+            "sync_status": "synced",
+            "workout_id": "workout-06fad623",
+            "started_at": "2025-11-07T08:34:56.987175+00:00",
+            "duration_minutes": null,
+            "exercises_performed": [],
+            "created_at": "2025-11-07T13:34:57.614000+00:00"
+          }
+        },
+        {
+          "id": "session-20251107-083540-013b31",
+          "data": {
+            "completed_at": "2025-11-07T08:35:40.708157+00:00",
+            "workout_name": "Push Day",
+            "notes": "Test session created by setup script",
+            "exercises_performed": [
+              {
+                "exercise_id": "exercise-test-123",
+                "exercise_name": "Barbell Bench Press",
+                "weight": 185.0,
+                "sets_completed": 4,
+                "set_details": [],
+                "previous_weight": null,
+                "weight_change": null,
+                "group_id": "group-1",
+                "weight_notes": null,
+                "order_index": 0,
+                "weight_unit": "lbs",
+                "is_bonus": false,
+                "target_sets": "4",
+                "target_reps": "8-10"
+              }
+            ],
+            "id": "session-20251107-083540-013b31",
+            "version": 1,
+            "sync_status": "synced",
+            "workout_id": "workout-06fad623",
+            "started_at": "2025-11-07T08:35:40.575165+00:00",
+            "duration_minutes": 0,
+            "status": "completed",
+            "created_at": "2025-11-07T13:35:41.178000+00:00"
+          }
+        }
+      ],
+      "exercise_history": [
+        {
+          "id": "workout-06fad623_Barbell Bench Press",
+          "data": {
+            "total_sessions": 1,
+            "exercise_name": "Barbell Bench Press",
+            "last_session_id": "session-20251107-083540-013b31",
+            "best_weight_date": "2025-11-07T08:35:40.708157+00:00",
+            "last_weight": 185.0,
+            "first_session_date": "2025-11-07T08:35:40.708157+00:00",
+            "id": "workout-06fad623_Barbell Bench Press",
+            "last_weight_unit": "lbs",
+            "best_weight": 185.0,
+            "workout_id": "workout-06fad623",
+            "last_session_date": "2025-11-07T08:35:40.708157+00:00",
+            "updated_at": "2025-11-07T13:35:41.754000+00:00",
+            "recent_sessions": [
+              {
+                "weight_unit": "lbs",
+                "weight": 185.0,
+                "session_id": "session-20251107-083540-013b31",
+                "sets": 4,
+                "date": "2025-11-07T08:35:40.708157+00:00"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  {
+    "user_id": "mnxaBMMr5NMRFAkylNr9O4QRo7j2",
+    "pulled_at": "2025-11-08T20:36:38.762430",
+    "user_document": null,
+    "subcollections": {
+      "workouts": [
+        {
+          "id": "workout-542be09e",
+          "data": {
+            "description": "",
+            "modified_date": "2025-11-07T22:16:21.985000+00:00",
+            "id": "workout-542be09e",
+            "name": "Push Day",
+            "sync_status": "synced",
+            "tags": [],
+            "version": 28,
+            "created_date": "2025-10-10T11:49:09.064000+00:00",
+            "bonus_exercises": [],
+            "is_template": true,
+            "exercise_groups": [
+              {
+                "rest": "60s",
+                "reps": "8-12",
+                "exercises": {
+                  "a": "Bench"
+                },
+                "sets": "3"
+              },
+              {
+                "rest": "60s",
+                "reps": "8-12",
+                "exercises": {
+                  "a": "Double Dumbbell Bench Press"
+                },
+                "sets": "3"
+              }
+            ]
+          }
+        },
+        {
+          "id": "workout-6338cdee",
+          "data": {
+            "description": "",
+            "modified_date": "2025-10-03T13:14:10.151000+00:00",
+            "version": 1,
+            "name": "Chest Day",
+            "id": "workout-6338cdee",
+            "tags": [],
+            "sync_status": "synced",
+            "created_date": "2025-10-03T13:14:10.151000+00:00",
+            "bonus_exercises": [],
+            "exercise_groups": [
+              {
+                "rest": "60s",
+                "reps": "8-12",
+                "exercises": {
+                  "a": "Bench Press"
+                },
+                "sets": "3",
+                "group_id": "group-93bcbd27"
+              },
+              {
+                "rest": "60s",
+                "reps": "8-12",
+                "exercises": {
+                  "b": "Dip Machine - Plates",
+                  "a": "Dips"
+                },
+                "sets": "3",
+                "group_id": "group-4a96924f"
+              }
+            ],
+            "is_template": true
+          }
+        },
+        {
+          "id": "workout-7eb8443b",
+          "data": {
+            "description": "Test save",
+            "modified_date": "2025-11-04T03:54:56.499000+00:00",
+            "sync_status": "synced",
+            "name": "new new 4",
+            "id": "workout-7eb8443b",
+            "tags": [
+              "test save"
+            ],
+            "version": 19,
+            "created_date": "2025-10-21T22:41:59.788000+00:00",
+            "is_template": true,
+            "bonus_exercises": [],
+            "exercise_groups": [
+              {
+                "rest": "60s",
+                "reps": "8-12",
+                "exercises": {
+                  "a": "Barbell Back Rack Carry"
+                },
+                "sets": "3"
+              },
+              {
+                "rest": "60s",
+                "reps": "8-12",
+                "exercises": {
+                  "a": "Kettlebell Goblet Carry"
+                },
+                "sets": "3"
+              },
+              {
+                "rest": "60s",
+                "reps": "8-12",
+                "exercises": {
+                  "a": "Bench"
+                },
+                "sets": "3"
+              },
+              {
+                "rest": "60s",
+                "reps": "8-12",
+                "exercises": {
+                  "c": "Alternating Double Kettlebell Floor Press",
+                  "b": "Barbell Bench Press",
+                  "a": "Double Kettlebell Push Up"
+                },
+                "sets": "3"
+              }
+            ]
+          }
+        },
+        {
+          "id": "workout-9a39855b",
+          "data": {
+            "description": "",
+            "modified_date": "2025-11-04T03:54:48.252000+00:00",
+            "id": "workout-9a39855b",
+            "name": "Back & Biceps",
+            "sync_status": "synced",
+            "tags": [],
+            "version": 31,
+            "created_date": "2025-10-27T01:52:36.932000+00:00",
+            "bonus_exercises": [],
+            "is_template": true,
+            "exercise_groups": [
+              {
+                "rest": "60s",
+                "reps": "8-12",
+                "exercises": {
+                  "a": "Test auto"
+                },
+                "sets": "3"
+              },
+              {
+                "rest": "60s",
+                "reps": "8-12",
+                "exercises": {
+                  "c": "Cable Face Pull",
+                  "b": "Barbell Block Pull Deadlift",
+                  "a": "Alternating Double Dumbbell Bent Over Row"
+                },
+                "sets": "3"
+              }
+            ]
+          }
+        },
+        {
+          "id": "workout-a808ee17",
+          "data": {
+            "description": "",
+            "modified_date": "2025-10-26T03:07:37.484000+00:00",
+            "sync_status": "synced",
+            "name": "Push day - upper body focus",
+            "id": "workout-a808ee17",
+            "tags": [],
+            "version": 2,
+            "created_date": "2025-10-26T03:07:20.339000+00:00",
+            "is_template": true,
+            "bonus_exercises": [],
+            "exercise_groups": [
+              {
+                "rest": "60s",
+                "reps": "8-12",
+                "exercises": {
+                  "a": "Alternating Double Dumbbell Bench Press"
+                },
+                "sets": "3"
+              },
+              {
+                "rest": "60s",
+                "reps": "8-12",
+                "exercises": {
+                  "a": "Ring Dips"
+                },
+                "sets": "3"
+              }
+            ]
+          }
+        },
+        {
+          "id": "workout-da1d9a34",
+          "data": {
+            "description": "",
+            "modified_date": "2025-11-09T01:24:32.811000+00:00",
+            "id": "workout-da1d9a34",
+            "name": "Legs",
+            "sync_status": "synced",
+            "tags": [],
+            "version": 77,
+            "created_date": "2025-10-17T02:15:28.531000+00:00",
+            "bonus_exercises": [],
+            "is_template": true,
+            "exercise_groups": [
+              {
+                "rest": "60s",
+                "reps": "12",
+                "exercises": {
+                  "c": "Squats",
+                  "b": "Kettlebell Goblet Carry",
+                  "a": "Barbell Bent Over Row"
+                },
+                "sets": "3"
+              },
+              {
+                "rest": "60s",
+                "reps": "12",
+                "exercises": {
+                  "c": "Alternating Double Dumbbell Bent Over Row",
+                  "b": "Barbell Reverse Grip Bent Over Row",
+                  "a": "Kettlebell Swing"
+                },
+                "sets": "3"
+              }
+            ]
+          }
+        },
+        {
+          "id": "workout-e8c7e54b",
+          "data": {
+            "description": "",
+            "modified_date": "2025-11-04T03:54:39.531000+00:00",
+            "id": "workout-e8c7e54b",
+            "name": "Squat Day",
+            "sync_status": "synced",
+            "tags": [],
+            "version": 28,
+            "created_date": "2025-10-01T16:42:14.213000+00:00",
+            "is_template": true,
+            "bonus_exercises": [],
+            "exercise_groups": [
+              {
+                "rest": "60s",
+                "reps": "8-12",
+                "exercises": {
+                  "a": "Leg Press"
+                },
+                "sets": "3"
+              },
+              {
+                "rest": "60s",
+                "reps": "8-12",
+                "exercises": {
+                  "a": "Straight Leg Dead Lift"
+                },
+                "sets": "3"
+              },
+              {
+                "rest": "60s",
+                "reps": "10",
+                "exercises": {
+                  "b": "Alternating Single Arm Kettlebell Swing",
+                  "a": "Kettlebell Goblet Squat On boss ball"
+                },
+                "sets": "3"
+              },
+              {
+                "rest": "60s",
+                "reps": "8-12",
+                "exercises": {
+                  "b": "Barbell Squats",
+                  "a": "Kettlebell Goblet Squat"
+                },
+                "sets": "3"
+              },
+              {
+                "rest": "60s",
+                "reps": "8-12",
+                "exercises": {
+                  "a": "Quad Machine"
+                },
+                "sets": "3"
+              }
+            ]
+          }
+        }
+      ],
+      "programs": [
+        {
+          "id": "program-076b2a0c",
+          "data": {
+            "difficulty_level": "intermediate",
+            "description": "Test Description",
+            "modified_date": "2025-10-20T16:46:49.580000+00:00",
+            "version": 1,
+            "name": "Fall 2025 v6",
+            "sync_status": "synced",
+            "tags": [],
+            "id": "program-076b2a0c",
+            "created_date": "2025-10-20T16:46:49.580000+00:00",
+            "duration_weeks": null,
+            "workouts": []
+          }
+        },
+        {
+          "id": "program-1f5a9d66",
+          "data": {
+            "difficulty_level": "intermediate",
+            "description": "",
+            "modified_date": "2025-10-10T11:48:49.257000+00:00",
+            "sync_status": "synced",
+            "name": "Fall 2025",
+            "version": 1,
+            "tags": [],
+            "id": "program-1f5a9d66",
+            "created_date": "2025-10-10T11:48:49.257000+00:00",
+            "duration_weeks": null,
+            "workouts": []
+          }
+        },
+        {
+          "id": "program-29adc784",
+          "data": {
+            "difficulty_level": "intermediate",
+            "description": "",
+            "modified_date": "2025-10-30T12:45:22.135000+00:00",
+            "id": "program-29adc784",
+            "name": "Fall 2026",
+            "sync_status": "synced",
+            "tags": [],
+            "version": 1,
+            "created_date": "2025-10-30T12:45:22.135000+00:00",
+            "duration_weeks": null,
+            "workouts": []
+          }
+        },
+        {
+          "id": "program-2c5c1c98",
+          "data": {
+            "difficulty_level": "intermediate",
+            "description": "",
+            "modified_date": "2025-10-30T12:46:05.992000+00:00",
+            "id": "program-2c5c1c98",
+            "name": "Fall 2025",
+            "sync_status": "synced",
+            "tags": [],
+            "version": 1,
+            "created_date": "2025-10-30T12:46:05.992000+00:00",
+            "duration_weeks": null,
+            "workouts": []
+          }
+        },
+        {
+          "id": "program-2e3713ec",
+          "data": {
+            "difficulty_level": "intermediate",
+            "description": "",
+            "modified_date": "2025-10-19T03:02:50.909000+00:00",
+            "id": "program-2e3713ec",
+            "name": "Fall 2025 (Copy)",
+            "version": 1,
+            "tags": [],
+            "sync_status": "synced",
+            "created_date": "2025-10-19T03:02:50.909000+00:00",
+            "workouts": [],
+            "duration_weeks": null
+          }
+        },
+        {
+          "id": "program-2fd8346e",
+          "data": {
+            "difficulty_level": "intermediate",
+            "description": "",
+            "modified_date": "2025-10-01T19:48:31.960000+00:00",
+            "sync_status": "synced",
+            "name": "Winter",
+            "id": "program-2fd8346e",
+            "tags": [],
+            "version": 8,
+            "created_date": "2025-10-01T16:42:57.640000+00:00",
+            "duration_weeks": null,
+            "workouts": [
+              {
+                "workout_id": "workout-e8c7e54b",
+                "custom_name": null,
+                "order_index": 0,
+                "custom_date": null
+              },
+              {
+                "workout_id": "workout-45b3ded7",
+                "custom_name": null,
+                "order_index": 1,
+                "custom_date": null
+              }
+            ]
+          }
+        },
+        {
+          "id": "program-55847dc2",
+          "data": {
+            "difficulty_level": "intermediate",
+            "description": "",
+            "modified_date": "2025-10-21T19:10:44.673000+00:00",
+            "sync_status": "synced",
+            "name": "New in gym program",
+            "id": "program-55847dc2",
+            "tags": [],
+            "version": 1,
+            "created_date": "2025-10-21T19:10:44.673000+00:00",
+            "workouts": [],
+            "duration_weeks": null
+          }
+        },
+        {
+          "id": "program-7285fed6",
+          "data": {
+            "difficulty_level": "intermediate",
+            "description": "",
+            "modified_date": "2025-10-03T14:31:44.886000+00:00",
+            "sync_status": "synced",
+            "name": "Fall 2025",
+            "version": 1,
+            "tags": [],
+            "id": "program-7285fed6",
+            "created_date": "2025-10-03T14:31:44.886000+00:00",
+            "duration_weeks": null,
+            "workouts": []
+          }
+        },
+        {
+          "id": "program-92442e6b",
+          "data": {
+            "difficulty_level": "intermediate",
+            "description": "",
+            "modified_date": "2025-10-17T00:03:34.474000+00:00",
+            "sync_status": "synced",
+            "name": "Fall 2025",
+            "version": 1,
+            "tags": [],
+            "id": "program-92442e6b",
+            "created_date": "2025-10-17T00:03:34.474000+00:00",
+            "duration_weeks": null,
+            "workouts": []
+          }
+        },
+        {
+          "id": "program-a0888a1d",
+          "data": {
+            "difficulty_level": "intermediate",
+            "description": "",
+            "modified_date": "2025-10-26T03:02:03.768000+00:00",
+            "sync_status": "synced",
+            "name": "Fall 2026",
+            "version": 1,
+            "tags": [],
+            "id": "program-a0888a1d",
+            "created_date": "2025-10-26T03:02:03.768000+00:00",
+            "workouts": [],
+            "duration_weeks": 12
+          }
+        },
+        {
+          "id": "program-a6fcbbe9",
+          "data": {
+            "difficulty_level": "intermediate",
+            "description": "",
+            "modified_date": "2025-10-26T04:16:41.699000+00:00",
+            "sync_status": "synced",
+            "name": "Fall 2026",
+            "version": 1,
+            "tags": [],
+            "id": "program-a6fcbbe9",
+            "created_date": "2025-10-26T04:16:41.699000+00:00",
+            "workouts": [],
+            "duration_weeks": null
+          }
+        },
+        {
+          "id": "program-abae84a9",
+          "data": {
+            "difficulty_level": "intermediate",
+            "description": "",
+            "modified_date": "2025-10-17T02:15:11.056000+00:00",
+            "sync_status": "synced",
+            "name": "Winter 25",
+            "version": 1,
+            "tags": [],
+            "id": "program-abae84a9",
+            "created_date": "2025-10-17T02:15:11.056000+00:00",
+            "duration_weeks": null,
+            "workouts": []
+          }
+        },
+        {
+          "id": "program-bef923b3",
+          "data": {
+            "difficulty_level": "intermediate",
+            "description": "",
+            "modified_date": "2025-10-01T16:42:21.743000+00:00",
+            "id": "program-bef923b3",
+            "name": "Fall 2025",
+            "sync_status": "synced",
+            "tags": [],
+            "version": 14,
+            "created_date": "2025-10-01T02:10:34.264000+00:00",
+            "duration_weeks": null,
+            "workouts": [
+              {
+                "workout_id": "workout-45b3ded7",
+                "custom_name": null,
+                "order_index": 0,
+                "custom_date": null
+              },
+              {
+                "workout_id": "workout-e8c7e54b",
+                "custom_name": null,
+                "order_index": 1,
+                "custom_date": null
+              }
+            ]
+          }
+        }
+      ],
+      "custom_exercises": [
+        {
+          "id": "exercise-43edbada",
+          "data": {
+            "mechanics": "Compound",
+            "tertiaryMuscle": null,
+            "planeOfMotion3": null,
+            "movementPattern3": null,
+            "id": "exercise-43edbada",
+            "footElevation": null,
+            "primaryEquipmentCount": null,
+            "secondaryEquipmentCount": null,
+            "difficultyLevel": "Beginner",
+            "forceType": null,
+            "posture": null,
+            "movementPattern2": null,
+            "updatedAt": "2025-10-20T17:59:56.592000+00:00",
+            "loadPosition": null,
+            "armPattern": null,
+            "primeMoverMuscle": null,
+            "favoriteCount": 0,
+            "laterality": null,
+            "planeOfMotion2": null,
+            "name": "Leg Press",
+            "secondaryEquipment": null,
+            "bodyRegion": null,
+            "secondaryMuscle": null,
+            "grip": null,
+            "popularityScore": 50,
+            "armType": null,
+            "shortVideoUrl": null,
+            "planeOfMotion1": null,
+            "movementPattern1": null,
+            "targetMuscleGroup": "Quads",
+            "createdAt": "2025-10-20T17:59:56.592000+00:00",
+            "combinationExercise": null,
+            "detailedVideoUrl": null,
+            "primaryEquipment": "Leg Press Machine",
+            "isGlobal": false,
+            "classification": null,
+            "nameSearchTokens": [
+              "leg",
+              "press"
+            ]
+          }
+        },
+        {
+          "id": "exercise-ea6898c8",
+          "data": {
+            "mechanics": null,
+            "tertiaryMuscle": null,
+            "planeOfMotion3": null,
+            "nameSearchTokens": [
+              "bench"
+            ],
+            "id": "exercise-ea6898c8",
+            "footElevation": null,
+            "posture": null,
+            "forceType": null,
+            "difficultyLevel": null,
+            "secondaryEquipmentCount": null,
+            "primaryEquipmentCount": null,
+            "movementPattern2": null,
+            "updatedAt": "2025-10-18T01:18:09.544000+00:00",
+            "armPattern": null,
+            "loadPosition": null,
+            "primeMoverMuscle": null,
+            "secondaryEquipment": null,
+            "bodyRegion": null,
+            "planeOfMotion2": null,
+            "favoriteCount": 0,
+            "name": "Bench",
+            "laterality": null,
+            "secondaryMuscle": null,
+            "grip": null,
+            "popularityScore": 50,
+            "planeOfMotion1": null,
+            "shortVideoUrl": null,
+            "armType": null,
+            "targetMuscleGroup": null,
+            "movementPattern1": null,
+            "createdAt": "2025-10-18T01:18:09.544000+00:00",
+            "combinationExercise": null,
+            "detailedVideoUrl": null,
+            "primaryEquipment": null,
+            "isGlobal": false,
+            "classification": null,
+            "movementPattern3": null
+          }
+        }
+      ],
+      "data": [
+        {
+          "id": "favorites",
+          "data": {
+            "lastUpdated": "2025-11-03T17:10:04.053000+00:00",
+            "exercises.exercise-1451354b": {
+              "favoritedAt": "2025-10-17T18:07:04.240951+00:00",
+              "isGlobal": true,
+              "primaryEquipment": "Barbell",
+              "targetMuscleGroup": "Back",
+              "exerciseId": "exercise-1451354b",
+              "name": "Barbell Conventional Deadlift"
+            },
+            "exercises.exercise-25f2af87": {
+              "favoritedAt": "2025-10-20T19:38:26.968537+00:00",
+              "isGlobal": true,
+              "primaryEquipment": "Ab Wheel",
+              "targetMuscleGroup": "Abdominals",
+              "exerciseId": "exercise-25f2af87",
+              "name": "Ab Wheel Kneeling Rollout"
+            },
+            "exerciseIds": [
+              "exercise-1451354b",
+              "exercise-0ed469cf",
+              "exercise-d900c135",
+              "exercise-716e9090",
+              "exercise-25f2af87",
+              "exercise-2c73768f",
+              "exercise-1002429d",
+              "exercise-1ccd9118",
+              "exercise-c0eaf4ba",
+              "exercise-6e79559f",
+              "exercise-e244bbea",
+              "exercise-e36b38f0",
+              "exercise-bdcbfb51",
+              "exercise-58ed5224"
+            ],
+            "count": 14,
+            "exercises.exercise-716e9090": {
+              "favoritedAt": "2025-10-20T19:03:08.434841+00:00",
+              "isGlobal": true,
+              "primaryEquipment": "Dumbbell",
+              "targetMuscleGroup": "Back",
+              "exerciseId": "exercise-716e9090",
+              "name": "Alternating Double Dumbbell Bent Over Row"
+            },
+            "exercises.exercise-d900c135": {
+              "favoritedAt": "2025-10-19T02:54:42.770640+00:00",
+              "isGlobal": true,
+              "primaryEquipment": "Pull Up Bar",
+              "targetMuscleGroup": "Abdominals",
+              "exerciseId": "exercise-d900c135",
+              "name": "Bar Full Back Lever"
+            },
+            "exercises": {
+              "exercise-bdcbfb51": {
+                "favoritedAt": "2025-11-02T18:58:29.000629+00:00",
+                "isGlobal": true,
+                "primaryEquipment": "Dumbbell",
+                "targetMuscleGroup": "Triceps",
+                "exerciseId": "exercise-bdcbfb51",
+                "name": "Double Dumbbell Close Grip Incline Bench Press"
+              },
+              "exercise-e36b38f0": {
+                "favoritedAt": "2025-11-02T18:58:00.788186+00:00",
+                "isGlobal": true,
+                "primaryEquipment": "Barbell",
+                "targetMuscleGroup": "Chest",
+                "exerciseId": "exercise-e36b38f0",
+                "name": "Barbell Bench Press"
+              },
+              "exercise-58ed5224": {
+                "favoritedAt": "2025-11-03T17:10:03.880937+00:00",
+                "isGlobal": true,
+                "exerciseId": "exercise-58ed5224",
+                "targetMuscleGroup": "Chest",
+                "primaryEquipment": "Barbell",
+                "name": "Barbell Decline Bench Press"
+              },
+              "exercise-2c73768f": {
+                "name": "Alternating Double Kettlebell Bench Press",
+                "isGlobal": true,
+                "primaryEquipment": "Kettlebell",
+                "targetMuscleGroup": "Chest",
+                "exerciseId": "exercise-2c73768f",
+                "favoritedAt": "2025-10-21T02:49:37.524341+00:00"
+              },
+              "exercise-c0eaf4ba": {
+                "favoritedAt": "2025-10-21T21:30:47.579540+00:00",
+                "isGlobal": true,
+                "primaryEquipment": "Barbell",
+                "targetMuscleGroup": "Shoulders",
+                "exerciseId": "exercise-c0eaf4ba",
+                "name": "Barbell Cyclist Thruster"
+              },
+              "exercise-1ccd9118": {
+                "favoritedAt": "2025-10-21T21:30:15.456747+00:00",
+                "isGlobal": true,
+                "primaryEquipment": "Clubbell",
+                "targetMuscleGroup": "Abdominals",
+                "exerciseId": "exercise-1ccd9118",
+                "name": "Alternating Double Clubbell Inside Circle"
+              },
+              "exercise-1002429d": {
+                "favoritedAt": "2025-10-21T15:49:21.584252+00:00",
+                "isGlobal": true,
+                "exerciseId": "exercise-1002429d",
+                "targetMuscleGroup": "Chest",
+                "primaryEquipment": "Dumbbell",
+                "name": "Alternating Double Dumbbell Decline Bench Press"
+              },
+              "exercise-e244bbea": {
+                "favoritedAt": "2025-11-02T11:57:58.042898+00:00",
+                "isGlobal": true,
+                "primaryEquipment": "Dumbbell",
+                "targetMuscleGroup": "Chest",
+                "exerciseId": "exercise-e244bbea",
+                "name": "Alternating Double Dumbbell Bench Press"
+              },
+              "exercise-6e79559f": {
+                "name": "Alternating Double Dumbbell Cross Body Hammer Curl",
+                "isGlobal": true,
+                "primaryEquipment": "Dumbbell",
+                "targetMuscleGroup": "Biceps",
+                "exerciseId": "exercise-6e79559f",
+                "favoritedAt": "2025-10-26T04:13:19.763681+00:00"
+              }
+            },
+            "exercises.exercise-0ed469cf": {
+              "favoritedAt": "2025-10-18T01:15:20.651410+00:00",
+              "isGlobal": true,
+              "primaryEquipment": "Kettlebell",
+              "targetMuscleGroup": "Chest",
+              "exerciseId": "exercise-0ed469cf",
+              "name": "Double Kettlebell Push Up"
+            }
+          }
+        }
+      ],
+      "workout_sessions": [
+        {
+          "id": "session-20251108-015746-b6daf1",
+          "data": {
+            "completed_at": null,
+            "workout_name": "Legs",
+            "notes": null,
+            "status": "in_progress",
+            "version": 1,
+            "id": "session-20251108-015746-b6daf1",
+            "sync_status": "synced",
+            "workout_id": "workout-da1d9a34",
+            "started_at": "2025-11-08T01:57:46.284000+00:00",
+            "exercises_performed": [],
+            "duration_minutes": null,
+            "created_at": "2025-11-08T01:57:46.711000+00:00"
+          }
+        },
+        {
+          "id": "session-20251108-020514-b2e177",
+          "data": {
+            "completed_at": null,
+            "workout_name": "Legs",
+            "notes": null,
+            "status": "in_progress",
+            "sync_status": "synced",
+            "id": "session-20251108-020514-b2e177",
+            "version": 1,
+            "workout_id": "workout-da1d9a34",
+            "started_at": "2025-11-08T02:05:13.706000+00:00",
+            "duration_minutes": null,
+            "exercises_performed": [
+              {
+                "target_sets": "3",
+                "exercise_name": "Squats",
+                "previous_weight": null,
+                "weight_unit": "lbs",
+                "exercise_id": null,
+                "weight": 135.0,
+                "weight_change": 135.0,
+                "group_id": "group-beb37306",
+                "order_index": 0,
+                "sets_completed": 3,
+                "is_bonus": false,
+                "target_reps": "12"
+              },
+              {
+                "target_sets": "3",
+                "exercise_name": "Alternating Double Dumbbell Bent Over Row",
+                "previous_weight": null,
+                "weight_unit": "kg",
+                "exercise_id": null,
+                "weight": 24.0,
+                "weight_change": 24.0,
+                "group_id": "group-ca22762e",
+                "order_index": 1,
+                "sets_completed": 3,
+                "is_bonus": false,
+                "target_reps": "12"
+              }
+            ],
+            "created_at": "2025-11-08T02:05:14.137000+00:00"
+          }
+        },
+        {
+          "id": "session-20251108-021224-6376e1",
+          "data": {
+            "completed_at": null,
+            "workout_name": "Legs",
+            "notes": null,
+            "status": "in_progress",
+            "sync_status": "synced",
+            "id": "session-20251108-021224-6376e1",
+            "version": 1,
+            "workout_id": "workout-da1d9a34",
+            "started_at": "2025-11-08T02:12:23.869000+00:00",
+            "duration_minutes": null,
+            "exercises_performed": [],
+            "created_at": "2025-11-08T02:12:24.286000+00:00"
+          }
+        },
+        {
+          "id": "session-20251108-021258-37ae1a",
+          "data": {
+            "completed_at": null,
+            "workout_name": "Legs",
+            "notes": null,
+            "status": "in_progress",
+            "sync_status": "synced",
+            "id": "session-20251108-021258-37ae1a",
+            "version": 1,
+            "workout_id": "workout-da1d9a34",
+            "started_at": "2025-11-08T02:12:57.822000+00:00",
+            "duration_minutes": null,
+            "exercises_performed": [],
+            "created_at": "2025-11-08T02:12:58.242000+00:00"
+          }
+        },
+        {
+          "id": "session-20251108-021725-f0b565",
+          "data": {
+            "completed_at": null,
+            "workout_name": "Legs",
+            "notes": null,
+            "exercises_performed": [],
+            "version": 1,
+            "sync_status": "synced",
+            "id": "session-20251108-021725-f0b565",
+            "workout_id": "workout-da1d9a34",
+            "duration_minutes": null,
+            "started_at": "2025-11-08T02:17:25.257000+00:00",
+            "status": "in_progress",
+            "created_at": "2025-11-08T02:17:25.677000+00:00"
+          }
+        },
+        {
+          "id": "session-20251108-021745-66405b",
+          "data": {
+            "completed_at": "2025-11-08T02:18:02.502000+00:00",
+            "workout_name": "new new 4",
+            "notes": null,
+            "exercises_performed": [
+              {
+                "is_bonus": false,
+                "weight_unit": "lbs",
+                "weight": 0.0,
+                "exercise_id": null,
+                "exercise_name": "Barbell Back Rack Carry",
+                "previous_weight": null,
+                "order_index": 0,
+                "group_id": "group-7e15a8d0",
+                "weight_notes": null,
+                "set_details": [],
+                "weight_change": 0.0,
+                "sets_completed": 3,
+                "target_sets": "3",
+                "target_reps": "8-12"
+              },
+              {
+                "is_bonus": false,
+                "weight_unit": "lbs",
+                "weight": 0.0,
+                "exercise_id": null,
+                "exercise_name": "Kettlebell Goblet Carry",
+                "previous_weight": null,
+                "order_index": 1,
+                "group_id": "group-d3d9e0a7",
+                "weight_notes": null,
+                "set_details": [],
+                "weight_change": 0.0,
+                "sets_completed": 3,
+                "target_sets": "3",
+                "target_reps": "8-12"
+              },
+              {
+                "is_bonus": false,
+                "weight_unit": "lbs",
+                "weight": 165.0,
+                "exercise_id": null,
+                "exercise_name": "Bench",
+                "previous_weight": null,
+                "order_index": 2,
+                "group_id": "group-daf9e862",
+                "weight_notes": null,
+                "set_details": [],
+                "weight_change": 165.0,
+                "sets_completed": 3,
+                "target_sets": "3",
+                "target_reps": "8-12"
+              },
+              {
+                "is_bonus": false,
+                "weight_unit": "lbs",
+                "weight": 0.0,
+                "exercise_id": null,
+                "exercise_name": "Double Kettlebell Push Up",
+                "previous_weight": null,
+                "order_index": 3,
+                "group_id": "group-f45dee9e",
+                "weight_notes": null,
+                "set_details": [],
+                "weight_change": 0.0,
+                "sets_completed": 3,
+                "target_sets": "3",
+                "target_reps": "8-12"
+              }
+            ],
+            "id": "session-20251108-021745-66405b",
+            "version": 1,
+            "sync_status": "synced",
+            "workout_id": "workout-7eb8443b",
+            "started_at": "2025-11-08T02:17:44.617000+00:00",
+            "duration_minutes": 0,
+            "status": "completed",
+            "created_at": "2025-11-08T02:17:45.028000+00:00"
+          }
+        },
+        {
+          "id": "session-20251108-021844-eaa28d",
+          "data": {
+            "completed_at": "2025-11-08T02:18:49.864000+00:00",
+            "workout_name": "new new 4",
+            "notes": null,
+            "exercises_performed": [
+              {
+                "is_bonus": false,
+                "weight_unit": "lbs",
+                "weight": 0.0,
+                "exercise_id": null,
+                "exercise_name": "Barbell Back Rack Carry",
+                "previous_weight": null,
+                "order_index": 0,
+                "group_id": "group-8e3be058",
+                "weight_notes": null,
+                "set_details": [],
+                "weight_change": 0.0,
+                "sets_completed": 3,
+                "target_sets": "3",
+                "target_reps": "8-12"
+              },
+              {
+                "is_bonus": false,
+                "weight_unit": "lbs",
+                "weight": 0.0,
+                "exercise_id": null,
+                "exercise_name": "Kettlebell Goblet Carry",
+                "previous_weight": null,
+                "order_index": 1,
+                "group_id": "group-41ff4ad7",
+                "weight_notes": null,
+                "set_details": [],
+                "weight_change": 0.0,
+                "sets_completed": 3,
+                "target_sets": "3",
+                "target_reps": "8-12"
+              },
+              {
+                "is_bonus": false,
+                "weight_unit": "lbs",
+                "weight": 0.0,
+                "exercise_id": null,
+                "exercise_name": "Bench",
+                "previous_weight": 165.0,
+                "order_index": 2,
+                "group_id": "group-f16dae7b",
+                "weight_notes": null,
+                "set_details": [],
+                "weight_change": 0.0,
+                "sets_completed": 3,
+                "target_sets": "3",
+                "target_reps": "8-12"
+              },
+              {
+                "is_bonus": false,
+                "weight_unit": "lbs",
+                "weight": 0.0,
+                "exercise_id": null,
+                "exercise_name": "Double Kettlebell Push Up",
+                "previous_weight": null,
+                "order_index": 3,
+                "group_id": "group-6cd2f484",
+                "weight_notes": null,
+                "set_details": [],
+                "weight_change": 0.0,
+                "sets_completed": 3,
+                "target_sets": "3",
+                "target_reps": "8-12"
+              }
+            ],
+            "id": "session-20251108-021844-eaa28d",
+            "version": 1,
+            "sync_status": "synced",
+            "workout_id": "workout-7eb8443b",
+            "started_at": "2025-11-08T02:18:43.684000+00:00",
+            "duration_minutes": 0,
+            "status": "completed",
+            "created_at": "2025-11-08T02:18:44.102000+00:00"
+          }
+        },
+        {
+          "id": "session-20251108-021917-027489",
+          "data": {
+            "completed_at": "2025-11-08T02:19:21.559000+00:00",
+            "workout_name": "Legs",
+            "notes": null,
+            "exercises_performed": [
+              {
+                "is_bonus": false,
+                "weight_unit": "lbs",
+                "weight": 0.0,
+                "exercise_id": null,
+                "exercise_name": "Kettlebell Goblet Carry",
+                "previous_weight": null,
+                "order_index": 0,
+                "group_id": "group-9cabb3b5",
+                "weight_notes": null,
+                "set_details": [],
+                "weight_change": 0.0,
+                "sets_completed": 3,
+                "target_sets": "3",
+                "target_reps": "12"
+              },
+              {
+                "is_bonus": false,
+                "weight_unit": "lbs",
+                "weight": 0.0,
+                "exercise_id": null,
+                "exercise_name": "Barbell Reverse Grip Bent Over Row",
+                "previous_weight": null,
+                "order_index": 1,
+                "group_id": "group-8f9976b6",
+                "weight_notes": null,
+                "set_details": [],
+                "weight_change": 0.0,
+                "sets_completed": 3,
+                "target_sets": "3",
+                "target_reps": "12"
+              }
+            ],
+            "id": "session-20251108-021917-027489",
+            "version": 1,
+            "sync_status": "synced",
+            "workout_id": "workout-da1d9a34",
+            "started_at": "2025-11-08T02:19:16.646000+00:00",
+            "duration_minutes": 0,
+            "status": "completed",
+            "created_at": "2025-11-08T02:19:17.066000+00:00"
+          }
+        },
+        {
+          "id": "session-20251108-022413-575c76",
+          "data": {
+            "completed_at": null,
+            "workout_name": "Legs",
+            "notes": null,
+            "exercises_performed": [],
+            "version": 1,
+            "sync_status": "synced",
+            "id": "session-20251108-022413-575c76",
+            "workout_id": "workout-da1d9a34",
+            "duration_minutes": null,
+            "started_at": "2025-11-08T02:24:12.735000+00:00",
+            "status": "in_progress",
+            "created_at": "2025-11-08T02:24:13.156000+00:00"
+          }
+        },
+        {
+          "id": "session-20251108-023122-e1a01d",
+          "data": {
+            "completed_at": null,
+            "workout_name": "Legs",
+            "notes": null,
+            "exercises_performed": [],
+            "sync_status": "synced",
+            "status": "in_progress",
+            "id": "session-20251108-023122-e1a01d",
+            "workout_id": "workout-da1d9a34",
+            "duration_minutes": null,
+            "started_at": "2025-11-08T02:31:21.969000+00:00",
+            "version": 1,
+            "created_at": "2025-11-08T02:31:22.381000+00:00"
+          }
+        },
+        {
+          "id": "session-20251108-032429-3ad1c9",
+          "data": {
+            "completed_at": null,
+            "workout_name": "Legs",
+            "notes": null,
+            "exercises_performed": [],
+            "id": "session-20251108-032429-3ad1c9",
+            "status": "in_progress",
+            "sync_status": "synced",
+            "workout_id": "workout-da1d9a34",
+            "duration_minutes": null,
+            "version": 1,
+            "started_at": "2025-11-08T03:24:28.761000+00:00",
+            "created_at": "2025-11-08T03:24:29.171000+00:00"
+          }
+        },
+        {
+          "id": "session-20251108-034009-1f89bd",
+          "data": {
+            "completed_at": null,
+            "workout_name": "Legs",
+            "notes": null,
+            "status": "in_progress",
+            "sync_status": "synced",
+            "version": 1,
+            "id": "session-20251108-034009-1f89bd",
+            "workout_id": "workout-da1d9a34",
+            "started_at": "2025-11-08T03:40:09.198000+00:00",
+            "duration_minutes": null,
+            "exercises_performed": [
+              {
+                "target_reps": "12",
+                "weight_unit": "lbs",
+                "weight": 0.0,
+                "sets_completed": 3,
+                "exercise_name": "Kettlebell Goblet Carry",
+                "previous_weight": null,
+                "weight_change": 0.0,
+                "group_id": "group-74ad5da3",
+                "order_index": 0,
+                "target_sets": "3",
+                "is_bonus": false,
+                "exercise_id": null
+              },
+              {
+                "target_reps": "12",
+                "weight_unit": "lbs",
+                "weight": 0.0,
+                "sets_completed": 3,
+                "exercise_name": "Barbell Reverse Grip Bent Over Row",
+                "previous_weight": null,
+                "weight_change": 0.0,
+                "group_id": "group-5539fee2",
+                "order_index": 1,
+                "target_sets": "3",
+                "is_bonus": false,
+                "exercise_id": null
+              }
+            ],
+            "created_at": "2025-11-08T03:40:09.768000+00:00"
+          }
+        },
+        {
+          "id": "session-20251108-045400-c03a49",
+          "data": {
+            "completed_at": null,
+            "workout_name": "Legs",
+            "notes": null,
+            "status": "in_progress",
+            "version": 1,
+            "exercises_performed": [],
+            "sync_status": "synced",
+            "workout_id": "workout-da1d9a34",
+            "duration_minutes": null,
+            "started_at": "2025-11-08T04:54:00.235000+00:00",
+            "id": "session-20251108-045400-c03a49",
+            "created_at": "2025-11-08T04:54:00.429000+00:00"
+          }
+        },
+        {
+          "id": "session-20251108-132525-f08a9f",
+          "data": {
+            "completed_at": null,
+            "workout_name": "Legs",
+            "notes": null,
+            "status": "in_progress",
+            "id": "session-20251108-132525-f08a9f",
+            "version": 1,
+            "sync_status": "synced",
+            "workout_id": "workout-da1d9a34",
+            "started_at": "2025-11-08T13:25:25.379000+00:00",
+            "duration_minutes": null,
+            "exercises_performed": [
+              {
+                "is_bonus": false,
+                "weight_unit": "lbs",
+                "previous_weight": null,
+                "weight": 0.0,
+                "exercise_name": "Kettlebell Goblet Carry",
+                "sets_completed": 3,
+                "order_index": 0,
+                "group_id": "group-f00b8af1",
+                "target_reps": "12",
+                "weight_change": 0.0,
+                "target_sets": "3",
+                "exercise_id": null
+              },
+              {
+                "is_bonus": false,
+                "weight_unit": "lbs",
+                "previous_weight": null,
+                "weight": 135.0,
+                "exercise_name": "Barbell Reverse Grip Bent Over Row",
+                "sets_completed": 3,
+                "order_index": 1,
+                "group_id": "group-fe38cd53",
+                "target_reps": "12",
+                "weight_change": 135.0,
+                "target_sets": "3",
+                "exercise_id": null
+              }
+            ],
+            "created_at": "2025-11-08T13:25:25.559000+00:00"
+          }
+        }
+      ],
+      "exercise_history": [
+        {
+          "id": "workout-7eb8443b_Barbell Back Rack Carry",
+          "data": {
+            "best_weight_date": "2025-11-08T02:18:02.502000+00:00",
+            "exercise_name": "Barbell Back Rack Carry",
+            "last_session_id": "session-20251108-021844-eaa28d",
+            "best_weight": 0.0,
+            "updated_at": "2025-11-08T02:18:50.526000+00:00",
+            "last_weight_unit": "lbs",
+            "id": "workout-7eb8443b_Barbell Back Rack Carry",
+            "first_session_date": "2025-11-08T02:18:02.502000+00:00",
+            "last_weight": 0.0,
+            "workout_id": "workout-7eb8443b",
+            "last_session_date": "2025-11-08T02:18:49.864000+00:00",
+            "total_sessions": 2,
+            "recent_sessions": [
+              {
+                "weight_unit": "lbs",
+                "weight": 0.0,
+                "session_id": "session-20251108-021844-eaa28d",
+                "sets": 3,
+                "date": "2025-11-08T02:18:49.864000+00:00"
+              },
+              {
+                "weight_unit": "lbs",
+                "weight": 0.0,
+                "session_id": "session-20251108-021745-66405b",
+                "sets": 3,
+                "date": "2025-11-08T02:18:02.502000+00:00"
+              }
+            ]
+          }
+        },
+        {
+          "id": "workout-7eb8443b_Bench",
+          "data": {
+            "best_weight_date": "2025-11-08T02:18:02.502000+00:00",
+            "exercise_name": "Bench",
+            "last_session_id": "session-20251108-021844-eaa28d",
+            "updated_at": "2025-11-08T02:18:50.817000+00:00",
+            "last_weight": 0.0,
+            "last_weight_unit": "lbs",
+            "id": "workout-7eb8443b_Bench",
+            "first_session_date": "2025-11-08T02:18:02.502000+00:00",
+            "best_weight": 165.0,
+            "workout_id": "workout-7eb8443b",
+            "last_session_date": "2025-11-08T02:18:49.864000+00:00",
+            "total_sessions": 2,
+            "recent_sessions": [
+              {
+                "weight_unit": "lbs",
+                "weight": 0.0,
+                "session_id": "session-20251108-021844-eaa28d",
+                "sets": 3,
+                "date": "2025-11-08T02:18:49.864000+00:00"
+              },
+              {
+                "weight_unit": "lbs",
+                "weight": 165.0,
+                "session_id": "session-20251108-021745-66405b",
+                "sets": 3,
+                "date": "2025-11-08T02:18:02.502000+00:00"
+              }
+            ]
+          }
+        },
+        {
+          "id": "workout-7eb8443b_Double Kettlebell Push Up",
+          "data": {
+            "best_weight_date": "2025-11-08T02:18:02.502000+00:00",
+            "exercise_name": "Double Kettlebell Push Up",
+            "last_session_id": "session-20251108-021844-eaa28d",
+            "best_weight": 0.0,
+            "updated_at": "2025-11-08T02:18:50.971000+00:00",
+            "last_weight_unit": "lbs",
+            "id": "workout-7eb8443b_Double Kettlebell Push Up",
+            "first_session_date": "2025-11-08T02:18:02.502000+00:00",
+            "last_weight": 0.0,
+            "workout_id": "workout-7eb8443b",
+            "last_session_date": "2025-11-08T02:18:49.864000+00:00",
+            "total_sessions": 2,
+            "recent_sessions": [
+              {
+                "weight_unit": "lbs",
+                "weight": 0.0,
+                "session_id": "session-20251108-021844-eaa28d",
+                "sets": 3,
+                "date": "2025-11-08T02:18:49.864000+00:00"
+              },
+              {
+                "weight_unit": "lbs",
+                "weight": 0.0,
+                "session_id": "session-20251108-021745-66405b",
+                "sets": 3,
+                "date": "2025-11-08T02:18:02.502000+00:00"
+              }
+            ]
+          }
+        },
+        {
+          "id": "workout-7eb8443b_Kettlebell Goblet Carry",
+          "data": {
+            "best_weight_date": "2025-11-08T02:18:02.502000+00:00",
+            "exercise_name": "Kettlebell Goblet Carry",
+            "last_session_id": "session-20251108-021844-eaa28d",
+            "best_weight": 0.0,
+            "updated_at": "2025-11-08T02:18:50.671000+00:00",
+            "last_weight_unit": "lbs",
+            "id": "workout-7eb8443b_Kettlebell Goblet Carry",
+            "first_session_date": "2025-11-08T02:18:02.502000+00:00",
+            "last_weight": 0.0,
+            "workout_id": "workout-7eb8443b",
+            "last_session_date": "2025-11-08T02:18:49.864000+00:00",
+            "total_sessions": 2,
+            "recent_sessions": [
+              {
+                "weight_unit": "lbs",
+                "weight": 0.0,
+                "session_id": "session-20251108-021844-eaa28d",
+                "sets": 3,
+                "date": "2025-11-08T02:18:49.864000+00:00"
+              },
+              {
+                "weight_unit": "lbs",
+                "weight": 0.0,
+                "session_id": "session-20251108-021745-66405b",
+                "sets": 3,
+                "date": "2025-11-08T02:18:02.502000+00:00"
+              }
+            ]
+          }
+        },
+        {
+          "id": "workout-da1d9a34_Barbell Reverse Grip Bent Over Row",
+          "data": {
+            "total_sessions": 1,
+            "exercise_name": "Barbell Reverse Grip Bent Over Row",
+            "last_session_id": "session-20251108-021917-027489",
+            "best_weight_date": "2025-11-08T02:19:21.559000+00:00",
+            "best_weight": 0.0,
+            "last_weight_unit": "lbs",
+            "id": "workout-da1d9a34_Barbell Reverse Grip Bent Over Row",
+            "last_weight": 0.0,
+            "first_session_date": "2025-11-08T02:19:21.559000+00:00",
+            "workout_id": "workout-da1d9a34",
+            "last_session_date": "2025-11-08T02:19:21.559000+00:00",
+            "updated_at": "2025-11-08T02:19:22.307000+00:00",
+            "recent_sessions": [
+              {
+                "weight_unit": "lbs",
+                "weight": 0.0,
+                "session_id": "session-20251108-021917-027489",
+                "sets": 3,
+                "date": "2025-11-08T02:19:21.559000+00:00"
+              }
+            ]
+          }
+        },
+        {
+          "id": "workout-da1d9a34_Kettlebell Goblet Carry",
+          "data": {
+            "total_sessions": 1,
+            "exercise_name": "Kettlebell Goblet Carry",
+            "last_session_id": "session-20251108-021917-027489",
+            "best_weight_date": "2025-11-08T02:19:21.559000+00:00",
+            "best_weight": 0.0,
+            "last_weight_unit": "lbs",
+            "id": "workout-da1d9a34_Kettlebell Goblet Carry",
+            "last_weight": 0.0,
+            "first_session_date": "2025-11-08T02:19:21.559000+00:00",
+            "workout_id": "workout-da1d9a34",
+            "last_session_date": "2025-11-08T02:19:21.559000+00:00",
+            "updated_at": "2025-11-08T02:19:22.152000+00:00",
+            "recent_sessions": [
+              {
+                "weight_unit": "lbs",
+                "weight": 0.0,
+                "session_id": "session-20251108-021917-027489",
+                "sets": 3,
+                "date": "2025-11-08T02:19:21.559000+00:00"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+]

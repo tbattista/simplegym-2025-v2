@@ -1,0 +1,9 @@
+[
+  {
+    "priority": "HIGH",
+    "category": "Feature Implementation",
+    "title": "Implement Weight Logging Collections",
+    "description": "No workout_sessions or exercise_history collections found. Implement the weight logging architecture as defined in WEIGHT_LOGGING_DATABASE_ARCHITECTURE.md",
+    "action": "Create workout_sessions and exercise_history subcollections for users"
+  }
+]
