@@ -437,13 +437,13 @@ function collectExerciseGroups() {
             const activeUnitBtn = bodyEl?.querySelector('.weight-unit-btn.active');
             const weightUnit = activeUnitBtn?.getAttribute('data-unit') || 'lbs';
             
-            const weight = bodyEl?.querySelector('.weight-input')?.value || '';
+            const weight = bodyEl?.querySelector('.weight-input')?.value?.trim() || '';
             const groupData = {
                 exercises: exercises,
                 sets: bodyEl?.querySelector('.sets-input')?.value || '3',
                 reps: bodyEl?.querySelector('.reps-input')?.value || '8-12',
                 rest: bodyEl?.querySelector('.rest-input')?.value || '60s',
-                default_weight: weight ? parseFloat(weight) : null,
+                default_weight: weight || null,
                 default_weight_unit: weightUnit
             };
             
