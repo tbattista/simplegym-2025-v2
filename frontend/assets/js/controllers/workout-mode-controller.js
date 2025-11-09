@@ -484,14 +484,7 @@ class WorkoutModeController {
                 this.showSaveIndicator(card, 'success');
             }
             
-            // Update auto-save status in header
-            const autoSaveStatus = document.getElementById('autoSaveStatus');
-            if (autoSaveStatus) {
-                autoSaveStatus.textContent = 'Saved';
-                setTimeout(() => {
-                    autoSaveStatus.textContent = 'Ready';
-                }, 2000);
-            }
+            console.log('✅ Auto-save successful');
             
         } catch (error) {
             console.error('❌ Auto-save failed:', error);
@@ -680,62 +673,237 @@ class WorkoutModeController {
      * Handle complete workout
      */
     async handleCompleteWorkout() {
-        // Use modal manager for confirmation
-        const modalManager = this.getModalManager();
-        modalManager.confirm(
-            'Complete Workout?',
-            'Are you sure you want to complete this workout?',
-            async () => {
-                try {
-                    const exercisesPerformed = this.collectExerciseData();
-                    const completedSession = await this.sessionService.completeSession(exercisesPerformed);
-                    
-                    // Show success
-                    this.showCompletionSummary(completedSession);
-                    
-                } catch (error) {
-                    console.error('❌ Error completing workout:', error);
-                    const modalManager = this.getModalManager();
-                    modalManager.alert('Error', error.message, 'danger');
-                }
-            }
-        );
+        // Show bottom offcanvas for workout completion (Sneat standard)
+        this.showCompleteWorkoutOffcanvas();
     }
     
     /**
-     * Show completion summary
+     * Show complete workout offcanvas (Sneat bottom offcanvas pattern)
      */
-    showCompletionSummary(session) {
-        const duration = session.duration_minutes || 0;
-        const exerciseCount = session.exercises_performed?.length || 0;
+    showCompleteWorkoutOffcanvas() {
+        const session = this.sessionService.getCurrentSession();
+        if (!session) return;
         
-        const message = `
-            <div class="text-center">
-                <i class="bx bx-trophy display-1 text-success mb-3"></i>
-                <h4>Workout Complete! 🎉</h4>
-                <p class="text-muted">Great job on completing your workout!</p>
-                <div class="mt-3">
-                    <div class="d-flex justify-content-center gap-4">
-                        <div>
-                            <div class="h5 mb-0">${duration} min</div>
-                            <small class="text-muted">Duration</small>
+        // Calculate session stats
+        const elapsed = Math.floor((Date.now() - session.startedAt.getTime()) / 1000);
+        const minutes = Math.floor(elapsed / 60);
+        const exerciseCount = this.currentWorkout?.exercise_groups?.length || 0;
+        const bonusCount = this.currentWorkout?.bonus_exercises?.length || 0;
+        const totalExercises = exerciseCount + bonusCount;
+        
+        // Create offcanvas HTML (slides up from bottom - Sneat best practice)
+        const offcanvasHtml = `
+            <div class="offcanvas offcanvas-bottom" tabindex="-1" id="completeWorkoutOffcanvas" aria-labelledby="completeWorkoutOffcanvasLabel">
+                <div class="offcanvas-header border-bottom">
+                    <h5 class="offcanvas-title" id="completeWorkoutOffcanvasLabel">
+                        <i class="bx bx-check-circle me-2"></i>Complete Workout
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                </div>
+                <div class="offcanvas-body">
+                    <div class="text-center mb-4">
+                        <div class="mb-3">
+                            <i class="bx bx-dumbbell" style="font-size: 3rem; color: var(--bs-primary);"></i>
                         </div>
-                        <div>
-                            <div class="h5 mb-0">${exerciseCount}</div>
-                            <small class="text-muted">Exercises</small>
+                        <h5 class="mb-2">${this.escapeHtml(this.currentWorkout.name)}</h5>
+                        <p class="text-muted mb-0">Ready to complete your workout?</p>
+                    </div>
+                    
+                    <!-- Session Stats -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-6">
+                            <div class="card bg-label-primary">
+                                <div class="card-body text-center py-3">
+                                    <div class="h4 mb-0">${minutes} min</div>
+                                    <small class="text-muted">Duration</small>
+                                </div>
+                            </div>
                         </div>
+                        <div class="col-6">
+                            <div class="card bg-label-success">
+                                <div class="card-body text-center py-3">
+                                    <div class="h4 mb-0">${totalExercises}</div>
+                                    <small class="text-muted">Exercises</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Info Alert -->
+                    <div class="alert alert-info d-flex align-items-start mb-4">
+                        <i class="bx bx-info-circle me-2 mt-1"></i>
+                        <div>
+                            <strong>Your progress will be saved</strong>
+                            <p class="mb-0 small">All weight data and exercise history will be recorded.</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Action Buttons -->
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-outline-secondary flex-fill" data-bs-dismiss="offcanvas">
+                            <i class="bx bx-x me-1"></i>Cancel
+                        </button>
+                        <button type="button" class="btn btn-success flex-fill" id="confirmCompleteBtn">
+                            <i class="bx bx-check me-1"></i>Complete Workout
+                        </button>
                     </div>
                 </div>
             </div>
         `;
         
-        const modalManager = this.getModalManager();
-        modalManager.alert('Success', message, 'success');
+        // Remove existing offcanvas if any
+        const existingOffcanvas = document.getElementById('completeWorkoutOffcanvas');
+        if (existingOffcanvas) {
+            existingOffcanvas.remove();
+        }
         
-        // Redirect after delay
-        setTimeout(() => {
-            window.location.href = 'workouts.html';
-        }, 3000);
+        // Add offcanvas to body
+        document.body.insertAdjacentHTML('beforeend', offcanvasHtml);
+        
+        // Initialize Bootstrap offcanvas
+        const offcanvasElement = document.getElementById('completeWorkoutOffcanvas');
+        const offcanvas = new window.bootstrap.Offcanvas(offcanvasElement);
+        
+        // Setup confirm button
+        const confirmBtn = document.getElementById('confirmCompleteBtn');
+        confirmBtn.addEventListener('click', async () => {
+            // Disable button and show loading
+            confirmBtn.disabled = true;
+            confirmBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Completing...';
+            
+            try {
+                const exercisesPerformed = this.collectExerciseData();
+                const completedSession = await this.sessionService.completeSession(exercisesPerformed);
+                
+                // Close offcanvas
+                offcanvas.hide();
+                
+                // Show success summary
+                this.showCompletionSummary(completedSession);
+                
+            } catch (error) {
+                console.error('❌ Error completing workout:', error);
+                
+                // Re-enable button
+                confirmBtn.disabled = false;
+                confirmBtn.innerHTML = '<i class="bx bx-check me-1"></i>Complete Workout';
+                
+                // Show error
+                const modalManager = this.getModalManager();
+                modalManager.alert('Error', error.message, 'danger');
+            }
+        });
+        
+        // Cleanup offcanvas on hide
+        offcanvasElement.addEventListener('hidden.bs.offcanvas', () => {
+            offcanvasElement.remove();
+        });
+        
+        // Show offcanvas
+        offcanvas.show();
+    }
+    
+    /**
+     * Show completion summary (success offcanvas)
+     */
+    showCompletionSummary(session) {
+        const duration = session.duration_minutes || 0;
+        const exerciseCount = session.exercises_performed?.length || 0;
+        
+        // Create success offcanvas HTML (slides up from bottom)
+        const offcanvasHtml = `
+            <div class="offcanvas offcanvas-bottom" tabindex="-1" id="completionSummaryOffcanvas" aria-labelledby="completionSummaryOffcanvasLabel" data-bs-backdrop="static" data-bs-keyboard="false">
+                <div class="offcanvas-header border-bottom bg-success">
+                    <h5 class="offcanvas-title text-white" id="completionSummaryOffcanvasLabel">
+                        <i class="bx bx-trophy me-2"></i>Workout Complete!
+                    </h5>
+                </div>
+                <div class="offcanvas-body">
+                    <div class="text-center mb-4">
+                        <div class="mb-3">
+                            <i class="bx bx-trophy" style="font-size: 4rem; color: var(--bs-success);"></i>
+                        </div>
+                        <h4 class="mb-2">Great Job! 🎉</h4>
+                        <p class="text-muted">You've successfully completed your workout</p>
+                    </div>
+                    
+                    <!-- Stats Cards -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-6">
+                            <div class="card bg-label-success">
+                                <div class="card-body text-center py-3">
+                                    <div class="h3 mb-0">${duration}</div>
+                                    <small class="text-muted">Minutes</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="card bg-label-primary">
+                                <div class="card-body text-center py-3">
+                                    <div class="h3 mb-0">${exerciseCount}</div>
+                                    <small class="text-muted">Exercises</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Success Message -->
+                    <div class="alert alert-success d-flex align-items-start mb-4">
+                        <i class="bx bx-check-circle me-2 mt-1"></i>
+                        <div>
+                            <strong>Progress Saved!</strong>
+                            <p class="mb-0 small">Your workout data has been recorded and is ready to view in your history.</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Action Buttons -->
+                    <div class="d-flex flex-column gap-2">
+                        <button type="button" class="btn btn-primary" onclick="window.location.href='workouts.html'">
+                            <i class="bx bx-list-ul me-1"></i>View Workout History
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" onclick="window.location.href='index.html'">
+                            <i class="bx bx-home me-1"></i>Back to Dashboard
+                        </button>
+                    </div>
+                    
+                    <p class="text-center text-muted small mt-3 mb-0">Redirecting in <span id="redirectCountdown">5</span> seconds...</p>
+                </div>
+            </div>
+        `;
+        
+        // Remove any existing offcanvas
+        const existingOffcanvas = document.getElementById('completionSummaryOffcanvas');
+        if (existingOffcanvas) {
+            existingOffcanvas.remove();
+        }
+        
+        // Add offcanvas to body
+        document.body.insertAdjacentHTML('beforeend', offcanvasHtml);
+        
+        // Initialize Bootstrap offcanvas
+        const offcanvasElement = document.getElementById('completionSummaryOffcanvas');
+        const offcanvas = new window.bootstrap.Offcanvas(offcanvasElement);
+        
+        // Cleanup offcanvas on hide
+        offcanvasElement.addEventListener('hidden.bs.offcanvas', () => {
+            offcanvasElement.remove();
+        });
+        
+        // Show offcanvas
+        offcanvas.show();
+        
+        // Countdown and redirect
+        let countdown = 5;
+        const countdownEl = document.getElementById('redirectCountdown');
+        const countdownInterval = setInterval(() => {
+            countdown--;
+            if (countdownEl) countdownEl.textContent = countdown;
+            
+            if (countdown <= 0) {
+                clearInterval(countdownInterval);
+                window.location.href = 'workouts.html';
+            }
+        }, 1000);
     }
     
     /**
