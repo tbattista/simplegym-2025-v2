@@ -378,42 +378,38 @@ class WorkoutModeController {
             </div>
         `;
         
-        // Create a custom modal using Bootstrap (slides up from bottom)
-        const modalHtml = `
-            <div class="modal fade" id="weightEditModal" tabindex="-1" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-bottom">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title">
-                                <i class="bx bx-edit-alt me-2"></i>Edit Weight
-                            </h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <h6 class="mb-3">${exerciseName}</h6>
-                            ${modalContent}
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                            ${isSessionActive ? '<button type="button" class="btn btn-primary" id="saveWeightBtn">Save</button>' : ''}
-                        </div>
+        // Create offcanvas using Bootstrap (slides up from bottom - Sneat best practice)
+        const offcanvasHtml = `
+            <div class="offcanvas offcanvas-bottom" tabindex="-1" id="weightEditOffcanvas" aria-labelledby="weightEditOffcanvasLabel">
+                <div class="offcanvas-header">
+                    <h5 class="offcanvas-title" id="weightEditOffcanvasLabel">
+                        <i class="bx bx-edit-alt me-2"></i>Edit Weight
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                </div>
+                <div class="offcanvas-body">
+                    <h6 class="mb-3">${exerciseName}</h6>
+                    ${modalContent}
+                    <div class="d-flex gap-2 mt-4">
+                        <button type="button" class="btn btn-outline-secondary flex-fill" data-bs-dismiss="offcanvas">Cancel</button>
+                        ${isSessionActive ? '<button type="button" class="btn btn-primary flex-fill" id="saveWeightBtn">Save</button>' : ''}
                     </div>
                 </div>
             </div>
         `;
         
-        // Remove existing modal if any
-        const existingModal = document.getElementById('weightEditModal');
-        if (existingModal) {
-            existingModal.remove();
+        // Remove existing offcanvas if any
+        const existingOffcanvas = document.getElementById('weightEditOffcanvas');
+        if (existingOffcanvas) {
+            existingOffcanvas.remove();
         }
         
-        // Add modal to body
-        document.body.insertAdjacentHTML('beforeend', modalHtml);
+        // Add offcanvas to body
+        document.body.insertAdjacentHTML('beforeend', offcanvasHtml);
         
-        // Initialize Bootstrap modal
-        const modalElement = document.getElementById('weightEditModal');
-        const modal = new window.bootstrap.Modal(modalElement);
+        // Initialize Bootstrap offcanvas
+        const offcanvasElement = document.getElementById('weightEditOffcanvas');
+        const offcanvas = new window.bootstrap.Offcanvas(offcanvasElement);
         
         // Setup event listeners
         if (isSessionActive) {
@@ -438,8 +434,8 @@ class WorkoutModeController {
                     return; // Don't close modal on error
                 }
                 
-                // Close modal
-                modal.hide();
+                // Close offcanvas
+                offcanvas.hide();
                 
                 // Re-render workout to show updated weight
                 this.renderWorkout();
@@ -459,13 +455,13 @@ class WorkoutModeController {
             });
         }
         
-        // Cleanup modal on hide
-        modalElement.addEventListener('hidden.bs.modal', () => {
-            modalElement.remove();
+        // Cleanup offcanvas on hide
+        offcanvasElement.addEventListener('hidden.bs.offcanvas', () => {
+            offcanvasElement.remove();
         });
         
-        // Show modal
-        modal.show();
+        // Show offcanvas
+        offcanvas.show();
     }
     
     

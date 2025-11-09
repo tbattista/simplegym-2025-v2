@@ -986,84 +986,94 @@
 }
 
 /* ============================================
-   WEIGHT EDIT MODAL - BOTTOM SLIDE UP
+   WEIGHT EDIT OFFCANVAS - BOTTOM SLIDE UP
    ============================================ */
 
-/* Modal slides up from bottom */
-.modal-dialog-bottom {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    margin: 0;
-    max-width: 100%;
-    transform: translateY(100%);
-    transition: transform 0.3s ease-out;
-}
-
-.modal.show .modal-dialog-bottom {
-    transform: translateY(0);
-}
-
-.modal-dialog-bottom .modal-content {
+/* Weight offcanvas specific styling (following Sneat best practices) */
+#weightEditOffcanvas {
+    height: auto;
+    max-height: 85vh;
     border-radius: 1rem 1rem 0 0;
-    border-bottom: none;
-    max-height: 80vh;
-    overflow-y: auto;
 }
 
-/* Backdrop animation */
-.modal.fade .modal-dialog-bottom {
-    transform: translateY(100%);
-}
-
-.modal.show .modal-dialog-bottom {
-    transform: translateY(0);
-}
-
-/* Weight modal specific styling */
-#weightEditModal .modal-header {
+#weightEditOffcanvas .offcanvas-header {
     border-bottom: 1px solid var(--bs-border-color);
     padding: 1.25rem 1.5rem;
 }
 
-#weightEditModal .modal-body {
+#weightEditOffcanvas .offcanvas-body {
     padding: 1.5rem;
 }
 
-#weightEditModal .modal-footer {
-    border-top: 1px solid var(--bs-border-color);
-    padding: 1rem 1.5rem;
-}
-
-/* Weight input styling in modal */
-#weightEditModal .weight-input {
+/* Weight input styling in offcanvas */
+#weightEditOffcanvas .weight-input {
     font-size: 1.25rem;
     font-weight: 600;
     text-align: center;
     padding: 0.75rem;
+    border: 2px solid var(--bs-border-color);
+    transition: border-color 0.2s ease;
 }
 
-#weightEditModal .weight-unit-select {
+#weightEditOffcanvas .weight-input:focus {
+    border-color: var(--bs-primary);
+    box-shadow: 0 0 0 0.2rem rgba(var(--bs-primary-rgb), 0.25);
+}
+
+#weightEditOffcanvas .weight-unit-select {
     font-size: 1rem;
+    font-weight: 600;
+    border: 2px solid var(--bs-border-color);
+}
+
+#weightEditOffcanvas .weight-unit-select:focus {
+    border-color: var(--bs-primary);
+    box-shadow: 0 0 0 0.2rem rgba(var(--bs-primary-rgb), 0.25);
+}
+
+/* Button styling */
+#weightEditOffcanvas .btn {
+    padding: 0.75rem 1.5rem;
     font-weight: 600;
 }
 
-/* Mobile adjustments for bottom modal */
+/* Mobile adjustments for bottom offcanvas */
 @media (max-width: 767.98px) {
-    .modal-dialog-bottom .modal-content {
+    #weightEditOffcanvas {
         max-height: 90vh;
     }
     
-    #weightEditModal .modal-header {
+    #weightEditOffcanvas .offcanvas-header {
         padding: 1rem 1.25rem;
     }
     
-    #weightEditModal .modal-body {
+    #weightEditOffcanvas .offcanvas-body {
         padding: 1.25rem;
     }
     
-    #weightEditModal .weight-input {
+    #weightEditOffcanvas .weight-input {
         font-size: 1.1rem;
+        padding: 0.65rem;
     }
+    
+    #weightEditOffcanvas .btn {
+        padding: 0.65rem 1.25rem;
+    }
+}
+
+/* Dark theme support */
+[data-bs-theme="dark"] #weightEditOffcanvas {
+    background-color: var(--bs-gray-900);
+    color: var(--bs-body-color);
+}
+
+[data-bs-theme="dark"] #weightEditOffcanvas .offcanvas-header {
+    border-bottom-color: var(--bs-gray-700);
+}
+
+[data-bs-theme="dark"] #weightEditOffcanvas .weight-input,
+[data-bs-theme="dark"] #weightEditOffcanvas .weight-unit-select {
+    background-color: var(--bs-gray-800);
+    border-color: var(--bs-gray-700);
+    color: var(--bs-body-color);
 }

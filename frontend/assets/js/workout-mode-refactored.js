@@ -148,9 +148,28 @@ class RestTimer {
                 
             case 'paused':
                 labelHtml = `<span class="text-warning">${this.formatTime(this.remainingSeconds)}</span>`;
-                buttonHtml = `<button class="btn btn-outline-secondary ${isGridLayout ? 'workout-grid-btn' : 'flex-fill'}" onclick="window.resetTimer('${this.timerId}')">
-                    <i class="bx bx-reset me-1"></i>Reset
-                </button>`;
+                // Two buttons side-by-side: Reset and Resume
+                if (isGridLayout) {
+                    buttonHtml = `
+                        <div class="d-flex gap-1 w-100">
+                            <button class="btn btn-outline-secondary flex-fill" onclick="window.resetTimer('${this.timerId}')" style="padding: 0.5rem 0.25rem;">
+                                <i class="bx bx-reset"></i>
+                            </button>
+                            <button class="btn btn-success flex-fill" onclick="window.resumeTimer('${this.timerId}')" style="padding: 0.5rem 0.25rem;">
+                                <i class="bx bx-play"></i>
+                            </button>
+                        </div>
+                    `;
+                } else {
+                    buttonHtml = `
+                        <button class="btn btn-outline-secondary flex-fill" onclick="window.resetTimer('${this.timerId}')">
+                            <i class="bx bx-reset me-1"></i>Reset
+                        </button>
+                        <button class="btn btn-success flex-fill" onclick="window.resumeTimer('${this.timerId}')">
+                            <i class="bx bx-play me-1"></i>Resume
+                        </button>
+                    `;
+                }
                 break;
                 
             case 'done':
