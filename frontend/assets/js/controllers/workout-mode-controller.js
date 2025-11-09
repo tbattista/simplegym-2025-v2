@@ -1015,7 +1015,8 @@ class WorkoutModeController {
         this.sessionTimerInterval = setInterval(() => {
             const elapsed = Math.floor((Date.now() - session.startedAt.getTime()) / 1000);
             const minutes = Math.floor(elapsed / 60);
-            const timeStr = `${minutes} min`;
+            const seconds = elapsed % 60;
+            const timeStr = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
             
             const sessionTimer = document.getElementById('sessionTimer');
             const footerTimer = document.getElementById('footerSessionTimer');
