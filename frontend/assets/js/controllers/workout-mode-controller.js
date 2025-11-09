@@ -858,15 +858,18 @@ class WorkoutModeController {
                     
                     <!-- Action Buttons -->
                     <div class="d-flex flex-column gap-2">
-                        <button type="button" class="btn btn-primary" onclick="window.location.href='workouts.html'">
-                            <i class="bx bx-list-ul me-1"></i>View Workout History
+                        <button type="button" class="btn btn-primary" onclick="window.location.href='workout-mode.html'">
+                            <i class="bx bx-dumbbell me-1"></i>Start Another Workout
+                        </button>
+                        <button type="button" class="btn btn-outline-primary" onclick="window.location.href='workouts.html'">
+                            <i class="bx bx-list-ul me-1"></i>View History
                         </button>
                         <button type="button" class="btn btn-outline-secondary" onclick="window.location.href='index.html'">
-                            <i class="bx bx-home me-1"></i>Back to Dashboard
+                            <i class="bx bx-home me-1"></i>Dashboard
                         </button>
                     </div>
                     
-                    <p class="text-center text-muted small mt-3 mb-0">Redirecting in <span id="redirectCountdown">5</span> seconds...</p>
+                    <p class="text-center text-muted small mt-3 mb-0">Returning to workout selection in <span id="redirectCountdown">5</span> seconds...</p>
                 </div>
             </div>
         `;
@@ -901,7 +904,7 @@ class WorkoutModeController {
             
             if (countdown <= 0) {
                 clearInterval(countdownInterval);
-                window.location.href = 'workouts.html';
+                window.location.href = 'workout-mode.html';
             }
         }, 1000);
     }
