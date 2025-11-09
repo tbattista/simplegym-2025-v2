@@ -1078,26 +1078,51 @@ class WorkoutModeController {
         try {
             console.log('📋 Showing workout selection...');
             
+            // Check if WorkoutListComponent is available
+            if (typeof WorkoutListComponent === 'undefined') {
+                console.error('❌ WorkoutListComponent not loaded!');
+                throw new Error('WorkoutListComponent not available. Please refresh the page.');
+            }
+            
             // Hide other states
-            document.getElementById('workoutLoadingState').style.display = 'none';
-            document.getElementById('workoutErrorState').style.display = 'none';
-            document.getElementById('exerciseCardsContainer').style.display = 'none';
-            document.getElementById('workoutModeFooter').style.display = 'none';
+            const loadingState = document.getElementById('workoutLoadingState');
+            const errorState = document.getElementById('workoutErrorState');
+            const cardsContainer = document.getElementById('exerciseCardsContainer');
+            const footer = document.getElementById('workoutModeFooter');
+            const selectionContainer = document.getElementById('workoutSelectionContainer');
+            
+            if (loadingState) loadingState.style.display = 'none';
+            if (errorState) errorState.style.display = 'none';
+            if (cardsContainer) cardsContainer.style.display = 'none';
+            if (footer) footer.style.display = 'none';
             
             // Show selection container
-            const selectionContainer = document.getElementById('workoutSelectionContainer');
+            if (!selectionContainer) {
+                throw new Error('Workout selection container not found in DOM');
+            }
             selectionContainer.style.display = 'block';
             
             // Update page title
-            document.getElementById('workoutName').textContent = 'Select a Workout';
+            const workoutNameEl = document.getElementById('workoutName');
+            if (workoutNameEl) workoutNameEl.textContent = 'Select a Workout';
             document.title = '👻 Select Workout - Ghost Gym';
             
             // Hide change workout link
             const changeLink = document.getElementById('changeWorkoutLink');
             if (changeLink) changeLink.style.display = 'none';
             
+            // Check if data manager is ready
+            if (!window.dataManager) {
+                throw new Error('Data manager not available. Please refresh the page.');
+            }
+            
+            console.log('🔍 Data manager available:', !!window.dataManager);
+            console.log('🔍 Data manager has getWorkouts:', !!window.dataManager.getWorkouts);
+            
             // Initialize workout list component
             if (!this.workoutListComponent) {
+                console.log('📦 Creating new WorkoutListComponent...');
+                
                 this.workoutListComponent = new WorkoutListComponent({
                     containerId: 'workoutModeListContainer',
                     searchInputId: 'workoutModeSearch',
@@ -1105,16 +1130,20 @@ class WorkoutModeController {
                     showActions: ['start'], // Only show Start button
                     enablePagination: true,
                     pageSize: 50,
-                    emptyMessage: 'No workouts found',
+                    emptyMessage: 'No workouts found. Create one in the Workout Builder!',
                     onWorkoutSelect: (workoutId, action) => {
+                        console.log('🎯 Workout selected from list:', workoutId, action);
                         this.selectWorkout(workoutId);
                     }
                 });
                 
+                console.log('⏳ Initializing WorkoutListComponent...');
                 await this.workoutListComponent.initialize();
+                console.log('✅ WorkoutListComponent initialized');
             } else {
-                // Refresh existing component
+                console.log('🔄 Refreshing existing WorkoutListComponent...');
                 await this.workoutListComponent.refresh();
+                console.log('✅ WorkoutListComponent refreshed');
             }
             
             console.log('✅ Workout selection ready');
