@@ -443,14 +443,14 @@ function collectExerciseGroups() {
                 sets: bodyEl?.querySelector('.sets-input')?.value || '3',
                 reps: bodyEl?.querySelector('.reps-input')?.value || '8-12',
                 rest: bodyEl?.querySelector('.rest-input')?.value || '60s',
-                weight: weight,
-                weight_unit: weightUnit
+                default_weight: weight ? parseFloat(weight) : null,
+                default_weight_unit: weightUnit
             };
             
             console.log('🔍 DEBUG: Collecting exercise group with weight:', {
                 exercises: Object.keys(exercises),
-                weight: weight,
-                weight_unit: weightUnit
+                default_weight: weight,
+                default_weight_unit: weightUnit
             });
             
             groups.push(groupData);
@@ -1127,13 +1127,13 @@ function editWorkout(id) {
             
             // Populate weight and weight unit
             const weightInput = lastGroup.querySelector('.weight-input');
-            if (weightInput && group.weight) {
-                weightInput.value = group.weight;
-                console.log('🔍 DEBUG: Populated weight field:', group.weight);
+            if (weightInput && group.default_weight) {
+                weightInput.value = group.default_weight;
+                console.log('🔍 DEBUG: Populated weight field:', group.default_weight);
             }
             
             // Set weight unit button
-            const weightUnit = group.weight_unit || 'lbs';
+            const weightUnit = group.default_weight_unit || 'lbs';
             const unitButtons = lastGroup.querySelectorAll('.weight-unit-btn');
             unitButtons.forEach(btn => {
                 btn.classList.remove('active', 'btn-secondary');
@@ -1188,7 +1188,7 @@ function editWorkout(id) {
 
 /**
  * Sync weights from exercise history to workout builder
- * Auto-populates weight fields with last used values from completed workouts
+ * HYBRID APPROACH: Updates UI + saves to workout template for persistence
  */
 async function syncWeightsFromHistory(workoutId) {
     // Only sync for authenticated users
@@ -1212,6 +1212,8 @@ async function syncWeightsFromHistory(workoutId) {
         }
         
         const histories = await response.json();
+        let syncedCount = 0;
+        let needsSave = false;
         
         // Update weight fields for each exercise group
         const groups = document.querySelectorAll('#exerciseGroups .exercise-group');
@@ -1223,27 +1225,43 @@ async function syncWeightsFromHistory(workoutId) {
             const weightInput = group.querySelector('.weight-input');
             const unitButtons = group.querySelectorAll('.weight-unit-btn');
             
-            // Update weight value
-            if (weightInput && history.last_weight) {
-                weightInput.value = history.last_weight;
-                console.log(`✅ Synced weight for ${mainExercise}: ${history.last_weight} ${history.last_weight_unit}`);
-            }
+            // Check if weight is different from current value
+            const currentWeight = weightInput?.value;
+            const historyWeight = history.last_weight?.toString();
             
-            // Update unit button
-            if (history.last_weight_unit) {
-                unitButtons.forEach(btn => {
-                    const isActive = btn.getAttribute('data-unit') === history.last_weight_unit;
-                    btn.classList.toggle('active', isActive);
-                    btn.classList.toggle('btn-secondary', isActive);
-                    btn.classList.toggle('btn-outline-secondary', !isActive);
-                });
+            if (historyWeight && currentWeight !== historyWeight) {
+                // Update weight value
+                if (weightInput) {
+                    weightInput.value = history.last_weight;
+                    syncedCount++;
+                    needsSave = true;
+                    console.log(`✅ Synced weight for ${mainExercise}: ${history.last_weight} ${history.last_weight_unit}`);
+                }
+                
+                // Update unit button
+                if (history.last_weight_unit) {
+                    unitButtons.forEach(btn => {
+                        const isActive = btn.getAttribute('data-unit') === history.last_weight_unit;
+                        btn.classList.toggle('active', isActive);
+                        btn.classList.toggle('btn-secondary', isActive);
+                        btn.classList.toggle('btn-outline-secondary', !isActive);
+                    });
+                }
+                
+                // Update preview to show new weight
+                updateExerciseGroupPreview(group);
             }
-            
-            // Update preview to show new weight
-            updateExerciseGroupPreview(group);
         });
         
-        console.log(`✅ Weights synced from history for ${Object.keys(histories).length} exercises`);
+        if (syncedCount > 0) {
+            console.log(`✅ Synced ${syncedCount} weights from history`);
+            
+            // Auto-save to persist synced weights to workout template
+            if (needsSave && window.ghostGym.workoutBuilder.selectedWorkoutId) {
+                console.log('💾 Auto-saving synced weights to workout template...');
+                await autoSaveWorkout();
+            }
+        }
         
     } catch (error) {
         // Fail silently - not critical for user experience

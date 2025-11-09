@@ -185,6 +185,19 @@ class ExerciseGroup(BaseModel):
         description="Rest period between sets",
         example="60s"
     )
+    
+    # Weight tracking fields (Hybrid approach: stored in template + synced from history)
+    default_weight: Optional[float] = Field(
+        default=None,
+        ge=0,
+        description="Current/default weight for this exercise (auto-syncs from workout history)"
+    )
+    
+    default_weight_unit: str = Field(
+        default="lbs",
+        description="Weight unit: 'lbs', 'kg', or 'other'",
+        example="lbs"
+    )
 
 class BonusExercise(BaseModel):
     """Model for bonus exercises"""
