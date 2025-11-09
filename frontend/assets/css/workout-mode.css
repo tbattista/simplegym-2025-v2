@@ -1077,3 +1077,120 @@
     border-color: var(--bs-gray-700);
     color: var(--bs-body-color);
 }
+
+/* ============================================
+   WORKOUT COMPLETION OFFCANVAS
+   ============================================ */
+
+/* Completion summary offcanvas - auto height to fit content */
+#completionSummaryOffcanvas {
+    height: auto;
+    max-height: 90vh;
+    border-radius: 1rem 1rem 0 0;
+}
+
+#completionSummaryOffcanvas .offcanvas-header {
+    padding: 1.25rem 1.5rem;
+}
+
+#completionSummaryOffcanvas .offcanvas-body {
+    padding: 1.5rem;
+    overflow-y: auto;
+}
+
+/* Ensure buttons are properly sized */
+#completionSummaryOffcanvas .btn {
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+/* Stats cards in completion summary */
+#completionSummaryOffcanvas .card {
+    border: none;
+}
+
+/* Mobile adjustments */
+@media (max-width: 767.98px) {
+    #completionSummaryOffcanvas {
+        max-height: 95vh;
+    }
+    
+    #completionSummaryOffcanvas .offcanvas-header {
+        padding: 1rem 1.25rem;
+    }
+    
+    #completionSummaryOffcanvas .offcanvas-body {
+        padding: 1.25rem;
+    }
+    
+    #completionSummaryOffcanvas .btn {
+        padding: 0.65rem 1.25rem;
+        font-size: 0.95rem;
+    }
+}
+
+/* Dark theme support */
+[data-bs-theme="dark"] #completionSummaryOffcanvas {
+    background-color: var(--bs-gray-900);
+    color: var(--bs-body-color);
+}
+
+[data-bs-theme="dark"] #completionSummaryOffcanvas .offcanvas-header {
+    background-color: var(--bs-success);
+}
+
+/* ============================================
+   COMPLETE WORKOUT OFFCANVAS (Pre-completion)
+   ============================================ */
+
+/* Complete workout confirmation offcanvas - auto height */
+#completeWorkoutOffcanvas {
+    height: auto;
+    max-height: 85vh;
+    border-radius: 1rem 1rem 0 0;
+}
+
+#completeWorkoutOffcanvas .offcanvas-header {
+    padding: 1.25rem 1.5rem;
+}
+
+#completeWorkoutOffcanvas .offcanvas-body {
+    padding: 1.5rem;
+    overflow-y: auto;
+}
+
+#completeWorkoutOffcanvas .btn {
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+}
+
+/* Mobile adjustments */
+@media (max-width: 767.98px) {
+    #completeWorkoutOffcanvas {
+        max-height: 90vh;
+    }
+    
+    #completeWorkoutOffcanvas .offcanvas-header {
+        padding: 1rem 1.25rem;
+    }
+    
+    #completeWorkoutOffcanvas .offcanvas-body {
+        padding: 1.25rem;
+    }
+    
+    #completeWorkoutOffcanvas .btn {
+        padding: 0.65rem 1.25rem;
+        font-size: 0.95rem;
+    }
+}
+
+/* Dark theme support */
+[data-bs-theme="dark"] #completeWorkoutOffcanvas {
+    background-color: var(--bs-gray-900);
+    color: var(--bs-body-color);
+}
+
+[data-bs-theme="dark"] #completeWorkoutOffcanvas .offcanvas-header {
+    border-bottom-color: var(--bs-gray-700);
+}
