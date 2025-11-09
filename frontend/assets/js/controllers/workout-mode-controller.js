@@ -887,11 +887,17 @@ class WorkoutModeController {
         console.log('🔄 Auth state changed:', user ? 'authenticated' : 'anonymous');
         this.initializeStartButtonTooltip();
         
-        // If we're in workout selection mode and auth state changed, refresh the list
-        if (this.workoutListComponent && !this.getWorkoutIdFromUrl()) {
-            console.log('🔄 Refreshing workout list after auth change...');
-            await this.workoutListComponent.refresh();
-            console.log('✅ Workout list refreshed');
+        // If we're in workout selection mode and auth state changed, reload workouts
+        const selectionContainer = document.getElementById('workoutSelectionContainer');
+        if (selectionContainer && selectionContainer.style.display !== 'none' && !this.getWorkoutIdFromUrl()) {
+            console.log('🔄 Reloading workout list after auth change...');
+            // Wait for storage mode to update
+            await new Promise(resolve => setTimeout(resolve, 500));
+            // Reload workouts with new storage mode
+            if (window.loadWorkouts) {
+                await window.loadWorkouts();
+                console.log('✅ Workout list reloaded');
+            }
         }
     }
     
