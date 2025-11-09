@@ -83,7 +83,14 @@ class WorkoutModeController {
             // IMPORTANT: Wait for auth state to settle before loading workout
             // This ensures we're in the correct storage mode (localStorage vs firestore)
             console.log('⏳ Waiting for auth state to settle...');
-            await new Promise(resolve => setTimeout(resolve, 1500));
+            
+            // Use longer timeout in production environments (Railway, etc.)
+            const isProduction = window.location.hostname !== 'localhost' &&
+                                window.location.hostname !== '127.0.0.1';
+            const settleTime = isProduction ? 3000 : 1500;
+            console.log(`⏱️ Using ${settleTime}ms settle time (${isProduction ? 'production' : 'local'})`);
+            
+            await new Promise(resolve => setTimeout(resolve, settleTime));
             console.log('✅ Auth state settled, storage mode:', this.dataManager.storageMode);
             
             // Load workout
@@ -1095,11 +1102,36 @@ class WorkoutModeController {
         try {
             console.log('📋 Showing workout selection...');
             
+            // Update loading message
+            const loadingMessage = document.getElementById('loadingMessage');
+            if (loadingMessage) {
+                loadingMessage.textContent = 'Initializing workout list...';
+            }
+            
+            // Wait for data manager with retry logic
+            console.log('⏳ Waiting for data manager...');
+            let retries = 0;
+            const maxRetries = 5;
+            while (!window.dataManager && retries < maxRetries) {
+                console.log(`⏳ Data manager not ready, waiting... (${retries + 1}/${maxRetries})`);
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                retries++;
+            }
+            
+            if (!window.dataManager) {
+                throw new Error('Data manager not available after waiting. Please refresh the page.');
+            }
+            
+            console.log('✅ Data manager ready');
+            console.log('🔍 Data manager has getWorkouts:', !!window.dataManager.getWorkouts);
+            
             // Check if WorkoutListComponent is available
             if (typeof WorkoutListComponent === 'undefined') {
                 console.error('❌ WorkoutListComponent not loaded!');
                 throw new Error('WorkoutListComponent not available. Please refresh the page.');
             }
+            
+            console.log('✅ WorkoutListComponent available');
             
             // Hide other states
             const loadingState = document.getElementById('workoutLoadingState');
@@ -1127,14 +1159,6 @@ class WorkoutModeController {
             // Hide change workout link
             const changeLink = document.getElementById('changeWorkoutLink');
             if (changeLink) changeLink.style.display = 'none';
-            
-            // Check if data manager is ready
-            if (!window.dataManager) {
-                throw new Error('Data manager not available. Please refresh the page.');
-            }
-            
-            console.log('🔍 Data manager available:', !!window.dataManager);
-            console.log('🔍 Data manager has getWorkouts:', !!window.dataManager.getWorkouts);
             
             // Initialize workout list component
             if (!this.workoutListComponent) {
@@ -1203,6 +1227,8 @@ class WorkoutModeController {
      * Show error state
      */
     showError(message) {
+        console.error('❌ Showing error:', message);
+        
         const loading = document.getElementById('workoutLoadingState');
         const error = document.getElementById('workoutErrorState');
         const errorMessage = document.getElementById('workoutErrorMessage');
@@ -1210,16 +1236,31 @@ class WorkoutModeController {
         const footer = document.getElementById('workoutModeFooter');
         const selection = document.getElementById('workoutSelectionContainer');
         
+        // Hide all other states
         if (loading) loading.style.display = 'none';
         if (selection) selection.style.display = 'none';
+        if (content) content.style.display = 'none';
+        if (footer) footer.style.display = 'none';
+        
+        // Show error with detailed message and troubleshooting tips
         if (error) {
             error.style.display = 'block';
             if (errorMessage && message) {
-                errorMessage.textContent = message;
+                errorMessage.innerHTML = `
+                    <strong>${this.escapeHtml(message)}</strong>
+                    <br><br>
+                    <small class="text-muted">
+                        <strong>Troubleshooting tips:</strong><br>
+                        1. Refresh the page (Ctrl+R or Cmd+R)<br>
+                        2. Clear browser cache and try again<br>
+                        3. Check browser console for details (F12)<br>
+                        4. Try a different browser<br>
+                        <br>
+                        <em>If this persists, the app may still be initializing. Wait a moment and refresh.</em>
+                    </small>
+                `;
             }
         }
-        if (content) content.style.display = 'none';
-        if (footer) footer.style.display = 'none';
     }
     
     /**
