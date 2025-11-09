@@ -348,14 +348,13 @@ class WorkoutModeController {
                     <label class="form-label"><i class="bx bx-dumbbell me-2"></i>Weight</label>
                     <div class="d-flex gap-2">
                         <input
-                            type="number"
+                            type="text"
                             class="form-control weight-input"
                             id="modalWeightInput"
                             data-exercise-name="${exerciseName}"
                             value="${currentWeight || ''}"
-                            placeholder="135"
-                            step="5"
-                            min="0"
+                            placeholder="135 or 4x45 plates"
+                            maxlength="50"
                             ${!isSessionActive ? 'readonly disabled' : ''}
                             style="flex: 1;">
                         <select class="form-select weight-unit-select" id="modalWeightUnit" data-exercise-name="${exerciseName}" ${!isSessionActive ? 'disabled' : ''} style="width: 100px;">
@@ -363,6 +362,7 @@ class WorkoutModeController {
                             <option value="kg" ${currentUnit === 'kg' ? 'selected' : ''}>kg</option>
                         </select>
                     </div>
+                    <small class="text-muted">Enter weight as number or description (e.g., "4x45 plates", "135", "BW+25")</small>
                 </div>
                 ${lastWeight && lastSessionDate ? `
                     <div class="alert alert-info mb-0">
@@ -421,10 +421,10 @@ class WorkoutModeController {
             const unitSelect = document.getElementById('modalWeightUnit');
             
             saveBtn.addEventListener('click', async () => {
-                const weight = parseFloat(weightInput.value) || 0;
+                const weight = weightInput.value.trim();
                 const unit = unitSelect.value;
                 
-                // Update session service
+                // Update session service (now accepts string values)
                 this.sessionService.updateExerciseWeight(exerciseName, weight, unit);
                 
                 // Explicitly trigger auto-save and wait for it
@@ -446,13 +446,13 @@ class WorkoutModeController {
             
             // Also setup input listeners for real-time updates
             weightInput.addEventListener('input', (e) => {
-                const weight = parseFloat(e.target.value) || 0;
+                const weight = e.target.value.trim();
                 const unit = unitSelect.value;
                 this.sessionService.updateExerciseWeight(exerciseName, weight, unit);
             });
             
             unitSelect.addEventListener('change', (e) => {
-                const weight = parseFloat(weightInput.value) || 0;
+                const weight = weightInput.value.trim();
                 const unit = e.target.value;
                 this.sessionService.updateExerciseWeight(exerciseName, weight, unit);
             });
