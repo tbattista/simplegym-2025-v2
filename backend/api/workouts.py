@@ -279,5 +279,46 @@ async def delete_workout_firebase(
         logger.error(f"Error deleting workout: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error deleting workout: {str(e)}")
 
+@firebase_router.get("/exercise-history/workout/{workout_id}")
+async def get_workout_exercise_history(
+    workout_id: str,
+    current_user: Optional[dict] = Depends(get_current_user_optional)
+):
+    """
+    Get exercise history for all exercises in a workout
+    Returns last weights used for each exercise to auto-populate workout builder
+    """
+    try:
+        user_id = extract_user_id(current_user)
+        
+        if not user_id:
+            raise HTTPException(status_code=401, detail="Authentication required")
+        
+        if not firebase_service.is_available():
+            raise HTTPException(status_code=503, detail="Firebase service unavailable")
+        
+        logger.info(f"Fetching exercise history for workout {workout_id}, user: {user_id}")
+        
+        # Reuse existing service method
+        histories = await firestore_data_service.get_exercise_history_for_workout(
+            user_id,
+            workout_id
+        )
+        
+        # Convert to dict keyed by exercise name for easy frontend lookup
+        result = {
+            name: history.model_dump()
+            for name, history in histories.items()
+        }
+        
+        logger.info(f"✅ Retrieved history for {len(result)} exercises")
+        return result
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to get exercise history: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 # Export both routers
 __all__ = ['router', 'firebase_router']

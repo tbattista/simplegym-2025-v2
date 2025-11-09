@@ -567,8 +567,8 @@ function addExerciseGroup() {
                     <div class="row g-2 mb-2">
                         <div class="col-12">
                             <label class="form-label small mb-1">
-                                <i class="bx bx-info-circle me-1"></i>
-                                Target Weight (Optional - Reference Only)
+                                <i class="bx bx-dumbbell me-1"></i>
+                                Weight (Auto-syncs from workouts)
                             </label>
                         </div>
                     </div>
@@ -1187,6 +1187,71 @@ function editWorkout(id) {
 }
 
 /**
+ * Sync weights from exercise history to workout builder
+ * Auto-populates weight fields with last used values from completed workouts
+ */
+async function syncWeightsFromHistory(workoutId) {
+    // Only sync for authenticated users
+    if (!window.authService || !window.authService.isUserAuthenticated()) {
+        return;
+    }
+    
+    try {
+        // Fetch exercise history from backend
+        const url = window.config.api.getUrl(`/api/v3/firebase/workouts/exercise-history/workout/${workoutId}`);
+        const response = await fetch(url, {
+            headers: {
+                'Authorization': `Bearer ${await window.dataManager.getAuthToken()}`
+            }
+        });
+        
+        if (!response.ok) {
+            // Silently fail - not critical for user experience
+            console.log('No exercise history available yet');
+            return;
+        }
+        
+        const histories = await response.json();
+        
+        // Update weight fields for each exercise group
+        const groups = document.querySelectorAll('#exerciseGroups .exercise-group');
+        groups.forEach(group => {
+            const mainExercise = group.querySelector('.exercise-input')?.value?.trim();
+            if (!mainExercise || !histories[mainExercise]) return;
+            
+            const history = histories[mainExercise];
+            const weightInput = group.querySelector('.weight-input');
+            const unitButtons = group.querySelectorAll('.weight-unit-btn');
+            
+            // Update weight value
+            if (weightInput && history.last_weight) {
+                weightInput.value = history.last_weight;
+                console.log(`✅ Synced weight for ${mainExercise}: ${history.last_weight} ${history.last_weight_unit}`);
+            }
+            
+            // Update unit button
+            if (history.last_weight_unit) {
+                unitButtons.forEach(btn => {
+                    const isActive = btn.getAttribute('data-unit') === history.last_weight_unit;
+                    btn.classList.toggle('active', isActive);
+                    btn.classList.toggle('btn-secondary', isActive);
+                    btn.classList.toggle('btn-outline-secondary', !isActive);
+                });
+            }
+            
+            // Update preview to show new weight
+            updateExerciseGroupPreview(group);
+        });
+        
+        console.log(`✅ Weights synced from history for ${Object.keys(histories).length} exercises`);
+        
+    } catch (error) {
+        // Fail silently - not critical for user experience
+        console.warn('⚠️ Could not sync weights from history:', error.message);
+    }
+}
+
+/**
  * Duplicate workout
  */
 function duplicateWorkout(id) {
@@ -1351,6 +1416,7 @@ function initializeExerciseAutocompletes() {
 
 // Make functions globally available
 window.renderWorkouts = renderWorkouts;
+window.syncWeightsFromHistory = syncWeightsFromHistory;
 window.filterWorkouts = filterWorkouts;
 window.addWorkoutDragListeners = addWorkoutDragListeners;
 window.saveWorkout = saveWorkout;
