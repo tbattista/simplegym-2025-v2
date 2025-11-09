@@ -905,3 +905,82 @@
         border-top-width: 3px;
     }
 }
+
+/* ============================================
+   WORKOUT SELECTION STYLES
+   ============================================ */
+
+#workoutSelectionContainer {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+#workoutSelectionContainer h5 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+#workoutSelectionContainer .text-muted {
+    font-size: 0.95rem;
+}
+
+/* Workout list cards in workout mode */
+#workoutModeListContainer .workout-list-card {
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border: 2px solid transparent;
+}
+
+#workoutModeListContainer .workout-list-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+    border-color: var(--bs-primary);
+}
+
+#workoutModeListContainer .workout-list-card:active {
+    transform: translateY(-2px);
+}
+
+/* Simplified button layout for workout mode - only Start button */
+#workoutModeListContainer .btn-group {
+    justify-content: center;
+}
+
+#workoutModeListContainer .btn-primary {
+    font-size: 1rem;
+    padding: 0.625rem 1.5rem;
+    font-weight: 600;
+}
+
+/* Search bar styling */
+#workoutModeSearch {
+    font-size: 1rem;
+    padding: 0.75rem 1rem;
+}
+
+#workoutModeSearch:focus {
+    border-color: var(--bs-primary);
+    box-shadow: 0 0 0 0.2rem rgba(var(--bs-primary-rgb), 0.25);
+}
+
+/* Mobile optimizations for workout selection */
+@media (max-width: 767.98px) {
+    #workoutSelectionContainer {
+        padding: 0 0.5rem;
+    }
+    
+    #workoutSelectionContainer h5 {
+        font-size: 1.25rem;
+    }
+    
+    #workoutModeListContainer .row {
+        row-gap: 1rem !important;
+    }
+    
+    #workoutModeListContainer .btn-primary {
+        font-size: 0.95rem;
+        padding: 0.5rem 1rem;
+    }
+}

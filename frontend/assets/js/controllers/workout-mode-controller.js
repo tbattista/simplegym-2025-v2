@@ -17,6 +17,7 @@ class WorkoutModeController {
         this.timers = {};
         this.soundEnabled = localStorage.getItem('workoutSoundEnabled') !== 'false';
         this.autoSaveTimer = null;
+        this.workoutListComponent = null;
         
         console.log('🎮 Workout Mode Controller initialized');
         console.log('🔍 DEBUG: Modal manager available?', !!window.ghostGymModalManager);
@@ -74,7 +75,8 @@ class WorkoutModeController {
             // Get workout ID from URL
             const workoutId = this.getWorkoutIdFromUrl();
             if (!workoutId) {
-                this.showError('No workout selected. Please select a workout to begin.');
+                // Show workout selection instead of error
+                await this.showWorkoutSelection();
                 return;
             }
             
@@ -1063,20 +1065,104 @@ class WorkoutModeController {
     }
     
     /**
+     * Show workout selection UI
+     */
+    async showWorkoutSelection() {
+        try {
+            console.log('📋 Showing workout selection...');
+            
+            // Hide other states
+            document.getElementById('workoutLoadingState').style.display = 'none';
+            document.getElementById('workoutErrorState').style.display = 'none';
+            document.getElementById('exerciseCardsContainer').style.display = 'none';
+            document.getElementById('workoutModeFooter').style.display = 'none';
+            
+            // Show selection container
+            const selectionContainer = document.getElementById('workoutSelectionContainer');
+            selectionContainer.style.display = 'block';
+            
+            // Update page title
+            document.getElementById('workoutName').textContent = 'Select a Workout';
+            document.title = '👻 Select Workout - Ghost Gym';
+            
+            // Hide change workout link
+            const changeLink = document.getElementById('changeWorkoutLink');
+            if (changeLink) changeLink.style.display = 'none';
+            
+            // Initialize workout list component
+            if (!this.workoutListComponent) {
+                this.workoutListComponent = new WorkoutListComponent({
+                    containerId: 'workoutModeListContainer',
+                    searchInputId: 'workoutModeSearch',
+                    clearSearchBtnId: 'clearWorkoutModeSearch',
+                    showActions: ['start'], // Only show Start button
+                    enablePagination: true,
+                    pageSize: 50,
+                    emptyMessage: 'No workouts found',
+                    onWorkoutSelect: (workoutId, action) => {
+                        this.selectWorkout(workoutId);
+                    }
+                });
+                
+                await this.workoutListComponent.initialize();
+            } else {
+                // Refresh existing component
+                await this.workoutListComponent.refresh();
+            }
+            
+            console.log('✅ Workout selection ready');
+            
+        } catch (error) {
+            console.error('❌ Error showing workout selection:', error);
+            this.showError('Failed to load workout list: ' + error.message);
+        }
+    }
+    
+    /**
+     * Select a workout from the list
+     */
+    async selectWorkout(workoutId) {
+        try {
+            console.log('🎯 Workout selected:', workoutId);
+            
+            // Update URL without page reload
+            const url = new URL(window.location);
+            url.searchParams.set('id', workoutId);
+            window.history.pushState({ workoutId }, '', url);
+            
+            // Hide selection container
+            document.getElementById('workoutSelectionContainer').style.display = 'none';
+            
+            // Show change workout link
+            const changeLink = document.getElementById('changeWorkoutLink');
+            if (changeLink) changeLink.style.display = 'inline';
+            
+            // Load the workout
+            await this.loadWorkout(workoutId);
+            
+        } catch (error) {
+            console.error('❌ Error selecting workout:', error);
+            this.showError('Failed to load workout: ' + error.message);
+        }
+    }
+    
+    /**
      * Show error state
      */
     showError(message) {
         const loading = document.getElementById('workoutLoadingState');
         const error = document.getElementById('workoutErrorState');
+        const errorMessage = document.getElementById('workoutErrorMessage');
         const content = document.getElementById('exerciseCardsContainer');
         const footer = document.getElementById('workoutModeFooter');
+        const selection = document.getElementById('workoutSelectionContainer');
         
         if (loading) loading.style.display = 'none';
+        if (selection) selection.style.display = 'none';
         if (error) {
             error.style.display = 'block';
-            const errorText = error.querySelector('p');
-            if (errorText && message) {
-                errorText.textContent = message;
+            if (errorMessage && message) {
+                errorMessage.textContent = message;
             }
         }
         if (content) content.style.display = 'none';
