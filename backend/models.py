@@ -187,10 +187,9 @@ class ExerciseGroup(BaseModel):
     )
     
     # Weight tracking fields (Hybrid approach: stored in template + synced from history)
-    default_weight: Optional[float] = Field(
+    default_weight: Optional[str] = Field(
         default=None,
-        ge=0,
-        description="Current/default weight for this exercise (auto-syncs from workout history)"
+        description="Current/default weight for this exercise (auto-syncs from workout history). Supports numeric (135) or text (4x45, BW+25) values."
     )
     
     default_weight_unit: str = Field(
