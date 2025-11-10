@@ -645,8 +645,8 @@ function updateStats() {
  */
 async function toggleExerciseFavorite(exerciseId) {
     if (!window.firebaseAuth?.currentUser) {
-        showAlert('Please sign in to favorite exercises', 'warning');
-        showAuthModal();
+        showAlert('Please sign in to favorite exercises. Use the menu to log in.', 'warning');
+        // Auth modal removed - users can sign in via menu
         return;
     }
     

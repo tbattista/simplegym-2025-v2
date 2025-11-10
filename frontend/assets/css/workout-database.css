@@ -634,9 +634,19 @@
 }
 
 /* Add padding to content to prevent overlap with sticky footer */
-.workout-database-footer ~ .content-wrapper .container-xxl,
-.container-xxl {
-    padding-bottom: 140px !important;
+.container-xxl.flex-grow-1.container-p-y {
+    padding-bottom: 200px !important;
+}
+
+/* Ensure card has space above footer */
+.card {
+    margin-bottom: 2rem;
+}
+
+/* Pagination needs extra bottom spacing */
+.pagination-container {
+    padding-bottom: 2rem;
+    margin-bottom: 1rem;
 }
 
 /* Footer button styling */
@@ -675,8 +685,8 @@
     }
     
     /* Adjust content padding for mobile */
-    .container-xxl {
-        padding-bottom: 130px !important;
+    .container-xxl.flex-grow-1.container-p-y {
+        padding-bottom: 180px !important;
     }
 }
 
@@ -691,7 +701,7 @@
     }
     
     /* Extra compact for very small screens */
-    .container-xxl {
-        padding-bottom: 120px !important;
+    .container-xxl.flex-grow-1.container-p-y {
+        padding-bottom: 160px !important;
     }
 }

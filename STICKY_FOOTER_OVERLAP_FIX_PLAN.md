@@ -16,31 +16,88 @@ Both [`exercise-database.html`](frontend/exercise-database.html) and [`workout-d
 
 **Exercise Database CSS:**
 ```css
-/* Line 44-46 */
+/* Line 2-14 - Basic footer positioning without sidebar adjustment */
+.exercise-database-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    padding: 1rem;
+    background: transparent;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    pointer-events: none;
+}
+
+/* Line 21-25 - Sidebar adjustment only for large screens */
+@media (min-width: 1200px) {
+    .exercise-database-footer {
+        left: var(--layout-menu-width, 260px);
+    }
+}
+
+/* Line 28-36 - Inner container styling */
+.exercise-database-footer > div {
+    background: var(--bs-body-bg);
+    border: 1px solid var(--bs-border-color);
+    border-radius: var(--bs-border-radius-lg);
+    padding: 1rem;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 600px;
+}
+
+/* Line 44-46 - Insufficient padding */
 .content-wrapper {
     padding-bottom: 180px !important;
 }
-
-/* Line 49-52 - Attempts to constrain table height */
-.exercise-card-table {
-    max-height: calc(100vh - 350px);
-    overflow-y: auto;
-}
-
-/* Line 60-62 - Attempts to add margin to card */
-.card:has(#exerciseTableContainer) {
-    margin-bottom: 180px !important;
-}
 ```
 
-**Workout Database CSS:**
+**Workout Database CSS (Better Implementation):**
 ```css
-/* Line 637-640 */
-.workout-database-footer ~ .content-wrapper .container-xxl,
-.container-xxl {
-    padding-bottom: 140px !important;
+/* Line 603-619 - Proper footer positioning with sidebar adjustment */
+.workout-database-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: transparent;
+    padding: 1rem;
+    z-index: 1000;
+    
+    /* Adjust for sidebar on desktop */
+    margin-left: var(--layout-menu-width, 260px);
+    transition: margin-left 0.3s ease;
+    
+    /* Center content with max width */
+    display: flex;
+    justify-content: center;
+}
+
+/* Line 621-629 - Inner container */
+.workout-database-footer > div {
+    background: var(--bs-body-bg);
+    border: 1px solid var(--bs-border-color);
+    border-radius: var(--bs-border-radius-lg);
+    padding: 1rem;
+    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 600px;
+}
+
+/* Line 632-634 - Menu collapsed state */
+.layout-menu-collapsed .workout-database-footer {
+    margin-left: var(--layout-menu-collapsed-width, 80px);
 }
 ```
+
+**Key Differences:**
+- Exercise DB uses `left` property with media query for sidebar
+- Workout DB uses `margin-left` with transition for smoother sidebar interaction
+- Workout DB has stronger box-shadow (0 -4px 12px vs 0 -2px 10px)
+- Workout DB handles collapsed menu state
 
 ## Solution Design
 
@@ -61,43 +118,72 @@ Create a **unified, robust solution** that:
 
 ## Implementation Plan
 
-### Phase 1: Fix Exercise Database CSS
+### Phase 1: Copy Workout Database Footer Styling to Exercise Database
 
 **File**: [`frontend/assets/css/exercise-database.css`](frontend/assets/css/exercise-database.css)
 
 #### Changes Required:
 
-1. **Remove ineffective rules** (lines 43-62):
-   - Remove `.content-wrapper` padding (doesn't reach nested content)
-   - Remove `.exercise-card-table` max-height (too restrictive)
-   - Remove `.card:has()` selector (browser support issues)
+**REPLACE the entire Exercise Database Footer section (lines 1-83) with the Workout Database approach:**
 
-2. **Add proper container padding**:
+1. **Replace footer positioning** (lines 2-25):
    ```css
-   /* Target the actual content container */
-   .container-xxl.flex-grow-1.container-p-y {
-       padding-bottom: 200px !important;
+   /* Exercise Database Sticky Footer */
+   .exercise-database-footer {
+       position: fixed;
+       bottom: 0;
+       left: 0;
+       right: 0;
+       background: transparent;
+       padding: 1rem;
+       z-index: 1000;
+       
+       /* Adjust for sidebar on desktop - COPIED FROM WORKOUT DB */
+       margin-left: var(--layout-menu-width, 260px);
+       transition: margin-left 0.3s ease;
+       
+       /* Center content with max width */
+       display: flex;
+       justify-content: center;
+   }
+   
+   /* Remove pointer-events rules - not needed with margin-left approach */
+   ```
+
+2. **Update inner container** (lines 28-36):
+   ```css
+   /* Inner container with card styling - COPIED FROM WORKOUT DB */
+   .exercise-database-footer > div {
+       background: var(--bs-body-bg);
+       border: 1px solid var(--bs-border-color);
+       border-radius: var(--bs-border-radius-lg);
+       padding: 1rem;
+       box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);  /* Stronger shadow */
+       width: 100%;
+       max-width: 600px;
    }
    ```
 
-3. **Add card bottom margin**:
+3. **Add collapsed menu state** (NEW):
    ```css
+   /* When menu is collapsed - COPIED FROM WORKOUT DB */
+   .layout-menu-collapsed .exercise-database-footer {
+       margin-left: var(--layout-menu-collapsed-width, 80px);
+   }
+   ```
+
+4. **Update content padding** (replace lines 43-62):
+   ```css
+   /* Add padding to content to prevent overlap with sticky footer */
+   .container-xxl.flex-grow-1.container-p-y {
+       padding-bottom: 200px !important;
+   }
+   
    /* Ensure card has space above footer */
    .card {
        margin-bottom: 2rem;
    }
-   ```
-
-4. **Add rounded corners to search input**:
-   ```css
-   /* Rounded corners for search input */
-   .exercise-database-footer #exerciseSearch {
-       border-radius: 0.5rem;
-   }
-   ```
-
-5. **Ensure pagination visibility**:
-   ```css
+   
    /* Pagination needs extra bottom spacing */
    .pagination-container {
        padding-bottom: 2rem;
@@ -105,47 +191,97 @@ Create a **unified, robust solution** that:
    }
    ```
 
-6. **Add responsive adjustments**:
+5. **Update dark theme support** (lines 39-41):
    ```css
+   /* Dark theme support - COPIED FROM WORKOUT DB */
+   [data-bs-theme="dark"] .exercise-database-footer > div {
+       background: var(--bs-gray-900);
+       border-color: var(--bs-gray-700);
+       box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.3);
+   }
+   ```
+
+6. **Update mobile responsive** (lines 70-83):
+   ```css
+   /* Mobile responsive - COPIED FROM WORKOUT DB */
+   @media (max-width: 1199px) {
+       /* Remove sidebar offset on mobile */
+       .exercise-database-footer {
+           margin-left: 0;
+       }
+   }
+   
    @media (max-width: 768px) {
+       .exercise-database-footer {
+           padding: 0.75rem 1rem;
+       }
+       
+       /* Adjust content padding for mobile */
        .container-xxl.flex-grow-1.container-p-y {
            padding-bottom: 180px !important;
        }
    }
    
    @media (max-width: 576px) {
+       .exercise-database-footer {
+           padding: 0.625rem 0.875rem;
+       }
+       
+       /* Extra compact for very small screens */
        .container-xxl.flex-grow-1.container-p-y {
            padding-bottom: 160px !important;
        }
    }
    ```
 
-### Phase 2: Fix Workout Database CSS
+**Summary of Changes:**
+- ✅ Replace `left` property with `margin-left` for sidebar adjustment
+- ✅ Add `transition` for smooth sidebar collapse
+- ✅ Remove `pointer-events` approach (not needed)
+- ✅ Increase box-shadow from `0 -2px 10px` to `0 -4px 12px`
+- ✅ Add collapsed menu state handling
+- ✅ Update responsive breakpoints to match workout DB
+- ✅ Improve dark theme support
+- ✅ Use consistent padding values (200px/180px/160px)
+
+### Phase 2: Update Workout Database Content Padding
 
 **File**: [`frontend/assets/css/workout-database.css`](frontend/assets/css/workout-database.css)
 
 #### Changes Required:
 
-1. **Update existing padding rules** (lines 636-640):
-   - Make selector more specific
-   - Increase padding values to match footer height
+The workout database footer styling is already correct. We only need to update the content padding to match the exercise database approach.
 
-2. **Replace current rule**:
+1. **Update content padding** (lines 636-640):
    ```css
-   /* OLD (line 637-640) */
+   /* OLD */
    .workout-database-footer ~ .content-wrapper .container-xxl,
    .container-xxl {
        padding-bottom: 140px !important;
    }
    
-   /* NEW */
+   /* NEW - More specific selector and increased padding */
    .container-xxl.flex-grow-1.container-p-y {
        padding-bottom: 200px !important;
    }
    ```
 
-3. **Update responsive breakpoints** (lines 677-696):
+2. **Update responsive breakpoints** (lines 677-696):
    ```css
+   /* OLD */
+   @media (max-width: 768px) {
+       .container-xxl {
+           padding-bottom: 130px !important;
+       }
+   }
+   
+   @media (max-width: 576px) {
+       .container-xxl {
+           padding-bottom: 120px !important;
+       }
+   }
+   
+   /* NEW - Match exercise database values */
    @media (max-width: 768px) {
        .container-xxl.flex-grow-1.container-p-y {
            padding-bottom: 180px !important;
@@ -159,22 +295,21 @@ Create a **unified, robust solution** that:
    }
    ```
 
-4. **Add card spacing**:
+3. **Add card and pagination spacing** (NEW):
    ```css
    /* Ensure workout cards have proper spacing */
    .card {
        margin-bottom: 2rem;
    }
-   ```
-
-5. **Ensure pagination visibility**:
-   ```css
+   
    /* Pagination spacing */
    .pagination-container {
        padding-bottom: 2rem;
        margin-bottom: 1rem;
    }
    ```
+
+**Note:** The workout database footer CSS (lines 603-656) is already optimal and serves as the template for the exercise database.
 
 ### Phase 3: Create Shared Footer Styles (Optional Enhancement)
 

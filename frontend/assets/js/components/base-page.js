@@ -124,12 +124,8 @@ class GhostGymBasePage {
         if (this.options.redirectOnAuthFail) {
             window.location.href = this.options.redirectOnAuthFail;
         } else {
-            this.showError('Please sign in to access this page');
-            
-            // Show auth modal if available
-            if (window.showAuthModal) {
-                window.showAuthModal();
-            }
+            this.showError('Please sign in to access this page. Use the menu to log in.');
+            // Auth modal removed - users should use menu to sign in
         }
     }
     

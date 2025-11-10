@@ -1,27 +1,24 @@
-/* Exercise Database Sticky Footer */
+/* ============================================
+   EXERCISE DATABASE STICKY FOOTER
+   Copied from workout-database.css for consistency
+   ============================================ */
+
 .exercise-database-footer {
     position: fixed;
     bottom: 0;
     left: 0;
     right: 0;
-    z-index: 1000;
-    padding: 1rem;
     background: transparent;
+    padding: 1rem;
+    z-index: 1000;
+    
+    /* Adjust for sidebar on desktop */
+    margin-left: var(--layout-menu-width, 260px);
+    transition: margin-left 0.3s ease;
+    
+    /* Center content with max width */
     display: flex;
     justify-content: center;
-    align-items: center;
-    pointer-events: none; /* Allow clicks through transparent areas */
-}
-
-.exercise-database-footer > div {
-    pointer-events: auto; /* Re-enable clicks on the actual content */
-}
-
-/* Adjust for sidebar */
-@media (min-width: 1200px) {
-    .exercise-database-footer {
-        left: var(--layout-menu-width, 260px);
-    }
 }
 
 /* Inner container with card styling */
@@ -30,54 +27,68 @@
     border: 1px solid var(--bs-border-color);
     border-radius: var(--bs-border-radius-lg);
     padding: 1rem;
-    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
     width: 100%;
     max-width: 600px;
 }
 
-/* Dark theme support */
-[data-theme="dark"] .exercise-database-footer > div {
-    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.3);
+/* When menu is collapsed */
+.layout-menu-collapsed .exercise-database-footer {
+    margin-left: var(--layout-menu-collapsed-width, 80px);
 }
 
 /* Add padding to content to prevent overlap with sticky footer */
-.content-wrapper {
-    padding-bottom: 180px !important;
+.container-xxl.flex-grow-1.container-p-y {
+    padding-bottom: 200px !important;
 }
 
-/* Constrain the exercise card to not extend behind footer */
-.exercise-card-table {
-    max-height: calc(100vh - 350px);
-    overflow-y: auto;
-}
-
-/* Ensure the exercise list card has proper spacing */
-#exerciseTableContainer {
+/* Ensure card has space above footer */
+.card {
     margin-bottom: 2rem;
 }
 
-/* Add bottom margin to the entire card */
-.card:has(#exerciseTableContainer) {
-    margin-bottom: 180px !important;
-}
-
-/* Ensure pagination doesn't get hidden behind footer */
+/* Pagination needs extra bottom spacing */
 .pagination-container {
-    margin-bottom: 1.5rem;
-    padding-bottom: 1rem;
+    padding-bottom: 2rem;
+    margin-bottom: 1rem;
 }
 
-/* Mobile adjustments */
+/* Dark theme support */
+[data-bs-theme="dark"] .exercise-database-footer > div {
+    background: var(--bs-gray-900);
+    border-color: var(--bs-gray-700);
+    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* ============================================
+   MOBILE RESPONSIVE FOR STICKY FOOTER
+   ============================================ */
+
+@media (max-width: 1199px) {
+    /* Remove sidebar offset on mobile */
+    .exercise-database-footer {
+        margin-left: 0;
+    }
+}
+
 @media (max-width: 768px) {
     .exercise-database-footer {
-        left: 0;
-        padding: 0.75rem;
+        padding: 0.75rem 1rem;
     }
     
-    .exercise-database-footer > div {
-        max-width: 100%;
-        border-radius: 0;
-        border-left: none;
-        border-right: none;
+    /* Adjust content padding for mobile */
+    .container-xxl.flex-grow-1.container-p-y {
+        padding-bottom: 180px !important;
+    }
+}
+
+@media (max-width: 576px) {
+    .exercise-database-footer {
+        padding: 0.625rem 0.875rem;
+    }
+    
+    /* Extra compact for very small screens */
+    .container-xxl.flex-grow-1.container-p-y {
+        padding-bottom: 160px !important;
     }
 }

@@ -75,8 +75,9 @@ class WorkoutModeController {
             // Get workout ID from URL
             const workoutId = this.getWorkoutIdFromUrl();
             if (!workoutId) {
-                // Show workout selection instead of error
-                await this.showWorkoutSelection();
+                // Redirect to workout database for workout selection
+                console.log('🔄 No workout ID provided, redirecting to workout database...');
+                window.location.href = 'workout-database.html';
                 return;
             }
             
@@ -1119,18 +1120,7 @@ class WorkoutModeController {
         console.log('🔄 Auth state changed:', user ? 'authenticated' : 'anonymous');
         this.initializeStartButtonTooltip();
         
-        // If we're in workout selection mode and auth state changed, reload workouts
-        const selectionContainer = document.getElementById('workoutSelectionContainer');
-        if (selectionContainer && selectionContainer.style.display !== 'none' && !this.getWorkoutIdFromUrl()) {
-            console.log('🔄 Reloading workout list after auth change...');
-            // Wait for storage mode to update
-            await new Promise(resolve => setTimeout(resolve, 500));
-            // Reload workouts with new storage mode
-            if (window.loadWorkouts) {
-                await window.loadWorkouts();
-                console.log('✅ Workout list reloaded');
-            }
-        }
+        // Auth state changed - no special handling needed since we redirect to workout database
     }
     
     /**
@@ -1357,128 +1347,6 @@ class WorkoutModeController {
     }
     
     /**
-     * Show workout selection UI
-     * Uses the same approach as workout-database.html (PROVEN to work on Railway)
-     */
-    async showWorkoutSelection() {
-        try {
-            console.log('📋 Showing workout selection...');
-            
-            // Wait for data manager with retry logic
-            console.log('⏳ Waiting for data manager...');
-            let retries = 0;
-            const maxRetries = 5;
-            while (!window.dataManager && retries < maxRetries) {
-                console.log(`⏳ Data manager not ready, waiting... (${retries + 1}/${maxRetries})`);
-                await new Promise(resolve => setTimeout(resolve, 1000));
-                retries++;
-            }
-            
-            if (!window.dataManager) {
-                throw new Error('Data manager not available after waiting. Please refresh the page.');
-            }
-            
-            console.log('✅ Data manager ready');
-            
-            // Check if loadWorkouts function is available (from workout-database.js)
-            if (typeof window.loadWorkouts !== 'function') {
-                throw new Error('loadWorkouts function not available. Please refresh the page.');
-            }
-            
-            console.log('✅ loadWorkouts function available');
-            
-            // Hide other states
-            const loadingState = document.getElementById('workoutLoadingState');
-            const errorState = document.getElementById('workoutErrorState');
-            const cardsContainer = document.getElementById('exerciseCardsContainer');
-            const footer = document.getElementById('workoutModeFooter');
-            const selectionContainer = document.getElementById('workoutSelectionContainer');
-            const selectionFooter = document.getElementById('workoutSelectionFooter');
-            
-            if (loadingState) loadingState.style.display = 'none';
-            if (errorState) errorState.style.display = 'none';
-            if (cardsContainer) cardsContainer.style.display = 'none';
-            if (footer) footer.style.display = 'none';
-            
-            // Show selection container and footer
-            if (!selectionContainer) {
-                throw new Error('Workout selection container not found in DOM');
-            }
-            selectionContainer.style.display = 'block';
-            if (selectionFooter) selectionFooter.style.display = 'block';
-            
-            // Update page title
-            const workoutNameEl = document.getElementById('workoutName');
-            if (workoutNameEl) workoutNameEl.textContent = 'Select a Workout';
-            document.title = '👻 Select Workout - Ghost Gym';
-            
-            // Hide change workout link
-            const changeLink = document.getElementById('changeWorkoutLink');
-            if (changeLink) changeLink.style.display = 'none';
-            
-            // Initialize global state for workout database (required by workout-database.js)
-            window.ghostGym = window.ghostGym || {};
-            window.ghostGym.workoutDatabase = window.ghostGym.workoutDatabase || {
-                all: [],
-                filtered: [],
-                displayed: [],
-                currentPage: 1,
-                pageSize: 50,
-                filters: {
-                    search: '',
-                    tags: [],
-                    sortBy: 'modified_date',
-                    sortOrder: 'desc'
-                },
-                stats: {
-                    total: 0,
-                    showing: 0
-                }
-            };
-            
-            // Use the PROVEN loadWorkouts function from workout-database.js
-            console.log('📡 Calling loadWorkouts() from workout-database.js...');
-            await window.loadWorkouts();
-            console.log('✅ Workout selection ready');
-            
-        } catch (error) {
-            console.error('❌ Error showing workout selection:', error);
-            this.showError('Failed to load workout list: ' + error.message);
-        }
-    }
-    
-    /**
-     * Select a workout from the list
-     */
-    async selectWorkout(workoutId) {
-        try {
-            console.log('🎯 Workout selected:', workoutId);
-            
-            // Update URL without page reload
-            const url = new URL(window.location);
-            url.searchParams.set('id', workoutId);
-            window.history.pushState({ workoutId }, '', url);
-            
-            // Hide selection container and footer
-            const selectionContainer = document.getElementById('workoutSelectionContainer');
-            const selectionFooter = document.getElementById('workoutSelectionFooter');
-            if (selectionContainer) selectionContainer.style.display = 'none';
-            if (selectionFooter) selectionFooter.style.display = 'none';
-            
-            // Show change workout link
-            const changeLink = document.getElementById('changeWorkoutLink');
-            if (changeLink) changeLink.style.display = 'inline';
-            
-            // Load the workout
-            await this.loadWorkout(workoutId);
-            
-        } catch (error) {
-            console.error('❌ Error selecting workout:', error);
-            this.showError('Failed to load workout: ' + error.message);
-        }
-    }
-    
-    /**
      * Show error state
      */
     showError(message) {
@@ -1489,13 +1357,9 @@ class WorkoutModeController {
         const errorMessage = document.getElementById('workoutErrorMessage');
         const content = document.getElementById('exerciseCardsContainer');
         const footer = document.getElementById('workoutModeFooter');
-        const selection = document.getElementById('workoutSelectionContainer');
-        const selectionFooter = document.getElementById('workoutSelectionFooter');
         
         // Hide all other states
         if (loading) loading.style.display = 'none';
-        if (selection) selection.style.display = 'none';
-        if (selectionFooter) selectionFooter.style.display = 'none';
         if (content) content.style.display = 'none';
         if (footer) footer.style.display = 'none';
         
