@@ -86,14 +86,22 @@
               <!-- Workout Mode Header (Custom - No standard app bar) -->
               <div class="workout-mode-header">
                 <div class="mb-4">
-                  <!-- Workout Title -->
-                  <h4 class="mb-1" id="workoutModeTitle">
-                    <i class="bx bx-dumbbell me-2"></i>
-                    <span id="workoutName">Loading workout...</span>
-                  </h4>
-                  <a href="workouts.html" class="text-muted small" id="changeWorkoutLink">
-                    <i class="bx bx-refresh me-1"></i>Change workout
-                  </a>
+                  <!-- Page Title (h4 - Sneat standard for page titles) -->
+                  <h4 class="mb-2">Workout Mode</h4>
+                  
+                  <!-- Workout Name (h5 - secondary heading) -->
+                  <h5 class="mb-1" id="workoutName">Loading workout...</h5>
+                  
+                  <!-- Workout Details (small text with muted color) -->
+                  <div class="text-muted small" id="workoutDetails">
+                    <span id="workoutDescription"></span>
+                  </div>
+                  
+                  <!-- Last Completed (small text with icon) -->
+                  <div class="text-muted small mt-1" id="lastCompletedContainer" style="display: none;">
+                    <i class="bx bx-history me-1"></i>
+                    Last completed: <span id="lastCompletedDate">Never</span>
+                  </div>
                 </div>
               </div>
 
@@ -210,12 +218,18 @@
             Time: <span id="footerSessionTimer">00:00</span>
           </div>
           
-          <!-- Right side: Controls (always visible, always right-aligned) -->
+          <!-- Right side: Controls (4 buttons - always visible, always right-aligned) -->
           <div class="d-flex gap-2 ms-auto">
-            <button class="btn btn-sm btn-outline-primary" id="shareWorkoutBtn">
+            <button class="btn btn-sm btn-outline-secondary" id="editWorkoutBtn" title="Edit this workout">
+              <i class="bx bx-edit-alt"></i>
+            </button>
+            <button class="btn btn-sm btn-outline-secondary" id="changeWorkoutBtn" title="Change workout">
+              <i class="bx bx-refresh"></i>
+            </button>
+            <button class="btn btn-sm btn-outline-primary" id="shareWorkoutBtn" title="Share workout">
               <i class="bx bx-share-alt"></i>
             </button>
-            <button class="btn btn-sm btn-outline-secondary" id="soundToggleBtn">
+            <button class="btn btn-sm btn-outline-secondary" id="soundToggleBtn" title="Toggle sound">
               <i class="bx bx-volume-full" id="soundIcon"></i>
             </button>
           </div>

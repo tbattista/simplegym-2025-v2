@@ -13,20 +13,34 @@
     margin-bottom: 2rem;
 }
 
+/* Enhanced header typography following Sneat standards */
 .workout-mode-header h4 {
     font-size: 1.5rem;
     font-weight: 600;
     color: var(--bs-heading-color);
+    margin-bottom: 0.5rem;
 }
 
-.workout-mode-header #changeWorkoutLink {
-    text-decoration: none;
+.workout-mode-header h5 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--bs-heading-color);
+    margin-bottom: 0.25rem;
+}
+
+.workout-mode-header #workoutDetails {
     font-size: 0.875rem;
-    transition: color 0.2s ease;
+    line-height: 1.5;
 }
 
-.workout-mode-header #changeWorkoutLink:hover {
-    color: var(--bs-primary) !important;
+.workout-mode-header #lastCompletedContainer {
+    font-size: 0.875rem;
+    display: flex;
+    align-items: center;
+}
+
+.workout-mode-header #lastCompletedContainer i {
+    color: var(--bs-primary);
 }
 
 /* ============================================
@@ -570,6 +584,39 @@
     background: rgba(var(--bs-success-rgb), 0.02);
 }
 
+/* Footer button group - ensure proper spacing and alignment */
+.workout-mode-footer .d-flex.gap-2 {
+    gap: 0.5rem !important;
+}
+
+/* Footer icon-only buttons */
+.workout-mode-footer .btn-sm {
+    width: 38px;
+    height: 38px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.workout-mode-footer .btn-sm i {
+    font-size: 1.25rem;
+    margin: 0;
+}
+
+/* Hover states for footer buttons */
+.workout-mode-footer .btn-outline-secondary:hover {
+    background-color: var(--bs-secondary);
+    border-color: var(--bs-secondary);
+    color: white;
+}
+
+.workout-mode-footer .btn-outline-primary:hover {
+    background-color: var(--bs-primary);
+    border-color: var(--bs-primary);
+    color: white;
+}
+
 /* When menu is collapsed */
 .layout-menu-collapsed .workout-mode-footer {
     margin-left: var(--layout-menu-collapsed-width, 80px);
@@ -742,8 +789,18 @@
         font-size: 1.25rem;
     }
     
-    .workout-mode-header #changeWorkoutLink {
-        font-size: 0.8rem;
+    .workout-mode-header h5 {
+        font-size: 1.1rem;
+    }
+    
+    /* Footer button adjustments */
+    .workout-mode-footer .btn-sm {
+        width: 36px;
+        height: 36px;
+    }
+    
+    .workout-mode-footer .btn-sm i {
+        font-size: 1.1rem;
     }
     
     /* Exercise Cards */
@@ -844,8 +901,21 @@
         font-size: 1.1rem;
     }
     
+    .workout-mode-header h5 {
+        font-size: 1rem;
+    }
+    
     .exercise-card-summary h6 {
         font-size: 0.95rem;
+    }
+    
+    .workout-mode-footer .btn-sm {
+        width: 34px;
+        height: 34px;
+    }
+    
+    .workout-mode-footer .btn-sm i {
+        font-size: 1rem;
     }
     
     .rest-timer-display .display-4 {

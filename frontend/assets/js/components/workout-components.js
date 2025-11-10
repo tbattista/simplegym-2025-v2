@@ -18,7 +18,7 @@
     /**
      * Workout Grid Component
      * Full-page workout list view with search and actions
-     * Used in: workouts.html
+     * Used in: workout-builder.html
      */
     registry.register('workoutGrid', {
         dependencies: ['renderWorkoutsView', 'dataManager'],

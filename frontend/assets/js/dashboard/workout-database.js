@@ -643,8 +643,8 @@ function editWorkout(workoutId) {
     // Store workout ID in sessionStorage
     sessionStorage.setItem('editWorkoutId', workoutId);
     
-    // Navigate to workouts.html (editor page)
-    window.location.href = 'workouts.html';
+    // Navigate to workout-builder.html (editor page)
+    window.location.href = 'workout-builder.html';
 }
 
 /**
@@ -864,8 +864,8 @@ function createNewWorkout() {
     // Clear any existing workout ID
     sessionStorage.removeItem('editWorkoutId');
     
-    // Navigate to workouts.html (editor page)
-    window.location.href = 'workouts.html';
+    // Navigate to workout-builder.html (editor page)
+    window.location.href = 'workout-builder.html';
 }
 
 /**

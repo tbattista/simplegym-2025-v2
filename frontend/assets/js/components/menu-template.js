@@ -47,7 +47,7 @@ function getMenuHTML(activePage = 'home') {
                 <span class="menu-header-text">Workout Management</span>
             </li>
             <li class="menu-item ${activePage === 'workouts' ? 'active' : ''}">
-                <a href="workouts.html" class="menu-link">
+                <a href="workout-builder.html" class="menu-link">
                     <i class="menu-icon tf-icons bx bx-dumbbell"></i>
                     <div class="text-truncate">Workout Builder</div>
                 </a>

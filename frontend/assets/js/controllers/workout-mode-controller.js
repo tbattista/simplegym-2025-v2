@@ -144,9 +144,32 @@ class WorkoutModeController {
                 throw new Error('Workout not found');
             }
             
-            // Update page title
+            // Update page title and header
             document.getElementById('workoutName').textContent = this.currentWorkout.name;
             document.title = `👻 ${this.currentWorkout.name} - Workout Mode - Ghost Gym`;
+            
+            // Update workout details
+            const detailsEl = document.getElementById('workoutDetails');
+            if (detailsEl && this.currentWorkout.description) {
+                detailsEl.textContent = this.currentWorkout.description;
+            }
+            
+            // Fetch and display last completed date
+            const lastCompleted = await this.fetchLastCompleted();
+            const lastCompletedContainer = document.getElementById('lastCompletedContainer');
+            const lastCompletedDate = document.getElementById('lastCompletedDate');
+            
+            if (lastCompleted && lastCompletedContainer && lastCompletedDate) {
+                const formattedDate = lastCompleted.toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric'
+                });
+                lastCompletedDate.textContent = formattedDate;
+                lastCompletedContainer.style.display = 'flex';
+            } else if (lastCompletedContainer) {
+                lastCompletedContainer.style.display = 'none';
+            }
             
             // Render workout
             this.renderWorkout();
@@ -162,6 +185,47 @@ class WorkoutModeController {
         } catch (error) {
             console.error('❌ Error loading workout:', error);
             this.showError(error.message);
+        }
+    }
+    
+    /**
+     * Fetch last completed date for current workout
+     */
+    async fetchLastCompleted() {
+        try {
+            if (!this.currentWorkout || !this.authService.isUserAuthenticated()) {
+                return null;
+            }
+            
+            const token = await this.authService.getIdToken();
+            if (!token) return null;
+            
+            // Use the history endpoint to get last session
+            const url = window.config.api.getUrl(`/api/v3/workout-sessions/history/workout/${this.currentWorkout.id}`);
+            
+            const response = await fetch(url, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            
+            if (!response.ok) {
+                console.warn('Could not fetch last completed date');
+                return null;
+            }
+            
+            const historyData = await response.json();
+            
+            // Get the most recent session date
+            if (historyData.last_session_date) {
+                return new Date(historyData.last_session_date);
+            }
+            
+            return null;
+            
+        } catch (error) {
+            console.error('Error fetching last completed:', error);
+            return null;
         }
     }
     
@@ -595,6 +659,18 @@ class WorkoutModeController {
         if (completeBtn) {
             completeBtn.addEventListener('click', () => this.handleCompleteWorkout());
         }
+        
+        // Edit workout button
+        const editBtn = document.getElementById('editWorkoutBtn');
+        if (editBtn) {
+            editBtn.addEventListener('click', () => this.handleEditWorkout());
+        }
+        
+        // Change workout button
+        const changeBtn = document.getElementById('changeWorkoutBtn');
+        if (changeBtn) {
+            changeBtn.addEventListener('click', () => this.handleChangeWorkout());
+        }
     }
     
     /**
@@ -861,7 +937,7 @@ class WorkoutModeController {
                         <button type="button" class="btn btn-primary" onclick="window.location.href='workout-mode.html'">
                             <i class="bx bx-dumbbell me-1"></i>Start Another Workout
                         </button>
-                        <button type="button" class="btn btn-outline-primary" onclick="window.location.href='workouts.html'">
+                        <button type="button" class="btn btn-outline-primary" onclick="window.location.href='workout-builder.html'">
                             <i class="bx bx-list-ul me-1"></i>View History
                         </button>
                         <button type="button" class="btn btn-outline-secondary" onclick="window.location.href='index.html'">
@@ -1149,6 +1225,29 @@ class WorkoutModeController {
     }
     
     /**
+     * Handle edit workout button click
+     * Navigate to builder with current workout loaded
+     */
+    handleEditWorkout() {
+        if (!this.currentWorkout) {
+            console.error('No workout to edit');
+            return;
+        }
+        
+        // Navigate to workout-builder.html (builder page) with workout ID
+        window.location.href = `workout-builder.html?id=${this.currentWorkout.id}`;
+    }
+    
+    /**
+     * Handle change workout button click
+     * Navigate to workout database
+     */
+    handleChangeWorkout() {
+        // Navigate to workout database page
+        window.location.href = 'workout-database.html';
+    }
+    
+    /**
      * Toggle exercise card
      */
     toggleExerciseCard(index) {
@@ -1219,7 +1318,7 @@ class WorkoutModeController {
                 'Workout Complete! 🎉',
                 'Great job! Would you like to return to the workout list?',
                 () => {
-                    window.location.href = 'workouts.html';
+                    window.location.href = 'workout-builder.html';
                 }
             );
         }

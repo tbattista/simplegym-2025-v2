@@ -98,15 +98,16 @@ async def serve_programs():
         )
 
 @app.get("/workouts", response_class=HTMLResponse)
-@app.get("/workouts.html", response_class=HTMLResponse)
-async def serve_workouts():
-    """Serve the Workouts Library page"""
+@app.get("/workout-builder", response_class=HTMLResponse)
+@app.get("/workout-builder.html", response_class=HTMLResponse)
+async def serve_workout_builder():
+    """Serve the Workout Builder page"""
     try:
-        with open("frontend/workouts.html", "r", encoding="utf-8") as f:
+        with open("frontend/workout-builder.html", "r", encoding="utf-8") as f:
             return HTMLResponse(content=f.read())
     except FileNotFoundError:
         return HTMLResponse(
-            content="<h1>Workouts page not found</h1><p>Please ensure frontend/workouts.html exists</p>",
+            content="<h1>Workout Builder page not found</h1><p>Please ensure frontend/workout-builder.html exists</p>",
             status_code=404
         )
 
