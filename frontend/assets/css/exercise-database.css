@@ -10,6 +10,11 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    pointer-events: none; /* Allow clicks through transparent areas */
+}
+
+.exercise-database-footer > div {
+    pointer-events: auto; /* Re-enable clicks on the actual content */
 }
 
 /* Adjust for sidebar */
@@ -37,12 +42,29 @@
 
 /* Add padding to content to prevent overlap with sticky footer */
 .content-wrapper {
-    padding-bottom: 150px;
+    padding-bottom: 180px !important;
+}
+
+/* Constrain the exercise card to not extend behind footer */
+.exercise-card-table {
+    max-height: calc(100vh - 350px);
+    overflow-y: auto;
 }
 
 /* Ensure the exercise list card has proper spacing */
 #exerciseTableContainer {
     margin-bottom: 2rem;
+}
+
+/* Add bottom margin to the entire card */
+.card:has(#exerciseTableContainer) {
+    margin-bottom: 180px !important;
+}
+
+/* Ensure pagination doesn't get hidden behind footer */
+.pagination-container {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
 }
 
 /* Mobile adjustments */
