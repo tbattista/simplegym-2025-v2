@@ -523,6 +523,16 @@
     transition: margin-left 0.3s ease;
 }
 
+/* Ensure controls are always right-aligned in the bottom controls row */
+.workout-mode-footer .d-flex.align-items-center {
+    justify-content: flex-end;
+}
+
+/* Session info stays on the left when visible via me-auto class */
+#sessionInfo {
+    margin-right: auto !important;
+}
+
 .workout-mode-footer-content {
     display: flex;
     justify-content: space-between;
