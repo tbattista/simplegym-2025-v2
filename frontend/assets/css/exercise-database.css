@@ -1,0 +1,61 @@
+/* Exercise Database Sticky Footer */
+.exercise-database-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    padding: 1rem;
+    background: transparent;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Adjust for sidebar */
+@media (min-width: 1200px) {
+    .exercise-database-footer {
+        left: var(--layout-menu-width, 260px);
+    }
+}
+
+/* Inner container with card styling */
+.exercise-database-footer > div {
+    background: var(--bs-body-bg);
+    border: 1px solid var(--bs-border-color);
+    border-radius: var(--bs-border-radius-lg);
+    padding: 1rem;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 600px;
+}
+
+/* Dark theme support */
+[data-theme="dark"] .exercise-database-footer > div {
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.3);
+}
+
+/* Add padding to content to prevent overlap with sticky footer */
+.content-wrapper {
+    padding-bottom: 150px;
+}
+
+/* Ensure the exercise list card has proper spacing */
+#exerciseTableContainer {
+    margin-bottom: 2rem;
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+    .exercise-database-footer {
+        left: 0;
+        padding: 0.75rem;
+    }
+    
+    .exercise-database-footer > div {
+        max-width: 100%;
+        border-radius: 0;
+        border-left: none;
+        border-right: none;
+    }
+}

@@ -93,7 +93,7 @@ async function initializeExerciseDatabase(page) {
                 {
                     key: 'equipment',
                     label: 'Equipment',
-                    type: 'select',
+                    type: 'multiselect',
                     options: getUniqueEquipment(),
                     placeholder: 'All Equipment'
                 },
@@ -379,9 +379,18 @@ function applyFiltersAndRender(filters) {
         allExercises = allExercises.filter(e => e.targetMuscleGroup === filters.muscleGroup);
     }
     
-    // Apply equipment filter
-    if (filters.equipment) {
-        allExercises = allExercises.filter(e => e.primaryEquipment === filters.equipment);
+    // Apply equipment filter (supports multi-select with OR logic)
+    if (filters.equipment && filters.equipment.length > 0) {
+        console.log('🔧 Equipment filter active:', filters.equipment);
+        const beforeCount = allExercises.length;
+        
+        allExercises = allExercises.filter(e => {
+            // Ensure primaryEquipment exists and matches any selected equipment
+            const hasEquipment = e.primaryEquipment && filters.equipment.includes(e.primaryEquipment);
+            return hasEquipment;
+        });
+        
+        console.log(`📊 Equipment filter: ${beforeCount} → ${allExercises.length} exercises`);
     }
     
     // Apply difficulty filter
@@ -421,6 +430,67 @@ function applyFiltersAndRender(filters) {
     
     // Update stats
     updateStats();
+    
+    // Update filter feedback
+    updateFilterFeedback(filters);
+}
+
+/**
+ * Update filter feedback display
+ */
+function updateFilterFeedback(filters) {
+    const feedbackContainer = document.getElementById('filterFeedback');
+    const feedbackText = document.getElementById('filterFeedbackText');
+    
+    if (!feedbackContainer || !feedbackText) return;
+    
+    const activeFilters = [];
+    
+    // Check each filter and add to active list
+    if (filters.search) {
+        activeFilters.push(`<strong>Search:</strong> "${filters.search}"`);
+    }
+    
+    if (filters.muscleGroup) {
+        activeFilters.push(`<strong>Muscle:</strong> ${filters.muscleGroup}`);
+    }
+    
+    // Show individual equipment selections
+    if (filters.equipment && filters.equipment.length > 0) {
+        const equipmentItems = filters.equipment.map(eq =>
+            `<span class="badge bg-primary me-1 mb-1">${eq}</span>`
+        ).join('');
+        activeFilters.push(`<strong>Equipment:</strong><br>${equipmentItems}`);
+    }
+    
+    if (filters.difficulty) {
+        activeFilters.push(`<strong>Difficulty:</strong> ${filters.difficulty}`);
+    }
+    
+    if (filters.exerciseTier) {
+        const tierLabels = {
+            '1': 'Standard (Tier 1)',
+            '2': 'Standard (Tier 2)',
+            '3': 'Specialized'
+        };
+        activeFilters.push(`<strong>Tier:</strong> ${tierLabels[filters.exerciseTier] || filters.exerciseTier}`);
+    }
+    
+    if (filters.favoritesOnly) {
+        activeFilters.push('<strong>Favorites only</strong>');
+    }
+    
+    if (filters.customOnly) {
+        activeFilters.push('<strong>Custom only</strong>');
+    }
+    
+    // Show/hide feedback based on active filters
+    if (activeFilters.length > 0) {
+        feedbackText.innerHTML = `<div style="line-height: 1.8;">Active filters:<br>${activeFilters.join('<br>')}</div>`;
+        feedbackContainer.style.display = 'block';
+    } else {
+        feedbackContainer.style.display = 'none';
+    }
 }
 
 /**
@@ -566,15 +636,8 @@ function getUniqueEquipment() {
  * Update stats display
  */
 function updateStats() {
-    const favCount = document.getElementById('favoritesCount');
-    const customCount = document.getElementById('customCount');
-    const showingCount = document.getElementById('showingCount');
-    
-    if (favCount) favCount.textContent = window.ghostGym.exercises.favorites.size;
-    if (customCount) customCount.textContent = window.ghostGym.exercises.custom.length;
-    if (showingCount && exerciseTable) {
-        showingCount.textContent = exerciseTable.getFilteredData().length;
-    }
+    // Stats display removed from UI - keeping function for compatibility
+    // Can be removed in future refactoring
 }
 
 /**

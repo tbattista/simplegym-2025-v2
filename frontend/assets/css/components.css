@@ -100,3 +100,29 @@
         box-shadow: none;
     }
 }
+
+/* ============================================================================
+   SEARCH CARD STYLING (SHARED)
+   Card-style search boxes with centered layout
+   ============================================================================ */
+
+/* Container for search cards - centers content with max-width */
+.search-card-container {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+}
+
+/* Search card styling - applies to all search boxes */
+.search-card-container .card {
+    width: 100%;
+    max-width: 600px;
+    border-radius: var(--bs-border-radius-lg);
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+    .search-card-container .card {
+        max-width: 100%;
+    }
+}

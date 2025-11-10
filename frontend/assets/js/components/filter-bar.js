@@ -125,6 +125,8 @@ class GhostGymFilterBar {
         switch (filter.type) {
             case 'select':
                 return this.createSelectFilterHTML(filter, colClass);
+            case 'multiselect':
+                return this.createMultiSelectFilterHTML(filter, colClass);
             case 'checkbox':
                 return this.createCheckboxFilterHTML(filter, colClass);
             case 'radio':
@@ -132,6 +134,41 @@ class GhostGymFilterBar {
             default:
                 return '';
         }
+    }
+    
+    createMultiSelectFilterHTML(filter, colClass) {
+        const helpIcon = filter.helpText ? `
+            <i class="bx bx-info-circle text-muted ms-1"
+               style="font-size: 0.875rem; cursor: help;"
+               data-bs-toggle="tooltip"
+               data-bs-placement="top"
+               data-bs-custom-class="tooltip-mobile-friendly"
+               title="${filter.helpText}"></i>
+        ` : '';
+        
+        return `
+            <div class="${colClass}">
+                <label class="form-label fw-semibold" for="multiselect-${filter.key}">
+                    ${filter.label}
+                    ${helpIcon}
+                </label>
+                <select multiple
+                        class="form-select"
+                        id="multiselect-${filter.key}"
+                        data-filter-key="${filter.key}"
+                        data-filter-type="multiselect"
+                        aria-label="${filter.label}"
+                        size="8"
+                        style="min-height: 200px;">
+                    ${(filter.options || []).map(opt => {
+                        const value = typeof opt === 'object' ? opt.value : opt;
+                        const label = typeof opt === 'object' ? opt.label : opt;
+                        return `<option value="${value}">${label}</option>`;
+                    }).join('')}
+                </select>
+                <small class="form-text text-muted">Hold Ctrl (Cmd on Mac) to select multiple</small>
+            </div>
+        `;
     }
     
     createSelectFilterHTML(filter, colClass) {
@@ -245,6 +282,11 @@ class GhostGymFilterBar {
                 element.addEventListener('change', () => {
                     this.handleFilterChange(key, element.value);
                 });
+            } else if (filterType === 'multiselect') {
+                element.addEventListener('change', () => {
+                    const selected = Array.from(element.selectedOptions).map(opt => opt.value);
+                    this.handleFilterChange(key, selected);
+                });
             } else if (filterType === 'checkbox') {
                 element.addEventListener('change', () => {
                     this.handleFilterChange(key, element.checked);
@@ -266,11 +308,14 @@ class GhostGymFilterBar {
         }
     }
     
+    
     initializeFilters() {
         // Initialize filter state with default values
         this.options.filters.forEach(filter => {
             if (filter.type === 'checkbox') {
                 this.state.filters[filter.key] = filter.defaultValue || false;
+            } else if (filter.type === 'multiselect') {
+                this.state.filters[filter.key] = filter.defaultValue || [];
             } else {
                 this.state.filters[filter.key] = filter.defaultValue || '';
             }
@@ -355,6 +400,9 @@ class GhostGymFilterBar {
             if (filterType === 'select') {
                 element.value = '';
                 this.state.filters[key] = '';
+            } else if (filterType === 'multiselect') {
+                Array.from(element.options).forEach(opt => opt.selected = false);
+                this.state.filters[key] = [];
             } else if (filterType === 'checkbox') {
                 element.checked = false;
                 this.state.filters[key] = false;

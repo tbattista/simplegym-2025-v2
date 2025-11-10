@@ -42,6 +42,9 @@
     
     <!-- Component CSS (includes all component styles) -->
     <link rel="stylesheet" href="/static/assets/css/components.css" />
+    
+    <!-- Exercise Database CSS -->
+    <link rel="stylesheet" href="/static/assets/css/exercise-database.css" />
 
     <!-- Helpers -->
     <script src="/static/assets/vendor/js/helpers.js"></script>
@@ -88,39 +91,6 @@
                     Exercise Database
                   </h4>
                   <p class="text-muted mb-0">Browse and favorite from <span id="totalExercisesCount">2,583</span> exercises</p>
-                </div>
-              </div>
-
-              <!-- Search Bar with Filter Button -->
-              <div class="card mb-4">
-                <div class="card-body">
-                  <div class="d-flex gap-2" style="flex-wrap: nowrap;">
-                    <div class="input-group flex-grow-1">
-                      <span class="input-group-text">
-                        <i class="bx bx-search"></i>
-                      </span>
-                      <input
-                        type="text"
-                        class="form-control"
-                        id="exerciseSearch"
-                        placeholder="Search exercises by name, muscle group, or equipment..."
-                        autocomplete="off"
-                        style="min-width: 0;">
-                      <button class="btn btn-sm btn-icon" type="button" id="clearSearchBtn" style="display: none;">
-                        <i class="bx bx-x"></i>
-                      </button>
-                    </div>
-                    <button
-                      class="btn btn-primary"
-                      type="button"
-                      data-bs-toggle="offcanvas"
-                      data-bs-target="#filtersOffcanvas"
-                      aria-controls="filtersOffcanvas"
-                      title="Filters"
-                      style="flex-shrink: 0;">
-                      <i class="bx bx-filter-alt"></i>
-                    </button>
-                  </div>
                 </div>
               </div>
 
@@ -171,6 +141,39 @@
     </div>
     <!-- / Layout wrapper -->
 
+    <!-- Exercise Database Footer (Sticky Search) -->
+    <div class="exercise-database-footer" id="exerciseDatabaseFooter">
+      <div class="d-flex flex-column gap-2">
+        <div class="d-flex gap-2">
+          <input
+            type="text"
+            class="form-control flex-grow-1"
+            id="exerciseSearch"
+            placeholder="Search exercises by name, muscle group, or equipment..."
+            autocomplete="off"
+            style="min-width: 0;">
+          <button class="btn btn-primary btn-sm" type="button" id="searchBtn" title="Search">
+            <i class="bx bx-search"></i>
+          </button>
+          <button
+            class="btn btn-primary"
+            type="button"
+            data-bs-toggle="offcanvas"
+            data-bs-target="#filtersOffcanvas"
+            aria-controls="filtersOffcanvas"
+            title="Filters"
+            style="flex-shrink: 0;">
+            <i class="bx bx-filter-alt"></i>
+          </button>
+        </div>
+        
+        <!-- Filter Feedback -->
+        <div class="filter-feedback text-muted small" id="filterFeedback" style="display: none;">
+          <span id="filterFeedbackText"></span>
+        </div>
+      </div>
+    </div>
+
     <!-- Filters Offcanvas (FilterBar component will populate this) -->
     <div class="offcanvas offcanvas-bottom" tabindex="-1" id="filtersOffcanvas" aria-labelledby="filtersOffcanvasLabel" style="height: 70vh;">
       <div class="offcanvas-header">
@@ -181,24 +184,6 @@
         <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
       </div>
       <div class="offcanvas-body">
-        <!-- Stats Section - Compact Single Line -->
-        <div class="mb-3 pb-3 border-bottom">
-          <div class="d-flex justify-content-between align-items-center gap-3 flex-wrap" style="font-size: 0.875rem;">
-            <div class="d-flex align-items-center gap-1">
-              <span class="text-muted">Fav:</span>
-              <span class="fw-semibold" id="favoritesCount">0</span>
-            </div>
-            <div class="d-flex align-items-center gap-1">
-              <span class="text-muted">Custom:</span>
-              <span class="fw-semibold" id="customCount">0</span>
-            </div>
-            <div class="d-flex align-items-center gap-1">
-              <span class="text-muted">Showing:</span>
-              <span class="fw-semibold" id="showingCount">0</span>
-            </div>
-          </div>
-        </div>
-        
         <!-- FilterBar component will inject filter controls here -->
         <div id="filterBarContainer"></div>
 

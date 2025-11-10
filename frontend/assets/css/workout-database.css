@@ -605,15 +605,27 @@
     bottom: 0;
     left: 0;
     right: 0;
-    background: var(--bs-body-bg);
-    border-top: 2px solid var(--bs-border-color);
+    background: transparent;
     padding: 1rem;
     z-index: 1000;
-    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
     
     /* Adjust for sidebar on desktop */
     margin-left: var(--layout-menu-width, 260px);
     transition: margin-left 0.3s ease;
+    
+    /* Center content with max width */
+    display: flex;
+    justify-content: center;
+}
+
+.workout-database-footer > div {
+    background: var(--bs-body-bg);
+    border: 1px solid var(--bs-border-color);
+    border-radius: var(--bs-border-radius-lg);
+    padding: 1rem;
+    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 600px;
 }
 
 /* When menu is collapsed */
@@ -637,7 +649,7 @@
 }
 
 /* Dark theme support */
-[data-bs-theme="dark"] .workout-database-footer {
+[data-bs-theme="dark"] .workout-database-footer > div {
     background: var(--bs-gray-900);
     border-color: var(--bs-gray-700);
 }
