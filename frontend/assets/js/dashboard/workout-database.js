@@ -656,7 +656,7 @@ function doWorkout(workoutId) {
 }
 
 /**
- * View workout details - Open modal
+ * View workout details - Open modal or offcanvas depending on page
  */
 async function viewWorkoutDetails(workoutId) {
     try {
@@ -669,7 +669,7 @@ async function viewWorkoutDetails(workoutId) {
         if (!workout) {
             const response = await fetch(`/api/v3/firebase/workouts/${workoutId}`, {
                 headers: {
-                    'Authorization': window.dataManager?.getAuthToken ? 
+                    'Authorization': window.dataManager?.getAuthToken ?
                         `Bearer ${window.dataManager.getAuthToken()}` : ''
                 }
             });
@@ -681,12 +681,17 @@ async function viewWorkoutDetails(workoutId) {
             workout = await response.json();
         }
         
-        // Populate modal
-        populateWorkoutDetailModal(workout);
-        
-        // Show modal
-        const modal = new bootstrap.Modal(document.getElementById('workoutDetailModal'));
-        modal.show();
+        // Check if modal exists (workout-database.html page)
+        const modalElement = document.getElementById('workoutDetailModal');
+        if (modalElement) {
+            // Use modal on workout-database page
+            populateWorkoutDetailModal(workout);
+            const modal = new bootstrap.Modal(modalElement);
+            modal.show();
+        } else {
+            // Use offcanvas on other pages (like workout-mode.html)
+            showWorkoutDetailOffcanvas(workout);
+        }
         
     } catch (error) {
         console.error('❌ Failed to load workout details:', error);
@@ -699,22 +704,68 @@ async function viewWorkoutDetails(workoutId) {
 }
 
 /**
- * Populate workout detail modal
+ * Show workout details in offcanvas (for pages without modal)
  */
-function populateWorkoutDetailModal(workout) {
-    // Set title
-    document.getElementById('workoutDetailName').textContent = workout.name;
+function showWorkoutDetailOffcanvas(workout) {
+    // Build offcanvas HTML
+    const offcanvasHTML = `
+        <div class="offcanvas offcanvas-bottom" tabindex="-1" id="workoutDetailOffcanvas" aria-labelledby="workoutDetailOffcanvasLabel">
+            <div class="offcanvas-header border-bottom">
+                <h5 class="offcanvas-title" id="workoutDetailOffcanvasLabel">
+                    <i class="bx bx-dumbbell me-2"></i>${escapeHtml(workout.name)}
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+            </div>
+            <div class="offcanvas-body" style="max-height: 70vh; overflow-y: auto;">
+                ${generateWorkoutDetailHTML(workout)}
+                
+                <!-- Action Buttons -->
+                <div class="d-flex gap-2 mt-4 pt-3 border-top">
+                    <button type="button" class="btn btn-primary flex-fill" onclick="doWorkout('${workout.id}'); bootstrap.Offcanvas.getInstance(document.getElementById('workoutDetailOffcanvas')).hide();">
+                        <i class="bx bx-play me-1"></i>Start Workout
+                    </button>
+                    <button type="button" class="btn btn-outline-primary flex-fill" onclick="editWorkout('${workout.id}'); bootstrap.Offcanvas.getInstance(document.getElementById('workoutDetailOffcanvas')).hide();">
+                        <i class="bx bx-edit me-1"></i>Edit
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
     
-    // Build modal body HTML
-    let bodyHTML = '';
+    // Remove existing offcanvas if any
+    const existingOffcanvas = document.getElementById('workoutDetailOffcanvas');
+    if (existingOffcanvas) {
+        existingOffcanvas.remove();
+    }
+    
+    // Add offcanvas to body
+    document.body.insertAdjacentHTML('beforeend', offcanvasHTML);
+    
+    // Initialize and show offcanvas
+    const offcanvasElement = document.getElementById('workoutDetailOffcanvas');
+    const offcanvas = new bootstrap.Offcanvas(offcanvasElement);
+    
+    // Cleanup on hide
+    offcanvasElement.addEventListener('hidden.bs.offcanvas', () => {
+        offcanvasElement.remove();
+    });
+    
+    offcanvas.show();
+}
+
+/**
+ * Generate workout detail HTML (reusable for both modal and offcanvas)
+ */
+function generateWorkoutDetailHTML(workout) {
+    let html = '';
     
     // Metadata section
-    bodyHTML += `
+    html += `
         <div class="workout-detail-meta mb-4">
             ${workout.description ? `<p class="text-muted">${escapeHtml(workout.description)}</p>` : ''}
-            <div class="d-flex gap-3 mb-2">
-                <span class="text-muted"><i class="bx bx-calendar me-1"></i> Created: ${formatDate(workout.created_date)}</span>
-                <span class="text-muted"><i class="bx bx-time me-1"></i> Modified: ${formatDate(workout.modified_date)}</span>
+            <div class="d-flex gap-3 mb-2 flex-wrap">
+                <span class="text-muted small"><i class="bx bx-calendar me-1"></i> Created: ${formatDate(workout.created_date)}</span>
+                <span class="text-muted small"><i class="bx bx-time me-1"></i> Modified: ${formatDate(workout.modified_date)}</span>
             </div>
             ${workout.tags && workout.tags.length > 0 ? `
                 <div class="mt-2">
@@ -726,10 +777,10 @@ function populateWorkoutDetailModal(workout) {
     
     // Exercise Groups
     if (workout.exercise_groups && workout.exercise_groups.length > 0) {
-        bodyHTML += '<h6 class="mb-3">Exercise Groups</h6>';
+        html += '<h6 class="mb-3">Exercise Groups</h6>';
         
         workout.exercise_groups.forEach((group, index) => {
-            bodyHTML += `
+            html += `
                 <div class="card mb-3">
                     <div class="card-body">
                         <h6 class="card-title">Group ${index + 1}</h6>
@@ -741,11 +792,12 @@ function populateWorkoutDetailModal(workout) {
                                 </div>
                             `).join('')}
                         </div>
-                        <div class="d-flex gap-2">
+                        <div class="d-flex gap-2 flex-wrap">
                             <span class="badge bg-label-primary">Sets: ${group.sets || '3'}</span>
                             <span class="badge bg-label-info">Reps: ${group.reps || '8-12'}</span>
                             <span class="badge bg-label-secondary">Rest: ${group.rest || '60s'}</span>
                         </div>
+                        ${group.notes ? `<div class="mt-2 small text-muted">${escapeHtml(group.notes)}</div>` : ''}
                     </div>
                 </div>
             `;
@@ -754,25 +806,39 @@ function populateWorkoutDetailModal(workout) {
     
     // Bonus Exercises
     if (workout.bonus_exercises && workout.bonus_exercises.length > 0) {
-        bodyHTML += '<h6 class="mb-3 mt-4">Bonus Exercises</h6>';
+        html += '<h6 class="mb-3 mt-4">Bonus Exercises</h6>';
         
         workout.bonus_exercises.forEach((bonus, index) => {
-            bodyHTML += `
+            html += `
                 <div class="card mb-2">
                     <div class="card-body py-2">
-                        <div class="d-flex justify-content-between align-items-center">
+                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
                             <strong>${escapeHtml(bonus.name)}</strong>
-                            <div class="d-flex gap-2">
+                            <div class="d-flex gap-2 flex-wrap">
                                 <span class="badge bg-label-primary">${bonus.sets || '2'} sets</span>
                                 <span class="badge bg-label-info">${bonus.reps || '15'} reps</span>
                                 <span class="badge bg-label-secondary">${bonus.rest || '30s'} rest</span>
                             </div>
                         </div>
+                        ${bonus.notes ? `<div class="mt-2 small text-muted">${escapeHtml(bonus.notes)}</div>` : ''}
                     </div>
                 </div>
             `;
         });
     }
+    
+    return html;
+}
+
+/**
+ * Populate workout detail modal (for workout-database.html page)
+ */
+function populateWorkoutDetailModal(workout) {
+    // Set title
+    document.getElementById('workoutDetailName').textContent = workout.name;
+    
+    // Use shared HTML generator
+    const bodyHTML = generateWorkoutDetailHTML(workout);
     
     // Set modal body
     document.getElementById('workoutDetailBody').innerHTML = bodyHTML;
