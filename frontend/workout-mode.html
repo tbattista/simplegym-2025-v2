@@ -116,26 +116,6 @@
 
               <!-- Workout Selection State (shown when no workout ID in URL) -->
               <div id="workoutSelectionContainer" style="display: none;">
-                <!-- Search Bar -->
-                <div class="card mb-3">
-                  <div class="card-body p-3">
-                    <div class="input-group">
-                      <span class="input-group-text">
-                        <i class="bx bx-search"></i>
-                      </span>
-                      <input
-                        type="text"
-                        class="form-control"
-                        id="searchInput"
-                        placeholder="Search workouts..."
-                        autocomplete="off">
-                      <button class="btn btn-icon" type="button" id="clearSearchBtn" style="display: none;">
-                        <i class="bx bx-x"></i>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-                
                 <!-- Workout List Container (same ID as workout-database.html) -->
                 <div class="card">
                   <div class="card-body p-0">
@@ -234,6 +214,108 @@
             </button>
           </div>
         </div>
+      </div>
+    </div>
+
+    <!-- Filters Offcanvas (Bottom) -->
+    <div class="offcanvas offcanvas-bottom" tabindex="-1" id="filtersOffcanvas" aria-labelledby="filtersOffcanvasLabel" style="height: 60vh;">
+      <div class="offcanvas-header">
+        <h5 class="offcanvas-title" id="filtersOffcanvasLabel">
+          <i class="bx bx-filter-alt me-2"></i>
+          Filters
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+      </div>
+      <div class="offcanvas-body">
+        <div class="row">
+          <!-- Left Column -->
+          <div class="col-md-6">
+            <!-- Sort By -->
+            <div class="mb-4">
+              <label class="form-label fw-semibold">Sort By</label>
+              <select class="form-select" id="sortBySelect">
+                <option value="modified_date">Recently Modified</option>
+                <option value="created_date">Recently Created</option>
+                <option value="name">Name (A-Z)</option>
+                <option value="exercise_count">Most Exercises</option>
+              </select>
+            </div>
+
+            <!-- Tags Filter -->
+            <div class="mb-4">
+              <label class="form-label fw-semibold">Tags</label>
+              <div id="tagsFilterContainer">
+                <!-- Tags will be loaded dynamically -->
+                <p class="text-muted small">Loading tags...</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column -->
+          <div class="col-md-6">
+            <!-- Stats -->
+            <div class="mb-4">
+              <label class="form-label fw-semibold">Your Stats</label>
+              <div class="d-flex justify-content-between mb-2">
+                <span class="text-muted">Total Workouts:</span>
+                <span class="fw-semibold" id="totalCount">0</span>
+              </div>
+              <div class="d-flex justify-content-between">
+                <span class="text-muted">Showing:</span>
+                <span class="fw-semibold" id="showingCount">0</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="row mt-3">
+          <div class="col-12">
+            <button type="button" class="btn btn-outline-secondary w-100 mb-2" id="clearFiltersBtn">
+              <i class="bx bx-x me-1"></i>
+              Clear All Filters
+            </button>
+            <button type="button" class="btn btn-primary w-100" data-bs-dismiss="offcanvas">
+              <i class="bx bx-check me-1"></i>
+              Apply Filters
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sticky Bottom Bar for Workout Selection -->
+    <div class="workout-selection-footer" id="workoutSelectionFooter" style="display: none;">
+      <div class="d-flex flex-column gap-2">
+        <!-- Search Bar with Filter Button -->
+        <div class="d-flex gap-2" style="flex-wrap: nowrap;">
+          <input
+            type="text"
+            class="form-control flex-grow-1"
+            id="searchInput"
+            placeholder="Search workouts..."
+            autocomplete="off"
+            style="min-width: 0;">
+          <button class="btn btn-primary btn-sm" type="button" id="searchBtn" title="Search">
+            <i class="bx bx-search"></i>
+          </button>
+          <button
+            class="btn btn-primary"
+            type="button"
+            data-bs-toggle="offcanvas"
+            data-bs-target="#filtersOffcanvas"
+            aria-controls="filtersOffcanvas"
+            title="Filters"
+            style="flex-shrink: 0;">
+            <i class="bx bx-filter-alt"></i>
+          </button>
+        </div>
+        
+        <!-- New Workout Button -->
+        <button type="button" class="btn btn-primary w-100" onclick="window.location.href='workout-builder.html'">
+          <i class="bx bx-plus me-1"></i>
+          New Workout
+        </button>
       </div>
     </div>
 

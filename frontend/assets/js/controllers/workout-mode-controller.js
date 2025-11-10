@@ -1393,17 +1393,19 @@ class WorkoutModeController {
             const cardsContainer = document.getElementById('exerciseCardsContainer');
             const footer = document.getElementById('workoutModeFooter');
             const selectionContainer = document.getElementById('workoutSelectionContainer');
+            const selectionFooter = document.getElementById('workoutSelectionFooter');
             
             if (loadingState) loadingState.style.display = 'none';
             if (errorState) errorState.style.display = 'none';
             if (cardsContainer) cardsContainer.style.display = 'none';
             if (footer) footer.style.display = 'none';
             
-            // Show selection container
+            // Show selection container and footer
             if (!selectionContainer) {
                 throw new Error('Workout selection container not found in DOM');
             }
             selectionContainer.style.display = 'block';
+            if (selectionFooter) selectionFooter.style.display = 'block';
             
             // Update page title
             const workoutNameEl = document.getElementById('workoutName');
@@ -1457,8 +1459,11 @@ class WorkoutModeController {
             url.searchParams.set('id', workoutId);
             window.history.pushState({ workoutId }, '', url);
             
-            // Hide selection container
-            document.getElementById('workoutSelectionContainer').style.display = 'none';
+            // Hide selection container and footer
+            const selectionContainer = document.getElementById('workoutSelectionContainer');
+            const selectionFooter = document.getElementById('workoutSelectionFooter');
+            if (selectionContainer) selectionContainer.style.display = 'none';
+            if (selectionFooter) selectionFooter.style.display = 'none';
             
             // Show change workout link
             const changeLink = document.getElementById('changeWorkoutLink');
@@ -1485,10 +1490,12 @@ class WorkoutModeController {
         const content = document.getElementById('exerciseCardsContainer');
         const footer = document.getElementById('workoutModeFooter');
         const selection = document.getElementById('workoutSelectionContainer');
+        const selectionFooter = document.getElementById('workoutSelectionFooter');
         
         // Hide all other states
         if (loading) loading.style.display = 'none';
         if (selection) selection.style.display = 'none';
+        if (selectionFooter) selectionFooter.style.display = 'none';
         if (content) content.style.display = 'none';
         if (footer) footer.style.display = 'none';
         

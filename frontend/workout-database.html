@@ -92,45 +92,6 @@
                 <p class="text-muted mb-0">Browse and manage your <span id="totalWorkoutsCount">0</span> workout templates</p>
               </div>
 
-              <!-- Search Bar with Filter Button -->
-              <div class="card mb-4">
-                <div class="card-body">
-                  <div class="d-flex gap-2 mb-3" style="flex-wrap: nowrap;">
-                    <div class="input-group flex-grow-1">
-                      <span class="input-group-text">
-                        <i class="bx bx-search"></i>
-                      </span>
-                      <input
-                        type="text"
-                        class="form-control"
-                        id="searchInput"
-                        placeholder="Search workouts by name or tags..."
-                        autocomplete="off"
-                        style="min-width: 0;">
-                      <button class="btn btn-sm btn-icon" type="button" id="clearSearchBtn" style="display: none;">
-                        <i class="bx bx-x"></i>
-                      </button>
-                    </div>
-                    <button
-                      class="btn btn-primary"
-                      type="button"
-                      data-bs-toggle="offcanvas"
-                      data-bs-target="#filtersOffcanvas"
-                      aria-controls="filtersOffcanvas"
-                      title="Filters"
-                      style="flex-shrink: 0;">
-                      <i class="bx bx-filter-alt"></i>
-                    </button>
-                  </div>
-                  
-                  <!-- New Workout Button -->
-                  <button type="button" class="btn btn-primary w-100" id="createNewWorkoutBtn">
-                    <i class="bx bx-plus me-1"></i>
-                    New Workout
-                  </button>
-                </div>
-              </div>
-
               <!-- Workout List Card -->
               <div class="card">
                 <!-- Card Header with Title -->
@@ -177,6 +138,41 @@
       <div class="layout-overlay layout-menu-toggle"></div>
     </div>
     <!-- / Layout wrapper -->
+
+    <!-- Sticky Bottom Bar for Search and Actions -->
+    <div class="workout-database-footer" id="workoutDatabaseFooter">
+      <div class="d-flex flex-column gap-2">
+        <!-- Search Bar with Filter Button -->
+        <div class="d-flex gap-2" style="flex-wrap: nowrap;">
+          <input
+            type="text"
+            class="form-control flex-grow-1"
+            id="searchInput"
+            placeholder="Search workouts by name or tags..."
+            autocomplete="off"
+            style="min-width: 0;">
+          <button class="btn btn-primary btn-sm" type="button" id="searchBtn" title="Search">
+            <i class="bx bx-search"></i>
+          </button>
+          <button
+            class="btn btn-primary"
+            type="button"
+            data-bs-toggle="offcanvas"
+            data-bs-target="#filtersOffcanvas"
+            aria-controls="filtersOffcanvas"
+            title="Filters"
+            style="flex-shrink: 0;">
+            <i class="bx bx-filter-alt"></i>
+          </button>
+        </div>
+        
+        <!-- New Workout Button -->
+        <button type="button" class="btn btn-primary w-100" id="createNewWorkoutBtn">
+          <i class="bx bx-plus me-1"></i>
+          New Workout
+        </button>
+      </div>
+    </div>
 
     <!-- Filters Offcanvas (Bottom) -->
     <div class="offcanvas offcanvas-bottom" tabindex="-1" id="filtersOffcanvas" aria-labelledby="filtersOffcanvasLabel" style="height: 60vh;">
@@ -382,7 +378,7 @@
             
             // Set up search functionality
             const searchInput = document.getElementById('searchInput');
-            const clearSearchBtn = document.getElementById('clearSearchBtn');
+            const searchBtn = document.getElementById('searchBtn');
             
             if (searchInput) {
                 // Real-time search with debouncing
@@ -390,26 +386,25 @@
                 searchInput.addEventListener('input', function() {
                     clearTimeout(searchTimeout);
                     
-                    // Show/hide clear button
-                    if (clearSearchBtn) {
-                        clearSearchBtn.style.display = this.value.trim() ? 'block' : 'none';
-                    }
-                    
                     // Debounce search by 300ms
                     searchTimeout = setTimeout(() => {
                         filterWorkouts();
                     }, 300);
                 });
                 
-                // Clear search button
-                if (clearSearchBtn) {
-                    clearSearchBtn.addEventListener('click', function() {
-                        searchInput.value = '';
-                        this.style.display = 'none';
+                // Search button click
+                if (searchBtn) {
+                    searchBtn.addEventListener('click', function() {
                         filterWorkouts();
-                        searchInput.focus();
                     });
                 }
+                
+                // Enter key to search
+                searchInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        filterWorkouts();
+                    }
+                });
             }
             
             // Load workouts

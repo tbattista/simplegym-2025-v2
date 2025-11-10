@@ -595,3 +595,91 @@
         page-break-inside: avoid;
     }
 }
+
+/* ============================================
+   STICKY BOTTOM BAR
+   ============================================ */
+
+.workout-database-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--bs-body-bg);
+    border-top: 2px solid var(--bs-border-color);
+    padding: 1rem;
+    z-index: 1000;
+    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
+    
+    /* Adjust for sidebar on desktop */
+    margin-left: var(--layout-menu-width, 260px);
+    transition: margin-left 0.3s ease;
+}
+
+/* When menu is collapsed */
+.layout-menu-collapsed .workout-database-footer {
+    margin-left: var(--layout-menu-collapsed-width, 80px);
+}
+
+/* Add padding to content to prevent overlap with sticky footer */
+.workout-database-footer ~ .content-wrapper .container-xxl,
+.container-xxl {
+    padding-bottom: 140px !important;
+}
+
+/* Footer button styling */
+.workout-database-footer .btn {
+    font-weight: 600;
+}
+
+.workout-database-footer .btn-primary {
+    font-size: 1rem;
+}
+
+/* Dark theme support */
+[data-bs-theme="dark"] .workout-database-footer {
+    background: var(--bs-gray-900);
+    border-color: var(--bs-gray-700);
+}
+
+/* ============================================
+   MOBILE RESPONSIVE FOR STICKY FOOTER
+   ============================================ */
+
+@media (max-width: 1199px) {
+    /* Remove sidebar offset on mobile */
+    .workout-database-footer {
+        margin-left: 0;
+    }
+}
+
+@media (max-width: 768px) {
+    .workout-database-footer {
+        padding: 0.75rem 1rem;
+    }
+    
+    .workout-database-footer .btn {
+        font-size: 0.875rem;
+    }
+    
+    /* Adjust content padding for mobile */
+    .container-xxl {
+        padding-bottom: 130px !important;
+    }
+}
+
+@media (max-width: 576px) {
+    .workout-database-footer {
+        padding: 0.625rem 0.875rem;
+    }
+    
+    .workout-database-footer .btn {
+        font-size: 0.8rem;
+        padding: 0.5rem 0.75rem;
+    }
+    
+    /* Extra compact for very small screens */
+    .container-xxl {
+        padding-bottom: 120px !important;
+    }
+}
