@@ -638,13 +638,13 @@
 /* Apply shared sticky footer pattern */
 .editor-actions {
     /* Inherits from .sticky-footer utility class */
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
     background: transparent;
     padding: 1rem;
-    z-index: 1000;
+    z-index: 1050 !important;
     margin-left: var(--layout-menu-width, 260px);
     transition: margin-left 0.3s ease;
     display: flex;
