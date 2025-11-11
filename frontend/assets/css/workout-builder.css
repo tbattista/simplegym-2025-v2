@@ -1,17 +1,85 @@
 /**
  * Ghost Gym - Workout Builder Styles (REFACTORED)
  * Horizontal split-screen workout builder with inline editing
- * 
+ *
  * REFACTORING NOTES:
  * - Removed duplicate selectors
  * - Reduced !important usage (only where necessary for Bootstrap overrides)
  * - Added .workout-builder-page wrapper for better specificity
  * - Organized by component hierarchy
  * - Mobile-first responsive design
- * 
- * @version 2.0.0
- * @date 2025-01-24
+ * - Consolidated button styles to match workout-database.css
+ * - Fixed edit button icon visibility issues
+ * - Improved code reuse with shared utility classes
+ *
+ * @version 2.1.0
+ * @date 2025-01-11
  */
+
+/* ============================================
+   SHARED UTILITY CLASSES (Reusable)
+   ============================================ */
+
+/* Sticky Footer Pattern - Shared with workout-database */
+.sticky-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: transparent;
+    padding: 1rem;
+    z-index: 1000;
+    margin-left: var(--layout-menu-width, 260px);
+    transition: margin-left 0.3s ease;
+    display: flex;
+    justify-content: center;
+}
+
+.sticky-footer > div {
+    background: var(--bs-body-bg);
+    border: 1px solid var(--bs-border-color);
+    border-radius: var(--bs-border-radius-lg);
+    padding: 1rem;
+    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 600px;
+}
+
+.layout-menu-collapsed .sticky-footer {
+    margin-left: var(--layout-menu-collapsed-width, 80px);
+}
+
+/* Standard Button Sizing - Consistent across app */
+.btn-standard {
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    border-radius: 0.375rem;
+    transition: all 0.2s ease;
+    min-width: 100px;
+}
+
+.btn-standard i {
+    font-size: 1rem;
+}
+
+/* Icon Button Pattern - Consistent sizing */
+.btn-icon-only {
+    width: 32px;
+    height: 32px;
+    padding: 0 !important;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.btn-icon-only i {
+    font-size: 16px !important;
+    line-height: 1 !important;
+    color: currentColor !important;
+}
 
 /* ============================================
    WORKOUT LIBRARY SECTION (Collapsible)
@@ -564,16 +632,62 @@
 }
 
 /* ============================================
-   EDITOR ACTIONS
+   EDITOR ACTIONS - STICKY FOOTER (Uses Shared Pattern)
    ============================================ */
 
+/* Apply shared sticky footer pattern */
 .editor-actions {
+    /* Inherits from .sticky-footer utility class */
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: transparent;
+    padding: 1rem;
+    z-index: 1000;
+    margin-left: var(--layout-menu-width, 260px);
+    transition: margin-left 0.3s ease;
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 2rem;
-    padding-top: 1.5rem;
-    border-top: 1px solid var(--bs-border-color);
+    justify-content: center;
+}
+
+.editor-actions > div {
+    background: var(--bs-body-bg);
+    border: 1px solid var(--bs-border-color);
+    border-radius: var(--bs-border-radius-lg);
+    padding: 1rem;
+    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 600px;
+}
+
+.layout-menu-collapsed .editor-actions {
+    margin-left: var(--layout-menu-collapsed-width, 80px);
+}
+
+/* Add padding to workout editor to prevent content from being hidden behind sticky footer */
+#workoutEditorForm {
+    padding-bottom: 180px;
+}
+
+/* Save status styling */
+.editor-actions #saveStatus {
+    display: block;
+    text-align: center;
+    margin-bottom: 0.75rem;
+    font-size: 0.875rem;
+}
+
+/* Button styling - Override to make buttons more compact */
+.editor-actions .btn {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    border-radius: 0.25rem;
+}
+
+.editor-actions .btn i {
+    font-size: 1rem;
 }
 
 .save-status {
@@ -937,9 +1051,10 @@
     border-color: rgba(16, 185, 129, 0.3);
 }
 
-/* Editor Actions */
-[data-bs-theme="dark"] .editor-actions {
-    border-top-color: #475569;
+/* Editor Actions - Sticky Footer Dark Mode */
+[data-bs-theme="dark"] .editor-actions > div {
+    background: var(--bs-gray-900);
+    border-color: var(--bs-gray-700);
 }
 
 [data-bs-theme="dark"] .save-status {
@@ -1249,13 +1364,47 @@ button {
         font-size: 0.95rem;
     }
     
-    /* Editor actions */
+    /* Editor actions - Sticky Footer Mobile */
     .editor-actions {
-        flex-direction: column;
-        gap: 1rem;
-        align-items: stretch;
-        padding-top: 1.25rem;
-        margin-top: 1.5rem;
+        padding: 0.75rem 1rem;
+        margin-left: 0;
+    }
+    
+    .editor-actions .btn {
+        font-size: 0.875rem;
+    }
+    
+    .editor-actions #saveStatus {
+        font-size: 0.8125rem;
+        margin-bottom: 0.625rem;
+    }
+    
+    /* Adjust padding for mobile */
+    #workoutEditorForm {
+        padding-bottom: 180px;
+    }
+}
+
+@media (max-width: 1199px) {
+    /* Remove sidebar offset on tablet/mobile */
+    .editor-actions {
+        margin-left: 0;
+    }
+}
+
+@media (max-width: 576px) {
+    .editor-actions {
+        padding: 0.625rem 0.875rem;
+    }
+    
+    .editor-actions .btn {
+        font-size: 0.8rem;
+        padding: 0.5rem 0.75rem;
+    }
+    
+    /* Extra compact for very small screens */
+    #workoutEditorForm {
+        padding-bottom: 160px;
     }
     
     .editor-actions .btn-group {
@@ -1344,5 +1493,688 @@ button {
     
     .workout-editor-empty-state {
         min-height: 250px;
+    }
+}
+
+/* ============================================
+   EXERCISE GROUP CARDS (New Card-Based Layout)
+   ============================================ */
+
+.exercise-groups-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+/* Increase spacing for compact cards */
+.exercise-group-card.compact {
+    margin-bottom: 0.5rem;
+}
+
+.exercise-group-card {
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.exercise-group-card .card {
+    border: 2px solid var(--bs-border-color);
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.exercise-group-card .card:hover {
+    border-color: var(--bs-primary);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+/* Selected state for editing */
+.exercise-group-card.editing .card {
+    border-color: var(--bs-primary);
+    border-width: 3px;
+    background: rgba(var(--bs-primary-rgb), 0.05);
+    box-shadow: 0 0 0 3px rgba(var(--bs-primary-rgb), 0.15);
+}
+
+/* Exercise Preview */
+.exercise-preview {
+    margin-bottom: 0.75rem;
+}
+
+.exercise-preview .exercise-main {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+    color: var(--bs-heading-color);
+}
+
+.exercise-preview .exercise-alternates {
+    font-size: 0.875rem;
+    margin-bottom: 0.5rem;
+    color: var(--bs-secondary);
+}
+
+.exercise-preview .exercise-alternates span {
+    display: block;
+    line-height: 1.4;
+}
+
+.exercise-preview .exercise-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.exercise-preview .badge {
+    font-size: 0.75rem;
+    padding: 0.35em 0.65em;
+}
+
+/* Card Action Buttons */
+.exercise-group-card .btn-group {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+}
+
+.exercise-group-card .btn-group .btn {
+    flex: 1;
+    font-size: 0.875rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.375rem;
+    transition: all 0.2s ease;
+}
+
+.exercise-group-card .btn-edit-group {
+    background: transparent;
+    border-color: var(--bs-primary);
+    color: var(--bs-primary);
+}
+
+.exercise-group-card .btn-edit-group:hover {
+    background: var(--bs-primary);
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(var(--bs-primary-rgb), 0.3);
+}
+
+.exercise-group-card .btn-delete-group {
+    background: transparent;
+    border-color: var(--bs-danger);
+    color: var(--bs-danger);
+}
+
+.exercise-group-card .btn-delete-group:hover {
+    background: var(--bs-danger);
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(var(--bs-danger-rgb), 0.3);
+}
+
+/* Drag Handle (Edit Mode) */
+.exercise-group-card .drag-handle {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    cursor: move;
+    font-size: 1.5rem;
+    color: var(--bs-secondary);
+    padding: 0.5rem;
+    display: none;
+    z-index: 10;
+}
+
+.exercise-group-card .drag-handle:hover {
+    color: var(--bs-primary);
+}
+
+/* Edit Mode Active */
+.exercise-groups-container.edit-mode-active .exercise-group-card {
+    cursor: move;
+}
+
+.exercise-groups-container.edit-mode-active .drag-handle {
+    display: block !important;
+}
+
+.exercise-groups-container.edit-mode-active .btn-group {
+    pointer-events: none;
+    opacity: 0.5;
+}
+
+.exercise-groups-container.edit-mode-active .exercise-group-card .card {
+    background: rgba(var(--bs-warning-rgb), 0.05);
+    border-color: var(--bs-warning);
+}
+
+/* Sortable states for cards */
+.exercise-group-card.sortable-ghost {
+    opacity: 0.4;
+    background: var(--bs-gray-200);
+}
+
+.exercise-group-card.sortable-drag {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    transform: rotate(2deg) scale(1.02);
+}
+
+.exercise-group-card.sortable-chosen {
+    cursor: grabbing;
+}
+
+/* ============================================
+   OFFCANVAS EDITOR STYLES
+   ============================================ */
+
+/* Match workout-database offcanvas sizing */
+#exerciseGroupEditOffcanvas,
+#bonusExerciseEditOffcanvas {
+    height: auto !important;
+    max-height: 85vh;
+    min-height: 40vh;
+}
+
+#exerciseGroupEditOffcanvas .offcanvas-body,
+#bonusExerciseEditOffcanvas .offcanvas-body {
+    overflow-y: auto;
+    max-height: calc(85vh - 140px);
+    padding: 1.5rem;
+}
+
+#exerciseGroupEditOffcanvas .offcanvas-header,
+#bonusExerciseEditOffcanvas .offcanvas-header {
+    flex-shrink: 0;
+    padding: 1rem 1.5rem;
+}
+
+#exerciseGroupEditOffcanvas .offcanvas-footer,
+#bonusExerciseEditOffcanvas .offcanvas-footer {
+    flex-shrink: 0;
+    background: var(--bs-body-bg);
+}
+
+/* Smooth transition for offcanvas */
+#exerciseGroupEditOffcanvas.offcanvas-bottom,
+#bonusExerciseEditOffcanvas.offcanvas-bottom {
+    transition: transform 0.3s ease-in-out;
+}
+
+/* Form styling in offcanvas */
+.offcanvas-body .form-label {
+    font-weight: 500;
+    font-size: 0.875rem;
+    margin-bottom: 0.5rem;
+    color: var(--bs-gray-700);
+}
+
+.offcanvas-body .form-control {
+    font-size: 0.875rem;
+    padding: 0.625rem 0.75rem;
+}
+
+.offcanvas-body .form-control:focus {
+    border-color: var(--bs-primary);
+    box-shadow: 0 0 0 0.2rem rgba(var(--bs-primary-rgb), 0.15);
+}
+
+.offcanvas-body .form-text {
+    font-size: 0.75rem;
+    margin-top: 0.5rem;
+}
+
+/* Weight unit buttons in offcanvas */
+.offcanvas-body .weight-unit-btn {
+    font-size: 0.875rem;
+    padding: 0.5rem;
+    transition: all 0.2s ease;
+}
+
+.offcanvas-body .weight-unit-btn.active {
+    background-color: var(--bs-primary);
+    border-color: var(--bs-primary);
+    color: white;
+}
+
+.offcanvas-body .weight-unit-btn:not(.active):hover {
+    background-color: rgba(var(--bs-primary-rgb), 0.1);
+    border-color: var(--bs-primary);
+    color: var(--bs-primary);
+}
+
+/* Offcanvas footer buttons */
+.offcanvas-footer .btn {
+    font-weight: 500;
+    padding: 0.625rem 1rem;
+    font-size: 0.875rem;
+}
+
+.offcanvas-footer .btn-label-secondary {
+    background-color: rgba(var(--bs-secondary-rgb), 0.1);
+    border: 1px solid transparent;
+    color: var(--bs-secondary);
+}
+
+.offcanvas-footer .btn-label-secondary:hover {
+    background-color: rgba(var(--bs-secondary-rgb), 0.2);
+    color: var(--bs-secondary);
+}
+
+/* ============================================
+   BONUS EXERCISE CARDS
+   ============================================ */
+
+.bonus-exercise-card {
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.bonus-exercise-card .card {
+    border: 2px solid var(--bs-border-color);
+    transition: all 0.2s ease;
+    background: rgba(var(--bs-success-rgb), 0.02);
+}
+
+.bonus-exercise-card .card:hover {
+    border-color: var(--bs-success);
+    box-shadow: 0 4px 12px rgba(var(--bs-success-rgb), 0.15);
+    transform: translateY(-2px);
+}
+
+.bonus-exercise-card.editing .card {
+    border-color: var(--bs-success);
+    border-width: 3px;
+    background: rgba(var(--bs-success-rgb), 0.08);
+}
+
+.bonus-exercise-card .exercise-preview .exercise-main {
+    color: var(--bs-success);
+}
+
+/* ============================================
+   DARK MODE SUPPORT
+   ============================================ */
+
+[data-bs-theme="dark"] .exercise-group-card .card,
+[data-bs-theme="dark"] .bonus-exercise-card .card {
+    background: #1e293b;
+    border-color: #475569;
+}
+
+[data-bs-theme="dark"] .exercise-group-card .card:hover,
+[data-bs-theme="dark"] .bonus-exercise-card .card:hover {
+    background: #334155;
+    border-color: var(--bs-primary);
+}
+
+[data-bs-theme="dark"] .exercise-group-card.editing .card {
+    background: rgba(var(--bs-primary-rgb), 0.15);
+}
+
+[data-bs-theme="dark"] .exercise-preview .exercise-main {
+    color: #f8fafc;
+}
+
+[data-bs-theme="dark"] .exercise-preview .exercise-alternates {
+    color: #94a3b8;
+}
+
+[data-bs-theme="dark"] .offcanvas-body .form-label {
+    color: #f8fafc;
+}
+
+[data-bs-theme="dark"] .offcanvas-body .form-control {
+    background: #334155;
+    border-color: #475569;
+    color: #f8fafc;
+}
+
+[data-bs-theme="dark"] .offcanvas-body .form-control:focus {
+    background: #334155;
+    border-color: var(--bs-primary);
+    color: #f8fafc;
+}
+
+[data-bs-theme="dark"] .offcanvas-footer {
+    background: #1e293b;
+    border-color: #475569;
+}
+
+/* ============================================
+   MOBILE RESPONSIVE
+   ============================================ */
+
+@media (max-width: 768px) {
+    .exercise-group-card .card-body,
+    .bonus-exercise-card .card-body {
+        padding: 0.75rem;
+    }
+    
+    .exercise-preview .exercise-main {
+        font-size: 1rem;
+    }
+    
+    .exercise-preview .exercise-meta {
+        gap: 0.375rem;
+    }
+    
+    .exercise-preview .badge {
+        font-size: 0.7rem;
+        padding: 0.25rem 0.5rem;
+    }
+    
+    .exercise-group-card .btn-group .btn,
+    .bonus-exercise-card .btn-group .btn {
+        font-size: 0.8125rem;
+        padding: 0.5rem 0.625rem;
+    }
+    
+    /* Offcanvas adjustments */
+    #exerciseGroupEditOffcanvas,
+    #bonusExerciseEditOffcanvas {
+        max-height: 90vh;
+    }
+    
+    .offcanvas-body {
+        padding: 1rem;
+    }
+    
+    .offcanvas-header {
+        padding: 0.875rem 1rem;
+    }
+    
+    .offcanvas-footer {
+        padding: 0.75rem 1rem;
+    }
+    
+    .offcanvas-footer .btn {
+        padding: 0.5rem 0.875rem;
+        font-size: 0.8125rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .exercise-preview .exercise-main {
+        font-size: 0.95rem;
+    }
+    
+    .exercise-preview .badge {
+        font-size: 0.65rem;
+        padding: 0.2rem 0.4rem;
+    }
+    
+    .exercise-group-card .btn-group,
+    .bonus-exercise-card .btn-group {
+        flex-direction: column;
+        gap: 0.375rem;
+    }
+    
+    .exercise-group-card .btn-group .btn,
+    .bonus-exercise-card .btn-group .btn {
+        width: 100%;
+    }
+}
+
+/* ============================================
+   COMPACT CARD LAYOUT
+   ============================================ */
+
+/* Compact card modifier */
+.exercise-group-card.compact .card,
+.bonus-exercise-card.compact .card {
+    padding: 0;
+}
+
+.exercise-group-card.compact .card-body,
+.bonus-exercise-card.compact .card-body {
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: auto;
+    position: relative;
+}
+
+/* Exercise content - takes remaining space */
+.exercise-content {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding-right: 44px; /* Space for the edit button */
+}
+
+/* Edit button - Uses shared .btn-icon-only pattern with positioning */
+.btn-edit-compact {
+    /* Inherits from .btn-icon-only utility class */
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    padding: 0 !important;
+    margin: 0 !important;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    background: transparent;
+    border: 1.5px solid var(--bs-primary);
+    color: var(--bs-primary) !important;
+    transition: all 0.2s ease;
+    z-index: 10;
+    line-height: 1;
+}
+
+.btn-edit-compact:hover {
+    background: var(--bs-primary) !important;
+    border-color: var(--bs-primary) !important;
+    color: white !important;
+    transform: translateY(-50%) scale(1.05);
+    box-shadow: 0 2px 8px rgba(var(--bs-primary-rgb), 0.3);
+}
+
+.btn-edit-compact i {
+    font-size: 16px !important;
+    line-height: 1 !important;
+    display: inline-block !important;
+    color: currentColor !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 16px !important;
+    height: 16px !important;
+    vertical-align: middle;
+}
+
+.btn-edit-compact i::before {
+    display: inline-block !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    line-height: 1 !important;
+    vertical-align: middle;
+}
+
+/* Ensure icon is visible in hover state */
+.btn-edit-compact:hover i {
+    color: white !important;
+}
+
+/* Exercise list - each exercise on new line */
+.exercise-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.exercise-line {
+    font-size: 0.875rem;
+    line-height: 1.4;
+    color: var(--bs-heading-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.exercise-line:first-child {
+    font-weight: 600;
+    font-size: 0.9375rem;
+}
+
+/* Meta text - plain text, not badges */
+.exercise-meta-text {
+    font-size: 0.75rem;
+    color: var(--bs-secondary);
+    line-height: 1.3;
+}
+
+/* Drag handle for compact cards - positioned same as edit button, outline style */
+.exercise-group-card.compact .drag-handle,
+.bonus-exercise-card.compact .drag-handle {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    display: none !important;
+    align-items: center;
+    justify-content: center;
+    cursor: move;
+    color: var(--bs-warning);
+    z-index: 10;
+    transition: all 0.2s ease;
+    background: transparent;
+    border: 1.5px solid var(--bs-warning);
+    border-radius: 4px;
+}
+
+.exercise-group-card.compact .drag-handle i,
+.bonus-exercise-card.compact .drag-handle i {
+    font-size: 20px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.exercise-group-card.compact .drag-handle:hover,
+.bonus-exercise-card.compact .drag-handle:hover {
+    color: white;
+    background: var(--bs-warning);
+    border-color: var(--bs-warning);
+    transform: translateY(-50%) scale(1.05);
+    box-shadow: 0 2px 8px rgba(var(--bs-warning-rgb), 0.3);
+}
+
+/* Remove old button group styles for compact cards */
+.exercise-group-card.compact .btn-group,
+.bonus-exercise-card.compact .btn-group {
+    display: none;
+}
+
+/* Edit Mode Active - Hide edit button, show drag handle */
+.exercise-groups-container.edit-mode-active .exercise-group-card.compact .btn-edit-compact,
+.exercise-groups-container.edit-mode-active .bonus-exercise-card.compact .btn-edit-compact {
+    display: none !important;
+}
+
+.exercise-groups-container.edit-mode-active .exercise-group-card.compact .drag-handle,
+.exercise-groups-container.edit-mode-active .bonus-exercise-card.compact .drag-handle {
+    display: flex !important;
+}
+
+/* Edit mode styling for compact cards */
+.exercise-groups-container.edit-mode-active .exercise-group-card.compact .card,
+.exercise-groups-container.edit-mode-active .bonus-exercise-card.compact .card {
+    background: rgba(var(--bs-warning-rgb), 0.05);
+    border-color: var(--bs-warning);
+    cursor: move;
+}
+
+.exercise-groups-container.edit-mode-active .exercise-group-card.compact .card:hover,
+.exercise-groups-container.edit-mode-active .bonus-exercise-card.compact .card:hover {
+    background: rgba(var(--bs-warning-rgb), 0.1);
+    border-color: var(--bs-warning);
+    box-shadow: 0 4px 12px rgba(var(--bs-warning-rgb), 0.2);
+}
+
+/* Sortable states for compact cards */
+.exercise-group-card.compact.sortable-ghost,
+.bonus-exercise-card.compact.sortable-ghost {
+    opacity: 0.4;
+}
+
+.exercise-group-card.compact.sortable-drag,
+.bonus-exercise-card.compact.sortable-drag {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    transform: rotate(2deg) scale(1.02);
+}
+
+.exercise-group-card.compact.sortable-chosen,
+.bonus-exercise-card.compact.sortable-chosen {
+    cursor: grabbing;
+}
+
+/* In edit mode, make the entire card draggable but keep drag handle visible */
+.exercise-groups-container.edit-mode-active .exercise-group-card.compact .card-body,
+.exercise-groups-container.edit-mode-active .bonus-exercise-card.compact .card-body {
+    cursor: move;
+}
+
+/* Dark mode for compact cards */
+[data-bs-theme="dark"] .exercise-line {
+    color: #f8fafc;
+}
+
+[data-bs-theme="dark"] .exercise-meta-text {
+    color: #94a3b8;
+}
+
+[data-bs-theme="dark"] .btn-edit-compact {
+    background: var(--bs-primary);
+    border-color: var(--bs-primary);
+    color: white;
+}
+
+[data-bs-theme="dark"] .btn-edit-compact:hover {
+    background: var(--bs-primary);
+    border-color: var(--bs-primary);
+    color: white;
+    box-shadow: 0 2px 8px rgba(var(--bs-primary-rgb), 0.4);
+}
+
+/* Mobile responsive for compact cards */
+@media (max-width: 768px) {
+    .exercise-group-card.compact .card-body,
+    .bonus-exercise-card.compact .card-body {
+        padding: 6px 10px;
+        gap: 10px;
+    }
+    
+    .btn-edit-compact {
+        width: 28px;
+        height: 28px;
+    }
+    
+    .btn-edit-compact i {
+        font-size: 14px;
+    }
+    
+    .exercise-line {
+        font-size: 0.8125rem;
+    }
+    
+    .exercise-line:first-child {
+        font-size: 0.875rem;
+    }
+    
+    .exercise-meta-text {
+        font-size: 0.7rem;
     }
 }

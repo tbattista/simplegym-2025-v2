@@ -411,83 +411,129 @@ async function saveWorkout(silent = false) {
 
 /**
  * Collect exercise groups from form
+ * UPDATED: Reads from card data storage for card-based layout
  */
 function collectExerciseGroups() {
     const groups = [];
-    const groupElements = document.querySelectorAll('#exerciseGroups .exercise-group');
     
-    groupElements.forEach(groupEl => {
-        const exercises = {};
-        // Works with both accordion and card structures
-        const exerciseInputs = groupEl.querySelectorAll('.exercise-input');
-        
-        exerciseInputs.forEach((input, index) => {
-            const value = input.value.trim();
-            if (value) {
-                const letter = String.fromCharCode(97 + index); // a, b, c, etc.
-                exercises[letter] = value;
+    // Check if using card-based layout (new approach)
+    const cardElements = document.querySelectorAll('#exerciseGroups .exercise-group-card');
+    
+    if (cardElements.length > 0) {
+        // NEW: Collect from card data storage
+        cardElements.forEach(cardEl => {
+            const groupId = cardEl.getAttribute('data-group-id');
+            const groupData = window.exerciseGroupsData[groupId];
+            
+            if (groupData && groupData.exercises.a) {
+                // Clean up exercises object - remove empty values
+                const exercises = {};
+                Object.keys(groupData.exercises).forEach(key => {
+                    if (groupData.exercises[key]) {
+                        exercises[key] = groupData.exercises[key];
+                    }
+                });
+                
+                if (Object.keys(exercises).length > 0) {
+                    groups.push({
+                        exercises: exercises,
+                        sets: groupData.sets || '3',
+                        reps: groupData.reps || '8-12',
+                        rest: groupData.rest || '60s',
+                        default_weight: groupData.default_weight || null,
+                        default_weight_unit: groupData.default_weight_unit || 'lbs'
+                    });
+                }
             }
         });
+    } else {
+        // FALLBACK: Old accordion-based approach for backward compatibility
+        const groupElements = document.querySelectorAll('#exerciseGroups .exercise-group');
         
-        if (Object.keys(exercises).length > 0) {
-            // Find inputs in either accordion-body or card-body
-            const bodyEl = groupEl.querySelector('.accordion-body') || groupEl.querySelector('.card-body');
+        groupElements.forEach(groupEl => {
+            const exercises = {};
+            const exerciseInputs = groupEl.querySelectorAll('.exercise-input');
             
-            // Get selected weight unit
-            const activeUnitBtn = bodyEl?.querySelector('.weight-unit-btn.active');
-            const weightUnit = activeUnitBtn?.getAttribute('data-unit') || 'lbs';
-            
-            const weight = bodyEl?.querySelector('.weight-input')?.value?.trim() || '';
-            const groupData = {
-                exercises: exercises,
-                sets: bodyEl?.querySelector('.sets-input')?.value || '3',
-                reps: bodyEl?.querySelector('.reps-input')?.value || '8-12',
-                rest: bodyEl?.querySelector('.rest-input')?.value || '60s',
-                default_weight: weight || null,
-                default_weight_unit: weightUnit
-            };
-            
-            console.log('🔍 DEBUG: Collecting exercise group with weight:', {
-                exercises: Object.keys(exercises),
-                default_weight: weight,
-                default_weight_unit: weightUnit
+            exerciseInputs.forEach((input, index) => {
+                const value = input.value.trim();
+                if (value) {
+                    const letter = String.fromCharCode(97 + index);
+                    exercises[letter] = value;
+                }
             });
             
-            groups.push(groupData);
-        }
-    });
+            if (Object.keys(exercises).length > 0) {
+                const bodyEl = groupEl.querySelector('.accordion-body') || groupEl.querySelector('.card-body');
+                const activeUnitBtn = bodyEl?.querySelector('.weight-unit-btn.active');
+                const weightUnit = activeUnitBtn?.getAttribute('data-unit') || 'lbs';
+                const weight = bodyEl?.querySelector('.weight-input')?.value?.trim() || '';
+                
+                groups.push({
+                    exercises: exercises,
+                    sets: bodyEl?.querySelector('.sets-input')?.value || '3',
+                    reps: bodyEl?.querySelector('.reps-input')?.value || '8-12',
+                    rest: bodyEl?.querySelector('.rest-input')?.value || '60s',
+                    default_weight: weight || null,
+                    default_weight_unit: weightUnit
+                });
+            }
+        });
+    }
     
+    console.log('🔍 DEBUG: Collected', groups.length, 'exercise groups');
     return groups;
 }
 
 /**
  * Collect bonus exercises from form
- * Works with both accordion and card structures for backward compatibility
+ * UPDATED: Reads from card data storage for card-based layout
  */
 function collectBonusExercises() {
     const bonusExercises = [];
-    const bonusElements = document.querySelectorAll('#bonusExercises .bonus-exercise');
     
-    bonusElements.forEach(bonusEl => {
-        // Try accordion structure first, then fall back to card structure
-        const bodyEl = bonusEl.querySelector('.accordion-body') || bonusEl.querySelector('.card-body');
+    // Check if using card-based layout (new approach)
+    const cardElements = document.querySelectorAll('#bonusExercises .bonus-exercise-card');
+    
+    if (cardElements.length > 0) {
+        // NEW: Collect from card data storage
+        cardElements.forEach(cardEl => {
+            const bonusId = cardEl.getAttribute('data-bonus-id');
+            const bonusData = window.bonusExercisesData[bonusId];
+            
+            if (bonusData && bonusData.name) {
+                bonusExercises.push({
+                    name: bonusData.name,
+                    sets: bonusData.sets || '2',
+                    reps: bonusData.reps || '15',
+                    rest: bonusData.rest || '30s'
+                });
+            }
+        });
+    } else {
+        // FALLBACK: Old accordion-based approach for backward compatibility
+        const bonusElements = document.querySelectorAll('#bonusExercises .bonus-exercise');
         
-        const name = bodyEl?.querySelector('.bonus-name-input')?.value?.trim();
-        if (name) {
-            bonusExercises.push({
-                name: name,
-                sets: bodyEl?.querySelector('.bonus-sets-input')?.value || '2',
-                reps: bodyEl?.querySelector('.bonus-reps-input')?.value || '15',
-                rest: bodyEl?.querySelector('.bonus-rest-input')?.value || '30s'
-            });
-        }
-    });
+        bonusElements.forEach(bonusEl => {
+            const bodyEl = bonusEl.querySelector('.accordion-body') || bonusEl.querySelector('.card-body');
+            const name = bodyEl?.querySelector('.bonus-name-input')?.value?.trim();
+            
+            if (name) {
+                bonusExercises.push({
+                    name: name,
+                    sets: bodyEl?.querySelector('.bonus-sets-input')?.value || '2',
+                    reps: bodyEl?.querySelector('.bonus-reps-input')?.value || '15',
+                    rest: bodyEl?.querySelector('.bonus-rest-input')?.value || '30s'
+                });
+            }
+        });
+    }
     
+    console.log('🔍 DEBUG: Collected', bonusExercises.length, 'bonus exercises');
     return bonusExercises;
 }
 
 /**
- * Add exercise group to workout form
+ * Add exercise group to workout form (UPDATED FOR CARD-BASED LAYOUT)
  */
 function addExerciseGroup() {
     const container = document.getElementById('exerciseGroups');
@@ -495,155 +541,24 @@ function addExerciseGroup() {
     
     const groupCount = container.children.length + 1;
     const groupId = `group-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    const collapseId = `collapse-${groupId}`;
     
-    // First group expanded, rest collapsed
-    const isExpanded = groupCount === 1;
-    const showClass = isExpanded ? 'show' : '';
-    const collapsedClass = isExpanded ? '' : 'collapsed';
-    
-    const groupHtml = `
-        <div class="accordion-item exercise-group" data-group-id="${groupId}">
-            <h2 class="accordion-header" id="heading-${groupId}">
-                <button class="accordion-button ${collapsedClass}" type="button"
-                        data-bs-toggle="collapse" data-bs-target="#${collapseId}"
-                        aria-expanded="${isExpanded}" aria-controls="${collapseId}">
-                    <div class="group-title-container">
-                        <span class="group-title">Exercise Group ${groupCount}</span>
-                        <div class="group-exercises-preview">
-                            <span class="exercise-preview-main" data-exercise="a"></span>
-                            <div class="group-exercises-secondary-line">
-                                <span class="exercise-preview-secondary" data-exercise="b"></span>
-                                <span class="exercise-preview-secondary" data-exercise="c"></span>
-                                <span class="exercise-preview-info"></span>
-                            </div>
-                        </div>
-                    </div>
-                    <span class="exercise-preview-weight"></span>
-                </button>
-                <div class="group-actions">
-                    <span class="drag-handle" title="Drag to reorder">
-                        <i class="bx bx-menu"></i>
-                    </span>
-                </div>
-            </h2>
-            <div id="${collapseId}" class="accordion-collapse collapse ${showClass}"
-                 aria-labelledby="heading-${groupId}" data-bs-parent="#exerciseGroups">
-                <div class="accordion-body">
-                    <!-- Exercise inputs -->
-                    <div class="mb-2">
-                        <label class="form-label small mb-1">Exercise</label>
-                        <input type="text" class="form-control form-control-sm exercise-input exercise-autocomplete-input"
-                               id="exercise-${groupId}-a" placeholder="Search exercises...">
-                    </div>
-                    <div class="mb-2">
-                        <label class="form-label small mb-1">Alt</label>
-                        <input type="text" class="form-control form-control-sm exercise-input exercise-autocomplete-input"
-                               id="exercise-${groupId}-b" placeholder="Search exercises...">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label small mb-1">Alt</label>
-                        <input type="text" class="form-control form-control-sm exercise-input exercise-autocomplete-input"
-                               id="exercise-${groupId}-c" placeholder="Search exercises...">
-                    </div>
-                    
-                    <!-- Sets, Reps, Rest - Grid Layout -->
-                    <div class="row g-2 mb-2">
-                        <div class="col-4">
-                            <label class="form-label small mb-1">Sets</label>
-                            <input type="text" class="form-control form-control-sm sets-input text-center" value="3" placeholder="3" maxlength="3">
-                        </div>
-                        <div class="col-4">
-                            <label class="form-label small mb-1">Reps</label>
-                            <input type="text" class="form-control form-control-sm reps-input text-center" value="8-12" placeholder="8-12" maxlength="6">
-                        </div>
-                        <div class="col-4">
-                            <label class="form-label small mb-1">Rest</label>
-                            <input type="text" class="form-control form-control-sm rest-input text-center" value="60s" placeholder="60s" maxlength="10">
-                        </div>
-                    </div>
-                    
-                    <!-- Weight and Unit Buttons -->
-                    <div class="row g-2 mb-2">
-                        <div class="col-12">
-                            <label class="form-label small mb-1">
-                                <i class="bx bx-dumbbell me-1"></i>
-                                Weight (Auto-syncs from workouts)
-                            </label>
-                        </div>
-                    </div>
-                    <div class="row g-3 mb-2">
-                        <div class="col-3">
-                            <input type="text" class="form-control form-control-sm weight-input text-center" placeholder="0" maxlength="6">
-                        </div>
-                        <div class="col-3">
-                            <button type="button" class="btn btn-sm btn-outline-secondary w-100 weight-unit-btn" data-unit="lbs">lbs</button>
-                        </div>
-                        <div class="col-3">
-                            <button type="button" class="btn btn-sm btn-outline-secondary w-100 weight-unit-btn" data-unit="kg">kg</button>
-                        </div>
-                        <div class="col-3">
-                            <button type="button" class="btn btn-sm btn-outline-secondary w-100 weight-unit-btn" data-unit="other">other</button>
-                        </div>
-                    </div>
-                    <div class="row g-2 mb-3">
-                        <div class="col-12">
-                            <div class="alert alert-info py-1 px-2 mb-0" style="font-size: 0.7rem;">
-                                <i class="bx bx-bulb me-1"></i><strong>Tip:</strong> Actual weights are logged during workouts in Workout Mode
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Delete Button -->
-                    <div class="d-flex justify-content-end">
-                        <button type="button" class="btn btn-sm btn-outline-danger btn-remove-group"
-                                onclick="removeExerciseGroup(this); event.stopPropagation();"
-                                title="Delete group">
-                            <i class="bx bx-trash me-1"></i>Delete
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    `;
+    // Create card HTML
+    const groupHtml = createExerciseGroupCard(groupId, null, groupCount);
     
     container.insertAdjacentHTML('beforeend', groupHtml);
     
     // Initialize Sortable if not already done
     initializeExerciseGroupSorting();
     
-    // Initialize autocomplete on new exercise inputs
-    initializeExerciseAutocompletes();
-    
-    // Add input event listeners to update preview
-    const newGroup = container.lastElementChild;
-    const exerciseInputs = newGroup.querySelectorAll('.exercise-input');
-    exerciseInputs.forEach(input => {
-        input.addEventListener('input', () => updateExerciseGroupPreview(newGroup));
-        input.addEventListener('change', () => updateExerciseGroupPreview(newGroup));
-    });
-    
-    // Add listeners for sets, reps, rest, weight to update preview
-    const setsInput = newGroup.querySelector('.sets-input');
-    const repsInput = newGroup.querySelector('.reps-input');
-    const restInput = newGroup.querySelector('.rest-input');
-    const weightInput = newGroup.querySelector('.weight-input');
-    
-    [setsInput, repsInput, restInput, weightInput].forEach(input => {
-        if (input) {
-            input.addEventListener('input', () => updateExerciseGroupPreview(newGroup));
-            input.addEventListener('change', () => updateExerciseGroupPreview(newGroup));
-        }
-    });
-    
-    // Add autosave listeners to all inputs in the new group
-    addAutosaveListenersToGroup(newGroup);
-    
-    // Add weight unit button listeners
-    addWeightUnitButtonListeners(newGroup);
+    // Auto-open editor for new group
+    setTimeout(() => {
+        openExerciseGroupEditor(groupId);
+    }, 100);
     
     // Mark editor as dirty
     markEditorDirty();
+    
+    console.log('✅ Added new exercise group card:', groupId);
 }
 
 /**
@@ -685,7 +600,7 @@ function addWeightUnitButtonListeners(groupElement) {
 }
 
 /**
- * Add bonus exercise to workout form (accordion style)
+ * Add bonus exercise to workout form (UPDATED FOR CARD-BASED LAYOUT)
  */
 function addBonusExercise() {
     const container = document.getElementById('bonusExercises');
@@ -693,101 +608,21 @@ function addBonusExercise() {
     
     const bonusCount = container.children.length + 1;
     const bonusId = `bonus-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    const collapseId = `collapse-${bonusId}`;
     
-    // First bonus expanded, rest collapsed
-    const isExpanded = bonusCount === 1;
-    const showClass = isExpanded ? 'show' : '';
-    const collapsedClass = isExpanded ? '' : 'collapsed';
-    
-    const bonusHtml = `
-        <div class="accordion-item bonus-exercise" data-bonus-id="${bonusId}">
-            <h2 class="accordion-header" id="heading-${bonusId}">
-                <button class="accordion-button ${collapsedClass}" type="button"
-                        data-bs-toggle="collapse" data-bs-target="#${collapseId}"
-                        aria-expanded="${isExpanded}" aria-controls="${collapseId}">
-                    <div class="bonus-title-container">
-                        <span class="bonus-title">Bonus Exercise ${bonusCount}</span>
-                        <span class="bonus-preview"></span>
-                    </div>
-                </button>
-                <div class="group-actions">
-                    <span class="drag-handle" title="Drag to reorder">
-                        <i class="bx bx-menu"></i>
-                    </span>
-                </div>
-            </h2>
-            <div id="${collapseId}" class="accordion-collapse collapse ${showClass}"
-                 aria-labelledby="heading-${bonusId}" data-bs-parent="#bonusExercises">
-                <div class="accordion-body">
-                    <!-- Exercise Name -->
-                    <div class="row mb-3">
-                        <div class="col-12">
-                            <label class="form-label">Exercise Name</label>
-                            <input type="text" class="form-control bonus-name-input exercise-autocomplete-input"
-                                   id="bonus-${bonusId}" placeholder="Search exercises...">
-                        </div>
-                    </div>
-                    
-                    <!-- Sets, Reps, Rest -->
-                    <div class="row mb-3">
-                        <div class="col-12">
-                            <div class="d-flex align-items-end gap-2">
-                                <div style="width: 80px;">
-                                    <label class="form-label small mb-1">Sets</label>
-                                    <input type="text" class="form-control form-control-sm bonus-sets-input text-center" value="2" placeholder="2" maxlength="3">
-                                </div>
-                                <div style="width: 80px;">
-                                    <label class="form-label small mb-1">Reps</label>
-                                    <input type="text" class="form-control form-control-sm bonus-reps-input text-center" value="15" placeholder="15" maxlength="6">
-                                </div>
-                                <div style="flex: 1;">
-                                    <label class="form-label small mb-1">Rest</label>
-                                    <input type="text" class="form-control form-control-sm bonus-rest-input text-center" value="30s" placeholder="30s" maxlength="10">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Delete Button -->
-                    <div class="row mt-3">
-                        <div class="col-12 d-flex justify-content-end">
-                            <button type="button" class="btn btn-sm btn-outline-danger"
-                                    onclick="removeBonusExercise(this); event.stopPropagation();"
-                                    title="Delete bonus exercise">
-                                <i class="bx bx-trash me-1"></i>Delete
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    `;
+    // Create card HTML
+    const bonusHtml = createBonusExerciseCard(bonusId, null, bonusCount);
     
     container.insertAdjacentHTML('beforeend', bonusHtml);
     
-    // Initialize autocomplete on new bonus exercise input
-    initializeExerciseAutocompletes();
-    
-    // Add input event listeners to update preview
-    const newBonus = container.lastElementChild;
-    const nameInput = newBonus.querySelector('.bonus-name-input');
-    const setsInput = newBonus.querySelector('.bonus-sets-input');
-    const repsInput = newBonus.querySelector('.bonus-reps-input');
-    const restInput = newBonus.querySelector('.bonus-rest-input');
-    
-    [nameInput, setsInput, repsInput, restInput].forEach(input => {
-        if (input) {
-            input.addEventListener('input', () => updateBonusExercisePreview(newBonus));
-            input.addEventListener('change', () => updateBonusExercisePreview(newBonus));
-        }
-    });
-    
-    // Add autosave listeners to the new bonus exercise
-    addAutosaveListenersToGroup(newBonus);
+    // Auto-open editor for new bonus exercise
+    setTimeout(() => {
+        openBonusExerciseEditor(bonusId);
+    }, 100);
     
     // Mark editor as dirty
     markEditorDirty();
+    
+    console.log('✅ Added new bonus exercise card:', bonusId);
 }
 
 /**
@@ -1648,8 +1483,19 @@ function updateSortableForEditMode(isEditMode) {
     const sortable = container.sortableInstance;
     
     if (isEditMode) {
+        // Detect layout type - card-based or accordion-based
+        const hasCardLayout = container.querySelector('.exercise-group-card.compact') !== null;
+        const hasAccordionLayout = container.querySelector('.accordion-item') !== null;
+        
         // Make entire item draggable in edit mode
-        sortable.option('handle', '.accordion-item');
+        if (hasCardLayout) {
+            // For card-based layout, make the entire card draggable
+            sortable.option('handle', '.exercise-group-card.compact .card');
+        } else if (hasAccordionLayout) {
+            // For accordion-based layout, make the accordion item draggable
+            sortable.option('handle', '.accordion-item');
+        }
+        
         sortable.option('animation', 200);
         
         // Add change tracking
@@ -1764,3 +1610,498 @@ window.saveExerciseGroupOrder = saveExerciseGroupOrder;
 window.showToast = showToast;
 
 console.log('📦 Workouts module loaded');
+
+/**
+ * ============================================
+ * CARD-BASED EXERCISE GROUP FUNCTIONS
+ * ============================================
+ */
+
+// Initialize storage for exercise group data
+window.exerciseGroupsData = window.exerciseGroupsData || {};
+window.bonusExercisesData = window.bonusExercisesData || {};
+
+/**
+ * Create exercise group card HTML
+ * @param {string} groupId - Unique group ID
+ * @param {object} groupData - Group data (optional)
+ * @param {number} groupNumber - Group number for display
+ * @returns {string} HTML string
+ */
+function createExerciseGroupCard(groupId, groupData = null, groupNumber = 1) {
+    const data = groupData || {
+        exercises: { a: '', b: '', c: '' },
+        sets: '3',
+        reps: '8-12',
+        rest: '60s',
+        default_weight: '',
+        default_weight_unit: 'lbs'
+    };
+    
+    // Store data
+    window.exerciseGroupsData[groupId] = data;
+    
+    // Build exercise list (main, alt, alt2)
+    const exercises = [];
+    if (data.exercises.a) exercises.push(data.exercises.a);
+    if (data.exercises.b) exercises.push(data.exercises.b);
+    if (data.exercises.c) exercises.push(data.exercises.c);
+    
+    const hasData = data.exercises.a;
+    
+    // Build exercises HTML - each on new line
+    let exercisesHtml = '';
+    if (exercises.length > 0) {
+        exercisesHtml = exercises.map((ex, idx) => {
+            const label = idx === 0 ? '' : `<span class="text-muted">Alt${idx > 1 ? idx : ''}: </span>`;
+            return `<div class="exercise-line">${label}${escapeHtml(ex)}</div>`;
+        }).join('');
+    } else {
+        exercisesHtml = '<div class="exercise-line text-muted">Click edit to add exercises</div>';
+    }
+    
+    // Build meta text (plain text, not badges)
+    let metaText = '';
+    if (hasData) {
+        const parts = [`${data.sets} sets`, `${data.reps} reps`, `${data.rest} rest`];
+        if (data.default_weight) {
+            parts.push(`${data.default_weight} ${data.default_weight_unit}`);
+        }
+        metaText = parts.join(' • ');
+    }
+    
+    return `
+        <div class="exercise-group-card compact" data-group-id="${groupId}">
+            <div class="card">
+                <div class="card-body">
+                    <button type="button" class="btn btn-sm btn-icon btn-edit-compact"
+                            onclick="event.preventDefault(); event.stopPropagation(); openExerciseGroupEditor('${groupId}');"
+                            title="Edit exercise group">
+                        <i class="bx bx-edit"></i>
+                    </button>
+                    <div class="exercise-content">
+                        <div class="exercise-list">
+                            ${exercisesHtml}
+                        </div>
+                        ${metaText ? `<div class="exercise-meta-text text-muted small">${metaText}</div>` : ''}
+                    </div>
+                    <div class="drag-handle" style="display: none;">
+                        <i class="bx bx-menu"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+/**
+ * Open exercise group editor offcanvas
+ * @param {string} groupId - ID of group to edit
+ */
+function openExerciseGroupEditor(groupId) {
+    const groupData = window.exerciseGroupsData[groupId] || {
+        exercises: { a: '', b: '', c: '' },
+        sets: '3',
+        reps: '8-12',
+        rest: '60s',
+        default_weight: '',
+        default_weight_unit: 'lbs'
+    };
+    
+    // Populate offcanvas fields
+    document.getElementById('editExerciseA').value = groupData.exercises.a || '';
+    document.getElementById('editExerciseB').value = groupData.exercises.b || '';
+    document.getElementById('editExerciseC').value = groupData.exercises.c || '';
+    document.getElementById('editSets').value = groupData.sets || '3';
+    document.getElementById('editReps').value = groupData.reps || '8-12';
+    document.getElementById('editRest').value = groupData.rest || '60s';
+    document.getElementById('editWeight').value = groupData.default_weight || '';
+    
+    // Set weight unit
+    document.querySelectorAll('#exerciseGroupEditOffcanvas .weight-unit-btn').forEach(btn => {
+        const isActive = btn.getAttribute('data-unit') === (groupData.default_weight_unit || 'lbs');
+        btn.classList.toggle('active', isActive);
+        btn.classList.toggle('btn-secondary', isActive);
+        btn.classList.toggle('btn-outline-secondary', !isActive);
+    });
+    
+    // Store current group ID for saving
+    window.currentEditingGroupId = groupId;
+    
+    // Mark card as editing
+    document.querySelectorAll('.exercise-group-card').forEach(c => c.classList.remove('editing'));
+    document.querySelector(`[data-group-id="${groupId}"]`)?.classList.add('editing');
+    
+    // Initialize autocompletes
+    setTimeout(() => {
+        if (window.initializeExerciseAutocompletes) {
+            window.initializeExerciseAutocompletes();
+        }
+    }, 100);
+    
+    // Open offcanvas
+    const offcanvas = new bootstrap.Offcanvas(document.getElementById('exerciseGroupEditOffcanvas'));
+    offcanvas.show();
+    
+    console.log('✅ Opened exercise group editor:', groupId);
+}
+
+/**
+ * Save exercise group from offcanvas
+ */
+function saveExerciseGroupFromOffcanvas() {
+    const groupId = window.currentEditingGroupId;
+    if (!groupId) return;
+    
+    // Collect data from offcanvas
+    const groupData = {
+        exercises: {
+            a: document.getElementById('editExerciseA').value.trim(),
+            b: document.getElementById('editExerciseB').value.trim(),
+            c: document.getElementById('editExerciseC').value.trim()
+        },
+        sets: document.getElementById('editSets').value,
+        reps: document.getElementById('editReps').value,
+        rest: document.getElementById('editRest').value,
+        default_weight: document.getElementById('editWeight').value.trim(),
+        default_weight_unit: document.querySelector('#exerciseGroupEditOffcanvas .weight-unit-btn.active')?.getAttribute('data-unit') || 'lbs'
+    };
+    
+    // Validate
+    if (!groupData.exercises.a) {
+        if (window.showAlert) {
+            showAlert('Primary exercise is required', 'danger');
+        } else {
+            alert('Primary exercise is required');
+        }
+        return;
+    }
+    
+    // Store data
+    window.exerciseGroupsData[groupId] = groupData;
+    
+    // Update card preview
+    updateExerciseGroupCardPreview(groupId, groupData);
+    
+    // Close offcanvas
+    const offcanvas = bootstrap.Offcanvas.getInstance(document.getElementById('exerciseGroupEditOffcanvas'));
+    if (offcanvas) offcanvas.hide();
+    
+    // Remove editing state
+    document.querySelector(`[data-group-id="${groupId}"]`)?.classList.remove('editing');
+    
+    // Mark as dirty for autosave
+    if (window.markEditorDirty) {
+        window.markEditorDirty();
+    }
+    
+    console.log('✅ Exercise group saved:', groupId);
+}
+
+/**
+ * Update exercise group card preview
+ * @param {string} groupId - Group ID
+ * @param {object} groupData - Group data
+ */
+function updateExerciseGroupCardPreview(groupId, groupData) {
+    const card = document.querySelector(`[data-group-id="${groupId}"]`);
+    if (!card) return;
+    
+    // Build exercise list (main, alt, alt2)
+    const exercises = [];
+    if (groupData.exercises.a) exercises.push(groupData.exercises.a);
+    if (groupData.exercises.b) exercises.push(groupData.exercises.b);
+    if (groupData.exercises.c) exercises.push(groupData.exercises.c);
+    
+    const hasData = groupData.exercises.a;
+    
+    // Build exercises HTML - each on new line
+    let exercisesHtml = '';
+    if (exercises.length > 0) {
+        exercisesHtml = exercises.map((ex, idx) => {
+            const label = idx === 0 ? '' : `<span class="text-muted">Alt${idx > 1 ? idx : ''}: </span>`;
+            return `<div class="exercise-line">${label}${escapeHtml(ex)}</div>`;
+        }).join('');
+    } else {
+        exercisesHtml = '<div class="exercise-line text-muted">Click edit to add exercises</div>';
+    }
+    
+    // Build meta text (plain text, not badges)
+    let metaText = '';
+    if (hasData) {
+        const parts = [`${groupData.sets} sets`, `${groupData.reps} reps`, `${groupData.rest} rest`];
+        if (groupData.default_weight) {
+            parts.push(`${groupData.default_weight} ${groupData.default_weight_unit}`);
+        }
+        metaText = parts.join(' • ');
+    }
+    
+    // Update exercise list
+    const exerciseList = card.querySelector('.exercise-list');
+    if (exerciseList) {
+        exerciseList.innerHTML = exercisesHtml;
+    }
+    
+    // Update meta text
+    const metaTextEl = card.querySelector('.exercise-meta-text');
+    if (metaTextEl) {
+        if (metaText) {
+            metaTextEl.textContent = metaText;
+            metaTextEl.style.display = 'block';
+        } else {
+            metaTextEl.textContent = '';
+            metaTextEl.style.display = 'none';
+        }
+    }
+}
+
+/**
+ * Delete exercise group card
+ * @param {string} groupId - Group ID to delete
+ */
+function deleteExerciseGroupCard(groupId) {
+    const card = document.querySelector(`[data-group-id="${groupId}"]`);
+    if (!card) return;
+    
+    const groupData = window.exerciseGroupsData[groupId];
+    const exerciseName = groupData?.exercises?.a || 'this exercise group';
+    
+    if (confirm(`Are you sure you want to delete "${exerciseName}"?\n\nThis action cannot be undone.`)) {
+        // Remove from DOM
+        card.remove();
+        
+        // Remove from data storage
+        delete window.exerciseGroupsData[groupId];
+        
+        // Mark as dirty
+        if (window.markEditorDirty) {
+            window.markEditorDirty();
+        }
+        
+        console.log('✅ Exercise group deleted:', groupId);
+    }
+}
+
+/**
+ * Get exercise group data from storage
+ * @param {string} groupId - Group ID
+ * @returns {object} Group data
+ */
+function getExerciseGroupData(groupId) {
+    return window.exerciseGroupsData[groupId] || {
+        exercises: { a: '', b: '', c: '' },
+        sets: '3',
+        reps: '8-12',
+        rest: '60s',
+        default_weight: '',
+        default_weight_unit: 'lbs'
+    };
+}
+
+/**
+ * Create bonus exercise card HTML
+ * @param {string} bonusId - Unique bonus ID
+ * @param {object} bonusData - Bonus data (optional)
+ * @param {number} bonusNumber - Bonus number for display
+ * @returns {string} HTML string
+ */
+function createBonusExerciseCard(bonusId, bonusData = null, bonusNumber = 1) {
+    const data = bonusData || {
+        name: '',
+        sets: '2',
+        reps: '15',
+        rest: '30s'
+    };
+    
+    // Store data
+    window.bonusExercisesData[bonusId] = data;
+    
+    const exerciseName = data.name || `New Bonus Exercise ${bonusNumber}`;
+    const hasData = data.name;
+    
+    // Build meta text (plain text, not badges)
+    let metaText = '';
+    if (hasData) {
+        metaText = `${data.sets} sets • ${data.reps} reps • ${data.rest} rest`;
+    } else {
+        metaText = 'Click edit to add exercise';
+    }
+    
+    return `
+        <div class="bonus-exercise-card compact" data-bonus-id="${bonusId}">
+            <div class="card">
+                <div class="card-body">
+                    <button type="button" class="btn btn-sm btn-icon btn-edit-compact"
+                            onclick="event.preventDefault(); event.stopPropagation(); openBonusExerciseEditor('${bonusId}');"
+                            title="Edit bonus exercise">
+                        <i class="bx bx-edit"></i>
+                    </button>
+                    <div class="exercise-content">
+                        <div class="exercise-line">${escapeHtml(exerciseName)}</div>
+                        <div class="exercise-meta-text text-muted small">${metaText}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+/**
+ * Open bonus exercise editor offcanvas
+ * @param {string} bonusId - ID of bonus to edit
+ */
+function openBonusExerciseEditor(bonusId) {
+    const bonusData = window.bonusExercisesData[bonusId] || {
+        name: '',
+        sets: '2',
+        reps: '15',
+        rest: '30s'
+    };
+    
+    // Populate offcanvas fields
+    document.getElementById('editBonusName').value = bonusData.name || '';
+    document.getElementById('editBonusSets').value = bonusData.sets || '2';
+    document.getElementById('editBonusReps').value = bonusData.reps || '15';
+    document.getElementById('editBonusRest').value = bonusData.rest || '30s';
+    
+    // Store current bonus ID for saving
+    window.currentEditingBonusId = bonusId;
+    
+    // Mark card as editing
+    document.querySelectorAll('.bonus-exercise-card').forEach(c => c.classList.remove('editing'));
+    document.querySelector(`[data-bonus-id="${bonusId}"]`)?.classList.add('editing');
+    
+    // Initialize autocompletes
+    setTimeout(() => {
+        if (window.initializeExerciseAutocompletes) {
+            window.initializeExerciseAutocompletes();
+        }
+    }, 100);
+    
+    // Open offcanvas
+    const offcanvas = new bootstrap.Offcanvas(document.getElementById('bonusExerciseEditOffcanvas'));
+    offcanvas.show();
+    
+    console.log('✅ Opened bonus exercise editor:', bonusId);
+}
+
+/**
+ * Save bonus exercise from offcanvas
+ */
+function saveBonusExerciseFromOffcanvas() {
+    const bonusId = window.currentEditingBonusId;
+    if (!bonusId) return;
+    
+    // Collect data from offcanvas
+    const bonusData = {
+        name: document.getElementById('editBonusName').value.trim(),
+        sets: document.getElementById('editBonusSets').value,
+        reps: document.getElementById('editBonusReps').value,
+        rest: document.getElementById('editBonusRest').value
+    };
+    
+    // Validate
+    if (!bonusData.name) {
+        if (window.showAlert) {
+            showAlert('Exercise name is required', 'danger');
+        } else {
+            alert('Exercise name is required');
+        }
+        return;
+    }
+    
+    // Store data
+    window.bonusExercisesData[bonusId] = bonusData;
+    
+    // Update card preview
+    updateBonusExerciseCardPreview(bonusId, bonusData);
+    
+    // Close offcanvas
+    const offcanvas = bootstrap.Offcanvas.getInstance(document.getElementById('bonusExerciseEditOffcanvas'));
+    if (offcanvas) offcanvas.hide();
+    
+    // Remove editing state
+    document.querySelector(`[data-bonus-id="${bonusId}"]`)?.classList.remove('editing');
+    
+    // Mark as dirty for autosave
+    if (window.markEditorDirty) {
+        window.markEditorDirty();
+    }
+    
+    console.log('✅ Bonus exercise saved:', bonusId);
+}
+
+/**
+ * Update bonus exercise card preview
+ * @param {string} bonusId - Bonus ID
+ * @param {object} bonusData - Bonus data
+ */
+function updateBonusExerciseCardPreview(bonusId, bonusData) {
+    const card = document.querySelector(`[data-bonus-id="${bonusId}"]`);
+    if (!card) return;
+    
+    const exerciseName = bonusData.name || 'New Bonus Exercise';
+    const hasData = bonusData.name;
+    
+    // Build meta text (plain text, not badges)
+    let metaText = '';
+    if (hasData) {
+        metaText = `${bonusData.sets} sets • ${bonusData.reps} reps • ${bonusData.rest} rest`;
+    } else {
+        metaText = 'Click edit to add exercise';
+    }
+    
+    // Update exercise name
+    const exerciseLine = card.querySelector('.exercise-line');
+    if (exerciseLine) {
+        exerciseLine.textContent = exerciseName;
+    }
+    
+    // Update meta text
+    const metaTextEl = card.querySelector('.exercise-meta-text');
+    if (metaTextEl) {
+        metaTextEl.textContent = metaText;
+    }
+}
+
+/**
+ * Delete bonus exercise card
+ * @param {string} bonusId - Bonus ID to delete
+ */
+function deleteBonusExerciseCard(bonusId) {
+    const card = document.querySelector(`[data-bonus-id="${bonusId}"]`);
+    if (!card) return;
+    
+    const bonusData = window.bonusExercisesData[bonusId];
+    const exerciseName = bonusData?.name || 'this bonus exercise';
+    
+    if (confirm(`Are you sure you want to delete "${exerciseName}"?\n\nThis action cannot be undone.`)) {
+        // Remove from DOM
+        card.remove();
+        
+        // Remove from data storage
+        delete window.bonusExercisesData[bonusId];
+        
+        // Mark as dirty
+        if (window.markEditorDirty) {
+            window.markEditorDirty();
+        }
+        
+        console.log('✅ Bonus exercise deleted:', bonusId);
+    }
+}
+
+// Make new functions globally available
+window.createExerciseGroupCard = createExerciseGroupCard;
+window.openExerciseGroupEditor = openExerciseGroupEditor;
+window.saveExerciseGroupFromOffcanvas = saveExerciseGroupFromOffcanvas;
+window.updateExerciseGroupCardPreview = updateExerciseGroupCardPreview;
+window.deleteExerciseGroupCard = deleteExerciseGroupCard;
+window.getExerciseGroupData = getExerciseGroupData;
+window.createBonusExerciseCard = createBonusExerciseCard;
+window.openBonusExerciseEditor = openBonusExerciseEditor;
+window.saveBonusExerciseFromOffcanvas = saveBonusExerciseFromOffcanvas;
+window.updateBonusExerciseCardPreview = updateBonusExerciseCardPreview;
+window.deleteBonusExerciseCard = deleteBonusExerciseCard;
+
+console.log('📦 Card-based exercise group functions loaded');

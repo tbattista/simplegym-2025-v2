@@ -252,28 +252,30 @@
                         </div>
                       </div>
 
-                      <!-- Editor Actions -->
-                      <div class="pt-3" style="border-top: 1px solid var(--bs-border-color);">
-                        <!-- Save Status (above buttons) -->
-                        <div class="mb-3 text-center">
-                          <span id="saveStatus" class="text-muted small"></span>
-                        </div>
-                        
-                        <!-- Action Buttons (full width) -->
-                        <div class="d-grid gap-2">
-                          <div class="btn-group" role="group">
-                            <button type="button" class="btn btn-outline-secondary" id="cancelEditBtn">
-                              <i class="bx bx-x me-1"></i>
-                              Cancel
-                            </button>
-                            <button type="button" class="btn btn-outline-danger" id="deleteWorkoutBtn" style="display: none;">
-                              <i class="bx bx-trash me-1"></i>
-                              Delete
-                            </button>
-                            <button type="button" class="btn btn-primary" id="saveWorkoutBtn">
-                              <i class="bx bx-save me-1"></i>
-                              Save Workout
-                            </button>
+                      <!-- Editor Actions - Sticky Footer (styled like workout-database) -->
+                      <div class="editor-actions">
+                        <div>
+                          <!-- Save Status (above buttons) -->
+                          <div class="mb-2 text-center">
+                            <span id="saveStatus" class="text-muted small"></span>
+                          </div>
+                          
+                          <!-- Action Buttons (full width) -->
+                          <div class="d-grid gap-2">
+                            <div class="btn-group btn-group-sm" role="group">
+                              <button type="button" class="btn btn-outline-secondary btn-sm" id="cancelEditBtn">
+                                <i class="bx bx-x me-1"></i>
+                                Cancel
+                              </button>
+                              <button type="button" class="btn btn-outline-danger btn-sm" id="deleteWorkoutBtn" style="display: none;">
+                                <i class="bx bx-trash me-1"></i>
+                                Delete
+                              </button>
+                              <button type="button" class="btn btn-primary btn-sm" id="saveWorkoutBtn">
+                                <i class="bx bx-save me-1"></i>
+                                Save Workout
+                              </button>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -396,6 +398,172 @@
                 </div>
             </div>
         </div>
+    </div>
+
+    <!-- Exercise Group Edit Offcanvas (Bottom) -->
+    <div class="offcanvas offcanvas-bottom" tabindex="-1"
+         id="exerciseGroupEditOffcanvas"
+         aria-labelledby="exerciseGroupEditLabel">
+      
+      <!-- Header -->
+      <div class="offcanvas-header border-bottom">
+        <h5 class="offcanvas-title" id="exerciseGroupEditLabel">
+          <i class="bx bx-dumbbell me-2"></i>
+          <span id="exerciseGroupTitle">Edit Exercise Group</span>
+        </h5>
+        <button type="button" class="btn-close"
+                data-bs-dismiss="offcanvas" aria-label="Close"></button>
+      </div>
+      
+      <!-- Body - Scrollable -->
+      <div class="offcanvas-body" id="exerciseGroupEditBody">
+        <!-- Exercise Inputs -->
+        <div class="mb-3">
+          <label class="form-label">Primary Exercise *</label>
+          <input type="text" class="form-control exercise-input exercise-autocomplete-input"
+                 id="editExerciseA" placeholder="Search exercises...">
+        </div>
+        
+        <div class="mb-3">
+          <label class="form-label">Alternate Exercise B</label>
+          <input type="text" class="form-control exercise-input exercise-autocomplete-input"
+                 id="editExerciseB" placeholder="Search exercises...">
+        </div>
+        
+        <div class="mb-3">
+          <label class="form-label">Alternate Exercise C</label>
+          <input type="text" class="form-control exercise-input exercise-autocomplete-input"
+                 id="editExerciseC" placeholder="Search exercises...">
+        </div>
+        
+        <!-- Sets, Reps, Rest -->
+        <div class="row g-2 mb-3">
+          <div class="col-4">
+            <label class="form-label">Sets</label>
+            <input type="text" class="form-control sets-input text-center"
+                   id="editSets" value="3" placeholder="3">
+          </div>
+          <div class="col-4">
+            <label class="form-label">Reps</label>
+            <input type="text" class="form-control reps-input text-center"
+                   id="editReps" value="8-12" placeholder="8-12">
+          </div>
+          <div class="col-4">
+            <label class="form-label">Rest</label>
+            <input type="text" class="form-control rest-input text-center"
+                   id="editRest" value="60s" placeholder="60s">
+          </div>
+        </div>
+        
+        <!-- Weight -->
+        <div class="mb-3">
+          <label class="form-label">
+            <i class="bx bx-dumbbell me-1"></i>
+            Default Weight
+          </label>
+          <div class="row g-2">
+            <div class="col-4">
+              <input type="text" class="form-control weight-input text-center"
+                     id="editWeight" placeholder="0">
+            </div>
+            <div class="col-8">
+              <div class="btn-group w-100" role="group">
+                <button type="button" class="btn btn-outline-secondary weight-unit-btn active"
+                        data-unit="lbs">lbs</button>
+                <button type="button" class="btn btn-outline-secondary weight-unit-btn"
+                        data-unit="kg">kg</button>
+                <button type="button" class="btn btn-outline-secondary weight-unit-btn"
+                        data-unit="other">other</button>
+              </div>
+            </div>
+          </div>
+          <div class="form-text">
+            <i class="bx bx-info-circle me-1"></i>
+            This weight auto-syncs from your workout history
+          </div>
+        </div>
+      </div>
+      
+      <!-- Footer - Action Buttons -->
+      <div class="offcanvas-footer border-top p-3">
+        <div class="d-flex gap-2 mb-2">
+          <button type="button" class="btn btn-label-secondary flex-fill"
+                  data-bs-dismiss="offcanvas">Cancel</button>
+          <button type="button" class="btn btn-primary flex-fill"
+                  id="saveExerciseGroupBtn">
+            <i class="bx bx-save me-1"></i>
+            Save Changes
+          </button>
+        </div>
+        <button type="button" class="btn btn-outline-danger w-100"
+                id="deleteExerciseGroupBtn">
+          <i class="bx bx-trash me-1"></i>
+          Delete Exercise Group
+        </button>
+      </div>
+    </div>
+
+    <!-- Bonus Exercise Edit Offcanvas (Bottom) -->
+    <div class="offcanvas offcanvas-bottom" tabindex="-1"
+         id="bonusExerciseEditOffcanvas"
+         aria-labelledby="bonusExerciseEditLabel">
+      
+      <!-- Header -->
+      <div class="offcanvas-header border-bottom">
+        <h5 class="offcanvas-title" id="bonusExerciseEditLabel">
+          <i class="bx bx-plus-circle me-2"></i>
+          <span id="bonusExerciseTitle">Edit Bonus Exercise</span>
+        </h5>
+        <button type="button" class="btn-close"
+                data-bs-dismiss="offcanvas" aria-label="Close"></button>
+      </div>
+      
+      <!-- Body - Scrollable -->
+      <div class="offcanvas-body" id="bonusExerciseEditBody">
+        <!-- Exercise Name -->
+        <div class="mb-3">
+          <label class="form-label">Exercise Name *</label>
+          <input type="text" class="form-control exercise-input exercise-autocomplete-input"
+                 id="editBonusName" placeholder="Search exercises...">
+        </div>
+        
+        <!-- Sets, Reps, Rest -->
+        <div class="row g-2 mb-3">
+          <div class="col-4">
+            <label class="form-label">Sets</label>
+            <input type="text" class="form-control bonus-sets-input text-center"
+                   id="editBonusSets" value="2" placeholder="2">
+          </div>
+          <div class="col-4">
+            <label class="form-label">Reps</label>
+            <input type="text" class="form-control bonus-reps-input text-center"
+                   id="editBonusReps" value="15" placeholder="15">
+          </div>
+          <div class="col-4">
+            <label class="form-label">Rest</label>
+            <input type="text" class="form-control bonus-rest-input text-center"
+                   id="editBonusRest" value="30s" placeholder="30s">
+          </div>
+        </div>
+      </div>
+      
+      <!-- Footer - Action Buttons -->
+      <div class="offcanvas-footer border-top p-3">
+        <div class="d-flex gap-2 mb-2">
+          <button type="button" class="btn btn-label-secondary flex-fill"
+                  data-bs-dismiss="offcanvas">Cancel</button>
+          <button type="button" class="btn btn-primary flex-fill"
+                  id="saveBonusExerciseBtn">
+            <i class="bx bx-save me-1"></i>
+            Save Changes
+          </button>
+        </div>
+        <button type="button" class="btn btn-outline-danger w-100"
+                id="deleteBonusExerciseBtn">
+          <i class="bx bx-trash me-1"></i>
+          Delete Bonus Exercise
+        </button>
+      </div>
     </div>
 
     <!-- Core JS -->

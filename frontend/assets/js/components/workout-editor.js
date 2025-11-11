@@ -34,66 +34,45 @@ function loadWorkoutIntoEditor(workoutId) {
     document.getElementById('workoutDescription').value = workout.description || '';
     document.getElementById('workoutTags').value = workout.tags ? workout.tags.join(', ') : '';
     
-    // Clear and populate exercise groups
+    // Clear and populate exercise groups (UPDATED FOR CARD-BASED LAYOUT)
     const exerciseGroupsContainer = document.getElementById('exerciseGroups');
     exerciseGroupsContainer.innerHTML = '';
     
+    // Clear data storage
+    window.exerciseGroupsData = {};
+    
     if (workout.exercise_groups && workout.exercise_groups.length > 0) {
-        workout.exercise_groups.forEach(group => {
-            addExerciseGroup();
-            const lastGroup = exerciseGroupsContainer.lastElementChild;
+        workout.exercise_groups.forEach((group, index) => {
+            const groupId = `group-${Date.now()}-${index}-${Math.random().toString(36).substr(2, 9)}`;
+            const groupNumber = index + 1;
             
-            // Populate exercises in correct order (a, b, c, d, e, f)
-            const exerciseInputs = lastGroup.querySelectorAll('.exercise-input');
-            const orderedKeys = ['a', 'b', 'c', 'd', 'e', 'f'];
-            orderedKeys.forEach((key, index) => {
-                if (group.exercises && group.exercises[key] && exerciseInputs[index]) {
-                    exerciseInputs[index].value = group.exercises[key];
-                }
-            });
+            // Create card with data
+            const cardHtml = window.createExerciseGroupCard(groupId, group, groupNumber);
+            exerciseGroupsContainer.insertAdjacentHTML('beforeend', cardHtml);
             
-            // Populate sets, reps, rest
-            lastGroup.querySelector('.sets-input').value = group.sets || '3';
-            lastGroup.querySelector('.reps-input').value = group.reps || '8-12';
-            lastGroup.querySelector('.rest-input').value = group.rest || '60s';
-            
-            // Populate weight and weight unit
-            const weightInput = lastGroup.querySelector('.weight-input');
-            if (weightInput && group.default_weight) {
-                weightInput.value = group.default_weight;
-                console.log('🔍 DEBUG: Populated weight field:', group.default_weight);
-            }
-            
-            // Set weight unit button
-            const weightUnit = group.default_weight_unit || 'lbs';
-            const unitButtons = lastGroup.querySelectorAll('.weight-unit-btn');
-            unitButtons.forEach(btn => {
-                btn.classList.remove('active', 'btn-secondary');
-                btn.classList.add('btn-outline-secondary');
-                if (btn.getAttribute('data-unit') === weightUnit) {
-                    btn.classList.add('active', 'btn-secondary');
-                    btn.classList.remove('btn-outline-secondary');
-                    console.log('🔍 DEBUG: Set weight unit button to:', weightUnit);
-                }
-            });
+            console.log('🔍 DEBUG: Loaded exercise group card:', groupId, group);
         });
     } else {
         addExerciseGroup();
     }
     
-    // Clear and populate bonus exercises
+    // Clear and populate bonus exercises (UPDATED FOR CARD-BASED LAYOUT)
     const bonusExercisesContainer = document.getElementById('bonusExercises');
     bonusExercisesContainer.innerHTML = '';
     
+    // Clear data storage
+    window.bonusExercisesData = {};
+    
     if (workout.bonus_exercises && workout.bonus_exercises.length > 0) {
-        workout.bonus_exercises.forEach(bonus => {
-            addBonusExercise();
-            const lastBonus = bonusExercisesContainer.lastElementChild;
+        workout.bonus_exercises.forEach((bonus, index) => {
+            const bonusId = `bonus-${Date.now()}-${index}-${Math.random().toString(36).substr(2, 9)}`;
+            const bonusNumber = index + 1;
             
-            lastBonus.querySelector('.bonus-name-input').value = bonus.name || '';
-            lastBonus.querySelector('.bonus-sets-input').value = bonus.sets || '2';
-            lastBonus.querySelector('.bonus-reps-input').value = bonus.reps || '15';
-            lastBonus.querySelector('.bonus-rest-input').value = bonus.rest || '30s';
+            // Create card with data
+            const cardHtml = window.createBonusExerciseCard(bonusId, bonus, bonusNumber);
+            bonusExercisesContainer.insertAdjacentHTML('beforeend', cardHtml);
+            
+            console.log('🔍 DEBUG: Loaded bonus exercise card:', bonusId, bonus);
         });
     }
     
@@ -583,6 +562,79 @@ function setupWorkoutEditorListeners() {
             }
         });
     }
+    
+    // NEW: Save Exercise Group from Offcanvas button
+    const saveExerciseGroupBtn = document.getElementById('saveExerciseGroupBtn');
+    if (saveExerciseGroupBtn) {
+        saveExerciseGroupBtn.addEventListener('click', () => {
+            if (window.saveExerciseGroupFromOffcanvas) {
+                window.saveExerciseGroupFromOffcanvas();
+            }
+        });
+    }
+    
+    // NEW: Save Bonus Exercise from Offcanvas button
+    const saveBonusExerciseBtn = document.getElementById('saveBonusExerciseBtn');
+    if (saveBonusExerciseBtn) {
+        saveBonusExerciseBtn.addEventListener('click', () => {
+            if (window.saveBonusExerciseFromOffcanvas) {
+                window.saveBonusExerciseFromOffcanvas();
+            }
+        });
+    }
+    
+    // NEW: Delete Exercise Group from Offcanvas button
+    const deleteExerciseGroupBtn = document.getElementById('deleteExerciseGroupBtn');
+    if (deleteExerciseGroupBtn) {
+        deleteExerciseGroupBtn.addEventListener('click', () => {
+            const groupId = window.currentEditingGroupId;
+            if (groupId && window.deleteExerciseGroupCard) {
+                // Close offcanvas first
+                const offcanvas = bootstrap.Offcanvas.getInstance(document.getElementById('exerciseGroupEditOffcanvas'));
+                if (offcanvas) offcanvas.hide();
+                
+                // Delete after a short delay to allow offcanvas to close
+                setTimeout(() => {
+                    window.deleteExerciseGroupCard(groupId);
+                }, 300);
+            }
+        });
+    }
+    
+    // NEW: Delete Bonus Exercise from Offcanvas button
+    const deleteBonusExerciseBtn = document.getElementById('deleteBonusExerciseBtn');
+    if (deleteBonusExerciseBtn) {
+        deleteBonusExerciseBtn.addEventListener('click', () => {
+            const bonusId = window.currentEditingBonusId;
+            if (bonusId && window.deleteBonusExerciseCard) {
+                // Close offcanvas first
+                const offcanvas = bootstrap.Offcanvas.getInstance(document.getElementById('bonusExerciseEditOffcanvas'));
+                if (offcanvas) offcanvas.hide();
+                
+                // Delete after a short delay to allow offcanvas to close
+                setTimeout(() => {
+                    window.deleteBonusExerciseCard(bonusId);
+                }, 300);
+            }
+        });
+    }
+    
+    // NEW: Weight unit button listeners in offcanvas
+    const setupOffcanvasWeightButtons = () => {
+        document.querySelectorAll('#exerciseGroupEditOffcanvas .weight-unit-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const container = this.closest('.btn-group');
+                container.querySelectorAll('.weight-unit-btn').forEach(b => {
+                    b.classList.remove('active', 'btn-secondary');
+                    b.classList.add('btn-outline-secondary');
+                });
+                this.classList.add('active', 'btn-secondary');
+                this.classList.remove('btn-outline-secondary');
+            });
+        });
+    };
+    setupOffcanvasWeightButtons();
     
     // Warn on navigation if dirty
     window.addEventListener('beforeunload', (e) => {
