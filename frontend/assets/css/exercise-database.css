@@ -32,6 +32,19 @@
     max-width: 600px;
 }
 
+/* Search input styling - subtle background to stand out */
+.exercise-database-footer #exerciseSearch {
+    background-color: rgba(var(--bs-primary-rgb), 0.05);
+    border-color: rgba(var(--bs-primary-rgb), 0.2);
+    transition: all 0.2s ease;
+}
+
+.exercise-database-footer #exerciseSearch:focus {
+    background-color: var(--bs-body-bg);
+    border-color: var(--bs-primary);
+    box-shadow: 0 0 0 0.2rem rgba(var(--bs-primary-rgb), 0.15);
+}
+
 /* When menu is collapsed */
 .layout-menu-collapsed .exercise-database-footer {
     margin-left: var(--layout-menu-collapsed-width, 80px);
