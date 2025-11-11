@@ -9,12 +9,47 @@ class MigrationUIManager {
         this.progressModal = null;
         this.isReady = false;
         this.migrationInProgress = false;
+        this.migrationCompleted = false;
+        this.migrationDismissed = false;
+        
+        // Load previous migration state
+        this.loadMigrationState();
         
         // Initialize when DOM is ready
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', () => this.initialize());
         } else {
             this.initialize();
+        }
+    }
+    
+    loadMigrationState() {
+        try {
+            const state = localStorage.getItem('migration_state');
+            if (state) {
+                const parsed = JSON.parse(state);
+                this.migrationCompleted = parsed.completed || false;
+                this.migrationDismissed = parsed.dismissed || false;
+                
+                // Reset dismissed state after 7 days (in case user changes mind)
+                if (parsed.timestamp && (Date.now() - parsed.timestamp) > 7 * 24 * 60 * 60 * 1000) {
+                    this.migrationDismissed = false;
+                }
+            }
+        } catch (error) {
+            console.error('Error loading migration state:', error);
+        }
+    }
+    
+    saveMigrationState() {
+        try {
+            localStorage.setItem('migration_state', JSON.stringify({
+                completed: this.migrationCompleted,
+                dismissed: this.migrationDismissed,
+                timestamp: Date.now()
+            }));
+        } catch (error) {
+            console.error('Error saving migration state:', error);
         }
     }
     
@@ -102,33 +137,115 @@ class MigrationUIManager {
         if (upgradeSignInBtn) {
             upgradeSignInBtn.addEventListener('click', () => this.handleMigrationRequest('signin'));
         }
+        
+        // Track modal dismissal
+        const upgradeModal = document.getElementById('upgradeModal');
+        if (upgradeModal) {
+            upgradeModal.addEventListener('hidden.bs.modal', () => {
+                if (!this.migrationInProgress) {
+                    this.migrationDismissed = true;
+                    this.saveMigrationState();
+                    console.log('📝 Migration prompt dismissed by user');
+                }
+            });
+        }
     }
     
     handleAuthStateChange(authData) {
         const { user, isAuthenticated } = authData;
         
+        // Only check migration for authenticated users
         if (isAuthenticated && user && !this.migrationInProgress) {
-            // Check if migration is needed
-            setTimeout(() => this.checkMigrationNeeded(), 1000);
+            // Prevent checking on every page load - use session storage
+            const lastAuthCheck = sessionStorage.getItem('last_auth_check');
+            const now = Date.now();
+            
+            // Only check once per session (or after 1 minute)
+            if (!lastAuthCheck || (now - parseInt(lastAuthCheck)) > 60000) {
+                sessionStorage.setItem('last_auth_check', now.toString());
+                
+                // Only proceed if not already handled
+                if (!this.migrationCompleted && !this.migrationDismissed) {
+                    setTimeout(() => this.checkMigrationNeeded(), 1000);
+                }
+            }
         }
     }
     
     async checkMigrationNeeded() {
         try {
+            // Skip if already handled
+            if (this.migrationCompleted || this.migrationDismissed) {
+                console.log('⏭️ Migration already handled, skipping check');
+                return;
+            }
+            
             // Check if user has local data that could be migrated
             const localPrograms = this.getLocalStorageData('gym_programs');
             const localWorkouts = this.getLocalStorageData('gym_workouts');
             
-            if (localPrograms.length > 0 || localWorkouts.length > 0) {
-                // Check migration eligibility via API
-                const eligibility = await this.checkMigrationEligibility();
-                
-                if (eligibility.eligible) {
-                    this.showMigrationPrompt(localPrograms.length, localWorkouts.length);
-                }
+            if (localPrograms.length === 0 && localWorkouts.length === 0) {
+                console.log('⏭️ No local data to migrate');
+                return;
+            }
+            
+            // Check if data already exists in cloud
+            const cloudData = await this.getCloudData();
+            const hasNewLocalData = this.hasDataNotInCloud(
+                localPrograms,
+                localWorkouts,
+                cloudData
+            );
+            
+            if (!hasNewLocalData) {
+                console.log('⏭️ All local data already in cloud');
+                this.migrationCompleted = true;
+                this.saveMigrationState();
+                return;
+            }
+            
+            // Check migration eligibility via API
+            const eligibility = await this.checkMigrationEligibility();
+            
+            if (eligibility.eligible) {
+                this.showMigrationPrompt(localPrograms.length, localWorkouts.length);
             }
         } catch (error) {
             console.error('❌ Error checking migration need:', error);
+        }
+    }
+    
+    hasDataNotInCloud(localPrograms, localWorkouts, cloudData) {
+        const cloudProgramIds = new Set(cloudData.programs.map(p => p.id));
+        const cloudWorkoutIds = new Set(cloudData.workouts.map(w => w.id));
+        
+        const newPrograms = localPrograms.filter(p => !cloudProgramIds.has(p.id));
+        const newWorkouts = localWorkouts.filter(w => !cloudWorkoutIds.has(w.id));
+        
+        console.log(`📊 Migration check: ${newPrograms.length} new programs, ${newWorkouts.length} new workouts`);
+        
+        return newPrograms.length > 0 || newWorkouts.length > 0;
+    }
+    
+    async getCloudData() {
+        try {
+            const token = await window.dataManager.getAuthToken();
+            const [programsRes, workoutsRes] = await Promise.all([
+                fetch(getApiUrl('/api/v3/user/programs'), {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                }),
+                fetch(getApiUrl('/api/v3/user/workouts'), {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                })
+            ]);
+            
+            const programs = programsRes.ok ? (await programsRes.json()).programs || [] : [];
+            const workouts = workoutsRes.ok ? (await workoutsRes.json()).workouts || [] : [];
+            
+            return { programs, workouts };
+        } catch (error) {
+            console.error('Error fetching cloud data:', error);
+            return { programs: [], workouts: [] };
         }
     }
     
@@ -380,6 +497,10 @@ class MigrationUIManager {
     
     showMigrationSuccess(result) {
         const message = `🎉 Migration successful! ${result.migrated_programs} programs and ${result.migrated_workouts} workouts are now synced to the cloud.`;
+        
+        // Mark migration as completed
+        this.migrationCompleted = true;
+        this.saveMigrationState();
         
         if (window.dashboard && window.dashboard.showAlert) {
             window.dashboard.showAlert(message, 'success');

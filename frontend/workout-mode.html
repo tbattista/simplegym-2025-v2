@@ -83,22 +83,21 @@
             <!-- Content -->
             <div class="container-xxl flex-grow-1 container-p-y">
               
-              <!-- Workout Mode Header (Custom - No standard app bar) -->
-              <div class="workout-mode-header">
-                <div class="mb-4">
-                  <!-- Page Title (h4 - Sneat standard for page titles) -->
-                  <h4 class="mb-2">Workout Mode</h4>
-                  
-                  <!-- Workout Name (h5 - secondary heading) -->
-                  <h5 class="mb-1" id="workoutName">Loading workout...</h5>
-                  
-                  <!-- Workout Details (small text with muted color) -->
-                  <div class="text-muted small" id="workoutDetails">
-                    <span id="workoutDescription"></span>
-                  </div>
-                  
-                  <!-- Last Completed (small text with icon) -->
-                  <div class="text-muted small mt-1" id="lastCompletedContainer" style="display: none;">
+              <!-- Page Header (Standard Pattern) -->
+              <div class="mb-4">
+                <h4 class="mb-1">
+                  <i class="bx bx-play-circle me-2"></i>
+                  Workout Mode
+                </h4>
+                <p class="text-muted mb-0">Execute your workout with rest timers and tracking</p>
+              </div>
+
+              <!-- Workout Info Card (Separate from Header) -->
+              <div class="card mb-4" id="workoutInfoCard" style="display: none;">
+                <div class="card-body">
+                  <h5 class="card-title mb-2" id="workoutName">Loading workout...</h5>
+                  <p class="text-muted mb-2" id="workoutDescription"></p>
+                  <div class="text-muted small" id="lastCompletedContainer" style="display: none;">
                     <i class="bx bx-history me-1"></i>
                     Last completed: <span id="lastCompletedDate">Never</span>
                   </div>
