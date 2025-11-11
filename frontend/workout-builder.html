@@ -592,6 +592,15 @@
     <script src="/static/assets/js/firebase/auth-ui.js?v=20251020-03"></script>
     <script src="/static/assets/js/firebase/data-manager.js?v=20251020-05"></script>
 
+    <!-- Common Utilities (MUST load before other dashboard scripts) -->
+    <script src="/static/assets/js/utils/common-utils.js"></script>
+    
+    <!-- Autosave Manager Module (MUST load before workouts.js) -->
+    <script src="/static/assets/js/modules/autosave-manager.js"></script>
+    
+    <!-- Card Renderer Module (MUST load before workouts.js) -->
+    <script src="/static/assets/js/modules/card-renderer.js"></script>
+
     <!-- Core Services -->
     <script src="/static/assets/js/services/exercise-cache-service.js?v=20251020-05"></script>
     

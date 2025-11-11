@@ -1,197 +1,106 @@
 /**
  * Ghost Gym Dashboard - Workout Management Module
  * Handles workout CRUD operations, exercise groups, and rendering
- * @version 1.1.0 - Added autosave functionality
+ * @version 3.0.0 - Refactored to use CardRenderer module
+ *
+ * NOTE: Core utility functions (escapeHtml, showAlert, debounce, generateId)
+ * are now loaded from common-utils.js
+ * NOTE: Autosave functionality is now handled by AutosaveManager module
+ * NOTE: Card rendering is now handled by CardRenderer module
  */
 
 /**
  * ============================================
- * AUTOSAVE STATE MANAGEMENT
+ * AUTOSAVE INITIALIZATION
  * ============================================
  */
 
-// Autosave configuration
-const AUTOSAVE_DEBOUNCE_MS = 3000; // 3 seconds
-let autosaveTimeout = null;
-let lastSaveTime = null;
-
-// Initialize autosave state
-window.ghostGym = window.ghostGym || {};
-window.ghostGym.workoutBuilder = window.ghostGym.workoutBuilder || {
-    isDirty: false,
-    isAutosaving: false,
-    selectedWorkoutId: null,
-    autosaveEnabled: true
-};
+// Initialize AutosaveManager for workout builder
+let workoutAutosaveManager = null;
 
 /**
- * Mark editor as having unsaved changes
+ * Initialize autosave manager
+ */
+function initializeWorkoutAutosave() {
+    workoutAutosaveManager = new AutosaveManager({
+        namespace: 'workoutBuilder',
+        debounceMs: 3000,
+        saveCallback: async (silent) => {
+            // Use saveWorkoutFromEditor if available (new inline editor)
+            if (window.saveWorkoutFromEditor) {
+                await window.saveWorkoutFromEditor(silent);
+            } else {
+                // Fallback to old saveWorkout function
+                await saveWorkout(silent);
+            }
+        },
+        updateIndicatorCallback: (status) => {
+            // Delegate to workout-editor's updateSaveStatus if available
+            if (window.updateSaveStatus) {
+                window.updateSaveStatus(status);
+            }
+        },
+        enabled: true
+    });
+    
+    // Start relative time updates
+    workoutAutosaveManager.startRelativeTimeUpdates();
+    
+    // Set up beforeunload warning
+    workoutAutosaveManager.setupBeforeUnloadWarning();
+    
+    console.log('✅ Workout autosave manager initialized');
+}
+
+// Initialize on load
+if (typeof AutosaveManager !== 'undefined') {
+    initializeWorkoutAutosave();
+} else {
+    console.warn('⚠️ AutosaveManager not loaded, autosave disabled');
+}
+
+/**
+ * Wrapper functions for backward compatibility
  */
 function markEditorDirty() {
-    if (!window.ghostGym.workoutBuilder.selectedWorkoutId) {
-        // Don't mark dirty for new unsaved workouts
-        return;
+    if (workoutAutosaveManager) {
+        workoutAutosaveManager.markDirty();
     }
-    
-    window.ghostGym.workoutBuilder.isDirty = true;
-    updateSaveIndicator('unsaved');
-    scheduleAutosave();
 }
 
-/**
- * Schedule autosave with debounce
- */
 function scheduleAutosave() {
-    if (!window.ghostGym.workoutBuilder.autosaveEnabled) {
-        return;
+    if (workoutAutosaveManager) {
+        workoutAutosaveManager.scheduleAutosave();
     }
-    
-    clearTimeout(autosaveTimeout);
-    autosaveTimeout = setTimeout(() => {
-        if (window.ghostGym.workoutBuilder.isDirty &&
-            window.ghostGym.workoutBuilder.selectedWorkoutId) {
-            autoSaveWorkout();
-        }
-    }, AUTOSAVE_DEBOUNCE_MS);
 }
 
-/**
- * Perform autosave
- */
 async function autoSaveWorkout() {
-    if (window.ghostGym.workoutBuilder.isAutosaving) {
-        return; // Prevent concurrent saves
-    }
-    
-    try {
-        window.ghostGym.workoutBuilder.isAutosaving = true;
-        
-        // Use saveWorkoutFromEditor if available (new inline editor)
-        if (window.saveWorkoutFromEditor) {
-            await window.saveWorkoutFromEditor(true); // Pass true for silent mode
-        } else {
-            // Fallback to old saveWorkout function
-            await saveWorkout(true);
-        }
-        
-        window.ghostGym.workoutBuilder.isDirty = false;
-        lastSaveTime = new Date();
-        
-        console.log('✅ Workout auto-saved successfully');
-        
-    } catch (error) {
-        console.error('❌ Autosave failed:', error);
-    } finally {
-        window.ghostGym.workoutBuilder.isAutosaving = false;
+    if (workoutAutosaveManager) {
+        await workoutAutosaveManager.performAutosave();
     }
 }
 
-/**
- * Update save status indicator
- * Now uses saveStatus element from workout-editor
- */
 function updateSaveIndicator(status) {
-    // Delegate to workout-editor's updateSaveStatus if available
-    if (window.updateSaveStatus) {
-        window.updateSaveStatus(status);
-        return;
-    }
-    
-    // Fallback for old implementation
-    const indicator = document.getElementById('saveStatus');
-    if (!indicator) return;
-    
-    indicator.className = `save-status ${status}`;
-    
-    switch (status) {
-        case 'saving':
-            indicator.textContent = 'Saving...';
-            break;
-        case 'saved':
-            indicator.textContent = 'All changes saved';
-            break;
-        case 'unsaved':
-            indicator.textContent = 'Unsaved changes';
-            break;
-        case 'error':
-            indicator.textContent = 'Save failed';
-            break;
-        default:
-            indicator.textContent = '';
+    if (workoutAutosaveManager) {
+        workoutAutosaveManager.updateIndicator(status);
     }
 }
 
-/**
- * Update relative save time display
- */
-function updateRelativeSaveTime() {
-    if (!lastSaveTime) return;
-    
-    const indicator = document.getElementById('saveStatus');
-    if (!indicator) return;
-    
-    const now = new Date();
-    const seconds = Math.floor((now - lastSaveTime) / 1000);
-    
-    let timeText = '';
-    if (seconds < 60) {
-        timeText = 'Saved just now';
-    } else if (seconds < 120) {
-        timeText = 'Saved 1 min ago';
-    } else if (seconds < 3600) {
-        timeText = `Saved ${Math.floor(seconds / 60)} mins ago`;
-    } else {
-        timeText = 'Saved';
-    }
-    
-    indicator.textContent = timeText;
-}
-
-// Update relative time every 30 seconds
-setInterval(updateRelativeSaveTime, 30000);
-
-/**
- * Initialize autosave listeners on form inputs
- */
 function initializeAutosaveListeners() {
-    // Listen to workout name, description, tags
-    const workoutName = document.getElementById('workoutName');
-    const workoutDescription = document.getElementById('workoutDescription');
-    const workoutTags = document.getElementById('workoutTags');
-    
-    [workoutName, workoutDescription, workoutTags].forEach(input => {
-        if (input) {
-            input.addEventListener('input', markEditorDirty);
-            input.addEventListener('change', markEditorDirty);
-        }
-    });
-    
-    console.log('✅ Autosave listeners initialized');
-}
-
-/**
- * Add autosave listeners to exercise group inputs
- */
-function addAutosaveListenersToGroup(groupElement) {
-    if (!groupElement) return;
-    
-    const inputs = groupElement.querySelectorAll('input, textarea, select');
-    inputs.forEach(input => {
-        input.addEventListener('input', markEditorDirty);
-        input.addEventListener('change', markEditorDirty);
-    });
-}
-
-/**
- * Warn user about unsaved changes on page unload
- */
-window.addEventListener('beforeunload', (e) => {
-    if (window.ghostGym.workoutBuilder.isDirty) {
-        e.preventDefault();
-        e.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
-        return e.returnValue;
+    if (workoutAutosaveManager) {
+        workoutAutosaveManager.initializeListeners([
+            'workoutName',
+            'workoutDescription',
+            'workoutTags'
+        ]);
     }
-});
+}
+
+function addAutosaveListenersToGroup(groupElement) {
+    if (workoutAutosaveManager) {
+        workoutAutosaveManager.addListenersToContainer(groupElement);
+    }
+}
 
 /**
  * Render workouts in grid layout (Builder view)
@@ -929,8 +838,13 @@ function editWorkout(id) {
     if (!workout) return;
     
     // Set selected workout ID for autosave
-    window.ghostGym.workoutBuilder.selectedWorkoutId = workout.id;
-    window.ghostGym.workoutBuilder.isDirty = false;
+    if (workoutAutosaveManager) {
+        workoutAutosaveManager.setSelectedItemId(workout.id);
+    } else {
+        // Fallback for when autosave manager isn't available
+        window.ghostGym.workoutBuilder.selectedWorkoutId = workout.id;
+        window.ghostGym.workoutBuilder.isDirty = false;
+    }
     
     // Populate form with workout data
     document.getElementById('workoutName').value = workout.name || '';
@@ -1011,10 +925,6 @@ function editWorkout(id) {
     
     // Initialize autosave listeners
     initializeAutosaveListeners();
-    
-    // Update save indicator
-    updateSaveIndicator('saved');
-    lastSaveTime = new Date();
     
     // Show modal
     const modal = new bootstrap.Modal(document.getElementById('workoutModal'));
@@ -1162,9 +1072,14 @@ function clearWorkoutForm() {
         addExerciseGroup();
         
         // Reset autosave state for new workout
-        window.ghostGym.workoutBuilder.selectedWorkoutId = null;
-        window.ghostGym.workoutBuilder.isDirty = false;
-        updateSaveIndicator();
+        if (workoutAutosaveManager) {
+            workoutAutosaveManager.reset();
+        } else {
+            // Fallback for when autosave manager isn't available
+            window.ghostGym.workoutBuilder.selectedWorkoutId = null;
+            window.ghostGym.workoutBuilder.isDirty = false;
+            updateSaveIndicator();
+        }
         
         // Initialize autosave listeners
         initializeAutosaveListeners();
@@ -1613,86 +1528,11 @@ console.log('📦 Workouts module loaded');
 
 /**
  * ============================================
- * CARD-BASED EXERCISE GROUP FUNCTIONS
+ * CARD EDITOR FUNCTIONS (UI ONLY)
  * ============================================
+ * Card rendering is handled by CardRenderer module.
+ * These functions handle the editor UI interactions.
  */
-
-// Initialize storage for exercise group data
-window.exerciseGroupsData = window.exerciseGroupsData || {};
-window.bonusExercisesData = window.bonusExercisesData || {};
-
-/**
- * Create exercise group card HTML
- * @param {string} groupId - Unique group ID
- * @param {object} groupData - Group data (optional)
- * @param {number} groupNumber - Group number for display
- * @returns {string} HTML string
- */
-function createExerciseGroupCard(groupId, groupData = null, groupNumber = 1) {
-    const data = groupData || {
-        exercises: { a: '', b: '', c: '' },
-        sets: '3',
-        reps: '8-12',
-        rest: '60s',
-        default_weight: '',
-        default_weight_unit: 'lbs'
-    };
-    
-    // Store data
-    window.exerciseGroupsData[groupId] = data;
-    
-    // Build exercise list (main, alt, alt2)
-    const exercises = [];
-    if (data.exercises.a) exercises.push(data.exercises.a);
-    if (data.exercises.b) exercises.push(data.exercises.b);
-    if (data.exercises.c) exercises.push(data.exercises.c);
-    
-    const hasData = data.exercises.a;
-    
-    // Build exercises HTML - each on new line
-    let exercisesHtml = '';
-    if (exercises.length > 0) {
-        exercisesHtml = exercises.map((ex, idx) => {
-            const label = idx === 0 ? '' : `<span class="text-muted">Alt${idx > 1 ? idx : ''}: </span>`;
-            return `<div class="exercise-line">${label}${escapeHtml(ex)}</div>`;
-        }).join('');
-    } else {
-        exercisesHtml = '<div class="exercise-line text-muted">Click edit to add exercises</div>';
-    }
-    
-    // Build meta text (plain text, not badges)
-    let metaText = '';
-    if (hasData) {
-        const parts = [`${data.sets} sets`, `${data.reps} reps`, `${data.rest} rest`];
-        if (data.default_weight) {
-            parts.push(`${data.default_weight} ${data.default_weight_unit}`);
-        }
-        metaText = parts.join(' • ');
-    }
-    
-    return `
-        <div class="exercise-group-card compact" data-group-id="${groupId}">
-            <div class="card">
-                <div class="card-body">
-                    <button type="button" class="btn btn-sm btn-icon btn-edit-compact"
-                            onclick="event.preventDefault(); event.stopPropagation(); openExerciseGroupEditor('${groupId}');"
-                            title="Edit exercise group">
-                        <i class="bx bx-edit"></i>
-                    </button>
-                    <div class="exercise-content">
-                        <div class="exercise-list">
-                            ${exercisesHtml}
-                        </div>
-                        ${metaText ? `<div class="exercise-meta-text text-muted small">${metaText}</div>` : ''}
-                    </div>
-                    <div class="drag-handle" style="display: none;">
-                        <i class="bx bx-menu"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-    `;
-}
 
 /**
  * Open exercise group editor offcanvas
@@ -1780,8 +1620,10 @@ function saveExerciseGroupFromOffcanvas() {
     // Store data
     window.exerciseGroupsData[groupId] = groupData;
     
-    // Update card preview
-    updateExerciseGroupCardPreview(groupId, groupData);
+    // Update card preview using CardRenderer
+    if (window.updateExerciseGroupCardPreview) {
+        window.updateExerciseGroupCardPreview(groupId, groupData);
+    }
     
     // Close offcanvas
     const offcanvas = bootstrap.Offcanvas.getInstance(document.getElementById('exerciseGroupEditOffcanvas'));
@@ -1796,154 +1638,6 @@ function saveExerciseGroupFromOffcanvas() {
     }
     
     console.log('✅ Exercise group saved:', groupId);
-}
-
-/**
- * Update exercise group card preview
- * @param {string} groupId - Group ID
- * @param {object} groupData - Group data
- */
-function updateExerciseGroupCardPreview(groupId, groupData) {
-    const card = document.querySelector(`[data-group-id="${groupId}"]`);
-    if (!card) return;
-    
-    // Build exercise list (main, alt, alt2)
-    const exercises = [];
-    if (groupData.exercises.a) exercises.push(groupData.exercises.a);
-    if (groupData.exercises.b) exercises.push(groupData.exercises.b);
-    if (groupData.exercises.c) exercises.push(groupData.exercises.c);
-    
-    const hasData = groupData.exercises.a;
-    
-    // Build exercises HTML - each on new line
-    let exercisesHtml = '';
-    if (exercises.length > 0) {
-        exercisesHtml = exercises.map((ex, idx) => {
-            const label = idx === 0 ? '' : `<span class="text-muted">Alt${idx > 1 ? idx : ''}: </span>`;
-            return `<div class="exercise-line">${label}${escapeHtml(ex)}</div>`;
-        }).join('');
-    } else {
-        exercisesHtml = '<div class="exercise-line text-muted">Click edit to add exercises</div>';
-    }
-    
-    // Build meta text (plain text, not badges)
-    let metaText = '';
-    if (hasData) {
-        const parts = [`${groupData.sets} sets`, `${groupData.reps} reps`, `${groupData.rest} rest`];
-        if (groupData.default_weight) {
-            parts.push(`${groupData.default_weight} ${groupData.default_weight_unit}`);
-        }
-        metaText = parts.join(' • ');
-    }
-    
-    // Update exercise list
-    const exerciseList = card.querySelector('.exercise-list');
-    if (exerciseList) {
-        exerciseList.innerHTML = exercisesHtml;
-    }
-    
-    // Update meta text
-    const metaTextEl = card.querySelector('.exercise-meta-text');
-    if (metaTextEl) {
-        if (metaText) {
-            metaTextEl.textContent = metaText;
-            metaTextEl.style.display = 'block';
-        } else {
-            metaTextEl.textContent = '';
-            metaTextEl.style.display = 'none';
-        }
-    }
-}
-
-/**
- * Delete exercise group card
- * @param {string} groupId - Group ID to delete
- */
-function deleteExerciseGroupCard(groupId) {
-    const card = document.querySelector(`[data-group-id="${groupId}"]`);
-    if (!card) return;
-    
-    const groupData = window.exerciseGroupsData[groupId];
-    const exerciseName = groupData?.exercises?.a || 'this exercise group';
-    
-    if (confirm(`Are you sure you want to delete "${exerciseName}"?\n\nThis action cannot be undone.`)) {
-        // Remove from DOM
-        card.remove();
-        
-        // Remove from data storage
-        delete window.exerciseGroupsData[groupId];
-        
-        // Mark as dirty
-        if (window.markEditorDirty) {
-            window.markEditorDirty();
-        }
-        
-        console.log('✅ Exercise group deleted:', groupId);
-    }
-}
-
-/**
- * Get exercise group data from storage
- * @param {string} groupId - Group ID
- * @returns {object} Group data
- */
-function getExerciseGroupData(groupId) {
-    return window.exerciseGroupsData[groupId] || {
-        exercises: { a: '', b: '', c: '' },
-        sets: '3',
-        reps: '8-12',
-        rest: '60s',
-        default_weight: '',
-        default_weight_unit: 'lbs'
-    };
-}
-
-/**
- * Create bonus exercise card HTML
- * @param {string} bonusId - Unique bonus ID
- * @param {object} bonusData - Bonus data (optional)
- * @param {number} bonusNumber - Bonus number for display
- * @returns {string} HTML string
- */
-function createBonusExerciseCard(bonusId, bonusData = null, bonusNumber = 1) {
-    const data = bonusData || {
-        name: '',
-        sets: '2',
-        reps: '15',
-        rest: '30s'
-    };
-    
-    // Store data
-    window.bonusExercisesData[bonusId] = data;
-    
-    const exerciseName = data.name || `New Bonus Exercise ${bonusNumber}`;
-    const hasData = data.name;
-    
-    // Build meta text (plain text, not badges)
-    let metaText = '';
-    if (hasData) {
-        metaText = `${data.sets} sets • ${data.reps} reps • ${data.rest} rest`;
-    } else {
-        metaText = 'Click edit to add exercise';
-    }
-    
-    return `
-        <div class="bonus-exercise-card compact" data-bonus-id="${bonusId}">
-            <div class="card">
-                <div class="card-body">
-                    <button type="button" class="btn btn-sm btn-icon btn-edit-compact"
-                            onclick="event.preventDefault(); event.stopPropagation(); openBonusExerciseEditor('${bonusId}');"
-                            title="Edit bonus exercise">
-                        <i class="bx bx-edit"></i>
-                    </button>
-                    <div class="exercise-content">
-                        <div class="exercise-line">${escapeHtml(exerciseName)}</div>
-                        <div class="exercise-meta-text text-muted small">${metaText}</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    `;
 }
 
 /**
@@ -2013,8 +1707,10 @@ function saveBonusExerciseFromOffcanvas() {
     // Store data
     window.bonusExercisesData[bonusId] = bonusData;
     
-    // Update card preview
-    updateBonusExerciseCardPreview(bonusId, bonusData);
+    // Update card preview using CardRenderer
+    if (window.updateBonusExerciseCardPreview) {
+        window.updateBonusExerciseCardPreview(bonusId, bonusData);
+    }
     
     // Close offcanvas
     const offcanvas = bootstrap.Offcanvas.getInstance(document.getElementById('bonusExerciseEditOffcanvas'));
@@ -2031,77 +1727,10 @@ function saveBonusExerciseFromOffcanvas() {
     console.log('✅ Bonus exercise saved:', bonusId);
 }
 
-/**
- * Update bonus exercise card preview
- * @param {string} bonusId - Bonus ID
- * @param {object} bonusData - Bonus data
- */
-function updateBonusExerciseCardPreview(bonusId, bonusData) {
-    const card = document.querySelector(`[data-bonus-id="${bonusId}"]`);
-    if (!card) return;
-    
-    const exerciseName = bonusData.name || 'New Bonus Exercise';
-    const hasData = bonusData.name;
-    
-    // Build meta text (plain text, not badges)
-    let metaText = '';
-    if (hasData) {
-        metaText = `${bonusData.sets} sets • ${bonusData.reps} reps • ${bonusData.rest} rest`;
-    } else {
-        metaText = 'Click edit to add exercise';
-    }
-    
-    // Update exercise name
-    const exerciseLine = card.querySelector('.exercise-line');
-    if (exerciseLine) {
-        exerciseLine.textContent = exerciseName;
-    }
-    
-    // Update meta text
-    const metaTextEl = card.querySelector('.exercise-meta-text');
-    if (metaTextEl) {
-        metaTextEl.textContent = metaText;
-    }
-}
-
-/**
- * Delete bonus exercise card
- * @param {string} bonusId - Bonus ID to delete
- */
-function deleteBonusExerciseCard(bonusId) {
-    const card = document.querySelector(`[data-bonus-id="${bonusId}"]`);
-    if (!card) return;
-    
-    const bonusData = window.bonusExercisesData[bonusId];
-    const exerciseName = bonusData?.name || 'this bonus exercise';
-    
-    if (confirm(`Are you sure you want to delete "${exerciseName}"?\n\nThis action cannot be undone.`)) {
-        // Remove from DOM
-        card.remove();
-        
-        // Remove from data storage
-        delete window.bonusExercisesData[bonusId];
-        
-        // Mark as dirty
-        if (window.markEditorDirty) {
-            window.markEditorDirty();
-        }
-        
-        console.log('✅ Bonus exercise deleted:', bonusId);
-    }
-}
-
-// Make new functions globally available
-window.createExerciseGroupCard = createExerciseGroupCard;
+// Make editor functions globally available
 window.openExerciseGroupEditor = openExerciseGroupEditor;
 window.saveExerciseGroupFromOffcanvas = saveExerciseGroupFromOffcanvas;
-window.updateExerciseGroupCardPreview = updateExerciseGroupCardPreview;
-window.deleteExerciseGroupCard = deleteExerciseGroupCard;
-window.getExerciseGroupData = getExerciseGroupData;
-window.createBonusExerciseCard = createBonusExerciseCard;
 window.openBonusExerciseEditor = openBonusExerciseEditor;
 window.saveBonusExerciseFromOffcanvas = saveBonusExerciseFromOffcanvas;
-window.updateBonusExerciseCardPreview = updateBonusExerciseCardPreview;
-window.deleteBonusExerciseCard = deleteBonusExerciseCard;
 
-console.log('📦 Card-based exercise group functions loaded');
+console.log('📦 Card editor functions loaded');

@@ -1,7 +1,10 @@
 /**
  * Ghost Gym Dashboard - Workout Database Module
  * Handles workout library display, filtering, sorting, and actions
- * @version 1.0.0
+ * @version 2.0.0 - Refactored to use common-utils.js
+ *
+ * NOTE: Core utility functions (escapeHtml, formatDate, truncateText, showLoading)
+ * are now loaded from common-utils.js
  */
 
 /**
@@ -846,38 +849,7 @@ function getTotalExerciseCount(workout) {
     return count;
 }
 
-/**
- * Format date for display
- */
-function formatDate(dateString) {
-    if (!dateString) return 'N/A';
-    
-    try {
-        const date = new Date(dateString);
-        const now = new Date();
-        const diffTime = Math.abs(now - date);
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-        
-        if (diffDays === 0) return 'Today';
-        if (diffDays === 1) return 'Yesterday';
-        if (diffDays < 7) return `${diffDays} days ago`;
-        if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
-        
-        return date.toLocaleDateString();
-    } catch (error) {
-        return dateString;
-    }
-}
-
-/**
- * Escape HTML to prevent XSS
- */
-function escapeHtml(text) {
-    if (!text) return '';
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-}
+// formatDate, escapeHtml, truncateText are now in common-utils.js
 
 /**
  * ============================================
@@ -912,7 +884,7 @@ function showWorkoutError(message) {
             <div class="text-center py-5">
                 <i class="bx bx-error-circle display-1 text-danger"></i>
                 <h5 class="mt-3">Error Loading Workouts</h5>
-                <p class="text-muted">${escapeHtml(message)}</p>
+                <p class="text-muted">${window.escapeHtml(message)}</p>
                 <button class="btn btn-primary mt-2" onclick="loadWorkouts()">
                     <i class="bx bx-refresh me-1"></i>Retry
                 </button>
@@ -938,4 +910,4 @@ window.doWorkout = doWorkout;
 window.viewWorkoutDetails = viewWorkoutDetails;
 window.createNewWorkout = createNewWorkout;
 
-console.log('📦 Workout Database module loaded');
+console.log('📦 Workout Database module loaded (v2.0 - using common-utils)');
