@@ -5,6 +5,36 @@
  */
 
 /* ============================================
+   WORKOUT DETAIL OFFCANVAS
+   ============================================ */
+
+/* Make offcanvas grow to fit content with max height */
+#workoutDetailOffcanvas {
+    height: auto !important;
+    max-height: 85vh;
+    min-height: 30vh;
+}
+
+#workoutDetailOffcanvas .offcanvas-body {
+    overflow-y: auto;
+    max-height: calc(85vh - 120px); /* Account for header and footer */
+}
+
+#workoutDetailOffcanvas .offcanvas-header {
+    flex-shrink: 0;
+}
+
+#workoutDetailOffcanvas .offcanvas-footer {
+    flex-shrink: 0;
+    background: var(--bs-body-bg);
+}
+
+/* Smooth transition for offcanvas */
+#workoutDetailOffcanvas.offcanvas-bottom {
+    transition: transform 0.3s ease-in-out;
+}
+
+/* ============================================
    TABLE STYLES
    ============================================ */
 
@@ -90,38 +120,86 @@
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
+/* Reduce card body padding to compensate for button spacing */
+.card .card-body {
+    padding: 0.75rem !important; /* Reduced padding for more compact cards */
+    display: flex;
+    flex-direction: column;
+}
+
 /* Workout card button styling - horizontal layout on all screens */
 .card .btn-group {
     display: flex;
     flex-direction: row;
     width: 100%;
+    gap: 0.5rem; /* Add spacing between buttons */
+    margin-top: auto; /* Push buttons to bottom with no extra margin */
 }
 
 .card .btn-group .btn {
     flex: 1;
     white-space: nowrap;
+    border-radius: 0.375rem !important; /* Rounded corners like search box */
+    padding: 0.5rem 0.75rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    border: 1px solid;
 }
 
-/* Button color hierarchy: View (dullest) < Edit (medium) < Start (boldest/filled) */
+/* Remove Bootstrap's default btn-group border radius override */
 .card .btn-group .btn:first-child {
-    /* View button - dullest (outline secondary) */
-    background: transparent;
-    border-color: var(--bs-secondary);
-    color: var(--bs-secondary);
+    border-top-left-radius: 0.375rem !important;
+    border-bottom-left-radius: 0.375rem !important;
+}
+
+.card .btn-group .btn:last-child {
+    border-top-right-radius: 0.375rem !important;
+    border-bottom-right-radius: 0.375rem !important;
+}
+
+/* Button color hierarchy: View (primary filled) < Edit (outline primary) < Start (outline secondary) */
+.card .btn-group .btn:first-child {
+    /* View button - primary filled */
+    background: var(--bs-primary);
+    border-color: var(--bs-primary);
+    color: white;
+}
+
+.card .btn-group .btn:first-child:hover {
+    background: var(--bs-primary);
+    border-color: var(--bs-primary);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(var(--bs-primary-rgb), 0.4);
 }
 
 .card .btn-group .btn:nth-child(2) {
-    /* Edit button - medium (outline primary) */
+    /* Edit button - outline primary */
     background: transparent;
     border-color: var(--bs-primary);
     color: var(--bs-primary);
 }
 
-.card .btn-group .btn:last-child {
-    /* Start button - boldest (filled primary) */
+.card .btn-group .btn:nth-child(2):hover {
     background: var(--bs-primary);
     border-color: var(--bs-primary);
     color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(var(--bs-primary-rgb), 0.3);
+}
+
+.card .btn-group .btn:last-child {
+    /* Start button - filled secondary (darker) */
+    background: var(--bs-secondary);
+    border-color: var(--bs-secondary);
+    color: white;
+}
+
+.card .btn-group .btn:last-child:hover {
+    background: var(--bs-secondary);
+    border-color: var(--bs-secondary);
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(var(--bs-secondary-rgb), 0.4);
 }
 
 /* ============================================
@@ -347,42 +425,62 @@
     flex-direction: row;
     justify-content: flex-end;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.625rem; /* Increased gap between buttons */
 }
 
 #workoutDetailModal .modal-footer .btn {
     min-width: 100px;
     margin: 0;
-    padding: 0.375rem 0.75rem;
-    font-size: 0.8125rem;
+    padding: 0.5rem 1rem; /* Increased padding for better touch targets */
+    font-size: 0.875rem;
+    border-radius: 0.375rem; /* Rounded corners like search box buttons */
+    font-weight: 500;
+    transition: all 0.2s ease;
 }
 
 #workoutDetailModal .modal-footer .btn i {
-    font-size: 0.875rem;
+    font-size: 1rem;
 }
 
-/* Button hierarchy in modal footer: Close (secondary) < Edit (outline) < Start (primary filled) */
-#workoutDetailModal .modal-footer .btn-secondary {
-    background: var(--bs-secondary);
-    border-color: var(--bs-secondary);
-    color: white;
+/* Button hierarchy in modal footer: Close (label-secondary) < Edit (outline) < Start (primary filled) */
+/* Using Sneat's btn-label-secondary for less prominent actions */
+#workoutDetailModal .modal-footer .btn-label-secondary {
+    background-color: rgba(var(--bs-secondary-rgb), 0.1);
+    border: 1px solid transparent;
+    color: var(--bs-secondary);
+}
+
+#workoutDetailModal .modal-footer .btn-label-secondary:hover {
+    background-color: rgba(var(--bs-secondary-rgb), 0.2);
+    color: var(--bs-secondary);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 #workoutDetailModal .modal-footer .btn-outline-primary {
     background: transparent;
-    border-color: var(--bs-primary);
+    border: 1px solid var(--bs-primary);
     color: var(--bs-primary);
 }
 
 #workoutDetailModal .modal-footer .btn-outline-primary:hover {
     background: var(--bs-primary);
     color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(var(--bs-primary-rgb), 0.3);
 }
 
 #workoutDetailModal .modal-footer .btn-primary {
     background: var(--bs-primary);
-    border-color: var(--bs-primary);
+    border: 1px solid var(--bs-primary);
     color: white;
+}
+
+#workoutDetailModal .modal-footer .btn-primary:hover {
+    background: var(--bs-primary);
+    border-color: var(--bs-primary);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(var(--bs-primary-rgb), 0.4);
 }
 
 /* Ensure buttons stay horizontal on mobile */

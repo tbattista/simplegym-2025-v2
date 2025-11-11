@@ -326,7 +326,7 @@ function renderWorkoutTable() {
     const paginationHTML = renderPaginationControls(filtered.length, currentPage, pageSize);
     
     container.innerHTML = `
-        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 p-4">
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 p-1">
             ${cardsHTML}
         </div>
         ${paginationHTML}
@@ -681,17 +681,8 @@ async function viewWorkoutDetails(workoutId) {
             workout = await response.json();
         }
         
-        // Check if modal exists (workout-database.html page)
-        const modalElement = document.getElementById('workoutDetailModal');
-        if (modalElement) {
-            // Use modal on workout-database page
-            populateWorkoutDetailModal(workout);
-            const modal = new bootstrap.Modal(modalElement);
-            modal.show();
-        } else {
-            // Use offcanvas on other pages (like workout-mode.html)
-            showWorkoutDetailOffcanvas(workout);
-        }
+        // Always use offcanvas for workout details
+        showWorkoutDetailOffcanvas(workout);
         
     } catch (error) {
         console.error('❌ Failed to load workout details:', error);
@@ -704,52 +695,38 @@ async function viewWorkoutDetails(workoutId) {
 }
 
 /**
- * Show workout details in offcanvas (for pages without modal)
+ * Show workout details in offcanvas
  */
 function showWorkoutDetailOffcanvas(workout) {
-    // Build offcanvas HTML
-    const offcanvasHTML = `
-        <div class="offcanvas offcanvas-bottom" tabindex="-1" id="workoutDetailOffcanvas" aria-labelledby="workoutDetailOffcanvasLabel">
-            <div class="offcanvas-header border-bottom">
-                <h5 class="offcanvas-title" id="workoutDetailOffcanvasLabel">
-                    <i class="bx bx-dumbbell me-2"></i>${escapeHtml(workout.name)}
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-            </div>
-            <div class="offcanvas-body" style="max-height: 70vh; overflow-y: auto;">
-                ${generateWorkoutDetailHTML(workout)}
-                
-                <!-- Action Buttons -->
-                <div class="d-flex gap-2 mt-4 pt-3 border-top">
-                    <button type="button" class="btn btn-primary flex-fill" onclick="doWorkout('${workout.id}'); bootstrap.Offcanvas.getInstance(document.getElementById('workoutDetailOffcanvas')).hide();">
-                        <i class="bx bx-play me-1"></i>Start Workout
-                    </button>
-                    <button type="button" class="btn btn-outline-primary flex-fill" onclick="editWorkout('${workout.id}'); bootstrap.Offcanvas.getInstance(document.getElementById('workoutDetailOffcanvas')).hide();">
-                        <i class="bx bx-edit me-1"></i>Edit
-                    </button>
-                </div>
-            </div>
-        </div>
-    `;
-    
-    // Remove existing offcanvas if any
-    const existingOffcanvas = document.getElementById('workoutDetailOffcanvas');
-    if (existingOffcanvas) {
-        existingOffcanvas.remove();
+    // Get the offcanvas element
+    const offcanvasElement = document.getElementById('workoutDetailOffcanvas');
+    if (!offcanvasElement) {
+        console.error('❌ Offcanvas element not found');
+        return;
     }
     
-    // Add offcanvas to body
-    document.body.insertAdjacentHTML('beforeend', offcanvasHTML);
+    // Set title
+    document.getElementById('workoutDetailName').textContent = workout.name;
+    
+    // Use shared HTML generator
+    const bodyHTML = generateWorkoutDetailHTML(workout);
+    
+    // Set offcanvas body
+    document.getElementById('workoutDetailBody').innerHTML = bodyHTML;
+    
+    // Set up action buttons
+    document.getElementById('editWorkoutFromOffcanvas').onclick = () => {
+        bootstrap.Offcanvas.getInstance(offcanvasElement).hide();
+        editWorkout(workout.id);
+    };
+    
+    document.getElementById('doWorkoutFromOffcanvas').onclick = () => {
+        bootstrap.Offcanvas.getInstance(offcanvasElement).hide();
+        doWorkout(workout.id);
+    };
     
     // Initialize and show offcanvas
-    const offcanvasElement = document.getElementById('workoutDetailOffcanvas');
     const offcanvas = new bootstrap.Offcanvas(offcanvasElement);
-    
-    // Cleanup on hide
-    offcanvasElement.addEventListener('hidden.bs.offcanvas', () => {
-        offcanvasElement.remove();
-    });
-    
     offcanvas.show();
 }
 
@@ -830,30 +807,6 @@ function generateWorkoutDetailHTML(workout) {
     return html;
 }
 
-/**
- * Populate workout detail modal (for workout-database.html page)
- */
-function populateWorkoutDetailModal(workout) {
-    // Set title
-    document.getElementById('workoutDetailName').textContent = workout.name;
-    
-    // Use shared HTML generator
-    const bodyHTML = generateWorkoutDetailHTML(workout);
-    
-    // Set modal body
-    document.getElementById('workoutDetailBody').innerHTML = bodyHTML;
-    
-    // Set up modal action buttons
-    document.getElementById('editWorkoutFromModal').onclick = () => {
-        bootstrap.Modal.getInstance(document.getElementById('workoutDetailModal')).hide();
-        editWorkout(workout.id);
-    };
-    
-    document.getElementById('doWorkoutFromModal').onclick = () => {
-        bootstrap.Modal.getInstance(document.getElementById('workoutDetailModal')).hide();
-        doWorkout(workout.id);
-    };
-}
 
 /**
  * Create new workout - Navigate to editor
