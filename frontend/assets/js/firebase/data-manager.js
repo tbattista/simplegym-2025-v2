@@ -77,10 +77,11 @@ class FirebaseDataManager {
         
         console.log(`🔄 Auth state changed: ${this.storageMode} mode`);
         
+        // Migration functionality disabled - users can manually export/import if needed
         // If user just authenticated, check for migration opportunity
-        if (!wasAuthenticated && this.isAuthenticated) {
-            this.checkMigrationOpportunity();
-        }
+        // if (!wasAuthenticated && this.isAuthenticated) {
+        //     this.checkMigrationOpportunity();
+        // }
         
         // Notify listeners of auth state change
         this.notifyAuthStateChange(user);
@@ -184,7 +185,7 @@ class FirebaseDataManager {
         }
     }
     
-    async executeMigration(migrationData) {
+    async executeMigration_DISABLED(migrationData) {
         try {
             const url = window.config.api.getUrl('/api/v3/auth/migrate-data');
             console.log('🔍 DEBUG: Migration URL:', url);

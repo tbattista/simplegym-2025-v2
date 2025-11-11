@@ -1,6 +1,9 @@
 /**
  * Migration UI Manager for Ghost Gym V3 Phase 2
  * Handles user interface for data migration from anonymous to authenticated accounts
+ *
+ * ⚠️ DISABLED - Migration modal removed per user request
+ * This file is kept for reference but functionality is disabled
  */
 
 class MigrationUIManager {
@@ -15,12 +18,14 @@ class MigrationUIManager {
         // Load previous migration state
         this.loadMigrationState();
         
+        // ⚠️ DISABLED - Do not initialize
         // Initialize when DOM is ready
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', () => this.initialize());
-        } else {
-            this.initialize();
-        }
+        // if (document.readyState === 'loading') {
+        //     document.addEventListener('DOMContentLoaded', () => this.initialize());
+        // } else {
+        //     this.initialize();
+        // }
+        console.log('⚠️ Migration UI Manager is disabled');
     }
     
     loadMigrationState() {
@@ -54,10 +59,11 @@ class MigrationUIManager {
     }
     
     initialize() {
-        this.setupModals();
-        this.setupEventListeners();
-        this.isReady = true;
-        console.log('✅ Migration UI Manager initialized');
+        // ⚠️ DISABLED
+        // this.setupModals();
+        // this.setupEventListeners();
+        this.isReady = false;
+        console.log('⚠️ Migration UI Manager is disabled - no initialization');
     }
     
     setupModals() {
@@ -121,10 +127,11 @@ class MigrationUIManager {
     }
     
     setupEventListeners() {
+        // ⚠️ DISABLED - Do not listen for auth changes
         // Listen for auth state changes to trigger migration prompts
-        window.addEventListener('authStateChanged', (event) => {
-            this.handleAuthStateChange(event.detail);
-        });
+        // window.addEventListener('authStateChanged', (event) => {
+        //     this.handleAuthStateChange(event.detail);
+        // });
         
         // Set up migration buttons in upgrade modal
         const upgradeCreateBtn = document.getElementById('upgradeCreateAccountBtn');
@@ -689,15 +696,18 @@ class MigrationUIManager {
     }
 }
 
+// ⚠️ DISABLED - Do not create instance
 // Create global migration UI manager instance
-window.migrationUI = new MigrationUIManager();
+// window.migrationUI = new MigrationUIManager();
 
 // Listen for sync status changes
-window.addEventListener('syncStatusChanged', (event) => {
-    if (window.migrationUI) {
-        window.migrationUI.updateSyncStatus(event.detail.status);
-    }
-});
+// window.addEventListener('syncStatusChanged', (event) => {
+//     if (window.migrationUI) {
+//         window.migrationUI.updateSyncStatus(event.detail.status);
+//     }
+// });
+
+console.log('⚠️ Migration UI Manager disabled - modal functionality removed');
 
 // Export for module use
 if (typeof module !== 'undefined' && module.exports) {

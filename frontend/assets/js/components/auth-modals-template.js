@@ -158,67 +158,6 @@ function getAuthModalsHTML() {
             </div>
         </div>
 
-        <!-- Account Upgrade Prompt Modal -->
-        <div class="modal fade" id="upgradeModal" tabindex="-1" aria-labelledby="upgradeModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header border-0">
-                        <h5 class="modal-title" id="upgradeModalLabel">
-                            <i class="bx bx-cloud-upload me-2"></i>
-                            Save Your Work
-                        </h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    
-                    <div class="modal-body">
-                        <div class="text-center mb-4">
-                            <i class="bx bx-error-circle text-warning display-4"></i>
-                            <h6 class="mt-3">Your work is only saved locally</h6>
-                            <p class="text-muted">
-                                Create an account to save your programs and workouts to the cloud
-                                and access them from any device.
-                            </p>
-                        </div>
-                        
-                        <div class="row text-center mb-4">
-                            <div class="col-4">
-                                <i class="bx bx-cloud-check text-success display-6"></i>
-                                <small class="d-block text-muted">Cloud Sync</small>
-                            </div>
-                            <div class="col-4">
-                                <i class="bx bx-mobile text-success display-6"></i>
-                                <small class="d-block text-muted">Multi-Device</small>
-                            </div>
-                            <div class="col-4">
-                                <i class="bx bx-shield-check text-success display-6"></i>
-                                <small class="d-block text-muted">Secure Backup</small>
-                            </div>
-                        </div>
-                        
-                        <div class="d-grid gap-2">
-                            <button type="button" class="btn btn-primary" id="upgradeCreateAccountBtn">
-                                <i class="bx bx-user-plus me-2"></i>
-                                Create Account & Save Data
-                            </button>
-                            <button type="button" class="btn btn-outline-secondary" id="upgradeSignInBtn">
-                                <i class="bx bx-log-in me-2"></i>
-                                I Already Have an Account
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <div class="modal-footer border-0">
-                        <div class="w-100 text-center">
-                            <button type="button" class="btn btn-link text-muted" data-bs-dismiss="modal">
-                                <i class="bx bx-x me-1"></i>
-                                Maybe Later
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
         <!-- Backup & Export Modal -->
         <div class="modal fade" id="backupModal" tabindex="-1" aria-labelledby="backupModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
