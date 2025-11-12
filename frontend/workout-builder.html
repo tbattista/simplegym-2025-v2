@@ -37,6 +37,9 @@
     <!-- Custom Ghost Gym CSS -->
     <link rel="stylesheet" href="/static/assets/css/ghost-gym-custom.css" />
     
+    <!-- Navbar CSS -->
+    <link rel="stylesheet" href="/static/assets/css/navbar-custom.css" />
+    
     <!-- Exercise Autocomplete CSS -->
     <link rel="stylesheet" href="/static/assets/css/exercise-autocomplete.css" />
     
@@ -58,10 +61,6 @@
   </head>
 
   <body>
-    <!-- Floating Hamburger Menu Button -->
-    <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Toggle menu">
-      <i class="bx bx-menu"></i>
-    </button>
     
     <!-- Layout wrapper -->
     <div class="layout-wrapper layout-content-navbar">
@@ -80,15 +79,6 @@
             <!-- Content -->
             <div class="container-xxl flex-grow-1 container-p-y">
               
-              <!-- Page Header -->
-              <div class="mb-4">
-                <h4 class="mb-1">
-                  <i class="bx bx-edit me-2"></i>
-                  Workout Editor
-                </h4>
-                <p class="text-muted mb-0">Edit your workout template</p>
-              </div>
-
               <!-- Workout Editor Section -->
               <!-- Loading State (shown while loading workout) -->
               <div id="workoutEditorLoadingState" class="text-center py-5">
@@ -112,12 +102,12 @@
                       
                       <!-- Workout Info Section -->
                       <div class="mb-3">
-                        <h6 class="mb-3">
+                        <h6 class="mb-2">
                           <i class="bx bx-edit me-1"></i>
                           Workout Info
                         </h6>
                         <div class="card">
-                          <div class="card-body">
+                          <div class="card-body" style="padding: 1rem 1.25rem;">
                             <div class="mb-3">
                               <label for="workoutName" class="form-label">Workout Name *</label>
                               <input type="text" class="form-control" id="workoutName" required maxlength="100" placeholder="e.g., Push Day - Upper Body">
@@ -151,7 +141,7 @@
                       
                       <!-- Exercise Groups Section -->
                       <div class="mb-3">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
                           <h6 class="mb-0">
                             <i class="bx bx-list-ul me-1"></i>
                             Exercise Groups
@@ -164,7 +154,7 @@
                             </label>
                           </div>
                         </div>
-                        <div id="exerciseGroups" class="accordion accordion-workout-groups mb-3">
+                        <div id="exerciseGroups" class="accordion accordion-workout-groups mb-2">
                           <!-- Exercise groups will be added here as accordion items -->
                         </div>
                         <!-- Add Group Button -->
@@ -205,24 +195,6 @@
                   </div>
             </div>
             <!-- / Content -->
-
-            <!-- Footer -->
-            <footer class="content-footer footer bg-footer-theme">
-              <div class="container-xxl">
-                <div
-                  class="footer-container d-flex align-items-center justify-content-between py-4 flex-md-row flex-column">
-                  <div class="mb-2 mb-md-0">
-                    ©
-                    <script>
-                      document.write(new Date().getFullYear());
-                    </script>
-                    , made with ❤️ by
-                    <strong>👻 Ghost Gym V0.4.1</strong>
-                  </div>
-                </div>
-              </div>
-            </footer>
-            <!-- / Footer -->
 
             <div class="content-backdrop fade"></div>
           </div>
@@ -494,10 +466,12 @@
 
     <!-- Load templates FIRST (before main.js) -->
     <script src="/static/assets/js/components/menu-template.js"></script>
+    <script src="/static/assets/js/components/navbar-template.js"></script>
     <script src="/static/assets/js/components/auth-modals-template.js"></script>
     
     <!-- Inject components SECOND (before main.js) -->
     <script src="/static/assets/js/services/menu-injection-service.js"></script>
+    <script src="/static/assets/js/services/navbar-injection-service.js"></script>
 
     <!-- Main JS -->
     <script src="/static/assets/js/main.js"></script>
@@ -638,17 +612,19 @@
             // Wait for auth state to settle (important for Firebase mode)
             await new Promise(resolve => setTimeout(resolve, 1000));
             
-            // Check if we should auto-load a workout from URL parameter or sessionStorage
+            // Check if we should auto-load a workout from URL parameter, sessionStorage, or localStorage
             const urlParams = new URLSearchParams(window.location.search);
             const urlWorkoutId = urlParams.get('id');
             const sessionWorkoutId = sessionStorage.getItem('editWorkoutId');
-            const editWorkoutId = urlWorkoutId || sessionWorkoutId;
+            const localStorageWorkoutId = localStorage.getItem('currentEditingWorkoutId');
+            const editWorkoutId = urlWorkoutId || sessionWorkoutId || localStorageWorkoutId;
             
             const loadingState = document.getElementById('workoutEditorLoadingState');
             const emptyState = document.getElementById('workoutEditorEmptyState');
             
             if (editWorkoutId) {
-                console.log('📝 Auto-loading workout:', editWorkoutId, urlWorkoutId ? '(from URL)' : '(from sessionStorage)');
+                const source = urlWorkoutId ? '(from URL)' : sessionWorkoutId ? '(from sessionStorage)' : '(from localStorage - page refresh)';
+                console.log('📝 Auto-loading workout:', editWorkoutId, source);
                 
                 // Show loading state
                 loadingState.style.display = 'block';
@@ -692,14 +668,19 @@
                     }, 2000);
                 }
             } else {
-                // No workout ID provided - redirect to workout database
-                console.log('⚠️ No workout ID provided, redirecting to workout database...');
+                // No workout ID provided - create new workout
+                console.log('📝 No workout ID provided, creating new workout...');
                 loadingState.style.display = 'none';
-                emptyState.style.display = 'block';
                 
-                setTimeout(() => {
-                    window.location.href = 'workout-database.html';
-                }, 1000);
+                // Create new workout in editor
+                if (window.createNewWorkoutInEditor) {
+                    window.createNewWorkoutInEditor();
+                } else {
+                    // Fallback: show empty state with message
+                    emptyState.querySelector('h5').textContent = 'Create a New Workout';
+                    emptyState.querySelector('p').innerHTML = 'Start building your workout template';
+                    emptyState.style.display = 'block';
+                }
             }
             
             console.log('✅ Workout editor page ready!');

@@ -23,6 +23,14 @@ function loadWorkoutIntoEditor(workoutId) {
     window.ghostGym.workoutBuilder.isDirty = false;
     window.ghostGym.workoutBuilder.currentWorkout = { ...workout };
     
+    // Persist workout ID to localStorage for page refresh recovery
+    try {
+        localStorage.setItem('currentEditingWorkoutId', workoutId);
+        console.log('💾 Saved workout ID to localStorage for refresh recovery');
+    } catch (error) {
+        console.warn('⚠️ Could not save to localStorage:', error);
+    }
+    
     // Show "Hide Workouts" button
     const hideWorkoutsBtn = document.getElementById('hideWorkoutsBtn');
     if (hideWorkoutsBtn) {
@@ -119,84 +127,135 @@ function loadWorkoutIntoEditor(workoutId) {
 
 /**
  * Create new workout in editor
+ * Auto-saves a new workout with default name so it persists on refresh
  */
-function createNewWorkoutInEditor() {
+async function createNewWorkoutInEditor() {
     console.log('📝 Creating new workout in editor');
     
-    // Update builder state
-    window.ghostGym.workoutBuilder.selectedWorkoutId = null;
-    window.ghostGym.workoutBuilder.isEditing = true;
-    window.ghostGym.workoutBuilder.isDirty = false;
-    window.ghostGym.workoutBuilder.currentWorkout = {
-        id: null,
-        name: '',
-        description: '',
-        tags: [],
-        exercise_groups: [],
-        bonus_exercises: []
-    };
-    
-    // Collapse workout library using the same function as the button
-    const expandedContent = document.getElementById('workoutLibraryExpandedContent');
-    if (expandedContent && expandedContent.style.display !== 'none') {
-        toggleWorkoutLibraryContent();
+    try {
+        // Show loading state
+        updateSaveStatus('saving');
+        
+        // Create a new workout with default name and one exercise group
+        const timestamp = new Date().toLocaleString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            hour: 'numeric',
+            minute: '2-digit',
+            hour12: true
+        });
+        
+        const newWorkoutData = {
+            name: `New Workout - ${timestamp}`,
+            description: '',
+            tags: [],
+            exercise_groups: [{
+                exercises: { a: 'Exercise Name' },
+                sets: '3',
+                reps: '8-12',
+                rest: '60s',
+                default_weight: null,
+                default_weight_unit: 'lbs'
+            }],
+            bonus_exercises: []
+        };
+        
+        // Save to database
+        const savedWorkout = await window.dataManager.createWorkout(newWorkoutData);
+        console.log('✅ New workout auto-saved:', savedWorkout.id);
+        
+        // Add to local state
+        window.ghostGym.workouts.unshift(savedWorkout);
+        
+        // Update builder state
+        window.ghostGym.workoutBuilder.selectedWorkoutId = savedWorkout.id;
+        window.ghostGym.workoutBuilder.isEditing = true;
+        window.ghostGym.workoutBuilder.isDirty = false;
+        window.ghostGym.workoutBuilder.currentWorkout = { ...savedWorkout };
+        
+        // Store in localStorage for refresh recovery
+        try {
+            localStorage.setItem('currentEditingWorkoutId', savedWorkout.id);
+            console.log('💾 Saved workout ID to localStorage for refresh recovery');
+        } catch (error) {
+            console.warn('⚠️ Could not save to localStorage:', error);
+        }
+        
+        // Collapse workout library
+        const expandedContent = document.getElementById('workoutLibraryExpandedContent');
+        if (expandedContent && expandedContent.style.display !== 'none') {
+            toggleWorkoutLibraryContent();
+        }
+        
+        // Populate form with saved workout data
+        document.getElementById('workoutName').value = savedWorkout.name;
+        document.getElementById('workoutDescription').value = savedWorkout.description || '';
+        document.getElementById('workoutTags').value = savedWorkout.tags ? savedWorkout.tags.join(', ') : '';
+        
+        // Clear and populate exercise groups
+        const exerciseGroupsContainer = document.getElementById('exerciseGroups');
+        exerciseGroupsContainer.innerHTML = '';
+        window.exerciseGroupsData = {};
+        
+        savedWorkout.exercise_groups.forEach((group, index) => {
+            const groupId = `group-${Date.now()}-${index}-${Math.random().toString(36).substr(2, 9)}`;
+            const groupNumber = index + 1;
+            const cardHtml = window.createExerciseGroupCard(groupId, group, groupNumber);
+            exerciseGroupsContainer.insertAdjacentHTML('beforeend', cardHtml);
+        });
+        
+        // Show editor, hide empty state
+        document.getElementById('workoutEditorEmptyState').style.display = 'none';
+        document.getElementById('workoutEditorForm').style.display = 'block';
+        
+        // Show delete button
+        document.getElementById('deleteWorkoutBtn').style.display = 'inline-block';
+        
+        // Update save status
+        updateSaveStatus('saved');
+        
+        // Refresh library to show new workout
+        if (window.renderWorkoutsView) {
+            window.renderWorkoutsView();
+        }
+        
+        // Highlight in library
+        highlightSelectedWorkout(savedWorkout.id);
+        
+        // Initialize autocompletes
+        if (window.initializeExerciseAutocompletes) {
+            setTimeout(() => window.initializeExerciseAutocompletes(), 100);
+        }
+        
+        // Initialize Sortable for drag-and-drop
+        if (window.initializeExerciseGroupSorting) {
+            setTimeout(() => window.initializeExerciseGroupSorting(), 150);
+        }
+        
+        // Initialize edit mode toggle
+        if (window.initializeEditMode) {
+            setTimeout(() => window.initializeEditMode(), 200);
+        }
+        
+        // Focus on name input and select the text so user can easily rename
+        const nameInput = document.getElementById('workoutName');
+        nameInput.focus();
+        nameInput.select();
+        
+        // Reset metadata button states
+        if (window.updateMetadataButtonStates) {
+            setTimeout(() => window.updateMetadataButtonStates(), 250);
+        }
+        
+        console.log('✅ New workout created and ready for editing');
+        
+    } catch (error) {
+        console.error('❌ Failed to create new workout:', error);
+        if (window.showAlert) {
+            showAlert('Failed to create new workout: ' + error.message, 'danger');
+        }
+        updateSaveStatus('error');
     }
-    
-    // Hide "Change Workout" button for new workouts
-    const changeWorkoutBtn = document.getElementById('changeWorkoutBtn');
-    if (changeWorkoutBtn) {
-        changeWorkoutBtn.style.display = 'none';
-    }
-    
-    // Clear form
-    document.getElementById('workoutName').value = '';
-    document.getElementById('workoutDescription').value = '';
-    document.getElementById('workoutTags').value = '';
-    
-    // Clear exercise groups and add one default
-    const exerciseGroupsContainer = document.getElementById('exerciseGroups');
-    exerciseGroupsContainer.innerHTML = '';
-    addExerciseGroup();
-    
-    // Show editor, hide empty state
-    document.getElementById('workoutEditorEmptyState').style.display = 'none';
-    document.getElementById('workoutEditorForm').style.display = 'block';
-    
-    // Hide delete button for new workouts
-    document.getElementById('deleteWorkoutBtn').style.display = 'none';
-    
-    // Update save status
-    updateSaveStatus('');
-    
-    // Clear selection in library
-    document.querySelectorAll('.workout-card-compact').forEach(card => {
-        card.classList.remove('selected');
-    });
-    
-    // Initialize autocompletes
-    if (window.initializeExerciseAutocompletes) {
-        setTimeout(() => window.initializeExerciseAutocompletes(), 100);
-    }
-    
-    // Initialize Sortable for drag-and-drop
-    if (window.initializeExerciseGroupSorting) {
-        setTimeout(() => window.initializeExerciseGroupSorting(), 150);
-    }
-    
-    // Initialize edit mode toggle
-    if (window.initializeEditMode) {
-        setTimeout(() => window.initializeEditMode(), 200);
-    }
-    
-    // Focus on name input
-    document.getElementById('workoutName').focus();
-    
-    // Reset metadata button states
-    if (window.updateMetadataButtonStates) {
-        setTimeout(() => window.updateMetadataButtonStates(), 250);
-    }
-    
-    console.log('✅ New workout editor ready');
 }
 
 /**
@@ -315,6 +374,14 @@ function cancelEditWorkout() {
         }
     }
     
+    // Clear localStorage when user intentionally cancels
+    try {
+        localStorage.removeItem('currentEditingWorkoutId');
+        console.log('🗑️ Cleared workout ID from localStorage (cancelled)');
+    } catch (error) {
+        console.warn('⚠️ Could not clear localStorage:', error);
+    }
+    
     // Reset state
     window.ghostGym.workoutBuilder.selectedWorkoutId = null;
     window.ghostGym.workoutBuilder.isEditing = false;
@@ -374,6 +441,14 @@ async function deleteWorkoutFromEditor() {
         // Refresh library
         if (window.renderWorkoutsView) {
             window.renderWorkoutsView();
+        }
+        
+        // Clear localStorage before canceling (workout no longer exists)
+        try {
+            localStorage.removeItem('currentEditingWorkoutId');
+            console.log('🗑️ Cleared workout ID from localStorage (deleted)');
+        } catch (error) {
+            console.warn('⚠️ Could not clear localStorage:', error);
         }
         
         // Return to empty state
@@ -576,11 +651,33 @@ function setupWorkoutEditorListeners() {
     };
     setupOffcanvasWeightButtons();
     
-    // Warn on navigation if dirty
+    // Warn on navigation if dirty, and clean up localStorage on intentional navigation
     window.addEventListener('beforeunload', (e) => {
         if (window.ghostGym.workoutBuilder.isDirty) {
             e.preventDefault();
             e.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+        }
+    });
+    
+    // Clear localStorage when navigating away from workout builder (but not on refresh)
+    // This uses pagehide which fires on actual navigation but not on refresh
+    let isRefreshing = false;
+    window.addEventListener('beforeunload', () => {
+        // Check if this is a refresh (F5, Ctrl+R, etc.) vs navigation
+        // Performance navigation type 1 = reload
+        isRefreshing = true;
+    });
+    
+    window.addEventListener('pagehide', () => {
+        // Only clear if we're not on the workout builder page anymore
+        // and it's not a refresh
+        if (!isRefreshing && !window.location.pathname.includes('workout-builder')) {
+            try {
+                localStorage.removeItem('currentEditingWorkoutId');
+                console.log('🗑️ Cleared workout ID from localStorage (navigated away)');
+            } catch (error) {
+                console.warn('⚠️ Could not clear localStorage:', error);
+            }
         }
     });
     

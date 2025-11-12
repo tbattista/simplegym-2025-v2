@@ -441,19 +441,51 @@ class FirebaseDataManager {
         // Use deduplicated fetch
         return this.deduplicatedFetch(url, async () => {
             console.log('🔍 DEBUG: Fetching workouts from:', url);
+            console.log('🔍 DEBUG: Current protocol:', window.location.protocol);
+            console.log('🔍 DEBUG: Current origin:', window.location.origin);
             
-            const response = await fetch(url, {
-                headers: {
-                    'Authorization': `Bearer ${await this.getAuthToken()}`
+            try {
+                const response = await fetch(url, {
+                    headers: {
+                        'Authorization': `Bearer ${await this.getAuthToken()}`
+                    }
+                });
+                
+                if (!response.ok) {
+                    const errorText = await response.text().catch(() => 'No error details');
+                    console.error('❌ API Error Response:', {
+                        status: response.status,
+                        statusText: response.statusText,
+                        url: url,
+                        errorText: errorText
+                    });
+                    throw new Error(`Failed to fetch workouts: ${response.status} ${response.statusText}`);
                 }
-            });
-            
-            if (!response.ok) {
-                throw new Error('Failed to fetch workouts from Firestore');
+                
+                const data = await response.json();
+                console.log('✅ Successfully fetched workouts:', data.workouts?.length || 0);
+                return data.workouts || [];
+                
+            } catch (error) {
+                console.error('❌ Fetch Error Details:', {
+                    message: error.message,
+                    name: error.name,
+                    url: url,
+                    protocol: window.location.protocol,
+                    origin: window.location.origin,
+                    isSSLError: error.message.includes('SSL') || error.message.includes('ERR_SSL')
+                });
+                
+                // Provide helpful error message for SSL issues
+                if (error.message.includes('SSL') || error.message.includes('ERR_SSL')) {
+                    console.error('💡 SSL Error detected - this usually means:');
+                    console.error('   1. Trying to use HTTPS on localhost (should use HTTP)');
+                    console.error('   2. Mixed content (HTTP page trying HTTPS resource)');
+                    console.error('   3. Invalid SSL certificate');
+                }
+                
+                throw error;
             }
-            
-            const data = await response.json();
-            return data.workouts || [];
         });
     }
     

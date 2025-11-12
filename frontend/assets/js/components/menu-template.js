@@ -87,44 +87,6 @@ function getMenuHTML(activePage = 'home') {
                     <span class="badge badge-center rounded-pill bg-label-info ms-auto">Soon</span>
                 </a>
             </li>
-            
-            <!-- Account and Settings Section -->
-            <li class="menu-header small text-uppercase mt-auto">
-                <span class="menu-header-text">Account and Settings</span>
-            </li>
-            
-            <!-- Dark Mode Toggle -->
-            <li class="menu-item" id="darkModeToggle">
-                <a href="javascript:void(0);" class="menu-link">
-                    <i class="menu-icon tf-icons bx bx-moon" id="themeIcon"></i>
-                    <div class="text-truncate" id="themeText">Dark Mode</div>
-                </a>
-            </li>
-            
-            <!-- Sign In Button (for anonymous users) -->
-            <li class="menu-item auth-sign-in" id="menuAuthSignIn">
-                <a href="javascript:void(0);" class="menu-link" id="menuSignInBtn">
-                    <i class="menu-icon tf-icons bx bx-user"></i>
-                    <div class="text-truncate">Sign In</div>
-                </a>
-            </li>
-            
-            <!-- User Profile (for authenticated users) -->
-            <li class="menu-item auth-sign-out d-none" id="menuAuthProfile">
-                <a href="javascript:void(0);" class="menu-link">
-                    <i class="menu-icon tf-icons bx bx-user-circle"></i>
-                    <div class="text-truncate">
-                        <div id="menuUserDisplayName" class="fw-medium">User</div>
-                        <small class="text-muted" id="menuUserEmailDisplay">user@example.com</small>
-                    </div>
-                </a>
-            </li>
-            <li class="menu-item auth-sign-out d-none">
-                <a href="javascript:void(0);" class="menu-link" id="menuSignOutBtn">
-                    <i class="menu-icon tf-icons bx bx-power-off"></i>
-                    <div class="text-truncate">Sign Out</div>
-                </a>
-            </li>
         </ul>
     `;
 }
@@ -133,44 +95,8 @@ function getMenuHTML(activePage = 'home') {
 window.getMenuHTML = getMenuHTML;
 
 /**
- * Initialize theme toggle functionality
- * Call this after menu is injected into the DOM
- */
-function initializeThemeToggle() {
-    // Wait for theme manager to be available
-    if (!window.themeManager) {
-        console.warn('⚠️ Theme manager not available yet, retrying...');
-        setTimeout(initializeThemeToggle, 100);
-        return;
-    }
-
-    console.log('🎨 Initializing theme toggle in menu...');
-
-    const toggleBtn = document.getElementById('darkModeToggle');
-    if (!toggleBtn) {
-        console.warn('⚠️ Dark mode toggle button not found');
-        return;
-    }
-
-    // Set up click handler for theme toggle
-    toggleBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        cycleTheme();
-    });
-
-    // Update button to show current theme
-    updateThemeButton();
-
-    // Listen for theme changes from other sources
-    window.addEventListener('themeChanged', () => {
-        updateThemeButton();
-    });
-
-    console.log('✅ Theme toggle initialized');
-}
-
-/**
  * Cycle through theme options: auto → dark → light → auto
+ * Shared function used by both navbar and any other theme toggles
  */
 function cycleTheme() {
     if (!window.themeManager) return;
@@ -194,38 +120,10 @@ function cycleTheme() {
 
     console.log('🎨 Cycling theme from', currentPreference, 'to', nextTheme);
     window.themeManager.setPreference(nextTheme);
-    updateThemeButton();
-}
-
-/**
- * Update theme button icon and text to show current theme
- */
-function updateThemeButton() {
-    if (!window.themeManager) return;
-
-    const currentPreference = window.themeManager.getPreference();
-    const icon = document.getElementById('themeIcon');
-    const text = document.getElementById('themeText');
-
-    if (!icon || !text) return;
-
-    switch (currentPreference) {
-        case 'auto':
-            icon.className = 'menu-icon tf-icons bx bx-desktop';
-            text.textContent = 'Auto Theme';
-            break;
-        case 'dark':
-            icon.className = 'menu-icon tf-icons bx bx-moon';
-            text.textContent = 'Dark Mode';
-            break;
-        case 'light':
-            icon.className = 'menu-icon tf-icons bx bx-sun';
-            text.textContent = 'Light Mode';
-            break;
-    }
+    
+    // Dispatch event so all theme toggles can update
+    window.dispatchEvent(new Event('themeChanged'));
 }
 
 // Make globally available
-window.initializeThemeToggle = initializeThemeToggle;
 window.cycleTheme = cycleTheme;
-window.updateThemeButton = updateThemeButton;

@@ -40,6 +40,9 @@
     <!-- Custom Ghost Gym CSS -->
     <link rel="stylesheet" href="/static/assets/css/ghost-gym-custom.css" />
     
+    <!-- Navbar CSS -->
+    <link rel="stylesheet" href="/static/assets/css/navbar-custom.css" />
+    
     <!-- Landing Page CSS -->
     <link rel="stylesheet" href="/static/assets/css/landing-page.css" />
 
@@ -58,10 +61,6 @@
   </head>
 
   <body>
-    <!-- Floating Hamburger Menu Button -->
-    <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Toggle menu">
-      <i class="bx bx-menu"></i>
-    </button>
     
     <!-- Layout wrapper -->
     <div class="layout-wrapper layout-content-navbar">
@@ -85,15 +84,6 @@
 
               <!-- Authenticated User Dashboard -->
               <div id="authenticatedDashboard" style="display: none;">
-                <!-- Welcome Header -->
-                <div class="mb-4">
-                  <h4 class="mb-1">
-                    <i class="bx bx-home me-2"></i>
-                    Welcome back, <span id="userDisplayName">User</span>!
-                  </h4>
-                  <p class="text-muted mb-0">Here's your fitness overview</p>
-                </div>
-
                 <!-- Statistics Cards -->
                 <div class="row g-3 mb-4">
                   <!-- Workouts Card -->
@@ -331,24 +321,6 @@
             </div>
             <!-- / Content -->
 
-            <!-- Footer -->
-            <footer class="content-footer footer bg-footer-theme">
-              <div class="container-xxl">
-                <div
-                  class="footer-container d-flex align-items-center justify-content-between py-4 flex-md-row flex-column">
-                  <div class="mb-2 mb-md-0">
-                    ©
-                    <script>
-                      document.write(new Date().getFullYear());
-                    </script>
-                    , made with ❤️ by
-                    <strong>👻 Ghost Gym V0.4.1</strong>
-                  </div>
-                </div>
-              </div>
-            </footer>
-            <!-- / Footer -->
-
             <div class="content-backdrop fade"></div>
           </div>
           <!-- Content wrapper -->
@@ -370,10 +342,12 @@
 
     <!-- Load templates FIRST -->
     <script src="/static/assets/js/components/menu-template.js"></script>
+    <script src="/static/assets/js/components/navbar-template.js"></script>
     <script src="/static/assets/js/components/auth-modals-template.js"></script>
     
     <!-- Inject components SECOND -->
     <script src="/static/assets/js/services/menu-injection-service.js"></script>
+    <script src="/static/assets/js/services/navbar-injection-service.js"></script>
 
     <!-- Main JS -->
     <script src="/static/assets/js/main.js"></script>

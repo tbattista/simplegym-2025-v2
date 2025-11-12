@@ -37,6 +37,9 @@
     <!-- Custom Ghost Gym CSS -->
     <link rel="stylesheet" href="/static/assets/css/ghost-gym-custom.css" />
     
+    <!-- Navbar CSS -->
+    <link rel="stylesheet" href="/static/assets/css/navbar-custom.css" />
+    
     <!-- Component CSS (includes all component styles) -->
     <link rel="stylesheet" href="/static/assets/css/components.css" />
     
@@ -58,10 +61,6 @@
   </head>
 
   <body>
-    <!-- Floating Hamburger Menu Button -->
-    <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Toggle menu">
-      <i class="bx bx-menu"></i>
-    </button>
     
     <!-- Layout wrapper -->
     <div class="layout-wrapper layout-content-navbar">
@@ -80,22 +79,14 @@
             <!-- Content -->
             <div class="container-xxl flex-grow-1 container-p-y">
               
-              <!-- Page Header -->
-              <div class="mb-4">
-                <h4 class="mb-1">
-                  <i class="bx bx-library me-2"></i>
-                  Workout Database
-                </h4>
-                <p class="text-muted mb-0">Browse and manage your <span id="totalWorkoutsCount">0</span> workout templates</p>
-              </div>
-
               <!-- Workout List Card -->
               <div class="card">
-                <!-- Card Header with Title -->
-                <div class="card-header d-flex justify-content-between align-items-center border-bottom">
-                  <h5 class="mb-0">
+                <!-- Card Header with Title and Description -->
+                <div class="card-header border-bottom">
+                  <h5 class="mb-1">
                     <i class="bx bx-list-ul me-2"></i>Workout List
                   </h5>
+                  <p class="text-muted mb-0 small">Browse and manage your <span id="totalWorkoutsCount">0</span> workout templates</p>
                 </div>
 
                 <!-- DataTable Container -->
@@ -105,24 +96,6 @@
               </div>
             </div>
             <!-- / Content -->
-
-            <!-- Footer -->
-            <footer class="content-footer footer bg-footer-theme">
-              <div class="container-xxl">
-                <div
-                  class="footer-container d-flex align-items-center justify-content-between py-4 flex-md-row flex-column">
-                  <div class="mb-2 mb-md-0">
-                    ©
-                    <script>
-                      document.write(new Date().getFullYear());
-                    </script>
-                    , made with ❤️ by
-                    <strong>👻 Ghost Gym V0.4.1</strong>
-                  </div>
-                </div>
-              </div>
-            </footer>
-            <!-- / Footer -->
 
             <div class="content-backdrop fade"></div>
           </div>
@@ -274,10 +247,12 @@
 
     <!-- Load templates FIRST (before main.js) -->
     <script src="/static/assets/js/components/menu-template.js"></script>
+    <script src="/static/assets/js/components/navbar-template.js"></script>
     <script src="/static/assets/js/components/auth-modals-template.js"></script>
     
     <!-- Inject components SECOND (before main.js) -->
     <script src="/static/assets/js/services/menu-injection-service.js"></script>
+    <script src="/static/assets/js/services/navbar-injection-service.js"></script>
 
     <!-- Main JS -->
     <script src="/static/assets/js/main.js"></script>

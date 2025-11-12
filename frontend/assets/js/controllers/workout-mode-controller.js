@@ -128,6 +128,15 @@ class WorkoutModeController {
             // Show loading state
             this.showLoadingState();
             
+            // Debug environment info
+            console.log('🔍 DEBUG: Environment Info:', {
+                protocol: window.location.protocol,
+                origin: window.location.origin,
+                storageMode: this.dataManager?.storageMode,
+                isAuthenticated: this.authService?.isUserAuthenticated(),
+                isOnline: navigator.onLine
+            });
+            
             // Use existing data manager
             console.log('🔍 DEBUG: Calling dataManager.getWorkouts()...');
             console.log('🔍 DEBUG: dataManager exists?', !!this.dataManager);
@@ -142,7 +151,23 @@ class WorkoutModeController {
             console.log('🔍 DEBUG: Found workout?', !!this.currentWorkout);
             
             if (!this.currentWorkout) {
-                throw new Error('Workout not found');
+                // Enhanced error message with helpful context
+                const availableIds = workouts?.map(w => w.id).join(', ') || 'none';
+                const errorMsg = `Workout not found (ID: ${workoutId})
+
+Available workouts: ${workouts?.length || 0}
+Available IDs: ${availableIds}
+
+This could mean:
+• The workout was deleted
+• You're in ${this.dataManager?.storageMode || 'unknown'} mode (try ${this.dataManager?.storageMode === 'localStorage' ? 'logging in' : 'logging out'})
+• The URL has an incorrect workout ID
+• The workout exists in a different storage location
+
+Current storage mode: ${this.dataManager?.storageMode || 'unknown'}
+Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
+                
+                throw new Error(errorMsg);
             }
             
             // Update page title and header
@@ -1399,6 +1424,41 @@ class WorkoutModeController {
         const div = document.createElement('div');
         div.textContent = text;
         return div.innerHTML;
+    }
+    
+    /**
+     * Debug helper - shows comprehensive environment info
+     * Call from console: window.workoutModeController.showDebugInfo()
+     */
+    showDebugInfo() {
+        console.group('🔍 Workout Mode Debug Info');
+        console.log('Protocol:', window.location.protocol);
+        console.log('Hostname:', window.location.hostname);
+        console.log('Origin:', window.location.origin);
+        console.log('Full URL:', window.location.href);
+        console.log('---');
+        console.log('API Base URL:', window.config?.api?.baseUrl);
+        console.log('Storage Mode:', this.dataManager?.storageMode);
+        console.log('Is Online:', navigator.onLine);
+        console.log('Is Authenticated:', this.authService?.isUserAuthenticated());
+        console.log('---');
+        console.log('Current Workout ID:', this.currentWorkout?.id);
+        console.log('Current Workout Name:', this.currentWorkout?.name);
+        console.log('Session Active:', this.sessionService?.isSessionActive());
+        console.groupEnd();
+        
+        // Return info object for programmatic access
+        return {
+            protocol: window.location.protocol,
+            hostname: window.location.hostname,
+            origin: window.location.origin,
+            apiBase: window.config?.api?.baseUrl,
+            storageMode: this.dataManager?.storageMode,
+            isOnline: navigator.onLine,
+            isAuthenticated: this.authService?.isUserAuthenticated(),
+            currentWorkoutId: this.currentWorkout?.id,
+            sessionActive: this.sessionService?.isSessionActive()
+        };
     }
 }
 

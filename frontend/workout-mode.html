@@ -11,9 +11,6 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
     
-    <!-- Force HTTPS for all requests -->
-    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
-
     <title>👻 Workout Mode - Ghost Gym V0.4.1</title>
 
     <meta name="description" content="Execute your workout with rest timers and exercise tracking" />
@@ -40,6 +37,12 @@
     <!-- Custom Ghost Gym CSS -->
     <link rel="stylesheet" href="/static/assets/css/ghost-gym-custom.css" />
     
+    <!-- Navbar CSS -->
+    <link rel="stylesheet" href="/static/assets/css/navbar-custom.css" />
+    
+    <!-- Component CSS (includes all component styles) -->
+    <link rel="stylesheet" href="/static/assets/css/components.css" />
+    
     <!-- Workout Mode CSS -->
     <link rel="stylesheet" href="/static/assets/css/workout-mode.css?v=20251107-03" />
     
@@ -61,10 +64,6 @@
   </head>
 
   <body>
-    <!-- Floating Hamburger Menu Button -->
-    <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Toggle menu">
-      <i class="bx bx-menu"></i>
-    </button>
     
     <!-- Layout wrapper -->
     <div class="layout-wrapper layout-content-navbar">
@@ -83,20 +82,15 @@
             <!-- Content -->
             <div class="container-xxl flex-grow-1 container-p-y">
               
-              <!-- Page Header (Standard Pattern) -->
-              <div class="mb-4">
-                <h4 class="mb-1">
-                  <i class="bx bx-play-circle me-2"></i>
-                  Workout Mode
-                </h4>
-                <p class="text-muted mb-0">Execute your workout with rest timers and tracking</p>
-              </div>
-
-              <!-- Workout Info Card (Separate from Header) -->
+              <!-- Workout Info Card -->
               <div class="card mb-4" id="workoutInfoCard" style="display: none;">
+                <div class="card-header border-bottom">
+                  <h5 class="mb-1">
+                    <i class="bx bx-dumbbell me-2"></i><span id="workoutName">Loading workout...</span>
+                  </h5>
+                  <p class="text-muted mb-0 small" id="workoutDescription"></p>
+                </div>
                 <div class="card-body">
-                  <h5 class="card-title mb-2" id="workoutName">Loading workout...</h5>
-                  <p class="text-muted mb-2" id="workoutDescription"></p>
                   <div class="text-muted small" id="lastCompletedContainer" style="display: none;">
                     <i class="bx bx-history me-1"></i>
                     Last completed: <span id="lastCompletedDate">Never</span>
@@ -130,24 +124,6 @@
 
             </div>
             <!-- / Content -->
-
-            <!-- Footer -->
-            <footer class="content-footer footer bg-footer-theme">
-              <div class="container-xxl">
-                <div
-                  class="footer-container d-flex align-items-center justify-content-between py-4 flex-md-row flex-column">
-                  <div class="mb-2 mb-md-0">
-                    ©
-                    <script>
-                      document.write(new Date().getFullYear());
-                    </script>
-                    , made with ❤️ by
-                    <strong>👻 Ghost Gym V0.4.1</strong>
-                  </div>
-                </div>
-              </div>
-            </footer>
-            <!-- / Footer -->
 
             <div class="content-backdrop fade"></div>
           </div>
@@ -215,10 +191,12 @@
 
     <!-- Load templates FIRST (before main.js) -->
     <script src="/static/assets/js/components/menu-template.js"></script>
+    <script src="/static/assets/js/components/navbar-template.js"></script>
     <script src="/static/assets/js/components/auth-modals-template.js"></script>
     
     <!-- Inject components SECOND (before main.js) -->
     <script src="/static/assets/js/services/menu-injection-service.js"></script>
+    <script src="/static/assets/js/services/navbar-injection-service.js"></script>
 
     <!-- Main JS -->
     <script src="/static/assets/js/main.js"></script>
@@ -228,6 +206,9 @@
     <script src="/static/assets/js/firebase/auth-service.js?v=20251020-03"></script>
     <script src="/static/assets/js/firebase/auth-ui.js?v=20251020-03"></script>
     <script src="/static/assets/js/firebase/data-manager.js?v=20251020-05"></script>
+
+    <!-- Common Utilities (MUST load before other dashboard scripts) -->
+    <script src="/static/assets/js/utils/common-utils.js"></script>
 
     <!-- Component Scripts -->
     <script src="/static/assets/js/components/base-page.js"></script>

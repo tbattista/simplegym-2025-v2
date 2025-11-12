@@ -37,7 +37,18 @@
             if (!path.startsWith('/')) {
                 path = '/' + path;
             }
-            return this.baseUrl + path;
+            
+            // Construct URL using current origin (preserves protocol)
+            const url = this.baseUrl + path;
+            
+            // Debug logging for troubleshooting
+            if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                console.log('🔗 API URL constructed:', url);
+                console.log('📍 Current protocol:', window.location.protocol);
+                console.log('📍 Current origin:', window.location.origin);
+            }
+            
+            return url;
         }
     };
     

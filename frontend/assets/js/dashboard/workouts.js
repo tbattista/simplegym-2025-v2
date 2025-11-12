@@ -451,8 +451,18 @@ function addExerciseGroup() {
     const groupCount = container.children.length + 1;
     const groupId = `group-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     
-    // Create card HTML
-    const groupHtml = createExerciseGroupCard(groupId, null, groupCount);
+    // Create default data with placeholder exercise name
+    const defaultData = {
+        exercises: { a: 'Exercise Name', b: '', c: '' },
+        sets: '3',
+        reps: '8-12',
+        rest: '60s',
+        default_weight: '',
+        default_weight_unit: 'lbs'
+    };
+    
+    // Create card HTML with default data
+    const groupHtml = createExerciseGroupCard(groupId, defaultData, groupCount);
     
     container.insertAdjacentHTML('beforeend', groupHtml);
     
@@ -1262,6 +1272,13 @@ function enterEditMode() {
     // Add edit mode class to container
     container.classList.add('edit-mode-active');
     
+    // Change edit icons to move icons
+    const editButtons = container.querySelectorAll('.btn-edit-compact i');
+    editButtons.forEach(icon => {
+        icon.classList.remove('bx-edit');
+        icon.classList.add('bx-menu');
+    });
+    
     // Toggle is already checked by user interaction
     // Update label if needed
     const label = document.querySelector('.edit-mode-label');
@@ -1312,6 +1329,13 @@ async function exitEditMode() {
     
     // Remove edit mode class
     container.classList.remove('edit-mode-active');
+    
+    // Change move icons back to edit icons
+    const moveIcons = container.querySelectorAll('.btn-edit-compact i');
+    moveIcons.forEach(icon => {
+        icon.classList.remove('bx-menu');
+        icon.classList.add('bx-edit');
+    });
     
     // Toggle is already unchecked by user interaction
     // Label remains as 'Edit'
@@ -1404,14 +1428,15 @@ function updateSortableForEditMode(isEditMode) {
         
         // Make entire item draggable in edit mode
         if (hasCardLayout) {
-            // For card-based layout, make the entire card draggable
-            sortable.option('handle', '.exercise-group-card.compact .card');
+            // For card-based layout, make the entire card body draggable
+            sortable.option('handle', '.exercise-group-card.compact .card-body');
         } else if (hasAccordionLayout) {
             // For accordion-based layout, make the accordion item draggable
             sortable.option('handle', '.accordion-item');
         }
         
         sortable.option('animation', 200);
+        sortable.option('cursor', 'move');
         
         // Add change tracking
         sortable.option('onEnd', function(evt) {
