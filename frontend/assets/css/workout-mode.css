@@ -518,24 +518,11 @@
 }
 
 /* ============================================
-   STICKY BOTTOM BAR
+   STICKY BOTTOM BAR - USES SHARED COMPONENT
    ============================================ */
 
-.workout-mode-footer {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: var(--bs-body-bg);
-    border-top: 2px solid var(--bs-border-color);
-    padding: 1rem;
-    z-index: 1000;
-    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
-    
-    /* Adjust for sidebar on desktop */
-    margin-left: var(--layout-menu-width, 260px);
-    transition: margin-left 0.3s ease;
-}
+/* Note: .workout-mode-footer now uses .sticky-footer-base from components/sticky-footer.css */
+/* Only custom workout-mode specific styles remain here */
 
 /* Ensure controls are always right-aligned in the bottom controls row */
 .workout-mode-footer .d-flex.align-items-center {
@@ -545,43 +532,6 @@
 /* Session info stays on the left when visible via me-auto class */
 #sessionInfo {
     margin-right: auto !important;
-}
-
-.workout-mode-footer-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 1rem;
-    flex-wrap: wrap;
-}
-
-.footer-session-info {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    font-size: 0.9rem;
-}
-
-.footer-session-info .session-timer {
-    font-size: 1rem;
-}
-
-#completeWorkoutBtn {
-    min-width: 160px;
-    font-size: 1rem;
-    padding: 0.65rem 1.25rem;
-    font-weight: 600;
-}
-
-#completeWorkoutBtn i {
-    font-size: 1.2rem;
-    margin-right: 0.5rem;
-}
-
-/* Active session footer state */
-.workout-mode-footer.active {
-    border-top-color: var(--bs-success);
-    background: rgba(var(--bs-success-rgb), 0.02);
 }
 
 /* Footer button group - ensure proper spacing and alignment */
@@ -617,71 +567,20 @@
     color: white;
 }
 
-/* When menu is collapsed */
-.layout-menu-collapsed .workout-mode-footer {
-    margin-left: var(--layout-menu-collapsed-width, 80px);
-}
-
 /* Add padding to content to prevent overlap with sticky footer */
 .workout-mode-footer ~ .content-wrapper .container-xxl {
-    padding-bottom: 80px;
+    padding-bottom: 200px;
 }
 
 /* ============================================
    STICKY BOTTOM BAR FOR WORKOUT SELECTION
    ============================================ */
 
-.workout-selection-footer {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: transparent;
-    padding: 1rem;
-    z-index: 1000;
-    
-    /* Adjust for sidebar on desktop */
-    margin-left: var(--layout-menu-width, 260px);
-    transition: margin-left 0.3s ease;
-    
-    /* Center content with max width */
-    display: flex;
-    justify-content: center;
-}
-
-.workout-selection-footer > div {
-    background: var(--bs-body-bg);
-    border: 1px solid var(--bs-border-color);
-    border-radius: var(--bs-border-radius-lg);
-    padding: 1rem;
-    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
-    width: 100%;
-    max-width: 600px;
-}
-
-/* When menu is collapsed */
-.layout-menu-collapsed .workout-selection-footer {
-    margin-left: var(--layout-menu-collapsed-width, 80px);
-}
-
-/* Footer button styling */
-.workout-selection-footer .btn {
-    font-weight: 600;
-}
-
-.workout-selection-footer .btn-primary {
-    font-size: 1rem;
-}
-
-/* Dark theme support */
-[data-bs-theme="dark"] .workout-selection-footer > div {
-    background: var(--bs-gray-900);
-    border-color: var(--bs-gray-700);
-}
+/* Note: .workout-selection-footer uses .sticky-footer-base from components/sticky-footer.css */
 
 /* Add padding to content when selection footer is visible */
 #workoutSelectionContainer {
-    padding-bottom: 80px;
+    padding-bottom: 200px;
 }
 
 /* ============================================

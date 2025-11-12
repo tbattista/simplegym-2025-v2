@@ -56,25 +56,7 @@ function loadWorkoutIntoEditor(workoutId) {
         addExerciseGroup();
     }
     
-    // Clear and populate bonus exercises (UPDATED FOR CARD-BASED LAYOUT)
-    const bonusExercisesContainer = document.getElementById('bonusExercises');
-    bonusExercisesContainer.innerHTML = '';
-    
-    // Clear data storage
-    window.bonusExercisesData = {};
-    
-    if (workout.bonus_exercises && workout.bonus_exercises.length > 0) {
-        workout.bonus_exercises.forEach((bonus, index) => {
-            const bonusId = `bonus-${Date.now()}-${index}-${Math.random().toString(36).substr(2, 9)}`;
-            const bonusNumber = index + 1;
-            
-            // Create card with data
-            const cardHtml = window.createBonusExerciseCard(bonusId, bonus, bonusNumber);
-            bonusExercisesContainer.insertAdjacentHTML('beforeend', cardHtml);
-            
-            console.log('🔍 DEBUG: Loaded bonus exercise card:', bonusId, bonus);
-        });
-    }
+    // Bonus exercises section removed - no longer needed
     
     // Show editor, hide empty state
     document.getElementById('workoutEditorEmptyState').style.display = 'none';
@@ -175,9 +157,6 @@ function createNewWorkoutInEditor() {
     const exerciseGroupsContainer = document.getElementById('exerciseGroups');
     exerciseGroupsContainer.innerHTML = '';
     addExerciseGroup();
-    
-    // Clear bonus exercises
-    document.getElementById('bonusExercises').innerHTML = '';
     
     // Show editor, hide empty state
     document.getElementById('workoutEditorEmptyState').style.display = 'none';
@@ -552,33 +531,12 @@ function setupWorkoutEditorListeners() {
         });
     }
     
-    // Add Bonus Exercise button
-    const addBonusBtn = document.getElementById('addBonusExerciseBtn');
-    if (addBonusBtn) {
-        addBonusBtn.addEventListener('click', () => {
-            if (window.addBonusExercise) {
-                window.addBonusExercise();
-                markEditorDirty();
-            }
-        });
-    }
-    
     // NEW: Save Exercise Group from Offcanvas button
     const saveExerciseGroupBtn = document.getElementById('saveExerciseGroupBtn');
     if (saveExerciseGroupBtn) {
         saveExerciseGroupBtn.addEventListener('click', () => {
             if (window.saveExerciseGroupFromOffcanvas) {
                 window.saveExerciseGroupFromOffcanvas();
-            }
-        });
-    }
-    
-    // NEW: Save Bonus Exercise from Offcanvas button
-    const saveBonusExerciseBtn = document.getElementById('saveBonusExerciseBtn');
-    if (saveBonusExerciseBtn) {
-        saveBonusExerciseBtn.addEventListener('click', () => {
-            if (window.saveBonusExerciseFromOffcanvas) {
-                window.saveBonusExerciseFromOffcanvas();
             }
         });
     }
@@ -596,24 +554,6 @@ function setupWorkoutEditorListeners() {
                 // Delete after a short delay to allow offcanvas to close
                 setTimeout(() => {
                     window.deleteExerciseGroupCard(groupId);
-                }, 300);
-            }
-        });
-    }
-    
-    // NEW: Delete Bonus Exercise from Offcanvas button
-    const deleteBonusExerciseBtn = document.getElementById('deleteBonusExerciseBtn');
-    if (deleteBonusExerciseBtn) {
-        deleteBonusExerciseBtn.addEventListener('click', () => {
-            const bonusId = window.currentEditingBonusId;
-            if (bonusId && window.deleteBonusExerciseCard) {
-                // Close offcanvas first
-                const offcanvas = bootstrap.Offcanvas.getInstance(document.getElementById('bonusExerciseEditOffcanvas'));
-                if (offcanvas) offcanvas.hide();
-                
-                // Delete after a short delay to allow offcanvas to close
-                setTimeout(() => {
-                    window.deleteBonusExerciseCard(bonusId);
                 }, 300);
             }
         });

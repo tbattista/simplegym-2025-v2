@@ -1,0 +1,104 @@
+/**
+ * Unified Sticky Footer Component
+ * Standard pattern from workout-database.css
+ * 
+ * @version 1.0.0
+ * @source workout-database.css lines 701-818
+ * @usage Add 'sticky-footer-base' class to footer element
+ *        Add 'has-sticky-footer' class to content container
+ */
+
+/* ============================================
+   BASE STICKY FOOTER PATTERN
+   ============================================ */
+
+.sticky-footer-base {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: transparent;
+    padding: 1rem;
+    z-index: 1000;
+    
+    /* Adjust for sidebar on desktop */
+    margin-left: var(--layout-menu-width, 260px);
+    transition: margin-left 0.3s ease;
+    
+    /* Center content with max width */
+    display: flex;
+    justify-content: center;
+}
+
+/* Inner content wrapper with card styling */
+.sticky-footer-base > div {
+    background: var(--bs-body-bg);
+    border: 1px solid var(--bs-border-color);
+    border-radius: var(--bs-border-radius-lg);
+    padding: 1rem;
+    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 600px;
+}
+
+/* When menu is collapsed */
+.layout-menu-collapsed .sticky-footer-base {
+    margin-left: var(--layout-menu-collapsed-width, 80px);
+}
+
+/* ============================================
+   CONTENT PADDING TO PREVENT OVERLAP
+   ============================================ */
+
+/* Add padding to content to prevent overlap with sticky footer */
+.has-sticky-footer {
+    padding-bottom: 200px !important;
+}
+
+/* Ensure card has space above footer */
+.has-sticky-footer .card {
+    margin-bottom: 2rem;
+}
+
+/* ============================================
+   DARK THEME SUPPORT
+   ============================================ */
+
+[data-bs-theme="dark"] .sticky-footer-base > div {
+    background: var(--bs-gray-900);
+    border-color: var(--bs-gray-700);
+    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* ============================================
+   MOBILE RESPONSIVE
+   ============================================ */
+
+@media (max-width: 1199px) {
+    /* Remove sidebar offset on mobile */
+    .sticky-footer-base {
+        margin-left: 0;
+    }
+}
+
+@media (max-width: 768px) {
+    .sticky-footer-base {
+        padding: 0.75rem 1rem;
+    }
+    
+    /* Adjust content padding for mobile */
+    .has-sticky-footer {
+        padding-bottom: 180px !important;
+    }
+}
+
+@media (max-width: 576px) {
+    .sticky-footer-base {
+        padding: 0.625rem 0.875rem;
+    }
+    
+    /* Extra compact for very small screens */
+    .has-sticky-footer {
+        padding-bottom: 160px !important;
+    }
+}

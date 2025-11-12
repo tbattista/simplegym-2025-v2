@@ -128,100 +128,10 @@ function renderProgramsView() {
 }
 
 /**
- * Render Workouts View (horizontal scroll library + inline editor)
- */
-function renderWorkoutsView() {
-    const libraryScroll = document.getElementById('workoutLibraryScroll');
-    if (!libraryScroll || !window.ghostGym) return;
-    
-    const searchInput = document.getElementById('workoutsViewSearch');
-    const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
-    
-    // Enhanced filtering
-    const filteredWorkouts = window.ghostGym.workouts.filter(workout =>
-        workout.name.toLowerCase().includes(searchTerm) ||
-        (workout.description || '').toLowerCase().includes(searchTerm) ||
-        (workout.tags || []).some(tag => tag.toLowerCase().includes(searchTerm))
-    );
-    
-    // Enhanced empty state
-    if (filteredWorkouts.length === 0) {
-        const emptyMessage = searchTerm
-            ? `<div class="text-center py-3" style="width: 100%;">
-                   <i class="bx bx-search display-4 text-muted"></i>
-                   <h6 class="mt-2">No Workouts Match "${escapeHtml(searchTerm)}"</h6>
-                   <p class="text-muted small mb-0">Try adjusting your search or create a new workout</p>
-               </div>`
-            : `<div class="text-center py-3" style="width: 100%;">
-                   <i class="bx bx-dumbbell display-4 text-muted"></i>
-                   <h6 class="mt-2">No Workouts Yet</h6>
-                   <p class="text-muted small mb-2">Create your first workout template to get started</p>
-                   <button class="btn btn-primary btn-sm" onclick="createNewWorkoutInEditor()">
-                       <i class="bx bx-plus me-1"></i>Create Your First Workout
-                   </button>
-               </div>`;
-        
-        libraryScroll.innerHTML = emptyMessage;
-        return;
-    }
-    
-    // Render compact workout cards for horizontal scroll
-    libraryScroll.innerHTML = filteredWorkouts.map(workout => {
-        const totalExercises = (workout.exercise_groups || []).reduce((sum, group) => {
-            return sum + Object.keys(group.exercises || {}).length;
-        }, 0);
-        
-        const isSelected = window.ghostGym.workoutBuilder?.selectedWorkoutId === workout.id;
-        
-        return `
-        <div class="workout-card-compact ${isSelected ? 'selected' : ''}"
-             data-workout-id="${workout.id}"
-             onclick="loadWorkoutIntoEditor('${workout.id}')">
-            <h6 class="workout-card-compact-title">${escapeHtml(workout.name)}</h6>
-            
-            ${workout.description ? `
-                <p class="workout-card-compact-description">${escapeHtml(workout.description)}</p>
-            ` : '<p class="workout-card-compact-description" style="opacity: 0.5;">No description</p>'}
-            
-            <div class="workout-card-compact-stats">
-                <span class="workout-card-compact-stat">
-                    <i class="bx bx-list-ul"></i>
-                    ${workout.exercise_groups?.length || 0} groups
-                </span>
-                <span class="workout-card-compact-stat">
-                    <i class="bx bx-dumbbell"></i>
-                    ${totalExercises} exercises
-                </span>
-                ${workout.bonus_exercises && workout.bonus_exercises.length > 0 ? `
-                    <span class="workout-card-compact-stat">
-                        <i class="bx bx-plus-circle"></i>
-                        ${workout.bonus_exercises.length} bonus
-                    </span>
-                ` : ''}
-            </div>
-            
-            ${workout.tags && workout.tags.length > 0 ? `
-                <div class="workout-card-compact-tags">
-                    ${workout.tags.slice(0, 3).map(tag => `<span class="workout-card-compact-tag">${escapeHtml(tag)}</span>`).join('')}
-                    ${workout.tags.length > 3 ? `<span class="workout-card-compact-tag">+${workout.tags.length - 3}</span>` : ''}
-                </div>
-            ` : ''}
-        </div>
-    `}).join('');
-}
-
-/**
  * Filter programs in Programs View
  */
 function filterProgramsView() {
     renderProgramsView();
-}
-
-/**
- * Filter workouts in Workouts View
- */
-function filterWorkoutsView() {
-    renderWorkoutsView();
 }
 
 /**
@@ -237,9 +147,7 @@ function selectProgramAndGoToBuilder(programId) {
 
 // Make functions globally accessible for standalone pages
 window.renderProgramsView = renderProgramsView;
-window.renderWorkoutsView = renderWorkoutsView;
 window.filterProgramsView = filterProgramsView;
-window.filterWorkoutsView = filterWorkoutsView;
 window.selectProgramAndGoToBuilder = selectProgramAndGoToBuilder;
 
 console.log('📦 Views module loaded');

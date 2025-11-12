@@ -10,13 +10,10 @@
     <meta
       name="viewport"
       content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
-    
-    <!-- Force HTTPS for all requests -->
-    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
 
-    <title>👻 Workout Library - Ghost Gym V0.4.1</title>
+    <title>👻 Workout Editor - Ghost Gym V0.4.1</title>
 
-    <meta name="description" content="Manage your workout templates with Ghost Gym" />
+    <meta name="description" content="Edit your workout templates with Ghost Gym" />
 
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="/static/assets/img/favicon/favicon.ico" />
@@ -86,175 +83,100 @@
               <!-- Page Header -->
               <div class="mb-4">
                 <h4 class="mb-1">
-                  <i class="bx bx-dumbbell me-2"></i>
-                  Workout Builder
+                  <i class="bx bx-edit me-2"></i>
+                  Workout Editor
                 </h4>
-                <p class="text-muted mb-0">Create and manage your workouts</p>
+                <p class="text-muted mb-0">Edit your workout template</p>
               </div>
 
-              <!-- Workout Library Section (Always visible at top) -->
-              <div id="workoutLibrarySection" class="card mb-3 workout-library-card">
-                <div id="workoutLibraryCardBody" class="card-body p-3">
-                  <!-- Header with Workout Library title, New Button, and Hide Button -->
-                  <div id="workoutLibraryHeader" class="d-flex justify-content-between align-items-center mb-3">
-                    <h6 class="mb-0">
-                      <i class="bx bx-dumbbell me-1"></i>
-                      Workout Library
-                    </h6>
-                    <div class="d-flex gap-2">
-                      <button type="button" class="btn btn-sm btn-primary" id="workoutsViewNewBtnHeader" onclick="createNewWorkoutInEditor()" title="New Workout">
-                        <i class="bx bx-plus me-1"></i>
-                        New
-                      </button>
-                      <button type="button" class="btn btn-sm btn-outline-secondary" id="hideWorkoutsBtn" onclick="toggleWorkoutLibraryContent()">
-                        <i class="bx bx-chevron-up me-1"></i>
-                        Hide Workouts
-                      </button>
-                    </div>
-                  </div>
-                  
-                  <!-- Workout Library Content (collapsible) -->
-                  <div id="workoutLibraryExpandedContent" class="workout-library-content">
-                    <!-- Search Box with Filter Button -->
-                    <div class="search-card-container mb-3">
-                      <div class="card workout-search-card">
-                        <div class="card-body p-2">
-                        <div class="d-flex gap-2" style="flex-wrap: nowrap;">
-                          <div class="input-group input-group-sm flex-grow-1">
-                            <span class="input-group-text">
-                              <i class="bx bx-search"></i>
-                            </span>
-                            <input
-                              type="text"
-                              class="form-control"
-                              placeholder="Search workouts..."
-                              aria-label="Search workouts"
-                              id="workoutsViewSearch"
-                              oninput="filterWorkoutsView()"
-                              style="min-width: 0;">
-                            <button class="btn btn-sm btn-icon" type="button" id="clearWorkoutSearchBtn" onclick="clearWorkoutSearch()" style="display: none;">
-                              <i class="bx bx-x"></i>
-                            </button>
-                          </div>
-                          <button class="btn btn-primary btn-sm" type="button" id="workoutFilterBtn" title="Filter" style="flex-shrink: 0;">
-                            <i class="bx bx-filter-alt"></i>
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                    </div>
-                    
-                    <!-- Horizontal Scrolling Workout Library -->
-                    <div id="workoutLibraryScroll" class="workout-library-scroll">
-                      <!-- Compact workout cards will be rendered here -->
-                      <div class="text-center py-3" style="width: 100%;">
-                        <div class="spinner-border spinner-border-sm text-primary" role="status">
-                          <span class="visually-hidden">Loading workouts...</span>
-                        </div>
-                        <p class="mt-2 mb-0 text-muted small">Loading your workouts...</p>
-                      </div>
-                    </div>
-                  </div>
+              <!-- Workout Editor Section -->
+              <!-- Loading State (shown while loading workout) -->
+              <div id="workoutEditorLoadingState" class="text-center py-5">
+                <div class="spinner-border text-primary mb-3" role="status" style="width: 3rem; height: 3rem;">
+                  <span class="visually-hidden">Loading...</span>
                 </div>
+                <h5 class="mt-3">Loading workout...</h5>
+                <p class="text-muted">Please wait while we fetch your workout</p>
               </div>
 
+              <!-- Empty State (shown when no workout selected) -->
+              <div id="workoutEditorEmptyState" class="text-center py-5" style="display: none;">
+                <i class="bx bx-dumbbell display-1 text-muted"></i>
+                <h5 class="mt-3">No workout loaded</h5>
+                <p class="text-muted">Navigate from the <a href="workout-database.html">Workout Database</a> to edit a workout</p>
+              </div>
 
-              <!-- Workout Editor Section (Bottom - Expandable) -->
-              <div class="card workout-editor-card">
-                <div class="card-body p-4">
-                  
-                  <!-- Empty State (shown when no workout selected) -->
-                  <div id="workoutEditorEmptyState" class="text-center py-5">
-                    <i class="bx bx-dumbbell display-1 text-muted"></i>
-                    <h5 class="mt-3">Select a workout to edit</h5>
-                    <p class="text-muted">Click a workout card above or create a new workout to get started</p>
-                  </div>
-
-                  <!-- Editor Form (hidden initially) -->
-                  <div id="workoutEditorForm" style="display: none;">
+              <!-- Editor Form (hidden initially) -->
+              <div id="workoutEditorForm" style="display: none;">
                     <form id="workoutForm">
                       
                       <!-- Workout Info Section -->
-                      <div class="mb-4">
+                      <div class="mb-3">
                         <h6 class="mb-3">
                           <i class="bx bx-edit me-1"></i>
                           Workout Info
                         </h6>
-                        
-                        <div class="mb-3">
-                          <label for="workoutName" class="form-label">Workout Name *</label>
-                          <input type="text" class="form-control" id="workoutName" required maxlength="100" placeholder="e.g., Push Day - Upper Body">
-                        </div>
-                        
-                        <!-- Compact Tags and Description Buttons -->
-                        <div class="d-flex gap-2">
-                          <!-- Tags Button with Popover -->
-                          <button type="button" class="btn btn-sm btn-outline-secondary" id="tagsPopoverBtn"
-                                  data-bs-toggle="popover" data-bs-placement="bottom" data-bs-html="true"
-                                  data-bs-trigger="click" data-bs-custom-class="tags-popover">
-                            <i class="bx bx-purchase-tag me-1"></i>
-                            <span id="tagsButtonText">Add Tags</span>
-                          </button>
+                        <div class="card">
+                          <div class="card-body">
+                            <div class="mb-3">
+                              <label for="workoutName" class="form-label">Workout Name *</label>
+                              <input type="text" class="form-control" id="workoutName" required maxlength="100" placeholder="e.g., Push Day - Upper Body">
+                            </div>
                           
-                          <!-- Description Button with Popover -->
-                          <button type="button" class="btn btn-sm btn-outline-secondary" id="descriptionPopoverBtn"
-                                  data-bs-toggle="popover" data-bs-placement="bottom" data-bs-html="true"
-                                  data-bs-trigger="click" data-bs-custom-class="description-popover">
-                            <i class="bx bx-note me-1"></i>
-                            <span id="descriptionButtonText">Add Description</span>
-                          </button>
+                          <!-- Compact Tags and Description Buttons -->
+                          <div class="d-flex gap-2">
+                            <!-- Tags Button with Popover -->
+                            <button type="button" class="btn btn-sm btn-outline-secondary" id="tagsPopoverBtn"
+                                    data-bs-toggle="popover" data-bs-placement="bottom" data-bs-html="true"
+                                    data-bs-trigger="click" data-bs-custom-class="tags-popover">
+                              <i class="bx bx-purchase-tag me-1"></i>
+                              <span id="tagsButtonText">Add Tags</span>
+                            </button>
+                            
+                            <!-- Description Button with Popover -->
+                            <button type="button" class="btn btn-sm btn-outline-secondary" id="descriptionPopoverBtn"
+                                    data-bs-toggle="popover" data-bs-placement="bottom" data-bs-html="true"
+                                    data-bs-trigger="click" data-bs-custom-class="description-popover">
+                              <i class="bx bx-note me-1"></i>
+                              <span id="descriptionButtonText">Add Description</span>
+                            </button>
+                          </div>
+                          
+                            <!-- Hidden inputs to store actual values -->
+                            <input type="hidden" id="workoutTags">
+                            <textarea style="display: none;" id="workoutDescription" maxlength="500"></textarea>
+                          </div>
                         </div>
-                        
-                        <!-- Hidden inputs to store actual values -->
-                        <input type="hidden" id="workoutTags">
-                        <textarea style="display: none;" id="workoutDescription" maxlength="500"></textarea>
                       </div>
                       
-                      <!-- Exercise Groups -->
-                      <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h6 class="mb-0">
-                          <i class="bx bx-list-ul me-1"></i>
-                          Exercise Groups
-                        </h6>
-                        <div class="form-check form-switch mb-0">
-                          <input class="form-check-input" type="checkbox" role="switch"
-                                 id="editModeToggle" style="cursor: pointer;">
-                          <label class="form-check-label" for="editModeToggle" style="cursor: pointer;">
-                            <span class="edit-mode-label">Reorder</span>
-                          </label>
+                      <!-- Exercise Groups Section -->
+                      <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                          <h6 class="mb-0">
+                            <i class="bx bx-list-ul me-1"></i>
+                            Exercise Groups
+                          </h6>
+                          <div class="form-check form-switch mb-0">
+                            <input class="form-check-input" type="checkbox" role="switch"
+                                   id="editModeToggle" style="cursor: pointer;">
+                            <label class="form-check-label" for="editModeToggle" style="cursor: pointer;">
+                              <span class="edit-mode-label">Reorder</span>
+                            </label>
+                          </div>
                         </div>
-                      </div>
-                      <div id="exerciseGroups" class="accordion accordion-workout-groups mb-3">
-                        <!-- Exercise groups will be added here as accordion items -->
-                      </div>
-                      <!-- Add Group Button (moved to bottom) -->
-                      <div class="mb-4">
+                        <div id="exerciseGroups" class="accordion accordion-workout-groups mb-3">
+                          <!-- Exercise groups will be added here as accordion items -->
+                        </div>
+                        <!-- Add Group Button -->
                         <button type="button" class="btn btn-outline-primary w-100" id="addExerciseGroupBtn">
                           <i class="bx bx-plus me-1"></i>
                           Add Exercises
                         </button>
                       </div>
 
-                      <!-- Bonus Exercises -->
-                      <div class="mb-4">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                          <h6 class="mb-0">
-                            <i class="bx bx-plus-circle me-1"></i>
-                            Bonus Exercises
-                          </h6>
-                          <button type="button" class="btn btn-outline-secondary btn-sm" id="addBonusExerciseBtn">
-                            <i class="bx bx-plus me-1"></i>
-                            Add Bonus
-                          </button>
-                        </div>
-                        <div id="bonusExercises">
-                          <!-- Bonus exercises will be added here -->
-                        </div>
-                      </div>
-
-                      <!-- Editor Actions - Sticky Footer (styled like workout-database) -->
-                      <div class="editor-actions">
-                        <div>
+                      <!-- Editor Actions - Sticky Footer (uses shared sticky-footer-base component) -->
+                      <div class="editor-actions sticky-footer-base">
+                        <div class="d-flex flex-column gap-2">
                           <!-- Save Status (above buttons) -->
                           <div class="mb-2 text-center">
                             <span id="saveStatus" class="text-muted small"></span>
@@ -281,9 +203,6 @@
                       </div>
                     </form>
                   </div>
-
-                </div>
-              </div>
             </div>
             <!-- / Content -->
 
@@ -621,7 +540,7 @@
     <script src="/static/assets/js/components/workout-components.js"></script>
     
     <!-- Workout Editor Component -->
-    <script src="/static/assets/js/components/workout-editor.js"></script>
+    <script src="/static/assets/js/components/workout-editor.js?v=20251112-01"></script>
 
     <!-- Initialize Workouts Page with Component System -->
     <script>
@@ -669,60 +588,35 @@
             }
         };
 
-        // Function to load workouts
-        async function loadWorkoutsData() {
-            const libraryScroll = document.getElementById('workoutLibraryScroll');
-            
+        // Function to load workout data for editing
+        async function loadWorkoutForEditing(workoutId) {
             try {
-                // Show loading state
-                if (libraryScroll) {
-                    libraryScroll.innerHTML = `
-                        <div class="text-center py-3" style="width: 100%;">
-                            <div class="spinner-border spinner-border-sm text-primary" role="status">
-                                <span class="visually-hidden">Loading workouts...</span>
-                            </div>
-                            <p class="mt-2 mb-0 text-muted small">Loading your workouts...</p>
-                        </div>
-                    `;
-                }
-                
-                // Load workouts from data manager
-                console.log('📡 Loading workouts from data manager...');
-                console.log('🔍 Storage mode:', window.dataManager.storageMode);
-                console.log('🔍 Is authenticated:', window.dataManager.isAuthenticated);
+                console.log('📡 Loading workout for editing:', workoutId);
                 
                 const workouts = await window.dataManager.getWorkouts();
-                console.log(`✅ Loaded ${workouts.length} workouts from ${window.dataManager.storageMode}`);
+                const workout = workouts.find(w => w.id === workoutId);
+                
+                if (!workout) {
+                    console.error('❌ Workout not found:', workoutId);
+                    alert('Workout not found. Redirecting to workout database...');
+                    window.location.href = 'workout-database.html';
+                    return null;
+                }
+                
+                console.log('✅ Workout loaded:', workout.name);
                 
                 // Update global state
                 window.ghostGym.workouts = workouts;
                 
-                // Render workouts view
-                if (window.renderWorkoutsView) {
-                    window.renderWorkoutsView();
-                }
-                
-                console.log('✅ Workouts loaded and rendered!');
+                return workout;
                 
             } catch (error) {
-                console.error('❌ Failed to load workouts:', error);
-                if (libraryScroll) {
-                    libraryScroll.innerHTML = `
-                        <div class="text-center py-3" style="width: 100%;">
-                            <i class="bx bx-error-circle display-4 text-danger"></i>
-                            <h6 class="mt-2">Failed to Load Workouts</h6>
-                            <p class="text-muted small">${error.message}</p>
-                            <button class="btn btn-primary btn-sm mt-2" onclick="loadWorkoutsData()">
-                                <i class="bx bx-refresh me-1"></i>Retry
-                            </button>
-                        </div>
-                    `;
-                }
+                console.error('❌ Failed to load workout:', error);
+                alert('Failed to load workout. Redirecting to workout database...');
+                window.location.href = 'workout-database.html';
+                return null;
             }
         }
-        
-        // Make loadWorkoutsData globally available
-        window.loadWorkoutsData = loadWorkoutsData;
         
         // Initialize page using component system
         document.addEventListener('DOMContentLoaded', async function() {
@@ -744,68 +638,72 @@
             // Wait for auth state to settle (important for Firebase mode)
             await new Promise(resolve => setTimeout(resolve, 1000));
             
-            // Load workouts
-            await loadWorkoutsData();
-            
             // Check if we should auto-load a workout from URL parameter or sessionStorage
             const urlParams = new URLSearchParams(window.location.search);
             const urlWorkoutId = urlParams.get('id');
             const sessionWorkoutId = sessionStorage.getItem('editWorkoutId');
             const editWorkoutId = urlWorkoutId || sessionWorkoutId;
             
+            const loadingState = document.getElementById('workoutEditorLoadingState');
+            const emptyState = document.getElementById('workoutEditorEmptyState');
+            
             if (editWorkoutId) {
                 console.log('📝 Auto-loading workout:', editWorkoutId, urlWorkoutId ? '(from URL)' : '(from sessionStorage)');
+                
+                // Show loading state
+                loadingState.style.display = 'block';
+                emptyState.style.display = 'none';
                 
                 // Clear the session storage if it was used
                 if (sessionWorkoutId) {
                     sessionStorage.removeItem('editWorkoutId');
                 }
                 
-                // Load the workout into the editor
-                if (window.loadWorkoutIntoEditor) {
-                    // Wait a bit for the workouts to be fully rendered
-                    setTimeout(() => {
+                try {
+                    // Load workout data first, then load into editor
+                    const workout = await loadWorkoutForEditing(editWorkoutId);
+                    
+                    // Hide loading state
+                    loadingState.style.display = 'none';
+                    
+                    if (workout && window.loadWorkoutIntoEditor) {
                         window.loadWorkoutIntoEditor(editWorkoutId);
-                    }, 500);
+                    } else {
+                        // Show error and redirect
+                        emptyState.querySelector('h5').textContent = 'Workout not found';
+                        emptyState.querySelector('p').innerHTML = 'The workout could not be loaded. <a href="workout-database.html">Return to Workout Database</a>';
+                        emptyState.style.display = 'block';
+                        
+                        setTimeout(() => {
+                            window.location.href = 'workout-database.html';
+                        }, 2000);
+                    }
+                } catch (error) {
+                    console.error('❌ Error loading workout:', error);
+                    
+                    // Hide loading, show error
+                    loadingState.style.display = 'none';
+                    emptyState.querySelector('h5').textContent = 'Error loading workout';
+                    emptyState.querySelector('p').innerHTML = 'An error occurred. <a href="workout-database.html">Return to Workout Database</a>';
+                    emptyState.style.display = 'block';
+                    
+                    setTimeout(() => {
+                        window.location.href = 'workout-database.html';
+                    }, 2000);
                 }
+            } else {
+                // No workout ID provided - redirect to workout database
+                console.log('⚠️ No workout ID provided, redirecting to workout database...');
+                loadingState.style.display = 'none';
+                emptyState.style.display = 'block';
+                
+                setTimeout(() => {
+                    window.location.href = 'workout-database.html';
+                }, 1000);
             }
             
-            console.log('✅ Workouts page ready!');
+            console.log('✅ Workout editor page ready!');
         });
-        
-        // Listen for auth state changes and reload workouts
-        window.addEventListener('authStateChanged', async (event) => {
-            const { user, isAuthenticated } = event.detail;
-            console.log('🔄 Auth state changed on workouts page, reloading workouts...');
-            
-            // Wait a moment for data manager to update its mode
-            await new Promise(resolve => setTimeout(resolve, 300));
-            
-            // Reload workouts with new auth state
-            await loadWorkoutsData();
-        });
-        
-        // Helper function for filtering workouts (called by search input)
-        function filterWorkoutsView() {
-            // Get search term from either desktop or mobile search input
-            const desktopSearch = document.getElementById('workoutsViewSearch')?.value.toLowerCase() || '';
-            const mobileSearch = document.getElementById('workoutsViewSearchMobile')?.value.toLowerCase() || '';
-            const searchTerm = desktopSearch || mobileSearch;
-            
-            window.ghostGym.searchFilters.workouts = searchTerm;
-            
-            // Sync both search inputs
-            if (desktopSearch && document.getElementById('workoutsViewSearchMobile')) {
-                document.getElementById('workoutsViewSearchMobile').value = desktopSearch;
-            }
-            if (mobileSearch && document.getElementById('workoutsViewSearch')) {
-                document.getElementById('workoutsViewSearch').value = mobileSearch;
-            }
-            
-            if (window.renderWorkoutsView) {
-                window.renderWorkoutsView();
-            }
-        }
         
         // Initialize popovers for tags and description
         function initializeMetadataPopovers() {
@@ -1007,153 +905,10 @@
             }
         };
         
-        // Toggle workout library content in the top box
-        window.toggleWorkoutLibraryContent = function() {
-            const expandedContent = document.getElementById('workoutLibraryExpandedContent');
-            const hideBtn = document.getElementById('hideWorkoutsBtn');
-            const header = document.getElementById('workoutLibraryHeader');
-            const cardBody = document.getElementById('workoutLibraryCardBody');
-            const section = document.getElementById('workoutLibrarySection');
-            
-            if (!expandedContent) return;
-            
-            const isVisible = expandedContent.style.display !== 'none';
-            
-            if (isVisible) {
-                // Collapse
-                expandedContent.style.display = 'none';
-                if (hideBtn) {
-                    hideBtn.innerHTML = '<i class="bx bx-chevron-down me-1"></i>Show Workouts';
-                }
-                // Remove bottom margin when collapsed
-                if (header) {
-                    header.classList.remove('mb-3');
-                    header.classList.add('mb-0');
-                }
-                // Reduce padding significantly when collapsed
-                if (cardBody) {
-                    cardBody.classList.remove('p-3');
-                    cardBody.classList.add('py-2', 'px-3');
-                }
-                // Reduce card bottom margin when collapsed
-                if (section) {
-                    section.classList.remove('mb-3');
-                    section.classList.add('mb-2');
-                }
-            } else {
-                // Expand
-                expandedContent.style.display = 'block';
-                if (hideBtn) {
-                    hideBtn.innerHTML = '<i class="bx bx-chevron-up me-1"></i>Hide Workouts';
-                }
-                // Add bottom margin when expanded
-                if (header) {
-                    header.classList.remove('mb-0');
-                    header.classList.add('mb-3');
-                }
-                // Restore padding when expanded
-                if (cardBody) {
-                    cardBody.classList.remove('py-2', 'px-3');
-                    cardBody.classList.add('p-3');
-                }
-                // Restore card bottom margin when expanded
-                if (section) {
-                    section.classList.remove('mb-2');
-                    section.classList.add('mb-3');
-                }
-            }
-        };
-        
-        // Toggle inline workout library in Workout Info section
-        window.toggleWorkoutLibraryInline = function() {
-            const inlineLibrary = document.getElementById('inlineWorkoutLibrary');
-            const changeBtn = document.getElementById('changeWorkoutBtn');
-            const workoutLibraryScrollInline = document.getElementById('workoutLibraryScrollInline');
-            
-            if (!inlineLibrary || !changeBtn) return;
-            
-            const isVisible = inlineLibrary.style.display !== 'none';
-            
-            if (isVisible) {
-                // Collapse
-                inlineLibrary.style.display = 'none';
-                changeBtn.innerHTML = '<i class="bx bx-chevron-down me-1"></i>Change Workout';
-            } else {
-                // Expand
-                inlineLibrary.style.display = 'block';
-                changeBtn.innerHTML = '<i class="bx bx-chevron-up me-1"></i>Hide Workouts';
-                
-                // Copy workout cards from main library to inline library
-                const mainLibraryScroll = document.getElementById('workoutLibraryScroll');
-                if (mainLibraryScroll && workoutLibraryScrollInline) {
-                    workoutLibraryScrollInline.innerHTML = mainLibraryScroll.innerHTML;
-                }
-            }
-        };
-        
-        // Clear inline workout search
-        window.clearWorkoutSearchInline = function() {
-            const searchInput = document.getElementById('workoutsViewSearchInline');
-            const clearBtn = document.getElementById('clearWorkoutSearchBtnInline');
-            
-            if (searchInput) {
-                searchInput.value = '';
-                searchInput.focus();
-            }
-            if (clearBtn) {
-                clearBtn.style.display = 'none';
-            }
-            
-            filterWorkoutsView();
-        };
-        
-        // Clear workout search
-        window.clearWorkoutSearch = function() {
-            const searchInput = document.getElementById('workoutsViewSearch');
-            const clearBtn = document.getElementById('clearWorkoutSearchBtn');
-            
-            if (searchInput) {
-                searchInput.value = '';
-                searchInput.focus();
-            }
-            if (clearBtn) {
-                clearBtn.style.display = 'none';
-            }
-            
-            filterWorkoutsView();
-        };
-        
-        // Update search clear button visibility
-        function updateSearchClearButton() {
-            const searchInput = document.getElementById('workoutsViewSearch');
-            const clearBtn = document.getElementById('clearWorkoutSearchBtn');
-            
-            if (searchInput && clearBtn) {
-                clearBtn.style.display = searchInput.value.trim() ? 'block' : 'none';
-            }
-        }
-        
         // Initialize popovers when DOM is ready
         document.addEventListener('DOMContentLoaded', function() {
             // Wait a bit for other scripts to load
             setTimeout(initializeMetadataPopovers, 500);
-            
-            // Set up search input listener for clear button (main library)
-            const searchInput = document.getElementById('workoutsViewSearch');
-            if (searchInput) {
-                searchInput.addEventListener('input', updateSearchClearButton);
-            }
-            
-            // Set up search input listener for inline library
-            const searchInputInline = document.getElementById('workoutsViewSearchInline');
-            if (searchInputInline) {
-                searchInputInline.addEventListener('input', function() {
-                    const clearBtn = document.getElementById('clearWorkoutSearchBtnInline');
-                    if (clearBtn) {
-                        clearBtn.style.display = searchInputInline.value.trim() ? 'block' : 'none';
-                    }
-                });
-            }
         });
     </script>
   </body>
