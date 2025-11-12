@@ -1,12 +1,24 @@
 /**
  * Ghost Gym V2 - Global Application Configuration
  * Single source of truth for all app settings
- * 
+ *
  * This file centralizes configuration that was previously duplicated across multiple HTML files.
  * Load this BEFORE any other Ghost Gym scripts.
  */
 (function() {
     'use strict';
+    
+    // Apply Content Security Policy only in production (HTTPS)
+    // Railway automatically provides HTTPS, localhost uses HTTP
+    if (window.location.protocol === 'https:') {
+        const meta = document.createElement('meta');
+        meta.httpEquiv = 'Content-Security-Policy';
+        meta.content = 'upgrade-insecure-requests';
+        document.head.appendChild(meta);
+        console.log('🔒 Content Security Policy applied (HTTPS detected)');
+    } else {
+        console.log('🔓 Content Security Policy skipped (HTTP/localhost detected)');
+    }
     
     // Extend existing window.config (from config.js)
     window.config = window.config || {};
