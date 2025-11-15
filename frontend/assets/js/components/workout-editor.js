@@ -70,8 +70,11 @@ function loadWorkoutIntoEditor(workoutId) {
     document.getElementById('workoutEditorEmptyState').style.display = 'none';
     document.getElementById('workoutEditorForm').style.display = 'block';
     
-    // Show delete button for existing workouts
-    document.getElementById('deleteWorkoutBtn').style.display = 'inline-block';
+    // Show delete button for existing workouts (if it exists)
+    const deleteBtn = document.getElementById('deleteWorkoutBtn');
+    if (deleteBtn) {
+        deleteBtn.style.display = 'inline-block';
+    }
     
     // Update save status
     updateSaveStatus('saved');
@@ -208,8 +211,11 @@ async function createNewWorkoutInEditor() {
         document.getElementById('workoutEditorEmptyState').style.display = 'none';
         document.getElementById('workoutEditorForm').style.display = 'block';
         
-        // Show delete button
-        document.getElementById('deleteWorkoutBtn').style.display = 'inline-block';
+        // Show delete button (if it exists)
+        const deleteBtn = document.getElementById('deleteWorkoutBtn');
+        if (deleteBtn) {
+            deleteBtn.style.display = 'inline-block';
+        }
         
         // Update save status
         updateSaveStatus('saved');
@@ -340,8 +346,11 @@ async function saveWorkoutFromEditor(silent = false) {
         // Update save status
         updateSaveStatus('saved');
         
-        // Show delete button now that workout is saved
-        document.getElementById('deleteWorkoutBtn').style.display = 'inline-block';
+        // Show delete button now that workout is saved (if it exists)
+        const deleteBtn = document.getElementById('deleteWorkoutBtn');
+        if (deleteBtn) {
+            deleteBtn.style.display = 'inline-block';
+        }
         
         console.log('✅ Workout saved successfully');
         

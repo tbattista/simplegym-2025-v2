@@ -45,6 +45,9 @@
     
     <!-- Workout Builder CSS -->
     <link rel="stylesheet" href="/static/assets/css/workout-builder.css" />
+    
+    <!-- Bottom Action Bar CSS -->
+    <link rel="stylesheet" href="/static/assets/css/bottom-action-bar.css" />
 
     <!-- Helpers -->
     <script src="/static/assets/vendor/js/helpers.js"></script>
@@ -162,34 +165,6 @@
                           <i class="bx bx-plus me-1"></i>
                           Add Exercises
                         </button>
-                      </div>
-
-                      <!-- Editor Actions - Sticky Footer (uses shared sticky-footer-base component) -->
-                      <div class="editor-actions sticky-footer-base">
-                        <div class="d-flex flex-column gap-2">
-                          <!-- Save Status (above buttons) -->
-                          <div class="mb-2 text-center">
-                            <span id="saveStatus" class="text-muted small"></span>
-                          </div>
-                          
-                          <!-- Action Buttons (full width) -->
-                          <div class="d-grid gap-2">
-                            <div class="btn-group btn-group-sm" role="group">
-                              <button type="button" class="btn btn-outline-secondary btn-sm" id="cancelEditBtn">
-                                <i class="bx bx-x me-1"></i>
-                                Cancel
-                              </button>
-                              <button type="button" class="btn btn-outline-danger btn-sm" id="deleteWorkoutBtn" style="display: none;">
-                                <i class="bx bx-trash me-1"></i>
-                                Delete
-                              </button>
-                              <button type="button" class="btn btn-primary btn-sm" id="saveWorkoutBtn">
-                                <i class="bx bx-save me-1"></i>
-                                Save Workout
-                              </button>
-                            </div>
-                          </div>
-                        </div>
                       </div>
                     </form>
                   </div>
@@ -475,6 +450,10 @@
 
     <!-- Main JS -->
     <script src="/static/assets/js/main.js"></script>
+    
+    <!-- Bottom Action Bar (load after main.js) -->
+    <script src="/static/assets/js/config/bottom-action-bar-config.js"></script>
+    <script src="/static/assets/js/services/bottom-action-bar-service.js"></script>
 
     <!-- Sortable.js for drag and drop -->
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
@@ -514,7 +493,7 @@
     <script src="/static/assets/js/components/workout-components.js"></script>
     
     <!-- Workout Editor Component -->
-    <script src="/static/assets/js/components/workout-editor.js?v=20251112-01"></script>
+    <script src="/static/assets/js/components/workout-editor.js?v=20251115-01"></script>
 
     <!-- Initialize Workouts Page with Component System -->
     <script>

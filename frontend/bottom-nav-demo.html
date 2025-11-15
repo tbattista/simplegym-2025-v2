@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bottom Nav Bar Demo - Ghost Gym</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Boxicons -->
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Public Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f5f5f9;
+            padding: 20px;
+            padding-bottom: 120px;
+        }
+        
+        .demo-section {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        
+        .demo-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #566a7f;
+        }
+        
+        .demo-description {
+            color: #a1acb8;
+            font-size: 0.875rem;
+            margin-bottom: 20px;
+        }
+        
+        /* Bottom Action Bar Styles - Based on Material Design 3 & iOS Guidelines */
+        .bottom-action-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border-top: 1px solid rgba(0, 0, 0, 0.08);
+            padding: 8px 16px;
+            padding-bottom: calc(8px + env(safe-area-inset-bottom));
+            box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.06);
+            z-index: 1000;
+            height: 80px;
+            height: calc(80px + env(safe-area-inset-bottom));
+        }
+        
+        .action-bar-container {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            max-width: 600px;
+            margin: 0 auto;
+            position: relative;
+            height: 64px;
+            padding: 0 8px;
+        }
+        
+        .action-group {
+            display: flex;
+            gap: 0;
+            flex: 1;
+            justify-content: space-around;
+            z-index: 1;
+        }
+        
+        .action-group-left {
+            justify-content: flex-start;
+            gap: 12px;
+        }
+        
+        .action-group-right {
+            justify-content: flex-end;
+            gap: 12px;
+        }
+        
+        .action-btn {
+            width: 56px;
+            height: 56px;
+            min-width: 56px;
+            border-radius: 16px;
+            background: transparent;
+            border: none;
+            color: #6c757d;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            padding: 0;
+        }
+        
+        .action-btn:hover {
+            background: rgba(105, 108, 255, 0.08);
+            color: #696cff;
+        }
+        
+        .action-btn:active {
+            transform: scale(0.92);
+            background: rgba(105, 108, 255, 0.12);
+        }
+        
+        /* Text labels for buttons */
+        .action-btn-label {
+            font-size: 11px;
+            font-weight: 600;
+            margin-top: 3px;
+            color: inherit;
+            display: none;
+            line-height: 1;
+            letter-spacing: 0.02em;
+        }
+        
+        /* Show labels when enabled */
+        .show-labels .action-btn-label {
+            display: block;
+        }
+        
+        .show-labels .action-btn {
+            font-size: 24px;
+            padding-top: 6px;
+        }
+        
+        .show-labels .action-btn i {
+            display: block;
+        }
+        
+        /* FAB - Material Design 3 Specifications */
+        .action-fab {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%) translateY(-12px);
+            width: 64px;
+            height: 64px;
+            min-width: 64px;
+            border-radius: 50%;
+            background: #696cff;
+            color: white;
+            border: none;
+            box-shadow:
+                0 3px 5px -1px rgba(0, 0, 0, 0.2),
+                0 6px 10px 0 rgba(0, 0, 0, 0.14),
+                0 1px 18px 0 rgba(0, 0, 0, 0.12);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 2;
+        }
+        
+        .action-fab:hover {
+            background: #5f61e6;
+            transform: translate(-50%, -50%) translateY(-14px);
+            box-shadow:
+                0 5px 5px -3px rgba(0, 0, 0, 0.2),
+                0 8px 10px 1px rgba(0, 0, 0, 0.14),
+                0 3px 14px 2px rgba(0, 0, 0, 0.12);
+        }
+        
+        .action-fab:active {
+            transform: translate(-50%, -50%) translateY(-10px) scale(0.95);
+        }
+        
+        .action-fab.success {
+            background: #71dd37;
+        }
+        
+        .action-fab.success:hover {
+            background: #66cc33;
+        }
+        
+        .action-label {
+            font-size: 0.625rem;
+            color: #a1acb8;
+            text-align: center;
+            margin-top: 4px;
+            display: block;
+        }
+        
+        /* Demo specific styles */
+        .demo-bar {
+            position: relative;
+            background: white;
+            border: 1px solid #e7e7e7;
+            border-radius: 16px;
+            padding: 8px 16px;
+            margin-bottom: 10px;
+            height: 80px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .demo-bar .action-bar-container {
+            width: 100%;
+        }
+        
+        .demo-bar .action-fab {
+            position: absolute;
+            transform: translate(-50%, -50%) translateY(-12px);
+            top: 50%;
+        }
+        
+        .page-indicator {
+            display: inline-block;
+            padding: 4px 12px;
+            background: #696cff;
+            color: white;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        
+        .action-list {
+            list-style: none;
+            padding: 0;
+            margin: 15px 0;
+            font-size: 0.875rem;
+        }
+        
+        .action-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #f5f5f9;
+        }
+        
+        .action-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .action-list strong {
+            color: #566a7f;
+            display: inline-block;
+            min-width: 80px;
+        }
+        
+        /* Toggle buttons */
+        .toggle-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .toggle-btn {
+            padding: 8px 16px;
+            border: 2px solid #696cff;
+            background: white;
+            color: #696cff;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        
+        .toggle-btn.active {
+            background: #696cff;
+            color: white;
+        }
+        
+        .toggle-btn:hover {
+            background: #f5f5f9;
+        }
+        
+        .toggle-btn.active:hover {
+            background: #5f61e6;
+        }
+        
+        /* Style toggle */
+        .style-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 2000;
+            background: white;
+            padding: 12px 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+        
+        .style-toggle label {
+            margin: 0;
+            cursor: pointer;
+            user-select: none;
+        }
+        
+        .style-toggle input[type="checkbox"] {
+            width: 44px;
+            height: 24px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <!-- Style Toggle -->
+    <div class="style-toggle">
+        <label for="labelToggle">Show Labels</label>
+        <input type="checkbox" id="labelToggle" onchange="toggleLabels()">
+    </div>
+    
+    <div class="container">
+        <h1 class="mb-4">🎨 Bottom Navigation Bar Demo</h1>
+        <p class="text-muted mb-4">Visual preview of bottom action bars for each page. Click the buttons below to switch between different page configurations. Use the toggle in the top-right to show/hide text labels.</p>
+        
+        <!-- Toggle Buttons -->
+        <div class="toggle-buttons">
+            <button class="toggle-btn active" onclick="showConfig('workout-db')">Workout Database</button>
+            <button class="toggle-btn" onclick="showConfig('workout-builder')">Workout Builder</button>
+            <button class="toggle-btn" onclick="showConfig('exercise-db')">Exercise Database</button>
+            <button class="toggle-btn" onclick="showConfig('workout-mode')">Workout Mode</button>
+            <button class="toggle-btn" onclick="showConfig('workout-mode-started')">Workout Mode (Started)</button>
+        </div>
+        
+        <!-- Configuration Displays -->
+        
+        <!-- Workout Database -->
+        <div id="config-workout-db" class="demo-section">
+            <span class="page-indicator">Workout Database</span>
+            <h2 class="demo-title">Workout Database Page</h2>
+            <p class="demo-description">Browse and manage your workout templates</p>
+            
+            <ul class="action-list">
+                <li><strong>Left 1:</strong> 🎯 Filter → Open filters menu</li>
+                <li><strong>Left 2:</strong> 🔍 Search → Focus search input</li>
+                <li><strong>Center FAB:</strong> ➕ Create → Create new workout</li>
+                <li><strong>Right 1:</strong> ⚙️ Sort → Quick sort menu</li>
+                <li><strong>Right 2:</strong> ℹ️ Info → Workout statistics/info</li>
+            </ul>
+            
+            <div class="demo-bar" id="demo-bar-workout-db">
+                <div class="action-bar-container">
+                    <div class="action-group action-group-left">
+                        <button class="action-btn" title="Filter">
+                            <i class="bx bx-filter-alt"></i>
+                            <span class="action-btn-label">Filter</span>
+                        </button>
+                        <button class="action-btn" title="Search">
+                            <i class="bx bx-search"></i>
+                            <span class="action-btn-label">Search</span>
+                        </button>
+                    </div>
+                    
+                    <button class="action-fab" title="Create">
+                        <i class="bx bx-plus"></i>
+                    </button>
+                    
+                    <div class="action-group action-group-right">
+                        <button class="action-btn" title="Sort">
+                            <i class="bx bx-sort"></i>
+                            <span class="action-btn-label">Sort</span>
+                        </button>
+                        <button class="action-btn" title="Info">
+                            <i class="bx bx-info-circle"></i>
+                            <span class="action-btn-label">Info</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Workout Builder -->
+        <div id="config-workout-builder" class="demo-section" style="display: none;">
+            <span class="page-indicator">Workout Builder</span>
+            <h2 class="demo-title">Workout Builder Page (Edit Mode)</h2>
+            <p class="demo-description">Create and edit workout templates</p>
+            
+            <ul class="action-list">
+                <li><strong>Left 1:</strong> ❌ Cancel → Return to workout database (with confirm)</li>
+                <li><strong>Left 2:</strong> ▶️ Go → Start workout (navigate to workout mode)</li>
+                <li><strong>Center FAB:</strong> ➕ Add → Add exercise group</li>
+                <li><strong>Right 1:</strong> 💾 Save → Save workout (with auto-save indicator)</li>
+                <li><strong>Right 2:</strong> ⋮ More → Menu (delete, duplicate, export)</li>
+            </ul>
+            
+            <div class="demo-bar" id="demo-bar-workout-builder">
+                <div class="action-bar-container">
+                    <div class="action-group action-group-left">
+                        <button class="action-btn" title="Cancel">
+                            <i class="bx bx-x"></i>
+                            <span class="action-btn-label">Cancel</span>
+                        </button>
+                        <button class="action-btn" title="Go">
+                            <i class="bx bx-play"></i>
+                            <span class="action-btn-label">Go</span>
+                        </button>
+                    </div>
+                    
+                    <button class="action-fab" title="Add">
+                        <i class="bx bx-plus"></i>
+                    </button>
+                    
+                    <div class="action-group action-group-right">
+                        <button class="action-btn" title="Save">
+                            <i class="bx bx-save"></i>
+                            <span class="action-btn-label">Save</span>
+                        </button>
+                        <button class="action-btn" title="More">
+                            <i class="bx bx-dots-vertical-rounded"></i>
+                            <span class="action-btn-label">More</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Exercise Database -->
+        <div id="config-exercise-db" class="demo-section" style="display: none;">
+            <span class="page-indicator">Exercise Database</span>
+            <h2 class="demo-title">Exercise Database Page</h2>
+            <p class="demo-description">Browse and favorite exercises from the database</p>
+            
+            <ul class="action-list">
+                <li><strong>Left 1:</strong> 💪 Workouts → Navigate to workout database</li>
+                <li><strong>Left 2:</strong> ⭐ Favorites → Toggle favorites filter</li>
+                <li><strong>Center FAB:</strong> 🔍 Search → Focus search / toggle filters offcanvas</li>
+                <li><strong>Right 1:</strong> ⚙️ Sort → Quick sort menu</li>
+                <li><strong>Right 2:</strong> ➕ Custom → Add custom exercise</li>
+            </ul>
+            
+            <div class="demo-bar" id="demo-bar-exercise-db">
+                <div class="action-bar-container">
+                    <div class="action-group action-group-left">
+                        <button class="action-btn" title="Workouts">
+                            <i class="bx bx-dumbbell"></i>
+                            <span class="action-btn-label">Workouts</span>
+                        </button>
+                        <button class="action-btn" title="Favorites">
+                            <i class="bx bx-star"></i>
+                            <span class="action-btn-label">Favorites</span>
+                        </button>
+                    </div>
+                    
+                    <button class="action-fab" title="Search">
+                        <i class="bx bx-search"></i>
+                    </button>
+                    
+                    <div class="action-group action-group-right">
+                        <button class="action-btn" title="Sort">
+                            <i class="bx bx-sort"></i>
+                            <span class="action-btn-label">Sort</span>
+                        </button>
+                        <button class="action-btn" title="Custom">
+                            <i class="bx bx-plus"></i>
+                            <span class="action-btn-label">Custom</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Workout Mode (Not Started) -->
+        <div id="config-workout-mode" class="demo-section" style="display: none;">
+            <span class="page-indicator">Workout Mode</span>
+            <h2 class="demo-title">Workout Mode Page (Not Started)</h2>
+            <p class="demo-description">Ready to start your workout</p>
+            
+            <ul class="action-list">
+                <li><strong>Left 1:</strong> ⏭️ Skip → Skip current exercise</li>
+                <li><strong>Left 2:</strong> ➕ Bonus → Add bonus exercise (coming soon)</li>
+                <li><strong>Center FAB:</strong> ▶️ Start → Start workout tracking</li>
+                <li><strong>Right 1:</strong> 📝 Note → Add workout note (with exercise tagging)</li>
+                <li><strong>Right 2:</strong> 🔚 End → End workout (with summary)</li>
+            </ul>
+            
+            <div class="demo-bar" id="demo-bar-workout-mode">
+                <div class="action-bar-container">
+                    <div class="action-group action-group-left">
+                        <button class="action-btn" title="Skip">
+                            <i class="bx bx-skip-next"></i>
+                            <span class="action-btn-label">Skip</span>
+                        </button>
+                        <button class="action-btn" title="Bonus">
+                            <i class="bx bx-plus-circle"></i>
+                            <span class="action-btn-label">Bonus</span>
+                        </button>
+                    </div>
+                    
+                    <button class="action-fab success" title="Start">
+                        <i class="bx bx-play"></i>
+                    </button>
+                    
+                    <div class="action-group action-group-right">
+                        <button class="action-btn" title="Note">
+                            <i class="bx bx-note"></i>
+                            <span class="action-btn-label">Note</span>
+                        </button>
+                        <button class="action-btn" title="End">
+                            <i class="bx bx-stop-circle"></i>
+                            <span class="action-btn-label">End</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Workout Mode (Started) -->
+        <div id="config-workout-mode-started" class="demo-section" style="display: none;">
+            <span class="page-indicator">Workout Mode (Active)</span>
+            <h2 class="demo-title">Workout Mode Page (Active Workout)</h2>
+            <p class="demo-description">Workout in progress - tracking sets and reps</p>
+            
+            <ul class="action-list">
+                <li><strong>Left 1:</strong> ⏭️ Skip → Skip current exercise</li>
+                <li><strong>Left 2:</strong> ➕ Bonus → Add bonus exercise (coming soon)</li>
+                <li><strong>Center FAB:</strong> ✓ Complete → Mark current set complete</li>
+                <li><strong>Right 1:</strong> 📝 Note → Add workout note (with exercise tagging)</li>
+                <li><strong>Right 2:</strong> 🔚 End → End workout (with summary)</li>
+            </ul>
+            
+            <div class="demo-bar" id="demo-bar-workout-mode-started">
+                <div class="action-bar-container">
+                    <div class="action-group action-group-left">
+                        <button class="action-btn" title="Skip">
+                            <i class="bx bx-skip-next"></i>
+                            <span class="action-btn-label">Skip</span>
+                        </button>
+                        <button class="action-btn" title="Bonus">
+                            <i class="bx bx-plus-circle"></i>
+                            <span class="action-btn-label">Bonus</span>
+                        </button>
+                    </div>
+                    
+                    <button class="action-fab success" title="Complete">
+                        <i class="bx bx-check"></i>
+                    </button>
+                    
+                    <div class="action-group action-group-right">
+                        <button class="action-btn" title="Note">
+                            <i class="bx bx-note"></i>
+                            <span class="action-btn-label">Note</span>
+                        </button>
+                        <button class="action-btn" title="End">
+                            <i class="bx bx-stop-circle"></i>
+                            <span class="action-btn-label">End</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Live Preview at Bottom -->
+        <div class="demo-section" style="background: #696cff; color: white;">
+            <h3 style="margin-bottom: 10px;">👇 Live Preview Below</h3>
+            <p style="margin: 0; opacity: 0.9; font-size: 0.875rem;">Scroll down to see the fixed bottom action bar in action</p>
+        </div>
+        
+        <!-- Spacer for scrolling -->
+        <div style="height: 300px;"></div>
+    </div>
+    
+    <!-- Fixed Bottom Action Bar (Live Preview) -->
+    <div class="bottom-action-bar" id="livePreview">
+        <div class="action-bar-container">
+            <div class="action-group action-group-left">
+                <button class="action-btn" title="Filter" id="live-left-1">
+                    <i class="bx bx-filter-alt"></i>
+                    <span class="action-btn-label" id="live-left-1-label">Filter</span>
+                </button>
+                <button class="action-btn" title="Search" id="live-left-2">
+                    <i class="bx bx-search"></i>
+                    <span class="action-btn-label" id="live-left-2-label">Search</span>
+                </button>
+            </div>
+            
+            <button class="action-fab" title="Create" id="live-fab">
+                <i class="bx bx-plus"></i>
+            </button>
+            
+            <div class="action-group action-group-right">
+                <button class="action-btn" title="Sort" id="live-right-1">
+                    <i class="bx bx-sort"></i>
+                    <span class="action-btn-label" id="live-right-1-label">Sort</span>
+                </button>
+                <button class="action-btn" title="Info" id="live-right-2">
+                    <i class="bx bx-info-circle"></i>
+                    <span class="action-btn-label" id="live-right-2-label">Info</span>
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Configuration data
+        const configs = {
+            'workout-db': {
+                left1: { icon: 'bx-filter-alt', title: 'Filter', label: 'Filter' },
+                left2: { icon: 'bx-search', title: 'Search', label: 'Search' },
+                fab: { icon: 'bx-plus', title: 'Create', variant: '' },
+                right1: { icon: 'bx-sort', title: 'Sort', label: 'Sort' },
+                right2: { icon: 'bx-info-circle', title: 'Info', label: 'Info' }
+            },
+            'workout-builder': {
+                left1: { icon: 'bx-x', title: 'Cancel', label: 'Cancel' },
+                left2: { icon: 'bx-play', title: 'Go', label: 'Go' },
+                fab: { icon: 'bx-plus', title: 'Add', variant: '' },
+                right1: { icon: 'bx-save', title: 'Save', label: 'Save' },
+                right2: { icon: 'bx-dots-vertical-rounded', title: 'More', label: 'More' }
+            },
+            'exercise-db': {
+                left1: { icon: 'bx-dumbbell', title: 'Workouts', label: 'Workouts' },
+                left2: { icon: 'bx-star', title: 'Favorites', label: 'Favorites' },
+                fab: { icon: 'bx-search', title: 'Search', variant: '' },
+                right1: { icon: 'bx-sort', title: 'Sort', label: 'Sort' },
+                right2: { icon: 'bx-plus', title: 'Custom', label: 'Custom' }
+            },
+            'workout-mode': {
+                left1: { icon: 'bx-skip-next', title: 'Skip', label: 'Skip' },
+                left2: { icon: 'bx-plus-circle', title: 'Bonus', label: 'Bonus' },
+                fab: { icon: 'bx-play', title: 'Start', variant: 'success' },
+                right1: { icon: 'bx-note', title: 'Note', label: 'Note' },
+                right2: { icon: 'bx-stop-circle', title: 'End', label: 'End' }
+            },
+            'workout-mode-started': {
+                left1: { icon: 'bx-skip-next', title: 'Skip', label: 'Skip' },
+                left2: { icon: 'bx-plus-circle', title: 'Bonus', label: 'Bonus' },
+                fab: { icon: 'bx-check', title: 'Complete', variant: 'success' },
+                right1: { icon: 'bx-note', title: 'Note', label: 'Note' },
+                right2: { icon: 'bx-stop-circle', title: 'End', label: 'End' }
+            }
+        };
+        
+        // Toggle labels function
+        function toggleLabels() {
+            const isChecked = document.getElementById('labelToggle').checked;
+            const livePreview = document.getElementById('livePreview');
+            const demoBars = document.querySelectorAll('.demo-bar');
+            
+            if (isChecked) {
+                livePreview.classList.add('show-labels');
+                demoBars.forEach(bar => bar.classList.add('show-labels'));
+            } else {
+                livePreview.classList.remove('show-labels');
+                demoBars.forEach(bar => bar.classList.remove('show-labels'));
+            }
+        }
+        
+        function showConfig(configName) {
+            // Hide all configs
+            document.querySelectorAll('.demo-section').forEach(section => {
+                section.style.display = 'none';
+            });
+            
+            // Show selected config
+            document.getElementById('config-' + configName).style.display = 'block';
+            
+            // Update toggle buttons
+            document.querySelectorAll('.toggle-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Update live preview
+            updateLivePreview(configName);
+        }
+        
+        function updateLivePreview(configName) {
+            const config = configs[configName];
+            
+            // Update left buttons
+            updateButton('live-left-1', config.left1);
+            updateButton('live-left-2', config.left2);
+            
+            // Update FAB
+            const fab = document.getElementById('live-fab');
+            fab.querySelector('i').className = 'bx ' + config.fab.icon;
+            fab.title = config.fab.title;
+            fab.className = 'action-fab' + (config.fab.variant ? ' ' + config.fab.variant : '');
+            
+            // Update right buttons
+            updateButton('live-right-1', config.right1);
+            updateButton('live-right-2', config.right2);
+        }
+        
+        function updateButton(id, config) {
+            const btn = document.getElementById(id);
+            btn.querySelector('i').className = 'bx ' + config.icon;
+            btn.title = config.title;
+            
+            // Update label if it exists
+            const label = document.getElementById(id + '-label');
+            if (label && config.label) {
+                label.textContent = config.label;
+            }
+        }
+        
+        // Add click feedback
+        document.querySelectorAll('.action-btn, .action-fab').forEach(btn => {
+            btn.addEventListener('click', function() {
+                alert('Action: ' + this.title);
+            });
+        });
+    </script>
+</body>
+</html>

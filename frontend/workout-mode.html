@@ -48,6 +48,9 @@
     
     <!-- Workout Database CSS (for workout list component) -->
     <link rel="stylesheet" href="/static/assets/css/workout-database.css" />
+    
+    <!-- Bottom Action Bar CSS -->
+    <link rel="stylesheet" href="/static/assets/css/bottom-action-bar.css" />
 
     <!-- Helpers -->
     <script src="/static/assets/vendor/js/helpers.js"></script>
@@ -137,51 +140,6 @@
     </div>
     <!-- / Layout wrapper -->
 
-    <!-- Sticky Bottom Bar (uses shared sticky-footer-base component) -->
-    <div class="workout-mode-footer sticky-footer-base" id="workoutModeFooter" style="display: none;">
-      <div class="d-flex flex-column gap-2">
-        <!-- Start Workout Button (shown when not started) -->
-        <button
-          class="btn btn-lg btn-primary w-100"
-          id="startWorkoutBtn"
-          data-bs-toggle="tooltip"
-          data-bs-placement="top"
-          title="Start tracking your workout with weight logging"
-          style="display: none;">
-          <i class="bx bx-play-circle me-2"></i>Start Workout
-        </button>
-        
-        <!-- Complete Workout Button (shown when started) -->
-        <button class="btn btn-success btn-lg w-100" id="completeWorkoutBtn" style="display: none;">
-          <i class="bx bx-check-circle me-2"></i>Complete Workout
-        </button>
-        
-        <!-- Bottom Controls Row -->
-        <div class="d-flex align-items-center">
-          <!-- Left side: Session info (only shown when workout is active) -->
-          <div id="sessionInfo" class="text-muted small me-auto" style="display: none;">
-            Time: <span id="footerSessionTimer">00:00</span>
-          </div>
-          
-          <!-- Right side: Controls (4 buttons - always visible, always right-aligned) -->
-          <div class="d-flex gap-2 ms-auto">
-            <button class="btn btn-sm btn-outline-secondary" id="editWorkoutBtn" title="Edit this workout">
-              <i class="bx bx-edit-alt"></i>
-            </button>
-            <button class="btn btn-sm btn-outline-secondary" id="changeWorkoutBtn" title="Change workout">
-              <i class="bx bx-refresh"></i>
-            </button>
-            <button class="btn btn-sm btn-outline-primary" id="shareWorkoutBtn" title="Share workout">
-              <i class="bx bx-share-alt"></i>
-            </button>
-            <button class="btn btn-sm btn-outline-secondary" id="soundToggleBtn" title="Toggle sound">
-              <i class="bx bx-volume-full" id="soundIcon"></i>
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <!-- Core JS -->
     <script src="/static/assets/vendor/libs/jquery/jquery.js"></script>
     <script src="/static/assets/vendor/libs/popper/popper.js"></script>
@@ -200,6 +158,10 @@
 
     <!-- Main JS -->
     <script src="/static/assets/js/main.js"></script>
+    
+    <!-- Bottom Action Bar (load after main.js) -->
+    <script src="/static/assets/js/config/bottom-action-bar-config.js"></script>
+    <script src="/static/assets/js/services/bottom-action-bar-service.js"></script>
 
     <!-- Firebase Services -->
     <script src="/static/assets/js/firebase/firebase-init.js?v=20251020-03"></script>

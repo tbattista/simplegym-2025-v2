@@ -48,6 +48,9 @@
     
     <!-- Exercise Database CSS -->
     <link rel="stylesheet" href="/static/assets/css/exercise-database.css" />
+    
+    <!-- Bottom Action Bar CSS -->
+    <link rel="stylesheet" href="/static/assets/css/bottom-action-bar.css" />
 
     <!-- Helpers -->
     <script src="/static/assets/vendor/js/helpers.js"></script>
@@ -111,39 +114,6 @@
       <div class="layout-overlay layout-menu-toggle"></div>
     </div>
     <!-- / Layout wrapper -->
-
-    <!-- Exercise Database Footer (Sticky Search) -->
-    <div class="exercise-database-footer" id="exerciseDatabaseFooter">
-      <div class="d-flex flex-column gap-2">
-        <div class="d-flex gap-2">
-          <input
-            type="text"
-            class="form-control flex-grow-1"
-            id="exerciseSearch"
-            placeholder="Search exercises by name, muscle group, or equipment..."
-            autocomplete="off"
-            style="min-width: 0;">
-          <button class="btn btn-primary btn-sm" type="button" id="searchBtn" title="Search">
-            <i class="bx bx-search"></i>
-          </button>
-          <button
-            class="btn btn-primary"
-            type="button"
-            data-bs-toggle="offcanvas"
-            data-bs-target="#filtersOffcanvas"
-            aria-controls="filtersOffcanvas"
-            title="Filters"
-            style="flex-shrink: 0;">
-            <i class="bx bx-filter-alt"></i>
-          </button>
-        </div>
-        
-        <!-- Filter Feedback -->
-        <div class="filter-feedback text-muted small" id="filterFeedback" style="display: none;">
-          <span id="filterFeedbackText"></span>
-        </div>
-      </div>
-    </div>
 
     <!-- Filters Offcanvas (FilterBar component will populate this) -->
     <div class="offcanvas offcanvas-bottom" tabindex="-1" id="filtersOffcanvas" aria-labelledby="filtersOffcanvasLabel" style="height: 70vh;">
@@ -273,6 +243,10 @@
 
     <!-- Main JS -->
     <script src="/static/assets/js/main.js"></script>
+    
+    <!-- Bottom Action Bar (load after main.js) -->
+    <script src="/static/assets/js/config/bottom-action-bar-config.js"></script>
+    <script src="/static/assets/js/services/bottom-action-bar-service.js"></script>
 
     <!-- Firebase Services -->
     <script src="/static/assets/js/firebase/firebase-init.js?v=20251020-03"></script>
