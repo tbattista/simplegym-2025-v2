@@ -115,11 +115,16 @@
         const pageConfig = getCurrentPageConfig();
         console.log('📄 Page config:', pageConfig);
 
-        // Generate navbar HTML with search options
-        const navbarHTML = window.getNavbarHTML(pageConfig.title, pageConfig.icon, {
+        // Merge with window.navbarConfig if available (for page-specific overrides)
+        const options = {
             showSearch: pageConfig.showSearch || false,
-            searchPlaceholder: pageConfig.searchPlaceholder || 'Search...'
-        });
+            searchPlaceholder: pageConfig.searchPlaceholder || 'Search...',
+            showBonusButton: false,
+            ...(window.navbarConfig || {})
+        };
+
+        // Generate navbar HTML with all options
+        const navbarHTML = window.getNavbarHTML(pageConfig.title, pageConfig.icon, options);
 
         // Create a temporary container to parse the HTML
         const tempDiv = document.createElement('div');

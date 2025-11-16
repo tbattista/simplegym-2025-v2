@@ -16,6 +16,7 @@
 function getNavbarHTML(pageTitle = 'Ghost Gym', pageIcon = 'bx-home', options = {}) {
     const showSearch = options.showSearch || false;
     const searchPlaceholder = options.searchPlaceholder || 'Search...';
+    const showBonusButton = options.showBonusButton || false;
     return `
         <nav class="layout-navbar navbar navbar-expand-xl align-items-center bg-navbar-theme"
              id="layout-navbar">
@@ -86,6 +87,18 @@ function getNavbarHTML(pageTitle = 'Ghost Gym', pageIcon = 'bx-home', options = 
                 
                 <!-- Right Section: Utility Icons -->
                 <ul class="navbar-nav flex-row align-items-center ms-auto">
+                
+                <!-- Bonus Exercise Button (Workout Mode Only) -->
+                ${showBonusButton ? `
+                <li class="nav-item me-2 me-xl-3" id="navbarBonusButtonContainer" style="display: none;">
+                    <button class="btn btn-sm btn-outline-primary"
+                            id="navbarBonusButton"
+                            title="Add bonus exercises">
+                        <i class="bx bx-plus-circle me-1"></i>
+                        <span class="d-none d-sm-inline">Bonus</span>
+                    </button>
+                </li>
+                ` : ''}
                 
                 <!-- Dark Mode Toggle -->
                 <li class="nav-item me-2 me-xl-3">

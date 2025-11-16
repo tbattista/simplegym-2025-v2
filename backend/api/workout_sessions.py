@@ -387,5 +387,75 @@ async def get_exercise_history(
         raise HTTPException(status_code=500, detail=f"Error retrieving history: {str(e)}")
 
 
+@router.get("/history/workout/{workout_id}/bonus")
+async def get_workout_bonus_history(
+    workout_id: str,
+    current_user: Optional[dict] = Depends(get_current_user_optional)
+):
+    """
+    Get bonus exercises from the most recent completed session for this workout.
+    Used to pre-populate bonus exercises when starting a new workout session.
+    
+    **Premium Feature**: Requires authentication
+    
+    Returns:
+        Dictionary with last_session_date and list of bonus exercises
+    """
+    try:
+        user_id = extract_user_id(current_user)
+        
+        if not user_id:
+            raise HTTPException(
+                status_code=401,
+                detail="Authentication required"
+            )
+        
+        # Get most recent completed session for this workout
+        sessions = await firestore_data_service.get_user_sessions(
+            user_id,
+            workout_id=workout_id,
+            status="completed",
+            limit=1
+        )
+        
+        if not sessions or len(sessions) == 0:
+            return {
+                "last_session_date": None,
+                "bonus_exercises": []
+            }
+        
+        last_session = sessions[0]
+        
+        # Filter for bonus exercises only
+        bonus_exercises = [
+            {
+                "exercise_name": ex.exercise_name,
+                "target_sets": ex.target_sets,
+                "target_reps": ex.target_reps,
+                "weight": ex.weight,
+                "weight_unit": ex.weight_unit,
+                "order_index": ex.order_index
+            }
+            for ex in last_session.exercises_performed
+            if ex.is_bonus
+        ]
+        
+        logger.info(f"✅ Retrieved {len(bonus_exercises)} bonus exercises from last session")
+        
+        return {
+            "last_session_date": last_session.completed_at.isoformat() if last_session.completed_at else None,
+            "bonus_exercises": bonus_exercises
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error retrieving bonus exercise history: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error retrieving bonus history: {str(e)}"
+        )
+
+
 # Export router
 __all__ = ['router']

@@ -289,14 +289,17 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
             });
         }
         
-        // Render bonus exercises
-        if (this.currentWorkout.bonus_exercises && this.currentWorkout.bonus_exercises.length > 0) {
-            this.currentWorkout.bonus_exercises.forEach((bonus) => {
+        // Render bonus exercises from SESSION (not template)
+        const bonusExercises = this.sessionService.getBonusExercises();
+        if (bonusExercises && bonusExercises.length > 0) {
+            bonusExercises.forEach((bonus) => {
                 const bonusGroup = {
                     exercises: { a: bonus.name },
                     sets: bonus.sets,
                     reps: bonus.reps,
-                    rest: bonus.rest,
+                    rest: bonus.rest || '60s',
+                    default_weight: bonus.weight,
+                    default_weight_unit: bonus.weight_unit || 'lbs',
                     notes: bonus.notes
                 };
                 html += this.renderExerciseCard(bonusGroup, exerciseIndex, true);
@@ -807,6 +810,12 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
         const changeBtn = document.getElementById('changeWorkoutBtn');
         if (changeBtn) {
             changeBtn.addEventListener('click', () => this.handleChangeWorkout());
+        }
+        
+        // Bonus exercise button
+        const bonusBtn = document.getElementById('navbarBonusButton');
+        if (bonusBtn) {
+            bonusBtn.addEventListener('click', () => this.handleBonusExercises());
         }
     }
     
@@ -1410,6 +1419,412 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
     }
     
     /**
+     * BONUS EXERCISE METHODS
+     * Handle bonus exercise modal and management
+     */
+    
+    /**
+     * Show/hide bonus exercise button based on session state
+     */
+    updateBonusButtonVisibility(isActive) {
+        const bonusButtonContainer = document.getElementById('navbarBonusButtonContainer');
+        if (bonusButtonContainer) {
+            bonusButtonContainer.style.display = isActive ? 'block' : 'none';
+        }
+    }
+    
+    /**
+     * Handle bonus exercises button click
+     */
+    async handleBonusExercises() {
+        if (!this.sessionService.isSessionActive()) {
+            const modalManager = this.getModalManager();
+            modalManager.alert('Session Required', 'Please start your workout session before adding bonus exercises.', 'warning');
+            return;
+        }
+        
+        await this.showBonusExerciseModal();
+    }
+    
+    /**
+     * Show bonus exercise modal
+     */
+    async showBonusExerciseModal() {
+        try {
+            // Get current bonus exercises from session
+            const currentBonusExercises = this.sessionService.getBonusExercises();
+            
+            // Fetch previous session's bonus exercises
+            const previousBonusExercises = await this.sessionService.getLastSessionBonusExercises(this.currentWorkout.id);
+            
+            // Create modal HTML
+            const modalHtml = this.createBonusExerciseModalHTML(currentBonusExercises, previousBonusExercises);
+            
+            // Remove existing modal if any
+            const existingModal = document.getElementById('bonusExerciseOffcanvas');
+            if (existingModal) {
+                existingModal.remove();
+            }
+            
+            // Add modal to body
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+            
+            // Initialize Bootstrap offcanvas
+            const offcanvasElement = document.getElementById('bonusExerciseOffcanvas');
+            const offcanvas = new window.bootstrap.Offcanvas(offcanvasElement);
+            
+            // Setup event listeners
+            this.setupBonusExerciseModalListeners(offcanvas);
+            
+            // Show offcanvas
+            offcanvas.show();
+            
+        } catch (error) {
+            console.error('❌ Error showing bonus exercise modal:', error);
+            const modalManager = this.getModalManager();
+            modalManager.alert('Error', 'Failed to load bonus exercise modal. Please try again.', 'danger');
+        }
+    }
+    
+    /**
+     * Create bonus exercise modal HTML
+     */
+    createBonusExerciseModalHTML(currentBonusExercises, previousBonusExercises) {
+        const hasPrevious = previousBonusExercises && previousBonusExercises.length > 0;
+        const hasCurrent = currentBonusExercises && currentBonusExercises.length > 0;
+        
+        return `
+            <div class="offcanvas offcanvas-bottom" tabindex="-1" id="bonusExerciseOffcanvas"
+                 aria-labelledby="bonusExerciseOffcanvasLabel" style="height: 80vh;">
+                <div class="offcanvas-header border-bottom">
+                    <h5 class="offcanvas-title" id="bonusExerciseOffcanvasLabel">
+                        <i class="bx bx-plus-circle me-2"></i>Bonus Exercises
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                </div>
+                <div class="offcanvas-body">
+                    <!-- Info Alert -->
+                    <div class="alert alert-info d-flex align-items-start mb-4">
+                        <i class="bx bx-info-circle me-2 mt-1"></i>
+                        <div>
+                            <strong>Add supplementary exercises</strong>
+                            <p class="mb-0 small">Bonus exercises are saved in your workout history but don't modify your workout template.</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Previous Session Section -->
+                    ${hasPrevious ? `
+                        <div class="mb-4">
+                            <h6 class="mb-3">
+                                <i class="bx bx-history me-2"></i>From Last Session
+                                <button class="btn btn-sm btn-outline-primary ms-2" id="addAllPreviousBtn">
+                                    <i class="bx bx-plus me-1"></i>Add All
+                                </button>
+                            </h6>
+                            <div class="list-group" id="previousBonusList">
+                                ${previousBonusExercises.map((exercise, index) => `
+                                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <strong>${this.escapeHtml(exercise.exercise_name)}</strong>
+                                            <div class="text-muted small">
+                                                ${exercise.target_sets} × ${exercise.target_reps}
+                                                ${exercise.weight ? ` • ${exercise.weight} ${exercise.weight_unit}` : ''}
+                                            </div>
+                                        </div>
+                                        <button class="btn btn-sm btn-outline-primary"
+                                                data-action="add-previous"
+                                                data-index="${index}">
+                                            <i class="bx bx-plus"></i>
+                                        </button>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    ` : ''}
+                    
+                    <!-- Current Bonus Exercises -->
+                    <div class="mb-4">
+                        <h6 class="mb-3">
+                            <i class="bx bx-list-ul me-2"></i>Current Session
+                            ${hasCurrent ? `<span class="badge bg-primary">${currentBonusExercises.length}</span>` : ''}
+                        </h6>
+                        <div class="list-group" id="currentBonusList">
+                            ${hasCurrent ? currentBonusExercises.map((exercise, index) => `
+                                <div class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>${this.escapeHtml(exercise.name)}</strong>
+                                        <div class="text-muted small">
+                                            ${exercise.sets} × ${exercise.reps}
+                                            ${exercise.weight ? ` • ${exercise.weight} ${exercise.weight_unit}` : ''}
+                                        </div>
+                                    </div>
+                                    <button class="btn btn-sm btn-outline-danger"
+                                            data-action="remove"
+                                            data-index="${index}">
+                                        <i class="bx bx-trash"></i>
+                                    </button>
+                                </div>
+                            `).join('') : '<p class="text-muted text-center py-3">No bonus exercises added yet</p>'}
+                        </div>
+                    </div>
+                    
+                    <!-- Add New Exercise Form -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="mb-0"><i class="bx bx-plus-circle me-2"></i>Add New Exercise</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label class="form-label">Exercise Name</label>
+                                <input type="text" class="form-control" id="bonusExerciseName"
+                                       placeholder="e.g., Face Pulls, Leg Press">
+                            </div>
+                            <div class="row">
+                                <div class="col-6 mb-3">
+                                    <label class="form-label">Sets</label>
+                                    <input type="text" class="form-control" id="bonusSets"
+                                           value="3" placeholder="3">
+                                </div>
+                                <div class="col-6 mb-3">
+                                    <label class="form-label">Reps</label>
+                                    <input type="text" class="form-control" id="bonusReps"
+                                           value="12" placeholder="12">
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-8 mb-3">
+                                    <label class="form-label">Weight (Optional)</label>
+                                    <input type="text" class="form-control" id="bonusWeight"
+                                           placeholder="e.g., 135, 4x45">
+                                </div>
+                                <div class="col-4 mb-3">
+                                    <label class="form-label">Unit</label>
+                                    <select class="form-select" id="bonusWeightUnit">
+                                        <option value="lbs">lbs</option>
+                                        <option value="kg">kg</option>
+                                        <option value="other">other</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <button class="btn btn-primary w-100" id="addBonusExerciseBtn">
+                                <i class="bx bx-plus me-1"></i>Add Exercise
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Action Buttons -->
+                    <div class="d-flex gap-2 mt-4">
+                        <button type="button" class="btn btn-outline-secondary flex-fill" data-bs-dismiss="offcanvas">
+                            Close
+                        </button>
+                        <button type="button" class="btn btn-success flex-fill" id="saveBonusExercisesBtn">
+                            <i class="bx bx-check me-1"></i>Save & Continue
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+    
+    /**
+     * Setup bonus exercise modal event listeners
+     */
+    setupBonusExerciseModalListeners(offcanvas) {
+        // Add new exercise button
+        const addBtn = document.getElementById('addBonusExerciseBtn');
+        if (addBtn) {
+            addBtn.addEventListener('click', () => this.handleAddBonusExercise());
+        }
+        
+        // Add all previous exercises button
+        const addAllBtn = document.getElementById('addAllPreviousBtn');
+        if (addAllBtn) {
+            addAllBtn.addEventListener('click', () => this.handleAddAllPreviousExercises());
+        }
+        
+        // Save and continue button
+        const saveBtn = document.getElementById('saveBonusExercisesBtn');
+        if (saveBtn) {
+            saveBtn.addEventListener('click', async () => {
+                await this.handleSaveBonusExercises(offcanvas);
+            });
+        }
+        
+        // Delegate event listeners for dynamic buttons
+        const currentBonusList = document.getElementById('currentBonusList');
+        if (currentBonusList) {
+            currentBonusList.addEventListener('click', (e) => {
+                const removeBtn = e.target.closest('[data-action="remove"]');
+                if (removeBtn) {
+                    const index = parseInt(removeBtn.getAttribute('data-index'));
+                    this.handleRemoveBonusExercise(index);
+                }
+            });
+        }
+        
+        const previousBonusList = document.getElementById('previousBonusList');
+        if (previousBonusList) {
+            previousBonusList.addEventListener('click', (e) => {
+                const addBtn = e.target.closest('[data-action="add-previous"]');
+                if (addBtn) {
+                    const index = parseInt(addBtn.getAttribute('data-index'));
+                    this.handleAddPreviousExercise(index);
+                }
+            });
+        }
+        
+        // Cleanup on hide
+        const offcanvasElement = document.getElementById('bonusExerciseOffcanvas');
+        offcanvasElement.addEventListener('hidden.bs.offcanvas', () => {
+            offcanvasElement.remove();
+        });
+    }
+    
+    /**
+     * Handle add bonus exercise
+     */
+    handleAddBonusExercise() {
+        const nameInput = document.getElementById('bonusExerciseName');
+        const setsInput = document.getElementById('bonusSets');
+        const repsInput = document.getElementById('bonusReps');
+        const weightInput = document.getElementById('bonusWeight');
+        const unitSelect = document.getElementById('bonusWeightUnit');
+        
+        const name = nameInput.value.trim();
+        const sets = setsInput.value.trim();
+        const reps = repsInput.value.trim();
+        const weight = weightInput.value.trim();
+        const unit = unitSelect.value;
+        
+        if (!name) {
+            const modalManager = this.getModalManager();
+            modalManager.alert('Validation Error', 'Please enter an exercise name.', 'warning');
+            return;
+        }
+        
+        // Add to session
+        this.sessionService.addBonusExercise({
+            name,
+            sets: sets || '3',
+            reps: reps || '12',
+            weight: weight || '',
+            weight_unit: unit,
+            rest: '60s'
+        });
+        
+        // Clear form
+        nameInput.value = '';
+        setsInput.value = '3';
+        repsInput.value = '12';
+        weightInput.value = '';
+        unitSelect.value = 'lbs';
+        
+        // Refresh modal
+        this.refreshBonusExerciseModal();
+    }
+    
+    /**
+     * Handle remove bonus exercise
+     */
+    handleRemoveBonusExercise(index) {
+        this.sessionService.removeBonusExercise(index);
+        this.refreshBonusExerciseModal();
+    }
+    
+    /**
+     * Handle add previous exercise
+     */
+    async handleAddPreviousExercise(index) {
+        try {
+            const previousExercises = await this.sessionService.getLastSessionBonusExercises(this.currentWorkout.id);
+            const exercise = previousExercises[index];
+            
+            if (exercise) {
+                this.sessionService.addBonusExercise({
+                    name: exercise.exercise_name,
+                    sets: exercise.target_sets || '3',
+                    reps: exercise.target_reps || '12',
+                    weight: exercise.weight || '',
+                    weight_unit: exercise.weight_unit || 'lbs',
+                    rest: '60s'
+                });
+                
+                this.refreshBonusExerciseModal();
+            }
+        } catch (error) {
+            console.error('❌ Error adding previous exercise:', error);
+        }
+    }
+    
+    /**
+     * Handle add all previous exercises
+     */
+    async handleAddAllPreviousExercises() {
+        try {
+            const previousExercises = await this.sessionService.getLastSessionBonusExercises(this.currentWorkout.id);
+            
+            previousExercises.forEach(exercise => {
+                this.sessionService.addBonusExercise({
+                    name: exercise.exercise_name,
+                    sets: exercise.target_sets || '3',
+                    reps: exercise.target_reps || '12',
+                    weight: exercise.weight || '',
+                    weight_unit: exercise.weight_unit || 'lbs',
+                    rest: '60s'
+                });
+            });
+            
+            this.refreshBonusExerciseModal();
+        } catch (error) {
+            console.error('❌ Error adding all previous exercises:', error);
+        }
+    }
+    
+    /**
+     * Handle save bonus exercises
+     */
+    async handleSaveBonusExercises(offcanvas) {
+        try {
+            // Auto-save session with bonus exercises
+            await this.autoSave(null);
+            
+            // Re-render workout to show bonus exercises
+            this.renderWorkout();
+            
+            // Close modal
+            offcanvas.hide();
+            
+            // Show success message
+            if (window.showAlert) {
+                window.showAlert('Bonus exercises saved! 💪', 'success');
+            }
+        } catch (error) {
+            console.error('❌ Error saving bonus exercises:', error);
+            const modalManager = this.getModalManager();
+            modalManager.alert('Error', 'Failed to save bonus exercises. Please try again.', 'danger');
+        }
+    }
+    
+    /**
+     * Refresh bonus exercise modal
+     */
+    async refreshBonusExerciseModal() {
+        // Close current modal
+        const offcanvasElement = document.getElementById('bonusExerciseOffcanvas');
+        if (offcanvasElement) {
+            const offcanvas = window.bootstrap.Offcanvas.getInstance(offcanvasElement);
+            if (offcanvas) {
+                offcanvas.hide();
+            }
+        }
+        
+        // Reopen with updated data
+        setTimeout(() => {
+            this.showBonusExerciseModal();
+        }, 300);
+    }
+    
+    /**
      * Update session UI
      */
     updateSessionUI(isActive) {
@@ -1457,6 +1872,9 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
             
             // Start session timer
             this.startSessionTimer();
+            
+            // Show bonus button
+            this.updateBonusButtonVisibility(true);
         } else {
             if (startBtn) startBtn.style.display = 'block';
             if (completeBtn) completeBtn.style.display = 'none';
@@ -1492,6 +1910,9 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
             
             // Stop session timer
             this.stopSessionTimer();
+            
+            // Hide bonus button
+            this.updateBonusButtonVisibility(false);
         }
     }
     

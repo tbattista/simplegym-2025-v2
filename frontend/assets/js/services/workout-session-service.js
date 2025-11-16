@@ -370,6 +370,159 @@ class WorkoutSessionService {
     }
     
     /**
+     * BONUS EXERCISE METHODS
+     * Methods for managing bonus exercises in the current session
+     */
+    
+    /**
+     * Add bonus exercise to current session
+     * @param {string} exerciseName - Name of the bonus exercise
+     * @param {string} sets - Target sets (e.g., "2")
+     * @param {string} reps - Target reps (e.g., "15")
+     * @param {string} rest - Rest period (e.g., "30s")
+     * @param {string} weight - Optional weight value
+     * @param {string} unit - Weight unit (lbs/kg/other)
+     * @param {string} notes - Optional notes
+     */
+    addBonusExercise(exerciseName, sets, reps, rest, weight = '', unit = 'lbs', notes = '') {
+        if (!this.currentSession) {
+            console.warn('No active session to add bonus exercise');
+            return;
+        }
+        
+        // Initialize exercises object if needed
+        if (!this.currentSession.exercises) {
+            this.currentSession.exercises = {};
+        }
+        
+        // Create bonus exercise data
+        const bonusExercise = {
+            weight: weight || '',
+            weight_unit: unit,
+            previous_weight: null,
+            weight_change: 0,
+            target_sets: sets,
+            target_reps: reps,
+            rest: rest,
+            notes: notes,
+            is_bonus: true
+        };
+        
+        // Add to session
+        this.currentSession.exercises[exerciseName] = bonusExercise;
+        
+        console.log('✅ Bonus exercise added:', exerciseName);
+        this.notifyListeners('bonusExerciseAdded', { exerciseName, ...bonusExercise });
+        
+        // Persist session
+        this.persistSession();
+    }
+    
+    /**
+     * Remove bonus exercise from current session
+     * @param {string} exerciseName - Name of the exercise to remove
+     */
+    removeBonusExercise(exerciseName) {
+        if (!this.currentSession || !this.currentSession.exercises) {
+            return;
+        }
+        
+        if (this.currentSession.exercises[exerciseName]?.is_bonus) {
+            delete this.currentSession.exercises[exerciseName];
+            console.log('🗑️ Bonus exercise removed:', exerciseName);
+            this.notifyListeners('bonusExerciseRemoved', { exerciseName });
+            this.persistSession();
+        }
+    }
+    
+    /**
+     * Get all bonus exercises from current session
+     * @returns {Array} Array of bonus exercise objects
+     */
+    getBonusExercises() {
+        if (!this.currentSession || !this.currentSession.exercises) {
+            return [];
+        }
+        
+        return Object.entries(this.currentSession.exercises)
+            .filter(([name, data]) => data.is_bonus)
+            .map(([name, data]) => ({
+                exercise_name: name,
+                ...data
+            }));
+    }
+    
+    /**
+     * Fetch bonus exercises from last session for this workout
+     * @param {string} workoutId - Workout template ID
+     * @returns {Promise<Array>} Array of bonus exercises from last session
+     */
+    async getLastSessionBonusExercises(workoutId) {
+        try {
+            console.log('📊 Fetching last session bonus exercises for workout:', workoutId);
+            
+            // Get auth token
+            const token = await window.authService.getIdToken();
+            if (!token) {
+                console.warn('No auth token, skipping bonus history fetch');
+                return [];
+            }
+            
+            // Use centralized API config
+            const url = window.config.api.getUrl(
+                `/api/v3/workout-sessions/history/workout/${workoutId}/bonus`
+            );
+            
+            const response = await fetch(url, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            
+            if (!response.ok) {
+                throw new Error(`Failed to fetch bonus history: ${response.statusText}`);
+            }
+            
+            const data = await response.json();
+            
+            console.log('✅ Bonus exercise history loaded:', data.bonus_exercises?.length || 0, 'exercises');
+            
+            return data.bonus_exercises || [];
+            
+        } catch (error) {
+            console.error('❌ Error fetching bonus exercise history:', error);
+            // Non-fatal error - continue without history
+            return [];
+        }
+    }
+    
+    /**
+     * Pre-populate session with bonus exercises from last session
+     * @param {Array} bonusExercises - Array of bonus exercises to add
+     */
+    prePopulateBonusExercises(bonusExercises) {
+        if (!this.currentSession || !bonusExercises || bonusExercises.length === 0) {
+            return;
+        }
+        
+        console.log('🔄 Pre-populating bonus exercises from last session...');
+        
+        bonusExercises.forEach(bonus => {
+            this.addBonusExercise(
+                bonus.exercise_name,
+                bonus.target_sets,
+                bonus.target_reps,
+                '30s', // Default rest
+                bonus.weight || '',
+                bonus.weight_unit || 'lbs',
+                ''
+            );
+        });
+        
+        console.log('✅ Pre-populated', bonusExercises.length, 'bonus exercises');
+    }
+    
+    /**
      * SESSION PERSISTENCE METHODS
      * These methods handle saving/restoring sessions to/from localStorage
      * for seamless recovery after page refresh or browser close
