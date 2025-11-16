@@ -334,6 +334,13 @@ function collectExerciseGroups() {
             const groupId = cardEl.getAttribute('data-group-id');
             const groupData = window.exerciseGroupsData[groupId];
             
+            // Defensive check: warn if data is missing
+            if (!groupData) {
+                console.warn('⚠️ Missing exercise group data for groupId:', groupId);
+                console.warn('⚠️ Available groupIds:', Object.keys(window.exerciseGroupsData));
+                return;
+            }
+            
             if (groupData && groupData.exercises.a) {
                 // Clean up exercises object - remove empty values
                 const exercises = {};

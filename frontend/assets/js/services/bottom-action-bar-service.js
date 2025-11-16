@@ -155,28 +155,38 @@
          * @param {string} actionKey - The action key (e.g., 'left-0', 'fab', 'right-1')
          */
         handleButtonClick(actionKey) {
-            console.log('🖱️ Button clicked:', actionKey);
+            console.log('🖱️ Bottom Action Bar button clicked:', actionKey);
 
             let action = null;
+            let actionConfig = null;
 
             if (actionKey === 'fab') {
                 action = this.config.fab?.action;
+                actionConfig = this.config.fab;
             } else if (actionKey.startsWith('left-')) {
                 const index = parseInt(actionKey.split('-')[1]);
                 action = this.config.leftActions[index]?.action;
+                actionConfig = this.config.leftActions[index];
             } else if (actionKey.startsWith('right-')) {
                 const index = parseInt(actionKey.split('-')[1]);
                 action = this.config.rightActions[index]?.action;
+                actionConfig = this.config.rightActions[index];
             }
+
+            console.log('📋 Action config:', actionConfig);
 
             if (action && typeof action === 'function') {
                 try {
+                    console.log('▶️ Executing action for:', actionKey);
                     action();
+                    console.log('✅ Action executed successfully');
                 } catch (error) {
                     console.error('❌ Error executing action:', error);
+                    console.error('Stack trace:', error.stack);
                 }
             } else {
                 console.warn('⚠️ No action found for:', actionKey);
+                console.warn('Action type:', typeof action);
             }
         }
 
@@ -221,6 +231,75 @@
             }
 
             console.log('✅ Button updated:', buttonId);
+        }
+
+        /**
+         * Update button state (for visual feedback like loading, success, error)
+         * @param {string} buttonId - Button identifier (e.g., 'right-0' for save button)
+         * @param {string} state - State: 'default', 'saving', 'saved', 'error'
+         */
+        updateButtonState(buttonId, state) {
+            if (!this.container) return;
+
+            const button = this.container.querySelector(`[data-action="${buttonId}"]`);
+            if (!button) {
+                console.warn('⚠️ Button not found:', buttonId);
+                return;
+            }
+
+            // Remove all state classes
+            button.classList.remove('saving', 'saved', 'error');
+
+            // Add new state class
+            if (state !== 'default') {
+                button.classList.add(state);
+            }
+
+            // Update icon and label based on state
+            const icon = button.querySelector('i');
+            const label = button.querySelector('.action-btn-label');
+            
+            if (label) {
+                const originalLabel = label.dataset.originalLabel || label.textContent;
+                const originalIcon = label.dataset.originalIcon || (icon ? icon.className : 'bx bx-save');
+                
+                // Store originals if not already stored
+                if (!label.dataset.originalLabel) {
+                    label.dataset.originalLabel = originalLabel;
+                }
+                if (!label.dataset.originalIcon && icon) {
+                    label.dataset.originalIcon = icon.className;
+                }
+
+                switch (state) {
+                    case 'saving':
+                        if (icon) icon.className = 'bx bx-loader-alt bx-spin';
+                        label.textContent = 'Saving';
+                        break;
+                    case 'saved':
+                        if (icon) icon.className = 'bx bx-check';
+                        label.textContent = 'Saved';
+                        // Reset to default after 2 seconds
+                        setTimeout(() => {
+                            this.updateButtonState(buttonId, 'default');
+                        }, 2000);
+                        break;
+                    case 'error':
+                        if (icon) icon.className = 'bx bx-x';
+                        label.textContent = 'Failed';
+                        // Reset to default after 3 seconds
+                        setTimeout(() => {
+                            this.updateButtonState(buttonId, 'default');
+                        }, 3000);
+                        break;
+                    case 'default':
+                        if (icon) icon.className = originalIcon;
+                        label.textContent = originalLabel;
+                        break;
+                }
+            }
+
+            console.log('✅ Button state updated:', buttonId, state);
         }
 
         /**

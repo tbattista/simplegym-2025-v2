@@ -361,7 +361,28 @@ class ExerciseCacheService {
             localStorage.setItem(this.CACHE_KEY, JSON.stringify(cacheData));
             console.log(`💾 Cached ${exercises.length} exercises to localStorage`);
         } catch (error) {
-            console.error('Error setting exercise cache:', error);
+            if (error.name === 'QuotaExceededError') {
+                console.warn('⚠️ localStorage quota exceeded. Clearing old cache and retrying...');
+                // Clear the exercise cache to free up space
+                try {
+                    localStorage.removeItem(this.CACHE_KEY);
+                    console.log('🧹 Cleared exercise cache to free up space');
+                    
+                    // Try again with fresh space
+                    const cacheData = {
+                        exercises: exercises,
+                        timestamp: Date.now(),
+                        version: this.CACHE_VERSION
+                    };
+                    localStorage.setItem(this.CACHE_KEY, JSON.stringify(cacheData));
+                    console.log(`💾 Successfully cached ${exercises.length} exercises after clearing space`);
+                } catch (retryError) {
+                    console.error('❌ Still cannot cache exercises after clearing:', retryError);
+                    console.warn('⚠️ Exercise caching disabled due to storage limitations');
+                }
+            } else {
+                console.error('❌ Error setting exercise cache:', error);
+            }
         }
     }
     

@@ -161,7 +161,7 @@
                           <!-- Exercise groups will be added here as accordion items -->
                         </div>
                         <!-- Add Group Button -->
-                        <button type="button" class="btn btn-outline-primary w-100" id="addExerciseGroupBtn">
+                        <button type="button" class="btn btn-outline-primary w-100" id="addExerciseGroupBtnVisible">
                           <i class="bx bx-plus me-1"></i>
                           Add Exercises
                         </button>
@@ -182,6 +182,15 @@
       <div class="layout-overlay"></div>
     </div>
     <!-- / Layout wrapper -->
+
+    <!-- Hidden Trigger Buttons for Bottom Action Bar -->
+    <!-- These buttons are never visible but provide DOM elements for the bottom action bar to trigger -->
+    <div style="display: none;" aria-hidden="true">
+      <button id="saveWorkoutBtn" type="button">Save Workout</button>
+      <button id="cancelEditBtn" type="button">Cancel Edit</button>
+      <button id="deleteWorkoutBtn" type="button">Delete Workout</button>
+      <button id="addExerciseGroupBtn" type="button">Add Exercise Group</button>
+    </div>
 
     <!-- Workout Modal removed - now using inline editor -->
 
@@ -432,6 +441,34 @@
       </div>
     </div>
 
+    <!-- More Menu Offcanvas (Bottom) -->
+    <div class="offcanvas offcanvas-bottom" tabindex="-1"
+         id="moreMenuOffcanvas"
+         aria-labelledby="moreMenuLabel">
+      
+      <!-- Header -->
+      <div class="offcanvas-header border-bottom">
+        <h5 class="offcanvas-title" id="moreMenuLabel">
+          <i class="bx bx-dots-vertical-rounded me-2"></i>
+          More Options
+        </h5>
+        <button type="button" class="btn-close"
+                data-bs-dismiss="offcanvas" aria-label="Close"></button>
+      </div>
+      
+      <!-- Body -->
+      <div class="offcanvas-body p-0">
+        <!-- Delete Workout Option -->
+        <div class="more-menu-item danger" id="deleteWorkoutMenuItem">
+          <i class="bx bx-trash"></i>
+          <div class="more-menu-item-content">
+            <div class="more-menu-item-title">Delete Workout</div>
+            <small class="more-menu-item-description">This action cannot be undone</small>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Core JS -->
     <script src="/static/assets/vendor/libs/jquery/jquery.js"></script>
     <script src="/static/assets/vendor/libs/popper/popper.js"></script>
@@ -467,6 +504,9 @@
     <!-- Common Utilities (MUST load before other dashboard scripts) -->
     <script src="/static/assets/js/utils/common-utils.js"></script>
     
+    <!-- Toast Notifications -->
+    <script src="/static/assets/js/utils/toast-notifications.js"></script>
+    
     <!-- Autosave Manager Module (MUST load before workouts.js) -->
     <script src="/static/assets/js/modules/autosave-manager.js"></script>
     
@@ -493,7 +533,7 @@
     <script src="/static/assets/js/components/workout-components.js"></script>
     
     <!-- Workout Editor Component -->
-    <script src="/static/assets/js/components/workout-editor.js?v=20251115-01"></script>
+    <script src="/static/assets/js/components/workout-editor.js?v=20251116-01"></script>
 
     <!-- Initialize Workouts Page with Component System -->
     <script>

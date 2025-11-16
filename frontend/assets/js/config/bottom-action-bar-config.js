@@ -32,34 +32,6 @@
                     }
                 },
                 {
-                    icon: 'bx-search',
-                    label: 'Search',
-                    title: 'Search workouts',
-                    action: function() {
-                        // Toggle search overlay
-                        const overlay = document.getElementById('searchOverlay');
-                        if (overlay && overlay.classList.contains('active')) {
-                            if (window.hideSearchOverlay) {
-                                window.hideSearchOverlay();
-                            }
-                        } else {
-                            if (window.showSearchOverlay) {
-                                window.showSearchOverlay();
-                            }
-                        }
-                    }
-                }
-            ],
-            fab: {
-                icon: 'bx-plus',
-                title: 'Create new workout',
-                variant: 'primary',
-                action: function() {
-                    window.location.href = 'workout-builder.html';
-                }
-            },
-            rightActions: [
-                {
                     icon: 'bx-sort',
                     label: 'Sort',
                     title: 'Sort workouts',
@@ -72,6 +44,41 @@
                             offcanvas.show();
                             setTimeout(() => sortSelect.focus(), 300);
                         }
+                    }
+                }
+            ],
+            fab: {
+                icon: 'bx-search',
+                title: 'Search workouts',
+                variant: 'primary',
+                action: function() {
+                    // Toggle search overlay
+                    const overlay = document.getElementById('searchOverlay');
+                    if (overlay && overlay.classList.contains('active')) {
+                        if (window.hideSearchOverlay) {
+                            window.hideSearchOverlay();
+                        }
+                    } else {
+                        if (window.showSearchOverlay) {
+                            window.showSearchOverlay();
+                        }
+                    }
+                }
+            },
+            rightActions: [
+                {
+                    icon: 'bx-plus',
+                    label: 'Add',
+                    title: 'Create new workout',
+                    action: function() {
+                        // Clear localStorage to ensure a fresh workout is created
+                        try {
+                            localStorage.removeItem('currentEditingWorkoutId');
+                            console.log('🗑️ Cleared workout ID from localStorage (creating new workout)');
+                        } catch (error) {
+                            console.warn('⚠️ Could not clear localStorage:', error);
+                        }
+                        window.location.href = 'workout-builder.html';
                     }
                 },
                 {
@@ -188,9 +195,17 @@
                     label: 'Save',
                     title: 'Save workout',
                     action: function() {
+                        console.log('💾 Save action triggered from bottom action bar');
                         const saveBtn = document.getElementById('saveWorkoutBtn');
+                        console.log('🔍 Looking for save button:', saveBtn);
                         if (saveBtn) {
+                            console.log('✅ Save button found, clicking it');
                             saveBtn.click();
+                        } else {
+                            console.error('❌ Save button not found in DOM!');
+                            console.log('📋 Available buttons:',
+                                Array.from(document.querySelectorAll('button[id]')).map(b => b.id)
+                            );
                         }
                     }
                 },
@@ -199,8 +214,11 @@
                     label: 'More',
                     title: 'More options',
                     action: function() {
-                        // Show more options menu
-                        alert('More options menu - Coming soon!');
+                        // Show more options offcanvas
+                        const offcanvas = new bootstrap.Offcanvas(
+                            document.getElementById('moreMenuOffcanvas')
+                        );
+                        offcanvas.show();
                     }
                 }
             ]
@@ -242,18 +260,17 @@
                 title: 'Search exercises',
                 variant: 'primary',
                 action: function() {
-                    const offcanvas = new bootstrap.Offcanvas(
-                        document.getElementById('filtersOffcanvas')
-                    );
-                    offcanvas.show();
-                    
-                    // Focus search input after offcanvas opens
-                    setTimeout(() => {
-                        const searchInput = document.getElementById('exerciseSearch');
-                        if (searchInput) {
-                            searchInput.focus();
+                    // Toggle search overlay
+                    const overlay = document.getElementById('searchOverlay');
+                    if (overlay && overlay.classList.contains('active')) {
+                        if (window.hideSearchOverlay) {
+                            window.hideSearchOverlay();
                         }
-                    }, 300);
+                    } else {
+                        if (window.showSearchOverlay) {
+                            window.showSearchOverlay();
+                        }
+                    }
                 }
             },
             rightActions: [

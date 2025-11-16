@@ -196,11 +196,16 @@ function filterWorkouts() {
     
     // Apply search filter
     if (searchTerm) {
+        const searchLower = searchTerm.toLowerCase();
+        console.log('🔍 Search term:', searchTerm, '→', searchLower);
+        
         filtered = filtered.filter(workout => {
-            return workout.name.toLowerCase().includes(searchTerm) ||
-                   (workout.description || '').toLowerCase().includes(searchTerm) ||
-                   (workout.tags || []).some(tag => tag.toLowerCase().includes(searchTerm));
+            return workout.name.toLowerCase().includes(searchLower) ||
+                   (workout.description || '').toLowerCase().includes(searchLower) ||
+                   (workout.tags || []).some(tag => tag.toLowerCase().includes(searchLower));
         });
+        
+        console.log('📊 Filtered results:', filtered.length, 'of', window.ghostGym.workoutDatabase.all.length);
     }
     
     // Apply tag filter
@@ -266,16 +271,24 @@ function sortWorkouts(workouts, sortBy) {
  * Clear all filters
  */
 function clearFilters() {
-    // Clear search input
-    document.getElementById('searchInput').value = '';
+    // Clear search overlay input (correct element ID)
+    const searchOverlayInput = document.getElementById('searchOverlayInput');
+    if (searchOverlayInput) {
+        searchOverlayInput.value = '';
+    }
     
-    // Reset filter state
+    // Reset filter state (including search)
+    window.ghostGym.workoutDatabase.filters.search = '';
     window.ghostGym.workoutDatabase.filters.tags = [];
     window.ghostGym.workoutDatabase.filters.sortBy = 'modified_date';
     
-    // Reset button texts
-    document.getElementById('sortByText').textContent = 'Recently Modified';
-    document.getElementById('tagsText').textContent = 'All Tags';
+    // Reset button texts (with null checks)
+    const sortByText = document.getElementById('sortByText');
+    const tagsText = document.getElementById('tagsText');
+    if (sortByText) sortByText.textContent = 'Recently Modified';
+    if (tagsText) tagsText.textContent = 'All Tags';
+    
+    console.log('🧹 Filters cleared');
     
     // Re-apply filters
     filterWorkouts();
@@ -349,9 +362,13 @@ function createWorkoutCard(workout) {
     const groupCount = workout.exercise_groups?.length || 0;
     const totalExercises = getTotalExerciseCount(workout);
     
+    // Check if delete mode is active
+    const isDeleteMode = window.ghostGym.workoutDatabase.deleteMode;
+    const cardClass = isDeleteMode ? 'card h-100 delete-mode' : 'card h-100';
+    
     return `
         <div class="col">
-            <div class="card h-100">
+            <div class="${cardClass}">
                 <div class="card-body">
                     <!-- Card Title -->
                     <h5 class="card-title mb-2">${escapeHtml(workout.name)}</h5>
@@ -376,19 +393,23 @@ function createWorkoutCard(workout) {
                     ` : ''}
                     
                     <!-- Action Buttons -->
-                    <div class="d-grid gap-2 mt-auto">
-                        <button class="btn btn-primary btn-sm" onclick="doWorkout('${workout.id}')">
+                    ${isDeleteMode ? `
+                    <button class="btn btn-delete-workout w-100 mt-auto" onclick="deleteWorkoutFromDatabase('${workout.id}', '${escapeHtml(workout.name).replace(/'/g, "\\'")}')">
+                        <i class="bx bx-trash me-1"></i>Delete Workout
+                    </button>
+                    ` : `
+                    <div class="btn-group btn-group-sm w-100 mt-auto" role="group">
+                        <button class="btn btn-primary" onclick="doWorkout('${workout.id}')">
                             <i class="bx bx-play me-1"></i>Start Workout
                         </button>
-                        <div class="btn-group btn-group-sm" role="group">
-                            <button class="btn btn-outline-secondary" onclick="viewWorkoutDetails('${workout.id}')">
-                                <i class="bx bx-show me-1"></i>View
-                            </button>
-                            <button class="btn btn-outline-secondary" onclick="editWorkout('${workout.id}')">
-                                <i class="bx bx-edit me-1"></i>Edit
-                            </button>
-                        </div>
+                        <button class="btn btn-outline-secondary" onclick="viewWorkoutDetails('${workout.id}')">
+                            <i class="bx bx-show me-1"></i>View
+                        </button>
+                        <button class="btn btn-outline-secondary" onclick="editWorkout('${workout.id}')">
+                            <i class="bx bx-edit me-1"></i>Edit
+                        </button>
                     </div>
+                    `}
                 </div>
             </div>
         </div>
@@ -856,140 +877,66 @@ function getTotalExerciseCount(workout) {
 
 /**
  * ============================================
- * SEARCH OVERLAY MANAGEMENT
+ * SEARCH OVERLAY MANAGEMENT (Using Shared Component)
  * ============================================
  */
 
+let searchOverlay = null;
+
 /**
- * Initialize search overlay
+ * Initialize search overlay using shared component
  */
 function initSearchOverlay() {
-    const overlay = document.getElementById('searchOverlay');
-    const input = document.getElementById('searchOverlayInput');
-    const closeBtn = overlay?.querySelector('.search-overlay-close');
-    
-    if (!overlay || !input) {
-        console.warn('⚠️ Search overlay elements not found');
-        return;
-    }
-    
-    // Close button handler
-    closeBtn?.addEventListener('click', hideSearchOverlay);
-    
-    // Search input handler with debouncing
-    let searchTimeout;
-    input.addEventListener('input', function() {
-        clearTimeout(searchTimeout);
-        
-        const searchTerm = this.value.trim();
-        
-        // Update results count immediately
-        updateSearchResultsCount(searchTerm);
-        
-        // Debounce actual filtering
-        searchTimeout = setTimeout(() => {
-            performSearch(searchTerm);
-        }, 300);
-    });
-    
-    // Keyboard shortcuts
-    input.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') {
-            hideSearchOverlay();
+    searchOverlay = new GhostGymSearchOverlay({
+        placeholder: 'Search workouts by name, description, or tags...',
+        onSearch: (searchTerm) => {
+            // Update global state
+            window.ghostGym.workoutDatabase.filters.search = searchTerm;
+            
+            // Use existing filter function
+            filterWorkouts();
+            
+            console.log('🔍 Search performed:', searchTerm);
+        },
+        onResultsCount: (searchTerm) => {
+            if (!searchTerm) {
+                return { count: 0, total: 0 };
+            }
+            
+            // Calculate matching workouts
+            const searchLower = searchTerm.toLowerCase();
+            const filtered = window.ghostGym.workoutDatabase.all.filter(workout => {
+                return workout.name.toLowerCase().includes(searchLower) ||
+                       (workout.description || '').toLowerCase().includes(searchLower) ||
+                       (workout.tags || []).some(tag => tag.toLowerCase().includes(searchLower));
+            });
+            
+            return {
+                count: filtered.length,
+                total: window.ghostGym.workoutDatabase.all.length
+            };
         }
     });
     
-    // Click outside to close
-    document.addEventListener('click', function(e) {
-        if (overlay.classList.contains('active') &&
-            !overlay.contains(e.target) &&
-            !e.target.closest('[data-action="left-1"]')) {
-            hideSearchOverlay();
-        }
-    });
-    
-    console.log('✅ Search overlay initialized');
+    console.log('✅ Search overlay initialized with shared component');
 }
 
 /**
  * Show search overlay
  */
 function showSearchOverlay() {
-    const overlay = document.getElementById('searchOverlay');
-    const input = document.getElementById('searchOverlayInput');
-    
-    if (!overlay || !input) return;
-    
-    // Show overlay
-    overlay.classList.add('active');
-    
-    // Focus input after animation
-    setTimeout(() => {
-        input.focus();
-    }, 100);
-    
-    // Update results count
-    updateSearchResultsCount(input.value.trim());
-    
-    console.log('🔍 Search overlay shown');
+    if (searchOverlay) {
+        searchOverlay.show();
+    }
 }
 
 /**
  * Hide search overlay
  */
 function hideSearchOverlay() {
-    const overlay = document.getElementById('searchOverlay');
-    const input = document.getElementById('searchOverlayInput');
-    
-    if (!overlay) return;
-    
-    // Hide overlay
-    overlay.classList.remove('active');
-    
-    // Clear search if empty
-    if (input && !input.value.trim()) {
-        performSearch('');
+    if (searchOverlay) {
+        searchOverlay.hide();
     }
-    
-    console.log('🔍 Search overlay hidden');
-}
-
-/**
- * Perform search with given term
- */
-function performSearch(searchTerm) {
-    // Update global state
-    window.ghostGym.workoutDatabase.filters.search = searchTerm;
-    
-    // Use existing filter function
-    filterWorkouts();
-    
-    console.log('🔍 Search performed:', searchTerm);
-}
-
-/**
- * Update search results count display
- */
-function updateSearchResultsCount(searchTerm) {
-    const countEl = document.getElementById('searchResultsCount');
-    if (!countEl) return;
-    
-    if (!searchTerm) {
-        countEl.textContent = '';
-        return;
-    }
-    
-    // Calculate matching workouts
-    const filtered = window.ghostGym.workoutDatabase.all.filter(workout => {
-        return workout.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-               (workout.description || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-               (workout.tags || []).some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
-    });
-    
-    const count = filtered.length;
-    const total = window.ghostGym.workoutDatabase.all.length;
-    
-    countEl.textContent = `${count} of ${total} workouts`;
 }
 
 /**
@@ -1040,6 +987,100 @@ function showWorkoutError(message) {
  * ============================================
  */
 
+/**
+ * ============================================
+ * DELETE MODE MANAGEMENT
+ * ============================================
+ */
+
+/**
+ * Toggle delete mode on/off
+ */
+function toggleDeleteMode() {
+    const isActive = document.getElementById('deleteModeToggle').checked;
+    window.ghostGym.workoutDatabase.deleteMode = isActive;
+    
+    console.log(`🗑️ Delete mode ${isActive ? 'activated' : 'deactivated'}`);
+    
+    // Re-render cards with new button state
+    renderWorkoutTable();
+    
+    // Optional: Add body class for global styling
+    if (isActive) {
+        document.body.classList.add('delete-mode-active');
+    } else {
+        document.body.classList.remove('delete-mode-active');
+    }
+}
+
+/**
+ * Delete workout from database with confirmation
+ */
+async function deleteWorkoutFromDatabase(workoutId, workoutName) {
+    console.log('🗑️ Delete requested for workout:', workoutId, workoutName);
+    
+    // Show confirmation dialog
+    const confirmed = confirm(`⚠️ Are you sure you want to delete "${workoutName}"?\n\nThis action cannot be undone.`);
+    
+    if (!confirmed) {
+        console.log('❌ Delete cancelled by user');
+        return;
+    }
+    
+    try {
+        console.log('🔄 Deleting workout from database...');
+        
+        // Delete from database using data manager
+        await window.dataManager.deleteWorkout(workoutId);
+        
+        // Remove from local state
+        window.ghostGym.workoutDatabase.all = window.ghostGym.workoutDatabase.all.filter(w => w.id !== workoutId);
+        window.ghostGym.workouts = window.ghostGym.workouts.filter(w => w.id !== workoutId);
+        
+        // Update stats
+        window.ghostGym.workoutDatabase.stats.total = window.ghostGym.workoutDatabase.all.length;
+        
+        // Update total count display
+        const totalCountEl = document.getElementById('totalWorkoutsCount');
+        if (totalCountEl) {
+            totalCountEl.textContent = window.ghostGym.workoutDatabase.stats.total;
+        }
+        
+        // Re-apply filters and render
+        filterWorkouts();
+        
+        console.log('✅ Workout deleted successfully');
+        
+        // Show success message if available
+        if (window.showAlert) {
+            window.showAlert(`Workout "${workoutName}" deleted successfully`, 'success');
+        }
+        
+    } catch (error) {
+        console.error('❌ Failed to delete workout:', error);
+        
+        // Show error message
+        if (window.showAlert) {
+            window.showAlert('Failed to delete workout: ' + error.message, 'danger');
+        } else {
+            alert('Failed to delete workout: ' + error.message);
+        }
+    }
+}
+
+/**
+ * Initialize delete mode toggle
+ */
+function initDeleteModeToggle() {
+    const toggle = document.getElementById('deleteModeToggle');
+    if (toggle) {
+        toggle.addEventListener('change', toggleDeleteMode);
+        console.log('✅ Delete mode toggle initialized');
+    } else {
+        console.warn('⚠️ Delete mode toggle not found');
+    }
+}
+
 // Make functions globally available
 window.loadWorkouts = loadWorkouts;
 window.filterWorkouts = filterWorkouts;
@@ -1053,5 +1094,8 @@ window.createNewWorkout = createNewWorkout;
 window.initSearchOverlay = initSearchOverlay;
 window.showSearchOverlay = showSearchOverlay;
 window.hideSearchOverlay = hideSearchOverlay;
+window.toggleDeleteMode = toggleDeleteMode;
+window.deleteWorkoutFromDatabase = deleteWorkoutFromDatabase;
+window.initDeleteModeToggle = initDeleteModeToggle;
 
 console.log('📦 Workout Database module loaded (v2.0 - using common-utils)');

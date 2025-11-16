@@ -58,7 +58,19 @@ function loadWorkoutIntoEditor(workoutId) {
             const cardHtml = window.createExerciseGroupCard(groupId, group, groupNumber);
             exerciseGroupsContainer.insertAdjacentHTML('beforeend', cardHtml);
             
+            // CRITICAL FIX: Explicitly ensure data is stored in memory
+            // This guarantees the data is available when collectExerciseGroups() runs
+            window.exerciseGroupsData[groupId] = {
+                exercises: group.exercises || { a: '', b: '', c: '' },
+                sets: group.sets || '3',
+                reps: group.reps || '8-12',
+                rest: group.rest || '60s',
+                default_weight: group.default_weight || '',
+                default_weight_unit: group.default_weight_unit || 'lbs'
+            };
+            
             console.log('🔍 DEBUG: Loaded exercise group card:', groupId, group);
+            console.log('✅ DEBUG: Stored in exerciseGroupsData:', groupId, window.exerciseGroupsData[groupId]);
         });
     } else {
         addExerciseGroup();
@@ -166,6 +178,11 @@ async function createNewWorkoutInEditor() {
         // Save to database
         const savedWorkout = await window.dataManager.createWorkout(newWorkoutData);
         console.log('✅ New workout auto-saved:', savedWorkout.id);
+        
+        // Initialize workouts array if it doesn't exist
+        if (!window.ghostGym.workouts) {
+            window.ghostGym.workouts = [];
+        }
         
         // Add to local state
         window.ghostGym.workouts.unshift(savedWorkout);
@@ -300,7 +317,12 @@ async function saveWorkoutFromEditor(silent = false) {
         // Show saving status
         updateSaveStatus('saving');
         
-        // Only update button for manual saves
+        // Update bottom action bar button state (save button is right-0)
+        if (window.bottomActionBar && !silent) {
+            window.bottomActionBar.updateButtonState('right-0', 'saving');
+        }
+        
+        // Only update hidden button for manual saves
         const saveBtn = document.getElementById('saveWorkoutBtn');
         if (!silent && saveBtn) {
             saveBtn.innerHTML = '<i class="bx bx-loader-alt bx-spin me-1"></i>Saving...';
@@ -346,6 +368,11 @@ async function saveWorkoutFromEditor(silent = false) {
         // Update save status
         updateSaveStatus('saved');
         
+        // Update bottom action bar button state (save button is right-0)
+        if (window.bottomActionBar && !silent) {
+            window.bottomActionBar.updateButtonState('right-0', 'saved');
+        }
+        
         // Show delete button now that workout is saved (if it exists)
         const deleteBtn = document.getElementById('deleteWorkoutBtn');
         if (deleteBtn) {
@@ -356,10 +383,19 @@ async function saveWorkoutFromEditor(silent = false) {
         
     } catch (error) {
         console.error('❌ Error saving workout:', error);
+        
+        // Show error alert for manual saves
         if (!silent) {
             showAlert('Failed to save workout: ' + error.message, 'danger');
         }
+        
         updateSaveStatus('error');
+        
+        // Update bottom action bar button state (save button is right-0)
+        if (window.bottomActionBar && !silent) {
+            window.bottomActionBar.updateButtonState('right-0', 'error');
+        }
+        
         throw error; // Re-throw for autosave error handling
     } finally {
         // Reset button (only for manual saves)
@@ -580,10 +616,17 @@ function setupWorkoutEditorListeners() {
         }
     });
     
-    // Save button
+    // Save button with diagnostic logging
     const saveBtn = document.getElementById('saveWorkoutBtn');
     if (saveBtn) {
-        saveBtn.addEventListener('click', saveWorkoutFromEditor);
+        console.log('✅ Save button found, attaching click listener');
+        saveBtn.addEventListener('click', () => {
+            console.log('🖱️ Save button clicked!');
+            console.log('📊 Current workout state:', window.ghostGym?.workoutBuilder);
+            saveWorkoutFromEditor();
+        });
+    } else {
+        console.error('❌ Save button (#saveWorkoutBtn) not found in DOM!');
     }
     
     // Cancel button
@@ -604,10 +647,23 @@ function setupWorkoutEditorListeners() {
         newBtn.addEventListener('click', createNewWorkoutInEditor);
     }
     
-    // Add Exercise Group button
-    const addGroupBtn = document.getElementById('addExerciseGroupBtn');
-    if (addGroupBtn) {
-        addGroupBtn.addEventListener('click', () => {
+    // Add Exercise Group button (both visible and hidden trigger)
+    const addGroupBtnVisible = document.getElementById('addExerciseGroupBtnVisible');
+    const addGroupBtnHidden = document.getElementById('addExerciseGroupBtn');
+    
+    if (addGroupBtnVisible) {
+        addGroupBtnVisible.addEventListener('click', () => {
+            console.log('🖱️ Visible Add Exercise Group button clicked');
+            if (window.addExerciseGroup) {
+                window.addExerciseGroup();
+                markEditorDirty();
+            }
+        });
+    }
+    
+    if (addGroupBtnHidden) {
+        addGroupBtnHidden.addEventListener('click', () => {
+            console.log('🖱️ Hidden Add Exercise Group button clicked (from FAB)');
             if (window.addExerciseGroup) {
                 window.addExerciseGroup();
                 markEditorDirty();
@@ -659,6 +715,35 @@ function setupWorkoutEditorListeners() {
         });
     };
     setupOffcanvasWeightButtons();
+    
+    // NEW: More Menu - Delete Workout Item
+    const deleteWorkoutMenuItem = document.getElementById('deleteWorkoutMenuItem');
+    if (deleteWorkoutMenuItem) {
+        deleteWorkoutMenuItem.addEventListener('click', () => {
+            console.log('🗑️ Delete workout menu item clicked');
+            
+            // Close the more menu offcanvas first
+            const moreMenuOffcanvas = document.getElementById('moreMenuOffcanvas');
+            if (moreMenuOffcanvas) {
+                const offcanvasInstance = bootstrap.Offcanvas.getInstance(moreMenuOffcanvas);
+                if (offcanvasInstance) {
+                    offcanvasInstance.hide();
+                }
+            }
+            
+            // Trigger delete after offcanvas closes (300ms animation)
+            setTimeout(() => {
+                if (window.deleteWorkoutFromEditor) {
+                    window.deleteWorkoutFromEditor();
+                } else {
+                    console.error('❌ deleteWorkoutFromEditor function not found');
+                }
+            }, 300);
+        });
+        console.log('✅ Delete workout menu item listener attached');
+    } else {
+        console.warn('⚠️ Delete workout menu item not found in DOM');
+    }
     
     // Warn on navigation if dirty, and clean up localStorage on intentional navigation
     window.addEventListener('beforeunload', (e) => {

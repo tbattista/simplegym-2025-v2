@@ -787,6 +787,84 @@ window.exerciseTable = exerciseTable;
 window.filterBar = filterBar;
 window.toggleExerciseFavorite = toggleExerciseFavorite;
 window.showExerciseDetails = showExerciseDetails;
+window.initSearchOverlay = initSearchOverlay;
+window.showSearchOverlay = showSearchOverlay;
+window.hideSearchOverlay = hideSearchOverlay;
+
 window.addExerciseToWorkout = addExerciseToWorkout;
 
+/**
+ * ============================================
+ * SEARCH OVERLAY MANAGEMENT (Using Shared Component)
+ * ============================================
+ */
+
+let searchOverlay = null;
+
+/**
+ * Initialize search overlay using shared component
+ */
+function initSearchOverlay() {
+    searchOverlay = new GhostGymSearchOverlay({
+        placeholder: 'Search exercises by name, muscle group, or equipment...',
+        onSearch: (searchTerm) => {
+            // Update filter bar with search term
+            if (filterBar) {
+                const currentFilters = filterBar.getFilters();
+                currentFilters.search = searchTerm;
+                applyFiltersAndRender(currentFilters);
+            }
+            
+            console.log('🔍 Search performed:', searchTerm);
+        },
+        onResultsCount: (searchTerm) => {
+            if (!searchTerm) {
+                return { count: 0, total: 0 };
+            }
+            
+            // Calculate matching exercises
+            let allExercises = [...window.ghostGym.exercises.all, ...window.ghostGym.exercises.custom];
+            
+            const searchTerms = searchTerm.toLowerCase().split(/\s+/).filter(t => t.length > 0);
+            const filtered = allExercises.filter(exercise => {
+                const searchableText = `${exercise.name} ${exercise.targetMuscleGroup || ''} ${exercise.primaryEquipment || ''}`.toLowerCase();
+                return searchTerms.every(term => searchableText.includes(term));
+            });
+            
+            return {
+                count: filtered.length,
+                total: allExercises.length
+            };
+        }
+    });
+    
+    console.log('✅ Search overlay initialized with shared component');
+}
+
+/**
+ * Show search overlay
+ */
+function showSearchOverlay() {
+    if (searchOverlay) {
+        searchOverlay.show();
+    }
+}
+
+/**
+ * Hide search overlay
+ */
+function hideSearchOverlay() {
+    if (searchOverlay) {
+        searchOverlay.hide();
+    }
+}
+
 console.log('📦 Exercise Database module (refactored) loaded');
+
+// Initialize search overlay when module loads
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initSearchOverlay);
+} else {
+    // DOM already loaded
+    setTimeout(initSearchOverlay, 100);
+}

@@ -156,83 +156,10 @@
 }
 
 /* ============================================
-   STICKY FOOTER
-   ============================================ */
-
-.exercise-database-footer {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: transparent;
-    padding: 1rem;
-    z-index: 1000;
-    margin-left: var(--layout-menu-width, 260px);
-    transition: margin-left 0.3s ease;
-    display: flex;
-    justify-content: center;
-}
-
-.exercise-database-footer > div {
-    background: var(--bs-body-bg);
-    border: 1px solid var(--bs-border-color);
-    border-radius: var(--bs-border-radius-lg);
-    padding: 1rem;
-    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
-    width: 100%;
-    max-width: 600px;
-}
-
-.exercise-database-footer #exerciseSearch {
-    background-color: rgba(var(--bs-primary-rgb), 0.05);
-    border-color: rgba(var(--bs-primary-rgb), 0.2);
-    transition: all 0.2s ease;
-}
-
-.exercise-database-footer #exerciseSearch:focus {
-    background-color: var(--bs-body-bg);
-    border-color: var(--bs-primary);
-    box-shadow: 0 0 0 0.2rem rgba(var(--bs-primary-rgb), 0.15);
-}
-
-.layout-menu-collapsed .exercise-database-footer {
-    margin-left: var(--layout-menu-collapsed-width, 80px);
-}
-
-.container-xxl.flex-grow-1.container-p-y {
-    padding-bottom: 180px !important;
-}
-
-.pagination-container {
-    padding-bottom: 1.5rem;
-    margin-bottom: 0.5rem;
-}
-
-[data-bs-theme="dark"] .exercise-database-footer > div {
-    background: var(--bs-gray-900);
-    border-color: var(--bs-gray-700);
-    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.3);
-}
-
-/* ============================================
    RESPONSIVE
    ============================================ */
 
-@media (max-width: 1199px) {
-    .exercise-database-footer {
-        margin-left: 0;
-    }
-}
-
 @media (max-width: 768px) {
-    .exercise-database-footer {
-        padding: 0.75rem 1rem;
-    }
-    
-    .container-xxl.flex-grow-1.container-p-y {
-        padding-bottom: 180px !important;
-    }
-    
     /* Adjust card layout for tablets */
     #exerciseTableContainer .card .card-body {
         padding: 0.875rem !important;
@@ -255,13 +182,6 @@
 }
 
 @media (max-width: 576px) {
-    .exercise-database-footer {
-        padding: 0.625rem 0.875rem;
-    }
-    
-    .container-xxl.flex-grow-1.container-p-y {
-        padding-bottom: 160px !important;
-    }
     
     /* Optimize card layout for mobile */
     #exerciseTableContainer .card .card-body {
