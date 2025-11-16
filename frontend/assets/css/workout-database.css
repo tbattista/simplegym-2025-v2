@@ -5,6 +5,15 @@
  */
 
 /* ============================================
+   CONTENT CONTAINER PADDING
+   ============================================ */
+
+/* Add bottom padding to ensure last card is visible above nav bar */
+.container-xxl.flex-grow-1.container-p-y {
+    padding-bottom: 100px !important; /* Extra padding for bottom nav bar */
+}
+
+/* ============================================
    WORKOUT DETAIL OFFCANVAS
    ============================================ */
 
