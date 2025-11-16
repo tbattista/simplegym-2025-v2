@@ -661,6 +661,23 @@ async function toggleExerciseFavorite(exerciseId) {
     
     const isFavorited = window.ghostGym.exercises.favorites.has(exerciseId);
     
+    // Find the button that was clicked
+    const button = document.querySelector(`.favorite-btn[data-exercise-id="${exerciseId}"]`);
+    const icon = button?.querySelector('i');
+    
+    // Optimistic UI update
+    if (button && icon) {
+        if (isFavorited) {
+            icon.className = 'bx bx-heart';
+            button.classList.remove('text-danger');
+            button.title = 'Add to favorites';
+        } else {
+            icon.className = 'bx bxs-heart';
+            button.classList.add('text-danger');
+            button.title = 'Remove from favorites';
+        }
+    }
+    
     try {
         const token = await window.firebaseAuth.currentUser.getIdToken();
         
@@ -672,6 +689,13 @@ async function toggleExerciseFavorite(exerciseId) {
             if (response.ok) {
                 window.ghostGym.exercises.favorites.delete(exerciseId);
                 console.log('✅ Removed from favorites');
+            } else {
+                // Revert optimistic update on failure
+                if (button && icon) {
+                    icon.className = 'bx bxs-heart';
+                    button.classList.add('text-danger');
+                    button.title = 'Remove from favorites';
+                }
             }
         } else {
             const response = await fetch(exercisePage.getApiUrl('/api/v3/users/me/favorites'), {
@@ -685,16 +709,35 @@ async function toggleExerciseFavorite(exerciseId) {
             if (response.ok) {
                 window.ghostGym.exercises.favorites.add(exerciseId);
                 console.log('✅ Added to favorites');
+            } else {
+                // Revert optimistic update on failure
+                if (button && icon) {
+                    icon.className = 'bx bx-heart';
+                    button.classList.remove('text-danger');
+                    button.title = 'Add to favorites';
+                }
             }
         }
         
-        // Refresh table to update favorite icons
-        exerciseTable.refresh();
+        // Don't refresh the entire table - just update stats
         updateStats();
         
     } catch (error) {
         console.error('❌ Error toggling favorite:', error);
         showAlert('Failed to update favorite. Please try again.', 'danger');
+        
+        // Revert optimistic update on error
+        if (button && icon) {
+            if (isFavorited) {
+                icon.className = 'bx bxs-heart';
+                button.classList.add('text-danger');
+                button.title = 'Remove from favorites';
+            } else {
+                icon.className = 'bx bx-heart';
+                button.classList.remove('text-danger');
+                button.title = 'Add to favorites';
+            }
+        }
     }
 }
 
