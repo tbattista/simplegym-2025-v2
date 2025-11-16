@@ -238,14 +238,28 @@
                     }
                 },
                 {
-                    icon: 'bx-star',
+                    icon: 'bx-heart',
                     label: 'Favorites',
-                    title: 'Toggle favorites filter',
+                    title: 'Show only favorites',
                     action: function() {
                         // Toggle favorites filter
                         if (window.ghostGym?.exercises?.filters) {
-                            window.ghostGym.exercises.filters.favoritesOnly = 
-                                !window.ghostGym.exercises.filters.favoritesOnly;
+                            const isActive = !window.ghostGym.exercises.filters.favoritesOnly;
+                            window.ghostGym.exercises.filters.favoritesOnly = isActive;
+                            
+                            // Update button visual state
+                            if (window.bottomActionBar) {
+                                window.bottomActionBar.updateButton('left-1', {
+                                    icon: isActive ? 'bxs-heart' : 'bx-heart',
+                                    title: isActive ? 'Show all exercises' : 'Show only favorites'
+                                });
+                                
+                                // Add/remove active class for color change
+                                const btn = document.querySelector('[data-action="left-1"]');
+                                if (btn) {
+                                    btn.classList.toggle('active', isActive);
+                                }
+                            }
                             
                             // Trigger filter update
                             if (window.filterExercises) {

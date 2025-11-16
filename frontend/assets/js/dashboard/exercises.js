@@ -268,6 +268,9 @@ async function initializeExerciseDatabase(page) {
         // Update stats
         updateStats();
         
+        // Initialize favorites button state
+        initializeFavoritesButtonState();
+        
         console.log('✅ Exercise Database initialized with components');
         
     } catch (error) {
@@ -432,6 +435,9 @@ function applyFiltersAndRender(filters) {
     
     // Update filter feedback
     updateFilterFeedback(filters);
+    
+    // Update favorites button state
+    updateFavoritesButtonState(filters.favoritesOnly);
 }
 
 /**
@@ -779,6 +785,47 @@ function setExerciseCache(exercises) {
 function isExerciseCacheValid(cached) {
     if (cached.version !== '1.1') return false;
     const CACHE_DURATION = 7 * 24 * 60 * 60 * 1000; // 7 days
+/**
+ * Initialize favorites button state on page load
+ */
+function initializeFavoritesButtonState() {
+    // Wait for bottom action bar to be ready
+    const checkBottomBar = setInterval(() => {
+        if (window.bottomActionBar) {
+            clearInterval(checkBottomBar);
+            
+            // Get current filter state
+            const isActive = window.ghostGym?.exercises?.filters?.favoritesOnly || false;
+            updateFavoritesButtonState(isActive);
+            
+            console.log('✅ Favorites button state initialized:', isActive ? 'active' : 'inactive');
+        }
+    }, 100);
+    
+    // Clear interval after 5 seconds if not found
+    setTimeout(() => clearInterval(checkBottomBar), 5000);
+}
+
+/**
+ * Update favorites button visual state
+ * @param {boolean} isActive - Whether favorites filter is active
+ */
+function updateFavoritesButtonState(isActive) {
+    if (!window.bottomActionBar) return;
+    
+    // Update button icon and title
+    window.bottomActionBar.updateButton('left-1', {
+        icon: isActive ? 'bxs-heart' : 'bx-heart',
+        title: isActive ? 'Show all exercises' : 'Show only favorites'
+    });
+    
+    // Add/remove active class for color change
+    const btn = document.querySelector('[data-action="left-1"]');
+    if (btn) {
+        btn.classList.toggle('active', isActive);
+    }
+}
+
     return (Date.now() - cached.timestamp) < CACHE_DURATION;
 }
 
@@ -792,6 +839,8 @@ window.showSearchOverlay = showSearchOverlay;
 window.hideSearchOverlay = hideSearchOverlay;
 
 window.addExerciseToWorkout = addExerciseToWorkout;
+window.initializeFavoritesButtonState = initializeFavoritesButtonState;
+window.updateFavoritesButtonState = updateFavoritesButtonState;
 
 /**
  * ============================================
