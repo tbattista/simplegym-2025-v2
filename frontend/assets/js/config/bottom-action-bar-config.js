@@ -242,30 +242,45 @@
                     label: 'Favorites',
                     title: 'Show only favorites',
                     action: function() {
-                        // Toggle favorites filter
-                        if (window.ghostGym?.exercises?.filters) {
-                            const isActive = !window.ghostGym.exercises.filters.favoritesOnly;
-                            window.ghostGym.exercises.filters.favoritesOnly = isActive;
+                        console.log('❤️ Favorites button clicked');
+                        
+                        // Get current filter state from FilterBar
+                        if (!window.filterBar) {
+                            console.warn('⚠️ FilterBar not available');
+                            return;
+                        }
+                        
+                        const currentFilters = window.filterBar.getFilters();
+                        const isActive = !currentFilters.favoritesOnly;
+                        
+                        console.log('🔄 Toggling favorites filter:', isActive ? 'ON' : 'OFF');
+                        
+                        // Update filter in FilterBar using correct method
+                        window.filterBar.setFilterValue('favoritesOnly', isActive);
+                        
+                        // Update button visual state with animation
+                        if (window.bottomActionBar) {
+                            const btn = document.querySelector('[data-action="left-1"]');
                             
-                            // Update button visual state
-                            if (window.bottomActionBar) {
-                                window.bottomActionBar.updateButton('left-1', {
-                                    icon: isActive ? 'bxs-heart' : 'bx-heart',
-                                    title: isActive ? 'Show all exercises' : 'Show only favorites'
-                                });
-                                
-                                // Add/remove active class for color change
-                                const btn = document.querySelector('[data-action="left-1"]');
-                                if (btn) {
-                                    btn.classList.toggle('active', isActive);
-                                }
+                            // Add pulse animation
+                            if (btn) {
+                                btn.classList.add('pulse-animation');
+                                setTimeout(() => btn.classList.remove('pulse-animation'), 300);
                             }
                             
-                            // Trigger filter update
-                            if (window.filterExercises) {
-                                window.filterExercises();
+                            // Update icon and title
+                            window.bottomActionBar.updateButton('left-1', {
+                                icon: isActive ? 'bxs-heart' : 'bx-heart',
+                                title: isActive ? 'Show all exercises' : 'Show only favorites'
+                            });
+                            
+                            // Add/remove active class for color change
+                            if (btn) {
+                                btn.classList.toggle('active', isActive);
                             }
                         }
+                        
+                        console.log('✅ Favorites filter updated');
                     }
                 }
             ],

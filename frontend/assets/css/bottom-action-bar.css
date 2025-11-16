@@ -121,6 +121,27 @@
     background: rgba(var(--bs-danger-rgb), 0.16);
 }
 
+/* Pulse animation for button feedback */
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.15);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+.action-btn.pulse-animation {
+    animation: pulse 0.3s ease-in-out;
+}
+
+.action-btn.pulse-animation i {
+    animation: pulse 0.3s ease-in-out;
+}
+
 /* Button states for save feedback - Darker, Subtle Colors */
 .action-btn.saving {
     pointer-events: none;

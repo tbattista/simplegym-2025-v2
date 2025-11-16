@@ -129,6 +129,10 @@ async function initializeExerciseDatabase(page) {
         // Mark initialization as complete
         isInitializing = false;
         
+        // Export filterBar globally immediately after creation
+        window.filterBar = filterBar;
+        console.log('✅ FilterBar exported globally');
+        
         // Connect main search input to FilterBar
         const mainSearchInput = document.getElementById('exerciseSearch');
         const clearSearchBtn = document.getElementById('clearSearchBtn');
@@ -785,17 +789,21 @@ function setExerciseCache(exercises) {
 function isExerciseCacheValid(cached) {
     if (cached.version !== '1.1') return false;
     const CACHE_DURATION = 7 * 24 * 60 * 60 * 1000; // 7 days
+    return (Date.now() - cached.timestamp) < CACHE_DURATION;
+}
+
 /**
  * Initialize favorites button state on page load
  */
 function initializeFavoritesButtonState() {
-    // Wait for bottom action bar to be ready
-    const checkBottomBar = setInterval(() => {
-        if (window.bottomActionBar) {
-            clearInterval(checkBottomBar);
+    // Wait for both bottom action bar and filter bar to be ready
+    const checkComponents = setInterval(() => {
+        if (window.bottomActionBar && window.filterBar) {
+            clearInterval(checkComponents);
             
-            // Get current filter state
-            const isActive = window.ghostGym?.exercises?.filters?.favoritesOnly || false;
+            // Get current filter state from FilterBar
+            const currentFilters = window.filterBar.getFilters();
+            const isActive = currentFilters.favoritesOnly || false;
             updateFavoritesButtonState(isActive);
             
             console.log('✅ Favorites button state initialized:', isActive ? 'active' : 'inactive');
@@ -803,7 +811,7 @@ function initializeFavoritesButtonState() {
     }, 100);
     
     // Clear interval after 5 seconds if not found
-    setTimeout(() => clearInterval(checkBottomBar), 5000);
+    setTimeout(() => clearInterval(checkComponents), 5000);
 }
 
 /**
@@ -811,7 +819,12 @@ function initializeFavoritesButtonState() {
  * @param {boolean} isActive - Whether favorites filter is active
  */
 function updateFavoritesButtonState(isActive) {
-    if (!window.bottomActionBar) return;
+    if (!window.bottomActionBar) {
+        console.warn('⚠️ Bottom action bar not available for state update');
+        return;
+    }
+    
+    console.log('🔄 Updating favorites button state:', isActive ? 'active' : 'inactive');
     
     // Update button icon and title
     window.bottomActionBar.updateButton('left-1', {
@@ -823,10 +836,8 @@ function updateFavoritesButtonState(isActive) {
     const btn = document.querySelector('[data-action="left-1"]');
     if (btn) {
         btn.classList.toggle('active', isActive);
+        console.log('✅ Button class updated:', btn.classList.contains('active') ? 'active' : 'inactive');
     }
-}
-
-    return (Date.now() - cached.timestamp) < CACHE_DURATION;
 }
 
 // Export for global access
@@ -837,10 +848,20 @@ window.showExerciseDetails = showExerciseDetails;
 window.initSearchOverlay = initSearchOverlay;
 window.showSearchOverlay = showSearchOverlay;
 window.hideSearchOverlay = hideSearchOverlay;
-
 window.addExerciseToWorkout = addExerciseToWorkout;
 window.initializeFavoritesButtonState = initializeFavoritesButtonState;
 window.updateFavoritesButtonState = updateFavoritesButtonState;
+
+// Make filterBar available globally after initialization
+window.addEventListener('DOMContentLoaded', () => {
+    // Re-export after a short delay to ensure it's initialized
+    setTimeout(() => {
+        if (filterBar) {
+            window.filterBar = filterBar;
+            console.log('✅ FilterBar exported globally');
+        }
+    }, 500);
+});
 
 /**
  * ============================================
