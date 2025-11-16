@@ -1261,6 +1261,67 @@
 }
 
 /* ============================================
+   RESUME SESSION OFFCANVAS (Session Persistence)
+   ============================================ */
+
+/* Resume session offcanvas - auto height to fit content */
+#resumeSessionOffcanvas {
+    height: auto;
+    max-height: 85vh;
+    border-radius: 1rem 1rem 0 0;
+}
+
+#resumeSessionOffcanvas .offcanvas-header {
+    padding: 1.25rem 1.5rem;
+}
+
+#resumeSessionOffcanvas .offcanvas-body {
+    padding: 1.5rem;
+    overflow-y: auto;
+}
+
+#resumeSessionOffcanvas .btn {
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+/* Stats cards in resume prompt */
+#resumeSessionOffcanvas .card {
+    border: none;
+}
+
+/* Mobile adjustments */
+@media (max-width: 767.98px) {
+    #resumeSessionOffcanvas {
+        max-height: 90vh;
+    }
+    
+    #resumeSessionOffcanvas .offcanvas-header {
+        padding: 1rem 1.25rem;
+    }
+    
+    #resumeSessionOffcanvas .offcanvas-body {
+        padding: 1.25rem;
+    }
+    
+    #resumeSessionOffcanvas .btn {
+        padding: 0.65rem 1.25rem;
+        font-size: 0.95rem;
+    }
+}
+
+/* Dark theme support */
+[data-bs-theme="dark"] #resumeSessionOffcanvas {
+    background-color: var(--bs-gray-900);
+    color: var(--bs-body-color);
+}
+
+[data-bs-theme="dark"] #resumeSessionOffcanvas .offcanvas-header {
+    background-color: var(--bs-primary);
+}
+
+/* ============================================
    FLOATING TIMER WIDGET
    ============================================ */
 

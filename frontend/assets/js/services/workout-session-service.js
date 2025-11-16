@@ -67,6 +67,9 @@ class WorkoutSessionService {
             console.log('✅ Workout session started:', session.id);
             this.notifyListeners('sessionStarted', this.currentSession);
             
+            // Persist session immediately after start
+            this.persistSession();
+            
             return this.currentSession;
             
         } catch (error) {
@@ -124,6 +127,9 @@ class WorkoutSessionService {
             console.log('✅ Workout session completed:', this.currentSession.id);
             this.notifyListeners('sessionCompleted', completedSession);
             
+            // Clear persisted session after completion
+            this.clearPersistedSession();
+            
             return completedSession;
             
         } catch (error) {
@@ -172,6 +178,9 @@ class WorkoutSessionService {
             
             console.log('✅ Session auto-saved');
             this.notifyListeners('sessionSaved', { sessionId: this.currentSession.id });
+            
+            // Persist after auto-save
+            this.persistSession();
             
         } catch (error) {
             console.error('❌ Error auto-saving session:', error);
@@ -260,6 +269,9 @@ class WorkoutSessionService {
         
         console.log('💪 Updated weight:', exerciseName, weight, unit);
         this.notifyListeners('weightUpdated', { exerciseName, weight, unit });
+        
+        // Persist after weight update
+        this.persistSession();
     }
     
     /**
@@ -313,6 +325,9 @@ class WorkoutSessionService {
         
         console.log('🧹 Session cleared');
         this.notifyListeners('sessionCleared', {});
+        
+        // Clear persisted session
+        this.clearPersistedSession();
     }
     
     /**
@@ -352,6 +367,106 @@ class WorkoutSessionService {
             exerciseCount: Object.keys(this.exerciseHistory).length,
             startedAt: this.currentSession?.startedAt || null
         };
+    }
+    
+    /**
+     * SESSION PERSISTENCE METHODS
+     * These methods handle saving/restoring sessions to/from localStorage
+     * for seamless recovery after page refresh or browser close
+     */
+    
+    /**
+     * Persist current session to localStorage
+     * Automatically called after session changes to ensure data is never lost
+     */
+    persistSession() {
+        if (!this.currentSession) {
+            console.warn('⚠️ No active session to persist');
+            return;
+        }
+        
+        const sessionData = {
+            sessionId: this.currentSession.id,
+            workoutId: this.currentSession.workoutId,
+            workoutName: this.currentSession.workoutName,
+            startedAt: this.currentSession.startedAt.toISOString(),
+            status: this.currentSession.status,
+            exercises: this.currentSession.exercises || {},
+            lastUpdated: new Date().toISOString(),
+            version: '1.0'
+        };
+        
+        try {
+            localStorage.setItem('ghost_gym_active_workout_session', JSON.stringify(sessionData));
+            console.log('💾 Session persisted:', sessionData.sessionId);
+        } catch (error) {
+            console.error('❌ Failed to persist session:', error);
+            // Non-fatal - continue without persistence
+            // This can happen in private browsing mode or if storage is full
+        }
+    }
+    
+    /**
+     * Restore session from localStorage
+     * Called on page load to check for interrupted sessions
+     * @returns {Object|null} Restored session data or null
+     */
+    restoreSession() {
+        try {
+            const stored = localStorage.getItem('ghost_gym_active_workout_session');
+            if (!stored) {
+                console.log('ℹ️ No persisted session found');
+                return null;
+            }
+            
+            const sessionData = JSON.parse(stored);
+            
+            // Validate required fields
+            if (!sessionData.sessionId || !sessionData.workoutId || !sessionData.startedAt) {
+                console.warn('⚠️ Invalid session data, clearing...');
+                this.clearPersistedSession();
+                return null;
+            }
+            
+            // Check expiration (24 hours)
+            const lastUpdated = new Date(sessionData.lastUpdated);
+            const hoursSinceUpdate = (Date.now() - lastUpdated.getTime()) / (1000 * 60 * 60);
+            
+            if (hoursSinceUpdate > 24) {
+                console.log('⏰ Session expired (>24 hours), clearing...');
+                this.clearPersistedSession();
+                return null;
+            }
+            
+            console.log('✅ Session restored:', sessionData.sessionId);
+            return sessionData;
+            
+        } catch (error) {
+            console.error('❌ Error restoring session:', error);
+            this.clearPersistedSession();
+            return null;
+        }
+    }
+    
+    /**
+     * Clear persisted session from localStorage
+     * Called when session is completed or explicitly abandoned
+     */
+    clearPersistedSession() {
+        try {
+            localStorage.removeItem('ghost_gym_active_workout_session');
+            console.log('🧹 Persisted session cleared');
+        } catch (error) {
+            console.error('❌ Error clearing persisted session:', error);
+        }
+    }
+    
+    /**
+     * Check if a persisted session exists
+     * @returns {boolean} True if persisted session exists
+     */
+    hasPersistedSession() {
+        return !!localStorage.getItem('ghost_gym_active_workout_session');
     }
 }
 

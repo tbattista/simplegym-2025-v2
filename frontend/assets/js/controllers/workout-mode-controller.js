@@ -72,6 +72,15 @@ class WorkoutModeController {
                 this.handleAuthStateChange(user);
             });
             
+            // ✨ SESSION PERSISTENCE: Check for persisted session FIRST
+            const persistedSession = this.sessionService.restoreSession();
+            
+            if (persistedSession) {
+                console.log('🔄 Found persisted session, showing resume prompt...');
+                await this.showResumeSessionPrompt(persistedSession);
+                return; // Stop normal initialization - user will choose to resume or start fresh
+            }
+            
             // Get workout ID from URL
             const workoutId = this.getWorkoutIdFromUrl();
             if (!workoutId) {
@@ -848,6 +857,29 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
             return;
         }
         
+        // ✨ SESSION PERSISTENCE: Check if there's a different persisted session
+        const persistedSession = this.sessionService.restoreSession();
+        if (persistedSession && persistedSession.workoutId !== this.currentWorkout.id) {
+            const modalManager = this.getModalManager();
+            modalManager.confirm(
+                'Active Session Found',
+                `You have an active session for <strong>${this.escapeHtml(persistedSession.workoutName)}</strong>. Starting a new workout will end that session. Continue?`,
+                async () => {
+                    // User chose to start fresh - clear old session and start new one
+                    this.sessionService.clearPersistedSession();
+                    await this.startNewSession();
+                }
+            );
+            return;
+        }
+        
+        await this.startNewSession();
+    }
+    
+    /**
+     * Start a new workout session (extracted for reuse)
+     */
+    async startNewSession() {
         try {
             // Start session using service
             await this.sessionService.startSession(this.currentWorkout.id, this.currentWorkout.name);
@@ -1174,6 +1206,207 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
         
         // Show modal
         modal.show();
+    }
+    
+    /**
+     * SESSION PERSISTENCE METHODS
+     * Handle resuming interrupted workout sessions
+     */
+    
+    /**
+     * Show resume session prompt
+     * @param {Object} sessionData - Persisted session data
+     */
+    async showResumeSessionPrompt(sessionData) {
+        // Calculate elapsed time
+        const startedAt = new Date(sessionData.startedAt);
+        const elapsedMinutes = Math.floor((Date.now() - startedAt.getTime()) / (1000 * 60));
+        const elapsedHours = Math.floor(elapsedMinutes / 60);
+        const remainingMinutes = elapsedMinutes % 60;
+        
+        // Format elapsed time display
+        let elapsedDisplay;
+        if (elapsedHours > 0) {
+            elapsedDisplay = `${elapsedHours}h ${remainingMinutes}m ago`;
+        } else {
+            elapsedDisplay = `${elapsedMinutes} minutes ago`;
+        }
+        
+        // Count exercises with weights
+        const exercisesWithWeights = Object.keys(sessionData.exercises || {}).filter(
+            name => sessionData.exercises[name].weight
+        ).length;
+        const totalExercises = Object.keys(sessionData.exercises || {}).length;
+        
+        // Create offcanvas HTML
+        const offcanvasHtml = `
+            <div class="offcanvas offcanvas-bottom" tabindex="-1" id="resumeSessionOffcanvas"
+                 aria-labelledby="resumeSessionOffcanvasLabel" data-bs-backdrop="static" data-bs-keyboard="false">
+                <div class="offcanvas-header border-bottom bg-primary">
+                    <h5 class="offcanvas-title text-white" id="resumeSessionOffcanvasLabel">
+                        <i class="bx bx-history me-2"></i>Resume Workout?
+                    </h5>
+                </div>
+                <div class="offcanvas-body">
+                    <div class="text-center mb-4">
+                        <div class="mb-3">
+                            <i class="bx bx-dumbbell" style="font-size: 3rem; color: var(--bs-primary);"></i>
+                        </div>
+                        <h5 class="mb-2">${this.escapeHtml(sessionData.workoutName)}</h5>
+                        <p class="text-muted mb-0">You have an active workout session</p>
+                    </div>
+                    
+                    <!-- Session Info -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-6">
+                            <div class="card bg-label-primary">
+                                <div class="card-body text-center py-3">
+                                    <div class="h5 mb-0">${elapsedDisplay}</div>
+                                    <small class="text-muted">Started</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="card bg-label-success">
+                                <div class="card-body text-center py-3">
+                                    <div class="h5 mb-0">${exercisesWithWeights}/${totalExercises}</div>
+                                    <small class="text-muted">Weights Set</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Info Alert -->
+                    <div class="alert alert-info d-flex align-items-start mb-4">
+                        <i class="bx bx-info-circle me-2 mt-1"></i>
+                        <div>
+                            <strong>Your progress is saved</strong>
+                            <p class="mb-0 small">Resume to continue where you left off, or start fresh to begin a new session.</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Action Buttons -->
+                    <div class="d-flex flex-column gap-2">
+                        <button type="button" class="btn btn-primary" id="resumeSessionBtn">
+                            <i class="bx bx-play me-1"></i>Resume Workout
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" id="startFreshBtn">
+                            <i class="bx bx-refresh me-1"></i>Start Fresh
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Remove existing offcanvas if any
+        const existingOffcanvas = document.getElementById('resumeSessionOffcanvas');
+        if (existingOffcanvas) {
+            existingOffcanvas.remove();
+        }
+        
+        // Add offcanvas to body
+        document.body.insertAdjacentHTML('beforeend', offcanvasHtml);
+        
+        // Initialize Bootstrap offcanvas
+        const offcanvasElement = document.getElementById('resumeSessionOffcanvas');
+        const offcanvas = new window.bootstrap.Offcanvas(offcanvasElement);
+        
+        // Setup button handlers
+        const resumeBtn = document.getElementById('resumeSessionBtn');
+        const startFreshBtn = document.getElementById('startFreshBtn');
+        
+        resumeBtn.addEventListener('click', async () => {
+            resumeBtn.disabled = true;
+            resumeBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Resuming...';
+            
+            try {
+                await this.resumeSession(sessionData);
+                offcanvas.hide();
+            } catch (error) {
+                console.error('❌ Error resuming session:', error);
+                resumeBtn.disabled = false;
+                resumeBtn.innerHTML = '<i class="bx bx-play me-1"></i>Resume Workout';
+                this.showError(error.message);
+            }
+        });
+        
+        startFreshBtn.addEventListener('click', () => {
+            // Clear persisted session
+            this.sessionService.clearPersistedSession();
+            offcanvas.hide();
+            
+            // Continue with normal initialization
+            setTimeout(() => {
+                this.initialize();
+            }, 300);
+        });
+        
+        // Cleanup offcanvas on hide
+        offcanvasElement.addEventListener('hidden.bs.offcanvas', () => {
+            offcanvasElement.remove();
+        });
+        
+        // Show offcanvas
+        offcanvas.show();
+    }
+    
+    /**
+     * Resume a persisted session
+     * @param {Object} sessionData - Persisted session data
+     */
+    async resumeSession(sessionData) {
+        try {
+            console.log('🔄 Resuming workout session...');
+            
+            // Restore session to service
+            this.sessionService.currentSession = {
+                id: sessionData.sessionId,
+                workoutId: sessionData.workoutId,
+                workoutName: sessionData.workoutName,
+                startedAt: new Date(sessionData.startedAt),
+                status: sessionData.status,
+                exercises: sessionData.exercises || {}
+            };
+            
+            // Load the workout
+            await this.loadWorkout(sessionData.workoutId);
+            
+            // Update UI to show active session
+            this.updateSessionUI(true);
+            
+            // Start timer (will calculate from original start time)
+            this.startSessionTimer();
+            
+            // Calculate elapsed time for display
+            const elapsedMinutes = Math.floor(
+                (Date.now() - this.sessionService.currentSession.startedAt.getTime()) / (1000 * 60)
+            );
+            
+            // Show success message
+            if (window.showAlert) {
+                window.showAlert(
+                    `Workout resumed! You've been working out for ${elapsedMinutes} minutes.`,
+                    'success'
+                );
+            }
+            
+            console.log('✅ Session resumed successfully');
+            
+        } catch (error) {
+            console.error('❌ Error resuming session:', error);
+            
+            // Clear invalid session
+            this.sessionService.clearPersistedSession();
+            
+            // Show error and redirect
+            this.showError('Failed to resume workout. The workout may have been deleted.');
+            
+            setTimeout(() => {
+                window.location.href = 'workout-database.html';
+            }, 3000);
+            
+            throw error;
+        }
     }
     
     /**
