@@ -105,11 +105,6 @@ async function initializeExerciseDatabase(page) {
                     placeholder: 'All Levels'
                 },
                 {
-                    key: 'favoritesOnly',
-                    label: 'My Favorites Only',
-                    type: 'checkbox'
-                },
-                {
                     key: 'customOnly',
                     label: 'Custom Exercises Only',
                     type: 'checkbox'
@@ -689,6 +684,15 @@ async function toggleExerciseFavorite(exerciseId) {
             if (response.ok) {
                 window.ghostGym.exercises.favorites.delete(exerciseId);
                 console.log('✅ Removed from favorites');
+                
+                // If favorites filter is active, refresh the table to remove the exercise
+                if (filterBar) {
+                    const currentFilters = filterBar.getFilters();
+                    if (currentFilters.favoritesOnly) {
+                        console.log('🔄 Favorites filter active, refreshing table');
+                        applyFiltersAndRender(currentFilters);
+                    }
+                }
             } else {
                 // Revert optimistic update on failure
                 if (button && icon) {
@@ -719,7 +723,7 @@ async function toggleExerciseFavorite(exerciseId) {
             }
         }
         
-        // Don't refresh the entire table - just update stats
+        // Update stats
         updateStats();
         
     } catch (error) {
@@ -886,6 +890,7 @@ function updateFavoritesButtonState(isActive) {
 // Export for global access
 window.exerciseTable = exerciseTable;
 window.filterBar = filterBar;
+window.applyFiltersAndRender = applyFiltersAndRender;
 window.toggleExerciseFavorite = toggleExerciseFavorite;
 window.showExerciseDetails = showExerciseDetails;
 window.initSearchOverlay = initSearchOverlay;
