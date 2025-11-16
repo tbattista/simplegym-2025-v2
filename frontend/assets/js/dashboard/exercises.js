@@ -163,54 +163,54 @@ async function initializeExerciseDatabase(page) {
             });
         }
         
-        // Initialize DataTable component with card-style layout
+        // Initialize DataTable component with compact single-line cards
         exerciseTable = new GhostGymDataTable('exerciseTableContainer', {
             columns: [
                 {
                     key: 'card',
-                    label: 'EXERCISE NAME',
+                    label: '',
                     sortable: false,
                     render: (value, row) => {
                         const isCustom = !row.isGlobal;
                         const tierBadge = getTierBadgeCompact(row);
                         const isFavorited = window.ghostGym.exercises.favorites.has(row.id);
-                        
-                        // Difficulty badge with popover
                         const difficultyBadge = row.difficultyLevel ? getDifficultyBadgeWithPopover(row.difficultyLevel) : '';
                         
                         return `
-                            <div class="exercise-card">
-                                <div class="exercise-card-single-line">
-                                    <div class="exercise-card-info">
-                                        <div class="exercise-card-title">
-                                            ${isCustom ? '<i class="bx bx-user text-primary me-1" style="font-size: 0.875rem;"></i>' : ''}
-                                            <span class="fw-semibold">${exercisePage.escapeHtml(row.name)}</span>
+                            <div class="card mb-0" style="margin-bottom: 0.375rem !important;">
+                                <div class="card-body p-3">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="flex-grow-1">
+                                            <div class="fw-semibold mb-2">
+                                                ${isCustom ? '<i class="bx bx-user text-primary me-1" style="font-size: 0.875rem;"></i>' : ''}
+                                                ${exercisePage.escapeHtml(row.name)}
+                                            </div>
+                                            <div class="d-flex gap-2 flex-wrap align-items-center">
+                                                ${tierBadge}
+                                                ${difficultyBadge}
+                                                ${row.targetMuscleGroup ? `<span class="text-muted small">${exercisePage.escapeHtml(row.targetMuscleGroup)}</span>` : ''}
+                                                ${row.primaryEquipment ? `<span class="text-muted small">• ${exercisePage.escapeHtml(row.primaryEquipment)}</span>` : ''}
+                                            </div>
                                         </div>
-                                        <div class="exercise-card-meta">
-                                            ${tierBadge}
-                                            ${difficultyBadge}
-                                            ${row.targetMuscleGroup ? `<span class="text-muted">${exercisePage.escapeHtml(row.targetMuscleGroup)}</span>` : ''}
-                                            ${row.primaryEquipment ? `<span class="text-muted">• ${exercisePage.escapeHtml(row.primaryEquipment)}</span>` : ''}
-                                        </div>
-                                    </div>
-                                    <div class="exercise-card-actions">
-                                        <button class="btn btn-sm btn-icon favorite-btn ${isFavorited ? 'favorited' : ''}"
-                                                data-exercise-id="${row.id}"
-                                                title="${isFavorited ? 'Remove from favorites' : 'Add to favorites'}">
-                                            <i class="bx ${isFavorited ? 'bxs-heart text-danger' : 'bx-heart'}"></i>
-                                        </button>
-                                        <div class="dropdown">
-                                            <button type="button" class="btn btn-sm btn-icon dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
-                                                <i class="bx bx-dots-vertical-rounded"></i>
+                                        <div class="d-flex gap-2 align-items-center flex-shrink-0 ms-3">
+                                            <button class="btn btn-sm btn-icon favorite-btn ${isFavorited ? 'text-danger' : ''}"
+                                                    data-exercise-id="${row.id}"
+                                                    title="${isFavorited ? 'Remove from favorites' : 'Add to favorites'}">
+                                                <i class="bx ${isFavorited ? 'bxs-heart' : 'bx-heart'}"></i>
                                             </button>
-                                            <div class="dropdown-menu dropdown-menu-end">
-                                                <a class="dropdown-item view-details-link" href="javascript:void(0);" data-exercise-id="${row.id}">
-                                                    <i class="bx bx-info-circle me-2"></i>View Details
-                                                </a>
-                                                <a class="dropdown-item add-to-workout-link" href="javascript:void(0);"
-                                                   data-exercise-id="${row.id}" data-exercise-name="${exercisePage.escapeHtml(row.name)}">
-                                                    <i class="bx bx-plus me-2"></i>Add to Workout
-                                                </a>
+                                            <div class="dropdown">
+                                                <button type="button" class="btn btn-sm btn-icon dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
+                                                    <i class="bx bx-dots-vertical-rounded"></i>
+                                                </button>
+                                                <div class="dropdown-menu dropdown-menu-end">
+                                                    <a class="dropdown-item view-details-link" href="javascript:void(0);" data-exercise-id="${row.id}">
+                                                        <i class="bx bx-info-circle me-2"></i>View Details
+                                                    </a>
+                                                    <a class="dropdown-item add-to-workout-link" href="javascript:void(0);"
+                                                       data-exercise-id="${row.id}" data-exercise-name="${exercisePage.escapeHtml(row.name)}">
+                                                        <i class="bx bx-plus me-2"></i>Add to Workout
+                                                    </a>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -225,7 +225,6 @@ async function initializeExerciseDatabase(page) {
             pageSizeOptions: [25, 50, 100, 250],
             emptyMessage: 'No exercises found. Try adjusting your filters or search query.',
             loadingMessage: 'Loading exercises...',
-            tableClass: 'table exercise-card-table mb-0',
             onRowClick: null,
             onPageChange: (page, info) => {
                 console.log(`📄 Page ${page}: showing ${info.startIndex}-${info.endIndex} of ${info.totalItems}`);
@@ -547,7 +546,7 @@ function getDifficultyBadgeWithPopover(difficulty) {
     
     return `
         <span class="badge badge-outline-${info.color} difficulty-badge"
-              style="font-size: 0.7rem; padding: 0.25rem 0.5rem; cursor: help; background: transparent;"
+              style="font-size: 0.75rem; padding: 0.3rem 0.6rem; cursor: help; background: transparent;"
               data-bs-toggle="popover"
               data-bs-trigger="click hover focus"
               data-bs-placement="top"
@@ -568,9 +567,9 @@ function getTierBadgeCompact(exercise) {
     const isFoundational = exercise.isFoundational || false;
     
     if (isFoundational || exerciseTier === 1) {
-        return '<span class="badge" style="font-size: 0.65rem; padding: 0.15rem 0.35rem; background: rgba(139, 92, 246, 0.1); color: #8b5cf6; border: 1px solid rgba(139, 92, 246, 0.25);"><i class="bx bxs-star" style="font-size: 0.7rem;"></i> Standard</span>';
+        return '<span class="badge" style="font-size: 0.75rem; padding: 0.25rem 0.5rem; background: rgba(139, 92, 246, 0.1); color: #8b5cf6; border: 1px solid rgba(139, 92, 246, 0.25);"><i class="bx bxs-star" style="font-size: 0.75rem;"></i> Standard</span>';
     } else if (exerciseTier === 3) {
-        return '<span class="badge bg-secondary" style="font-size: 0.65rem; padding: 0.15rem 0.35rem; opacity: 0.7;"><i class="bx bx-dots-horizontal-rounded" style="font-size: 0.7rem;"></i></span>';
+        return '<span class="badge bg-secondary" style="font-size: 0.75rem; padding: 0.25rem 0.5rem; opacity: 0.7;"><i class="bx bx-dots-horizontal-rounded" style="font-size: 0.75rem;"></i></span>';
     }
     return '';
 }

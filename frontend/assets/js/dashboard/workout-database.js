@@ -190,7 +190,7 @@ function filterWorkouts() {
     let filtered = [...window.ghostGym.workoutDatabase.all];
     
     // Get filter values from state
-    const searchTerm = document.getElementById('searchInput')?.value.toLowerCase() || '';
+    const searchTerm = window.ghostGym.workoutDatabase.filters.search || '';
     const selectedTags = window.ghostGym.workoutDatabase.filters.tags || [];
     const sortBy = window.ghostGym.workoutDatabase.filters.sortBy || 'modified_date';
     
@@ -329,7 +329,7 @@ function renderWorkoutTable() {
     const paginationHTML = renderPaginationControls(filtered.length, currentPage, pageSize);
     
     container.innerHTML = `
-        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 p-1">
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3">
             ${cardsHTML}
         </div>
         ${paginationHTML}
@@ -340,11 +340,11 @@ function renderWorkoutTable() {
  * Create a single workout card
  */
 function createWorkoutCard(workout) {
-    // Get exercise list (first 2 lines worth)
+    // Get exercise list
     const exercises = getWorkoutExercisesList(workout);
-    const exercisesPreview = exercises.slice(0, 6).map(e => truncateText(e, 15)).join(', ');
+    const exercisesPreview = exercises.slice(0, 3).map(e => escapeHtml(e)).join(' • ');
     
-    // Get tags
+    // Get metadata
     const tags = workout.tags || [];
     const groupCount = workout.exercise_groups?.length || 0;
     const totalExercises = getTotalExerciseCount(workout);
@@ -352,39 +352,42 @@ function createWorkoutCard(workout) {
     return `
         <div class="col">
             <div class="card h-100">
-                <div class="card-body p-3">
-                    <!-- Top Row: Name and Badges -->
-                    <div class="d-flex justify-content-between align-items-start mb-2">
-                        <h6 class="mb-0 me-2">${escapeHtml(workout.name)}</h6>
-                        <div class="d-flex gap-1 flex-shrink-0">
-                            <span class="badge bg-label-primary">${groupCount} groups</span>
-                            <span class="badge bg-label-info">${totalExercises} exercises</span>
-                        </div>
+                <div class="card-body">
+                    <!-- Card Title -->
+                    <h5 class="card-title mb-2">${escapeHtml(workout.name)}</h5>
+                    
+                    <!-- Metadata Badges -->
+                    <div class="mb-2">
+                        <span class="badge bg-label-primary me-1">${groupCount} ${groupCount === 1 ? 'group' : 'groups'}</span>
+                        <span class="badge bg-label-info">${totalExercises} ${totalExercises === 1 ? 'exercise' : 'exercises'}</span>
                     </div>
                     
-                    <!-- Exercise Preview (1-2 lines) -->
-                    <div class="mb-2 small text-muted" style="line-height: 1.4; max-height: 2.8em; overflow: hidden;">
-                        ${exercisesPreview || 'No exercises yet'}
-                    </div>
+                    <!-- Exercise Preview -->
+                    <p class="card-text text-muted small mb-2" style="min-height: 2.2em; line-height: 1.3;">
+                        ${exercisesPreview || 'No exercises added yet'}
+                    </p>
                     
                     <!-- Tags (if any) -->
                     ${tags.length > 0 ? `
-                        <div class="mb-2">
-                            ${tags.slice(0, 2).map(tag => `<span class="badge bg-label-secondary me-1 small">${escapeHtml(tag)}</span>`).join('')}
-                        </div>
+                    <div class="mb-2">
+                        ${tags.slice(0, 3).map(tag => `<span class="badge bg-label-secondary me-1 small">${escapeHtml(tag)}</span>`).join('')}
+                        ${tags.length > 3 ? `<span class="badge bg-label-secondary small">+${tags.length - 3}</span>` : ''}
+                    </div>
                     ` : ''}
                     
-                    <!-- Action Buttons (Full Width Row) -->
-                    <div class="btn-group btn-group-sm w-100 mt-2" role="group">
-                        <button class="btn btn-primary" onclick="viewWorkoutDetails('${workout.id}')" title="View Details">
-                            <i class="bx bx-show me-1"></i>View
+                    <!-- Action Buttons -->
+                    <div class="d-grid gap-2 mt-auto">
+                        <button class="btn btn-primary btn-sm" onclick="doWorkout('${workout.id}')">
+                            <i class="bx bx-play me-1"></i>Start Workout
                         </button>
-                        <button class="btn btn-outline-primary" onclick="editWorkout('${workout.id}')" title="Edit Workout">
-                            <i class="bx bx-edit me-1"></i>Edit
-                        </button>
-                        <button class="btn btn-outline-secondary" onclick="doWorkout('${workout.id}')" title="Start Workout">
-                            <i class="bx bx-play me-1"></i>Start
-                        </button>
+                        <div class="btn-group btn-group-sm" role="group">
+                            <button class="btn btn-outline-secondary" onclick="viewWorkoutDetails('${workout.id}')">
+                                <i class="bx bx-show me-1"></i>View
+                            </button>
+                            <button class="btn btn-outline-secondary" onclick="editWorkout('${workout.id}')">
+                                <i class="bx bx-edit me-1"></i>Edit
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -853,6 +856,144 @@ function getTotalExerciseCount(workout) {
 
 /**
  * ============================================
+ * SEARCH OVERLAY MANAGEMENT
+ * ============================================
+ */
+
+/**
+ * Initialize search overlay
+ */
+function initSearchOverlay() {
+    const overlay = document.getElementById('searchOverlay');
+    const input = document.getElementById('searchOverlayInput');
+    const closeBtn = overlay?.querySelector('.search-overlay-close');
+    
+    if (!overlay || !input) {
+        console.warn('⚠️ Search overlay elements not found');
+        return;
+    }
+    
+    // Close button handler
+    closeBtn?.addEventListener('click', hideSearchOverlay);
+    
+    // Search input handler with debouncing
+    let searchTimeout;
+    input.addEventListener('input', function() {
+        clearTimeout(searchTimeout);
+        
+        const searchTerm = this.value.trim();
+        
+        // Update results count immediately
+        updateSearchResultsCount(searchTerm);
+        
+        // Debounce actual filtering
+        searchTimeout = setTimeout(() => {
+            performSearch(searchTerm);
+        }, 300);
+    });
+    
+    // Keyboard shortcuts
+    input.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            hideSearchOverlay();
+        }
+    });
+    
+    // Click outside to close
+    document.addEventListener('click', function(e) {
+        if (overlay.classList.contains('active') &&
+            !overlay.contains(e.target) &&
+            !e.target.closest('[data-action="left-1"]')) {
+            hideSearchOverlay();
+        }
+    });
+    
+    console.log('✅ Search overlay initialized');
+}
+
+/**
+ * Show search overlay
+ */
+function showSearchOverlay() {
+    const overlay = document.getElementById('searchOverlay');
+    const input = document.getElementById('searchOverlayInput');
+    
+    if (!overlay || !input) return;
+    
+    // Show overlay
+    overlay.classList.add('active');
+    
+    // Focus input after animation
+    setTimeout(() => {
+        input.focus();
+    }, 100);
+    
+    // Update results count
+    updateSearchResultsCount(input.value.trim());
+    
+    console.log('🔍 Search overlay shown');
+}
+
+/**
+ * Hide search overlay
+ */
+function hideSearchOverlay() {
+    const overlay = document.getElementById('searchOverlay');
+    const input = document.getElementById('searchOverlayInput');
+    
+    if (!overlay) return;
+    
+    // Hide overlay
+    overlay.classList.remove('active');
+    
+    // Clear search if empty
+    if (input && !input.value.trim()) {
+        performSearch('');
+    }
+    
+    console.log('🔍 Search overlay hidden');
+}
+
+/**
+ * Perform search with given term
+ */
+function performSearch(searchTerm) {
+    // Update global state
+    window.ghostGym.workoutDatabase.filters.search = searchTerm;
+    
+    // Use existing filter function
+    filterWorkouts();
+    
+    console.log('🔍 Search performed:', searchTerm);
+}
+
+/**
+ * Update search results count display
+ */
+function updateSearchResultsCount(searchTerm) {
+    const countEl = document.getElementById('searchResultsCount');
+    if (!countEl) return;
+    
+    if (!searchTerm) {
+        countEl.textContent = '';
+        return;
+    }
+    
+    // Calculate matching workouts
+    const filtered = window.ghostGym.workoutDatabase.all.filter(workout => {
+        return workout.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+               (workout.description || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+               (workout.tags || []).some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
+    });
+    
+    const count = filtered.length;
+    const total = window.ghostGym.workoutDatabase.all.length;
+    
+    countEl.textContent = `${count} of ${total} workouts`;
+}
+
+/**
+ * ============================================
  * UI STATE MANAGEMENT
  * ============================================
  */
@@ -909,5 +1050,8 @@ window.editWorkout = editWorkout;
 window.doWorkout = doWorkout;
 window.viewWorkoutDetails = viewWorkoutDetails;
 window.createNewWorkout = createNewWorkout;
+window.initSearchOverlay = initSearchOverlay;
+window.showSearchOverlay = showSearchOverlay;
+window.hideSearchOverlay = hideSearchOverlay;
 
 console.log('📦 Workout Database module loaded (v2.0 - using common-utils)');

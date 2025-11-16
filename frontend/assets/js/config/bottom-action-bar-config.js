@@ -34,12 +34,11 @@
                 {
                     icon: 'bx-search',
                     label: 'Search',
-                    title: 'Focus search',
+                    title: 'Search workouts',
                     action: function() {
-                        const searchInput = document.getElementById('searchInput');
-                        if (searchInput) {
-                            searchInput.focus();
-                            searchInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        // Show search overlay
+                        if (window.showSearchOverlay) {
+                            window.showSearchOverlay();
                         }
                     }
                 }

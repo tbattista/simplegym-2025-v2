@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="en" class="layout-menu-fixed layout-compact" data-assets-path="/static/assets/">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+    <title>Workout Cards Demo - Ghost Gym</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/static/assets/vendor/fonts/iconify-icons.css" />
+
+    <!-- Core CSS -->
+    <link rel="stylesheet" href="/static/assets/vendor/css/core.css" />
+    <link rel="stylesheet" href="/static/assets/css/demo.css" />
+    <link rel="stylesheet" href="/static/assets/css/ghost-gym-custom.css" />
+</head>
+
+<body>
+    <div class="container-xxl flex-grow-1 container-p-y" style="padding-top: 2rem;">
+        
+        <!-- Workout List Section -->
+        <div class="mb-3">
+            <h6 class="mb-2">
+                <i class="bx bx-list-ul me-1"></i>
+                Workout List
+            </h6>
+            <p class="text-muted small mb-3">Browse and manage your 10 workout templates</p>
+            
+            <!-- Workout Cards Grid -->
+            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                
+                <!-- Card 1: With Tags -->
+                <div class="col">
+                    <div class="card h-100">
+                        <div class="card-body p-3">
+                            <!-- Top Row: Name and Badges -->
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h6 class="mb-0 me-2">Push Day - Upper Body</h6>
+                                <div class="d-flex gap-1 flex-shrink-0">
+                                    <span class="badge bg-label-primary">3 groups</span>
+                                    <span class="badge bg-label-info">5 exercises</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Exercise Preview (1-2 lines) -->
+                            <div class="mb-2 small text-muted" style="line-height: 1.4; max-height: 2.8em; overflow: hidden;">
+                                Bench Press, Incline Dumbbell Press, Cable Flyes, Overhead Press, Tricep Dips
+                            </div>
+                            
+                            <!-- Tags -->
+                            <div class="mb-2">
+                                <span class="badge bg-label-secondary me-1 small">chest</span>
+                                <span class="badge bg-label-secondary me-1 small">push</span>
+                            </div>
+                            
+                            <!-- Action Buttons (Full Width Row) -->
+                            <div class="btn-group btn-group-sm w-100 mt-2" role="group">
+                                <button class="btn btn-primary" title="View Details">
+                                    <i class="bx bx-show me-1"></i>View
+                                </button>
+                                <button class="btn btn-outline-primary" title="Edit Workout">
+                                    <i class="bx bx-edit me-1"></i>Edit
+                                </button>
+                                <button class="btn btn-outline-secondary" title="Start Workout">
+                                    <i class="bx bx-play me-1"></i>Start
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 2: Without Tags -->
+                <div class="col">
+                    <div class="card h-100">
+                        <div class="card-body p-3">
+                            <!-- Top Row: Name and Badges -->
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h6 class="mb-0 me-2">Leg Day</h6>
+                                <div class="d-flex gap-1 flex-shrink-0">
+                                    <span class="badge bg-label-primary">2 groups</span>
+                                    <span class="badge bg-label-info">4 exercises</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Exercise Preview (1-2 lines) -->
+                            <div class="mb-2 small text-muted" style="line-height: 1.4; max-height: 2.8em; overflow: hidden;">
+                                Squats, Leg Press, Romanian Deadlifts, Leg Curls
+                            </div>
+                            
+                            <!-- Action Buttons (Full Width Row) -->
+                            <div class="btn-group btn-group-sm w-100 mt-2" role="group">
+                                <button class="btn btn-primary" title="View Details">
+                                    <i class="bx bx-show me-1"></i>View
+                                </button>
+                                <button class="btn btn-outline-primary" title="Edit Workout">
+                                    <i class="bx bx-edit me-1"></i>Edit
+                                </button>
+                                <button class="btn btn-outline-secondary" title="Start Workout">
+                                    <i class="bx bx-play me-1"></i>Start
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 3: Long Name -->
+                <div class="col">
+                    <div class="card h-100">
+                        <div class="card-body p-3">
+                            <!-- Top Row: Name and Badges -->
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h6 class="mb-0 me-2">Full Body Strength Training Program</h6>
+                                <div class="d-flex gap-1 flex-shrink-0">
+                                    <span class="badge bg-label-primary">5 groups</span>
+                                    <span class="badge bg-label-info">8 exercises</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Exercise Preview (1-2 lines) -->
+                            <div class="mb-2 small text-muted" style="line-height: 1.4; max-height: 2.8em; overflow: hidden;">
+                                Deadlifts, Squats, Bench Press, Pull-ups, Overhead Press, Rows, Dips, Core Work
+                            </div>
+                            
+                            <!-- Tags -->
+                            <div class="mb-2">
+                                <span class="badge bg-label-secondary me-1 small">full-body</span>
+                            </div>
+                            
+                            <!-- Action Buttons (Full Width Row) -->
+                            <div class="btn-group btn-group-sm w-100 mt-2" role="group">
+                                <button class="btn btn-primary" title="View Details">
+                                    <i class="bx bx-show me-1"></i>View
+                                </button>
+                                <button class="btn btn-outline-primary" title="Edit Workout">
+                                    <i class="bx bx-edit me-1"></i>Edit
+                                </button>
+                                <button class="btn btn-outline-secondary" title="Start Workout">
+                                    <i class="bx bx-play me-1"></i>Start
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 4: Minimal Content -->
+                <div class="col">
+                    <div class="card h-100">
+                        <div class="card-body p-3">
+                            <!-- Top Row: Name and Badges -->
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h6 class="mb-0 me-2">Quick Workout</h6>
+                                <div class="d-flex gap-1 flex-shrink-0">
+                                    <span class="badge bg-label-primary">1 groups</span>
+                                    <span class="badge bg-label-info">2 exercises</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Exercise Preview (1-2 lines) -->
+                            <div class="mb-2 small text-muted" style="line-height: 1.4; max-height: 2.8em; overflow: hidden;">
+                                Push-ups, Squats
+                            </div>
+                            
+                            <!-- Action Buttons (Full Width Row) -->
+                            <div class="btn-group btn-group-sm w-100 mt-2" role="group">
+                                <button class="btn btn-primary" title="View Details">
+                                    <i class="bx bx-show me-1"></i>View
+                                </button>
+                                <button class="btn btn-outline-primary" title="Edit Workout">
+                                    <i class="bx bx-edit me-1"></i>Edit
+                                </button>
+                                <button class="btn btn-outline-secondary" title="Start Workout">
+                                    <i class="bx bx-play me-1"></i>Start
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 5: Multiple Tags -->
+                <div class="col">
+                    <div class="card h-100">
+                        <div class="card-body p-3">
+                            <!-- Top Row: Name and Badges -->
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h6 class="mb-0 me-2">Back & Biceps</h6>
+                                <div class="d-flex gap-1 flex-shrink-0">
+                                    <span class="badge bg-label-primary">4 groups</span>
+                                    <span class="badge bg-label-info">6 exercises</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Exercise Preview (1-2 lines) -->
+                            <div class="mb-2 small text-muted" style="line-height: 1.4; max-height: 2.8em; overflow: hidden;">
+                                Pull-ups, Barbell Rows, Lat Pulldowns, Cable Rows, Bicep Curls, Hammer Curls
+                            </div>
+                            
+                            <!-- Tags -->
+                            <div class="mb-2">
+                                <span class="badge bg-label-secondary me-1 small">back</span>
+                                <span class="badge bg-label-secondary me-1 small">pull</span>
+                            </div>
+                            
+                            <!-- Action Buttons (Full Width Row) -->
+                            <div class="btn-group btn-group-sm w-100 mt-2" role="group">
+                                <button class="btn btn-primary" title="View Details">
+                                    <i class="bx bx-show me-1"></i>View
+                                </button>
+                                <button class="btn btn-outline-primary" title="Edit Workout">
+                                    <i class="bx bx-edit me-1"></i>Edit
+                                </button>
+                                <button class="btn btn-outline-secondary" title="Start Workout">
+                                    <i class="bx bx-play me-1"></i>Start
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 6: No Exercises Yet -->
+                <div class="col">
+                    <div class="card h-100">
+                        <div class="card-body p-3">
+                            <!-- Top Row: Name and Badges -->
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h6 class="mb-0 me-2">New Workout Template</h6>
+                                <div class="d-flex gap-1 flex-shrink-0">
+                                    <span class="badge bg-label-primary">0 groups</span>
+                                    <span class="badge bg-label-info">0 exercises</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Exercise Preview (1-2 lines) -->
+                            <div class="mb-2 small text-muted" style="line-height: 1.4; max-height: 2.8em; overflow: hidden;">
+                                No exercises yet
+                            </div>
+                            
+                            <!-- Action Buttons (Full Width Row) -->
+                            <div class="btn-group btn-group-sm w-100 mt-2" role="group">
+                                <button class="btn btn-primary" title="View Details">
+                                    <i class="bx bx-show me-1"></i>View
+                                </button>
+                                <button class="btn btn-outline-primary" title="Edit Workout">
+                                    <i class="bx bx-edit me-1"></i>Edit
+                                </button>
+                                <button class="btn btn-outline-secondary" title="Start Workout">
+                                    <i class="bx bx-play me-1"></i>Start
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Note about the design -->
+        <div class="alert alert-info mt-4">
+            <h6 class="alert-heading">
+                <i class="bx bx-info-circle me-2"></i>
+                Workout Cards Demo
+            </h6>
+            <p class="mb-0">This page shows example workout cards with the new design:</p>
+            <ul class="mb-0 mt-2">
+                <li>Simple section label (h6) instead of card header</li>
+                <li>Cards display directly on page background</li>
+                <li>Consistent spacing with or without tags</li>
+                <li>Responsive grid layout (1 column mobile, 2 tablet, 3 desktop)</li>
+            </ul>
+        </div>
+
+    </div>
+
+    <!-- Core JS -->
+    <script src="/static/assets/vendor/libs/jquery/jquery.js"></script>
+    <script src="/static/assets/vendor/libs/popper/popper.js"></script>
+    <script src="/static/assets/vendor/js/bootstrap.js"></script>
+</body>
+</html>

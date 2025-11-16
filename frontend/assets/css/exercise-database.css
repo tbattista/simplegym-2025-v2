@@ -1,6 +1,162 @@
 /* ============================================
-   EXERCISE DATABASE STICKY FOOTER
-   Copied from workout-database.css for consistency
+   EXERCISE DATABASE STYLES
+   Compact card design matching workout database
+   ============================================ */
+
+/* Remove table borders and hide header */
+#exerciseTableContainer table,
+#exerciseTableContainer tbody,
+#exerciseTableContainer tr,
+#exerciseTableContainer td {
+    border: none !important;
+    background: transparent !important;
+    padding: 0 !important;
+}
+
+/* Ensure table is fully responsive */
+#exerciseTableContainer table {
+    width: 100% !important;
+    max-width: 100% !important;
+    table-layout: fixed !important;
+}
+
+#exerciseTableContainer .table-responsive {
+    overflow-x: visible !important;
+}
+
+/* Hide the table header row */
+#exerciseTableContainer thead,
+#exerciseTableContainer .datatable-header-row {
+    display: none !important;
+}
+
+/* Exercise cards with white fill and no borders */
+#exerciseTableContainer .card {
+    background-color: #fff !important;
+    border: none !important;
+    box-shadow: none !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow: visible !important;
+}
+
+#exerciseTableContainer .card .card-body {
+    overflow: visible !important;
+}
+
+/* Dark mode support */
+[data-bs-theme="dark"] #exerciseTableContainer .card {
+    background-color: #2b2c40 !important;
+}
+
+/* Compact card styling */
+.card .card-body {
+    padding: 1rem !important;
+}
+
+/* Exercise card title styling - stretch full width over buttons */
+#exerciseTableContainer .card .card-body > .d-flex {
+    position: relative;
+}
+
+#exerciseTableContainer .card .card-body .flex-grow-1 {
+    position: relative;
+    z-index: 2;
+    padding-right: 100px; /* Optimized space for buttons */
+    min-width: 0; /* Allow flex item to shrink below content size */
+    flex: 1 1 0%; /* Ensure it takes available space but can shrink */
+}
+
+#exerciseTableContainer .card .card-body .flex-grow-1 .fw-semibold {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+    width: 100%;
+    max-width: 100%; /* Ensure it doesn't exceed container */
+}
+
+#exerciseTableContainer .card .card-body .flex-shrink-0 {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 3;
+}
+
+/* Optimized icons for favorite and menu buttons */
+#exerciseTableContainer .btn-icon {
+    padding: 0.375rem !important;
+}
+
+#exerciseTableContainer .btn-icon i {
+    font-size: 1.5rem !important;
+    line-height: 1 !important;
+}
+
+#exerciseTableContainer .favorite-btn {
+    min-width: 40px;
+    min-height: 40px;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+#exerciseTableContainer .dropdown-toggle {
+    min-width: 40px;
+    min-height: 40px;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+/* Ensure dropdown menu appears above other cards */
+#exerciseTableContainer .dropdown {
+    position: static !important;
+}
+
+#exerciseTableContainer .dropdown-menu {
+    position: absolute !important;
+    z-index: 1050 !important;
+    will-change: transform;
+}
+
+/* Increase z-index of card when dropdown is open */
+#exerciseTableContainer .card:has(.dropdown.show) {
+    z-index: 1040 !important;
+    position: relative !important;
+}
+
+/* Ensure table cells don't clip dropdown */
+#exerciseTableContainer td {
+    overflow: visible !important;
+}
+
+#exerciseTableContainer tbody {
+    overflow: visible !important;
+}
+
+#exerciseTableContainer table {
+    overflow: visible !important;
+}
+
+#exerciseTableContainer .table-responsive {
+    overflow: visible !important;
+}
+
+/* Button sizing */
+.card .btn-sm {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.875rem;
+}
+
+.card .btn-group-sm .btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8125rem;
+}
+
+/* ============================================
+   STICKY FOOTER
    ============================================ */
 
 .exercise-database-footer {
@@ -11,17 +167,12 @@
     background: transparent;
     padding: 1rem;
     z-index: 1000;
-    
-    /* Adjust for sidebar on desktop */
     margin-left: var(--layout-menu-width, 260px);
     transition: margin-left 0.3s ease;
-    
-    /* Center content with max width */
     display: flex;
     justify-content: center;
 }
 
-/* Inner container with card styling */
 .exercise-database-footer > div {
     background: var(--bs-body-bg);
     border: 1px solid var(--bs-border-color);
@@ -32,7 +183,6 @@
     max-width: 600px;
 }
 
-/* Search input styling - subtle background to stand out */
 .exercise-database-footer #exerciseSearch {
     background-color: rgba(var(--bs-primary-rgb), 0.05);
     border-color: rgba(var(--bs-primary-rgb), 0.2);
@@ -45,28 +195,19 @@
     box-shadow: 0 0 0 0.2rem rgba(var(--bs-primary-rgb), 0.15);
 }
 
-/* When menu is collapsed */
 .layout-menu-collapsed .exercise-database-footer {
     margin-left: var(--layout-menu-collapsed-width, 80px);
 }
 
-/* Add padding to content to prevent overlap with sticky footer */
 .container-xxl.flex-grow-1.container-p-y {
-    padding-bottom: 200px !important;
+    padding-bottom: 180px !important;
 }
 
-/* Ensure card has space above footer */
-.card {
-    margin-bottom: 2rem;
-}
-
-/* Pagination needs extra bottom spacing */
 .pagination-container {
-    padding-bottom: 2rem;
-    margin-bottom: 1rem;
+    padding-bottom: 1.5rem;
+    margin-bottom: 0.5rem;
 }
 
-/* Dark theme support */
 [data-bs-theme="dark"] .exercise-database-footer > div {
     background: var(--bs-gray-900);
     border-color: var(--bs-gray-700);
@@ -74,11 +215,10 @@
 }
 
 /* ============================================
-   MOBILE RESPONSIVE FOR STICKY FOOTER
+   RESPONSIVE
    ============================================ */
 
 @media (max-width: 1199px) {
-    /* Remove sidebar offset on mobile */
     .exercise-database-footer {
         margin-left: 0;
     }
@@ -89,9 +229,28 @@
         padding: 0.75rem 1rem;
     }
     
-    /* Adjust content padding for mobile */
     .container-xxl.flex-grow-1.container-p-y {
         padding-bottom: 180px !important;
+    }
+    
+    /* Adjust card layout for tablets */
+    #exerciseTableContainer .card .card-body {
+        padding: 0.875rem !important;
+    }
+    
+    #exerciseTableContainer .card .card-body .flex-grow-1 {
+        padding-right: 90px; /* Optimized space for buttons */
+    }
+    
+    /* Proportional icons on tablets */
+    #exerciseTableContainer .btn-icon i {
+        font-size: 1.4rem !important;
+    }
+    
+    #exerciseTableContainer .favorite-btn,
+    #exerciseTableContainer .dropdown-toggle {
+        min-width: 38px;
+        min-height: 38px;
     }
 }
 
@@ -100,8 +259,50 @@
         padding: 0.625rem 0.875rem;
     }
     
-    /* Extra compact for very small screens */
     .container-xxl.flex-grow-1.container-p-y {
         padding-bottom: 160px !important;
+    }
+    
+    /* Optimize card layout for mobile */
+    #exerciseTableContainer .card .card-body {
+        padding: 0.75rem !important;
+    }
+    
+    #exerciseTableContainer .card .card-body .flex-grow-1 {
+        padding-right: 85px; /* Optimized space for buttons on mobile */
+    }
+    
+    /* Better fonts and badges for mobile */
+    #exerciseTableContainer .card .card-body .flex-grow-1 .fw-semibold {
+        font-size: 0.9rem;
+    }
+    
+    #exerciseTableContainer .card .card-body .flex-grow-1 .d-flex.gap-2 {
+        gap: 0.375rem !important;
+    }
+    
+    #exerciseTableContainer .card .card-body .flex-grow-1 .badge {
+        font-size: 0.7rem !important;
+        padding: 0.2rem 0.4rem !important;
+    }
+    
+    #exerciseTableContainer .card .card-body .flex-grow-1 .text-muted.small {
+        font-size: 0.75rem;
+    }
+    
+    /* Touch-friendly icons on mobile */
+    #exerciseTableContainer .btn-icon i {
+        font-size: 1.35rem !important;
+    }
+    
+    #exerciseTableContainer .favorite-btn,
+    #exerciseTableContainer .dropdown-toggle {
+        min-width: 36px;
+        min-height: 36px;
+    }
+    
+    /* Optimized gap between buttons */
+    #exerciseTableContainer .card .card-body .flex-shrink-0 {
+        gap: 0.5rem;
     }
 }
