@@ -458,3 +458,252 @@
         max-width: 250px;
     }
 }
+
+/* ============================================
+   NAVBAR SEARCH CONTAINER
+   ============================================ */
+
+.navbar-search-container {
+    display: flex;
+    align-items: center;
+    margin: 0 1rem;
+    flex: 0 1 auto;
+}
+
+/* ============================================
+   DESKTOP SEARCH (Always Visible)
+   ============================================ */
+
+.navbar-search-desktop {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    width: 350px;
+    max-width: 350px;
+}
+
+.navbar-search-desktop .search-input-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--bs-body-bg);
+    border: 1px solid var(--bs-border-color);
+    border-radius: var(--bs-border-radius);
+    padding: 0.375rem 0.75rem;
+    transition: all 0.2s ease;
+}
+
+.navbar-search-desktop .search-input-wrapper:focus-within {
+    border-color: var(--bs-primary);
+    box-shadow: 0 0 0 0.2rem rgba(var(--bs-primary-rgb), 0.25);
+}
+
+.navbar-search-input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    font-size: 16px; /* Prevent zoom on iOS */
+    padding: 0;
+    outline: none;
+    color: var(--bs-body-color);
+}
+
+.navbar-search-input::placeholder {
+    color: var(--bs-secondary);
+    opacity: 0.7;
+}
+
+.search-icon {
+    font-size: 1.25rem;
+    color: var(--bs-secondary);
+    flex-shrink: 0;
+}
+
+.search-clear {
+    opacity: 0.6;
+    transition: opacity 0.2s ease;
+    padding: 0.25rem;
+}
+
+.search-clear:hover {
+    opacity: 1;
+}
+
+.search-results-count {
+    font-size: 0.75rem;
+    color: var(--bs-secondary);
+    text-align: center;
+    min-height: 1rem;
+}
+
+/* ============================================
+   MOBILE SEARCH TOGGLE (Icon Button)
+   ============================================ */
+
+.navbar-search-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border: none;
+    background: transparent;
+    border-radius: 0.375rem;
+    color: var(--bs-body-color);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.navbar-search-toggle:hover {
+    background: rgba(67, 89, 113, 0.04);
+}
+
+.navbar-search-toggle i {
+    font-size: 1.5rem;
+}
+
+/* ============================================
+   MOBILE SEARCH (Expanded State)
+   ============================================ */
+
+.navbar-search-mobile {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: var(--bs-body-bg);
+    border-bottom: 1px solid var(--bs-border-color);
+    padding: 0.75rem 1rem;
+    z-index: 1050;
+    display: none;
+    flex-direction: column;
+    gap: 0.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.navbar-search-mobile.active {
+    display: flex;
+}
+
+.navbar-search-mobile .search-input-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--bs-body-bg);
+    border: 2px solid var(--bs-border-color);
+    border-radius: var(--bs-border-radius-lg);
+    padding: 0.5rem 0.75rem;
+    flex: 1;
+}
+
+.navbar-search-mobile .search-input-wrapper:focus-within {
+    border-color: var(--bs-primary);
+}
+
+.navbar-search-close {
+    position: absolute;
+    top: 50%;
+    right: 1rem;
+    transform: translateY(-50%);
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    background: transparent;
+    border-radius: 50%;
+    color: var(--bs-body-color);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.navbar-search-close:hover {
+    background: rgba(67, 89, 113, 0.08);
+}
+
+.navbar-search-close i {
+    font-size: 1.5rem;
+}
+
+/* Hide navbar elements when mobile search is active */
+body.mobile-search-active #navbarLeft,
+body.mobile-search-active #navbarRight {
+    display: none !important;
+}
+
+body.mobile-search-active .layout-navbar {
+    height: auto;
+    min-height: 56px;
+}
+
+/* ============================================
+   RESPONSIVE BREAKPOINTS FOR SEARCH
+   ============================================ */
+
+/* Tablet */
+@media (min-width: 768px) and (max-width: 1199px) {
+    .navbar-search-desktop {
+        width: 250px;
+        max-width: 250px;
+    }
+}
+
+/* Small tablet */
+@media (min-width: 768px) and (max-width: 991px) {
+    .navbar-search-desktop {
+        width: 200px;
+        max-width: 200px;
+    }
+}
+
+/* Mobile adjustments */
+@media (max-width: 767.98px) {
+    .navbar-search-container {
+        margin: 0 0.5rem;
+    }
+    
+    .navbar-search-mobile {
+        padding: 0.5rem 1rem;
+    }
+    
+    .navbar-search-mobile .search-results-count {
+        font-size: 0.7rem;
+    }
+}
+
+/* ============================================
+   DARK MODE FOR SEARCH
+   ============================================ */
+
+[data-theme="dark"] .navbar-search-mobile {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] .navbar-search-toggle:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="dark"] .navbar-search-close:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+/* ============================================
+   ACCESSIBILITY FOR SEARCH
+   ============================================ */
+
+.navbar-search-toggle:focus-visible,
+.navbar-search-close:focus-visible {
+    outline: 2px solid var(--bs-primary);
+    outline-offset: 2px;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    .navbar-search-desktop .search-input-wrapper,
+    .navbar-search-toggle,
+    .navbar-search-close,
+    .search-clear {
+        transition: none;
+    }
+}

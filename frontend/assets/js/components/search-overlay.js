@@ -2,6 +2,20 @@
  * Ghost Gym - Reusable Search Overlay Component
  * Provides a consistent search experience across all pages
  * @version 1.0.0
+ *
+ * ⚠️ DEPRECATED: This component has been replaced by navbar-integrated search
+ * @deprecated Since November 16, 2025
+ * @see frontend/assets/js/components/navbar-template.js - initializeNavbarSearch()
+ * @see SEARCH_NAVBAR_INTEGRATION_IMPLEMENTATION_SUMMARY.md
+ *
+ * This file is kept for reference during migration but is no longer used.
+ * The new navbar search provides better mobile keyboard handling with fixed positioning.
+ *
+ * To remove this file:
+ * 1. Verify navbar search works on all pages
+ * 2. Test thoroughly on mobile devices
+ * 3. Remove this file and search-overlay.css
+ * 4. Remove imports from HTML pages
  */
 
 class GhostGymSearchOverlay {

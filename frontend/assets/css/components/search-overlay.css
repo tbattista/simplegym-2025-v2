@@ -2,6 +2,14 @@
  * Ghost Gym - Search Overlay Component Styles
  * Reusable bottom slide-up search overlay
  * @version 1.0.0
+ *
+ * ⚠️ DEPRECATED: This stylesheet has been replaced by navbar-integrated search
+ * @deprecated Since November 16, 2025
+ * @see frontend/assets/css/navbar-custom.css - Navbar search styles
+ * @see SEARCH_NAVBAR_INTEGRATION_IMPLEMENTATION_SUMMARY.md
+ *
+ * This file is kept for reference during migration but is no longer used.
+ * The new navbar search provides better mobile keyboard handling with fixed positioning.
  */
 
 /* ============================================

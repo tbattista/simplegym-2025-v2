@@ -52,15 +52,17 @@
                 title: 'Search workouts',
                 variant: 'primary',
                 action: function() {
-                    // Toggle search overlay
-                    const overlay = document.getElementById('searchOverlay');
-                    if (overlay && overlay.classList.contains('active')) {
-                        if (window.hideSearchOverlay) {
-                            window.hideSearchOverlay();
+                    // On mobile, expand navbar search
+                    if (window.innerWidth < 768) {
+                        const searchToggle = document.getElementById('navbarSearchToggle');
+                        if (searchToggle) {
+                            searchToggle.click();
                         }
                     } else {
-                        if (window.showSearchOverlay) {
-                            window.showSearchOverlay();
+                        // On desktop, focus navbar search input
+                        const searchInput = document.getElementById('navbarSearchInput');
+                        if (searchInput) {
+                            searchInput.focus();
                         }
                     }
                 }
@@ -299,15 +301,17 @@
                 title: 'Search exercises',
                 variant: 'primary',
                 action: function() {
-                    // Toggle search overlay
-                    const overlay = document.getElementById('searchOverlay');
-                    if (overlay && overlay.classList.contains('active')) {
-                        if (window.hideSearchOverlay) {
-                            window.hideSearchOverlay();
+                    // On mobile, expand navbar search
+                    if (window.innerWidth < 768) {
+                        const searchToggle = document.getElementById('navbarSearchToggle');
+                        if (searchToggle) {
+                            searchToggle.click();
                         }
                     } else {
-                        if (window.showSearchOverlay) {
-                            window.showSearchOverlay();
+                        // On desktop, focus navbar search input
+                        const searchInput = document.getElementById('navbarSearchInput');
+                        if (searchInput) {
+                            searchInput.focus();
                         }
                     }
                 }

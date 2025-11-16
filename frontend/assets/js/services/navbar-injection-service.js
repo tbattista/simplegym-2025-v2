@@ -11,19 +11,53 @@
 
     /**
      * Page configuration mapping
-     * Maps page identifiers to their display titles and icons
+     * Maps page identifiers to their display titles, icons, and search settings
      */
     const PAGE_CONFIGS = {
-        'index.html': { title: 'Dashboard', icon: 'bx-home' },
-        'workout-mode.html': { title: 'Workout Mode', icon: 'bx-play-circle' },
-        'workout-builder.html': { title: 'Workout Builder', icon: 'bx-dumbbell' },
-        'exercise-database.html': { title: 'Exercise Database', icon: 'bx-book-content' },
-        'workout-database.html': { title: 'Workout Database', icon: 'bx-library' },
-        'programs.html': { title: 'My Programs', icon: 'bx-folder' },
-        'public-workouts.html': { title: 'Public Workouts', icon: 'bx-globe' },
+        'index.html': {
+            title: 'Dashboard',
+            icon: 'bx-home',
+            showSearch: false
+        },
+        'workout-mode.html': {
+            title: 'Workout Mode',
+            icon: 'bx-play-circle',
+            showSearch: false
+        },
+        'workout-builder.html': {
+            title: 'Workout Builder',
+            icon: 'bx-dumbbell',
+            showSearch: false
+        },
+        'exercise-database.html': {
+            title: 'Exercise Database',
+            icon: 'bx-book-content',
+            showSearch: true,
+            searchPlaceholder: 'Search exercises...'
+        },
+        'workout-database.html': {
+            title: 'Workout Database',
+            icon: 'bx-library',
+            showSearch: true,
+            searchPlaceholder: 'Search workouts...'
+        },
+        'programs.html': {
+            title: 'My Programs',
+            icon: 'bx-folder',
+            showSearch: false
+        },
+        'public-workouts.html': {
+            title: 'Public Workouts',
+            icon: 'bx-globe',
+            showSearch: false
+        },
         
         // Fallback for unknown pages
-        'default': { title: 'Ghost Gym', icon: 'bx-home' }
+        'default': {
+            title: 'Ghost Gym',
+            icon: 'bx-home',
+            showSearch: false
+        }
     };
 
     /**
@@ -81,8 +115,11 @@
         const pageConfig = getCurrentPageConfig();
         console.log('📄 Page config:', pageConfig);
 
-        // Generate navbar HTML
-        const navbarHTML = window.getNavbarHTML(pageConfig.title, pageConfig.icon);
+        // Generate navbar HTML with search options
+        const navbarHTML = window.getNavbarHTML(pageConfig.title, pageConfig.icon, {
+            showSearch: pageConfig.showSearch || false,
+            searchPlaceholder: pageConfig.searchPlaceholder || 'Search...'
+        });
 
         // Create a temporary container to parse the HTML
         const tempDiv = document.createElement('div');
@@ -117,6 +154,13 @@
                 window.initializeNavbarAuth();
             } else {
                 console.warn('⚠️ initializeNavbarAuth not available');
+            }
+
+            // Initialize search if enabled on this page
+            if (typeof window.initializeNavbarSearch === 'function') {
+                window.initializeNavbarSearch();
+            } else {
+                console.warn('⚠️ initializeNavbarSearch not available');
             }
 
             console.log('✅ Navbar functionality initialized');

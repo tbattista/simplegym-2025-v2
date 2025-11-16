@@ -8,9 +8,14 @@
  * Generate the complete navbar HTML
  * @param {string} pageTitle - The title to display in the navbar
  * @param {string} pageIcon - Boxicons class for the page icon (e.g., 'bx-home')
+ * @param {Object} options - Optional configuration
+ * @param {boolean} options.showSearch - Whether to show search in navbar (default: false)
+ * @param {string} options.searchPlaceholder - Placeholder text for search input
  * @returns {string} Complete navbar HTML
  */
-function getNavbarHTML(pageTitle = 'Ghost Gym', pageIcon = 'bx-home') {
+function getNavbarHTML(pageTitle = 'Ghost Gym', pageIcon = 'bx-home', options = {}) {
+    const showSearch = options.showSearch || false;
+    const searchPlaceholder = options.searchPlaceholder || 'Search...';
     return `
         <nav class="layout-navbar navbar navbar-expand-xl align-items-center bg-navbar-theme"
              id="layout-navbar">
@@ -30,6 +35,54 @@ function getNavbarHTML(pageTitle = 'Ghost Gym', pageIcon = 'bx-home') {
                         <h5 class="mb-0 fw-semibold">${pageTitle}</h5>
                     </div>
                 </div>
+                
+                <!-- Center Section: Search (responsive) -->
+                ${showSearch ? `
+                <div class="navbar-search-container" id="navbarSearchContainer">
+                    <!-- Desktop Search (always visible) -->
+                    <div class="navbar-search-desktop d-none d-md-flex">
+                        <div class="search-input-wrapper">
+                            <i class="bx bx-search search-icon"></i>
+                            <input
+                                type="text"
+                                id="navbarSearchInput"
+                                class="form-control navbar-search-input"
+                                placeholder="${searchPlaceholder}"
+                                autocomplete="off"
+                                autocapitalize="off"
+                                spellcheck="false"
+                            />
+                            <button class="btn-close search-clear d-none" id="navbarSearchClear" aria-label="Clear search"></button>
+                        </div>
+                        <div class="search-results-count" id="navbarSearchCount"></div>
+                    </div>
+                    
+                    <!-- Mobile Search Toggle (collapsed state) -->
+                    <button class="navbar-search-toggle d-md-none" id="navbarSearchToggle" title="Search" aria-label="Open search">
+                        <i class="bx bx-search"></i>
+                    </button>
+                    
+                    <!-- Mobile Search (expanded state) -->
+                    <div class="navbar-search-mobile d-md-none" id="navbarSearchMobile">
+                        <div class="search-input-wrapper">
+                            <i class="bx bx-search search-icon"></i>
+                            <input
+                                type="text"
+                                id="navbarSearchInputMobile"
+                                class="form-control navbar-search-input"
+                                placeholder="${searchPlaceholder}"
+                                autocomplete="off"
+                                autocapitalize="off"
+                                spellcheck="false"
+                            />
+                        </div>
+                        <button class="navbar-search-close" id="navbarSearchClose" aria-label="Close search">
+                            <i class="bx bx-x"></i>
+                        </button>
+                        <div class="search-results-count" id="navbarSearchCountMobile"></div>
+                    </div>
+                </div>
+                ` : ''}
                 
                 <!-- Right Section: Utility Icons -->
                 <ul class="navbar-nav flex-row align-items-center ms-auto">
@@ -277,10 +330,182 @@ function updateNavbarAuthUI(user) {
     }
 }
 
+/**
+ * Initialize Navbar Search
+ * Handles both desktop and mobile search functionality
+ */
+function initializeNavbarSearch() {
+    console.log('🔍 Initializing navbar search...');
+    
+    const searchToggle = document.getElementById('navbarSearchToggle');
+    const searchMobile = document.getElementById('navbarSearchMobile');
+    const searchClose = document.getElementById('navbarSearchClose');
+    const searchInputDesktop = document.getElementById('navbarSearchInput');
+    const searchInputMobile = document.getElementById('navbarSearchInputMobile');
+    const searchClear = document.getElementById('navbarSearchClear');
+    const searchCountDesktop = document.getElementById('navbarSearchCount');
+    const searchCountMobile = document.getElementById('navbarSearchCountMobile');
+    
+    // Check if search is enabled on this page
+    if (!searchToggle && !searchInputDesktop) {
+        console.log('ℹ️ Search not enabled on this page');
+        return;
+    }
+    
+    let searchTimeout = null;
+    
+    // Mobile: Toggle search expansion
+    if (searchToggle && searchMobile) {
+        searchToggle.addEventListener('click', () => {
+            searchMobile.classList.add('active');
+            document.body.classList.add('mobile-search-active');
+            
+            // Focus input after animation
+            setTimeout(() => {
+                searchInputMobile?.focus();
+            }, 100);
+            
+            console.log('📱 Mobile search expanded');
+        });
+    }
+    
+    // Mobile: Close search
+    if (searchClose && searchMobile) {
+        searchClose.addEventListener('click', () => {
+            searchMobile.classList.remove('active');
+            document.body.classList.remove('mobile-search-active');
+            
+            // Clear search if empty
+            if (searchInputMobile && !searchInputMobile.value.trim()) {
+                performSearch('');
+            }
+            
+            console.log('📱 Mobile search collapsed');
+        });
+    }
+    
+    // Desktop: Search input handler
+    if (searchInputDesktop) {
+        searchInputDesktop.addEventListener('input', (e) => {
+            handleSearchInput(e.target.value, searchCountDesktop, searchClear);
+        });
+        
+        // ESC to clear
+        searchInputDesktop.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                searchInputDesktop.value = '';
+                performSearch('');
+                updateSearchCount('', searchCountDesktop);
+                searchClear?.classList.add('d-none');
+            }
+        });
+    }
+    
+    // Mobile: Search input handler
+    if (searchInputMobile) {
+        searchInputMobile.addEventListener('input', (e) => {
+            handleSearchInput(e.target.value, searchCountMobile, null);
+            
+            // Sync with desktop input
+            if (searchInputDesktop) {
+                searchInputDesktop.value = e.target.value;
+            }
+        });
+        
+        // ESC to close
+        searchInputMobile.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                searchClose?.click();
+            }
+        });
+    }
+    
+    // Clear button handler
+    if (searchClear) {
+        searchClear.addEventListener('click', () => {
+            if (searchInputDesktop) {
+                searchInputDesktop.value = '';
+                searchInputDesktop.focus();
+            }
+            if (searchInputMobile) {
+                searchInputMobile.value = '';
+            }
+            performSearch('');
+            updateSearchCount('', searchCountDesktop);
+            searchClear.classList.add('d-none');
+        });
+    }
+    
+    /**
+     * Handle search input with debouncing
+     */
+    function handleSearchInput(value, countElement, clearButton) {
+        clearTimeout(searchTimeout);
+        
+        // Show/hide clear button
+        if (clearButton) {
+            if (value.trim()) {
+                clearButton.classList.remove('d-none');
+            } else {
+                clearButton.classList.add('d-none');
+            }
+        }
+        
+        // Update count immediately
+        updateSearchCount(value, countElement);
+        
+        // Debounce actual search
+        searchTimeout = setTimeout(() => {
+            performSearch(value.trim());
+        }, 300);
+    }
+    
+    /**
+     * Perform search (integrates with existing search logic)
+     */
+    function performSearch(searchTerm) {
+        console.log('🔍 Searching:', searchTerm);
+        
+        // Call existing search function if available
+        if (window.applyFiltersAndRender) {
+            const currentFilters = window.filterBar?.getFilters() || {};
+            currentFilters.search = searchTerm;
+            window.applyFiltersAndRender(currentFilters);
+        }
+    }
+    
+    /**
+     * Update search results count
+     */
+    function updateSearchCount(searchTerm, countElement) {
+        if (!countElement) return;
+        
+        if (!searchTerm) {
+            countElement.textContent = '';
+            return;
+        }
+        
+        // Get count from data table or filter bar
+        let count = 0;
+        let total = 0;
+        
+        if (window.dataTable) {
+            const filteredData = window.dataTable.getFilteredData();
+            count = filteredData.length;
+            total = window.dataTable.data?.length || 0;
+        }
+        
+        countElement.textContent = `${count} of ${total} results`;
+    }
+    
+    console.log('✅ Navbar search initialized');
+}
+
 // Make functions globally available
 window.initializeNavbarThemeToggle = initializeNavbarThemeToggle;
 window.updateNavbarThemeIcon = updateNavbarThemeIcon;
 window.initializeNavbarAuth = initializeNavbarAuth;
 window.updateNavbarAuthUI = updateNavbarAuthUI;
+window.initializeNavbarSearch = initializeNavbarSearch;
 
 console.log('📦 Navbar template component loaded');
