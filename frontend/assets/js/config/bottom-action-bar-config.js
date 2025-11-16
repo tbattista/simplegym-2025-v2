@@ -36,9 +36,16 @@
                     label: 'Search',
                     title: 'Search workouts',
                     action: function() {
-                        // Show search overlay
-                        if (window.showSearchOverlay) {
-                            window.showSearchOverlay();
+                        // Toggle search overlay
+                        const overlay = document.getElementById('searchOverlay');
+                        if (overlay && overlay.classList.contains('active')) {
+                            if (window.hideSearchOverlay) {
+                                window.hideSearchOverlay();
+                            }
+                        } else {
+                            if (window.showSearchOverlay) {
+                                window.showSearchOverlay();
+                            }
                         }
                     }
                 }
@@ -70,12 +77,64 @@
                 {
                     icon: 'bx-info-circle',
                     label: 'Info',
-                    title: 'Workout statistics',
+                    title: 'Page information',
                     action: function() {
-                        const offcanvas = new bootstrap.Offcanvas(
-                            document.getElementById('filtersOffcanvas')
-                        );
-                        offcanvas.show();
+                        // Show info modal with page explanation
+                        const modalHtml = `
+                            <div class="modal fade" id="workoutDatabaseInfoModal" tabindex="-1" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">
+                                                <i class="bx bx-info-circle me-2"></i>
+                                                Workout Database
+                                            </h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <h6 class="mb-3">📚 What is this page?</h6>
+                                            <p class="mb-3">This is your personal workout library where you can browse, search, and manage all your workout templates.</p>
+                                            
+                                            <h6 class="mb-3">🔍 How to use:</h6>
+                                            <ul class="mb-3">
+                                                <li><strong>Search:</strong> Tap the Search button to find workouts by name, description, or tags</li>
+                                                <li><strong>Filter:</strong> Use the Filter button to narrow down by tags</li>
+                                                <li><strong>Sort:</strong> Tap Sort to organize by date, name, or exercise count</li>
+                                                <li><strong>Create:</strong> Tap the + button to build a new workout</li>
+                                            </ul>
+                                            
+                                            <h6 class="mb-3">💡 Quick Actions:</h6>
+                                            <ul class="mb-0">
+                                                <li><strong>Start Workout:</strong> Tap the purple button on any workout card</li>
+                                                <li><strong>View Details:</strong> Tap "View" to see full workout information</li>
+                                                <li><strong>Edit:</strong> Tap "Edit" to modify a workout template</li>
+                                            </ul>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Got it!</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        
+                        // Remove existing modal if present
+                        const existingModal = document.getElementById('workoutDatabaseInfoModal');
+                        if (existingModal) {
+                            existingModal.remove();
+                        }
+                        
+                        // Add modal to body
+                        document.body.insertAdjacentHTML('beforeend', modalHtml);
+                        
+                        // Show modal
+                        const modal = new bootstrap.Modal(document.getElementById('workoutDatabaseInfoModal'));
+                        modal.show();
+                        
+                        // Clean up after modal is hidden
+                        document.getElementById('workoutDatabaseInfoModal').addEventListener('hidden.bs.modal', function() {
+                            this.remove();
+                        });
                     }
                 }
             ]
