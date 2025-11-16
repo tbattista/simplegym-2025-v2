@@ -168,12 +168,16 @@
                     label: 'Go',
                     title: 'Start workout',
                     action: function() {
-                        // Get current workout ID
-                        const workoutId = window.ghostGym?.workoutBuilder?.currentWorkout?.id;
+                        // Get current workout ID - check selectedWorkoutId first (more reliable)
+                        const workoutId = window.ghostGym?.workoutBuilder?.selectedWorkoutId ||
+                                        window.ghostGym?.workoutBuilder?.currentWorkout?.id;
+                        
                         if (workoutId) {
+                            console.log('🏃 Starting workout mode with ID:', workoutId);
                             window.location.href = `workout-mode.html?id=${workoutId}`;
                         } else {
-                            alert('Please save the workout first');
+                            console.warn('⚠️ No workout ID available');
+                            alert('Please save the workout first before starting workout mode');
                         }
                     }
                 }
@@ -364,9 +368,13 @@
                 title: 'Start workout',
                 variant: 'success',
                 action: function() {
-                    const startBtn = document.getElementById('startWorkoutBtn');
-                    if (startBtn) {
-                        startBtn.click();
+                    console.log('▶️ Start workout button clicked');
+                    // Call controller method directly since #startWorkoutBtn doesn't exist in HTML
+                    if (window.workoutModeController && window.workoutModeController.handleStartWorkout) {
+                        window.workoutModeController.handleStartWorkout();
+                    } else {
+                        console.error('❌ Workout mode controller not available');
+                        alert('Workout mode is still loading. Please wait a moment and try again.');
                     }
                 }
             },
@@ -384,11 +392,12 @@
                     label: 'End',
                     title: 'End workout',
                     action: function() {
-                        const completeBtn = document.getElementById('completeWorkoutBtn');
-                        if (completeBtn && completeBtn.style.display !== 'none') {
-                            completeBtn.click();
+                        console.log('⏹️ End workout button clicked');
+                        // Call controller method directly since #completeWorkoutBtn doesn't exist in HTML
+                        if (window.workoutModeController && window.workoutModeController.handleCompleteWorkout) {
+                            window.workoutModeController.handleCompleteWorkout();
                         } else {
-                            // Not started yet, go back to workout database
+                            // Not started yet or controller not ready, go back to workout database
                             if (confirm('Exit workout mode?')) {
                                 window.location.href = 'workout-database.html';
                             }
@@ -447,9 +456,13 @@
                     label: 'End',
                     title: 'End workout',
                     action: function() {
-                        const completeBtn = document.getElementById('completeWorkoutBtn');
-                        if (completeBtn) {
-                            completeBtn.click();
+                        console.log('⏹️ End workout button clicked (active mode)');
+                        // Call controller method directly since #completeWorkoutBtn doesn't exist in HTML
+                        if (window.workoutModeController && window.workoutModeController.handleCompleteWorkout) {
+                            window.workoutModeController.handleCompleteWorkout();
+                        } else {
+                            console.error('❌ Workout mode controller not available');
+                            alert('Unable to complete workout. Please try again.');
                         }
                     }
                 }

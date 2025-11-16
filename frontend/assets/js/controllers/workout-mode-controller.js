@@ -197,7 +197,14 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
                 lastCompletedContainer.style.display = 'none';
             }
             
-            // Render workout
+            // CRITICAL FIX: Fetch exercise history BEFORE rendering
+            // This ensures weights from history are available on initial load
+            if (this.authService.isUserAuthenticated()) {
+                console.log('📊 Fetching exercise history before render...');
+                await this.sessionService.fetchExerciseHistory(this.currentWorkout.id);
+            }
+            
+            // Render workout (now has history available)
             this.renderWorkout();
             
             // Initialize start button tooltip
@@ -295,6 +302,26 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
     }
     
     /**
+     * Render weight badge with visual feedback for different states
+     */
+    renderWeightBadge(currentWeight, currentUnit, weightSource, lastWeight, lastWeightUnit) {
+        if (currentWeight) {
+            // Has weight - show it with appropriate styling
+            const badgeClass = weightSource === 'history' ? 'bg-label-primary' : 'bg-primary';
+            const unitDisplay = currentUnit !== 'other' ? ` ${currentUnit}` : '';
+            const sourceHint = weightSource === 'history' ? ' (from history)' : '';
+            return `<span class="badge ${badgeClass}" title="Weight${sourceHint}">${currentWeight}${unitDisplay}</span>`;
+        } else if (lastWeight) {
+            // No current weight but has history - show as suggestion
+            const unitDisplay = lastWeightUnit !== 'other' ? ` ${lastWeightUnit}` : '';
+            return `<span class="badge bg-label-secondary" title="Last used weight - click Edit Weight to use">Last: ${lastWeight}${unitDisplay}</span>`;
+        } else {
+            // No weight at all - show clear indicator
+            return `<span class="badge bg-label-secondary" title="No weight set - click Edit Weight to add">No weight</span>`;
+        }
+    }
+    
+    /**
      * Render individual exercise card
      * (Keeping existing rendering logic - it works!)
      */
@@ -324,12 +351,18 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
         const lastWeightUnit = history?.last_weight_unit || 'lbs';
         const lastSessionDate = history?.last_session_date ? new Date(history.last_session_date).toLocaleDateString() : null;
         
-        // Get current weight from session OR from workout template
+        // IMPROVED: Better weight priority logic with clear fallback chain
+        // Priority: Session > Template > History > Empty
         const weightData = this.sessionService.getExerciseWeight(mainExercise);
         const templateWeight = group.default_weight || '';
         const templateUnit = group.default_weight_unit || 'lbs';
-        const currentWeight = weightData?.weight || templateWeight || lastWeight;
-        const currentUnit = weightData?.weight_unit || templateUnit || lastWeightUnit;
+        
+        // Determine current weight with proper fallback
+        const currentWeight = weightData?.weight || templateWeight || lastWeight || '';
+        const currentUnit = weightData?.weight_unit || (weightData?.weight ? templateUnit : (templateWeight ? templateUnit : lastWeightUnit));
+        
+        // Determine weight source for better UX feedback
+        const weightSource = weightData?.weight ? 'session' : (templateWeight ? 'template' : (lastWeight ? 'history' : 'none'));
         
         return `
             <div class="card exercise-card ${bonusClass}" data-exercise-index="${index}" data-exercise-name="${this.escapeHtml(mainExercise)}">
@@ -337,7 +370,7 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
                     <div class="exercise-card-summary">
                         <div class="d-flex justify-content-between align-items-start mb-1">
                             <h6 class="mb-0">${this.escapeHtml(mainExercise)}</h6>
-                            ${currentWeight ? `<span class="badge bg-primary">${currentWeight}${currentUnit !== 'other' ? ' ' + currentUnit : ''}</span>` : ''}
+                            ${this.renderWeightBadge(currentWeight, currentUnit, weightSource, lastWeight, lastWeightUnit)}
                         </div>
                         <div class="exercise-card-meta text-muted small">
                             ${sets} × ${reps} • Rest: ${rest}
@@ -379,7 +412,7 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
                         
                         <!-- Row 2, Column 1: Edit Weight Button -->
                         <button
-                            class="btn btn-outline-primary workout-grid-btn"
+                            class="btn ${currentWeight ? 'btn-outline-primary' : 'btn-outline-warning'} workout-grid-btn"
                             data-exercise-name="${this.escapeHtml(mainExercise)}"
                             data-current-weight="${currentWeight || ''}"
                             data-current-unit="${currentUnit}"
@@ -387,8 +420,10 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
                             data-last-weight-unit="${lastWeightUnit || ''}"
                             data-last-session-date="${lastSessionDate || ''}"
                             data-is-session-active="${isSessionActive}"
-                            onclick="window.workoutModeController.handleWeightButtonClick(this); event.stopPropagation();">
-                            <i class="bx bx-edit-alt me-1"></i>Edit Weight
+                            data-weight-source="${weightSource}"
+                            onclick="window.workoutModeController.handleWeightButtonClick(this); event.stopPropagation();"
+                            title="${currentWeight ? 'Edit current weight' : 'Set weight for this exercise'}">
+                            <i class="bx ${currentWeight ? 'bx-edit-alt' : 'bx-plus-circle'} me-1"></i>${currentWeight ? 'Edit Weight' : 'Set Weight'}
                         </button>
                         
                         <!-- Row 2, Column 2: Next Button -->
@@ -671,6 +706,73 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
     }
     
     /**
+     * Update workout template with final weights from completed session
+     * This ensures the workout builder shows the most recent weights
+     */
+    async updateWorkoutTemplateWeights(exercisesPerformed) {
+        try {
+            if (!this.currentWorkout || !exercisesPerformed || exercisesPerformed.length === 0) {
+                console.log('⏭️ Skipping template weight update - no data to update');
+                return;
+            }
+            
+            console.log('🔄 Updating workout template with final weights...');
+            
+            // Create a map of exercise names to their weights
+            const weightMap = new Map();
+            exercisesPerformed.forEach(exercise => {
+                if (exercise.weight) {
+                    weightMap.set(exercise.exercise_name, {
+                        weight: exercise.weight,
+                        weight_unit: exercise.weight_unit || 'lbs'
+                    });
+                }
+            });
+            
+            // Update exercise groups with new weights
+            let updated = false;
+            if (this.currentWorkout.exercise_groups) {
+                this.currentWorkout.exercise_groups.forEach(group => {
+                    const mainExercise = group.exercises?.a;
+                    if (mainExercise && weightMap.has(mainExercise)) {
+                        const weightData = weightMap.get(mainExercise);
+                        group.default_weight = weightData.weight;
+                        group.default_weight_unit = weightData.weight_unit;
+                        updated = true;
+                        console.log(`✅ Updated ${mainExercise}: ${weightData.weight} ${weightData.weight_unit}`);
+                    }
+                });
+            }
+            
+            // Update bonus exercises with new weights
+            if (this.currentWorkout.bonus_exercises) {
+                this.currentWorkout.bonus_exercises.forEach(bonus => {
+                    if (bonus.name && weightMap.has(bonus.name)) {
+                        const weightData = weightMap.get(bonus.name);
+                        bonus.default_weight = weightData.weight;
+                        bonus.default_weight_unit = weightData.weight_unit;
+                        updated = true;
+                        console.log(`✅ Updated bonus ${bonus.name}: ${weightData.weight} ${weightData.weight_unit}`);
+                    }
+                });
+            }
+            
+            // Save updated workout template to database
+            if (updated) {
+                await this.dataManager.updateWorkout(this.currentWorkout.id, this.currentWorkout);
+                console.log('✅ Workout template weights updated successfully');
+            } else {
+                console.log('ℹ️ No weights to update in template');
+            }
+            
+        } catch (error) {
+            console.error('❌ Error updating workout template weights:', error);
+            // Don't throw - this is a non-critical enhancement
+            // The workout completion should still succeed even if template update fails
+        }
+    }
+    
+    /**
      * Setup event listeners
      */
     setupEventListeners() {
@@ -876,6 +978,9 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
             try {
                 const exercisesPerformed = this.collectExerciseData();
                 const completedSession = await this.sessionService.completeSession(exercisesPerformed);
+                
+                // Update workout template with final weights
+                await this.updateWorkoutTemplateWeights(exercisesPerformed);
                 
                 // Close offcanvas
                 offcanvas.hide();
@@ -1090,6 +1195,33 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
             if (sessionIndicator) sessionIndicator.style.display = 'block';
             if (sessionInfo) sessionInfo.style.display = 'block';
             
+            // Update bottom action bar FAB to show "Complete" button
+            if (window.bottomActionBar) {
+                console.log('🔄 Updating bottom action bar FAB to Complete mode');
+                window.bottomActionBar.updateButton('fab', {
+                    icon: 'bx-stop-circle',
+                    title: 'Complete workout',
+                    variant: 'danger'
+                });
+                
+                // Update the FAB action to show complete workout offcanvas
+                const fabBtn = document.querySelector('[data-action="fab"]');
+                if (fabBtn) {
+                    // Remove old listener by cloning
+                    const newFabBtn = fabBtn.cloneNode(true);
+                    fabBtn.parentNode.replaceChild(newFabBtn, fabBtn);
+                    
+                    // Add new listener for complete workout
+                    newFabBtn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        console.log('⏹️ Complete workout FAB clicked');
+                        if (window.workoutModeController && window.workoutModeController.handleCompleteWorkout) {
+                            window.workoutModeController.handleCompleteWorkout();
+                        }
+                    });
+                }
+            }
+            
             // Start session timer
             this.startSessionTimer();
         } else {
@@ -1097,6 +1229,33 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
             if (completeBtn) completeBtn.style.display = 'none';
             if (sessionIndicator) sessionIndicator.style.display = 'none';
             if (sessionInfo) sessionInfo.style.display = 'none';
+            
+            // Update bottom action bar FAB back to "Start" button
+            if (window.bottomActionBar) {
+                console.log('🔄 Updating bottom action bar FAB to Start mode');
+                window.bottomActionBar.updateButton('fab', {
+                    icon: 'bx-play',
+                    title: 'Start workout',
+                    variant: 'success'
+                });
+                
+                // Update the FAB action to start workout
+                const fabBtn = document.querySelector('[data-action="fab"]');
+                if (fabBtn) {
+                    // Remove old listener by cloning
+                    const newFabBtn = fabBtn.cloneNode(true);
+                    fabBtn.parentNode.replaceChild(newFabBtn, fabBtn);
+                    
+                    // Add new listener for start workout
+                    newFabBtn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        console.log('▶️ Start workout FAB clicked');
+                        if (window.workoutModeController && window.workoutModeController.handleStartWorkout) {
+                            window.workoutModeController.handleStartWorkout();
+                        }
+                    });
+                }
+            }
             
             // Stop session timer
             this.stopSessionTimer();
@@ -1114,6 +1273,12 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
             clearInterval(this.sessionTimerInterval);
         }
         
+        // Show floating timer widget
+        const floatingWidget = document.getElementById('floatingTimerWidget');
+        if (floatingWidget) {
+            floatingWidget.style.display = 'block';
+        }
+        
         this.sessionTimerInterval = setInterval(() => {
             const elapsed = Math.floor((Date.now() - session.startedAt.getTime()) / 1000);
             const minutes = Math.floor(elapsed / 60);
@@ -1122,9 +1287,11 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
             
             const sessionTimer = document.getElementById('sessionTimer');
             const footerTimer = document.getElementById('footerSessionTimer');
+            const floatingTimer = document.getElementById('floatingTimerDisplay');
             
             if (sessionTimer) sessionTimer.textContent = timeStr;
             if (footerTimer) footerTimer.textContent = timeStr;
+            if (floatingTimer) floatingTimer.textContent = timeStr;
         }, 1000);
     }
     
@@ -1135,6 +1302,12 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
         if (this.sessionTimerInterval) {
             clearInterval(this.sessionTimerInterval);
             this.sessionTimerInterval = null;
+        }
+        
+        // Hide floating timer widget
+        const floatingWidget = document.getElementById('floatingTimerWidget');
+        if (floatingWidget) {
+            floatingWidget.style.display = 'none';
         }
     }
     

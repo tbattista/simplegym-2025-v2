@@ -1259,3 +1259,104 @@
 [data-bs-theme="dark"] #completeWorkoutOffcanvas .offcanvas-header {
     border-bottom-color: var(--bs-gray-700);
 }
+
+/* ============================================
+   FLOATING TIMER WIDGET
+   ============================================ */
+
+/* Floating timer widget in bottom right corner - Compact version */
+.floating-timer-widget {
+    position: fixed !important;
+    bottom: 90px !important; /* Above bottom nav bar */
+    right: 20px !important;
+    top: auto !important; /* Override any conflicting styles */
+    left: auto !important;
+    z-index: 1040 !important; /* Below modals (1050) but above content */
+    background: var(--bs-card-bg);
+    border: 1px solid var(--bs-border-color);
+    border-radius: 8px;
+    padding: 0.5rem 0.75rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    min-width: auto;
+    text-align: center;
+    transition: opacity 0.3s ease;
+    animation: slideInUp 0.4s ease;
+}
+
+.floating-timer-widget:hover {
+    opacity: 0.9;
+}
+
+/* Timer label - hidden */
+.floating-timer-widget .timer-label {
+    display: none;
+}
+
+/* Timer display - compact */
+.floating-timer-widget .timer-display {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--bs-body-color);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.05em;
+    line-height: 1;
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Dark theme support */
+[data-bs-theme="dark"] .floating-timer-widget {
+    background: var(--bs-gray-900);
+    border-color: var(--bs-primary);
+    box-shadow: 0 8px 24px rgba(105, 108, 255, 0.4);
+}
+
+[data-bs-theme="dark"] .floating-timer-widget:hover {
+    box-shadow: 0 12px 32px rgba(105, 108, 255, 0.5);
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+    .floating-timer-widget {
+        bottom: 75px; /* Adjust for mobile bottom nav */
+        right: 15px;
+        padding: 0.45rem 0.65rem;
+    }
+    
+    .floating-timer-widget .timer-display {
+        font-size: 0.95rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .floating-timer-widget {
+        bottom: 70px;
+        right: 12px;
+        padding: 0.4rem 0.6rem;
+    }
+    
+    .floating-timer-widget .timer-display {
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 360px) {
+    .floating-timer-widget {
+        bottom: 65px;
+        right: 10px;
+        padding: 0.35rem 0.55rem;
+    }
+    
+    .floating-timer-widget .timer-display {
+        font-size: 0.85rem;
+    }
+}
