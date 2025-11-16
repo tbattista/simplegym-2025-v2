@@ -236,52 +236,6 @@
                     action: function() {
                         window.location.href = 'workout-database.html';
                     }
-                },
-                {
-                    icon: 'bx-heart',
-                    label: 'Favorites',
-                    title: 'Show only favorites',
-                    action: function() {
-                        console.log('❤️ Favorites button clicked');
-                        
-                        // Get current filter state from FilterBar
-                        if (!window.filterBar) {
-                            console.warn('⚠️ FilterBar not available');
-                            return;
-                        }
-                        
-                        const currentFilters = window.filterBar.getFilters();
-                        const isActive = !currentFilters.favoritesOnly;
-                        
-                        console.log('🔄 Toggling favorites filter:', isActive ? 'ON' : 'OFF');
-                        
-                        // Update filter in FilterBar using correct method
-                        window.filterBar.setFilterValue('favoritesOnly', isActive);
-                        
-                        // Update button visual state with animation
-                        if (window.bottomActionBar) {
-                            const btn = document.querySelector('[data-action="left-1"]');
-                            
-                            // Add pulse animation
-                            if (btn) {
-                                btn.classList.add('pulse-animation');
-                                setTimeout(() => btn.classList.remove('pulse-animation'), 300);
-                            }
-                            
-                            // Update icon and title
-                            window.bottomActionBar.updateButton('left-1', {
-                                icon: isActive ? 'bxs-heart' : 'bx-heart',
-                                title: isActive ? 'Show all exercises' : 'Show only favorites'
-                            });
-                            
-                            // Add/remove active class for color change
-                            if (btn) {
-                                btn.classList.toggle('active', isActive);
-                            }
-                        }
-                        
-                        console.log('✅ Favorites filter updated');
-                    }
                 }
             ],
             fab: {
@@ -304,9 +258,9 @@
             },
             rightActions: [
                 {
-                    icon: 'bx-sort',
-                    label: 'Sort',
-                    title: 'Sort exercises',
+                    icon: 'bx-filter-alt',
+                    label: 'Filters',
+                    title: 'Open filters',
                     action: function() {
                         const offcanvas = new bootstrap.Offcanvas(
                             document.getElementById('filtersOffcanvas')

@@ -109,7 +109,7 @@
     <!-- / Layout wrapper -->
 
     <!-- Filters Offcanvas (FilterBar component will populate this) -->
-    <div class="offcanvas offcanvas-bottom" tabindex="-1" id="filtersOffcanvas" aria-labelledby="filtersOffcanvasLabel" style="height: 70vh;">
+    <div class="offcanvas offcanvas-bottom" tabindex="-1" id="filtersOffcanvas" aria-labelledby="filtersOffcanvasLabel" style="height: 100vh;">
       <div class="offcanvas-header">
         <h5 class="offcanvas-title" id="filtersOffcanvasLabel">
           <i class="bx bx-filter-alt me-2"></i>
@@ -123,14 +123,16 @@
 
         <!-- Action Buttons -->
         <div class="row mt-3">
-          <div class="col-12">
-            <button type="button" class="btn btn-outline-secondary w-100 mb-2" id="clearFiltersBtn">
+          <div class="col-6">
+            <button type="button" class="btn btn-outline-secondary w-100" id="clearFiltersBtn">
               <i class="bx bx-x me-1"></i>
-              Clear All Filters
+              Clear
             </button>
+          </div>
+          <div class="col-6">
             <button type="button" class="btn btn-primary w-100" data-bs-dismiss="offcanvas">
               <i class="bx bx-check me-1"></i>
-              Apply Filters
+              Apply
             </button>
           </div>
         </div>
