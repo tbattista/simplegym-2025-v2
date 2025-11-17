@@ -61,17 +61,15 @@ Added methods:
 - Auto-save support for bonus exercises
 - Proper data structure with `is_bonus` flag
 
-### Phase 3: Navbar Integration (✅ Complete)
+### Phase 3: Bottom Action Bar Integration (✅ Complete)
 **Files Modified:**
-- `frontend/assets/js/components/navbar-template.js`
-- `frontend/assets/js/services/navbar-injection-service.js`
-- `frontend/workout-mode.html`
+- `frontend/assets/js/config/bottom-action-bar-config.js`
 
 **Features:**
-- Added "Bonus" button to navbar (only visible during active sessions)
-- Responsive design (icon + text on desktop, icon only on mobile)
-- Configuration-based visibility control
-- Proper event listener setup
+- Updated "Bonus" button action in bottom action bar
+- Calls `handleBonusExercises()` method from controller
+- Available in both workout-mode and workout-mode-active states
+- Proper error handling when controller not ready
 
 ### Phase 4: Modal UI Implementation (✅ Complete)
 **File Modified:** `frontend/assets/js/controllers/workout-mode-controller.js`
@@ -134,7 +132,7 @@ Added comprehensive styling:
 ## Data Flow
 
 ### Adding Bonus Exercise
-1. User clicks "Bonus" button in navbar
+1. User clicks "Bonus" button in bottom action bar
 2. Modal opens showing previous session exercises + form
 3. User adds exercise (from history or new)
 4. Exercise added to session service
@@ -183,7 +181,7 @@ class ExercisePerformance(BaseModel):
 
 ### Scenario 1: First Time Adding Bonus Exercise
 1. User starts workout session
-2. "Bonus" button appears in navbar
+2. "Bonus" button available in bottom action bar
 3. User clicks "Bonus"
 4. Modal shows empty current list + add form
 5. User fills form: "Face Pulls", 3 sets, 15 reps, 30 lbs
@@ -219,11 +217,10 @@ class ExercisePerformance(BaseModel):
 ### Frontend JavaScript
 1. `frontend/assets/js/services/workout-session-service.js` - Added 5 bonus methods
 2. `frontend/assets/js/controllers/workout-mode-controller.js` - Added 10+ modal methods
-3. `frontend/assets/js/components/navbar-template.js` - Added bonus button
-4. `frontend/assets/js/services/navbar-injection-service.js` - Added config support
+3. `frontend/assets/js/config/bottom-action-bar-config.js` - Updated bonus button actions
 
 ### Frontend HTML
-1. `frontend/workout-mode.html` - Added navbar config
+(No HTML changes required - uses existing bottom action bar)
 
 ### Frontend CSS
 1. `frontend/assets/css/workout-mode.css` - Added 200+ lines of styling
@@ -270,12 +267,13 @@ class ExercisePerformance(BaseModel):
 - Users often repeat bonus exercises
 - Still allows full customization
 
-### 4. Navbar Button Visibility
-**Decision:** Only show "Bonus" button during active sessions
+### 4. Bottom Action Bar Placement
+**Decision:** Place "Bonus" button in bottom action bar instead of top navbar
 **Rationale:**
-- Bonus exercises only make sense during active workout
-- Reduces UI clutter when not needed
-- Clear visual indicator of session state
+- Consistent with other workout actions (Skip, Note, End)
+- Better mobile accessibility (thumb-friendly)
+- Follows existing app patterns
+- Always visible without scrolling
 
 ### 5. Green Success Theme
 **Decision:** Use success/green color for bonus exercises

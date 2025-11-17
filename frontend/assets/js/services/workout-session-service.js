@@ -11,6 +11,7 @@ class WorkoutSessionService {
         this.exerciseHistory = {};
         this.autoSaveTimer = null;
         this.listeners = new Set();
+        this.preWorkoutBonusExercises = []; // Store bonus exercises before session starts
         
         console.log('📦 Workout Session Service initialized');
     }
@@ -375,30 +376,36 @@ class WorkoutSessionService {
      */
     
     /**
-     * Add bonus exercise to current session
-     * @param {string} exerciseName - Name of the bonus exercise
-     * @param {string} sets - Target sets (e.g., "2")
-     * @param {string} reps - Target reps (e.g., "15")
-     * @param {string} rest - Rest period (e.g., "30s")
-     * @param {string} weight - Optional weight value
-     * @param {string} unit - Weight unit (lbs/kg/other)
-     * @param {string} notes - Optional notes
+     * Add bonus exercise to current session OR pre-workout list
+     * @param {Object} exerciseData - Exercise data object with name, sets, reps, etc.
      */
-    addBonusExercise(exerciseName, sets, reps, rest, weight = '', unit = 'lbs', notes = '') {
+    addBonusExercise(exerciseData) {
+        const { name, sets, reps, rest, weight = '', weight_unit = 'lbs', notes = '' } = exerciseData;
+        
+        // If no active session, add to pre-workout list
         if (!this.currentSession) {
-            console.warn('No active session to add bonus exercise');
+            console.log('📝 Adding bonus exercise to pre-workout list:', name);
+            this.preWorkoutBonusExercises.push({
+                name,
+                sets: sets || '3',
+                reps: reps || '12',
+                rest: rest || '60s',
+                weight: weight || '',
+                weight_unit: weight_unit,
+                notes: notes || ''
+            });
+            this.notifyListeners('preWorkoutBonusExerciseAdded', { name });
             return;
         }
         
-        // Initialize exercises object if needed
+        // Active session - add to session exercises
         if (!this.currentSession.exercises) {
             this.currentSession.exercises = {};
         }
         
-        // Create bonus exercise data
         const bonusExercise = {
             weight: weight || '',
-            weight_unit: unit,
+            weight_unit: weight_unit,
             previous_weight: null,
             weight_change: 0,
             target_sets: sets,
@@ -408,48 +415,92 @@ class WorkoutSessionService {
             is_bonus: true
         };
         
-        // Add to session
-        this.currentSession.exercises[exerciseName] = bonusExercise;
-        
-        console.log('✅ Bonus exercise added:', exerciseName);
-        this.notifyListeners('bonusExerciseAdded', { exerciseName, ...bonusExercise });
-        
-        // Persist session
+        this.currentSession.exercises[name] = bonusExercise;
+        console.log('✅ Bonus exercise added to session:', name);
+        this.notifyListeners('bonusExerciseAdded', { exerciseName: name, ...bonusExercise });
         this.persistSession();
     }
     
     /**
-     * Remove bonus exercise from current session
-     * @param {string} exerciseName - Name of the exercise to remove
+     * Remove bonus exercise from current session OR pre-workout list
+     * @param {number|string} indexOrName - Index for pre-workout list, name for session
      */
-    removeBonusExercise(exerciseName) {
-        if (!this.currentSession || !this.currentSession.exercises) {
+    removeBonusExercise(indexOrName) {
+        // If no active session, remove from pre-workout list by index
+        if (!this.currentSession) {
+            if (typeof indexOrName === 'number' && indexOrName >= 0 && indexOrName < this.preWorkoutBonusExercises.length) {
+                const removed = this.preWorkoutBonusExercises.splice(indexOrName, 1)[0];
+                console.log('🗑️ Pre-workout bonus exercise removed:', removed.name);
+                this.notifyListeners('preWorkoutBonusExerciseRemoved', { name: removed.name });
+            }
             return;
         }
         
-        if (this.currentSession.exercises[exerciseName]?.is_bonus) {
-            delete this.currentSession.exercises[exerciseName];
-            console.log('🗑️ Bonus exercise removed:', exerciseName);
-            this.notifyListeners('bonusExerciseRemoved', { exerciseName });
+        // Active session - remove by name
+        if (this.currentSession.exercises && this.currentSession.exercises[indexOrName]?.is_bonus) {
+            delete this.currentSession.exercises[indexOrName];
+            console.log('🗑️ Bonus exercise removed from session:', indexOrName);
+            this.notifyListeners('bonusExerciseRemoved', { exerciseName: indexOrName });
             this.persistSession();
         }
     }
     
     /**
-     * Get all bonus exercises from current session
+     * Get all bonus exercises from current session OR pre-workout list
      * @returns {Array} Array of bonus exercise objects
      */
     getBonusExercises() {
-        if (!this.currentSession || !this.currentSession.exercises) {
+        // If no active session, return pre-workout list
+        if (!this.currentSession) {
+            return this.preWorkoutBonusExercises;
+        }
+        
+        // Active session - return from session exercises
+        if (!this.currentSession.exercises) {
             return [];
         }
         
         return Object.entries(this.currentSession.exercises)
             .filter(([name, data]) => data.is_bonus)
             .map(([name, data]) => ({
-                exercise_name: name,
+                name: name,
                 ...data
             }));
+    }
+    
+    /**
+     * Get pre-workout bonus exercises
+     * @returns {Array} Array of pre-workout bonus exercises
+     */
+    getPreWorkoutBonusExercises() {
+        return this.preWorkoutBonusExercises;
+    }
+    
+    /**
+     * Clear pre-workout bonus exercises
+     */
+    clearPreWorkoutBonusExercises() {
+        this.preWorkoutBonusExercises = [];
+        console.log('🧹 Pre-workout bonus exercises cleared');
+    }
+    
+    /**
+     * Transfer pre-workout bonus exercises to active session
+     */
+    transferPreWorkoutBonusToSession() {
+        if (!this.currentSession || this.preWorkoutBonusExercises.length === 0) {
+            return;
+        }
+        
+        console.log('🔄 Transferring pre-workout bonus exercises to session...');
+        
+        this.preWorkoutBonusExercises.forEach(bonus => {
+            this.addBonusExercise(bonus);
+        });
+        
+        // Clear pre-workout list after transfer
+        this.preWorkoutBonusExercises = [];
+        console.log('✅ Pre-workout bonus exercises transferred to session');
     }
     
     /**

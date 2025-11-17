@@ -88,10 +88,17 @@
               <!-- Workout Info Card -->
               <div class="card mb-4" id="workoutInfoCard" style="display: none;">
                 <div class="card-header border-bottom">
-                  <h5 class="mb-1">
-                    <i class="bx bx-dumbbell me-2"></i><span id="workoutName">Loading workout...</span>
-                  </h5>
-                  <p class="text-muted mb-0 small" id="workoutDescription"></p>
+                  <div class="d-flex justify-content-between align-items-start">
+                    <div class="flex-grow-1">
+                      <h5 class="mb-1">
+                        <i class="bx bx-dumbbell me-2"></i><span id="workoutName">Loading workout...</span>
+                      </h5>
+                      <p class="text-muted mb-0 small" id="workoutDescription"></p>
+                    </div>
+                    <button class="btn btn-sm btn-outline-success" id="addBonusExerciseBtn" title="Add bonus exercises before starting">
+                      <i class="bx bx-plus-circle me-1"></i>Bonus
+                    </button>
+                  </div>
                 </div>
                 <div class="card-body">
                   <div class="text-muted small" id="lastCompletedContainer" style="display: none;">
@@ -163,12 +170,6 @@
     
     <!-- Inject components SECOND (before main.js) -->
     <script src="/static/assets/js/services/menu-injection-service.js"></script>
-    <script>
-        // Configure navbar with bonus button for workout mode
-        window.navbarConfig = {
-            showBonusButton: true
-        };
-    </script>
     <script src="/static/assets/js/services/navbar-injection-service.js"></script>
 
     <!-- Main JS -->

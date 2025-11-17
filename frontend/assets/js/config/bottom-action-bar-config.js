@@ -363,7 +363,12 @@
                     label: 'Bonus',
                     title: 'Add bonus exercise',
                     action: function() {
-                        alert('Bonus exercise feature - Coming soon!');
+                        if (window.workoutModeController && window.workoutModeController.handleBonusExercises) {
+                            window.workoutModeController.handleBonusExercises();
+                        } else {
+                            console.warn('⚠️ Workout mode controller not ready');
+                            alert('Please start your workout session first');
+                        }
                     }
                 }
             ],
@@ -431,7 +436,12 @@
                     label: 'Bonus',
                     title: 'Add bonus exercise',
                     action: function() {
-                        alert('Bonus exercise feature - Coming soon!');
+                        if (window.workoutModeController && window.workoutModeController.handleBonusExercises) {
+                            window.workoutModeController.handleBonusExercises();
+                        } else {
+                            console.warn('⚠️ Workout mode controller not ready');
+                            alert('Please start your workout session first');
+                        }
                     }
                 }
             ],

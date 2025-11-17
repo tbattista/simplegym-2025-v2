@@ -67,6 +67,9 @@ class WorkoutModeController {
             console.log('🔍 DEBUG: Current storage mode:', this.dataManager?.storageMode);
             console.log('🔍 DEBUG: Is authenticated?', this.authService?.isUserAuthenticated());
             
+            // Setup bonus exercise button handler
+            this.setupBonusExerciseButton();
+            
             // Setup auth state listener (reuse existing service)
             this.authService.onAuthStateChange((user) => {
                 this.handleAuthStateChange(user);
@@ -289,7 +292,7 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
             });
         }
         
-        // Render bonus exercises from SESSION (not template)
+        // Render bonus exercises from SESSION or PRE-WORKOUT list
         const bonusExercises = this.sessionService.getBonusExercises();
         if (bonusExercises && bonusExercises.length > 0) {
             bonusExercises.forEach((bonus) => {
@@ -811,12 +814,6 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
         if (changeBtn) {
             changeBtn.addEventListener('click', () => this.handleChangeWorkout());
         }
-        
-        // Bonus exercise button
-        const bonusBtn = document.getElementById('navbarBonusButton');
-        if (bonusBtn) {
-            bonusBtn.addEventListener('click', () => this.handleBonusExercises());
-        }
     }
     
     /**
@@ -886,6 +883,19 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
     }
     
     /**
+     * Setup bonus exercise button handler
+     */
+    setupBonusExerciseButton() {
+        // Add click handler for bonus exercise button (will be added to HTML)
+        document.addEventListener('click', (e) => {
+            if (e.target.closest('#addBonusExerciseBtn')) {
+                e.preventDefault();
+                this.handleBonusExercises();
+            }
+        });
+    }
+    
+    /**
      * Start a new workout session (extracted for reuse)
      */
     async startNewSession() {
@@ -893,13 +903,16 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
             // Start session using service
             await this.sessionService.startSession(this.currentWorkout.id, this.currentWorkout.name);
             
+            // Transfer pre-workout bonus exercises to session
+            this.sessionService.transferPreWorkoutBonusToSession();
+            
             // Fetch exercise history
             await this.sessionService.fetchExerciseHistory(this.currentWorkout.id);
             
             // Update UI
             this.updateSessionUI(true);
             
-            // Re-render to show weight inputs
+            // Re-render to show weight inputs and transferred bonus exercises
             this.renderWorkout();
             
             // Show success (reuse existing modal manager)
@@ -1424,25 +1437,10 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
      */
     
     /**
-     * Show/hide bonus exercise button based on session state
-     */
-    updateBonusButtonVisibility(isActive) {
-        const bonusButtonContainer = document.getElementById('navbarBonusButtonContainer');
-        if (bonusButtonContainer) {
-            bonusButtonContainer.style.display = isActive ? 'block' : 'none';
-        }
-    }
-    
-    /**
      * Handle bonus exercises button click
+     * Now works BEFORE and DURING workout session
      */
     async handleBonusExercises() {
-        if (!this.sessionService.isSessionActive()) {
-            const modalManager = this.getModalManager();
-            modalManager.alert('Session Required', 'Please start your workout session before adding bonus exercises.', 'warning');
-            return;
-        }
-        
         await this.showBonusExerciseModal();
     }
     
@@ -1702,7 +1700,7 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
             return;
         }
         
-        // Add to session
+        // Add to session or pre-workout list (service handles this)
         this.sessionService.addBonusExercise({
             name,
             sets: sets || '3',
@@ -1785,8 +1783,10 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
      */
     async handleSaveBonusExercises(offcanvas) {
         try {
-            // Auto-save session with bonus exercises
-            await this.autoSave(null);
+            // If session is active, auto-save
+            if (this.sessionService.isSessionActive()) {
+                await this.autoSave(null);
+            }
             
             // Re-render workout to show bonus exercises
             this.renderWorkout();
@@ -1795,8 +1795,13 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
             offcanvas.hide();
             
             // Show success message
+            const isPreWorkout = !this.sessionService.isSessionActive();
+            const message = isPreWorkout
+                ? 'Bonus exercises added! They will be included when you start the workout. 💪'
+                : 'Bonus exercises saved! 💪';
+            
             if (window.showAlert) {
-                window.showAlert('Bonus exercises saved! 💪', 'success');
+                window.showAlert(message, 'success');
             }
         } catch (error) {
             console.error('❌ Error saving bonus exercises:', error);
@@ -1872,9 +1877,6 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
             
             // Start session timer
             this.startSessionTimer();
-            
-            // Show bonus button
-            this.updateBonusButtonVisibility(true);
         } else {
             if (startBtn) startBtn.style.display = 'block';
             if (completeBtn) completeBtn.style.display = 'none';
@@ -1910,9 +1912,6 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
             
             // Stop session timer
             this.stopSessionTimer();
-            
-            // Hide bonus button
-            this.updateBonusButtonVisibility(false);
         }
     }
     
