@@ -694,21 +694,23 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
             });
         }
         
-        // Collect from bonus exercises
-        if (this.currentWorkout.bonus_exercises) {
-            this.currentWorkout.bonus_exercises.forEach((bonus, bonusIndex) => {
-                const weightData = this.sessionService.getExerciseWeight(bonus.name);
-                const history = this.sessionService.getExerciseHistory(bonus.name);
+        // Collect from SESSION bonus exercises (not template)
+        const bonusExercises = this.sessionService.getBonusExercises();
+        if (bonusExercises && bonusExercises.length > 0) {
+            bonusExercises.forEach((bonus, bonusIndex) => {
+                const exerciseName = bonus.name || bonus.exercise_name;
+                const weightData = this.sessionService.getExerciseWeight(exerciseName);
+                const history = this.sessionService.getExerciseHistory(exerciseName);
                 
                 exercisesPerformed.push({
-                    exercise_name: bonus.name,
-                    exercise_id: bonus.exercise_id || null,
-                    group_id: bonus.exercise_id || `bonus-${bonusIndex}`,
-                    sets_completed: parseInt(bonus.sets) || 0,
-                    target_sets: bonus.sets || '2',
-                    target_reps: bonus.reps || '15',
-                    weight: weightData?.weight || 0,
-                    weight_unit: weightData?.weight_unit || 'lbs',
+                    exercise_name: exerciseName,
+                    exercise_id: null,
+                    group_id: `bonus-${bonusIndex}`,
+                    sets_completed: parseInt(bonus.sets || bonus.target_sets) || 0,
+                    target_sets: bonus.sets || bonus.target_sets || '3',
+                    target_reps: bonus.reps || bonus.target_reps || '12',
+                    weight: weightData?.weight || bonus.weight || 0,
+                    weight_unit: weightData?.weight_unit || bonus.weight_unit || 'lbs',
                     previous_weight: history?.last_weight || null,
                     weight_change: weightData?.weight_change || 0,
                     order_index: orderIndex++,

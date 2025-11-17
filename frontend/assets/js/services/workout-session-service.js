@@ -260,8 +260,11 @@ class WorkoutSessionService {
         const previousWeight = history?.last_weight || 0;
         const weightChange = weight - previousWeight;
         
-        // Update session state
+        // FIXED: Merge with existing exercise data instead of replacing
+        // This preserves is_bonus flag and other metadata
+        const existingData = this.currentSession.exercises[exerciseName] || {};
         this.currentSession.exercises[exerciseName] = {
+            ...existingData,  // Preserve existing data (is_bonus, target_sets, etc.)
             weight: weight,
             weight_unit: unit,
             previous_weight: previousWeight,
