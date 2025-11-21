@@ -76,15 +76,14 @@ function getMenuHTML(activePage = 'home') {
                 </a>
             </li>
             
-            <!-- Public Workouts -->
+            <!-- Community -->
             <li class="menu-header small text-uppercase">
-                <span class="menu-header-text">Public Workouts</span>
+                <span class="menu-header-text">Community</span>
             </li>
             <li class="menu-item ${activePage === 'public-workouts' ? 'active' : ''}">
                 <a href="public-workouts.html" class="menu-link">
                     <i class="menu-icon tf-icons bx bx-globe"></i>
-                    <div class="text-truncate">Public Workouts</div>
-                    <span class="badge badge-center rounded-pill bg-label-info ms-auto">Soon</span>
+                    <div class="text-truncate">Discover Workouts</div>
                 </a>
             </li>
         </ul>

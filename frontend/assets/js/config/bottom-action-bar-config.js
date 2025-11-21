@@ -166,6 +166,29 @@
                     }
                 },
                 {
+                    icon: 'bx-share-alt',
+                    label: 'Share',
+                    title: 'Share workout',
+                    action: function() {
+                        // Get current workout ID
+                        const workoutId = window.ghostGym?.workoutBuilder?.selectedWorkoutId ||
+                                        window.ghostGym?.workoutBuilder?.currentWorkout?.id;
+                        
+                        if (workoutId) {
+                            console.log('🔗 Opening share modal for workout:', workoutId);
+                            if (window.openShareModal) {
+                                window.openShareModal(workoutId);
+                            } else {
+                                console.error('❌ Share modal not available');
+                                alert('Share feature is loading. Please try again in a moment.');
+                            }
+                        } else {
+                            console.warn('⚠️ No workout ID available');
+                            alert('Please save the workout first before sharing');
+                        }
+                    }
+                },
+                {
                     icon: 'bx-play',
                     label: 'Go',
                     title: 'Start workout',

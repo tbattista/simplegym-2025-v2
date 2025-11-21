@@ -1,0 +1,80 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ========================================================================
+    // USER DATA - Users can only access their own data
+    // ========================================================================
+    
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+      
+      match /workouts/{workoutId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+      
+      match /programs/{programId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+      
+      match /workout_sessions/{sessionId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+      
+      match /exercise_history/{historyId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+      
+      match /favorites/{favoriteId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+    }
+    
+    // ========================================================================
+    // GLOBAL EXERCISES - Read-only for all authenticated users
+    // ========================================================================
+    
+    match /global_exercises/{exerciseId} {
+      allow read: if request.auth != null;
+      allow write: if false; // Only admins can write (implement admin check)
+    }
+    
+    // ========================================================================
+    // PUBLIC WORKOUTS - Anyone can read, only creator can write
+    // ========================================================================
+    
+    match /public_workouts/{workoutId} {
+      // Anyone can read public workouts (no authentication required)
+      allow read: if true;
+      
+      // Only authenticated users can create public workouts
+      // Must set creator_id to their own user ID
+      allow create: if request.auth != null 
+                    && request.resource.data.creator_id == request.auth.uid;
+      
+      // Only the creator can update or delete their public workouts
+      allow update, delete: if request.auth != null 
+                            && resource.data.creator_id == request.auth.uid;
+    }
+    
+    // ========================================================================
+    // PRIVATE SHARES - Anyone with token can read
+    // ========================================================================
+    
+    match /private_shares/{shareToken} {
+      // Anyone can read (the token itself acts as authentication)
+      // This allows sharing via URL without requiring login
+      allow read: if true;
+      
+      // Only authenticated users can create private shares
+      // Must set creator_id to their own user ID
+      allow create: if request.auth != null 
+                    && request.resource.data.creator_id == request.auth.uid;
+      
+      // Only the creator can delete their private shares
+      // Note: Updates are not allowed - shares are immutable once created
+      allow delete: if request.auth != null 
+                    && resource.data.creator_id == request.auth.uid;
+    }
+  }
+}

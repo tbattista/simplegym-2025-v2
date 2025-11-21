@@ -535,6 +535,9 @@
     <!-- Workout Editor Component -->
     <script src="/static/assets/js/components/workout-editor.js?v=20251116-01"></script>
 
+    <!-- Share Modal Component -->
+    <script src="/static/assets/js/components/share-modal.js"></script>
+
     <!-- Initialize Workouts Page with Component System -->
     <script>
         // Initialize global state for workouts
@@ -610,6 +613,53 @@
                 return null;
             }
         }
+
+        // Function to load shared workout (public or private)
+        async function loadSharedWorkout(shareId, shareToken) {
+            try {
+                console.log('🔗 Loading shared workout:', shareId || shareToken);
+                
+                let endpoint, workoutData;
+                
+                if (shareId) {
+                    // Public share
+                    endpoint = `/api/v3/sharing/public-workouts/${shareId}`;
+                    console.log('📡 Fetching public workout from:', endpoint);
+                } else if (shareToken) {
+                    // Private share
+                    endpoint = `/api/v3/sharing/share/${shareToken}`;
+                    console.log('📡 Fetching private workout from:', endpoint);
+                }
+                
+                const response = await fetch(endpoint);
+                
+                if (!response.ok) {
+                    throw new Error(`Failed to load shared workout: ${response.statusText}`);
+                }
+                
+                const shareData = await response.json();
+                console.log('✅ Shared workout loaded:', shareData);
+                
+                // Extract workout data from share response
+                workoutData = shareData.workout_data;
+                
+                // Add metadata for display
+                workoutData.isShared = true;
+                workoutData.shareType = shareId ? 'public' : 'private';
+                workoutData.shareId = shareId;
+                workoutData.shareToken = shareToken;
+                workoutData.originalCreator = shareData.creator_name || 'Anonymous';
+                
+                // Generate temporary ID for the shared workout
+                workoutData.id = `shared-${shareId || shareToken}`;
+                
+                return workoutData;
+                
+            } catch (error) {
+                console.error('❌ Failed to load shared workout:', error);
+                throw error;
+            }
+        }
         
         // Initialize page using component system
         document.addEventListener('DOMContentLoaded', async function() {
@@ -631,15 +681,68 @@
             // Wait for auth state to settle (important for Firebase mode)
             await new Promise(resolve => setTimeout(resolve, 1000));
             
-            // Check if we should auto-load a workout from URL parameter, sessionStorage, or localStorage
+            // Check URL parameters for different loading modes
             const urlParams = new URLSearchParams(window.location.search);
+            const shareId = urlParams.get('share_id');
+            const shareToken = urlParams.get('share_token');
             const urlWorkoutId = urlParams.get('id');
             const sessionWorkoutId = sessionStorage.getItem('editWorkoutId');
             const localStorageWorkoutId = localStorage.getItem('currentEditingWorkoutId');
-            const editWorkoutId = urlWorkoutId || sessionWorkoutId || localStorageWorkoutId;
             
             const loadingState = document.getElementById('workoutEditorLoadingState');
             const emptyState = document.getElementById('workoutEditorEmptyState');
+            
+            // Priority 1: Load shared workout (public or private)
+            if (shareId || shareToken) {
+                const shareType = shareId ? 'public' : 'private';
+                console.log(`🔗 Loading ${shareType} shared workout...`);
+                
+                // Show loading state
+                loadingState.style.display = 'block';
+                emptyState.style.display = 'none';
+                
+                try {
+                    // Load shared workout data
+                    const sharedWorkout = await loadSharedWorkout(shareId, shareToken);
+                    
+                    // Hide loading state
+                    loadingState.style.display = 'none';
+                    
+                    // Update global state with shared workout
+                    window.ghostGym.workouts = [sharedWorkout];
+                    
+                    // Load into editor
+                    if (window.loadWorkoutIntoEditor) {
+                        window.loadWorkoutIntoEditor(sharedWorkout.id);
+                        
+                        // Show toast notification about shared workout
+                        setTimeout(() => {
+                            if (window.showToast) {
+                                window.showToast({
+                                    message: `This is a ${shareType} shared workout from ${sharedWorkout.originalCreator}. You can edit and save it to your library.`,
+                                    type: 'info',
+                                    title: 'Shared Workout',
+                                    icon: 'bx-share-alt',
+                                    delay: 5000
+                                });
+                            }
+                        }, 500);
+                    }
+                } catch (error) {
+                    console.error('❌ Error loading shared workout:', error);
+                    
+                    // Hide loading, show error
+                    loadingState.style.display = 'none';
+                    emptyState.querySelector('h5').textContent = 'Shared workout not found';
+                    emptyState.querySelector('p').innerHTML = 'This workout may have been deleted or the link has expired. <a href="workout-database.html">Return to Workout Database</a>';
+                    emptyState.style.display = 'block';
+                }
+                
+                return; // Exit early, don't load regular workout
+            }
+            
+            // Priority 2: Load user's own workout
+            const editWorkoutId = urlWorkoutId || sessionWorkoutId || localStorageWorkoutId;
             
             if (editWorkoutId) {
                 const source = urlWorkoutId ? '(from URL)' : sessionWorkoutId ? '(from sessionStorage)' : '(from localStorage - page refresh)';

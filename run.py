@@ -73,7 +73,8 @@ def main():
             port=port,
             reload=not is_production,  # Disable reload in production
             reload_dirs=["backend", "frontend"] if not is_production else None,
-            log_level="info"
+            log_level="warning",  # Reduce verbosity to hide invalid HTTP request warnings
+            access_log=True
         )
     except KeyboardInterrupt:
         print("\n\n[INFO] V2 Server stopped by user")

@@ -1,0 +1,477 @@
+<!doctype html>
+
+<html
+  lang="en"
+  class="layout-menu-fixed layout-compact"
+  data-assets-path="/static/assets/"
+  data-template="vertical-menu-template-free">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+
+    <title>🔗 Shared Workout - Ghost Gym V0.4.1</title>
+
+    <meta name="description" content="View shared workout" />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/static/assets/img/favicon/favicon.ico" />
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap"
+      rel="stylesheet" />
+
+    <link rel="stylesheet" href="/static/assets/vendor/fonts/iconify-icons.css" />
+
+    <!-- Core CSS -->
+    <link rel="stylesheet" href="/static/assets/vendor/css/core.css" />
+    <link rel="stylesheet" href="/static/assets/css/demo.css" />
+
+    <!-- Vendors CSS -->
+    <link rel="stylesheet" href="/static/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css" />
+
+    <!-- Custom Ghost Gym CSS -->
+    <link rel="stylesheet" href="/static/assets/css/ghost-gym-custom.css" />
+    
+    <!-- Navbar CSS -->
+    <link rel="stylesheet" href="/static/assets/css/navbar-custom.css" />
+
+    <!-- Helpers -->
+    <script src="/static/assets/vendor/js/helpers.js"></script>
+    <script src="/static/assets/js/config.js"></script>
+
+    <!-- Theme Manager (must load early to prevent flash) -->
+    <script src="/static/assets/js/services/theme-manager.js"></script>
+
+    <!-- Ghost Gym Centralized Configuration -->
+    <script src="/static/assets/js/app-config.js"></script>
+    
+    <!-- Firebase SDK Loader (Centralized) -->
+    <script type="module" src="/static/assets/js/firebase-loader.js"></script>
+  </head>
+
+  <body>
+    
+    <!-- Layout wrapper -->
+    <div class="layout-wrapper layout-content-navbar">
+      <div class="layout-container">
+        <!-- Menu -->
+        <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
+          <!-- Menu will be injected by menu-injection-service.js -->
+        </aside>
+        <!-- / Menu -->
+
+        <!-- Layout container -->
+        <div class="layout-page">
+
+          <!-- Content wrapper -->
+          <div class="content-wrapper">
+            <!-- Content -->
+            <div class="container-xxl flex-grow-1 container-p-y">
+              
+              <!-- Loading State -->
+              <div id="loadingState" class="text-center py-5">
+                <div class="spinner-border text-primary mb-3" role="status" style="width: 3rem; height: 3rem;">
+                  <span class="visually-hidden">Loading...</span>
+                </div>
+                <h5 class="mt-3">Loading shared workout...</h5>
+              </div>
+
+              <!-- Error State -->
+              <div id="errorState" class="text-center py-5" style="display: none;">
+                <i class="bx bx-error-circle display-1 text-danger"></i>
+                <h5 class="mt-3" id="errorTitle">Workout Not Found</h5>
+                <p class="text-muted" id="errorMessage">This share link may have expired or been deleted.</p>
+                <a href="public-workouts.html" class="btn btn-primary mt-3">
+                  <i class="bx bx-globe me-1"></i>
+                  Browse Public Workouts
+                </a>
+              </div>
+
+              <!-- Workout Content -->
+              <div id="workoutContent" style="display: none;">
+                <div class="row">
+                  <div class="col-lg-8 mx-auto">
+                    <!-- Workout Card -->
+                    <div class="card mb-4">
+                      <div class="card-body">
+                        <h3 class="mb-2" id="workoutName"></h3>
+                        <p class="text-muted mb-3">
+                          <i class="bx bx-user me-1"></i>
+                          <span id="creatorName"></span>
+                        </p>
+                        <p id="workoutDescription" class="mb-4"></p>
+
+                        <!-- Tags -->
+                        <div id="tagsContainer" class="mb-4" style="display: none;">
+                          <div id="workoutTags"></div>
+                        </div>
+
+                        <!-- Stats -->
+                        <div class="row text-center mb-4">
+                          <div class="col-6">
+                            <div class="h4 mb-0" id="viewCount">0</div>
+                            <small class="text-muted">Views</small>
+                          </div>
+                          <div class="col-6">
+                            <div class="h4 mb-0" id="exerciseCount">0</div>
+                            <small class="text-muted">Exercises</small>
+                          </div>
+                        </div>
+
+                        <!-- Expiration Warning -->
+                        <div id="expirationWarning" class="alert alert-warning" style="display: none;">
+                          <i class="bx bx-time me-2"></i>
+                          <span id="expirationText"></span>
+                        </div>
+
+                        <!-- Save Button -->
+                        <button type="button" class="btn btn-primary w-100 btn-lg" id="saveWorkoutBtn">
+                          <i class="bx bx-bookmark me-2"></i>
+                          Save to My Library
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- Exercise Groups -->
+                    <div class="card mb-4">
+                      <div class="card-header">
+                        <h5 class="mb-0">
+                          <i class="bx bx-list-ul me-2"></i>
+                          Exercise Groups
+                        </h5>
+                      </div>
+                      <div class="card-body">
+                        <div id="exerciseGroupsContainer"></div>
+                      </div>
+                    </div>
+
+                    <!-- Bonus Exercises -->
+                    <div id="bonusCard" class="card mb-4" style="display: none;">
+                      <div class="card-header">
+                        <h5 class="mb-0">
+                          <i class="bx bx-plus-circle me-2"></i>
+                          Bonus Exercises
+                        </h5>
+                      </div>
+                      <div class="card-body">
+                        <div id="bonusExercisesContainer"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+            <!-- / Content -->
+
+            <div class="content-backdrop fade"></div>
+          </div>
+          <!-- Content wrapper -->
+        </div>
+        <!-- / Layout page -->
+      </div>
+
+      <!-- Overlay -->
+      <div class="layout-overlay layout-menu-toggle"></div>
+    </div>
+    <!-- / Layout wrapper -->
+
+    <!-- Core JS -->
+    <script src="/static/assets/vendor/libs/jquery/jquery.js"></script>
+    <script src="/static/assets/vendor/libs/popper/popper.js"></script>
+    <script src="/static/assets/vendor/js/bootstrap.js"></script>
+    <script src="/static/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js"></script>
+    <script src="/static/assets/vendor/js/menu.js"></script>
+
+    <!-- Load templates FIRST (before main.js) -->
+    <script src="/static/assets/js/components/menu-template.js"></script>
+    <script src="/static/assets/js/components/navbar-template.js"></script>
+    <script src="/static/assets/js/components/auth-modals-template.js"></script>
+    
+    <!-- Inject components SECOND (before main.js) -->
+    <script src="/static/assets/js/services/menu-injection-service.js"></script>
+    <script src="/static/assets/js/services/navbar-injection-service.js"></script>
+
+    <!-- Main JS -->
+    <script src="/static/assets/js/main.js"></script>
+
+    <!-- Firebase Services -->
+    <script src="/static/assets/js/firebase/firebase-init.js?v=20251020-03"></script>
+    <script src="/static/assets/js/firebase/auth-service.js?v=20251020-03"></script>
+    <script src="/static/assets/js/firebase/auth-ui.js?v=20251020-03"></script>
+    <script src="/static/assets/js/firebase/data-manager.js?v=20251020-05"></script>
+
+    <!-- Common Utilities -->
+    <script src="/static/assets/js/utils/common-utils.js"></script>
+
+    <!-- Share Page JS -->
+    <script>
+        (function() {
+            'use strict';
+
+            let currentWorkout = null;
+            let shareToken = null;
+
+            // Initialize page
+            document.addEventListener('DOMContentLoaded', async function() {
+                console.log('📄 Share Page - DOM Ready');
+                
+                // Wait for Firebase to be ready
+                if (!window.firebaseReady) {
+                    await new Promise(resolve => {
+                        window.addEventListener('firebaseReady', resolve, { once: true });
+                    });
+                }
+                
+                // Get token from URL
+                const pathParts = window.location.pathname.split('/');
+                shareToken = pathParts[pathParts.length - 1] || pathParts[pathParts.length - 2];
+                
+                if (!shareToken || shareToken === 'share.html') {
+                    showError('Invalid Share Link', 'No share token provided in the URL.');
+                    return;
+                }
+
+                console.log('🔗 Loading shared workout with token:', shareToken);
+                
+                // Load workout
+                await loadSharedWorkout(shareToken);
+                
+                // Set up save button
+                document.getElementById('saveWorkoutBtn').addEventListener('click', handleSaveWorkout);
+                
+                console.log('✅ Share page ready!');
+            });
+
+            async function loadSharedWorkout(token) {
+                try {
+                    const response = await fetch(`/api/v3/sharing/share/${token}`);
+
+                    if (!response.ok) {
+                        const error = await response.json();
+                        throw new Error(error.detail || 'Failed to load workout');
+                    }
+
+                    const workout = await response.json();
+                    currentWorkout = workout;
+                    console.log('✅ Loaded shared workout:', workout);
+
+                    renderWorkout(workout);
+
+                } catch (error) {
+                    console.error('❌ Error loading shared workout:', error);
+                    showError('Workout Not Available', error.message);
+                }
+            }
+
+            function renderWorkout(workout) {
+                const workoutData = workout.workout_data || {};
+
+                // Update workout info
+                document.getElementById('workoutName').textContent = workoutData.name || 'Untitled Workout';
+                document.getElementById('creatorName').textContent = workout.creator_name || 'Anonymous';
+                
+                const descEl = document.getElementById('workoutDescription');
+                if (workoutData.description) {
+                    descEl.textContent = workoutData.description;
+                    descEl.style.display = 'block';
+                } else {
+                    descEl.style.display = 'none';
+                }
+
+                // Render tags
+                const tags = workoutData.tags || [];
+                if (tags.length > 0) {
+                    document.getElementById('tagsContainer').style.display = 'block';
+                    document.getElementById('workoutTags').innerHTML = tags.map(tag => 
+                        `<span class="badge bg-label-primary me-1">${escapeHtml(tag)}</span>`
+                    ).join('');
+                }
+
+                // Update stats
+                document.getElementById('viewCount').textContent = workout.view_count || 0;
+                const exerciseCount = (workoutData.exercise_groups || []).length + (workoutData.bonus_exercises || []).length;
+                document.getElementById('exerciseCount').textContent = exerciseCount;
+
+                // Show expiration warning if applicable
+                if (workout.expires_at) {
+                    const expiresDate = new Date(workout.expires_at);
+                    const now = new Date();
+                    const daysUntilExpiration = Math.ceil((expiresDate - now) / (1000 * 60 * 60 * 24));
+                    
+                    if (daysUntilExpiration <= 7) {
+                        document.getElementById('expirationWarning').style.display = 'block';
+                        document.getElementById('expirationText').textContent = 
+                            `This link expires in ${daysUntilExpiration} day${daysUntilExpiration !== 1 ? 's' : ''}`;
+                    }
+                }
+
+                // Render exercise groups
+                renderExerciseGroups(workoutData.exercise_groups || []);
+
+                // Render bonus exercises
+                const bonusExercises = workoutData.bonus_exercises || [];
+                if (bonusExercises.length > 0) {
+                    document.getElementById('bonusCard').style.display = 'block';
+                    renderBonusExercises(bonusExercises);
+                }
+
+                // Show content
+                document.getElementById('loadingState').style.display = 'none';
+                document.getElementById('workoutContent').style.display = 'block';
+            }
+
+            function renderExerciseGroups(groups) {
+                const container = document.getElementById('exerciseGroupsContainer');
+                container.innerHTML = '';
+
+                groups.forEach((group, index) => {
+                    const exercises = group.exercises || {};
+                    const exerciseNames = Object.values(exercises).filter(name => name);
+
+                    const groupDiv = document.createElement('div');
+                    groupDiv.className = 'mb-4';
+                    groupDiv.innerHTML = `
+                        <h6 class="mb-2">Group ${index + 1}</h6>
+                        <div class="mb-2">
+                            ${exerciseNames.map(name => `
+                                <div class="text-muted">• ${escapeHtml(name)}</div>
+                            `).join('')}
+                        </div>
+                        <div class="d-flex gap-3 text-muted small">
+                            <span><strong>Sets:</strong> ${escapeHtml(group.sets || '3')}</span>
+                            <span><strong>Reps:</strong> ${escapeHtml(group.reps || '8-12')}</span>
+                            <span><strong>Rest:</strong> ${escapeHtml(group.rest || '60s')}</span>
+                        </div>
+                        ${group.default_weight ? `
+                            <div class="text-muted small mt-2">
+                                <strong>Weight:</strong> ${escapeHtml(group.default_weight)} ${escapeHtml(group.default_weight_unit || 'lbs')}
+                            </div>
+                        ` : ''}
+                    `;
+
+                    container.appendChild(groupDiv);
+                });
+            }
+
+            function renderBonusExercises(bonusExercises) {
+                const container = document.getElementById('bonusExercisesContainer');
+                container.innerHTML = '';
+
+                bonusExercises.forEach(exercise => {
+                    const exerciseDiv = document.createElement('div');
+                    exerciseDiv.className = 'mb-3';
+                    exerciseDiv.innerHTML = `
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span>${escapeHtml(exercise.name)}</span>
+                            <div class="d-flex gap-3 text-muted small">
+                                <span>${escapeHtml(exercise.sets || '2')} sets</span>
+                                <span>${escapeHtml(exercise.reps || '15')} reps</span>
+                                <span>${escapeHtml(exercise.rest || '30s')} rest</span>
+                            </div>
+                        </div>
+                    `;
+
+                    container.appendChild(exerciseDiv);
+                });
+            }
+
+            async function handleSaveWorkout() {
+                if (!currentWorkout) {
+                    alert('No workout to save');
+                    return;
+                }
+
+                const btn = document.getElementById('saveWorkoutBtn');
+                const originalHTML = btn.innerHTML;
+
+                try {
+                    // Show loading state
+                    btn.disabled = true;
+                    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Saving...';
+
+                    // Get auth token
+                    const token = await getAuthToken();
+
+                    // Call API
+                    const response = await fetch(`/api/v3/sharing/share/${shareToken}/save`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({})
+                    });
+
+                    if (!response.ok) {
+                        const error = await response.json();
+                        throw new Error(error.detail || 'Failed to save workout');
+                    }
+
+                    const savedWorkout = await response.json();
+                    console.log('✅ Workout saved to library:', savedWorkout);
+
+                    // Show success
+                    btn.innerHTML = '<i class="bx bx-check me-2"></i>Saved!';
+                    btn.classList.remove('btn-primary');
+                    btn.classList.add('btn-success');
+
+                    // Redirect after a moment
+                    setTimeout(() => {
+                        window.location.href = 'workout-database.html';
+                    }, 1500);
+
+                } catch (error) {
+                    console.error('❌ Error saving workout:', error);
+                    alert('Failed to save workout: ' + error.message);
+
+                    // Reset button
+                    btn.disabled = false;
+                    btn.innerHTML = originalHTML;
+                }
+            }
+
+            async function getAuthToken() {
+                // Wait for auth service to be ready
+                if (!window.authService) {
+                    throw new Error('Authentication service not available');
+                }
+
+                // Wait for Firebase to be ready
+                if (!window.firebaseReady) {
+                    await new Promise(resolve => {
+                        window.addEventListener('firebaseReady', resolve, { once: true });
+                    });
+                }
+
+                // Check if user is authenticated
+                if (!window.authService.isUserAuthenticated()) {
+                    throw new Error('You must be logged in to save workouts');
+                }
+
+                // Get ID token from auth service
+                return await window.authService.getIdToken();
+            }
+
+            function showError(title, message) {
+                document.getElementById('loadingState').style.display = 'none';
+                document.getElementById('errorState').style.display = 'block';
+                document.getElementById('errorTitle').textContent = title;
+                document.getElementById('errorMessage').textContent = message;
+            }
+
+            function escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+
+        })();
+    </script>
+  </body>
+</html>
