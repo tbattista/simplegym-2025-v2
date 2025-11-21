@@ -473,8 +473,9 @@
             // Update stats (view count)
             document.getElementById('privateViewCount').textContent = 0;
 
-            // Set share URL
-            document.getElementById('privateShareUrl').value = shareData.share_url;
+            // Set share URL - format like public shares (opens in workout builder)
+            const shareUrl = `${window.location.origin}/workout-builder.html?share_token=${shareData.token}`;
+            document.getElementById('privateShareUrl').value = shareUrl;
 
             // Show expiration info if applicable
             if (shareData.expires_at) {

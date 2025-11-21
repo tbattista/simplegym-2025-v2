@@ -330,10 +330,35 @@ async function saveWorkoutFromEditor(silent = false) {
         }
         
         let savedWorkout;
+        const workoutId = window.ghostGym.workoutBuilder.selectedWorkoutId;
         
-        if (window.ghostGym.workoutBuilder.selectedWorkoutId) {
+        // Check if this is a shared workout (temporary ID starting with "shared-")
+        const isSharedWorkout = workoutId && workoutId.startsWith('shared-');
+        
+        if (isSharedWorkout) {
+            // Shared workout: Create a new workout (save as copy to user's library)
+            console.log('📋 Saving shared workout as new workout in user library');
+            savedWorkout = await window.dataManager.createWorkout(workoutData);
+            
+            // Add to local array
+            window.ghostGym.workouts.unshift(savedWorkout);
+            
+            // Update to the new workout ID
+            window.ghostGym.workoutBuilder.selectedWorkoutId = savedWorkout.id;
+            
+            // Update localStorage to track the new workout ID
+            try {
+                localStorage.setItem('currentEditingWorkoutId', savedWorkout.id);
+                console.log('💾 Updated localStorage with new workout ID:', savedWorkout.id);
+            } catch (error) {
+                console.warn('⚠️ Could not update localStorage:', error);
+            }
+            
+            if (!silent) {
+                showAlert(`Workout "${savedWorkout.name}" saved to your library!`, 'success');
+            }
+        } else if (workoutId) {
             // Update existing workout
-            const workoutId = window.ghostGym.workoutBuilder.selectedWorkoutId;
             savedWorkout = await window.dataManager.updateWorkout(workoutId, workoutData);
             
             // Update in local array
