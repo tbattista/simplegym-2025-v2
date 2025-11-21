@@ -521,22 +521,89 @@ def main():
     for coll_name in collection_names:
         coll_ref = db.collection(coll_name)
         docs = list(coll_ref.limit(3).stream())
+        
+        # Check for subcollections in first document
+        subcollections = []
+        if docs:
+            first_doc_ref = docs[0].reference
+            for subcoll in first_doc_ref.collections():
+                subcollections.append(subcoll.id)
+        
         full_structure["collections"][coll_name] = {
             "total_docs_sampled": len(docs),
-            "sample_doc_ids": [doc.id for doc in docs]
+            "sample_doc_ids": [doc.id for doc in docs],
+            "subcollections": subcollections
         }
+        
+        if subcollections:
+            print(f"  └─ Subcollections in {coll_name}: {', '.join(subcollections)}")
+    
+    # Check top-level workouts collection first
+    print(f"\n{'='*80}")
+    print(f"CHECKING TOP-LEVEL WORKOUTS COLLECTION")
+    print(f"{'='*80}")
+    workouts_ref = db.collection('workouts')
+    top_level_workouts = list(workouts_ref.limit(10).stream())
+    if top_level_workouts:
+        print(f"✅ Found {len(top_level_workouts)} workouts in top-level collection")
+        for workout in top_level_workouts[:3]:
+            data = workout.to_dict()
+            print(f"  - {data.get('name', 'Unknown')} (ID: {workout.id})")
+            # Check if it has a user_id or creator_id field
+            if 'user_id' in data:
+                print(f"    └─ user_id: {data['user_id']}")
+            if 'creator_id' in data:
+                print(f"    └─ creator_id: {data['creator_id']}")
+    else:
+        print("ℹ️  No workouts in top-level collection")
     
     # Get user ID to inspect
     user_id = args.user_id
     if not user_id:
-        # Get first user
+        # Get first user - try multiple methods
         users_ref = db.collection('users')
-        first_user = next(users_ref.limit(1).stream(), None)
-        if first_user:
-            user_id = first_user.id
-            print(f"\n📌 Using first user found: {user_id}")
-        else:
-            print("\n⚠️  No users found in database")
+        try:
+            print(f"\n🔍 Attempting to fetch users...")
+            # Method 1: Try stream with explicit fetch
+            users_list = list(users_ref.limit(10).stream())
+            print(f"   Stream method returned {len(users_list)} users")
+            
+            if users_list:
+                user_id = users_list[0].id
+                print(f"\n📌 Using first user found: {user_id}")
+                print(f"   Total users found: {len(users_list)}")
+                # Show all user IDs
+                print(f"   All user IDs: {[u.id for u in users_list]}")
+            else:
+                # Method 2: Try get() instead of stream()
+                print(f"   Trying get() method...")
+                users_docs = users_ref.limit(10).get()
+                print(f"   Get method returned {len(users_docs)} users")
+                
+                if users_docs:
+                    user_id = users_docs[0].id
+                    print(f"\n📌 Using first user found (via get): {user_id}")
+                    print(f"   Total users found: {len(users_docs)}")
+                else:
+                    print("\n⚠️  No users found in database")
+                    print("   This might be a permissions issue or the users collection is empty")
+                    print("\n💡 Checking if workouts have user references...")
+                    # Try to extract user_id from top-level workouts
+                    if top_level_workouts:
+                        for workout in top_level_workouts:
+                            data = workout.to_dict()
+                            if 'user_id' in data:
+                                user_id = data['user_id']
+                                print(f"   Found user_id in workout: {user_id}")
+                                break
+                    
+                    if not user_id:
+                        print("\n❌ Cannot proceed without a user ID")
+                        return
+        except Exception as e:
+            print(f"\n❌ Error fetching users: {str(e)}")
+            import traceback
+            print(traceback.format_exc())
             return
     
     # Deep inspection of user data

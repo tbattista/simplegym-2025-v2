@@ -1,5 +1,5 @@
 {
-  "inspected_at": "2025-11-06T10:52:40.143434",
+  "inspected_at": "2025-11-20T14:27:09.477534",
   "collections": {
     "global_exercises": {
       "total_docs_sampled": 3,
@@ -7,66 +7,25 @@
         "exercise-0012febe",
         "exercise-004518f5",
         "exercise-0048d526"
-      ]
+      ],
+      "subcollections": []
     },
     "users": {
       "total_docs_sampled": 0,
-      "sample_doc_ids": []
+      "sample_doc_ids": [],
+      "subcollections": []
+    },
+    "workouts": {
+      "total_docs_sampled": 1,
+      "sample_doc_ids": [
+        "kURoOYTzubBvW0mcKzYr"
+      ],
+      "subcollections": []
     }
   },
   "user_workouts": {
-    "total_count": 10,
+    "total_count": 4,
     "workouts": [
-      {
-        "id": "workout-06fad623",
-        "name": "Legs",
-        "fields": {
-          "description": {
-            "type": "str",
-            "value": "This is the best leg workout on the planet"
-          },
-          "modified_date": {
-            "type": "DatetimeWithNanoseconds",
-            "value": "<class 'google.api_core.datetime_helpers.DatetimeWithNanoseconds'>"
-          },
-          "id": {
-            "type": "str",
-            "value": "workout-06fad623"
-          },
-          "name": {
-            "type": "str",
-            "value": "Legs"
-          },
-          "sync_status": {
-            "type": "str",
-            "value": "synced"
-          },
-          "tags": {
-            "type": "list",
-            "value": "<class 'list'>"
-          },
-          "version": {
-            "type": "int",
-            "value": 19
-          },
-          "created_date": {
-            "type": "DatetimeWithNanoseconds",
-            "value": "<class 'google.api_core.datetime_helpers.DatetimeWithNanoseconds'>"
-          },
-          "is_template": {
-            "type": "bool",
-            "value": true
-          },
-          "bonus_exercises": {
-            "type": "list",
-            "value": "<class 'list'>"
-          },
-          "exercise_groups": {
-            "type": "list",
-            "value": "<class 'list'>"
-          }
-        }
-      },
       {
         "id": "workout-542be09e",
         "name": "Push Day",
@@ -97,7 +56,7 @@
           },
           "version": {
             "type": "int",
-            "value": 15
+            "value": 30
           },
           "created_date": {
             "type": "DatetimeWithNanoseconds",
@@ -118,62 +77,12 @@
         }
       },
       {
-        "id": "workout-6338cdee",
-        "name": "Chest Day",
+        "id": "workout-62ca91db",
+        "name": "Test Exercise with Everything",
         "fields": {
           "description": {
             "type": "str",
-            "value": ""
-          },
-          "modified_date": {
-            "type": "DatetimeWithNanoseconds",
-            "value": "<class 'google.api_core.datetime_helpers.DatetimeWithNanoseconds'>"
-          },
-          "version": {
-            "type": "int",
-            "value": 1
-          },
-          "name": {
-            "type": "str",
-            "value": "Chest Day"
-          },
-          "id": {
-            "type": "str",
-            "value": "workout-6338cdee"
-          },
-          "tags": {
-            "type": "list",
-            "value": "<class 'list'>"
-          },
-          "sync_status": {
-            "type": "str",
-            "value": "synced"
-          },
-          "created_date": {
-            "type": "DatetimeWithNanoseconds",
-            "value": "<class 'google.api_core.datetime_helpers.DatetimeWithNanoseconds'>"
-          },
-          "bonus_exercises": {
-            "type": "list",
-            "value": "<class 'list'>"
-          },
-          "exercise_groups": {
-            "type": "list",
-            "value": "<class 'list'>"
-          },
-          "is_template": {
-            "type": "bool",
-            "value": true
-          }
-        }
-      },
-      {
-        "id": "workout-7eb8443b",
-        "name": "new new 4",
-        "fields": {
-          "description": {
-            "type": "str",
-            "value": "Test save"
+            "value": "This workout will be awesome, you will kick ass after."
           },
           "modified_date": {
             "type": "DatetimeWithNanoseconds",
@@ -185,11 +94,11 @@
           },
           "name": {
             "type": "str",
-            "value": "new new 4"
+            "value": "Test Exercise with Everything"
           },
           "id": {
             "type": "str",
-            "value": "workout-7eb8443b"
+            "value": "workout-62ca91db"
           },
           "tags": {
             "type": "list",
@@ -197,7 +106,7 @@
           },
           "version": {
             "type": "int",
-            "value": 19
+            "value": 4
           },
           "created_date": {
             "type": "DatetimeWithNanoseconds",
@@ -268,8 +177,8 @@
         }
       },
       {
-        "id": "workout-a808ee17",
-        "name": "Push day - upper body focus",
+        "id": "workout-afcb8448",
+        "name": "Classic Chest Day",
         "fields": {
           "description": {
             "type": "str",
@@ -285,11 +194,11 @@
           },
           "name": {
             "type": "str",
-            "value": "Push day - upper body focus"
+            "value": "Classic Chest Day"
           },
           "id": {
             "type": "str",
-            "value": "workout-a808ee17"
+            "value": "workout-afcb8448"
           },
           "tags": {
             "type": "list",
@@ -297,107 +206,7 @@
           },
           "version": {
             "type": "int",
-            "value": 2
-          },
-          "created_date": {
-            "type": "DatetimeWithNanoseconds",
-            "value": "<class 'google.api_core.datetime_helpers.DatetimeWithNanoseconds'>"
-          },
-          "is_template": {
-            "type": "bool",
-            "value": true
-          },
-          "bonus_exercises": {
-            "type": "list",
-            "value": "<class 'list'>"
-          },
-          "exercise_groups": {
-            "type": "list",
-            "value": "<class 'list'>"
-          }
-        }
-      },
-      {
-        "id": "workout-b3ce1709",
-        "name": "Push Day",
-        "fields": {
-          "description": {
-            "type": "str",
-            "value": ""
-          },
-          "modified_date": {
-            "type": "DatetimeWithNanoseconds",
-            "value": "<class 'google.api_core.datetime_helpers.DatetimeWithNanoseconds'>"
-          },
-          "sync_status": {
-            "type": "str",
-            "value": "synced"
-          },
-          "name": {
-            "type": "str",
-            "value": "Push Day"
-          },
-          "version": {
-            "type": "int",
-            "value": 1
-          },
-          "tags": {
-            "type": "list",
-            "value": "<class 'list'>"
-          },
-          "id": {
-            "type": "str",
-            "value": "workout-b3ce1709"
-          },
-          "created_date": {
-            "type": "DatetimeWithNanoseconds",
-            "value": "<class 'google.api_core.datetime_helpers.DatetimeWithNanoseconds'>"
-          },
-          "is_template": {
-            "type": "bool",
-            "value": true
-          },
-          "bonus_exercises": {
-            "type": "list",
-            "value": "<class 'list'>"
-          },
-          "exercise_groups": {
-            "type": "list",
-            "value": "<class 'list'>"
-          }
-        }
-      },
-      {
-        "id": "workout-da1d9a34",
-        "name": "Legs",
-        "fields": {
-          "description": {
-            "type": "str",
-            "value": ""
-          },
-          "modified_date": {
-            "type": "DatetimeWithNanoseconds",
-            "value": "<class 'google.api_core.datetime_helpers.DatetimeWithNanoseconds'>"
-          },
-          "id": {
-            "type": "str",
-            "value": "workout-da1d9a34"
-          },
-          "name": {
-            "type": "str",
-            "value": "Legs"
-          },
-          "sync_status": {
-            "type": "str",
-            "value": "synced"
-          },
-          "tags": {
-            "type": "list",
-            "value": "<class 'list'>"
-          },
-          "version": {
-            "type": "int",
-            "value": 32
+            "value": 3
           },
           "created_date": {
             "type": "DatetimeWithNanoseconds",
@@ -410,106 +219,6 @@
           "is_template": {
             "type": "bool",
             "value": true
-          },
-          "exercise_groups": {
-            "type": "list",
-            "value": "<class 'list'>"
-          }
-        }
-      },
-      {
-        "id": "workout-e3d3abcf",
-        "name": "Push Day",
-        "fields": {
-          "description": {
-            "type": "str",
-            "value": ""
-          },
-          "modified_date": {
-            "type": "DatetimeWithNanoseconds",
-            "value": "<class 'google.api_core.datetime_helpers.DatetimeWithNanoseconds'>"
-          },
-          "sync_status": {
-            "type": "str",
-            "value": "synced"
-          },
-          "name": {
-            "type": "str",
-            "value": "Push Day"
-          },
-          "version": {
-            "type": "int",
-            "value": 1
-          },
-          "tags": {
-            "type": "list",
-            "value": "<class 'list'>"
-          },
-          "id": {
-            "type": "str",
-            "value": "workout-e3d3abcf"
-          },
-          "created_date": {
-            "type": "DatetimeWithNanoseconds",
-            "value": "<class 'google.api_core.datetime_helpers.DatetimeWithNanoseconds'>"
-          },
-          "is_template": {
-            "type": "bool",
-            "value": true
-          },
-          "bonus_exercises": {
-            "type": "list",
-            "value": "<class 'list'>"
-          },
-          "exercise_groups": {
-            "type": "list",
-            "value": "<class 'list'>"
-          }
-        }
-      },
-      {
-        "id": "workout-e8c7e54b",
-        "name": "Squat Day",
-        "fields": {
-          "description": {
-            "type": "str",
-            "value": ""
-          },
-          "modified_date": {
-            "type": "DatetimeWithNanoseconds",
-            "value": "<class 'google.api_core.datetime_helpers.DatetimeWithNanoseconds'>"
-          },
-          "id": {
-            "type": "str",
-            "value": "workout-e8c7e54b"
-          },
-          "name": {
-            "type": "str",
-            "value": "Squat Day"
-          },
-          "sync_status": {
-            "type": "str",
-            "value": "synced"
-          },
-          "tags": {
-            "type": "list",
-            "value": "<class 'list'>"
-          },
-          "version": {
-            "type": "int",
-            "value": 28
-          },
-          "created_date": {
-            "type": "DatetimeWithNanoseconds",
-            "value": "<class 'google.api_core.datetime_helpers.DatetimeWithNanoseconds'>"
-          },
-          "is_template": {
-            "type": "bool",
-            "value": true
-          },
-          "bonus_exercises": {
-            "type": "list",
-            "value": "<class 'list'>"
           },
           "exercise_groups": {
             "type": "list",
@@ -520,17 +229,17 @@
     ],
     "field_analysis": {
       "common_fields": [
+        "created_date",
         "id",
+        "is_template",
+        "name",
+        "sync_status",
+        "exercise_groups",
+        "bonus_exercises",
         "modified_date",
         "tags",
-        "sync_status",
-        "version",
-        "is_template",
-        "bonus_exercises",
-        "created_date",
-        "exercise_groups",
-        "name",
-        "description"
+        "description",
+        "version"
       ],
       "optional_fields": "set()",
       "field_types": {
@@ -558,11 +267,11 @@
         "created_date": [
           "DatetimeWithNanoseconds"
         ],
-        "is_template": [
-          "bool"
-        ],
         "bonus_exercises": [
           "list"
+        ],
+        "is_template": [
+          "bool"
         ],
         "exercise_groups": [
           "list"
@@ -1092,17 +801,17 @@
     ],
     "field_analysis": {
       "common_fields": [
-        "difficulty_level",
+        "created_date",
         "id",
-        "duration_weeks",
+        "workouts",
+        "name",
+        "sync_status",
+        "difficulty_level",
         "modified_date",
         "tags",
+        "description",
         "version",
-        "sync_status",
-        "workouts",
-        "created_date",
-        "name",
-        "description"
+        "duration_weeks"
       ],
       "workout_reference_structure": {
         "fields": [
@@ -1758,12 +1467,12 @@
           "int"
         ],
         "secondaryMuscle": [
-          "str",
-          "NoneType"
+          "NoneType",
+          "str"
         ],
         "grip": [
-          "str",
-          "NoneType"
+          "NoneType",
+          "str"
         ],
         "popularityScore": [
           "int"
@@ -1781,8 +1490,8 @@
           "str"
         ],
         "movementPattern1": [
-          "str",
-          "NoneType"
+          "NoneType",
+          "str"
         ],
         "exerciseTier": [
           "int"

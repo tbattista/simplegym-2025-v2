@@ -1,28 +1,28 @@
 # Firestore Database Structure Summary
-Generated: 2025-11-06 10:52:41
+Generated: 2025-11-20 14:27:11
 
 ## Overview
 
 ### Top-Level Collections
 - **global_exercises**: 3 documents sampled
 - **users**: 0 documents sampled
+- **workouts**: 1 documents sampled
 
 ## User Data Analysis
 
 ### Workout Templates
-- **Total**: 10 workouts
-- **Common Fields**: id, modified_date, tags, sync_status, version, is_template, bonus_exercises, created_date, exercise_groups, name, description
+- **Total**: 4 workouts
+- **Common Fields**: created_date, id, is_template, name, sync_status, exercise_groups, bonus_exercises, modified_date, tags, description, version
 
 **Sample Workouts:**
-- Legs (`workout-06fad623`)
 - Push Day (`workout-542be09e`)
-- Chest Day (`workout-6338cdee`)
-- new new 4 (`workout-7eb8443b`)
+- Test Exercise with Everything (`workout-62ca91db`)
 - Back & Biceps (`workout-9a39855b`)
+- Classic Chest Day (`workout-afcb8448`)
 
 ### Programs
 - **Total**: 10 programs
-- **Common Fields**: difficulty_level, id, duration_weeks, modified_date, tags, version, sync_status, workouts, created_date, name, description
+- **Common Fields**: created_date, id, workouts, name, sync_status, difficulty_level, modified_date, tags, description, version, duration_weeks
 
 **Sample Programs:**
 - Fall 2025 v6 (`program-076b2a0c`) - 0 workouts

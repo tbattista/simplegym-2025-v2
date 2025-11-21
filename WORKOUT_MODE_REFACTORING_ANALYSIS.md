@@ -18,7 +18,7 @@ The `workout-mode-controller.js` file has grown to **2,303 lines** and contains 
 
 ---
 
-## 🔴 Critical Issues
+## � Critical Issues
 
 ### 1. **God Object Anti-Pattern**
 The controller handles too many responsibilities:
@@ -285,7 +285,7 @@ frontend/assets/js/
 
 ---
 
-## 🔍 Code Quality Issues
+## � Code Quality Issues
 
 ### 1. **Inconsistent Error Handling**
 ```javascript

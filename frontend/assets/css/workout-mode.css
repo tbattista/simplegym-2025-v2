@@ -180,8 +180,30 @@
    EXERCISE CARDS
    ============================================ */
 
+/* Workout name header at top of first card */
+.workout-name-header {
+    background-color: var(--bs-card-bg);
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--bs-border-color);
+}
+
+.workout-name-header h6 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--bs-heading-color);
+    margin-bottom: 0;
+    display: flex;
+    align-items: center;
+}
+
+.workout-name-header h6 i {
+    color: var(--bs-primary);
+    font-size: 1.1rem;
+}
+
 .exercise-card {
     margin-bottom: 1rem;
+    background: var(--bs-card-bg);
     border: 1px solid #e2e8f0;
     border-radius: 8px;
     transition: all 0.3s ease;
@@ -347,7 +369,9 @@
 
 .exercise-card-body {
     padding: 1.25rem;
+    background: var(--bs-card-bg);
     animation: slideDown 0.3s ease;
+    border-radius: 0 0 8px 8px;
 }
 
 @keyframes slideDown {
@@ -658,6 +682,11 @@
    DARK THEME ADJUSTMENTS
    ============================================ */
 
+[data-bs-theme="dark"] .workout-name-header {
+    background-color: var(--bs-gray-900);
+    border-bottom-color: var(--bs-gray-700);
+}
+
 [data-bs-theme="dark"] .session-controls {
     background: var(--bs-gray-900);
     border-color: var(--bs-gray-700);
@@ -684,6 +713,10 @@
 
 [data-bs-theme="dark"] .exercise-card:not(.expanded) .exercise-card-header:hover {
     background: var(--bs-gray-800);
+}
+
+[data-bs-theme="dark"] .exercise-card-body {
+    background: var(--bs-gray-900);
 }
 
 [data-bs-theme="dark"] .rest-timer-container {
@@ -1202,7 +1235,7 @@
 }
 
 [data-bs-theme="dark"] #completionSummaryOffcanvas .offcanvas-header {
-    background-color: var(--bs-success);
+    border-bottom-color: var(--bs-gray-700);
 }
 
 /* ============================================
@@ -1318,7 +1351,7 @@
 }
 
 [data-bs-theme="dark"] #resumeSessionOffcanvas .offcanvas-header {
-    background-color: var(--bs-primary);
+    border-bottom-color: var(--bs-gray-700);
 }
 
 /* ============================================

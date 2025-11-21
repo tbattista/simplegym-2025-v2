@@ -12,6 +12,9 @@ class WorkoutModeController {
         this.authService = window.authService;
         this.dataManager = window.dataManager;
         
+        // Initialize card renderer
+        this.cardRenderer = new window.ExerciseCardRenderer(this.sessionService);
+        
         // State
         this.currentWorkout = null;
         this.timers = {};
@@ -186,27 +189,27 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
             document.getElementById('workoutName').textContent = this.currentWorkout.name;
             document.title = `👻 ${this.currentWorkout.name} - Workout Mode - Ghost Gym`;
             
-            // Update workout details
-            const detailsEl = document.getElementById('workoutDetails');
-            if (detailsEl && this.currentWorkout.description) {
-                detailsEl.textContent = this.currentWorkout.description;
+            // Show workout info header
+            const workoutInfoHeader = document.getElementById('workoutInfoHeader');
+            if (workoutInfoHeader) {
+                workoutInfoHeader.style.display = 'block';
             }
             
             // Fetch and display last completed date
             const lastCompleted = await this.fetchLastCompleted();
-            const lastCompletedContainer = document.getElementById('lastCompletedContainer');
             const lastCompletedDate = document.getElementById('lastCompletedDate');
             
-            if (lastCompleted && lastCompletedContainer && lastCompletedDate) {
+            if (lastCompleted && lastCompletedDate) {
                 const formattedDate = lastCompleted.toLocaleDateString('en-US', {
                     month: 'short',
                     day: 'numeric',
                     year: 'numeric'
                 });
                 lastCompletedDate.textContent = formattedDate;
-                lastCompletedContainer.style.display = 'flex';
-            } else if (lastCompletedContainer) {
-                lastCompletedContainer.style.display = 'none';
+                console.log('✅ Last completed date set:', formattedDate);
+            } else if (lastCompletedDate) {
+                lastCompletedDate.textContent = 'Never';
+                console.log('ℹ️ No last completed date found, showing "Never"');
             }
             
             // CRITICAL FIX: Fetch exercise history BEFORE rendering
@@ -239,14 +242,20 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
     async fetchLastCompleted() {
         try {
             if (!this.currentWorkout || !this.authService.isUserAuthenticated()) {
+                console.log('ℹ️ No workout or not authenticated, skipping last completed fetch');
                 return null;
             }
             
             const token = await this.authService.getIdToken();
-            if (!token) return null;
+            if (!token) {
+                console.log('ℹ️ No auth token, skipping last completed fetch');
+                return null;
+            }
             
-            // Use the history endpoint to get last session
+            // Use the history endpoint to get exercise histories
             const url = window.config.api.getUrl(`/api/v3/workout-sessions/history/workout/${this.currentWorkout.id}`);
+            
+            console.log('📡 Fetching workout history from:', url);
             
             const response = await fetch(url, {
                 headers: {
@@ -255,27 +264,46 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
             });
             
             if (!response.ok) {
-                console.warn('Could not fetch last completed date');
+                console.warn('⚠️ Could not fetch last completed date, status:', response.status);
                 return null;
             }
             
             const historyData = await response.json();
+            console.log('📊 History data received:', historyData);
             
-            // Get the most recent session date
-            if (historyData.last_session_date) {
-                return new Date(historyData.last_session_date);
+            // The response contains exercises object with exercise histories
+            // Each exercise history has a last_session_date
+            // We need to find the most recent date across all exercises
+            if (historyData.exercises && Object.keys(historyData.exercises).length > 0) {
+                let mostRecentDate = null;
+                
+                for (const exerciseName in historyData.exercises) {
+                    const exerciseHistory = historyData.exercises[exerciseName];
+                    if (exerciseHistory.last_session_date) {
+                        const sessionDate = new Date(exerciseHistory.last_session_date);
+                        if (!mostRecentDate || sessionDate > mostRecentDate) {
+                            mostRecentDate = sessionDate;
+                        }
+                    }
+                }
+                
+                if (mostRecentDate) {
+                    console.log('✅ Found most recent session date:', mostRecentDate);
+                    return mostRecentDate;
+                }
             }
             
+            console.log('ℹ️ No session history found for this workout');
             return null;
             
         } catch (error) {
-            console.error('Error fetching last completed:', error);
+            console.error('❌ Error fetching last completed:', error);
             return null;
         }
     }
     
     /**
-     * Render workout cards
+     * Render workout cards (now uses ExerciseCardRenderer)
      */
     renderWorkout() {
         const container = document.getElementById('exerciseCardsContainer');
@@ -284,16 +312,21 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
         let html = '';
         let exerciseIndex = 0;
         
+        // Calculate total cards first
+        const regularCount = this.currentWorkout.exercise_groups?.length || 0;
+        const bonusExercises = this.sessionService.getBonusExercises();
+        const bonusCount = bonusExercises?.length || 0;
+        const totalCards = regularCount + bonusCount;
+        
         // Render regular exercise groups
         if (this.currentWorkout.exercise_groups && this.currentWorkout.exercise_groups.length > 0) {
             this.currentWorkout.exercise_groups.forEach((group) => {
-                html += this.renderExerciseCard(group, exerciseIndex, false);
+                html += this.cardRenderer.renderCard(group, exerciseIndex, false, totalCards);
                 exerciseIndex++;
             });
         }
         
         // Render bonus exercises from SESSION or PRE-WORKOUT list
-        const bonusExercises = this.sessionService.getBonusExercises();
         if (bonusExercises && bonusExercises.length > 0) {
             bonusExercises.forEach((bonus) => {
                 const bonusGroup = {
@@ -305,7 +338,7 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
                     default_weight_unit: bonus.weight_unit || 'lbs',
                     notes: bonus.notes
                 };
-                html += this.renderExerciseCard(bonusGroup, exerciseIndex, true);
+                html += this.cardRenderer.renderCard(bonusGroup, exerciseIndex, true, totalCards);
                 exerciseIndex++;
             });
         }
@@ -314,141 +347,6 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
         
         // Initialize timers
         this.initializeTimers();
-    }
-    
-    /**
-     * Render weight badge with visual feedback for different states
-     */
-    renderWeightBadge(currentWeight, currentUnit, weightSource, lastWeight, lastWeightUnit) {
-        if (currentWeight) {
-            // Has weight - show it with appropriate styling
-            const badgeClass = weightSource === 'history' ? 'bg-label-primary' : 'bg-primary';
-            const unitDisplay = currentUnit !== 'other' ? ` ${currentUnit}` : '';
-            const sourceHint = weightSource === 'history' ? ' (from history)' : '';
-            return `<span class="badge ${badgeClass}" title="Weight${sourceHint}">${currentWeight}${unitDisplay}</span>`;
-        } else if (lastWeight) {
-            // No current weight but has history - show as suggestion
-            const unitDisplay = lastWeightUnit !== 'other' ? ` ${lastWeightUnit}` : '';
-            return `<span class="badge bg-label-secondary" title="Last used weight - click Edit Weight to use">Last: ${lastWeight}${unitDisplay}</span>`;
-        } else {
-            // No weight at all - show clear indicator
-            return `<span class="badge bg-label-secondary" title="No weight set - click Edit Weight to add">No weight</span>`;
-        }
-    }
-    
-    /**
-     * Render individual exercise card
-     * (Keeping existing rendering logic - it works!)
-     */
-    renderExerciseCard(group, index, isBonus) {
-        const exercises = group.exercises || {};
-        const mainExercise = exercises.a || 'Unknown Exercise';
-        const alternates = [];
-        
-        if (exercises.b) alternates.push({ label: 'Alt1', name: exercises.b });
-        if (exercises.c) alternates.push({ label: 'Alt2', name: exercises.c });
-        
-        const sets = group.sets || '3';
-        const reps = group.reps || '8-12';
-        const rest = group.rest || '60s';
-        const notes = group.notes || '';
-        
-        const restSeconds = this.parseRestTime(rest);
-        const timerId = `timer-${index}`;
-        const bonusClass = isBonus ? 'bonus-exercise' : '';
-        
-        // Check if session is active
-        const isSessionActive = this.sessionService.isSessionActive();
-        
-        // Get exercise history
-        const history = this.sessionService.getExerciseHistory(mainExercise);
-        const lastWeight = history?.last_weight || '';
-        const lastWeightUnit = history?.last_weight_unit || 'lbs';
-        const lastSessionDate = history?.last_session_date ? new Date(history.last_session_date).toLocaleDateString() : null;
-        
-        // IMPROVED: Better weight priority logic with clear fallback chain
-        // Priority: Session > Template > History > Empty
-        const weightData = this.sessionService.getExerciseWeight(mainExercise);
-        const templateWeight = group.default_weight || '';
-        const templateUnit = group.default_weight_unit || 'lbs';
-        
-        // Determine current weight with proper fallback
-        const currentWeight = weightData?.weight || templateWeight || lastWeight || '';
-        const currentUnit = weightData?.weight_unit || (weightData?.weight ? templateUnit : (templateWeight ? templateUnit : lastWeightUnit));
-        
-        // Determine weight source for better UX feedback
-        const weightSource = weightData?.weight ? 'session' : (templateWeight ? 'template' : (lastWeight ? 'history' : 'none'));
-        
-        return `
-            <div class="card exercise-card ${bonusClass}" data-exercise-index="${index}" data-exercise-name="${this.escapeHtml(mainExercise)}">
-                <div class="card-header exercise-card-header" onclick="window.workoutModeController.toggleExerciseCard(${index})">
-                    <div class="exercise-card-summary">
-                        <div class="d-flex justify-content-between align-items-start mb-1">
-                            <h6 class="mb-0">${this.escapeHtml(mainExercise)}</h6>
-                            ${this.renderWeightBadge(currentWeight, currentUnit, weightSource, lastWeight, lastWeightUnit)}
-                        </div>
-                        <div class="exercise-card-meta text-muted small">
-                            ${sets} × ${reps} • Rest: ${rest}
-                        </div>
-                        ${alternates.length > 0 ? `
-                            <div class="exercise-card-alts text-muted small mt-1">
-                                ${alternates.map(alt => `<div>${alt.label}: ${this.escapeHtml(alt.name)}</div>`).join('')}
-                            </div>
-                        ` : ''}
-                    </div>
-                    <i class="bx bx-chevron-down expand-icon"></i>
-                </div>
-                
-                <div class="card-body exercise-card-body" style="display: none;">
-                    ${isSessionActive && lastWeight && lastSessionDate ? `
-                        <div class="text-muted small mb-3">
-                            <i class="bx bx-history me-1"></i>Last: ${lastWeight} ${lastWeightUnit} (${lastSessionDate})
-                        </div>
-                    ` : ''}
-                    
-                    ${notes ? `
-                        <div class="alert alert-info mb-3" style="font-size: 0.875rem; padding: 0.75rem;">
-                            <i class="bx bx-info-circle me-1"></i>
-                            ${this.escapeHtml(notes)}
-                        </div>
-                    ` : ''}
-                    
-                    <!-- 2x2 Grid: Rest Timer | Start Button / Edit Weight | Next -->
-                    <div class="workout-button-grid">
-                        <!-- Row 1, Column 1: Rest Timer Label -->
-                        <div class="rest-timer-grid-label">
-                            <div class="rest-timer" data-rest-seconds="${restSeconds}" data-timer-id="${timerId}">
-                            </div>
-                        </div>
-                        
-                        <!-- Row 1, Column 2: Start Rest Button (will be rendered by timer) -->
-                        <div class="rest-timer-button-slot">
-                        </div>
-                        
-                        <!-- Row 2, Column 1: Edit Weight Button -->
-                        <button
-                            class="btn ${currentWeight ? 'btn-outline-primary' : 'btn-outline-warning'} workout-grid-btn"
-                            data-exercise-name="${this.escapeHtml(mainExercise)}"
-                            data-current-weight="${currentWeight || ''}"
-                            data-current-unit="${currentUnit}"
-                            data-last-weight="${lastWeight || ''}"
-                            data-last-weight-unit="${lastWeightUnit || ''}"
-                            data-last-session-date="${lastSessionDate || ''}"
-                            data-is-session-active="${isSessionActive}"
-                            data-weight-source="${weightSource}"
-                            onclick="window.workoutModeController.handleWeightButtonClick(this); event.stopPropagation();"
-                            title="${currentWeight ? 'Edit current weight' : 'Set weight for this exercise'}">
-                            <i class="bx ${currentWeight ? 'bx-edit-alt' : 'bx-plus-circle'} me-1"></i>${currentWeight ? 'Edit Weight' : 'Set Weight'}
-                        </button>
-                        
-                        <!-- Row 2, Column 2: Next Button -->
-                        <button class="btn btn-primary workout-grid-btn" onclick="window.workoutModeController.goToNextExercise(${index})">
-                            Next<i class="bx bx-right-arrow-alt ms-1"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        `;
     }
     
     /**
@@ -484,131 +382,18 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
     }
     
     /**
-     * Show weight modal
+     * Show weight modal (now delegates to factory)
      */
     showWeightModal(exerciseName, currentWeight, currentUnit, lastWeight, lastWeightUnit, lastSessionDate, isSessionActive) {
-        const modalManager = this.getModalManager();
-        
-        const modalContent = `
-            <div class="weight-modal-content">
-                <div class="mb-3">
-                    <label class="form-label"><i class="bx bx-dumbbell me-2"></i>Weight</label>
-                    <div class="d-flex gap-2">
-                        <input
-                            type="text"
-                            class="form-control weight-input"
-                            id="modalWeightInput"
-                            data-exercise-name="${exerciseName}"
-                            value="${currentWeight || ''}"
-                            placeholder="135 or 4x45 plates"
-                            maxlength="50"
-                            ${!isSessionActive ? 'readonly disabled' : ''}
-                            style="flex: 1;">
-                        <select class="form-select weight-unit-select" id="modalWeightUnit" data-exercise-name="${exerciseName}" ${!isSessionActive ? 'disabled' : ''} style="width: 100px;">
-                            <option value="lbs" ${currentUnit === 'lbs' ? 'selected' : ''}>lbs</option>
-                            <option value="kg" ${currentUnit === 'kg' ? 'selected' : ''}>kg</option>
-                            <option value="other" ${currentUnit === 'other' ? 'selected' : ''}>other</option>
-                        </select>
-                    </div>
-                    <small class="text-muted">Enter weight as number or description (e.g., "4x45 plates", "135", "BW+25")</small>
-                </div>
-                ${lastWeight && lastSessionDate ? `
-                    <div class="alert alert-info mb-0">
-                        <i class="bx bx-history me-2"></i>Last: ${lastWeight} ${lastWeightUnit} (${lastSessionDate})
-                    </div>
-                ` : ''}
-                ${!isSessionActive ? `
-                    <div class="alert alert-warning mb-0 mt-3">
-                        <i class="bx bx-lock-alt me-2"></i>Start workout to edit weights
-                    </div>
-                ` : ''}
-            </div>
-        `;
-        
-        // Create offcanvas using Bootstrap (slides up from bottom - Sneat best practice)
-        const offcanvasHtml = `
-            <div class="offcanvas offcanvas-bottom" tabindex="-1" id="weightEditOffcanvas" aria-labelledby="weightEditOffcanvasLabel">
-                <div class="offcanvas-header">
-                    <h5 class="offcanvas-title" id="weightEditOffcanvasLabel">
-                        <i class="bx bx-edit-alt me-2"></i>Edit Weight
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-                </div>
-                <div class="offcanvas-body">
-                    <h6 class="mb-3">${exerciseName}</h6>
-                    ${modalContent}
-                    <div class="d-flex gap-2 mt-4">
-                        <button type="button" class="btn btn-outline-secondary flex-fill" data-bs-dismiss="offcanvas">Cancel</button>
-                        ${isSessionActive ? '<button type="button" class="btn btn-primary flex-fill" id="saveWeightBtn">Save</button>' : ''}
-                    </div>
-                </div>
-            </div>
-        `;
-        
-        // Remove existing offcanvas if any
-        const existingOffcanvas = document.getElementById('weightEditOffcanvas');
-        if (existingOffcanvas) {
-            existingOffcanvas.remove();
-        }
-        
-        // Add offcanvas to body
-        document.body.insertAdjacentHTML('beforeend', offcanvasHtml);
-        
-        // Initialize Bootstrap offcanvas
-        const offcanvasElement = document.getElementById('weightEditOffcanvas');
-        const offcanvas = new window.bootstrap.Offcanvas(offcanvasElement);
-        
-        // Setup event listeners
-        if (isSessionActive) {
-            const saveBtn = document.getElementById('saveWeightBtn');
-            const weightInput = document.getElementById('modalWeightInput');
-            const unitSelect = document.getElementById('modalWeightUnit');
-            
-            saveBtn.addEventListener('click', async () => {
-                const weight = weightInput.value.trim();
-                const unit = unitSelect.value;
-                
-                // Update session service (now accepts string values)
-                this.sessionService.updateExerciseWeight(exerciseName, weight, unit);
-                
-                // Explicitly trigger auto-save and wait for it
-                try {
-                    await this.autoSave(null);
-                    console.log('✅ Weight saved successfully:', exerciseName, weight, unit);
-                } catch (error) {
-                    console.error('❌ Failed to save weight:', error);
-                    alert('Failed to save weight. Please try again.');
-                    return; // Don't close modal on error
-                }
-                
-                // Close offcanvas
-                offcanvas.hide();
-                
-                // Re-render workout to show updated weight
-                this.renderWorkout();
-            });
-            
-            // Also setup input listeners for real-time updates
-            weightInput.addEventListener('input', (e) => {
-                const weight = e.target.value.trim();
-                const unit = unitSelect.value;
-                this.sessionService.updateExerciseWeight(exerciseName, weight, unit);
-            });
-            
-            unitSelect.addEventListener('change', (e) => {
-                const weight = weightInput.value.trim();
-                const unit = e.target.value;
-                this.sessionService.updateExerciseWeight(exerciseName, weight, unit);
-            });
-        }
-        
-        // Cleanup offcanvas on hide
-        offcanvasElement.addEventListener('hidden.bs.offcanvas', () => {
-            offcanvasElement.remove();
+        // Use the new factory to create the offcanvas
+        window.WorkoutOffcanvasFactory.createWeightEdit(exerciseName, {
+            currentWeight,
+            currentUnit,
+            lastWeight,
+            lastWeightUnit,
+            lastSessionDate,
+            isSessionActive
         });
-        
-        // Show offcanvas
-        offcanvas.show();
     }
     
     
@@ -917,6 +702,11 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
             // Re-render to show weight inputs and transferred bonus exercises
             this.renderWorkout();
             
+            // Auto-expand first exercise card after render completes
+            setTimeout(() => {
+                this.expandFirstExerciseCard();
+            }, 300);
+            
             // Show success (reuse existing modal manager)
             if (window.showAlert) {
                 window.showAlert('Workout session started! 💪', 'success');
@@ -930,6 +720,17 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
     }
     
     /**
+     * Auto-expand first exercise card when workout starts
+     */
+    expandFirstExerciseCard() {
+        const firstCard = document.querySelector('.exercise-card[data-exercise-index="0"]');
+        if (firstCard && !firstCard.classList.contains('expanded')) {
+            console.log('✨ Auto-expanding first exercise card');
+            this.toggleExerciseCard(0);
+        }
+    }
+    
+    /**
      * Handle complete workout
      */
     async handleCompleteWorkout() {
@@ -938,7 +739,7 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
     }
     
     /**
-     * Show complete workout offcanvas (Sneat bottom offcanvas pattern)
+     * Show complete workout offcanvas (now uses factory)
      */
     showCompleteWorkoutOffcanvas() {
         const session = this.sessionService.getCurrentSession();
@@ -951,210 +752,27 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
         const bonusCount = this.currentWorkout?.bonus_exercises?.length || 0;
         const totalExercises = exerciseCount + bonusCount;
         
-        // Create offcanvas HTML (slides up from bottom - Sneat best practice)
-        const offcanvasHtml = `
-            <div class="offcanvas offcanvas-bottom" tabindex="-1" id="completeWorkoutOffcanvas" aria-labelledby="completeWorkoutOffcanvasLabel">
-                <div class="offcanvas-header border-bottom">
-                    <h5 class="offcanvas-title" id="completeWorkoutOffcanvasLabel">
-                        <i class="bx bx-check-circle me-2"></i>Complete Workout
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-                </div>
-                <div class="offcanvas-body">
-                    <div class="text-center mb-4">
-                        <div class="mb-3">
-                            <i class="bx bx-dumbbell" style="font-size: 3rem; color: var(--bs-primary);"></i>
-                        </div>
-                        <h5 class="mb-2">${this.escapeHtml(this.currentWorkout.name)}</h5>
-                        <p class="text-muted mb-0">Ready to complete your workout?</p>
-                    </div>
-                    
-                    <!-- Session Stats -->
-                    <div class="row g-3 mb-4">
-                        <div class="col-6">
-                            <div class="card bg-label-primary">
-                                <div class="card-body text-center py-3">
-                                    <div class="h4 mb-0">${minutes} min</div>
-                                    <small class="text-muted">Duration</small>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-6">
-                            <div class="card bg-label-success">
-                                <div class="card-body text-center py-3">
-                                    <div class="h4 mb-0">${totalExercises}</div>
-                                    <small class="text-muted">Exercises</small>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Info Alert -->
-                    <div class="alert alert-info d-flex align-items-start mb-4">
-                        <i class="bx bx-info-circle me-2 mt-1"></i>
-                        <div>
-                            <strong>Your progress will be saved</strong>
-                            <p class="mb-0 small">All weight data and exercise history will be recorded.</p>
-                        </div>
-                    </div>
-                    
-                    <!-- Action Buttons -->
-                    <div class="d-flex gap-2">
-                        <button type="button" class="btn btn-outline-secondary flex-fill" data-bs-dismiss="offcanvas">
-                            <i class="bx bx-x me-1"></i>Cancel
-                        </button>
-                        <button type="button" class="btn btn-success flex-fill" id="confirmCompleteBtn">
-                            <i class="bx bx-check me-1"></i>Complete Workout
-                        </button>
-                    </div>
-                </div>
-            </div>
-        `;
-        
-        // Remove existing offcanvas if any
-        const existingOffcanvas = document.getElementById('completeWorkoutOffcanvas');
-        if (existingOffcanvas) {
-            existingOffcanvas.remove();
-        }
-        
-        // Add offcanvas to body
-        document.body.insertAdjacentHTML('beforeend', offcanvasHtml);
-        
-        // Initialize Bootstrap offcanvas
-        const offcanvasElement = document.getElementById('completeWorkoutOffcanvas');
-        const offcanvas = new window.bootstrap.Offcanvas(offcanvasElement);
-        
-        // Setup confirm button
-        const confirmBtn = document.getElementById('confirmCompleteBtn');
-        confirmBtn.addEventListener('click', async () => {
-            // Disable button and show loading
-            confirmBtn.disabled = true;
-            confirmBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Completing...';
-            
-            try {
-                const exercisesPerformed = this.collectExerciseData();
-                const completedSession = await this.sessionService.completeSession(exercisesPerformed);
-                
-                // Update workout template with final weights
-                await this.updateWorkoutTemplateWeights(exercisesPerformed);
-                
-                // Close offcanvas
-                offcanvas.hide();
-                
-                // Show success summary
-                this.showCompletionSummary(completedSession);
-                
-            } catch (error) {
-                console.error('❌ Error completing workout:', error);
-                
-                // Re-enable button
-                confirmBtn.disabled = false;
-                confirmBtn.innerHTML = '<i class="bx bx-check me-1"></i>Complete Workout';
-                
-                // Show error
-                const modalManager = this.getModalManager();
-                modalManager.alert('Error', error.message, 'danger');
-            }
+        // Use factory to create offcanvas
+        window.WorkoutOffcanvasFactory.createCompleteWorkout({
+            workoutName: this.currentWorkout.name,
+            minutes,
+            totalExercises
+        }, async () => {
+            const exercisesPerformed = this.collectExerciseData();
+            const completedSession = await this.sessionService.completeSession(exercisesPerformed);
+            await this.updateWorkoutTemplateWeights(exercisesPerformed);
+            this.showCompletionSummary(completedSession);
         });
-        
-        // Cleanup offcanvas on hide
-        offcanvasElement.addEventListener('hidden.bs.offcanvas', () => {
-            offcanvasElement.remove();
-        });
-        
-        // Show offcanvas
-        offcanvas.show();
     }
     
     /**
-     * Show completion summary (success offcanvas)
+     * Show completion summary (now uses factory)
      */
     showCompletionSummary(session) {
-        const duration = session.duration_minutes || 0;
-        const exerciseCount = session.exercises_performed?.length || 0;
-        
-        // Create success offcanvas HTML (slides up from bottom)
-        const offcanvasHtml = `
-            <div class="offcanvas offcanvas-bottom" tabindex="-1" id="completionSummaryOffcanvas" aria-labelledby="completionSummaryOffcanvasLabel" data-bs-backdrop="static" data-bs-keyboard="false">
-                <div class="offcanvas-header border-bottom bg-success">
-                    <h5 class="offcanvas-title text-white" id="completionSummaryOffcanvasLabel">
-                        <i class="bx bx-trophy me-2"></i>Workout Complete!
-                    </h5>
-                </div>
-                <div class="offcanvas-body">
-                    <div class="text-center mb-4">
-                        <div class="mb-3">
-                            <i class="bx bx-trophy" style="font-size: 4rem; color: var(--bs-success);"></i>
-                        </div>
-                        <h4 class="mb-2">Great Job! 🎉</h4>
-                        <p class="text-muted">You've successfully completed your workout</p>
-                    </div>
-                    
-                    <!-- Stats Cards -->
-                    <div class="row g-3 mb-4">
-                        <div class="col-6">
-                            <div class="card bg-label-success">
-                                <div class="card-body text-center py-3">
-                                    <div class="h3 mb-0">${duration}</div>
-                                    <small class="text-muted">Minutes</small>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-6">
-                            <div class="card bg-label-primary">
-                                <div class="card-body text-center py-3">
-                                    <div class="h3 mb-0">${exerciseCount}</div>
-                                    <small class="text-muted">Exercises</small>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Success Message -->
-                    <div class="alert alert-success d-flex align-items-start mb-4">
-                        <i class="bx bx-check-circle me-2 mt-1"></i>
-                        <div>
-                            <strong>Progress Saved!</strong>
-                            <p class="mb-0 small">Your workout data has been recorded and is ready to view in your history.</p>
-                        </div>
-                    </div>
-                    
-                    <!-- Action Buttons -->
-                    <div class="d-flex flex-column gap-2">
-                        <button type="button" class="btn btn-primary" onclick="window.location.href='workout-mode.html'">
-                            <i class="bx bx-dumbbell me-1"></i>Start Another Workout
-                        </button>
-                        <button type="button" class="btn btn-outline-primary" onclick="window.location.href='workout-builder.html'">
-                            <i class="bx bx-list-ul me-1"></i>View History
-                        </button>
-                        <button type="button" class="btn btn-outline-secondary" onclick="window.location.href='index.html'">
-                            <i class="bx bx-home me-1"></i>Dashboard
-                        </button>
-                    </div>
-                </div>
-            </div>
-        `;
-        
-        // Remove any existing offcanvas
-        const existingOffcanvas = document.getElementById('completionSummaryOffcanvas');
-        if (existingOffcanvas) {
-            existingOffcanvas.remove();
-        }
-        
-        // Add offcanvas to body
-        document.body.insertAdjacentHTML('beforeend', offcanvasHtml);
-        
-        // Initialize Bootstrap offcanvas
-        const offcanvasElement = document.getElementById('completionSummaryOffcanvas');
-        const offcanvas = new window.bootstrap.Offcanvas(offcanvasElement);
-        
-        // Cleanup offcanvas on hide
-        offcanvasElement.addEventListener('hidden.bs.offcanvas', () => {
-            offcanvasElement.remove();
+        window.WorkoutOffcanvasFactory.createCompletionSummary({
+            duration: session.duration_minutes || 0,
+            exerciseCount: session.exercises_performed?.length || 0
         });
-        
-        // Show offcanvas
-        offcanvas.show();
     }
     
     /**
@@ -1238,7 +856,7 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
      */
     
     /**
-     * Show resume session prompt
+     * Show resume session prompt (now uses factory)
      * @param {Object} sessionData - Persisted session data
      */
     async showResumeSessionPrompt(sessionData) {
@@ -1249,129 +867,27 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
         const remainingMinutes = elapsedMinutes % 60;
         
         // Format elapsed time display
-        let elapsedDisplay;
-        if (elapsedHours > 0) {
-            elapsedDisplay = `${elapsedHours}h ${remainingMinutes}m ago`;
-        } else {
-            elapsedDisplay = `${elapsedMinutes} minutes ago`;
-        }
+        const elapsedDisplay = elapsedHours > 0
+            ? `${elapsedHours}h ${remainingMinutes}m ago`
+            : `${elapsedMinutes} minutes ago`;
         
         // Count exercises with weights
-        const exercisesWithWeights = Object.keys(sessionData.exercises || {}).filter(
-            name => sessionData.exercises[name].weight
-        ).length;
+        const exercisesWithWeights = Object.keys(sessionData.exercises || {})
+            .filter(name => sessionData.exercises[name].weight).length;
         const totalExercises = Object.keys(sessionData.exercises || {}).length;
         
-        // Create offcanvas HTML
-        const offcanvasHtml = `
-            <div class="offcanvas offcanvas-bottom" tabindex="-1" id="resumeSessionOffcanvas"
-                 aria-labelledby="resumeSessionOffcanvasLabel" data-bs-backdrop="static" data-bs-keyboard="false">
-                <div class="offcanvas-header border-bottom bg-primary">
-                    <h5 class="offcanvas-title text-white" id="resumeSessionOffcanvasLabel">
-                        <i class="bx bx-history me-2"></i>Resume Workout?
-                    </h5>
-                </div>
-                <div class="offcanvas-body">
-                    <div class="text-center mb-4">
-                        <div class="mb-3">
-                            <i class="bx bx-dumbbell" style="font-size: 3rem; color: var(--bs-primary);"></i>
-                        </div>
-                        <h5 class="mb-2">${this.escapeHtml(sessionData.workoutName)}</h5>
-                        <p class="text-muted mb-0">You have an active workout session</p>
-                    </div>
-                    
-                    <!-- Session Info -->
-                    <div class="row g-3 mb-4">
-                        <div class="col-6">
-                            <div class="card bg-label-primary">
-                                <div class="card-body text-center py-3">
-                                    <div class="h5 mb-0">${elapsedDisplay}</div>
-                                    <small class="text-muted">Started</small>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-6">
-                            <div class="card bg-label-success">
-                                <div class="card-body text-center py-3">
-                                    <div class="h5 mb-0">${exercisesWithWeights}/${totalExercises}</div>
-                                    <small class="text-muted">Weights Set</small>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Info Alert -->
-                    <div class="alert alert-info d-flex align-items-start mb-4">
-                        <i class="bx bx-info-circle me-2 mt-1"></i>
-                        <div>
-                            <strong>Your progress is saved</strong>
-                            <p class="mb-0 small">Resume to continue where you left off, or start fresh to begin a new session.</p>
-                        </div>
-                    </div>
-                    
-                    <!-- Action Buttons -->
-                    <div class="d-flex flex-column gap-2">
-                        <button type="button" class="btn btn-primary" id="resumeSessionBtn">
-                            <i class="bx bx-play me-1"></i>Resume Workout
-                        </button>
-                        <button type="button" class="btn btn-outline-secondary" id="startFreshBtn">
-                            <i class="bx bx-refresh me-1"></i>Start Fresh
-                        </button>
-                    </div>
-                </div>
-            </div>
-        `;
-        
-        // Remove existing offcanvas if any
-        const existingOffcanvas = document.getElementById('resumeSessionOffcanvas');
-        if (existingOffcanvas) {
-            existingOffcanvas.remove();
-        }
-        
-        // Add offcanvas to body
-        document.body.insertAdjacentHTML('beforeend', offcanvasHtml);
-        
-        // Initialize Bootstrap offcanvas
-        const offcanvasElement = document.getElementById('resumeSessionOffcanvas');
-        const offcanvas = new window.bootstrap.Offcanvas(offcanvasElement);
-        
-        // Setup button handlers
-        const resumeBtn = document.getElementById('resumeSessionBtn');
-        const startFreshBtn = document.getElementById('startFreshBtn');
-        
-        resumeBtn.addEventListener('click', async () => {
-            resumeBtn.disabled = true;
-            resumeBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Resuming...';
-            
-            try {
-                await this.resumeSession(sessionData);
-                offcanvas.hide();
-            } catch (error) {
-                console.error('❌ Error resuming session:', error);
-                resumeBtn.disabled = false;
-                resumeBtn.innerHTML = '<i class="bx bx-play me-1"></i>Resume Workout';
-                this.showError(error.message);
-            }
-        });
-        
-        startFreshBtn.addEventListener('click', () => {
-            // Clear persisted session
+        // Use factory to create offcanvas
+        window.WorkoutOffcanvasFactory.createResumeSession({
+            workoutName: sessionData.workoutName,
+            elapsedDisplay,
+            exercisesWithWeights,
+            totalExercises
+        },
+        async () => await this.resumeSession(sessionData),
+        () => {
             this.sessionService.clearPersistedSession();
-            offcanvas.hide();
-            
-            // Continue with normal initialization
-            setTimeout(() => {
-                this.initialize();
-            }, 300);
+            setTimeout(() => this.initialize(), 300);
         });
-        
-        // Cleanup offcanvas on hide
-        offcanvasElement.addEventListener('hidden.bs.offcanvas', () => {
-            offcanvasElement.remove();
-        });
-        
-        // Show offcanvas
-        offcanvas.show();
     }
     
     /**
@@ -1447,277 +963,57 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
     }
     
     /**
-     * Show simplified bonus exercise modal - one exercise at a time
+     * Show bonus exercise modal (now uses factory)
      */
     async showBonusExerciseModal() {
         try {
-            // Fetch previous session's bonus exercises for reference
-            const previousBonusExercises = await this.sessionService.getLastSessionBonusExercises(this.currentWorkout.id);
+            const previousBonusExercises = await this.sessionService
+                .getLastSessionBonusExercises(this.currentWorkout.id);
             
-            // Create simplified modal HTML
-            const modalHtml = this.createSimplifiedBonusExerciseModalHTML(previousBonusExercises);
-            
-            // Remove existing modal if any
-            const existingModal = document.getElementById('bonusExerciseOffcanvas');
-            if (existingModal) {
-                existingModal.remove();
-            }
-            
-            // Add modal to body
-            document.body.insertAdjacentHTML('beforeend', modalHtml);
-            
-            // Initialize Bootstrap offcanvas
-            const offcanvasElement = document.getElementById('bonusExerciseOffcanvas');
-            const offcanvas = new window.bootstrap.Offcanvas(offcanvasElement);
-            
-            // Setup event listeners
-            this.setupSimplifiedBonusExerciseModalListeners(offcanvas);
-            
-            // Show offcanvas
-            offcanvas.show();
-            
+            window.WorkoutOffcanvasFactory.createBonusExercise(
+                { previousExercises: previousBonusExercises },
+                async (data) => {
+                    // Handle adding new exercise
+                    this.sessionService.addBonusExercise({
+                        name: data.name,
+                        sets: data.sets || '3',
+                        reps: data.reps || '12',
+                        weight: data.weight || '',
+                        weight_unit: data.unit,
+                        rest: '60s'
+                    });
+                    this.renderWorkout();
+                    
+                    const message = !this.sessionService.isSessionActive()
+                        ? `${data.name} added! It will be included when you start the workout. 💪`
+                        : `${data.name} added to your workout! 💪`;
+                    if (window.showAlert) window.showAlert(message, 'success');
+                },
+                async (index) => {
+                    // Handle adding previous exercise
+                    const exercise = previousBonusExercises[index];
+                    if (exercise) {
+                        this.sessionService.addBonusExercise({
+                            name: exercise.exercise_name,
+                            sets: exercise.target_sets || '3',
+                            reps: exercise.target_reps || '12',
+                            weight: exercise.weight || '',
+                            weight_unit: exercise.weight_unit || 'lbs',
+                            rest: '60s'
+                        });
+                        this.renderWorkout();
+                        
+                        const message = !this.sessionService.isSessionActive()
+                            ? `${exercise.exercise_name} added! It will be included when you start the workout. 💪`
+                            : `${exercise.exercise_name} added to your workout! 💪`;
+                        if (window.showAlert) window.showAlert(message, 'success');
+                    }
+                }
+            );
         } catch (error) {
             console.error('❌ Error showing bonus exercise modal:', error);
             const modalManager = this.getModalManager();
             modalManager.alert('Error', 'Failed to load bonus exercise modal. Please try again.', 'danger');
-        }
-    }
-    
-    /**
-     * Create simplified bonus exercise modal HTML - one exercise at a time
-     */
-    createSimplifiedBonusExerciseModalHTML(previousBonusExercises) {
-        const hasPrevious = previousBonusExercises && previousBonusExercises.length > 0;
-        
-        return `
-            <div class="offcanvas offcanvas-bottom" tabindex="-1" id="bonusExerciseOffcanvas"
-                 aria-labelledby="bonusExerciseOffcanvasLabel" style="height: auto; max-height: 85vh;">
-                <div class="offcanvas-header border-bottom">
-                    <h5 class="offcanvas-title" id="bonusExerciseOffcanvasLabel">
-                        <i class="bx bx-plus-circle me-2"></i>Add Bonus Exercise
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-                </div>
-                <div class="offcanvas-body">
-                    <!-- Info Alert -->
-                    <div class="alert alert-info d-flex align-items-start mb-4">
-                        <i class="bx bx-info-circle me-2 mt-1"></i>
-                        <div>
-                            <strong>Add a supplementary exercise</strong>
-                            <p class="mb-0 small">Bonus exercises are saved in your workout history but don't modify your workout template.</p>
-                        </div>
-                    </div>
-                    
-                    <!-- Previous Session Section -->
-                    ${hasPrevious ? `
-                        <div class="mb-4">
-                            <h6 class="mb-3">
-                                <i class="bx bx-history me-2"></i>From Last Session
-                            </h6>
-                            <div class="list-group" id="previousBonusList">
-                                ${previousBonusExercises.map((exercise, index) => `
-                                    <div class="list-group-item d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <strong>${this.escapeHtml(exercise.exercise_name)}</strong>
-                                            <div class="text-muted small">
-                                                ${exercise.target_sets} × ${exercise.target_reps}
-                                                ${exercise.weight ? ` • ${exercise.weight} ${exercise.weight_unit}` : ''}
-                                            </div>
-                                        </div>
-                                        <button class="btn btn-sm btn-outline-primary"
-                                                data-action="add-previous"
-                                                data-index="${index}">
-                                            <i class="bx bx-plus"></i>
-                                        </button>
-                                    </div>
-                                `).join('')}
-                            </div>
-                        </div>
-                    ` : ''}
-                    
-                    <!-- Add New Exercise Form -->
-                    <div class="card">
-                        <div class="card-header">
-                            <h6 class="mb-0"><i class="bx bx-plus-circle me-2"></i>New Exercise</h6>
-                        </div>
-                        <div class="card-body">
-                            <div class="mb-3">
-                                <label class="form-label">Exercise Name</label>
-                                <input type="text" class="form-control" id="bonusExerciseName"
-                                       placeholder="e.g., Face Pulls, Leg Press" autofocus>
-                            </div>
-                            <div class="row">
-                                <div class="col-6 mb-3">
-                                    <label class="form-label">Sets</label>
-                                    <input type="text" class="form-control" id="bonusSets"
-                                           value="3" placeholder="3">
-                                </div>
-                                <div class="col-6 mb-3">
-                                    <label class="form-label">Reps</label>
-                                    <input type="text" class="form-control" id="bonusReps"
-                                           value="12" placeholder="12">
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-8 mb-3">
-                                    <label class="form-label">Weight (Optional)</label>
-                                    <input type="text" class="form-control" id="bonusWeight"
-                                           placeholder="e.g., 135, 4x45">
-                                </div>
-                                <div class="col-4 mb-3">
-                                    <label class="form-label">Unit</label>
-                                    <select class="form-select" id="bonusWeightUnit">
-                                        <option value="lbs">lbs</option>
-                                        <option value="kg">kg</option>
-                                        <option value="other">other</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Action Buttons -->
-                    <div class="d-flex gap-2 mt-4">
-                        <button type="button" class="btn btn-outline-secondary flex-fill" data-bs-dismiss="offcanvas">
-                            Cancel
-                        </button>
-                        <button type="button" class="btn btn-success flex-fill" id="addAndCloseBtn">
-                            <i class="bx bx-check me-1"></i>Add Exercise
-                        </button>
-                    </div>
-                </div>
-            </div>
-        `;
-    }
-    
-    /**
-     * Setup simplified bonus exercise modal event listeners
-     */
-    setupSimplifiedBonusExerciseModalListeners(offcanvas) {
-        // Add and close button
-        const addAndCloseBtn = document.getElementById('addAndCloseBtn');
-        if (addAndCloseBtn) {
-            addAndCloseBtn.addEventListener('click', async () => {
-                await this.handleAddAndCloseBonusExercise(offcanvas);
-            });
-        }
-        
-        // Previous exercises list
-        const previousBonusList = document.getElementById('previousBonusList');
-        if (previousBonusList) {
-            previousBonusList.addEventListener('click', async (e) => {
-                const addBtn = e.target.closest('[data-action="add-previous"]');
-                if (addBtn) {
-                    const index = parseInt(addBtn.getAttribute('data-index'));
-                    await this.handleAddPreviousExerciseAndClose(index, offcanvas);
-                }
-            });
-        }
-        
-        // Enter key to submit
-        const nameInput = document.getElementById('bonusExerciseName');
-        if (nameInput) {
-            nameInput.addEventListener('keypress', async (e) => {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    await this.handleAddAndCloseBonusExercise(offcanvas);
-                }
-            });
-        }
-        
-        // Cleanup on hide
-        const offcanvasElement = document.getElementById('bonusExerciseOffcanvas');
-        offcanvasElement.addEventListener('hidden.bs.offcanvas', () => {
-            offcanvasElement.remove();
-        });
-    }
-    
-    /**
-     * Handle add bonus exercise and close modal
-     */
-    async handleAddAndCloseBonusExercise(offcanvas) {
-        const nameInput = document.getElementById('bonusExerciseName');
-        const setsInput = document.getElementById('bonusSets');
-        const repsInput = document.getElementById('bonusReps');
-        const weightInput = document.getElementById('bonusWeight');
-        const unitSelect = document.getElementById('bonusWeightUnit');
-        
-        const name = nameInput.value.trim();
-        const sets = setsInput.value.trim();
-        const reps = repsInput.value.trim();
-        const weight = weightInput.value.trim();
-        const unit = unitSelect.value;
-        
-        if (!name) {
-            const modalManager = this.getModalManager();
-            modalManager.alert('Validation Error', 'Please enter an exercise name.', 'warning');
-            return;
-        }
-        
-        // Add to session or pre-workout list (service handles this)
-        this.sessionService.addBonusExercise({
-            name,
-            sets: sets || '3',
-            reps: reps || '12',
-            weight: weight || '',
-            weight_unit: unit,
-            rest: '60s'
-        });
-        
-        // Re-render workout to show the new bonus exercise
-        this.renderWorkout();
-        
-        // Close modal
-        offcanvas.hide();
-        
-        // Show success message
-        const isPreWorkout = !this.sessionService.isSessionActive();
-        const message = isPreWorkout
-            ? `${name} added! It will be included when you start the workout. 💪`
-            : `${name} added to your workout! 💪`;
-        
-        if (window.showAlert) {
-            window.showAlert(message, 'success');
-        }
-    }
-    
-    
-    /**
-     * Handle add previous exercise and close modal
-     */
-    async handleAddPreviousExerciseAndClose(index, offcanvas) {
-        try {
-            const previousExercises = await this.sessionService.getLastSessionBonusExercises(this.currentWorkout.id);
-            const exercise = previousExercises[index];
-            
-            if (exercise) {
-                this.sessionService.addBonusExercise({
-                    name: exercise.exercise_name,
-                    sets: exercise.target_sets || '3',
-                    reps: exercise.target_reps || '12',
-                    weight: exercise.weight || '',
-                    weight_unit: exercise.weight_unit || 'lbs',
-                    rest: '60s'
-                });
-                
-                // Re-render workout to show the new bonus exercise
-                this.renderWorkout();
-                
-                // Close modal
-                offcanvas.hide();
-                
-                // Show success message
-                const isPreWorkout = !this.sessionService.isSessionActive();
-                const message = isPreWorkout
-                    ? `${exercise.exercise_name} added! It will be included when you start the workout. 💪`
-                    : `${exercise.exercise_name} added to your workout! 💪`;
-                
-                if (window.showAlert) {
-                    window.showAlert(message, 'success');
-                }
-            }
-        } catch (error) {
-            console.error('❌ Error adding previous exercise:', error);
         }
     }
     
@@ -2047,15 +1343,9 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
                 this.toggleExerciseCard(nextIndex);
             }, 300);
         } else {
-            // Last exercise - show completion message
-            const modalManager = this.getModalManager();
-            modalManager.confirm(
-                'Workout Complete! 🎉',
-                'Great job! Would you like to return to the workout list?',
-                () => {
-                    window.location.href = 'workout-builder.html';
-                }
-            );
+            // Last exercise - show complete workout dialog
+            console.log('🎉 Last exercise completed, showing complete workout dialog');
+            this.handleCompleteWorkout();
         }
     }
     
@@ -2067,11 +1357,13 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
         const error = document.getElementById('workoutErrorState');
         const content = document.getElementById('exerciseCardsContainer');
         const footer = document.getElementById('workoutModeFooter');
+        const workoutInfoHeader = document.getElementById('workoutInfoHeader');
         
         if (loading) loading.style.display = 'block';
         if (error) error.style.display = 'none';
         if (content) content.style.display = 'none';
         if (footer) footer.style.display = 'none';
+        if (workoutInfoHeader) workoutInfoHeader.style.display = 'none';
     }
     
     /**
@@ -2081,10 +1373,12 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
         const loading = document.getElementById('workoutLoadingState');
         const content = document.getElementById('exerciseCardsContainer');
         const footer = document.getElementById('workoutModeFooter');
+        const workoutInfoHeader = document.getElementById('workoutInfoHeader');
         
         if (loading) loading.style.display = 'none';
         if (content) content.style.display = 'block';
         if (footer) footer.style.display = 'block';
+        if (workoutInfoHeader) workoutInfoHeader.style.display = 'block';
         
         // Update session UI to show correct button
         const isActive = this.sessionService.isSessionActive();
@@ -2102,11 +1396,13 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
         const errorMessage = document.getElementById('workoutErrorMessage');
         const content = document.getElementById('exerciseCardsContainer');
         const footer = document.getElementById('workoutModeFooter');
+        const workoutInfoHeader = document.getElementById('workoutInfoHeader');
         
         // Hide all other states
         if (loading) loading.style.display = 'none';
         if (content) content.style.display = 'none';
         if (footer) footer.style.display = 'none';
+        if (workoutInfoHeader) workoutInfoHeader.style.display = 'none';
         
         // Show error with detailed message and troubleshooting tips
         if (error) {
