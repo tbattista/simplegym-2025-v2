@@ -741,6 +741,158 @@ function setupWorkoutEditorListeners() {
     };
     setupOffcanvasWeightButtons();
     
+    // NEW: More Menu - Cancel Workout Item
+    const cancelWorkoutMenuItem = document.getElementById('cancelWorkoutMenuItem');
+    if (cancelWorkoutMenuItem) {
+        cancelWorkoutMenuItem.addEventListener('click', () => {
+            console.log('❌ Cancel workout menu item clicked');
+            
+            // Close more menu offcanvas first
+            const moreMenuOffcanvas = document.getElementById('moreMenuOffcanvas');
+            if (moreMenuOffcanvas) {
+                const offcanvasInstance = bootstrap.Offcanvas.getInstance(moreMenuOffcanvas);
+                if (offcanvasInstance) {
+                    offcanvasInstance.hide();
+                }
+            }
+            
+            // Trigger cancel after offcanvas closes (300ms animation)
+            setTimeout(() => {
+                if (window.cancelEditWorkout) {
+                    window.cancelEditWorkout();
+                } else {
+                    console.error('❌ cancelEditWorkout function not found');
+                }
+            }, 300);
+        });
+        console.log('✅ Cancel workout menu item listener attached');
+    } else {
+        console.warn('⚠️ Cancel workout menu item not found in DOM');
+    }
+    
+    // NEW: More Menu - Share Workout Item
+    const shareWorkoutMenuItem = document.getElementById('shareWorkoutMenuItem');
+    if (shareWorkoutMenuItem) {
+        shareWorkoutMenuItem.addEventListener('click', () => {
+            console.log('🔗 Share workout menu item clicked');
+            
+            // Close more menu offcanvas first
+            const moreMenuOffcanvas = document.getElementById('moreMenuOffcanvas');
+            if (moreMenuOffcanvas) {
+                const offcanvasInstance = bootstrap.Offcanvas.getInstance(moreMenuOffcanvas);
+                if (offcanvasInstance) {
+                    offcanvasInstance.hide();
+                }
+            }
+            
+            // Get current workout ID
+            const workoutId = window.ghostGym?.workoutBuilder?.selectedWorkoutId ||
+                            window.ghostGym?.workoutBuilder?.currentWorkout?.id;
+            
+            if (workoutId) {
+                // Open share offcanvas after more menu closes (300ms animation)
+                setTimeout(() => {
+                    if (window.shareModal && window.shareModal.open) {
+                        window.shareModal.open(workoutId);
+                    } else {
+                        console.error('❌ shareModal.open function not found');
+                        alert('Share feature is loading. Please try again in a moment.');
+                    }
+                }, 300);
+            } else {
+                console.warn('⚠️ No workout ID available for sharing');
+                alert('Please save the workout first before sharing');
+            }
+        });
+        console.log('✅ Share workout menu item listener attached');
+    } else {
+        console.warn('⚠️ Share workout menu item not found in DOM');
+    }
+    
+    // NEW: Share Menu - Public Share Item
+    const publicShareMenuItem = document.getElementById('publicShareMenuItem');
+    if (publicShareMenuItem) {
+        publicShareMenuItem.addEventListener('click', () => {
+            console.log('🌐 Public share menu item clicked');
+            
+            // Close share menu offcanvas first
+            const shareMenuOffcanvas = document.getElementById('shareMenuOffcanvas');
+            if (shareMenuOffcanvas) {
+                const offcanvasInstance = bootstrap.Offcanvas.getInstance(shareMenuOffcanvas);
+                if (offcanvasInstance) {
+                    offcanvasInstance.hide();
+                }
+            }
+            
+            // Trigger public share after offcanvas closes (300ms animation)
+            setTimeout(() => {
+                if (window.shareModal && window.shareModal.handlePublicShare) {
+                    // Get current workout ID
+                    const workoutId = window.ghostGym?.workoutBuilder?.selectedWorkoutId ||
+                                    window.ghostGym?.workoutBuilder?.currentWorkout?.id;
+                    
+                    if (workoutId) {
+                        // Set current workout in share modal and open modal dialog
+                        window.shareModal.currentWorkoutId = workoutId;
+                        const workouts = window.ghostGym?.workouts || [];
+                        window.shareModal.currentWorkout = workouts.find(w => w.id === workoutId);
+                        window.shareModal.openModal(workoutId);
+                    } else {
+                        console.error('❌ No workout ID available for public share');
+                        alert('Please save the workout first before sharing');
+                    }
+                } else {
+                    console.error('❌ shareModal.handlePublicShare function not found');
+                }
+            }, 300);
+        });
+        console.log('✅ Public share menu item listener attached');
+    } else {
+        console.warn('⚠️ Public share menu item not found in DOM');
+    }
+
+    // NEW: Share Menu - Private Share Item
+    const privateShareMenuItem = document.getElementById('privateShareMenuItem');
+    if (privateShareMenuItem) {
+        privateShareMenuItem.addEventListener('click', () => {
+            console.log('🔗 Private share menu item clicked');
+            
+            // Close share menu offcanvas first
+            const shareMenuOffcanvas = document.getElementById('shareMenuOffcanvas');
+            if (shareMenuOffcanvas) {
+                const offcanvasInstance = bootstrap.Offcanvas.getInstance(shareMenuOffcanvas);
+                if (offcanvasInstance) {
+                    offcanvasInstance.hide();
+                }
+            }
+            
+            // Trigger private share after offcanvas closes (300ms animation)
+            setTimeout(() => {
+                if (window.shareModal && window.shareModal.handlePrivateShare) {
+                    // Get current workout ID
+                    const workoutId = window.ghostGym?.workoutBuilder?.selectedWorkoutId ||
+                                    window.ghostGym?.workoutBuilder?.currentWorkout?.id;
+                    
+                    if (workoutId) {
+                        // Set current workout in share modal and open modal dialog
+                        window.shareModal.currentWorkoutId = workoutId;
+                        const workouts = window.ghostGym?.workouts || [];
+                        window.shareModal.currentWorkout = workouts.find(w => w.id === workoutId);
+                        window.shareModal.openModal(workoutId);
+                    } else {
+                        console.error('❌ No workout ID available for private share');
+                        alert('Please save the workout first before sharing');
+                    }
+                } else {
+                    console.error('❌ shareModal.handlePrivateShare function not found');
+                }
+            }, 300);
+        });
+        console.log('✅ Private share menu item listener attached');
+    } else {
+        console.warn('⚠️ Private share menu item not found in DOM');
+    }
+    
     // NEW: More Menu - Delete Workout Item
     const deleteWorkoutMenuItem = document.getElementById('deleteWorkoutMenuItem');
     if (deleteWorkoutMenuItem) {

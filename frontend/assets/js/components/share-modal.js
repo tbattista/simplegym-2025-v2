@@ -10,6 +10,7 @@
     class ShareModal {
         constructor() {
             this.modalId = 'shareWorkoutModal';
+            this.offcanvasId = 'shareMenuOffcanvas';
             this.currentWorkoutId = null;
             this.currentWorkout = null;
             this.activeTab = 'public'; // 'public' or 'private'
@@ -267,6 +268,30 @@
         }
 
         async open(workoutId) {
+            console.log('🔗 Opening share offcanvas for workout:', workoutId);
+            
+            this.currentWorkoutId = workoutId;
+            
+            // Get workout data
+            try {
+                const workouts = window.ghostGym?.workouts || [];
+                this.currentWorkout = workouts.find(w => w.id === workoutId);
+                
+                if (!this.currentWorkout) {
+                    throw new Error('Workout not found');
+                }
+
+                // Show offcanvas
+                const offcanvas = new bootstrap.Offcanvas(document.getElementById(this.offcanvasId));
+                offcanvas.show();
+
+            } catch (error) {
+                console.error('❌ Error opening share offcanvas:', error);
+                alert('Failed to open share offcanvas: ' + error.message);
+            }
+        }
+        
+        async openModal(workoutId) {
             console.log('🔗 Opening share modal for workout:', workoutId);
             
             this.currentWorkoutId = workoutId;
@@ -580,9 +605,14 @@
     // Create global instance
     window.shareModal = new ShareModal();
 
-    // Global function to open share modal
+    // Global function to open share offcanvas
     window.openShareModal = function(workoutId) {
         window.shareModal.open(workoutId);
+    };
+    
+    // Global function to open share modal (for backward compatibility)
+    window.openShareModalDialog = function(workoutId) {
+        window.shareModal.openModal(workoutId);
     };
 
     console.log('📦 Share Modal component loaded');

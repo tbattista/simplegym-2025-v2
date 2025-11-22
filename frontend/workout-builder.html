@@ -48,6 +48,9 @@
     
     <!-- Bottom Action Bar CSS -->
     <link rel="stylesheet" href="/static/assets/css/bottom-action-bar.css" />
+    
+    <!-- Unified Offcanvas CSS -->
+    <link rel="stylesheet" href="/static/assets/css/unified-offcanvas.css" />
 
     <!-- Helpers -->
     <script src="/static/assets/vendor/js/helpers.js"></script>
@@ -457,13 +460,68 @@
       </div>
       
       <!-- Body -->
-      <div class="offcanvas-body p-0">
+      <div class="offcanvas-body menu-items">
+        <!-- Cancel Edit Option -->
+        <div class="more-menu-item" id="cancelWorkoutMenuItem">
+          <i class="bx bx-x"></i>
+          <div class="more-menu-item-content">
+            <div class="more-menu-item-title">Cancel Edit</div>
+            <small class="more-menu-item-description">Discard changes and exit</small>
+          </div>
+        </div>
+        
+        <!-- Share Workout Option -->
+        <div class="more-menu-item" id="shareWorkoutMenuItem">
+          <i class="bx bx-share-alt"></i>
+          <div class="more-menu-item-content">
+            <div class="more-menu-item-title">Share Workout</div>
+            <small class="more-menu-item-description">Share publicly or create private link</small>
+          </div>
+        </div>
+        
         <!-- Delete Workout Option -->
         <div class="more-menu-item danger" id="deleteWorkoutMenuItem">
           <i class="bx bx-trash"></i>
           <div class="more-menu-item-content">
             <div class="more-menu-item-title">Delete Workout</div>
             <small class="more-menu-item-description">This action cannot be undone</small>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Share Menu Offcanvas (Bottom) -->
+    <div class="offcanvas offcanvas-bottom" tabindex="-1"
+         id="shareMenuOffcanvas"
+         aria-labelledby="shareMenuLabel">
+      
+      <!-- Header -->
+      <div class="offcanvas-header border-bottom">
+        <h5 class="offcanvas-title" id="shareMenuLabel">
+          <i class="bx bx-share-alt me-2"></i>
+          Share Workout
+        </h5>
+        <button type="button" class="btn-close"
+                data-bs-dismiss="offcanvas" aria-label="Close"></button>
+      </div>
+      
+      <!-- Body -->
+      <div class="offcanvas-body menu-items">
+        <!-- Public Share Option -->
+        <div class="more-menu-item" id="publicShareMenuItem">
+          <i class="bx bx-globe"></i>
+          <div class="more-menu-item-content">
+            <div class="more-menu-item-title">Share Publicly</div>
+            <small class="more-menu-item-description">Anyone can discover and save</small>
+          </div>
+        </div>
+        
+        <!-- Private Share Option -->
+        <div class="more-menu-item" id="privateShareMenuItem">
+          <i class="bx bx-link"></i>
+          <div class="more-menu-item-content">
+            <div class="more-menu-item-title">Create Private Link</div>
+            <small class="more-menu-item-description">Only people with link can access</small>
           </div>
         </div>
       </div>

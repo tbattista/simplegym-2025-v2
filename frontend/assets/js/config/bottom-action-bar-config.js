@@ -155,40 +155,6 @@
         'workout-builder': {
             leftActions: [
                 {
-                    icon: 'bx-x',
-                    label: 'Cancel',
-                    title: 'Cancel editing',
-                    action: function() {
-                        const cancelBtn = document.getElementById('cancelEditBtn');
-                        if (cancelBtn) {
-                            cancelBtn.click();
-                        }
-                    }
-                },
-                {
-                    icon: 'bx-share-alt',
-                    label: 'Share',
-                    title: 'Share workout',
-                    action: function() {
-                        // Get current workout ID
-                        const workoutId = window.ghostGym?.workoutBuilder?.selectedWorkoutId ||
-                                        window.ghostGym?.workoutBuilder?.currentWorkout?.id;
-                        
-                        if (workoutId) {
-                            console.log('🔗 Opening share modal for workout:', workoutId);
-                            if (window.openShareModal) {
-                                window.openShareModal(workoutId);
-                            } else {
-                                console.error('❌ Share modal not available');
-                                alert('Share feature is loading. Please try again in a moment.');
-                            }
-                        } else {
-                            console.warn('⚠️ No workout ID available');
-                            alert('Please save the workout first before sharing');
-                        }
-                    }
-                },
-                {
                     icon: 'bx-play',
                     label: 'Go',
                     title: 'Start workout',
@@ -203,6 +169,33 @@
                         } else {
                             console.warn('⚠️ No workout ID available');
                             alert('Please save the workout first before starting workout mode');
+                        }
+                    }
+                },
+                {
+                    icon: 'bx-share-alt',
+                    label: 'Share',
+                    title: 'Share workout',
+                    action: function() {
+                        console.log('🔗 Share button clicked from bottom action bar');
+                        
+                        // Get current workout ID
+                        const workoutId = window.ghostGym?.workoutBuilder?.selectedWorkoutId ||
+                                        window.ghostGym?.workoutBuilder?.currentWorkout?.id;
+                        
+                        if (workoutId) {
+                            // Open share offcanvas
+                            const shareOffcanvas = document.getElementById('shareMenuOffcanvas');
+                            if (shareOffcanvas) {
+                                const offcanvasInstance = new bootstrap.Offcanvas(shareOffcanvas);
+                                offcanvasInstance.show();
+                            } else {
+                                console.error('❌ Share offcanvas not found');
+                                alert('Share feature is loading. Please try again in a moment.');
+                            }
+                        } else {
+                            console.warn('⚠️ No workout ID available for sharing');
+                            alert('Please save the workout first before sharing');
                         }
                     }
                 }
