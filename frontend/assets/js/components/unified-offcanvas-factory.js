@@ -87,10 +87,10 @@ class UnifiedOffcanvasFactory {
      * @returns {Object} Offcanvas instance
      */
     static createFilterOffcanvas(config) {
-        const { 
-            id, 
-            title = 'Filters', 
-            icon = 'bx-filter-alt',
+        const {
+            id,
+            title = 'Filters',
+            icon = 'bx-filter',
             filterBarContainerId = 'filterBarContainer',
             clearButtonId = 'clearFiltersBtn',
             onApply,
@@ -100,14 +100,14 @@ class UnifiedOffcanvasFactory {
         const offcanvasHtml = `
             <div class="offcanvas offcanvas-bottom offcanvas-bottom-base offcanvas-bottom-tall"
                  tabindex="-1" id="${id}" aria-labelledby="${id}Label"
-                 style="height: 100vh;">
+                 style="height: 85vh;">
                 <div class="offcanvas-header border-bottom">
                     <h5 class="offcanvas-title" id="${id}Label">
                         <i class="bx ${icon} me-2"></i>${this.escapeHtml(title)}
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
                 </div>
-                <div class="offcanvas-body">
+                <div class="offcanvas-body" style="overflow-y: auto;">
                     <!-- FilterBar component will inject here -->
                     <div id="${filterBarContainerId}"></div>
                     

@@ -890,13 +890,16 @@ function initSearchOverlay() {
     searchOverlay = new GhostGymSearchOverlay({
         placeholder: 'Search workouts by name, description, or tags...',
         onSearch: (searchTerm) => {
+            console.log('🔍 Search callback triggered with term:', searchTerm);
+            
             // Update global state
             window.ghostGym.workoutDatabase.filters.search = searchTerm;
+            console.log('📊 Updated filter state:', window.ghostGym.workoutDatabase.filters);
             
             // Use existing filter function
             filterWorkouts();
             
-            console.log('🔍 Search performed:', searchTerm);
+            console.log('✅ Search performed and filtered');
         },
         onResultsCount: (searchTerm) => {
             if (!searchTerm) {

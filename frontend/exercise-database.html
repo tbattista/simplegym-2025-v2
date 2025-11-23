@@ -44,7 +44,7 @@
     <link rel="stylesheet" href="/static/assets/css/components.css" />
     
     <!-- Exercise Database CSS -->
-    <link rel="stylesheet" href="/static/assets/css/exercise-database.css?v=2.0.1" />
+    <link rel="stylesheet" href="/static/assets/css/exercise-database.css?v=2.0.2" />
     
     <!-- Bottom Action Bar CSS -->
     <link rel="stylesheet" href="/static/assets/css/bottom-action-bar.css" />
@@ -92,6 +92,11 @@
                   Exercise List
                 </h6>
                 <p class="text-muted small mb-3">Browse and favorite from <span id="totalExercisesCount">2,583</span> exercises</p>
+                
+                <!-- Filter Feedback (shows active filters) -->
+                <div id="filterFeedback" class="alert alert-info mb-3" style="display: none;">
+                  <div id="filterFeedbackText"></div>
+                </div>
                 
                 <!-- DataTable Container (Component will render here) -->
                 <div id="exerciseTableContainer"></div>
@@ -192,10 +197,9 @@
           </div>
         </div>
       </div>
-    </div>
-    <!-- Search Overlay will be injected by search-overlay.js component -->
+  </div>
 
-    <!-- Core JS -->
+  <!-- Core JS -->
     <script src="/static/assets/vendor/libs/jquery/jquery.js"></script>
     <script src="/static/assets/vendor/libs/popper/popper.js"></script>
     <script src="/static/assets/vendor/js/bootstrap.js"></script>
@@ -233,7 +237,6 @@
     <script src="/static/assets/js/components/filter-bar.js"></script>
     <script src="/static/assets/js/components/pagination.js"></script>
     <script src="/static/assets/js/components/modal-manager.js"></script>
-    <script src="/static/assets/js/components/search-overlay.js"></script>
     
     <!-- Unified Offcanvas Factory -->
     <script src="/static/assets/js/components/unified-offcanvas-factory.js"></script>

@@ -54,7 +54,6 @@ function getNavbarHTML(pageTitle = 'Ghost Gym', pageIcon = 'bx-home', options = 
                             />
                             <button class="btn-close search-clear d-none" id="navbarSearchClear" aria-label="Clear search"></button>
                         </div>
-                        <div class="search-results-count" id="navbarSearchCount"></div>
                     </div>
                     
                     <!-- Mobile Search Toggle (collapsed state) -->
@@ -62,7 +61,7 @@ function getNavbarHTML(pageTitle = 'Ghost Gym', pageIcon = 'bx-home', options = 
                         <i class="bx bx-search"></i>
                     </button>
                     
-                    <!-- Mobile Search (expanded state) -->
+                    <!-- Mobile Search (expanded state - top dropdown) -->
                     <div class="navbar-search-mobile d-md-none" id="navbarSearchMobile">
                         <div class="search-input-wrapper">
                             <i class="bx bx-search search-icon"></i>
@@ -75,11 +74,10 @@ function getNavbarHTML(pageTitle = 'Ghost Gym', pageIcon = 'bx-home', options = 
                                 autocapitalize="off"
                                 spellcheck="false"
                             />
+                            <button class="navbar-search-close" id="navbarSearchClose" aria-label="Clear search">
+                                <i class="bx bx-x"></i>
+                            </button>
                         </div>
-                        <button class="navbar-search-close" id="navbarSearchClose" aria-label="Close search">
-                            <i class="bx bx-x"></i>
-                        </button>
-                        <div class="search-results-count" id="navbarSearchCountMobile"></div>
                     </div>
                 </div>
                 ` : ''}
@@ -343,8 +341,6 @@ function initializeNavbarSearch() {
     const searchInputDesktop = document.getElementById('navbarSearchInput');
     const searchInputMobile = document.getElementById('navbarSearchInputMobile');
     const searchClear = document.getElementById('navbarSearchClear');
-    const searchCountDesktop = document.getElementById('navbarSearchCount');
-    const searchCountMobile = document.getElementById('navbarSearchCountMobile');
     
     // Check if search is enabled on this page
     if (!searchToggle && !searchInputDesktop) {
@@ -357,37 +353,56 @@ function initializeNavbarSearch() {
     // Mobile: Toggle search expansion
     if (searchToggle && searchMobile) {
         searchToggle.addEventListener('click', () => {
+            // Add haptic feedback on supported devices
+            if (navigator.vibrate) {
+                navigator.vibrate(10);
+            }
+            
             searchMobile.classList.add('active');
             document.body.classList.add('mobile-search-active');
             
-            // Focus input after animation
+            // Focus input after animation completes
             setTimeout(() => {
                 searchInputMobile?.focus();
-            }, 100);
+            }, 300);
             
             console.log('📱 Mobile search expanded');
         });
     }
     
-    // Mobile: Close search
-    if (searchClose && searchMobile) {
-        searchClose.addEventListener('click', () => {
-            searchMobile.classList.remove('active');
-            document.body.classList.remove('mobile-search-active');
-            
-            // Clear search if empty
-            if (searchInputMobile && !searchInputMobile.value.trim()) {
-                performSearch('');
+    // Mobile: Close search function
+    const closeMobileSearch = () => {
+        // Add haptic feedback
+        if (navigator.vibrate) {
+            navigator.vibrate(10);
+        }
+        
+        searchMobile?.classList.remove('active');
+        document.body.classList.remove('mobile-search-active');
+        
+        console.log('📱 Mobile search collapsed');
+    };
+    
+    // Mobile: Close button
+    if (searchClose) {
+        searchClose.addEventListener('click', (e) => {
+            e.stopPropagation();
+            // Clear the search
+            if (searchInputMobile) {
+                searchInputMobile.value = '';
             }
-            
-            console.log('📱 Mobile search collapsed');
+            if (searchInputDesktop) {
+                searchInputDesktop.value = '';
+            }
+            performSearch('');
+            closeMobileSearch();
         });
     }
     
     // Desktop: Search input handler
     if (searchInputDesktop) {
         searchInputDesktop.addEventListener('input', (e) => {
-            handleSearchInput(e.target.value, searchCountDesktop, searchClear);
+            handleSearchInput(e.target.value, searchClear);
         });
         
         // ESC to clear
@@ -395,7 +410,6 @@ function initializeNavbarSearch() {
             if (e.key === 'Escape') {
                 searchInputDesktop.value = '';
                 performSearch('');
-                updateSearchCount('', searchCountDesktop);
                 searchClear?.classList.add('d-none');
             }
         });
@@ -404,18 +418,25 @@ function initializeNavbarSearch() {
     // Mobile: Search input handler
     if (searchInputMobile) {
         searchInputMobile.addEventListener('input', (e) => {
-            handleSearchInput(e.target.value, searchCountMobile, null);
+            const value = e.target.value;
+            handleSearchInput(value, null);
             
             // Sync with desktop input
             if (searchInputDesktop) {
-                searchInputDesktop.value = e.target.value;
+                searchInputDesktop.value = value;
             }
+            
+            // Ensure search is performed
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                performSearch(value.trim());
+            }, 300);
         });
         
         // ESC to close
         searchInputMobile.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
-                searchClose?.click();
+                closeMobileSearch();
             }
         });
     }
@@ -431,7 +452,6 @@ function initializeNavbarSearch() {
                 searchInputMobile.value = '';
             }
             performSearch('');
-            updateSearchCount('', searchCountDesktop);
             searchClear.classList.add('d-none');
         });
     }
@@ -439,7 +459,7 @@ function initializeNavbarSearch() {
     /**
      * Handle search input with debouncing
      */
-    function handleSearchInput(value, countElement, clearButton) {
+    function handleSearchInput(value, clearButton) {
         clearTimeout(searchTimeout);
         
         // Show/hide clear button
@@ -450,9 +470,6 @@ function initializeNavbarSearch() {
                 clearButton.classList.add('d-none');
             }
         }
-        
-        // Update count immediately
-        updateSearchCount(value, countElement);
         
         // Debounce actual search
         searchTimeout = setTimeout(() => {
@@ -468,35 +485,13 @@ function initializeNavbarSearch() {
         
         // Call existing search function if available
         if (window.applyFiltersAndRender) {
-            const currentFilters = window.filterBar?.getFilters() || {};
+            // Use window.currentFilters if available, otherwise try filterBar
+            const currentFilters = window.currentFilters || window.filterBar?.getFilters() || {};
             currentFilters.search = searchTerm;
             window.applyFiltersAndRender(currentFilters);
         }
     }
     
-    /**
-     * Update search results count
-     */
-    function updateSearchCount(searchTerm, countElement) {
-        if (!countElement) return;
-        
-        if (!searchTerm) {
-            countElement.textContent = '';
-            return;
-        }
-        
-        // Get count from data table or filter bar
-        let count = 0;
-        let total = 0;
-        
-        if (window.dataTable) {
-            const filteredData = window.dataTable.getFilteredData();
-            count = filteredData.length;
-            total = window.dataTable.data?.length || 0;
-        }
-        
-        countElement.textContent = `${count} of ${total} results`;
-    }
     
     console.log('✅ Navbar search initialized');
 }

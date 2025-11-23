@@ -53,10 +53,9 @@ async function initializeExerciseDatabase(page) {
         // Load all exercise data
         await loadAllExerciseData(page);
         
-        // Initialize FilterBar component (without search in offcanvas)
-        // Note: Don't trigger onFilterChange during initialization
-        let isInitializing = true;
-        filterBar = new GhostGymFilterBar('filterBarContainer', {
+        // Initialize FilterBar state (will be created in offcanvas when opened)
+        // Store filter configuration for later use
+        window.filterBarConfig = {
             showSearch: false, // Don't show search in offcanvas, use main search instead
             filters: [
                 {
@@ -111,56 +110,25 @@ async function initializeExerciseDatabase(page) {
                 }
             ],
             onFilterChange: (filters) => {
-                // Skip filter changes during initialization
-                if (isInitializing) {
-                    console.log('⏭️ Skipping filter change during initialization');
-                    return;
-                }
                 console.log('🔍 Filters changed:', filters);
                 applyFiltersAndRender(filters);
             }
-        });
+        };
         
-        // Mark initialization as complete
-        isInitializing = false;
+        // Initialize filter state
+        window.currentFilters = {
+            sortBy: 'name',
+            exerciseTier: '1',
+            muscleGroup: '',
+            equipment: [],
+            difficulty: '',
+            customOnly: false,
+            favoritesOnly: false,
+            search: ''
+        };
         
-        // Export filterBar globally immediately after creation
-        window.filterBar = filterBar;
-        console.log('✅ FilterBar exported globally');
-        
-        // Connect main search input to FilterBar
-        const mainSearchInput = document.getElementById('exerciseSearch');
-        const clearSearchBtn = document.getElementById('clearSearchBtn');
-        
-        if (mainSearchInput) {
-            let searchTimeout;
-            mainSearchInput.addEventListener('input', (e) => {
-                const value = e.target.value.trim();
-                
-                // Show/hide clear button
-                if (clearSearchBtn) {
-                    clearSearchBtn.style.display = value ? 'block' : 'none';
-                }
-                
-                // Debounce search
-                clearTimeout(searchTimeout);
-                searchTimeout = setTimeout(() => {
-                    const currentFilters = filterBar.getFilters();
-                    currentFilters.search = value;
-                    applyFiltersAndRender(currentFilters);
-                }, 300);
-            });
-        }
-        
-        if (clearSearchBtn) {
-            clearSearchBtn.addEventListener('click', () => {
-                mainSearchInput.value = '';
-                clearSearchBtn.style.display = 'none';
-                const currentFilters = filterBar.getFilters();
-                currentFilters.search = '';
-                applyFiltersAndRender(currentFilters);
-            });
-        }
+        // Navbar search is now integrated - the navbar-template.js handles search input
+        // and calls window.applyFiltersAndRender when search changes
         
         // Initialize DataTable component with compact single-line cards
         exerciseTable = new GhostGymDataTable('exerciseTableContainer', {
@@ -261,8 +229,8 @@ async function initializeExerciseDatabase(page) {
             }
         });
         
-        // Set initial data
-        applyFiltersAndRender(filterBar.getFilters());
+        // Set initial data with default filters
+        applyFiltersAndRender(window.currentFilters);
         
         // Update stats
         updateStats();
@@ -843,14 +811,13 @@ function isExerciseCacheValid(cached) {
  * Initialize favorites button state on page load
  */
 function initializeFavoritesButtonState() {
-    // Wait for both bottom action bar and filter bar to be ready
+    // Wait for bottom action bar to be ready
     const checkComponents = setInterval(() => {
-        if (window.bottomActionBar && window.filterBar) {
+        if (window.bottomActionBar) {
             clearInterval(checkComponents);
             
-            // Get current filter state from FilterBar
-            const currentFilters = window.filterBar.getFilters();
-            const isActive = currentFilters.favoritesOnly || false;
+            // Get current filter state from global state
+            const isActive = window.currentFilters?.favoritesOnly || false;
             updateFavoritesButtonState(isActive);
             
             console.log('✅ Favorites button state initialized:', isActive ? 'active' : 'inactive');
@@ -873,14 +840,14 @@ function updateFavoritesButtonState(isActive) {
     
     console.log('🔄 Updating favorites button state:', isActive ? 'active' : 'inactive');
     
-    // Update button icon and title
-    window.bottomActionBar.updateButton('left-1', {
+    // Update button icon and title (left-0 is now the Favorites button)
+    window.bottomActionBar.updateButton('left-0', {
         icon: isActive ? 'bxs-heart' : 'bx-heart',
         title: isActive ? 'Show all exercises' : 'Show only favorites'
     });
     
     // Add/remove active class for color change
-    const btn = document.querySelector('[data-action="left-1"]');
+    const btn = document.querySelector('[data-action="left-0"]');
     if (btn) {
         btn.classList.toggle('active', isActive);
         console.log('✅ Button class updated:', btn.classList.contains('active') ? 'active' : 'inactive');
@@ -893,9 +860,6 @@ window.filterBar = filterBar;
 window.applyFiltersAndRender = applyFiltersAndRender;
 window.toggleExerciseFavorite = toggleExerciseFavorite;
 window.showExerciseDetails = showExerciseDetails;
-window.initSearchOverlay = initSearchOverlay;
-window.showSearchOverlay = showSearchOverlay;
-window.hideSearchOverlay = hideSearchOverlay;
 window.addExerciseToWorkout = addExerciseToWorkout;
 window.initializeFavoritesButtonState = initializeFavoritesButtonState;
 window.updateFavoritesButtonState = updateFavoritesButtonState;
@@ -911,78 +875,4 @@ window.addEventListener('DOMContentLoaded', () => {
     }, 500);
 });
 
-/**
- * ============================================
- * SEARCH OVERLAY MANAGEMENT (Using Shared Component)
- * ============================================
- */
-
-let searchOverlay = null;
-
-/**
- * Initialize search overlay using shared component
- */
-function initSearchOverlay() {
-    searchOverlay = new GhostGymSearchOverlay({
-        placeholder: 'Search exercises by name, muscle group, or equipment...',
-        onSearch: (searchTerm) => {
-            // Update filter bar with search term
-            if (filterBar) {
-                const currentFilters = filterBar.getFilters();
-                currentFilters.search = searchTerm;
-                applyFiltersAndRender(currentFilters);
-            }
-            
-            console.log('🔍 Search performed:', searchTerm);
-        },
-        onResultsCount: (searchTerm) => {
-            if (!searchTerm) {
-                return { count: 0, total: 0 };
-            }
-            
-            // Calculate matching exercises
-            let allExercises = [...window.ghostGym.exercises.all, ...window.ghostGym.exercises.custom];
-            
-            const searchTerms = searchTerm.toLowerCase().split(/\s+/).filter(t => t.length > 0);
-            const filtered = allExercises.filter(exercise => {
-                const searchableText = `${exercise.name} ${exercise.targetMuscleGroup || ''} ${exercise.primaryEquipment || ''}`.toLowerCase();
-                return searchTerms.every(term => searchableText.includes(term));
-            });
-            
-            return {
-                count: filtered.length,
-                total: allExercises.length
-            };
-        }
-    });
-    
-    console.log('✅ Search overlay initialized with shared component');
-}
-
-/**
- * Show search overlay
- */
-function showSearchOverlay() {
-    if (searchOverlay) {
-        searchOverlay.show();
-    }
-}
-
-/**
- * Hide search overlay
- */
-function hideSearchOverlay() {
-    if (searchOverlay) {
-        searchOverlay.hide();
-    }
-}
-
 console.log('📦 Exercise Database module (refactored) loaded');
-
-// Initialize search overlay when module loads
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initSearchOverlay);
-} else {
-    // DOM already loaded
-    setTimeout(initSearchOverlay, 100);
-}

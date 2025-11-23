@@ -21,7 +21,7 @@
         'workout-database': {
             leftActions: [
                 {
-                    icon: 'bx-filter-alt',
+                    icon: 'bx-filter',
                     label: 'Filter',
                     title: 'Open filters',
                     action: function() {
@@ -52,17 +52,29 @@
                 title: 'Search workouts',
                 variant: 'primary',
                 action: function() {
-                    // On mobile, expand navbar search
+                    // Toggle navbar search (open if closed, close if open)
+                    const searchToggle = document.getElementById('navbarSearchToggle');
+                    const searchMobile = document.getElementById('navbarSearchMobile');
+                    const searchInputDesktop = document.getElementById('navbarSearchInput');
+                    
+                    // On mobile, toggle the dropdown
                     if (window.innerWidth < 768) {
-                        const searchToggle = document.getElementById('navbarSearchToggle');
-                        if (searchToggle) {
-                            searchToggle.click();
+                        if (searchMobile && searchMobile.classList.contains('active')) {
+                            // Search is open, close it
+                            const searchClose = document.getElementById('navbarSearchClose');
+                            if (searchClose) {
+                                searchClose.click();
+                            }
+                        } else {
+                            // Search is closed, open it
+                            if (searchToggle) {
+                                searchToggle.click();
+                            }
                         }
                     } else {
-                        // On desktop, focus navbar search input
-                        const searchInput = document.getElementById('navbarSearchInput');
-                        if (searchInput) {
-                            searchInput.focus();
+                        // On desktop, focus the search input
+                        if (searchInputDesktop) {
+                            searchInputDesktop.focus();
                         }
                     }
                 }
@@ -155,24 +167,6 @@
         'workout-builder': {
             leftActions: [
                 {
-                    icon: 'bx-play',
-                    label: 'Go',
-                    title: 'Start workout',
-                    action: function() {
-                        // Get current workout ID - check selectedWorkoutId first (more reliable)
-                        const workoutId = window.ghostGym?.workoutBuilder?.selectedWorkoutId ||
-                                        window.ghostGym?.workoutBuilder?.currentWorkout?.id;
-                        
-                        if (workoutId) {
-                            console.log('🏃 Starting workout mode with ID:', workoutId);
-                            window.location.href = `workout-mode.html?id=${workoutId}`;
-                        } else {
-                            console.warn('⚠️ No workout ID available');
-                            alert('Please save the workout first before starting workout mode');
-                        }
-                    }
-                },
-                {
                     icon: 'bx-share-alt',
                     label: 'Share',
                     title: 'Share workout',
@@ -194,20 +188,7 @@
                             alert('Share feature is loading. Please try again.');
                         }
                     }
-                }
-            ],
-            fab: {
-                icon: 'bx-plus',
-                title: 'Add exercise group',
-                variant: 'primary',
-                action: function() {
-                    const addBtn = document.getElementById('addExerciseGroupBtn');
-                    if (addBtn) {
-                        addBtn.click();
-                    }
-                }
-            },
-            rightActions: [
+                },
                 {
                     icon: 'bx-save',
                     label: 'Save',
@@ -224,6 +205,38 @@
                             console.log('📋 Available buttons:',
                                 Array.from(document.querySelectorAll('button[id]')).map(b => b.id)
                             );
+                        }
+                    }
+                }
+                
+            ],
+            fab: {
+                icon: 'bx-plus',
+                title: 'Add exercise group',
+                variant: 'primary',
+                action: function() {
+                    const addBtn = document.getElementById('addExerciseGroupBtn');
+                    if (addBtn) {
+                        addBtn.click();
+                    }
+                }
+            },
+            rightActions: [
+                {
+                    icon: 'bx-play',
+                    label: 'Go',
+                    title: 'Start workout',
+                    action: function() {
+                        // Get current workout ID - check selectedWorkoutId first (more reliable)
+                        const workoutId = window.ghostGym?.workoutBuilder?.selectedWorkoutId ||
+                                        window.ghostGym?.workoutBuilder?.currentWorkout?.id;
+                        
+                        if (workoutId) {
+                            console.log('🏃 Starting workout mode with ID:', workoutId);
+                            window.location.href = `workout-mode.html?id=${workoutId}`;
+                        } else {
+                            console.warn('⚠️ No workout ID available');
+                            alert('Please save the workout first before starting workout mode');
                         }
                     }
                 },
@@ -291,43 +304,32 @@
         'exercise-database': {
             leftActions: [
                 {
-                    icon: 'bx-dumbbell',
-                    label: 'Workouts',
-                    title: 'Go to workouts',
-                    action: function() {
-                        window.location.href = 'workout-database.html';
-                    }
-                },
-                {
                     icon: 'bx-heart',
                     label: 'Favorites',
                     title: 'Show only favorites',
                     action: function() {
                         console.log('❤️ Favorites button clicked');
                         
-                        // Get current filter state from FilterBar
-                        if (!window.filterBar) {
-                            console.warn('⚠️ FilterBar not available');
+                        // Work directly with global filter state (no dependency on FilterBar)
+                        if (!window.currentFilters) {
+                            console.warn('⚠️ Filter state not initialized');
                             return;
                         }
                         
-                        const currentFilters = window.filterBar.getFilters();
-                        // Toggle the favoritesOnly state (stored separately since it's not in FilterBar)
-                        const isActive = !currentFilters.favoritesOnly;
+                        // Toggle the favoritesOnly state
+                        const isActive = !window.currentFilters.favoritesOnly;
+                        window.currentFilters.favoritesOnly = isActive;
                         
                         console.log('🔄 Toggling favorites filter:', isActive ? 'ON' : 'OFF');
                         
-                        // Manually add favoritesOnly to filters and apply
-                        currentFilters.favoritesOnly = isActive;
-                        
                         // Apply filters with the updated favoritesOnly state
                         if (window.applyFiltersAndRender) {
-                            window.applyFiltersAndRender(currentFilters);
+                            window.applyFiltersAndRender(window.currentFilters);
                         }
                         
                         // Update button visual state with animation
                         if (window.bottomActionBar) {
-                            const btn = document.querySelector('[data-action="left-1"]');
+                            const btn = document.querySelector('[data-action="left-0"]');
                             
                             // Add pulse animation
                             if (btn) {
@@ -336,7 +338,7 @@
                             }
                             
                             // Update icon and title
-                            window.bottomActionBar.updateButton('left-1', {
+                            window.bottomActionBar.updateButton('left-0', {
                                 icon: isActive ? 'bxs-heart' : 'bx-heart',
                                 title: isActive ? 'Show all exercises' : 'Show only favorites'
                             });
@@ -349,6 +351,93 @@
                         
                         console.log('✅ Favorites filter updated');
                     }
+                },
+                {
+                    icon: 'bx-filter',
+                    label: 'Filters',
+                    title: 'Open filters',
+                    action: function() {
+                        // Use UnifiedOffcanvasFactory to create filters offcanvas (muscle group, equipment, custom only)
+                        if (window.UnifiedOffcanvasFactory && window.filterBarConfig) {
+                            // Create filter config with only muscle group, equipment, and custom only
+                            const filtersOnly = window.filterBarConfig.filters.filter(f =>
+                                f.key === 'muscleGroup' || f.key === 'equipment' || f.key === 'customOnly'
+                            );
+                            
+                            const { offcanvas, offcanvasElement } = window.UnifiedOffcanvasFactory.createFilterOffcanvas({
+                                id: 'filtersOffcanvas',
+                                title: 'Filters',
+                                icon: 'bx-filter',
+                                filterBarContainerId: 'offcanvasFilterBarContainer',
+                                clearButtonId: 'clearFiltersBtn',
+                                onApply: function() {
+                                    console.log('✅ Filters applied');
+                                    // Sync FilterBar state to global state
+                                    if (window.filterBar) {
+                                        const filterBarState = window.filterBar.getFilters();
+                                        // Merge with current filters (preserve favoritesOnly)
+                                        window.currentFilters = {
+                                            ...window.currentFilters,
+                                            ...filterBarState
+                                        };
+                                    }
+                                },
+                                onClear: function() {
+                                    // Clear all filters in FilterBar
+                                    if (window.filterBar) {
+                                        window.filterBar.clearAll();
+                                    }
+                                }
+                            });
+                            
+                            // Initialize FilterBar inside the offcanvas after it's shown
+                            offcanvasElement.addEventListener('shown.bs.offcanvas', function initFilterBar() {
+                                console.log('🔧 Initializing FilterBar in offcanvas');
+                                
+                                // Always recreate FilterBar to ensure fresh state
+                                const container = document.getElementById('offcanvasFilterBarContainer');
+                                if (!container) {
+                                    console.error('❌ FilterBar container not found');
+                                    return;
+                                }
+                                
+                                // Clear container
+                                container.innerHTML = '';
+                                
+                                // Create new FilterBar instance with filters only (no sort)
+                                const filterBarConfig = {
+                                    ...window.filterBarConfig,
+                                    filters: filtersOnly,
+                                    onFilterChange: (filters) => {
+                                        console.log('🔍 Filters changed in offcanvas:', filters);
+                                        // Update global state
+                                        window.currentFilters = {
+                                            ...window.currentFilters,
+                                            ...filters
+                                        };
+                                        // Apply filters immediately
+                                        if (window.applyFiltersAndRender) {
+                                            window.applyFiltersAndRender(window.currentFilters);
+                                        }
+                                    }
+                                };
+                                
+                                window.filterBar = new window.GhostGymFilterBar('offcanvasFilterBarContainer', filterBarConfig);
+                                
+                                // Set current filter values (excluding favoritesOnly which isn't in FilterBar)
+                                if (window.currentFilters) {
+                                    const filterBarState = { ...window.currentFilters };
+                                    delete filterBarState.favoritesOnly; // This is handled separately
+                                    window.filterBar.setFilters(filterBarState);
+                                }
+                                
+                                console.log('✅ FilterBar initialized in offcanvas');
+                            }, { once: true });
+                        } else {
+                            console.error('❌ UnifiedOffcanvasFactory or filterBarConfig not loaded');
+                            alert('Filter feature is loading. Please try again in a moment.');
+                        }
+                    }
                 }
             ],
             fab: {
@@ -356,11 +445,22 @@
                 title: 'Search exercises',
                 variant: 'primary',
                 action: function() {
-                    // On mobile, expand navbar search
+                    // On mobile, toggle navbar search (open if closed, close if open)
                     if (window.innerWidth < 768) {
-                        const searchToggle = document.getElementById('navbarSearchToggle');
-                        if (searchToggle) {
-                            searchToggle.click();
+                        const searchMobile = document.getElementById('navbarSearchMobile');
+                        const searchClose = document.getElementById('navbarSearchClose');
+                        
+                        if (searchMobile && searchMobile.classList.contains('active')) {
+                            // Search is open, close it
+                            if (searchClose) {
+                                searchClose.click();
+                            }
+                        } else {
+                            // Search is closed, open it
+                            const searchToggle = document.getElementById('navbarSearchToggle');
+                            if (searchToggle) {
+                                searchToggle.click();
+                            }
                         }
                     } else {
                         // On desktop, focus navbar search input
@@ -373,45 +473,129 @@
             },
             rightActions: [
                 {
-                    icon: 'bx-filter-alt',
-                    label: 'Filters',
-                    title: 'Open filters',
+                    icon: 'bx-sort-alt-2',
+                    label: 'Sort',
+                    title: 'Sort and filter',
                     action: function() {
-                        // Use UnifiedOffcanvasFactory to create filters offcanvas
-                        if (window.UnifiedOffcanvasFactory) {
-                            window.UnifiedOffcanvasFactory.createFilterOffcanvas({
-                                id: 'filtersOffcanvas',
-                                title: 'Filters',
-                                icon: 'bx-filter-alt',
-                                filterBarContainerId: 'filterBarContainer',
-                                clearButtonId: 'clearFiltersBtn',
+                        // Create sort offcanvas with sortBy, difficulty, and tier
+                        if (window.UnifiedOffcanvasFactory && window.filterBarConfig) {
+                            // Get sortBy, difficulty, and exerciseTier filters
+                            const sortFilters = window.filterBarConfig.filters.filter(f =>
+                                f.key === 'sortBy' || f.key === 'difficulty' || f.key === 'exerciseTier'
+                            );
+                            
+                            if (sortFilters.length === 0) {
+                                console.error('❌ Sort filters not found');
+                                return;
+                            }
+                            
+                            const { offcanvas, offcanvasElement } = window.UnifiedOffcanvasFactory.createFilterOffcanvas({
+                                id: 'sortOffcanvas',
+                                title: 'Sort & Filter',
+                                icon: 'bx-sort-alt-2',
+                                filterBarContainerId: 'offcanvasSortBarContainer',
+                                clearButtonId: 'clearSortBtn',
                                 onApply: function() {
-                                    // Apply button just closes offcanvas
-                                    // FilterBar handles the actual filtering
-                                    console.log('✅ Filters applied');
+                                    console.log('✅ Sort applied');
+                                    if (window.sortBar) {
+                                        const sortState = window.sortBar.getFilters();
+                                        window.currentFilters = {
+                                            ...window.currentFilters,
+                                            ...sortState
+                                        };
+                                    }
                                 },
                                 onClear: function() {
-                                    // Trigger clear filters
-                                    if (window.clearFilters) {
-                                        window.clearFilters();
+                                    if (window.sortBar) {
+                                        window.sortBar.clearAll();
                                     }
                                 }
                             });
+                            
+                            // Initialize sort bar
+                            offcanvasElement.addEventListener('shown.bs.offcanvas', function initSortBar() {
+                                console.log('🔧 Initializing Sort Bar in offcanvas');
+                                
+                                const container = document.getElementById('offcanvasSortBarContainer');
+                                if (!container) {
+                                    console.error('❌ Sort Bar container not found');
+                                    return;
+                                }
+                                
+                                container.innerHTML = '';
+                                
+                                const sortBarConfig = {
+                                    showSearch: false,
+                                    showClearAll: false,
+                                    filters: sortFilters,
+                                    onFilterChange: (filters) => {
+                                        console.log('🔄 Sort/Filter changed:', filters);
+                                        window.currentFilters = {
+                                            ...window.currentFilters,
+                                            ...filters
+                                        };
+                                        if (window.applyFiltersAndRender) {
+                                            window.applyFiltersAndRender(window.currentFilters);
+                                        }
+                                    }
+                                };
+                                
+                                window.sortBar = new window.GhostGymFilterBar('offcanvasSortBarContainer', sortBarConfig);
+                                
+                                // Set current values for all sort filters
+                                if (window.currentFilters) {
+                                    const currentSortState = {};
+                                    if (window.currentFilters.sortBy) currentSortState.sortBy = window.currentFilters.sortBy;
+                                    if (window.currentFilters.difficulty) currentSortState.difficulty = window.currentFilters.difficulty;
+                                    if (window.currentFilters.exerciseTier) currentSortState.exerciseTier = window.currentFilters.exerciseTier;
+                                    window.sortBar.setFilters(currentSortState);
+                                }
+                                
+                                console.log('✅ Sort Bar initialized');
+                            }, { once: true });
                         } else {
-                            console.error('❌ UnifiedOffcanvasFactory not loaded');
-                            alert('Filter feature is loading. Please try again in a moment.');
+                            console.error('❌ UnifiedOffcanvasFactory or filterBarConfig not loaded');
+                            alert('Sort feature is loading. Please try again in a moment.');
                         }
                     }
                 },
                 {
-                    icon: 'bx-plus',
-                    label: 'Custom',
-                    title: 'Add custom exercise',
+                    icon: 'bx-dots-vertical-rounded',
+                    label: 'More',
+                    title: 'More options',
                     action: function() {
-                        const modal = new bootstrap.Modal(
-                            document.getElementById('customExerciseModal')
-                        );
-                        modal.show();
+                        // Use UnifiedOffcanvasFactory to create more menu
+                        if (window.UnifiedOffcanvasFactory) {
+                            window.UnifiedOffcanvasFactory.createMenuOffcanvas({
+                                id: 'moreMenuOffcanvas',
+                                title: 'More Options',
+                                icon: 'bx-dots-vertical-rounded',
+                                menuItems: [
+                                    {
+                                        icon: 'bx-plus',
+                                        title: 'Add Custom Exercise',
+                                        description: 'Create your own exercise',
+                                        onClick: () => {
+                                            const modal = new bootstrap.Modal(
+                                                document.getElementById('customExerciseModal')
+                                            );
+                                            modal.show();
+                                        }
+                                    },
+                                    {
+                                        icon: 'bx-dumbbell',
+                                        title: 'Go to Workouts',
+                                        description: 'View your workout templates',
+                                        onClick: () => {
+                                            window.location.href = 'workout-database.html';
+                                        }
+                                    }
+                                ]
+                            });
+                        } else {
+                            console.error('❌ UnifiedOffcanvasFactory not loaded');
+                            alert('More options is loading. Please try again in a moment.');
+                        }
                     }
                 }
             ]
