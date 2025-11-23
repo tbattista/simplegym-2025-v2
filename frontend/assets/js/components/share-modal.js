@@ -24,165 +24,165 @@
         }
 
         createModalHTML() {
-            const modalHTML = `
-                <div class="modal fade" id="${this.modalId}" tabindex="-1" aria-hidden="true">
-                    <div class="modal-dialog modal-dialog-centered">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title">
-                                    <i class="bx bx-share-alt me-2"></i>
-                                    Share Workout
-                                </h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body">
-                                <!-- Tabs -->
-                                <ul class="nav nav-tabs mb-3" role="tablist">
-                                    <li class="nav-item" role="presentation">
-                                        <button class="nav-link active" id="public-tab" data-bs-toggle="tab" 
-                                                data-bs-target="#public-share" type="button" role="tab">
-                                            <i class="bx bx-globe me-1"></i>
-                                            Public
-                                        </button>
-                                    </li>
-                                    <li class="nav-item" role="presentation">
-                                        <button class="nav-link" id="private-tab" data-bs-toggle="tab" 
-                                                data-bs-target="#private-share" type="button" role="tab">
-                                            <i class="bx bx-lock me-1"></i>
-                                            Private Link
-                                        </button>
-                                    </li>
-                                </ul>
+            const offcanvasHTML = `
+                <div class="offcanvas offcanvas-bottom offcanvas-bottom-base" tabindex="-1"
+                     id="${this.modalId}" aria-labelledby="${this.modalId}Label">
+                    <!-- Header -->
+                    <div class="offcanvas-header border-bottom">
+                        <h5 class="offcanvas-title" id="${this.modalId}Label">
+                            <i class="bx bx-share-alt me-2"></i>
+                            Share Workout
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                    </div>
+                    
+                    <!-- Body - Scrollable -->
+                    <div class="offcanvas-body">
+                        <!-- Tabs -->
+                        <ul class="nav nav-tabs mb-3" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="public-tab" data-bs-toggle="tab"
+                                        data-bs-target="#public-share" type="button" role="tab">
+                                    <i class="bx bx-globe me-1"></i>
+                                    Public
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="private-tab" data-bs-toggle="tab"
+                                        data-bs-target="#private-share" type="button" role="tab">
+                                    <i class="bx bx-lock me-1"></i>
+                                    Private Link
+                                </button>
+                            </li>
+                        </ul>
 
-                                <!-- Tab Content -->
-                                <div class="tab-content">
-                                    <!-- Public Share Tab -->
-                                    <div class="tab-pane fade show active" id="public-share" role="tabpanel">
-                                        <div id="publicShareForm">
-                                            <p class="text-muted small mb-3">
-                                                Share your workout publicly so others can discover and save it to their library.
-                                            </p>
-                                            
-                                            <!-- Show Creator Name Toggle -->
-                                            <div class="form-check form-switch mb-3">
-                                                <input class="form-check-input" type="checkbox" id="publicShowName" checked>
-                                                <label class="form-check-label" for="publicShowName">
-                                                    Show my name
-                                                </label>
-                                            </div>
+                        <!-- Tab Content -->
+                        <div class="tab-content">
+                            <!-- Public Share Tab -->
+                            <div class="tab-pane fade show active" id="public-share" role="tabpanel">
+                                <div id="publicShareForm">
+                                    <p class="text-muted small mb-3">
+                                        Share your workout publicly so others can discover and save it to their library.
+                                    </p>
+                                    
+                                    <!-- Show Creator Name Toggle -->
+                                    <div class="form-check form-switch mb-3">
+                                        <input class="form-check-input" type="checkbox" id="publicShowName" checked>
+                                        <label class="form-check-label" for="publicShowName">
+                                            Show my name
+                                        </label>
+                                    </div>
 
-                                            <!-- Share Button -->
-                                            <button type="button" class="btn btn-primary w-100" id="sharePublicBtn">
-                                                <i class="bx bx-globe me-1"></i>
-                                                Share Publicly
-                                            </button>
+                                    <!-- Share Button -->
+                                    <button type="button" class="btn btn-primary w-100" id="sharePublicBtn">
+                                        <i class="bx bx-globe me-1"></i>
+                                        Share Publicly
+                                    </button>
+                                </div>
+
+                                <!-- Success State -->
+                                <div id="publicShareSuccess" style="display: none;">
+                                    <div class="alert alert-success mb-3">
+                                        <i class="bx bx-check-circle me-2"></i>
+                                        Workout shared publicly!
+                                    </div>
+
+                                    <!-- Stats -->
+                                    <div class="d-flex gap-3 mb-3">
+                                        <div class="text-center flex-fill">
+                                            <div class="h4 mb-0" id="publicViewCount">0</div>
+                                            <small class="text-muted">Views</small>
                                         </div>
-
-                                        <!-- Success State -->
-                                        <div id="publicShareSuccess" style="display: none;">
-                                            <div class="alert alert-success mb-3">
-                                                <i class="bx bx-check-circle me-2"></i>
-                                                Workout shared publicly!
-                                            </div>
-
-                                            <!-- Stats -->
-                                            <div class="d-flex gap-3 mb-3">
-                                                <div class="text-center flex-fill">
-                                                    <div class="h4 mb-0" id="publicViewCount">0</div>
-                                                    <small class="text-muted">Views</small>
-                                                </div>
-                                                <div class="text-center flex-fill">
-                                                    <div class="h4 mb-0" id="publicSaveCount">0</div>
-                                                    <small class="text-muted">Saves</small>
-                                                </div>
-                                            </div>
-
-                                            <!-- Share URL -->
-                                            <div class="input-group mb-2">
-                                                <input type="text" class="form-control" id="publicShareUrl" readonly>
-                                                <button class="btn btn-outline-secondary" type="button" id="copyPublicUrlBtn">
-                                                    <i class="bx bx-copy"></i>
-                                                </button>
-                                            </div>
-
-                                            <button type="button" class="btn btn-outline-primary w-100" id="shareAnotherPublicBtn">
-                                                <i class="bx bx-refresh me-1"></i>
-                                                Update Share Settings
-                                            </button>
+                                        <div class="text-center flex-fill">
+                                            <div class="h4 mb-0" id="publicSaveCount">0</div>
+                                            <small class="text-muted">Saves</small>
                                         </div>
                                     </div>
 
-                                    <!-- Private Share Tab -->
-                                    <div class="tab-pane fade" id="private-share" role="tabpanel">
-                                        <div id="privateShareForm">
-                                            <p class="text-muted small mb-3">
-                                                Create a private link that only people with the link can access.
-                                            </p>
-                                            
-                                            <!-- Show Creator Name Toggle -->
-                                            <div class="form-check form-switch mb-3">
-                                                <input class="form-check-input" type="checkbox" id="privateShowName" checked>
-                                                <label class="form-check-label" for="privateShowName">
-                                                    Show my name
-                                                </label>
-                                            </div>
+                                    <!-- Share URL -->
+                                    <div class="input-group mb-2">
+                                        <input type="text" class="form-control" id="publicShareUrl" readonly>
+                                        <button class="btn btn-outline-secondary" type="button" id="copyPublicUrlBtn">
+                                            <i class="bx bx-copy"></i>
+                                        </button>
+                                    </div>
 
-                                            <!-- Expiration -->
-                                            <div class="mb-3">
-                                                <label class="form-label">Link Expiration</label>
-                                                <select class="form-select" id="privateExpiration">
-                                                    <option value="">Never</option>
-                                                    <option value="7">7 days</option>
-                                                    <option value="30" selected>30 days</option>
-                                                    <option value="90">90 days</option>
-                                                </select>
-                                            </div>
+                                    <button type="button" class="btn btn-outline-primary w-100" id="shareAnotherPublicBtn">
+                                        <i class="bx bx-refresh me-1"></i>
+                                        Update Share Settings
+                                    </button>
+                                </div>
+                            </div>
 
-                                            <!-- Share Button -->
-                                            <button type="button" class="btn btn-primary w-100" id="sharePrivateBtn">
-                                                <i class="bx bx-link me-1"></i>
-                                                Create Private Link
-                                            </button>
-                                        </div>
+                            <!-- Private Share Tab -->
+                            <div class="tab-pane fade" id="private-share" role="tabpanel">
+                                <div id="privateShareForm">
+                                    <p class="text-muted small mb-3">
+                                        Create a private link that only people with the link can access.
+                                    </p>
+                                    
+                                    <!-- Show Creator Name Toggle -->
+                                    <div class="form-check form-switch mb-3">
+                                        <input class="form-check-input" type="checkbox" id="privateShowName" checked>
+                                        <label class="form-check-label" for="privateShowName">
+                                            Show my name
+                                        </label>
+                                    </div>
 
-                                        <!-- Success State -->
-                                        <div id="privateShareSuccess" style="display: none;">
-                                            <div class="alert alert-success mb-3">
-                                                <i class="bx bx-check-circle me-2"></i>
-                                                Private link created!
-                                            </div>
+                                    <!-- Expiration -->
+                                    <div class="mb-3">
+                                        <label class="form-label">Link Expiration</label>
+                                        <select class="form-select" id="privateExpiration">
+                                            <option value="">Never</option>
+                                            <option value="7">7 days</option>
+                                            <option value="30" selected>30 days</option>
+                                            <option value="90">90 days</option>
+                                        </select>
+                                    </div>
 
-                                            <!-- Expiration Info -->
-                                            <div class="alert alert-info mb-3" id="privateExpirationInfo" style="display: none;">
-                                                <i class="bx bx-time me-2"></i>
-                                                <span id="privateExpirationText"></span>
-                                            </div>
+                                    <!-- Share Button -->
+                                    <button type="button" class="btn btn-primary w-100" id="sharePrivateBtn">
+                                        <i class="bx bx-link me-1"></i>
+                                        Create Private Link
+                                    </button>
+                                </div>
 
-                                            <!-- Stats -->
-                                            <div class="text-center mb-3">
-                                                <div class="h4 mb-0" id="privateViewCount">0</div>
-                                                <small class="text-muted">Views</small>
-                                            </div>
+                                <!-- Success State -->
+                                <div id="privateShareSuccess" style="display: none;">
+                                    <div class="alert alert-success mb-3">
+                                        <i class="bx bx-check-circle me-2"></i>
+                                        Private link created!
+                                    </div>
 
-                                            <!-- Share URL -->
-                                            <div class="input-group mb-2">
-                                                <input type="text" class="form-control" id="privateShareUrl" readonly>
-                                                <button class="btn btn-outline-secondary" type="button" id="copyPrivateUrlBtn">
-                                                    <i class="bx bx-copy"></i>
-                                                </button>
-                                            </div>
+                                    <!-- Expiration Info -->
+                                    <div class="alert alert-info mb-3" id="privateExpirationInfo" style="display: none;">
+                                        <i class="bx bx-time me-2"></i>
+                                        <span id="privateExpirationText"></span>
+                                    </div>
 
-                                            <div class="d-flex gap-2">
-                                                <button type="button" class="btn btn-outline-danger flex-fill" id="deletePrivateShareBtn">
-                                                    <i class="bx bx-trash me-1"></i>
-                                                    Delete Link
-                                                </button>
-                                                <button type="button" class="btn btn-outline-primary flex-fill" id="createNewPrivateBtn">
-                                                    <i class="bx bx-refresh me-1"></i>
-                                                    New Link
-                                                </button>
-                                            </div>
-                                        </div>
+                                    <!-- Stats -->
+                                    <div class="text-center mb-3">
+                                        <div class="h4 mb-0" id="privateViewCount">0</div>
+                                        <small class="text-muted">Views</small>
+                                    </div>
+
+                                    <!-- Share URL -->
+                                    <div class="input-group mb-2">
+                                        <input type="text" class="form-control" id="privateShareUrl" readonly>
+                                        <button class="btn btn-outline-secondary" type="button" id="copyPrivateUrlBtn">
+                                            <i class="bx bx-copy"></i>
+                                        </button>
+                                    </div>
+
+                                    <div class="d-flex gap-2">
+                                        <button type="button" class="btn btn-outline-danger flex-fill" id="deletePrivateShareBtn">
+                                            <i class="bx bx-trash me-1"></i>
+                                            Delete Link
+                                        </button>
+                                        <button type="button" class="btn btn-outline-primary flex-fill" id="createNewPrivateBtn">
+                                            <i class="bx bx-refresh me-1"></i>
+                                            New Link
+                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -191,19 +191,19 @@
                 </div>
             `;
 
-            // Remove existing modal if present
-            const existingModal = document.getElementById(this.modalId);
-            if (existingModal) {
-                existingModal.remove();
+            // Remove existing offcanvas if present
+            const existingOffcanvas = document.getElementById(this.modalId);
+            if (existingOffcanvas) {
+                existingOffcanvas.remove();
             }
 
-            // Add modal to body
-            document.body.insertAdjacentHTML('beforeend', modalHTML);
+            // Add offcanvas to body
+            document.body.insertAdjacentHTML('beforeend', offcanvasHTML);
         }
 
         attachEventListeners() {
-            const modal = document.getElementById(this.modalId);
-            if (!modal) return;
+            const offcanvas = document.getElementById(this.modalId);
+            if (!offcanvas) return;
 
             // Tab switching
             const publicTab = document.getElementById('public-tab');
@@ -261,8 +261,8 @@
                 createNewPrivateBtn.addEventListener('click', () => this.resetPrivateForm());
             }
 
-            // Reset on modal close
-            modal.addEventListener('hidden.bs.modal', () => {
+            // Reset on offcanvas close
+            offcanvas.addEventListener('hidden.bs.offcanvas', () => {
                 this.resetModal();
             });
         }
@@ -281,8 +281,11 @@
                     throw new Error('Workout not found');
                 }
 
+                // Reset offcanvas state
+                this.resetModal();
+
                 // Show offcanvas
-                const offcanvas = new bootstrap.Offcanvas(document.getElementById(this.offcanvasId));
+                const offcanvas = new bootstrap.Offcanvas(document.getElementById(this.modalId));
                 offcanvas.show();
 
             } catch (error) {
@@ -291,31 +294,9 @@
             }
         }
         
+        // Alias for backward compatibility
         async openModal(workoutId) {
-            console.log('🔗 Opening share modal for workout:', workoutId);
-            
-            this.currentWorkoutId = workoutId;
-            
-            // Get workout data
-            try {
-                const workouts = window.ghostGym?.workouts || [];
-                this.currentWorkout = workouts.find(w => w.id === workoutId);
-                
-                if (!this.currentWorkout) {
-                    throw new Error('Workout not found');
-                }
-
-                // Reset modal state
-                this.resetModal();
-
-                // Show modal
-                const modal = new bootstrap.Modal(document.getElementById(this.modalId));
-                modal.show();
-
-            } catch (error) {
-                console.error('❌ Error opening share modal:', error);
-                alert('Failed to open share modal: ' + error.message);
-            }
+            return this.open(workoutId);
         }
 
         async handlePublicShare() {

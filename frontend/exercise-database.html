@@ -48,6 +48,9 @@
     
     <!-- Bottom Action Bar CSS -->
     <link rel="stylesheet" href="/static/assets/css/bottom-action-bar.css" />
+    
+    <!-- Unified Offcanvas CSS -->
+    <link rel="stylesheet" href="/static/assets/css/components/unified-offcanvas.css" />
 
     <!-- Helpers -->
     <script src="/static/assets/vendor/js/helpers.js"></script>
@@ -107,37 +110,8 @@
       <div class="layout-overlay layout-menu-toggle"></div>
     </div>
     <!-- / Layout wrapper -->
-
-    <!-- Filters Offcanvas (FilterBar component will populate this) -->
-    <div class="offcanvas offcanvas-bottom" tabindex="-1" id="filtersOffcanvas" aria-labelledby="filtersOffcanvasLabel" style="height: 100vh;">
-      <div class="offcanvas-header">
-        <h5 class="offcanvas-title" id="filtersOffcanvasLabel">
-          <i class="bx bx-filter-alt me-2"></i>
-          Filters
-        </h5>
-        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-      </div>
-      <div class="offcanvas-body">
-        <!-- FilterBar component will inject filter controls here -->
-        <div id="filterBarContainer"></div>
-
-        <!-- Action Buttons -->
-        <div class="row mt-3">
-          <div class="col-6">
-            <button type="button" class="btn btn-outline-secondary w-100" id="clearFiltersBtn">
-              <i class="bx bx-x me-1"></i>
-              Clear
-            </button>
-          </div>
-          <div class="col-6">
-            <button type="button" class="btn btn-primary w-100" data-bs-dismiss="offcanvas">
-              <i class="bx bx-check me-1"></i>
-              Apply
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+    
+    <!-- Filters Offcanvas will be created dynamically by UnifiedOffcanvasFactory -->
 
     <!-- Exercise Detail Modal -->
     <div class="modal fade" id="exerciseDetailModal" tabindex="-1">
@@ -260,6 +234,9 @@
     <script src="/static/assets/js/components/pagination.js"></script>
     <script src="/static/assets/js/components/modal-manager.js"></script>
     <script src="/static/assets/js/components/search-overlay.js"></script>
+    
+    <!-- Unified Offcanvas Factory -->
+    <script src="/static/assets/js/components/unified-offcanvas-factory.js"></script>
 
     <!-- Exercise Database JS (Refactored) -->
     <script src="/static/assets/js/dashboard/exercises.js?v=2.0.2"></script>

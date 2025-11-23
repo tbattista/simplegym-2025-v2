@@ -183,19 +183,15 @@
                         const workoutId = window.ghostGym?.workoutBuilder?.selectedWorkoutId ||
                                         window.ghostGym?.workoutBuilder?.currentWorkout?.id;
                         
-                        if (workoutId) {
-                            // Open share offcanvas
-                            const shareOffcanvas = document.getElementById('shareMenuOffcanvas');
-                            if (shareOffcanvas) {
-                                const offcanvasInstance = new bootstrap.Offcanvas(shareOffcanvas);
-                                offcanvasInstance.show();
-                            } else {
-                                console.error('❌ Share offcanvas not found');
-                                alert('Share feature is loading. Please try again in a moment.');
-                            }
-                        } else {
+                        if (workoutId && window.shareModal) {
+                            // Open share offcanvas directly with tabs
+                            window.shareModal.open(workoutId);
+                        } else if (!workoutId) {
                             console.warn('⚠️ No workout ID available for sharing');
                             alert('Please save the workout first before sharing');
+                        } else {
+                            console.error('❌ Share modal not available');
+                            alert('Share feature is loading. Please try again.');
                         }
                     }
                 }
@@ -236,11 +232,54 @@
                     label: 'More',
                     title: 'More options',
                     action: function() {
-                        // Show more options offcanvas
-                        const offcanvas = new bootstrap.Offcanvas(
-                            document.getElementById('moreMenuOffcanvas')
-                        );
-                        offcanvas.show();
+                        // Use UnifiedOffcanvasFactory to create more menu
+                        if (window.UnifiedOffcanvasFactory) {
+                            window.UnifiedOffcanvasFactory.createMenuOffcanvas({
+                                id: 'moreMenuOffcanvas',
+                                title: 'More Options',
+                                icon: 'bx-dots-vertical-rounded',
+                                menuItems: [
+                                    {
+                                        icon: 'bx-x',
+                                        title: 'Cancel Edit',
+                                        description: 'Discard changes and exit',
+                                        onClick: () => {
+                                            const cancelBtn = document.getElementById('cancelEditBtn');
+                                            if (cancelBtn) {
+                                                cancelBtn.click();
+                                            }
+                                        }
+                                    },
+                                    {
+                                        icon: 'bx-share-alt',
+                                        title: 'Share Workout',
+                                        description: 'Share publicly or create private link',
+                                        onClick: () => {
+                                            // Trigger share button
+                                            const shareAction = window.BOTTOM_BAR_CONFIGS['workout-builder'].leftActions.find(a => a.icon === 'bx-share-alt');
+                                            if (shareAction && shareAction.action) {
+                                                shareAction.action();
+                                            }
+                                        }
+                                    },
+                                    {
+                                        icon: 'bx-trash',
+                                        title: 'Delete Workout',
+                                        description: 'This action cannot be undone',
+                                        variant: 'danger',
+                                        onClick: () => {
+                                            const deleteBtn = document.getElementById('deleteWorkoutBtn');
+                                            if (deleteBtn) {
+                                                deleteBtn.click();
+                                            }
+                                        }
+                                    }
+                                ]
+                            });
+                        } else {
+                            console.error('❌ UnifiedOffcanvasFactory not loaded');
+                            alert('More options is loading. Please try again in a moment.');
+                        }
                     }
                 }
             ]
@@ -338,10 +377,30 @@
                     label: 'Filters',
                     title: 'Open filters',
                     action: function() {
-                        const offcanvas = new bootstrap.Offcanvas(
-                            document.getElementById('filtersOffcanvas')
-                        );
-                        offcanvas.show();
+                        // Use UnifiedOffcanvasFactory to create filters offcanvas
+                        if (window.UnifiedOffcanvasFactory) {
+                            window.UnifiedOffcanvasFactory.createFilterOffcanvas({
+                                id: 'filtersOffcanvas',
+                                title: 'Filters',
+                                icon: 'bx-filter-alt',
+                                filterBarContainerId: 'filterBarContainer',
+                                clearButtonId: 'clearFiltersBtn',
+                                onApply: function() {
+                                    // Apply button just closes offcanvas
+                                    // FilterBar handles the actual filtering
+                                    console.log('✅ Filters applied');
+                                },
+                                onClear: function() {
+                                    // Trigger clear filters
+                                    if (window.clearFilters) {
+                                        window.clearFilters();
+                                    }
+                                }
+                            });
+                        } else {
+                            console.error('❌ UnifiedOffcanvasFactory not loaded');
+                            alert('Filter feature is loading. Please try again in a moment.');
+                        }
                     }
                 },
                 {

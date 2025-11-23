@@ -385,8 +385,8 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
      * Show weight modal (now delegates to factory)
      */
     showWeightModal(exerciseName, currentWeight, currentUnit, lastWeight, lastWeightUnit, lastSessionDate, isSessionActive) {
-        // Use the new factory to create the offcanvas
-        window.WorkoutOffcanvasFactory.createWeightEdit(exerciseName, {
+        // Use the unified factory to create the offcanvas
+        window.UnifiedOffcanvasFactory.createWeightEdit(exerciseName, {
             currentWeight,
             currentUnit,
             lastWeight,
@@ -752,8 +752,8 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
         const bonusCount = this.currentWorkout?.bonus_exercises?.length || 0;
         const totalExercises = exerciseCount + bonusCount;
         
-        // Use factory to create offcanvas
-        window.WorkoutOffcanvasFactory.createCompleteWorkout({
+        // Use unified factory to create offcanvas
+        window.UnifiedOffcanvasFactory.createCompleteWorkout({
             workoutName: this.currentWorkout.name,
             minutes,
             totalExercises
@@ -769,7 +769,7 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
      * Show completion summary (now uses factory)
      */
     showCompletionSummary(session) {
-        window.WorkoutOffcanvasFactory.createCompletionSummary({
+        window.UnifiedOffcanvasFactory.createCompletionSummary({
             duration: session.duration_minutes || 0,
             exerciseCount: session.exercises_performed?.length || 0
         });
@@ -876,8 +876,8 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
             .filter(name => sessionData.exercises[name].weight).length;
         const totalExercises = Object.keys(sessionData.exercises || {}).length;
         
-        // Use factory to create offcanvas
-        window.WorkoutOffcanvasFactory.createResumeSession({
+        // Use unified factory to create offcanvas
+        window.UnifiedOffcanvasFactory.createResumeSession({
             workoutName: sessionData.workoutName,
             elapsedDisplay,
             exercisesWithWeights,
@@ -970,7 +970,7 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
             const previousBonusExercises = await this.sessionService
                 .getLastSessionBonusExercises(this.currentWorkout.id);
             
-            window.WorkoutOffcanvasFactory.createBonusExercise(
+            window.UnifiedOffcanvasFactory.createBonusExercise(
                 { previousExercises: previousBonusExercises },
                 async (data) => {
                     // Handle adding new exercise

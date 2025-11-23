@@ -1,11 +1,156 @@
 /**
- * Ghost Gym - Workout Offcanvas Factory
- * Creates and manages bottom offcanvas modals for workout mode
- * @version 1.0.0
- * @date 2025-11-18
+ * Ghost Gym - Unified Offcanvas Factory
+ * Creates and manages all bottom offcanvas modals across the app
+ * Based on WorkoutOffcanvasFactory.js (workout-mode styling)
+ * Extended with menu, filter, and form patterns
+ * 
+ * @version 2.0.0
+ * @date 2025-11-23
  */
 
-class WorkoutOffcanvasFactory {
+class UnifiedOffcanvasFactory {
+    
+    /* ============================================
+       MENU OFFCANVAS (for Share/More menus)
+       ============================================ */
+    
+    /**
+     * Create menu-style offcanvas with clickable items
+     * @param {Object} config - Menu configuration
+     * @param {string} config.id - Unique offcanvas ID
+     * @param {string} config.title - Header title
+     * @param {string} config.icon - Boxicon class for title
+     * @param {Array} config.menuItems - Array of menu item objects
+     * @returns {Object} Offcanvas instance
+     */
+    static createMenuOffcanvas(config) {
+        const { id, title, icon, menuItems = [] } = config;
+        
+        const menuHtml = menuItems.map((item, index) => `
+            <div class="more-menu-item ${item.variant === 'danger' ? 'danger' : ''}"
+                 data-menu-action="${index}">
+                <i class="bx ${item.icon}"></i>
+                <div class="more-menu-item-content">
+                    <div class="more-menu-item-title">${this.escapeHtml(item.title)}</div>
+                    <small class="more-menu-item-description">${this.escapeHtml(item.description || '')}</small>
+                </div>
+            </div>
+        `).join('');
+        
+        const offcanvasHtml = `
+            <div class="offcanvas offcanvas-bottom offcanvas-bottom-base" tabindex="-1"
+                 id="${id}" aria-labelledby="${id}Label">
+                <div class="offcanvas-header border-bottom">
+                    <h5 class="offcanvas-title" id="${id}Label">
+                        <i class="bx ${icon} me-2"></i>${this.escapeHtml(title)}
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                </div>
+                <div class="offcanvas-body menu-items">
+                    ${menuHtml}
+                </div>
+            </div>
+        `;
+        
+        return this.createOffcanvas(id, offcanvasHtml, (offcanvas, offcanvasElement) => {
+            // Attach click handlers to menu items
+            menuItems.forEach((item, index) => {
+                const element = offcanvasElement.querySelector(`[data-menu-action="${index}"]`);
+                if (element && item.onClick) {
+                    element.addEventListener('click', async () => {
+                        try {
+                            await item.onClick();
+                            offcanvas.hide();
+                        } catch (error) {
+                            console.error('Menu item action failed:', error);
+                        }
+                    });
+                }
+            });
+        });
+    }
+    
+    /* ============================================
+       FILTER OFFCANVAS (for Exercise Database)
+       ============================================ */
+    
+    /**
+     * Create filter offcanvas with FilterBar component integration
+     * @param {Object} config - Filter configuration
+     * @param {string} config.id - Unique offcanvas ID
+     * @param {string} config.title - Header title (default: "Filters")
+     * @param {string} config.icon - Boxicon class (default: "bx-filter-alt")
+     * @param {string} config.filterBarContainerId - ID for FilterBar container
+     * @param {string} config.clearButtonId - ID for clear button
+     * @param {Function} config.onApply - Callback when Apply is clicked
+     * @param {Function} config.onClear - Callback when Clear is clicked
+     * @returns {Object} Offcanvas instance
+     */
+    static createFilterOffcanvas(config) {
+        const { 
+            id, 
+            title = 'Filters', 
+            icon = 'bx-filter-alt',
+            filterBarContainerId = 'filterBarContainer',
+            clearButtonId = 'clearFiltersBtn',
+            onApply,
+            onClear
+        } = config;
+        
+        const offcanvasHtml = `
+            <div class="offcanvas offcanvas-bottom offcanvas-bottom-base offcanvas-bottom-tall"
+                 tabindex="-1" id="${id}" aria-labelledby="${id}Label"
+                 style="height: 100vh;">
+                <div class="offcanvas-header border-bottom">
+                    <h5 class="offcanvas-title" id="${id}Label">
+                        <i class="bx ${icon} me-2"></i>${this.escapeHtml(title)}
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                </div>
+                <div class="offcanvas-body">
+                    <!-- FilterBar component will inject here -->
+                    <div id="${filterBarContainerId}"></div>
+                    
+                    <!-- Action Buttons -->
+                    <div class="row mt-3">
+                        <div class="col-6">
+                            <button type="button" class="btn btn-outline-secondary w-100" id="${clearButtonId}">
+                                <i class="bx bx-x me-1"></i>Clear
+                            </button>
+                        </div>
+                        <div class="col-6">
+                            <button type="button" class="btn btn-primary w-100" data-bs-dismiss="offcanvas">
+                                <i class="bx bx-check me-1"></i>Apply
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        return this.createOffcanvas(id, offcanvasHtml, (offcanvas, offcanvasElement) => {
+            // Clear button handler
+            if (onClear) {
+                const clearBtn = offcanvasElement.querySelector(`#${clearButtonId}`);
+                if (clearBtn) {
+                    clearBtn.addEventListener('click', onClear);
+                }
+            }
+            
+            // Apply button handler
+            if (onApply) {
+                const applyBtn = offcanvasElement.querySelector('[data-bs-dismiss="offcanvas"]');
+                if (applyBtn) {
+                    applyBtn.addEventListener('click', onApply);
+                }
+            }
+        });
+    }
+    
+    /* ============================================
+       WEIGHT EDIT OFFCANVAS (from WorkoutOffcanvasFactory)
+       ============================================ */
+    
     /**
      * Create weight edit offcanvas
      * @param {string} exerciseName - Exercise name
@@ -60,7 +205,7 @@ class WorkoutOffcanvasFactory {
 
         const offcanvasHtml = `
             <div class="offcanvas offcanvas-bottom offcanvas-bottom-base" tabindex="-1" id="weightEditOffcanvas" aria-labelledby="weightEditOffcanvasLabel">
-                <div class="offcanvas-header">
+                <div class="offcanvas-header border-bottom">
                     <h5 class="offcanvas-title" id="weightEditOffcanvasLabel">
                         <i class="bx bx-edit-alt me-2"></i>Edit Weight
                     </h5>
@@ -125,6 +270,10 @@ class WorkoutOffcanvasFactory {
             window.workoutSessionService.updateExerciseWeight(exerciseName, weight, unit);
         });
     }
+
+    /* ============================================
+       COMPLETE WORKOUT CONFIRMATION
+       ============================================ */
 
     /**
      * Create complete workout confirmation offcanvas
@@ -209,6 +358,10 @@ class WorkoutOffcanvasFactory {
         });
     }
 
+    /* ============================================
+       COMPLETION SUMMARY (Success Screen)
+       ============================================ */
+
     /**
      * Create completion summary offcanvas (success screen)
      * @param {Object} data - Completed session data
@@ -278,6 +431,10 @@ class WorkoutOffcanvasFactory {
         
         return this.createOffcanvas('completionSummaryOffcanvas', offcanvasHtml);
     }
+
+    /* ============================================
+       RESUME SESSION PROMPT
+       ============================================ */
 
     /**
      * Create resume session prompt offcanvas
@@ -369,6 +526,10 @@ class WorkoutOffcanvasFactory {
             });
         });
     }
+
+    /* ============================================
+       BONUS EXERCISE
+       ============================================ */
 
     /**
      * Create bonus exercise offcanvas
@@ -515,6 +676,10 @@ class WorkoutOffcanvasFactory {
         });
     }
 
+    /* ============================================
+       HELPER METHODS
+       ============================================ */
+
     /**
      * Create and show offcanvas (helper method)
      */
@@ -553,11 +718,11 @@ class WorkoutOffcanvasFactory {
 }
 
 // Export globally
-window.WorkoutOffcanvasFactory = WorkoutOffcanvasFactory;
+window.UnifiedOffcanvasFactory = UnifiedOffcanvasFactory;
 
 // Export for module use
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = WorkoutOffcanvasFactory;
+    module.exports = UnifiedOffcanvasFactory;
 }
 
-console.log('📦 WorkoutOffcanvasFactory component loaded');
+console.log('📦 UnifiedOffcanvasFactory component loaded');

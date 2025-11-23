@@ -1,0 +1,562 @@
+/**
+ * Ghost Gym - Unified Offcanvas Styles
+ * Based on workout-mode offcanvas styling (offcanvas-base.css)
+ * Extended with menu items, filters, and comprehensive patterns
+ * 
+ * @version 2.0.0
+ * @date 2025-11-23
+ * @foundation offcanvas-base.css (workout-mode styling)
+ */
+
+/* ============================================
+   BASE OFFCANVAS STYLES (Bottom Slide-Up)
+   Foundation from workout-mode
+   ============================================ */
+
+.offcanvas-bottom-base {
+    height: auto !important;
+    max-height: 85vh;
+    border-radius: 1rem 1rem 0 0 !important;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
+    transition: transform 0.3s ease-in-out;
+}
+
+.offcanvas-bottom-base .offcanvas-header {
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--bs-border-color);
+    flex-shrink: 0;
+}
+
+.offcanvas-bottom-base .offcanvas-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--bs-heading-color);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.offcanvas-bottom-base .offcanvas-title i {
+    font-size: 1.25rem;
+}
+
+.offcanvas-bottom-base .btn-close {
+    opacity: 0.6;
+    transition: opacity 0.2s ease;
+}
+
+.offcanvas-bottom-base .btn-close:hover {
+    opacity: 1;
+}
+
+.offcanvas-bottom-base .offcanvas-body {
+    padding: 1.5rem;
+    overflow-y: auto;
+    flex-shrink: 1;
+    flex-grow: 0;
+}
+
+.offcanvas-bottom-base .offcanvas-footer {
+    flex-shrink: 0;
+    background: var(--bs-body-bg);
+    border-top: 1px solid var(--bs-border-color);
+    padding: 1rem 1.5rem;
+}
+
+/* ============================================
+   BUTTON STYLES (Sneat Standard - 8px Rounded)
+   ============================================ */
+
+.offcanvas-bottom-base .btn {
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    font-size: 1rem;
+    border-radius: 8px !important;
+    transition: all 0.2s ease;
+    min-height: 44px;
+}
+
+/* Primary buttons */
+.offcanvas-bottom-base .btn-primary {
+    background: linear-gradient(135deg, var(--ghost-primary, #6366f1), var(--ghost-secondary, #8b5cf6));
+    border: none;
+    box-shadow: 0 2px 4px rgba(105, 108, 255, 0.3);
+}
+
+.offcanvas-bottom-base .btn-primary:hover {
+    background: linear-gradient(135deg, #5855eb, #7c3aed);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(105, 108, 255, 0.4);
+}
+
+.offcanvas-bottom-base .btn-primary:active {
+    transform: translateY(0);
+}
+
+/* Success buttons */
+.offcanvas-bottom-base .btn-success {
+    box-shadow: 0 2px 4px rgba(var(--bs-success-rgb), 0.3);
+}
+
+.offcanvas-bottom-base .btn-success:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(var(--bs-success-rgb), 0.4);
+}
+
+/* Secondary buttons */
+.offcanvas-bottom-base .btn-secondary,
+.offcanvas-bottom-base .btn-label-secondary {
+    background-color: rgba(var(--bs-secondary-rgb), 0.1);
+    border: 1px solid transparent;
+    color: var(--bs-secondary);
+}
+
+.offcanvas-bottom-base .btn-secondary:hover,
+.offcanvas-bottom-base .btn-label-secondary:hover {
+    background-color: rgba(var(--bs-secondary-rgb), 0.2);
+    color: var(--bs-secondary);
+}
+
+/* Outline buttons */
+.offcanvas-bottom-base .btn-outline-secondary {
+    border-width: 1.5px;
+}
+
+.offcanvas-bottom-base .btn-outline-danger,
+.offcanvas-bottom-base .btn-danger {
+    border-width: 1.5px;
+}
+
+.offcanvas-bottom-base .btn-outline-danger:hover,
+.offcanvas-bottom-base .btn-danger:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(var(--bs-danger-rgb), 0.3);
+}
+
+.offcanvas-bottom-base .btn-outline-danger:active,
+.offcanvas-bottom-base .btn-danger:active {
+    transform: translateY(0);
+}
+
+/* Button groups */
+.offcanvas-bottom-base .offcanvas-footer .d-flex {
+    gap: 0.5rem;
+}
+
+.offcanvas-bottom-base .offcanvas-footer .flex-fill {
+    flex: 1;
+}
+
+/* ============================================
+   FORM CONTROLS
+   ============================================ */
+
+.offcanvas-bottom-base .form-label {
+    font-weight: 500;
+    font-size: 0.875rem;
+    margin-bottom: 0.5rem;
+    color: var(--bs-gray-700);
+}
+
+.offcanvas-bottom-base .form-control,
+.offcanvas-bottom-base .form-select {
+    border: 2px solid var(--bs-border-color);
+    border-radius: 8px;
+    padding: 0.625rem 0.875rem;
+    font-size: 0.95rem;
+    transition: border-color 0.2s ease;
+}
+
+.offcanvas-bottom-base .form-control:focus,
+.offcanvas-bottom-base .form-select:focus {
+    border-color: var(--bs-primary);
+    box-shadow: 0 0 0 0.2rem rgba(var(--bs-primary-rgb), 0.15);
+}
+
+.offcanvas-bottom-base .form-text {
+    font-size: 0.75rem;
+    margin-top: 0.5rem;
+    color: var(--bs-secondary-color);
+}
+
+/* Textarea */
+.offcanvas-bottom-base textarea.form-control {
+    resize: vertical;
+    min-height: 80px;
+}
+
+/* Weight unit buttons */
+.offcanvas-bottom-base .weight-unit-btn {
+    font-size: 0.875rem;
+    padding: 0.5rem;
+    transition: all 0.2s ease;
+    border-radius: 8px;
+}
+
+.offcanvas-bottom-base .weight-unit-btn.active {
+    background-color: var(--bs-primary);
+    border-color: var(--bs-primary);
+    color: white;
+}
+
+.offcanvas-bottom-base .weight-unit-btn:not(.active):hover {
+    background-color: rgba(var(--bs-primary-rgb), 0.1);
+    border-color: var(--bs-primary);
+    color: var(--bs-primary);
+}
+
+/* ============================================
+   STATS CARDS (for confirmations/summaries)
+   ============================================ */
+
+.offcanvas-bottom-base .card {
+    border: none;
+    border-radius: 8px;
+}
+
+.offcanvas-bottom-base .card.bg-label-primary {
+    background-color: rgba(var(--bs-primary-rgb), 0.1);
+    color: var(--bs-primary);
+}
+
+.offcanvas-bottom-base .card.bg-label-success {
+    background-color: rgba(var(--bs-success-rgb), 0.1);
+    color: var(--bs-success);
+}
+
+.offcanvas-bottom-base .card.bg-label-info {
+    background-color: rgba(var(--bs-info-rgb), 0.1);
+    color: var(--bs-info);
+}
+
+.offcanvas-bottom-base .card.bg-label-warning {
+    background-color: rgba(var(--bs-warning-rgb), 0.1);
+    color: var(--bs-warning);
+}
+
+.offcanvas-bottom-base .card.bg-label-danger {
+    background-color: rgba(var(--bs-danger-rgb), 0.1);
+    color: var(--bs-danger);
+}
+
+/* ============================================
+   ALERT STYLING
+   ============================================ */
+
+.offcanvas-bottom-base .alert {
+    border-radius: 8px;
+    border: 1px solid;
+}
+
+.offcanvas-bottom-base .alert-info {
+    background-color: rgba(var(--bs-info-rgb), 0.1);
+    border-color: rgba(var(--bs-info-rgb), 0.3);
+    color: var(--bs-info);
+}
+
+.offcanvas-bottom-base .alert-success {
+    background-color: rgba(var(--bs-success-rgb), 0.1);
+    border-color: rgba(var(--bs-success-rgb), 0.3);
+    color: var(--bs-success);
+}
+
+.offcanvas-bottom-base .alert-warning {
+    background-color: rgba(var(--bs-warning-rgb), 0.1);
+    border-color: rgba(var(--bs-warning-rgb), 0.3);
+    color: var(--bs-warning);
+}
+
+.offcanvas-bottom-base .alert-danger {
+    background-color: rgba(var(--bs-danger-rgb), 0.1);
+    border-color: rgba(var(--bs-danger-rgb), 0.3);
+    color: var(--bs-danger);
+}
+
+/* ============================================
+   MENU ITEM PATTERN (for Share/More menus)
+   Block-Level Button Style
+   ============================================ */
+
+/* Menu items container */
+.offcanvas-bottom-base .offcanvas-body.menu-items {
+    padding: 1.5rem;
+}
+
+/* Individual menu item - styled as rounded button */
+.offcanvas-bottom-base .more-menu-item {
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1.5px solid var(--bs-border-color);
+    min-height: 72px;
+    border-radius: 8px;
+    background: var(--bs-body-bg);
+    margin-bottom: 0.75rem;
+}
+
+.offcanvas-bottom-base .more-menu-item:last-child {
+    margin-bottom: 0;
+}
+
+.offcanvas-bottom-base .more-menu-item:hover {
+    background: rgba(var(--bs-primary-rgb), 0.08);
+    border-color: var(--bs-primary);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(var(--bs-primary-rgb), 0.15);
+}
+
+.offcanvas-bottom-base .more-menu-item:active {
+    background: rgba(var(--bs-primary-rgb), 0.12);
+    transform: translateY(0);
+}
+
+/* Menu item icon */
+.offcanvas-bottom-base .more-menu-item > i {
+    font-size: 24px;
+    width: 24px;
+    min-width: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Menu item content */
+.offcanvas-bottom-base .more-menu-item-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.offcanvas-bottom-base .more-menu-item-title {
+    font-weight: 600;
+    font-size: 16px;
+    line-height: 1.3;
+}
+
+.offcanvas-bottom-base .more-menu-item-description {
+    font-size: 13px;
+    color: var(--bs-secondary-color);
+    line-height: 1.3;
+}
+
+/* Danger variant (for delete) */
+.offcanvas-bottom-base .more-menu-item.danger {
+    color: var(--bs-danger);
+    border-color: rgba(var(--bs-danger-rgb), 0.3);
+}
+
+.offcanvas-bottom-base .more-menu-item.danger:hover {
+    background: rgba(var(--bs-danger-rgb), 0.08);
+    border-color: var(--bs-danger);
+    box-shadow: 0 4px 12px rgba(var(--bs-danger-rgb), 0.15);
+}
+
+.offcanvas-bottom-base .more-menu-item.danger:active {
+    background: rgba(var(--bs-danger-rgb), 0.12);
+}
+
+.offcanvas-bottom-base .more-menu-item.danger .more-menu-item-description {
+    color: rgba(var(--bs-danger-rgb), 0.7);
+}
+
+/* ============================================
+   LIST GROUP (for previous items, etc.)
+   ============================================ */
+
+.offcanvas-bottom-base .list-group-item {
+    border-radius: 8px;
+    border: 1.5px solid var(--bs-border-color);
+    margin-bottom: 0.5rem;
+}
+
+.offcanvas-bottom-base .list-group-item:last-child {
+    margin-bottom: 0;
+}
+
+/* ============================================
+   VARIANT: TALL OFFCANVAS (for filters/forms with lots of content)
+   ============================================ */
+
+.offcanvas-bottom-tall {
+    height: auto !important;
+    max-height: 80vh;
+}
+
+.offcanvas-bottom-tall .offcanvas-body {
+    max-height: calc(80vh - 140px);
+}
+
+/* ============================================
+   MOBILE RESPONSIVE
+   ============================================ */
+
+@media (max-width: 767.98px) {
+    .offcanvas-bottom-base {
+        max-height: 90vh;
+    }
+    
+    .offcanvas-bottom-base .offcanvas-header {
+        padding: 1rem 1.25rem;
+    }
+    
+    .offcanvas-bottom-base .offcanvas-body {
+        padding: 1.25rem;
+    }
+    
+    .offcanvas-bottom-base .offcanvas-footer {
+        padding: 0.75rem 1rem;
+    }
+    
+    .offcanvas-bottom-base .btn {
+        padding: 0.65rem 1.25rem;
+        font-size: 0.95rem;
+    }
+    
+    .offcanvas-bottom-tall {
+        max-height: 85vh;
+    }
+    
+    .offcanvas-bottom-tall .offcanvas-body {
+        max-height: calc(85vh - 140px);
+    }
+}
+
+@media (max-width: 576px) {
+    .offcanvas-bottom-base {
+        max-height: 95vh;
+    }
+    
+    .offcanvas-bottom-base .offcanvas-body {
+        padding: 1rem;
+    }
+    
+    .offcanvas-bottom-base .offcanvas-footer {
+        padding: 0.625rem 0.875rem;
+    }
+    
+    .offcanvas-bottom-base .offcanvas-title {
+        font-size: 1rem;
+    }
+    
+    /* Stack buttons vertically on very small screens */
+    .offcanvas-bottom-base .offcanvas-footer .d-flex {
+        flex-direction: column;
+    }
+    
+    .offcanvas-bottom-base .offcanvas-footer .flex-fill {
+        width: 100%;
+    }
+    
+    .offcanvas-bottom-tall {
+        max-height: 90vh;
+    }
+    
+    .offcanvas-bottom-tall .offcanvas-body {
+        max-height: calc(90vh - 140px);
+    }
+}
+
+/* ============================================
+   DARK THEME SUPPORT
+   ============================================ */
+
+[data-bs-theme="dark"] .offcanvas-bottom-base {
+    background-color: var(--bs-gray-900);
+    color: var(--bs-body-color);
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.4);
+}
+
+[data-bs-theme="dark"] .offcanvas-bottom-base .offcanvas-header {
+    border-bottom-color: var(--bs-gray-700);
+}
+
+[data-bs-theme="dark"] .offcanvas-bottom-base .offcanvas-footer {
+    border-top-color: var(--bs-gray-700);
+}
+
+[data-bs-theme="dark"] .offcanvas-bottom-base .form-label {
+    color: var(--bs-gray-200);
+}
+
+[data-bs-theme="dark"] .offcanvas-bottom-base .form-control,
+[data-bs-theme="dark"] .offcanvas-bottom-base .form-select {
+    background-color: var(--bs-gray-800);
+    border-color: var(--bs-gray-700);
+    color: var(--bs-body-color);
+}
+
+[data-bs-theme="dark"] .offcanvas-bottom-base .form-control:focus,
+[data-bs-theme="dark"] .offcanvas-bottom-base .form-select:focus {
+    background-color: var(--bs-gray-800);
+    border-color: var(--bs-primary);
+    color: var(--bs-body-color);
+}
+
+[data-bs-theme="dark"] .offcanvas-bottom-base .card {
+    background-color: var(--bs-gray-800);
+    border-color: var(--bs-gray-700);
+}
+
+[data-bs-theme="dark"] .offcanvas-bottom-base .more-menu-item {
+    border-color: var(--bs-gray-700);
+    background: var(--bs-gray-900);
+}
+
+[data-bs-theme="dark"] .offcanvas-bottom-base .more-menu-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: var(--bs-primary);
+}
+
+[data-bs-theme="dark"] .offcanvas-bottom-base .more-menu-item.danger:hover {
+    background: rgba(var(--bs-danger-rgb), 0.15);
+    border-color: var(--bs-danger);
+}
+
+[data-bs-theme="dark"] .offcanvas-bottom-base .list-group-item {
+    background-color: var(--bs-gray-800);
+    border-color: var(--bs-gray-700);
+    color: var(--bs-body-color);
+}
+
+/* ============================================
+   ACCESSIBILITY
+   ============================================ */
+
+/* Focus visible for keyboard navigation */
+.offcanvas-bottom-base .btn:focus-visible {
+    outline: 2px solid var(--bs-primary);
+    outline-offset: 2px;
+}
+
+.offcanvas-bottom-base .more-menu-item:focus-visible {
+    outline: 2px solid var(--bs-primary);
+    outline-offset: -2px;
+}
+
+.offcanvas-bottom-base .form-control:focus-visible,
+.offcanvas-bottom-base .form-select:focus-visible {
+    outline: none;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    .offcanvas-bottom-base,
+    .offcanvas-bottom-base .btn,
+    .offcanvas-bottom-base .more-menu-item {
+        transition: none;
+    }
+}
+
+/* ============================================
+   PRINT STYLES
+   ============================================ */
+
+@media print {
+    .offcanvas-bottom-base {
+        display: none;
+    }
+}
