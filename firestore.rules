@@ -76,5 +76,27 @@ service cloud.firestore {
       allow delete: if request.auth != null 
                     && resource.data.creator_id == request.auth.uid;
     }
+    
+    // ========================================================================
+    // FEEDBACK - Anyone can submit, only admin email can read/update/delete
+    // ========================================================================
+    
+    match /feedback/{feedbackId} {
+      // Anyone can create feedback (authenticated or anonymous)
+      allow create: if true;
+      
+      // Only admin email can read feedback
+      // Hardcoded admin email for security
+      allow read: if request.auth != null
+                  && request.auth.token.email == 'tbattista@gmail.com';
+      
+      // Only admin email can update feedback (for status changes, notes, etc.)
+      allow update: if request.auth != null
+                    && request.auth.token.email == 'tbattista@gmail.com';
+      
+      // Only admin email can delete feedback
+      allow delete: if request.auth != null
+                    && request.auth.token.email == 'tbattista@gmail.com';
+    }
   }
 }

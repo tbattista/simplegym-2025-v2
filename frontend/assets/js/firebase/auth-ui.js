@@ -152,6 +152,19 @@ class AuthUI {
             if (menuUserEmailDisplay) {
                 menuUserEmailDisplay.textContent = user.email || 'No email';
             }
+            
+            // Update admin menu visibility (if function exists)
+            // Add small delay to ensure user object is fully populated
+            if (typeof window.updateAdminButtonVisibility === 'function') {
+                setTimeout(() => {
+                    window.updateAdminButtonVisibility(user);
+                }, 100);
+            }
+        } else {
+            // Hide admin menu when signed out
+            if (typeof window.updateAdminButtonVisibility === 'function') {
+                window.updateAdminButtonVisibility(null);
+            }
         }
     }
     

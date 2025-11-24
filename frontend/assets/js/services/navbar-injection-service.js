@@ -32,14 +32,12 @@
         'exercise-database.html': {
             title: 'Exercise Database',
             icon: 'bx-book-content',
-            showSearch: true,
-            searchPlaceholder: 'Search exercises...'
+            showSearch: false
         },
         'workout-database.html': {
             title: 'Workout Database',
             icon: 'bx-library',
-            showSearch: true,
-            searchPlaceholder: 'Search workouts...'
+            showSearch: false
         },
         'programs.html': {
             title: 'My Programs',
@@ -161,6 +159,13 @@
                 window.initializeNavbarSearch();
             } else {
                 console.warn('⚠️ initializeNavbarSearch not available');
+            }
+
+            // Initialize feedback button
+            if (typeof window.initializeNavbarFeedback === 'function') {
+                window.initializeNavbarFeedback();
+            } else {
+                console.warn('⚠️ initializeNavbarFeedback not available');
             }
 
             console.log('✅ Navbar functionality initialized');

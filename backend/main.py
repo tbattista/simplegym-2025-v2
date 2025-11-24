@@ -151,6 +151,19 @@ async def serve_workout_mode():
             status_code=404
         )
 
+@app.get("/feedback-admin", response_class=HTMLResponse)
+@app.get("/feedback-admin.html", response_class=HTMLResponse)
+async def serve_feedback_admin():
+    """Serve the Feedback Admin Dashboard page"""
+    try:
+        with open("frontend/feedback-admin.html", "r", encoding="utf-8") as f:
+            return HTMLResponse(content=f.read())
+    except FileNotFoundError:
+        return HTMLResponse(
+            content="<h1>Feedback Admin not found</h1><p>Please ensure frontend/feedback-admin.html exists</p>",
+            status_code=404
+        )
+
 
 if __name__ == "__main__":
     import uvicorn

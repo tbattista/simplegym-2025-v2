@@ -52,30 +52,11 @@
                 title: 'Search workouts',
                 variant: 'primary',
                 action: function() {
-                    // Toggle navbar search (open if closed, close if open)
-                    const searchToggle = document.getElementById('navbarSearchToggle');
-                    const searchMobile = document.getElementById('navbarSearchMobile');
-                    const searchInputDesktop = document.getElementById('navbarSearchInput');
-                    
-                    // On mobile, toggle the dropdown
-                    if (window.innerWidth < 768) {
-                        if (searchMobile && searchMobile.classList.contains('active')) {
-                            // Search is open, close it
-                            const searchClose = document.getElementById('navbarSearchClose');
-                            if (searchClose) {
-                                searchClose.click();
-                            }
-                        } else {
-                            // Search is closed, open it
-                            if (searchToggle) {
-                                searchToggle.click();
-                            }
-                        }
+                    // Toggle FAB search dropdown
+                    if (window.workoutSearchDropdown) {
+                        window.workoutSearchDropdown.toggle();
                     } else {
-                        // On desktop, focus the search input
-                        if (searchInputDesktop) {
-                            searchInputDesktop.focus();
-                        }
+                        console.error('❌ Workout search dropdown not initialized');
                     }
                 }
             },
@@ -445,29 +426,11 @@
                 title: 'Search exercises',
                 variant: 'primary',
                 action: function() {
-                    // On mobile, toggle navbar search (open if closed, close if open)
-                    if (window.innerWidth < 768) {
-                        const searchMobile = document.getElementById('navbarSearchMobile');
-                        const searchClose = document.getElementById('navbarSearchClose');
-                        
-                        if (searchMobile && searchMobile.classList.contains('active')) {
-                            // Search is open, close it
-                            if (searchClose) {
-                                searchClose.click();
-                            }
-                        } else {
-                            // Search is closed, open it
-                            const searchToggle = document.getElementById('navbarSearchToggle');
-                            if (searchToggle) {
-                                searchToggle.click();
-                            }
-                        }
+                    // Toggle FAB search dropdown
+                    if (window.exerciseSearchDropdown) {
+                        window.exerciseSearchDropdown.toggle();
                     } else {
-                        // On desktop, focus navbar search input
-                        const searchInput = document.getElementById('navbarSearchInput');
-                        if (searchInput) {
-                            searchInput.focus();
-                        }
+                        console.error('❌ Exercise search dropdown not initialized');
                     }
                 }
             },

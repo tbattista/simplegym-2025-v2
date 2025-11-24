@@ -38,7 +38,21 @@
             sendPasswordResetEmail,
             updateProfile
         } = await import('https://www.gstatic.com/firebasejs/10.5.0/firebase-auth.js');
-        const { getFirestore } = await import('https://www.gstatic.com/firebasejs/10.5.0/firebase-firestore.js');
+        const {
+            getFirestore,
+            collection,
+            addDoc,
+            getDocs,
+            doc,
+            getDoc,
+            updateDoc,
+            deleteDoc,
+            query,
+            where,
+            orderBy,
+            serverTimestamp,
+            Timestamp
+        } = await import('https://www.gstatic.com/firebasejs/10.5.0/firebase-firestore.js');
         
         // Initialize Firebase with centralized config
         const app = initializeApp(window.config.firebase);
@@ -49,6 +63,22 @@
         window.firebaseApp = app;
         window.firebaseAuth = auth;
         window.firebaseDb = db;
+        
+        // Make Firestore functions available globally
+        window.firestoreFunctions = {
+            collection,
+            addDoc,
+            getDocs,
+            doc,
+            getDoc,
+            updateDoc,
+            deleteDoc,
+            query,
+            where,
+            orderBy,
+            serverTimestamp,
+            Timestamp
+        };
         
         // Make Firebase Auth functions available globally
         window.firebaseAuthFunctions = {

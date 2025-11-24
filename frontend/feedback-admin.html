@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+
+<html
+  lang="en"
+  class="layout-menu-fixed layout-compact"
+  data-assets-path="/static/assets/"
+  data-template="vertical-menu-template-free">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+    
+    <title>👻 Feedback Admin - Ghost Gym V0.4.1</title>
+
+    <meta name="description" content="Admin dashboard for managing user feedback" />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/static/assets/img/favicon/favicon.ico" />
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap"
+      rel="stylesheet" />
+
+    <link rel="stylesheet" href="/static/assets/vendor/fonts/iconify-icons.css" />
+
+    <!-- Core CSS -->
+    <link rel="stylesheet" href="/static/assets/vendor/css/core.css" />
+    <link rel="stylesheet" href="/static/assets/css/demo.css" />
+
+    <!-- Vendors CSS -->
+    <link rel="stylesheet" href="/static/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css" />
+
+    <!-- Custom Ghost Gym CSS -->
+    <link rel="stylesheet" href="/static/assets/css/ghost-gym-custom.css" />
+    
+    <!-- Navbar CSS -->
+    <link rel="stylesheet" href="/static/assets/css/navbar-custom.css" />
+    
+    <!-- Admin CSS -->
+    <link rel="stylesheet" href="/static/assets/css/feedback-admin.css" />
+
+    <!-- Helpers -->
+    <script src="/static/assets/vendor/js/helpers.js"></script>
+    <script src="/static/assets/js/config.js"></script>
+
+    <!-- Theme Manager (must load early to prevent flash) -->
+    <script src="/static/assets/js/services/theme-manager.js"></script>
+
+    <!-- Ghost Gym Centralized Configuration -->
+    <script src="/static/assets/js/app-config.js"></script>
+    
+    <!-- Firebase SDK Loader (Centralized) -->
+    <script type="module" src="/static/assets/js/firebase-loader.js"></script>
+  </head>
+
+  <body>
+    
+    <!-- Layout wrapper -->
+    <div class="layout-wrapper layout-content-navbar">
+      <div class="layout-container">
+        <!-- Menu -->
+        <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
+          <!-- Menu will be injected by menu-injection-service.js -->
+        </aside>
+        <!-- / Menu -->
+
+        <!-- Layout container -->
+        <div class="layout-page">
+
+          <!-- Content wrapper -->
+          <div class="content-wrapper">
+            <!-- Content -->
+            <div class="container-xxl flex-grow-1 container-p-y">
+              
+              <!-- Page Header -->
+              <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                  <h4 class="mb-1">
+                    <i class="bx bx-shield me-2 text-primary"></i>
+                    Feedback Admin Dashboard
+                  </h4>
+                  <p class="text-muted mb-0">View and manage user feedback submissions</p>
+                </div>
+                <button class="btn btn-primary" id="refreshBtn" onclick="loadFeedbackData()">
+                  <i class="bx bx-refresh me-1"></i>
+                  Refresh
+                </button>
+              </div>
+
+              <!-- Statistics Cards -->
+              <div class="row g-3 mb-4">
+                <!-- Total Feedback -->
+                <div class="col-6">
+                  <div class="card">
+                    <div class="card-body">
+                      <div class="d-flex align-items-center">
+                        <div class="avatar flex-shrink-0 me-3">
+                          <span class="avatar-initial rounded bg-label-primary">
+                            <i class="bx bx-message-dots bx-sm"></i>
+                          </span>
+                        </div>
+                        <div>
+                          <small class="text-muted d-block">Total</small>
+                          <h4 class="mb-0" id="statTotal">0</h4>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- New Feedback -->
+                <div class="col-6">
+                  <div class="card">
+                    <div class="card-body">
+                      <div class="d-flex align-items-center">
+                        <div class="avatar flex-shrink-0 me-3">
+                          <span class="avatar-initial rounded bg-label-warning">
+                            <i class="bx bx-bell bx-sm"></i>
+                          </span>
+                        </div>
+                        <div>
+                          <small class="text-muted d-block">New</small>
+                          <h4 class="mb-0" id="statNew">0</h4>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Done Feedback -->
+                <div class="col-6">
+                  <div class="card">
+                    <div class="card-body">
+                      <div class="d-flex align-items-center">
+                        <div class="avatar flex-shrink-0 me-3">
+                          <span class="avatar-initial rounded bg-label-success">
+                            <i class="bx bx-check-circle bx-sm"></i>
+                          </span>
+                        </div>
+                        <div>
+                          <small class="text-muted d-block">Done</small>
+                          <h4 class="mb-0" id="statDone">0</h4>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Bug Reports -->
+                <div class="col-6">
+                  <div class="card">
+                    <div class="card-body">
+                      <div class="d-flex align-items-center">
+                        <div class="avatar flex-shrink-0 me-3">
+                          <span class="avatar-initial rounded bg-label-danger">
+                            <i class="bx bx-bug bx-sm"></i>
+                          </span>
+                        </div>
+                        <div>
+                          <small class="text-muted d-block">Bugs</small>
+                          <h4 class="mb-0" id="statBugs">0</h4>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Filters -->
+              <div class="card mb-4">
+                <div class="card-body">
+                  <div class="row g-3">
+                    <div class="col-md-3">
+                      <label for="filterStatus" class="form-label">Status</label>
+                      <select class="form-select" id="filterStatus" onchange="applyFilters()">
+                        <option value="all">All Status</option>
+                        <option value="new" selected>New</option>
+                        <option value="done">Done</option>
+                      </select>
+                    </div>
+                    <div class="col-md-3">
+                      <label for="filterType" class="form-label">Type</label>
+                      <select class="form-select" id="filterType" onchange="applyFilters()">
+                        <option value="all">All Types</option>
+                        <option value="bug">Bug Report</option>
+                        <option value="feature">Feature Request</option>
+                        <option value="general">General Feedback</option>
+                      </select>
+                    </div>
+                    <div class="col-md-3">
+                      <label for="filterDate" class="form-label">Date Range</label>
+                      <select class="form-select" id="filterDate" onchange="applyFilters()">
+                        <option value="all">All Time</option>
+                        <option value="7days">Last 7 Days</option>
+                        <option value="30days">Last 30 Days</option>
+                      </select>
+                    </div>
+                    <div class="col-md-3 d-flex align-items-end">
+                      <button class="btn btn-outline-secondary w-100" onclick="resetFilters()">
+                        <i class="bx bx-reset me-1"></i>
+                        Reset Filters
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Feedback Table -->
+              <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                  <h5 class="mb-0">Feedback List</h5>
+                  <span class="badge bg-label-primary" id="feedbackCount">0 items</span>
+                </div>
+                <div class="card-body">
+                  <!-- Loading State -->
+                  <div id="loadingState" class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                      <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-3 text-muted">Loading feedback...</p>
+                  </div>
+
+                  <!-- Empty State -->
+                  <div id="emptyState" class="text-center py-5" style="display: none;">
+                    <i class="bx bx-inbox bx-lg text-muted mb-3"></i>
+                    <p class="text-muted">No feedback found</p>
+                  </div>
+
+                  <!-- Table -->
+                  <div id="feedbackTableContainer" style="display: none;">
+                    <div class="table-responsive">
+                      <table class="table table-hover">
+                        <thead>
+                          <tr>
+                            <th>Status</th>
+                            <th>Type</th>
+                            <th>Title</th>
+                            <th>From</th>
+                            <th>Date</th>
+                            <th>Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody id="feedbackTableBody">
+                          <!-- Rows will be inserted here -->
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+            <!-- / Content -->
+
+            <div class="content-backdrop fade"></div>
+          </div>
+          <!-- Content wrapper -->
+        </div>
+        <!-- / Layout page -->
+      </div>
+
+      <!-- Overlay -->
+      <div class="layout-overlay layout-menu-toggle"></div>
+    </div>
+    <!-- / Layout wrapper -->
+
+    <!-- Feedback Detail Modal -->
+    <div class="modal fade" id="feedbackDetailModal" tabindex="-1">
+      <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Feedback Details</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body" id="feedbackDetailBody">
+            <!-- Details will be loaded here -->
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-success" id="modalMarkDoneBtn" style="display: none;">
+              <i class="bx bx-check me-1"></i>
+              Mark as Done
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Core JS -->
+    <script src="/static/assets/vendor/libs/jquery/jquery.js"></script>
+    <script src="/static/assets/vendor/libs/popper/popper.js"></script>
+    <script src="/static/assets/vendor/js/bootstrap.js"></script>
+    <script src="/static/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js"></script>
+    <script src="/static/assets/vendor/js/menu.js"></script>
+
+    <!-- Load templates FIRST -->
+    <script src="/static/assets/js/components/menu-template.js"></script>
+    <script src="/static/assets/js/components/navbar-template.js"></script>
+    <script src="/static/assets/js/components/auth-modals-template.js"></script>
+    
+    <!-- Inject components SECOND -->
+    <script src="/static/assets/js/services/menu-injection-service.js"></script>
+    <script src="/static/assets/js/services/navbar-injection-service.js"></script>
+
+    <!-- Main JS -->
+    <script src="/static/assets/js/main.js"></script>
+
+    <!-- Firebase Services -->
+    <script src="/static/assets/js/firebase/firebase-init.js?v=20251020-03"></script>
+    <script src="/static/assets/js/firebase/auth-service.js?v=20251020-03"></script>
+    <script src="/static/assets/js/firebase/auth-ui.js?v=20251020-03"></script>
+    <script src="/static/assets/js/firebase/data-manager.js?v=20251020-05"></script>
+
+    <!-- Admin Service -->
+    <script src="/static/assets/js/services/feedback-admin-service.js"></script>
+
+    <!-- Page Script -->
+    <script>
+        let currentFeedbackId = null;
+
+        // Initialize page
+        async function initAdminPage() {
+            console.log('🔐 Initializing admin page...');
+            
+            // Wait for Firebase to be ready
+            if (!window.firebaseReady) {
+                await new Promise(resolve => {
+                    window.addEventListener('firebaseReady', resolve, { once: true });
+                });
+            }
+
+            // Check admin access
+            const hasAccess = await window.feedbackAdminService.checkAdminAccess();
+            if (!hasAccess) {
+                return; // Will redirect in checkAdminAccess
+            }
+
+            // Load initial data
+            await loadStatistics();
+            await loadFeedbackData();
+
+            console.log('✅ Admin page initialized');
+        }
+
+        // Load statistics
+        async function loadStatistics() {
+            try {
+                const stats = await window.feedbackAdminService.getStatistics();
+                
+                document.getElementById('statTotal').textContent = stats.total;
+                document.getElementById('statNew').textContent = stats.new;
+                document.getElementById('statDone').textContent = stats.done;
+                document.getElementById('statBugs').textContent = stats.bugs;
+                
+                console.log('✅ Statistics loaded');
+            } catch (error) {
+                console.error('❌ Error loading statistics:', error);
+            }
+        }
+
+        // Load feedback data
+        async function loadFeedbackData() {
+            try {
+                // Show loading state
+                document.getElementById('loadingState').style.display = 'block';
+                document.getElementById('emptyState').style.display = 'none';
+                document.getElementById('feedbackTableContainer').style.display = 'none';
+
+                // Get filters
+                const filters = {
+                    status: document.getElementById('filterStatus').value,
+                    type: document.getElementById('filterType').value,
+                    dateRange: document.getElementById('filterDate').value
+                };
+
+                // Load feedback
+                const feedbackList = await window.feedbackAdminService.loadFeedback(filters);
+
+                // Hide loading
+                document.getElementById('loadingState').style.display = 'none';
+
+                // Show empty state or table
+                if (feedbackList.length === 0) {
+                    document.getElementById('emptyState').style.display = 'block';
+                    document.getElementById('feedbackCount').textContent = '0 items';
+                } else {
+                    document.getElementById('feedbackTableContainer').style.display = 'block';
+                    document.getElementById('feedbackCount').textContent = `${feedbackList.length} item${feedbackList.length > 1 ? 's' : ''}`;
+                    renderFeedbackTable(feedbackList);
+                }
+
+                console.log('✅ Feedback data loaded');
+            } catch (error) {
+                console.error('❌ Error loading feedback:', error);
+                document.getElementById('loadingState').style.display = 'none';
+                alert('Error loading feedback. Please try again.');
+            }
+        }
+
+        // Render feedback table
+        function renderFeedbackTable(feedbackList) {
+            const tbody = document.getElementById('feedbackTableBody');
+            tbody.innerHTML = '';
+
+            feedbackList.forEach(item => {
+                const row = document.createElement('tr');
+                
+                // Status badge
+                const statusBadge = item.status === 'resolved' 
+                    ? '<span class="badge bg-success">✅ Done</span>'
+                    : '<span class="badge bg-warning">🟢 New</span>';
+                
+                // Type badge
+                let typeBadge = '';
+                if (item.type === 'bug') {
+                    typeBadge = '<span class="badge bg-danger">🐛 Bug</span>';
+                } else if (item.type === 'feature') {
+                    typeBadge = '<span class="badge bg-info">✨ Feature</span>';
+                } else {
+                    typeBadge = '<span class="badge bg-secondary">💡 General</span>';
+                }
+                
+                // Title (truncated)
+                const title = item.title.length > 50 
+                    ? item.title.substring(0, 50) + '...'
+                    : item.title;
+                
+                // From
+                const from = item.metadata?.userEmail || 'Anonymous';
+                
+                // Date
+                const date = window.feedbackAdminService.formatRelativeTime(item.createdAt);
+                
+                // Actions
+                const isDone = item.status === 'resolved';
+                const doneButton = isDone 
+                    ? ''
+                    : `<button class="btn btn-sm btn-success" onclick="markAsDone('${item.id}')">
+                         <i class="bx bx-check"></i> Done
+                       </button>`;
+                
+                row.innerHTML = `
+                    <td>${statusBadge}</td>
+                    <td>${typeBadge}</td>
+                    <td>
+                        <a href="javascript:void(0);" onclick="viewDetails('${item.id}')" class="text-decoration-none">
+                            ${title}
+                        </a>
+                    </td>
+                    <td><small>${from}</small></td>
+                    <td><small>${date}</small></td>
+                    <td>
+                        <div class="d-flex gap-1">
+                            <button class="btn btn-sm btn-outline-primary" onclick="viewDetails('${item.id}')">
+                                <i class="bx bx-show"></i> View
+                            </button>
+                            ${doneButton}
+                        </div>
+                    </td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+        }
+
+        // View feedback details
+        async function viewDetails(feedbackId) {
+            try {
+                currentFeedbackId = feedbackId;
+                const feedback = await window.feedbackAdminService.getFeedbackById(feedbackId);
+                
+                // Build detail HTML
+                const detailHTML = `
+                    <div class="feedback-detail">
+                        <!-- User Input -->
+                        <h6 class="mb-3">User Feedback</h6>
+                        <div class="mb-3">
+                            <strong>Type:</strong> 
+                            ${feedback.type === 'bug' ? '🐛 Bug Report' : 
+                              feedback.type === 'feature' ? '✨ Feature Request' : '💡 General Feedback'}
+                        </div>
+                        <div class="mb-3">
+                            <strong>Title:</strong><br>
+                            ${feedback.title}
+                        </div>
+                        <div class="mb-3">
+                            <strong>Description:</strong><br>
+                            <div class="p-3 bg-light rounded">${feedback.description.replace(/\n/g, '<br>')}</div>
+                        </div>
+                        ${feedback.priority ? `
+                        <div class="mb-3">
+                            <strong>Priority:</strong> 
+                            <span class="badge bg-${feedback.priority === 'critical' ? 'danger' : feedback.priority === 'high' ? 'warning' : 'secondary'}">
+                                ${feedback.priority.toUpperCase()}
+                            </span>
+                        </div>
+                        ` : ''}
+                        <div class="mb-4">
+                            <strong>Contact Preference:</strong> ${feedback.contactMe ? '✅ Yes' : '❌ No'}
+                        </div>
+
+                        <!-- Metadata -->
+                        <h6 class="mb-3 mt-4">Metadata</h6>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <small class="text-muted">Page URL:</small><br>
+                                <a href="${feedback.metadata.pageUrl}" target="_blank" class="small">${feedback.metadata.pageUrl}</a>
+                            </div>
+                            <div class="col-md-6">
+                                <small class="text-muted">Page Title:</small><br>
+                                <small>${feedback.metadata.pageTitle}</small>
+                            </div>
+                            <div class="col-md-6">
+                                <small class="text-muted">Submitted:</small><br>
+                                <small>${window.feedbackAdminService.formatDateTime(feedback.createdAt)}</small>
+                            </div>
+                            <div class="col-md-6">
+                                <small class="text-muted">User:</small><br>
+                                <small>${feedback.metadata.userEmail || 'Anonymous'}</small>
+                            </div>
+                            <div class="col-md-6">
+                                <small class="text-muted">Browser:</small><br>
+                                <small>${feedback.metadata.userAgent.substring(0, 50)}...</small>
+                            </div>
+                            <div class="col-md-6">
+                                <small class="text-muted">Screen:</small><br>
+                                <small>${feedback.metadata.screenResolution} (${feedback.metadata.viewport})</small>
+                            </div>
+                            <div class="col-md-6">
+                                <small class="text-muted">Theme:</small><br>
+                                <small>${feedback.metadata.theme}</small>
+                            </div>
+                            <div class="col-md-6">
+                                <small class="text-muted">Status:</small><br>
+                                <small>${feedback.status === 'resolved' ? '✅ Done' : '🟢 New'}</small>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                document.getElementById('feedbackDetailBody').innerHTML = detailHTML;
+                
+                // Show/hide mark as done button
+                const markDoneBtn = document.getElementById('modalMarkDoneBtn');
+                if (feedback.status === 'resolved') {
+                    markDoneBtn.style.display = 'none';
+                } else {
+                    markDoneBtn.style.display = 'inline-block';
+                    markDoneBtn.onclick = () => markAsDoneFromModal();
+                }
+                
+                // Show modal
+                const modal = new bootstrap.Modal(document.getElementById('feedbackDetailModal'));
+                modal.show();
+                
+            } catch (error) {
+                console.error('❌ Error viewing details:', error);
+                alert('Error loading feedback details.');
+            }
+        }
+
+        // Mark as done
+        async function markAsDone(feedbackId) {
+            if (!confirm('Mark this feedback as done?')) {
+                return;
+            }
+
+            try {
+                await window.feedbackAdminService.markAsDone(feedbackId);
+                alert('✅ Feedback marked as done!');
+                await loadStatistics();
+                await loadFeedbackData();
+            } catch (error) {
+                console.error('❌ Error marking as done:', error);
+                alert('Error marking feedback as done. Please try again.');
+            }
+        }
+
+        // Mark as done from modal
+        async function markAsDoneFromModal() {
+            if (currentFeedbackId) {
+                await markAsDone(currentFeedbackId);
+                bootstrap.Modal.getInstance(document.getElementById('feedbackDetailModal')).hide();
+            }
+        }
+
+        // Apply filters
+        function applyFilters() {
+            loadFeedbackData();
+        }
+
+        // Reset filters
+        function resetFilters() {
+            document.getElementById('filterStatus').value = 'new';
+            document.getElementById('filterType').value = 'all';
+            document.getElementById('filterDate').value = 'all';
+            loadFeedbackData();
+        }
+
+        // Initialize when DOM is ready
+        document.addEventListener('DOMContentLoaded', initAdminPage);
+    </script>
+  </body>
+</html>

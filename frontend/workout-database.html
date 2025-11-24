@@ -51,6 +51,9 @@
     
     <!-- Bottom Action Bar CSS -->
     <link rel="stylesheet" href="/static/assets/css/bottom-action-bar.css" />
+    
+    <!-- FAB Search Dropdown CSS -->
+    <link rel="stylesheet" href="/static/assets/css/components/fab-search-dropdown.css" />
 
     <!-- Helpers -->
     <script src="/static/assets/vendor/js/helpers.js"></script>
@@ -252,6 +255,11 @@
     <script src="/static/assets/js/components/filter-bar.js"></script>
     <script src="/static/assets/js/components/pagination.js"></script>
     <script src="/static/assets/js/components/modal-manager.js"></script>
+    <script src="/static/assets/js/components/fab-search-dropdown.js"></script>
+
+    <!-- Feedback System Scripts -->
+    <script src="/static/assets/js/services/feedback-service.js"></script>
+    <script src="/static/assets/js/components/feedback-modal.js"></script>
 
     <!-- Workout Database JS (Refactored) -->
     <script src="/static/assets/js/dashboard/workout-database.js?v=2.0.2"></script>
@@ -334,6 +342,21 @@
             if (window.initDeleteModeToggle) {
                 initDeleteModeToggle();
             }
+            
+            // Initialize FAB search dropdown
+            window.workoutSearchDropdown = new FabSearchDropdown({
+                placeholder: 'Search workouts...',
+                onSearch: (searchTerm) => {
+                    console.log('🔍 Workout search:', searchTerm);
+                    // Update filters and re-render
+                    if (window.ghostGym && window.ghostGym.workoutDatabase) {
+                        window.ghostGym.workoutDatabase.filters.search = searchTerm;
+                        if (window.filterWorkouts) {
+                            window.filterWorkouts();
+                        }
+                    }
+                }
+            });
             
             // Load workouts
             loadWorkouts();

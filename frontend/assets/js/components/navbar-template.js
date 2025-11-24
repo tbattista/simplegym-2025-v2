@@ -85,6 +85,17 @@ function getNavbarHTML(pageTitle = 'Ghost Gym', pageIcon = 'bx-home', options = 
                 <!-- Right Section: Utility Icons -->
                 <ul class="navbar-nav flex-row align-items-center ms-auto">
                 
+                <!-- Feedback Button -->
+                <li class="nav-item me-2 me-xl-3">
+                    <a class="nav-link"
+                       href="javascript:void(0);"
+                       id="navbarFeedbackBtn"
+                       title="Send Feedback">
+                        <i class="bx bx-message-dots bx-sm"></i>
+                        <span class="d-none d-lg-inline ms-1">Feedback</span>
+                    </a>
+                </li>
+                
                 <!-- Dark Mode Toggle -->
                 <li class="nav-item me-2 me-xl-3">
                     <a class="nav-link style-switcher-toggle hide-arrow" 
@@ -139,6 +150,14 @@ function getNavbarHTML(pageTitle = 'Ghost Gym', pageIcon = 'bx-home', options = 
                             </a>
                         </li>
                         <li><div class="dropdown-divider"></div></li>
+                        
+                        <!-- Admin Dashboard (visible only to admin) -->
+                        <li class="d-none" id="navbarAdminMenuItem">
+                            <a class="dropdown-item" href="/feedback-admin.html">
+                                <i class="bx bx-shield me-2"></i>
+                                <span>Admin Dashboard</span>
+                            </a>
+                        </li>
                         
                         <!-- Account Settings (future feature) -->
                         <li>
@@ -263,6 +282,9 @@ function initializeNavbarAuth() {
             if (window.authService) {
                 try {
                     await window.authService.signOut();
+                    console.log('✅ Signed out, redirecting to home...');
+                    // Redirect to home page after sign out
+                    window.location.href = '/';
                 } catch (error) {
                     console.error('❌ Sign out error:', error);
                 }
@@ -289,11 +311,16 @@ function initializeNavbarAuth() {
  * Update navbar UI based on authentication state
  * @param {Object|null} user - Current user object or null if signed out
  */
-function updateNavbarAuthUI(user) {
+function updateNavbarAuthUI(userDetail) {
+    // Extract user from event detail if needed
+    const user = userDetail?.user !== undefined ? userDetail.user : userDetail;
+    
     const signInElements = document.querySelectorAll('.auth-sign-in');
     const signOutElements = document.querySelectorAll('.auth-sign-out');
     
-    if (user) {
+    console.log('🔄 updateNavbarAuthUI called with user:', user?.email || 'null');
+    
+    if (user && user.email) {
         // User is signed in
         signInElements.forEach(el => el.classList.add('d-none'));
         signOutElements.forEach(el => el.classList.remove('d-none'));
@@ -318,13 +345,47 @@ function updateNavbarAuthUI(user) {
             el.textContent = initial;
         });
         
+        // Show/hide admin button based on email
+        updateAdminButtonVisibility(user);
+        
         console.log('✅ Navbar updated for signed-in user:', displayName);
     } else {
         // User is signed out
         signInElements.forEach(el => el.classList.remove('d-none'));
         signOutElements.forEach(el => el.classList.add('d-none'));
         
+        // Hide admin button
+        updateAdminButtonVisibility(null);
+        
         console.log('✅ Navbar updated for signed-out state');
+    }
+}
+
+/**
+ * Show/hide admin menu item based on user email
+ * @param {Object|null} user - Current user object or null
+ */
+function updateAdminButtonVisibility(user) {
+    console.log('🔍 updateAdminButtonVisibility called with user:', user?.email);
+    
+    const adminMenuItem = document.getElementById('navbarAdminMenuItem');
+    console.log('🔍 Admin menu item element:', adminMenuItem ? 'found' : 'NOT FOUND');
+    
+    if (!adminMenuItem) {
+        console.warn('⚠️ Admin menu item not found in DOM');
+        return;
+    }
+    
+    const ADMIN_EMAIL = 'tbattista@gmail.com';
+    console.log('🔍 Checking email:', user?.email, 'against:', ADMIN_EMAIL);
+    console.log('🔍 Match:', user?.email === ADMIN_EMAIL);
+    
+    if (user && user.email === ADMIN_EMAIL) {
+        adminMenuItem.classList.remove('d-none');
+        console.log('✅ Admin menu item shown for:', user.email);
+    } else {
+        adminMenuItem.classList.add('d-none');
+        console.log('❌ Admin menu item hidden. User email:', user?.email || 'none');
     }
 }
 
@@ -496,11 +557,59 @@ function initializeNavbarSearch() {
     console.log('✅ Navbar search initialized');
 }
 
+/**
+ * Initialize Navbar Feedback Button
+ * Connects to the feedback modal
+ */
+function initializeNavbarFeedback() {
+    console.log('💬 Initializing navbar feedback button...');
+    
+    const feedbackBtn = document.getElementById('navbarFeedbackBtn');
+    if (!feedbackBtn) {
+        console.warn('⚠️ Navbar feedback button not found');
+        return;
+    }
+
+    // Set up click handler
+    feedbackBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        
+        // Open feedback modal
+        if (window.feedbackModal) {
+            window.feedbackModal.open();
+        } else {
+            console.warn('⚠️ Feedback modal not initialized yet, retrying...');
+            // Retry after a short delay
+            setTimeout(() => {
+                if (window.feedbackModal) {
+                    window.feedbackModal.open();
+                } else {
+                    console.error('❌ Feedback modal not available');
+                    alert('Feedback feature is loading. Please try again in a moment.');
+                }
+            }, 500);
+        }
+    });
+
+    // Add keyboard shortcut: Ctrl/Cmd + Shift + F
+    document.addEventListener('keydown', (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'F') {
+            e.preventDefault();
+            feedbackBtn.click();
+        }
+    });
+
+    console.log('✅ Navbar feedback button initialized');
+    console.log('💡 Tip: Press Ctrl/Cmd + Shift + F to open feedback');
+}
+
 // Make functions globally available
 window.initializeNavbarThemeToggle = initializeNavbarThemeToggle;
 window.updateNavbarThemeIcon = updateNavbarThemeIcon;
 window.initializeNavbarAuth = initializeNavbarAuth;
 window.updateNavbarAuthUI = updateNavbarAuthUI;
+window.updateAdminButtonVisibility = updateAdminButtonVisibility;
 window.initializeNavbarSearch = initializeNavbarSearch;
+window.initializeNavbarFeedback = initializeNavbarFeedback;
 
 console.log('📦 Navbar template component loaded');
