@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+
+<html
+  lang="en"
+  class="layout-menu-fixed layout-compact"
+  data-assets-path="/static/assets/"
+  data-template="vertical-menu-template-free">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+    
+    <title>👻 Ghost Gym V0.4.1 - My Profile</title>
+
+    <meta name="description" content="Manage your Ghost Gym account settings and preferences" />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/static/assets/img/favicon/favicon.ico" />
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap"
+      rel="stylesheet" />
+
+    <link rel="stylesheet" href="/static/assets/vendor/fonts/iconify-icons.css" />
+
+    <!-- Core CSS -->
+    <link rel="stylesheet" href="/static/assets/vendor/css/core.css" />
+    <link rel="stylesheet" href="/static/assets/css/demo.css" />
+
+    <!-- Vendors CSS -->
+    <link rel="stylesheet" href="/static/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css" />
+
+    <!-- Custom Ghost Gym CSS -->
+    <link rel="stylesheet" href="/static/assets/css/ghost-gym-custom.css" />
+    
+    <!-- Navbar CSS -->
+    <link rel="stylesheet" href="/static/assets/css/navbar-custom.css" />
+
+    <!-- Helpers -->
+    <script src="/static/assets/vendor/js/helpers.js"></script>
+    <script src="/static/assets/js/config.js"></script>
+
+    <!-- Theme Manager (must load early to prevent flash) -->
+    <script src="/static/assets/js/services/theme-manager.js"></script>
+
+    <!-- Ghost Gym Centralized Configuration -->
+    <script src="/static/assets/js/app-config.js"></script>
+    
+    <!-- Firebase SDK Loader (Centralized) -->
+    <script type="module" src="/static/assets/js/firebase-loader.js"></script>
+  </head>
+
+  <body>
+    
+    <!-- Layout wrapper -->
+    <div class="layout-wrapper layout-content-navbar">
+      <div class="layout-container">
+        <!-- Menu -->
+        <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
+          <!-- Menu will be injected by menu-injection-service.js -->
+        </aside>
+        <!-- / Menu -->
+
+        <!-- Layout container -->
+        <div class="layout-page">
+
+          <!-- Content wrapper -->
+          <div class="content-wrapper">
+            <!-- Content -->
+            <div class="container-xxl flex-grow-1 container-p-y">
+              
+              <!-- Alert Container -->
+              <div id="alertContainer" class="mb-3"></div>
+
+              <!-- Profile Content -->
+              <div class="row">
+                <div class="col-md-12">
+                  
+                  <!-- Profile Header Card -->
+                  <div class="card mb-4">
+                    <div class="card-body">
+                      <div class="d-flex align-items-start align-items-sm-center gap-4">
+                        <div class="avatar avatar-xl">
+                          <span class="avatar-initial rounded-circle bg-label-primary" id="profileAvatar">U</span>
+                        </div>
+                        <div class="flex-grow-1">
+                          <h4 class="mb-1" id="profileDisplayName">Loading...</h4>
+                          <p class="text-muted mb-0" id="profileEmail">Loading...</p>
+                          <div class="mt-2">
+                            <span class="badge bg-label-success" id="emailVerifiedBadge" style="display: none;">
+                              <i class="bx bx-check-circle me-1"></i>Email Verified
+                            </span>
+                            <span class="badge bg-label-warning" id="emailNotVerifiedBadge" style="display: none;">
+                              <i class="bx bx-error-circle me-1"></i>Email Not Verified
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Account Information Card -->
+                  <div class="card mb-4">
+                    <h5 class="card-header">Account Information</h5>
+                    <div class="card-body">
+                      <form id="formAccountSettings" onsubmit="return false">
+                        <div class="row g-3">
+                          <div class="col-md-6">
+                            <label for="displayName" class="form-label">Display Name</label>
+                            <input
+                              class="form-control"
+                              type="text"
+                              id="displayName"
+                              name="displayName"
+                              placeholder="Enter your display name"
+                              maxlength="50"
+                              autofocus />
+                            <div class="form-text">This name will be displayed throughout the app</div>
+                          </div>
+                          <div class="col-md-6">
+                            <label for="email" class="form-label">Email</label>
+                            <input
+                              class="form-control"
+                              type="email"
+                              id="email"
+                              name="email"
+                              readonly
+                              disabled />
+                            <div class="form-text">Email cannot be changed</div>
+                          </div>
+                          <div class="col-md-6">
+                            <label class="form-label">Account Created</label>
+                            <input
+                              class="form-control"
+                              type="text"
+                              id="accountCreated"
+                              readonly
+                              disabled />
+                          </div>
+                          <div class="col-md-6">
+                            <label class="form-label">Sign-in Method</label>
+                            <input
+                              class="form-control"
+                              type="text"
+                              id="signInMethod"
+                              readonly
+                              disabled />
+                          </div>
+                        </div>
+                        <div class="mt-4">
+                          <button type="submit" class="btn btn-primary me-2" id="btnSaveProfile">
+                            <span class="spinner-border spinner-border-sm me-2 d-none" id="saveSpinner"></span>
+                            Save Changes
+                          </button>
+                          <button type="reset" class="btn btn-outline-secondary" id="btnCancelProfile">Cancel</button>
+                        </div>
+                      </form>
+                    </div>
+                  </div>
+
+                  <!-- Change Password Card (only for email/password accounts) -->
+                  <div class="card mb-4" id="changePasswordCard" style="display: none;">
+                    <h5 class="card-header">Change Password</h5>
+                    <div class="card-body">
+                      <div class="alert alert-info mb-3">
+                        <i class="bx bx-info-circle me-2"></i>
+                        For security, you'll need to enter your current password to set a new one.
+                      </div>
+                      <form id="formChangePassword" onsubmit="return false">
+                        <div class="row g-3">
+                          <div class="col-md-12">
+                            <label for="currentPassword" class="form-label">Current Password</label>
+                            <div class="input-group input-group-merge">
+                              <input
+                                class="form-control"
+                                type="password"
+                                id="currentPassword"
+                                name="currentPassword"
+                                placeholder="Enter current password"
+                                autocomplete="current-password" />
+                              <span class="input-group-text cursor-pointer" id="toggleCurrentPassword">
+                                <i class="bx bx-hide"></i>
+                              </span>
+                            </div>
+                          </div>
+                          <div class="col-md-6">
+                            <label for="newPassword" class="form-label">New Password</label>
+                            <div class="input-group input-group-merge">
+                              <input
+                                class="form-control"
+                                type="password"
+                                id="newPassword"
+                                name="newPassword"
+                                placeholder="Enter new password"
+                                autocomplete="new-password" />
+                              <span class="input-group-text cursor-pointer" id="toggleNewPassword">
+                                <i class="bx bx-hide"></i>
+                              </span>
+                            </div>
+                            <div class="form-text">Minimum 6 characters</div>
+                          </div>
+                          <div class="col-md-6">
+                            <label for="confirmPassword" class="form-label">Confirm New Password</label>
+                            <div class="input-group input-group-merge">
+                              <input
+                                class="form-control"
+                                type="password"
+                                id="confirmPassword"
+                                name="confirmPassword"
+                                placeholder="Confirm new password"
+                                autocomplete="new-password" />
+                              <span class="input-group-text cursor-pointer" id="toggleConfirmPassword">
+                                <i class="bx bx-hide"></i>
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="mt-4">
+                          <button type="submit" class="btn btn-primary" id="btnChangePassword">
+                            <span class="spinner-border spinner-border-sm me-2 d-none" id="passwordSpinner"></span>
+                            Change Password
+                          </button>
+                        </div>
+                      </form>
+                    </div>
+                  </div>
+
+                  <!-- Delete Account Card -->
+                  <div class="card">
+                    <h5 class="card-header">Delete Account</h5>
+                    <div class="card-body">
+                      <div class="mb-3 col-12 mb-0">
+                        <div class="alert alert-warning">
+                          <h6 class="alert-heading mb-1">
+                            <i class="bx bx-error-circle me-2"></i>
+                            Are you sure you want to delete your account?
+                          </h6>
+                          <p class="mb-0">Once you delete your account, there is no going back. All your workouts, programs, and data will be permanently deleted. Please be certain.</p>
+                        </div>
+                      </div>
+                      <form id="formAccountDeletion" onsubmit="return false">
+                        <div class="form-check mb-3">
+                          <input
+                            class="form-check-input"
+                            type="checkbox"
+                            name="accountDeletionConfirm"
+                            id="accountDeletionConfirm" />
+                          <label class="form-check-label" for="accountDeletionConfirm">
+                            I understand that this action cannot be undone
+                          </label>
+                        </div>
+                        <button type="submit" class="btn btn-danger" id="btnDeleteAccount" disabled>
+                          <span class="spinner-border spinner-border-sm me-2 d-none" id="deleteSpinner"></span>
+                          Delete My Account
+                        </button>
+                      </form>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+            <!-- / Content -->
+
+            <div class="content-backdrop fade"></div>
+          </div>
+          <!-- Content wrapper -->
+        </div>
+        <!-- / Layout page -->
+      </div>
+
+      <!-- Overlay -->
+      <div class="layout-overlay layout-menu-toggle"></div>
+    </div>
+    <!-- / Layout wrapper -->
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">
+              <i class="bx bx-error-circle text-danger me-2"></i>
+              Confirm Account Deletion
+            </h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <p class="mb-3">This is your final warning. Deleting your account will:</p>
+            <ul class="mb-3">
+              <li>Permanently delete all your workouts</li>
+              <li>Permanently delete all your programs</li>
+              <li>Permanently delete all your workout history</li>
+              <li>Remove your account from Ghost Gym</li>
+            </ul>
+            <p class="text-danger fw-bold mb-3">This action cannot be undone!</p>
+            <div class="mb-3" id="reauthContainer">
+              <label for="deletePassword" class="form-label">Enter your password to confirm:</label>
+              <input
+                type="password"
+                class="form-control"
+                id="deletePassword"
+                placeholder="Your password"
+                autocomplete="current-password" />
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="button" class="btn btn-danger" id="btnConfirmDelete">
+              <span class="spinner-border spinner-border-sm me-2 d-none" id="confirmDeleteSpinner"></span>
+              Yes, Delete My Account
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Core JS -->
+    <script src="/static/assets/vendor/libs/jquery/jquery.js"></script>
+    <script src="/static/assets/vendor/libs/popper/popper.js"></script>
+    <script src="/static/assets/vendor/js/bootstrap.js"></script>
+    <script src="/static/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js"></script>
+    <script src="/static/assets/vendor/js/menu.js"></script>
+
+    <!-- Load templates FIRST -->
+    <script src="/static/assets/js/components/menu-template.js"></script>
+    <script src="/static/assets/js/components/navbar-template.js"></script>
+    <script src="/static/assets/js/components/auth-modals-template.js"></script>
+    
+    <!-- Inject components SECOND -->
+    <script src="/static/assets/js/services/menu-injection-service.js"></script>
+    <script src="/static/assets/js/services/navbar-injection-service.js"></script>
+    
+    <!-- Feedback System (Global) -->
+    <script src="/static/assets/js/services/feedback-injection-service.js"></script>
+
+    <!-- Main JS -->
+    <script src="/static/assets/js/main.js"></script>
+
+    <!-- Firebase Services -->
+    <script src="/static/assets/js/firebase/firebase-init.js?v=20251020-03"></script>
+    <script src="/static/assets/js/firebase/auth-service.js?v=20251020-03"></script>
+    <script src="/static/assets/js/firebase/auth-ui.js?v=20251020-03"></script>
+
+    <!-- Common Utilities -->
+    <script src="/static/assets/js/utils/common-utils.js"></script>
+    <script src="/static/assets/js/utils/toast-notifications.js"></script>
+
+    <!-- Profile Page Scripts -->
+    <script src="/static/assets/js/profile/profile-manager.js"></script>
+    <script src="/static/assets/js/profile/password-manager.js"></script>
+    <script src="/static/assets/js/profile/account-deletion.js"></script>
+
+    <!-- Menu Navigation System -->
+    <script src="/static/assets/js/menu-navigation.js?v=20251020-04"></script>
+  </body>
+</html>

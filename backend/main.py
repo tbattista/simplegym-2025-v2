@@ -16,7 +16,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Import routers
-from .api import health, documents, workouts, programs, exercises, favorites, auth, data, migration, workout_sessions, sharing
+from .api import health, documents, workouts, programs, exercises, favorites, auth, data, migration, workout_sessions, sharing, user_profile
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -52,8 +52,9 @@ app.include_router(data.router)
 app.include_router(migration.router)
 app.include_router(workout_sessions.router)  # Workout session logging (premium feature)
 app.include_router(sharing.router)  # Workout sharing endpoints
+app.include_router(user_profile.router)  # User profile management
 
-logger.info("✅ All routers included successfully (13 routers total)")
+logger.info("✅ All routers included successfully (14 routers total)")
 
 # Create necessary directories
 os.makedirs("backend/uploads", exist_ok=True)
@@ -161,6 +162,19 @@ async def serve_feedback_admin():
     except FileNotFoundError:
         return HTMLResponse(
             content="<h1>Feedback Admin not found</h1><p>Please ensure frontend/feedback-admin.html exists</p>",
+            status_code=404
+        )
+
+@app.get("/profile", response_class=HTMLResponse)
+@app.get("/profile.html", response_class=HTMLResponse)
+async def serve_profile():
+    """Serve the User Profile page"""
+    try:
+        with open("frontend/profile.html", "r", encoding="utf-8") as f:
+            return HTMLResponse(content=f.read())
+    except FileNotFoundError:
+        return HTMLResponse(
+            content="<h1>Profile page not found</h1><p>Please ensure frontend/profile.html exists</p>",
             status_code=404
         )
 

@@ -159,17 +159,11 @@ function getNavbarHTML(pageTitle = 'Ghost Gym', pageIcon = 'bx-home', options = 
                             </a>
                         </li>
                         
-                        <!-- Account Settings (future feature) -->
+                        <!-- Account Settings -->
                         <li>
-                            <a class="dropdown-item" href="javascript:void(0);">
+                            <a class="dropdown-item" href="/profile.html">
                                 <i class="bx bx-user me-2"></i>
                                 <span>My Profile</span>
-                            </a>
-                        </li>
-                        <li>
-                            <a class="dropdown-item" href="javascript:void(0);">
-                                <i class="bx bx-cog me-2"></i>
-                                <span>Settings</span>
                             </a>
                         </li>
                         
@@ -570,37 +564,41 @@ function initializeNavbarFeedback() {
         return;
     }
 
-    // Set up click handler
+    // Set up click handler with improved retry logic
     feedbackBtn.addEventListener('click', (e) => {
         e.preventDefault();
-        
-        // Open feedback modal
-        if (window.feedbackModal) {
-            window.feedbackModal.open();
-        } else {
-            console.warn('⚠️ Feedback modal not initialized yet, retrying...');
-            // Retry after a short delay
-            setTimeout(() => {
-                if (window.feedbackModal) {
-                    window.feedbackModal.open();
-                } else {
-                    console.error('❌ Feedback modal not available');
-                    alert('Feedback feature is loading. Please try again in a moment.');
-                }
-            }, 500);
-        }
+        openFeedbackModalWithRetry();
     });
 
     // Add keyboard shortcut: Ctrl/Cmd + Shift + F
     document.addEventListener('keydown', (e) => {
         if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'F') {
             e.preventDefault();
-            feedbackBtn.click();
+            openFeedbackModalWithRetry();
         }
     });
 
     console.log('✅ Navbar feedback button initialized');
     console.log('💡 Tip: Press Ctrl/Cmd + Shift + F to open feedback');
+}
+
+/**
+ * Open feedback modal with retry logic
+ * Attempts to open the modal, retrying if not yet initialized
+ */
+function openFeedbackModalWithRetry(attempt = 1, maxAttempts = 5) {
+    if (window.feedbackModal) {
+        window.feedbackModal.open();
+        console.log('✅ Feedback modal opened');
+    } else if (attempt < maxAttempts) {
+        console.warn(`⚠️ Feedback modal not initialized yet, retrying (${attempt}/${maxAttempts})...`);
+        setTimeout(() => {
+            openFeedbackModalWithRetry(attempt + 1, maxAttempts);
+        }, 200 * attempt); // Exponential backoff: 200ms, 400ms, 600ms, 800ms
+    } else {
+        console.error('❌ Feedback modal not available after multiple attempts');
+        alert('Feedback feature is still loading. Please wait a moment and try again.');
+    }
 }
 
 // Make functions globally available
@@ -611,5 +609,6 @@ window.updateNavbarAuthUI = updateNavbarAuthUI;
 window.updateAdminButtonVisibility = updateAdminButtonVisibility;
 window.initializeNavbarSearch = initializeNavbarSearch;
 window.initializeNavbarFeedback = initializeNavbarFeedback;
+window.openFeedbackModalWithRetry = openFeedbackModalWithRetry;
 
 console.log('📦 Navbar template component loaded');

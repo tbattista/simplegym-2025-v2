@@ -204,3 +204,40 @@
   outline: 2px solid #696cff;
   outline-offset: 2px;
 }
+
+/* ============================================================================
+   DASHBOARD STATISTICS CARDS - DROPDOWN FIX
+   ============================================================================ */
+
+/* Ensure cards don't clip dropdown menus */
+#authenticatedDashboard .card {
+  overflow: visible !important;
+  position: relative;
+  z-index: 1;
+}
+
+/* Increase z-index when dropdown is open */
+#authenticatedDashboard .card:has(.dropdown-menu.show) {
+  z-index: 1060 !important;
+}
+
+/* Ensure dropdown menus appear on top of other cards */
+#authenticatedDashboard .dropdown {
+  position: static;
+}
+
+#authenticatedDashboard .dropdown-menu {
+  position: absolute !important;
+  z-index: 1050 !important;
+  margin-top: 0.125rem;
+}
+
+/* Ensure the card body doesn't clip the dropdown */
+#authenticatedDashboard .card-body {
+  overflow: visible !important;
+}
+
+/* Make sure the row doesn't clip dropdowns either */
+#authenticatedDashboard .row {
+  overflow: visible !important;
+}
