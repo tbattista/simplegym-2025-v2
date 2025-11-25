@@ -178,6 +178,19 @@ async def serve_profile():
             status_code=404
         )
 
+@app.get("/workout-history", response_class=HTMLResponse)
+@app.get("/workout-history.html", response_class=HTMLResponse)
+async def serve_workout_history():
+    """Serve the Workout History page"""
+    try:
+        with open("frontend/workout-history.html", "r", encoding="utf-8") as f:
+            return HTMLResponse(content=f.read())
+    except FileNotFoundError:
+        return HTMLResponse(
+            content="<h1>Workout History not found</h1><p>Please ensure frontend/workout-history.html exists</p>",
+            status_code=404
+        )
+
 
 if __name__ == "__main__":
     import uvicorn

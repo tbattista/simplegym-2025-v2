@@ -400,10 +400,13 @@ function createWorkoutCard(workout) {
                     ` : `
                     <div class="btn-group btn-group-sm w-100 mt-auto" role="group">
                         <button class="btn btn-primary" onclick="doWorkout('${workout.id}')">
-                            <i class="bx bx-play me-1"></i>Start Workout
+                            <i class="bx bx-play me-1"></i>Start
                         </button>
                         <button class="btn btn-outline-secondary" onclick="viewWorkoutDetails('${workout.id}')">
                             <i class="bx bx-show me-1"></i>View
+                        </button>
+                        <button class="btn btn-outline-info" onclick="viewWorkoutHistory('${workout.id}')">
+                            <i class="bx bx-history me-1"></i>History
                         </button>
                         <button class="btn btn-outline-secondary" onclick="editWorkout('${workout.id}')">
                             <i class="bx bx-edit me-1"></i>Edit
@@ -1084,6 +1087,14 @@ function initDeleteModeToggle() {
     }
 }
 
+/**
+ * View workout history - Navigate to history page
+ */
+function viewWorkoutHistory(workoutId) {
+    console.log('📊 Viewing workout history:', workoutId);
+    window.location.href = `workout-history.html?id=${workoutId}`;
+}
+
 // Make functions globally available
 window.loadWorkouts = loadWorkouts;
 window.filterWorkouts = filterWorkouts;
@@ -1093,6 +1104,7 @@ window.handleEntriesPerPageChange = handleEntriesPerPageChange;
 window.editWorkout = editWorkout;
 window.doWorkout = doWorkout;
 window.viewWorkoutDetails = viewWorkoutDetails;
+window.viewWorkoutHistory = viewWorkoutHistory;
 window.createNewWorkout = createNewWorkout;
 window.initSearchOverlay = initSearchOverlay;
 window.showSearchOverlay = showSearchOverlay;
