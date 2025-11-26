@@ -100,6 +100,11 @@ async function loadWorkoutHistory(workoutId) {
  */
 async function fetchWorkoutSessions(workoutId) {
   try {
+    // Check if user is authenticated
+    if (!window.dataManager || !window.dataManager.isUserAuthenticated()) {
+      throw new Error('User not authenticated');
+    }
+    
     const token = await window.dataManager.getAuthToken();
     const response = await fetch(
       `/api/v3/workout-sessions/?workout_id=${workoutId}&page_size=50`,
@@ -138,6 +143,11 @@ async function fetchWorkoutSessions(workoutId) {
  */
 async function fetchExerciseHistory(workoutId) {
   try {
+    // Check if user is authenticated
+    if (!window.dataManager || !window.dataManager.isUserAuthenticated()) {
+      throw new Error('User not authenticated');
+    }
+    
     const token = await window.dataManager.getAuthToken();
     const response = await fetch(
       `/api/v3/workout-sessions/history/workout/${workoutId}`,

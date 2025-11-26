@@ -225,9 +225,15 @@
             // Wait for auth state to settle
             await new Promise(resolve => setTimeout(resolve, 1000));
             
-            // Initialize workout history
-            if (window.initWorkoutHistory) {
-                await window.initWorkoutHistory();
+            // Only initialize if user is authenticated
+            if (window.dataManager.isUserAuthenticated()) {
+                console.log('✅ User authenticated, loading workout history');
+                if (window.initWorkoutHistory) {
+                    await window.initWorkoutHistory();
+                }
+            } else {
+                console.log('⏭️ User not authenticated, waiting for auth state change');
+                // Show loading state - will be handled by auth state change event
             }
             
             console.log('✅ Workout History page ready!');
@@ -236,7 +242,13 @@
         // Listen for auth state changes
         window.addEventListener('authStateChanged', async (event) => {
             const { user, isAuthenticated } = event.detail;
-            console.log('🔄 Auth state changed on workout history page');
+            console.log('🔄 Auth state changed on workout history page', { isAuthenticated });
+            
+            // Only reload if user is authenticated
+            if (!isAuthenticated) {
+                console.log('⏭️ User not authenticated, skipping history load');
+                return;
+            }
             
             // Wait a moment for data manager to update its mode
             await new Promise(resolve => setTimeout(resolve, 300));
