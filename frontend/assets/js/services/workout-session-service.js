@@ -22,7 +22,7 @@ class WorkoutSessionService {
      * @param {string} workoutName - Workout name
      * @returns {Promise<Object>} Session object
      */
-    async startSession(workoutId, workoutName) {
+    async startSession(workoutId, workoutName, workoutData = null) {
         try {
             console.log('🏋️ Starting workout session:', workoutName);
             
@@ -65,6 +65,12 @@ class WorkoutSessionService {
                 exercises: {}
             };
             
+            // PHASE 1: Pre-populate exercises from template
+            if (workoutData) {
+                this.currentSession.exercises = this._initializeExercisesFromTemplate(workoutData);
+                console.log('✅ Pre-populated', Object.keys(this.currentSession.exercises).length, 'exercises from template');
+            }
+            
             console.log('✅ Workout session started:', session.id);
             this.notifyListeners('sessionStarted', this.currentSession);
             
@@ -77,6 +83,63 @@ class WorkoutSessionService {
             console.error('❌ Error starting workout session:', error);
             throw error;
         }
+    }
+    
+    /**
+     * PHASE 1: Initialize exercises from workout template
+     * Pre-populates all exercises with template defaults
+     * @param {Object} workout - Workout template data
+     * @returns {Object} Initialized exercises object
+     * @private
+     */
+    _initializeExercisesFromTemplate(workout) {
+        const exercises = {};
+        
+        // Initialize regular exercise groups
+        if (workout.exercise_groups) {
+            workout.exercise_groups.forEach((group, index) => {
+                const exerciseName = group.exercises?.a;
+                if (exerciseName) {
+                    exercises[exerciseName] = {
+                        weight: group.default_weight || null,
+                        weight_unit: group.default_weight_unit || 'lbs',
+                        target_sets: group.sets || '3',
+                        target_reps: group.reps || '8-12',
+                        rest: group.rest || '60s',
+                        previous_weight: null,
+                        weight_change: 0,
+                        order_index: index,
+                        is_bonus: false,
+                        is_modified: false,  // Track if user changes it
+                        is_skipped: false,   // For Phase 2
+                        notes: ''
+                    };
+                }
+            });
+        }
+        
+        // Initialize bonus exercises from template
+        if (workout.bonus_exercises) {
+            const baseIndex = workout.exercise_groups?.length || 0;
+            workout.bonus_exercises.forEach((bonus, index) => {
+                exercises[bonus.name] = {
+                    weight: bonus.default_weight || null,
+                    weight_unit: bonus.default_weight_unit || 'lbs',
+                    target_sets: bonus.sets || '3',
+                    target_reps: bonus.reps || '12',
+                    rest: bonus.rest || '30s',
+                    previous_weight: null,
+                    weight_change: 0,
+                    order_index: baseIndex + index,
+                    is_bonus: true,
+                    is_modified: false,
+                    is_skipped: false,
+                    notes: ''
+                };
+            });
+        }
+        
+        return exercises;
     }
     
     /**
@@ -268,13 +331,59 @@ class WorkoutSessionService {
             weight: weight,
             weight_unit: unit,
             previous_weight: previousWeight,
-            weight_change: weightChange
+            weight_change: weightChange,
+            is_modified: true,  // PHASE 1: Mark as user-modified
+            modified_at: new Date().toISOString()  // PHASE 1: Track when
         };
         
         console.log('💪 Updated weight:', exerciseName, weight, unit);
         this.notifyListeners('weightUpdated', { exerciseName, weight, unit });
         
         // Persist after weight update
+        this.persistSession();
+    }
+    
+    /**
+     * PHASE 2: Mark exercise as skipped
+     * @param {string} exerciseName - Exercise name
+     * @param {string} reason - Optional reason for skipping (max 200 chars)
+     */
+    skipExercise(exerciseName, reason = '') {
+        if (!this.currentSession?.exercises) {
+            console.warn('⚠️ No active session to skip exercise');
+            return;
+        }
+        
+        const existingData = this.currentSession.exercises[exerciseName] || {};
+        
+        this.currentSession.exercises[exerciseName] = {
+            ...existingData,
+            is_skipped: true,
+            skip_reason: reason.substring(0, 200), // Enforce 200 char limit
+            skipped_at: new Date().toISOString()
+        };
+        
+        console.log('⏭️ Exercise skipped:', exerciseName, reason ? `(${reason})` : '');
+        this.notifyListeners('exerciseSkipped', { exerciseName, reason });
+        this.persistSession();
+    }
+
+    /**
+     * PHASE 2: Unskip exercise (if user changes mind)
+     * @param {string} exerciseName - Exercise name
+     */
+    unskipExercise(exerciseName) {
+        if (!this.currentSession?.exercises?.[exerciseName]) {
+            console.warn('⚠️ Exercise not found in session:', exerciseName);
+            return;
+        }
+        
+        this.currentSession.exercises[exerciseName].is_skipped = false;
+        this.currentSession.exercises[exerciseName].skip_reason = null;
+        delete this.currentSession.exercises[exerciseName].skipped_at;
+        
+        console.log('↩️ Exercise unskipped:', exerciseName);
+        this.notifyListeners('exerciseUnskipped', { exerciseName });
         this.persistSession();
     }
     
@@ -600,12 +709,13 @@ class WorkoutSessionService {
             status: this.currentSession.status,
             exercises: this.currentSession.exercises || {},
             lastUpdated: new Date().toISOString(),
-            version: '1.0'
+            version: '2.0',  // PHASE 1: Bump version for new schema
+            schemaVersion: 2  // PHASE 1: Explicit schema version
         };
         
         try {
             localStorage.setItem('ghost_gym_active_workout_session', JSON.stringify(sessionData));
-            console.log('💾 Session persisted:', sessionData.sessionId);
+            console.log('💾 Session persisted (v2.0):', sessionData.sessionId);
         } catch (error) {
             console.error('❌ Failed to persist session:', error);
             // Non-fatal - continue without persistence
@@ -626,7 +736,13 @@ class WorkoutSessionService {
                 return null;
             }
             
-            const sessionData = JSON.parse(stored);
+            let sessionData = JSON.parse(stored);
+            
+            // PHASE 1: Handle version migration
+            if (!sessionData.version || sessionData.version === '1.0') {
+                console.log('🔄 Migrating session from v1.0 to v2.0...');
+                sessionData = this._migrateSessionV1toV2(sessionData);
+            }
             
             // Validate required fields
             if (!sessionData.sessionId || !sessionData.workoutId || !sessionData.startedAt) {
@@ -645,7 +761,7 @@ class WorkoutSessionService {
                 return null;
             }
             
-            console.log('✅ Session restored:', sessionData.sessionId);
+            console.log('✅ Session restored (v' + sessionData.version + '):', sessionData.sessionId);
             return sessionData;
             
         } catch (error) {
@@ -653,6 +769,34 @@ class WorkoutSessionService {
             this.clearPersistedSession();
             return null;
         }
+    }
+    
+    /**
+     * PHASE 1: Migrate session from v1.0 to v2.0
+     * Adds new fields to existing exercises
+     * @param {Object} sessionData - Old session data
+     * @returns {Object} Migrated session data
+     * @private
+     */
+    _migrateSessionV1toV2(sessionData) {
+        sessionData.version = '2.0';
+        sessionData.schemaVersion = 2;
+        sessionData.exercises = sessionData.exercises || {};
+        
+        // Add new fields to existing exercises
+        Object.keys(sessionData.exercises).forEach(exerciseName => {
+            const exercise = sessionData.exercises[exerciseName];
+            sessionData.exercises[exerciseName] = {
+                ...exercise,
+                is_modified: true,  // Assume modified if it exists in v1.0
+                modified_at: sessionData.lastUpdated || new Date().toISOString(),
+                is_skipped: false,
+                notes: exercise.notes || ''
+            };
+        });
+        
+        console.log('✅ Session migrated to v2.0');
+        return sessionData;
     }
     
     /**

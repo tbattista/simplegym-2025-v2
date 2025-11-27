@@ -331,44 +331,114 @@ function createSessionCard(session, index) {
 }
 
 /**
- * Render session details
+ * Render session details (Phase 3: Enhanced with Change column)
  */
 function renderSessionDetails(session) {
-  const exercises = session.exercises_performed || [];
-  
-  return `
-    <div class="session-details">
-      ${session.notes ? `
-        <div class="alert alert-info mb-3">
-          <i class="bx bx-note me-2"></i>${escapeHtml(session.notes)}
+    const exercises = session.exercises_performed || [];
+    
+    return `
+        <div class="session-details">
+            ${session.notes ? `
+                <div class="alert alert-info mb-3">
+                    <i class="bx bx-note me-2"></i>${escapeHtml(session.notes)}
+                </div>
+            ` : ''}
+            
+            <div class="table-responsive">
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Exercise</th>
+                            <th>Weight</th>
+                            <th>Sets × Reps</th>
+                            <th>Change</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${exercises.map(ex => renderExerciseRow(ex)).join('')}
+                    </tbody>
+                </table>
+            </div>
         </div>
-      ` : ''}
-      
-      <h6 class="mb-3">Exercises Performed</h6>
-      <div class="table-responsive">
-        <table class="table table-sm">
-          <thead>
-            <tr>
-              <th>Exercise</th>
-              <th>Weight</th>
-              <th>Sets</th>
-              <th>Reps</th>
+    `;
+}
+
+/**
+ * Render a single exercise row with progression indicators (Phase 3)
+ * @private
+ */
+function renderExerciseRow(ex) {
+    // Determine status badge
+    let statusBadge = '';
+    let rowClass = '';
+    
+    if (ex.is_skipped) {
+        statusBadge = '<span class="badge bg-warning">Skipped</span>';
+        rowClass = 'text-muted';
+    } else if (ex.is_bonus) {
+        statusBadge = '<span class="badge bg-success">Bonus</span>';
+    } else if (ex.is_modified) {
+        statusBadge = '<span class="badge bg-info">Modified</span>';
+    } else {
+        statusBadge = '<span class="badge bg-secondary">Default</span>';
+    }
+    
+    // PHASE 3: Determine weight change indicator
+    let changeIndicator = '—';
+    let changeIcon = '';
+    
+    if (ex.is_skipped) {
+        changeIndicator = '—';
+    } else if (ex.weight_change !== undefined && ex.weight_change !== null) {
+        const unitDisplay = ex.weight_unit && ex.weight_unit !== 'other' ? ` ${ex.weight_unit}` : '';
+        if (ex.weight_change > 0) {
+            changeIcon = '↑';
+            changeIndicator = `<span class="text-success fw-bold" title="Weight increased from previous session">
+                ${changeIcon} +${ex.weight_change.toFixed(1)}${unitDisplay}
+            </span>`;
+        } else if (ex.weight_change < 0) {
+            changeIcon = '↓';
+            changeIndicator = `<span class="text-danger fw-bold" title="Weight decreased from previous session">
+                ${changeIcon} ${ex.weight_change.toFixed(1)}${unitDisplay}
+            </span>`;
+        } else if (ex.previous_weight) {
+            changeIcon = '→';
+            changeIndicator = `<span class="text-muted" title="Same weight as previous session">
+                ${changeIcon} 0
+            </span>`;
+        }
+    } else if (!ex.previous_weight && !ex.is_skipped) {
+        changeIcon = '★';
+        changeIndicator = `<span class="text-primary" title="First time performing this exercise">
+            ${changeIcon} New
+        </span>`;
+    }
+    
+    return `
+        <tr class="${rowClass}">
+            <td>
+                ${ex.is_skipped ? '<i class="bx bx-x-circle text-warning me-1"></i>' : ''}
+                ${escapeHtml(ex.exercise_name)}
+            </td>
+            <td>
+                ${ex.is_skipped ? '—' : `${ex.weight || '—'} ${ex.weight_unit || ''}`}
+            </td>
+            <td>
+                ${ex.is_skipped ? '—' : `${ex.target_sets} × ${ex.target_reps}`}
+            </td>
+            <td>${changeIndicator}</td>
+            <td>${statusBadge}</td>
+        </tr>
+        ${ex.is_skipped && ex.skip_reason ? `
+            <tr class="${rowClass}">
+                <td colspan="5" class="small ps-4">
+                    <i class="bx bx-info-circle text-warning me-1"></i>
+                    <em>${escapeHtml(ex.skip_reason)}</em>
+                </td>
             </tr>
-          </thead>
-          <tbody>
-            ${exercises.map(ex => `
-              <tr>
-                <td>${escapeHtml(ex.exercise_name)}</td>
-                <td>${ex.weight || '-'} ${ex.weight_unit || ''}</td>
-                <td>${ex.sets_completed || '-'}</td>
-                <td>${(ex.reps_completed || []).join(', ') || '-'}</td>
-              </tr>
-            `).join('')}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  `;
+        ` : ''}
+    `;
 }
 
 /**
@@ -399,7 +469,9 @@ function renderExercisePerformance() {
  * Create exercise performance card
  */
 function createExercisePerformanceCard(history) {
-  const collapseId = `exercise-${history.id}`;
+  // Sanitize ID to make it a valid CSS selector (remove spaces and special chars)
+  const sanitizedId = history.id.replace(/[^a-zA-Z0-9-_]/g, '-');
+  const collapseId = `exercise-${sanitizedId}`;
   const isExpanded = window.ghostGym.workoutHistory.expandedExercises.has(history.id);
   
   return `

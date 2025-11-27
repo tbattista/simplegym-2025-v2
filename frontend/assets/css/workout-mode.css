@@ -1,9 +1,70 @@
 /**
  * Ghost Gym - Workout Mode Styles
  * Clean workout execution interface with rest timers and weight logging
- * @version 2.0.0
- * @date 2025-11-07
+ * @version 2.1.0 - Phase 3: Visual Progression Indicators
+ * @date 2025-11-27
  */
+
+/* ============================================
+   PHASE 3: PROGRESSION INDICATOR COLORS
+   ============================================ */
+
+:root {
+    /* Progression indicators */
+    --color-weight-increased: #28a745;  /* Green - weight went up */
+    --color-weight-decreased: #dc3545;  /* Red - weight went down */
+    --color-weight-same: #6c757d;       /* Gray - same as last time */
+    --color-weight-new: #007bff;        /* Blue - first time doing exercise */
+    --color-weight-modified: #ffc107;   /* Yellow - user changed from template */
+}
+
+/* Weight badge progression indicators */
+.weight-badge.increased {
+    background-color: var(--color-weight-increased) !important;
+    color: white !important;
+}
+
+.weight-badge.decreased {
+    background-color: var(--color-weight-decreased) !important;
+    color: white !important;
+}
+
+.weight-badge.same {
+    background-color: var(--color-weight-same) !important;
+    color: white !important;
+}
+
+.weight-badge.new {
+    background-color: var(--color-weight-new) !important;
+    color: white !important;
+}
+
+.weight-badge.modified {
+    border: 2px solid var(--color-weight-modified) !important;
+    box-shadow: 0 0 0 1px var(--color-weight-modified) !important;
+}
+
+/* Dark theme adjustments for progression indicators */
+[data-bs-theme="dark"] .weight-badge.increased {
+    background-color: #34d058 !important;
+}
+
+[data-bs-theme="dark"] .weight-badge.decreased {
+    background-color: #f85149 !important;
+}
+
+[data-bs-theme="dark"] .weight-badge.same {
+    background-color: #8b949e !important;
+}
+
+[data-bs-theme="dark"] .weight-badge.new {
+    background-color: #58a6ff !important;
+}
+
+[data-bs-theme="dark"] .weight-badge.modified {
+    border-color: #ffd33d !important;
+    box-shadow: 0 0 0 1px #ffd33d !important;
+}
 
 /* ============================================
    WORKOUT MODE HEADER
@@ -281,13 +342,23 @@
     display: inline;
 }
 
-/* 2x2 Grid Layout for workout buttons */
+/* 2x2 Grid Layout for workout buttons (default) */
 .workout-button-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
     grid-template-rows: auto auto;
     gap: 0.5rem;
     margin-top: 1rem;
+}
+
+/* 2x3 Grid Layout for workout buttons (with skip button) */
+.workout-button-grid-2x3 {
+    grid-template-columns: 1fr 1fr 1fr;
+}
+
+/* Placeholder for empty grid cells */
+.workout-grid-btn-placeholder {
+    min-height: 44px;
 }
 
 /* Row 1, Column 1: Timer label styling */
@@ -1236,4 +1307,80 @@
 
 [data-bs-theme="dark"] .exercise-card.bonus-exercise.expanded .exercise-card-header {
     background: linear-gradient(135deg, rgba(var(--bs-success-rgb), 0.16), rgba(var(--bs-success-rgb), 0.2));
+}
+/* ============================================
+   SKIPPED EXERCISE STYLING (Phase 2)
+   ============================================ */
+
+/* Skipped exercise card styling */
+.exercise-card.skipped {
+    opacity: 0.65;
+    border-left: 4px solid var(--bs-warning);
+    background: linear-gradient(135deg, rgba(var(--bs-warning-rgb), 0.03), rgba(var(--bs-warning-rgb), 0.08));
+}
+
+.exercise-card.skipped:hover {
+    opacity: 0.75;
+    border-color: var(--bs-warning);
+    box-shadow: 0 4px 12px rgba(var(--bs-warning-rgb), 0.25);
+}
+
+.exercise-card.skipped .exercise-card-header {
+    background: rgba(var(--bs-warning-rgb), 0.08);
+}
+
+.exercise-card.skipped .exercise-card-summary h6 {
+    color: var(--bs-warning);
+    text-decoration: line-through;
+}
+
+.exercise-card.skipped .exercise-card-meta {
+    opacity: 0.7;
+}
+
+/* Skip button styling */
+.skip-exercise-btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+    border-color: var(--bs-warning);
+    color: var(--bs-warning);
+}
+
+.skip-exercise-btn:hover {
+    background-color: var(--bs-warning);
+    border-color: var(--bs-warning);
+    color: white;
+}
+
+/* Unskip button styling */
+.unskip-exercise-btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+    background-color: var(--bs-warning);
+    border-color: var(--bs-warning);
+    color: white;
+}
+
+.unskip-exercise-btn:hover {
+    background-color: #e0a800;
+    border-color: #d39e00;
+}
+
+/* Dark theme adjustments */
+[data-bs-theme="dark"] .exercise-card.skipped {
+    background: linear-gradient(135deg, rgba(var(--bs-warning-rgb), 0.08), rgba(var(--bs-warning-rgb), 0.12));
+    border-color: var(--bs-warning);
+}
+
+[data-bs-theme="dark"] .exercise-card.skipped .exercise-card-header {
+    background: linear-gradient(135deg, rgba(var(--bs-warning-rgb), 0.12), rgba(var(--bs-warning-rgb), 0.16));
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+    .skip-exercise-btn,
+    .unskip-exercise-btn {
+        padding: 0.2rem 0.4rem;
+        font-size: 0.8rem;
+    }
 }

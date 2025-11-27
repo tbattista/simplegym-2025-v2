@@ -810,16 +810,24 @@ class ExercisePerformance(BaseModel):
     target_reps: str = Field(default="8-12", description="Target reps from template")
     
     # Weight Tracking
-    weight: Optional[float] = Field(None, ge=0, description="Primary weight used (in specified unit)")
-    weight_unit: str = Field(default="lbs", description="Weight unit: 'lbs' or 'kg'")
+    weight: Optional[str] = Field(None, description="Primary weight used - supports numeric (135) or text (Body, BW+25, 4x45)")
+    weight_unit: str = Field(default="lbs", description="Weight unit: 'lbs', 'kg', or 'other'")
     weight_notes: Optional[str] = Field(None, max_length=100, description="Notes about weight (e.g., 'per hand' for dumbbells)")
     
     # Set-by-Set Detail (Optional - for advanced tracking)
     set_details: List[SetDetail] = Field(default_factory=list, description="Optional per-set breakdown")
     
     # Changes from Previous Session
-    previous_weight: Optional[float] = Field(None, description="Weight from last session for comparison")
-    weight_change: Optional[float] = Field(None, description="Change from previous (+5, -10, etc.)")
+    previous_weight: Optional[str] = Field(None, description="Weight from last session for comparison")
+    weight_change: Optional[str] = Field(None, description="Change from previous (e.g., +5, -10, or text comparison)")
+    
+    # PHASE 1: Modification Tracking
+    is_modified: bool = Field(default=False, description="Whether user modified weight from template default")
+    modified_at: Optional[datetime] = Field(None, description="When user last modified this exercise")
+    
+    # PHASE 2: Skip Tracking (prepared for future)
+    is_skipped: bool = Field(default=False, description="Whether exercise was skipped")
+    skip_reason: Optional[str] = Field(None, max_length=200, description="Reason for skipping exercise")
     
     # Metadata
     order_index: int = Field(..., ge=0, description="Position in workout (0-based)")
@@ -868,7 +876,7 @@ class ExerciseHistory(BaseModel):
     exercise_name: str = Field(..., description="Exercise name")
     
     # Last Session Data
-    last_weight: Optional[float] = Field(None, description="Last weight used")
+    last_weight: Optional[str] = Field(None, description="Last weight used - supports numeric or text")
     last_weight_unit: str = Field(default="lbs", description="Unit for last weight")
     last_session_id: Optional[str] = Field(None, description="Reference to last workout session")
     last_session_date: Optional[datetime] = Field(None, description="Date of last session")
@@ -876,7 +884,7 @@ class ExerciseHistory(BaseModel):
     # Historical Tracking
     total_sessions: int = Field(default=0, ge=0, description="Total number of sessions logged")
     first_session_date: Optional[datetime] = Field(None, description="Date of first logged session")
-    best_weight: Optional[float] = Field(None, description="Personal record weight")
+    best_weight: Optional[str] = Field(None, description="Personal record weight - supports numeric or text")
     best_weight_date: Optional[datetime] = Field(None, description="Date PR was set")
     
     # Recent Sessions (last 5 for trend analysis)

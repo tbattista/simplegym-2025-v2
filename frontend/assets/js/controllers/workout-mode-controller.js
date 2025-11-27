@@ -462,6 +462,18 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
                 const weightData = this.sessionService.getExerciseWeight(mainExercise);
                 const history = this.sessionService.getExerciseHistory(mainExercise);
                 
+                // PHASE 1: Use nullish coalescing to preserve template defaults
+                // Support both numeric and text weights (Body, BW+25, 4x45, etc.)
+                const finalWeight = weightData?.weight ?? group.default_weight ?? null;
+                const finalUnit = weightData?.weight_unit || group.default_weight_unit || 'lbs';
+                
+                // PHASE 3: Calculate weight change properly
+                const previousWeight = history?.last_weight || null;
+                let weightChange = null;
+                if (finalWeight !== null && previousWeight !== null && typeof finalWeight === 'number' && typeof previousWeight === 'number') {
+                    weightChange = finalWeight - previousWeight;
+                }
+                
                 exercisesPerformed.push({
                     exercise_name: mainExercise,
                     exercise_id: null,
@@ -469,12 +481,15 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
                     sets_completed: parseInt(group.sets) || 0,
                     target_sets: group.sets || '3',
                     target_reps: group.reps || '8-12',
-                    weight: weightData?.weight || 0,
-                    weight_unit: weightData?.weight_unit || 'lbs',
-                    previous_weight: history?.last_weight || null,
-                    weight_change: weightData?.weight_change || 0,
+                    weight: finalWeight,  // Can be string or null
+                    weight_unit: finalUnit,
+                    previous_weight: previousWeight,
+                    weight_change: weightChange,  // PHASE 3: Calculated from current - previous
                     order_index: orderIndex++,
-                    is_bonus: false
+                    is_bonus: false,
+                    is_modified: weightData?.is_modified || false,  // PHASE 1
+                    is_skipped: weightData?.is_skipped || false,    // PHASE 2
+                    skip_reason: weightData?.skip_reason || null    // PHASE 2
                 });
             });
         }
@@ -487,6 +502,17 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
                 const weightData = this.sessionService.getExerciseWeight(exerciseName);
                 const history = this.sessionService.getExerciseHistory(exerciseName);
                 
+                // PHASE 1: Use nullish coalescing for bonus exercises too
+                // Support both numeric and text weights
+                const finalWeight = weightData?.weight ?? bonus.weight ?? null;
+                
+                // PHASE 3: Calculate weight change properly
+                const previousWeight = history?.last_weight || null;
+                let weightChange = null;
+                if (finalWeight !== null && previousWeight !== null && typeof finalWeight === 'number' && typeof previousWeight === 'number') {
+                    weightChange = finalWeight - previousWeight;
+                }
+                
                 exercisesPerformed.push({
                     exercise_name: exerciseName,
                     exercise_id: null,
@@ -494,12 +520,15 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
                     sets_completed: parseInt(bonus.sets || bonus.target_sets) || 0,
                     target_sets: bonus.sets || bonus.target_sets || '3',
                     target_reps: bonus.reps || bonus.target_reps || '12',
-                    weight: weightData?.weight || bonus.weight || 0,
+                    weight: finalWeight,  // Can be string or null
                     weight_unit: weightData?.weight_unit || bonus.weight_unit || 'lbs',
-                    previous_weight: history?.last_weight || null,
-                    weight_change: weightData?.weight_change || 0,
+                    previous_weight: previousWeight,
+                    weight_change: weightChange,  // PHASE 3: Calculated from current - previous
                     order_index: orderIndex++,
-                    is_bonus: true
+                    is_bonus: true,
+                    is_modified: weightData?.is_modified || false,
+                    is_skipped: weightData?.is_skipped || false,    // PHASE 2
+                    skip_reason: weightData?.skip_reason || null    // PHASE 2
                 });
             });
         }
@@ -687,8 +716,12 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
      */
     async startNewSession() {
         try {
-            // Start session using service
-            await this.sessionService.startSession(this.currentWorkout.id, this.currentWorkout.name);
+            // PHASE 1: Pass workout data to pre-populate exercises
+            await this.sessionService.startSession(
+                this.currentWorkout.id,
+                this.currentWorkout.name,
+                this.currentWorkout  // Pass full workout data for template initialization
+            );
             
             // Transfer pre-workout bonus exercises to session
             this.sessionService.transferPreWorkoutBonusToSession();
@@ -771,7 +804,8 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
     showCompletionSummary(session) {
         window.UnifiedOffcanvasFactory.createCompletionSummary({
             duration: session.duration_minutes || 0,
-            exerciseCount: session.exercises_performed?.length || 0
+            exerciseCount: session.exercises_performed?.length || 0,
+            workoutId: this.currentWorkout?.id  // Pass workout ID for history link
         });
     }
     
@@ -1347,6 +1381,87 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
             console.log('🎉 Last exercise completed, showing complete workout dialog');
             this.handleCompleteWorkout();
         }
+    }
+    
+    /**
+     * PHASE 2: Handle skipping an exercise
+     * @param {string} exerciseName - Exercise name
+     * @param {number} index - Exercise index
+     */
+    handleSkipExercise(exerciseName, index) {
+        if (!this.sessionService.isSessionActive()) {
+            console.warn('⚠️ Cannot skip exercise - no active session');
+            return;
+        }
+        
+        // Show skip reason offcanvas
+        window.UnifiedOffcanvasFactory.createSkipExercise(
+            { exerciseName },
+            async (reason) => {
+                // Mark as skipped in session
+                this.sessionService.skipExercise(exerciseName, reason);
+                
+                // Update UI - re-render to show skipped state
+                this.renderWorkout();
+                
+                // Auto-advance to next exercise
+                setTimeout(() => {
+                    this.goToNextExercise(index);
+                }, 300);
+                
+                // Show success message
+                if (window.showAlert) {
+                    const message = reason
+                        ? `${exerciseName} skipped: ${reason}`
+                        : `${exerciseName} skipped`;
+                    window.showAlert(message, 'warning');
+                }
+                
+                // Auto-save session
+                try {
+                    await this.autoSave(null);
+                } catch (error) {
+                    console.error('❌ Failed to auto-save after skip:', error);
+                }
+            }
+        );
+    }
+    
+    /**
+     * PHASE 2: Handle unskipping an exercise
+     * @param {string} exerciseName - Exercise name
+     * @param {number} index - Exercise index
+     */
+    handleUnskipExercise(exerciseName, index) {
+        if (!this.sessionService.isSessionActive()) {
+            console.warn('⚠️ Cannot unskip exercise - no active session');
+            return;
+        }
+        
+        const modalManager = this.getModalManager();
+        modalManager.confirm(
+            'Unskip Exercise',
+            `Resume <strong>${this.escapeHtml(exerciseName)}</strong>?`,
+            async () => {
+                // Mark as not skipped in session
+                this.sessionService.unskipExercise(exerciseName);
+                
+                // Update UI - re-render to remove skipped state
+                this.renderWorkout();
+                
+                // Show success message
+                if (window.showAlert) {
+                    window.showAlert(`${exerciseName} resumed`, 'success');
+                }
+                
+                // Auto-save session
+                try {
+                    await this.autoSave(null);
+                } catch (error) {
+                    console.error('❌ Failed to auto-save after unskip:', error);
+                }
+            }
+        );
     }
     
     /**
