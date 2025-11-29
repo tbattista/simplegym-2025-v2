@@ -1621,9 +1621,11 @@ function openExerciseGroupEditor(groupId) {
 /**
  * Save exercise group from offcanvas
  */
-function saveExerciseGroupFromOffcanvas() {
+async function saveExerciseGroupFromOffcanvas() {
     const groupId = window.currentEditingGroupId;
     if (!groupId) return;
+    
+    console.log('💾 OFFCANVAS SAVE: Saving exercise group and auto-creating custom exercises');
     
     // Collect data from offcanvas
     const groupData = {
@@ -1639,6 +1641,12 @@ function saveExerciseGroupFromOffcanvas() {
         default_weight_unit: document.querySelector('#exerciseGroupEditOffcanvas .weight-unit-btn.active')?.getAttribute('data-unit') || 'lbs'
     };
     
+    console.log('💾 OFFCANVAS SAVE: Exercise names:', {
+        a: groupData.exercises.a,
+        b: groupData.exercises.b,
+        c: groupData.exercises.c
+    });
+    
     // Validate
     if (!groupData.exercises.a) {
         if (window.showAlert) {
@@ -1647,6 +1655,15 @@ function saveExerciseGroupFromOffcanvas() {
             alert('Primary exercise is required');
         }
         return;
+    }
+    
+    // Auto-create custom exercises immediately
+    if (window.autoCreateExercisesInGroups) {
+        console.log('🚀 OFFCANVAS SAVE: Auto-creating custom exercises...');
+        await window.autoCreateExercisesInGroups([groupData]);
+        console.log('✅ OFFCANVAS SAVE: Auto-create completed');
+    } else {
+        console.warn('⚠️ OFFCANVAS SAVE: autoCreateExercisesInGroups not available');
     }
     
     // Store data

@@ -20,18 +20,22 @@ class ExerciseAutocomplete {
             preferFoundational: false,  // New option to prefer foundational exercises
             tierFilter: null,  // New option to filter by tier
             allowCustom: true,
+            allowAutoCreate: false,  // New option to enable auto-creation
             onSelect: null,
+            onAutoCreate: null,  // New callback for auto-created exercises
             ...options
         };
         
         // Use global cache service instead of local storage
         this.cacheService = window.exerciseCacheService;
+        this.autoCreateService = window.autoCreateExerciseService;
         this.filteredResults = [];
         this.selectedIndex = -1;
         this.isOpen = false;
         this.debounceTimer = null;
         this.dropdown = null;
         this.cacheListener = null;
+        this.isAutoCreating = false;
         
         this.init();
     }
@@ -57,6 +61,14 @@ class ExerciseAutocomplete {
         this.cacheListener = this.cacheService.addListener((event, data) => {
             if (event === 'loaded' || event === 'customLoaded') {
                 console.log(`🔄 Cache updated: ${event}`);
+            } else if (event === 'customExerciseCreated') {
+                console.log(`🆕 New custom exercise created: ${data.exercise.name}`);
+                // Re-run search if dropdown is open and has a valid query
+                if (this.isOpen && this.input.value.trim().length >= this.options.minChars) {
+                    const currentQuery = this.input.value.trim();
+                    console.log(`🔄 Refreshing search results for: "${currentQuery}"`);
+                    this.search(currentQuery);
+                }
             }
         });
         
@@ -233,7 +245,7 @@ class ExerciseAutocomplete {
                      data-index="${index}"
                      onclick="window.exerciseAutocompleteInstances['${this.input.id}'].selectExercise(${JSON.stringify(exercise).replace(/"/g, '&quot;')})">
                     <div class="exercise-name">
-                        ${isCustom ? '<i class="bx bx-star text-warning me-1"></i>' : ''}
+                        ${isCustom ? '<span class="badge bg-label-primary me-1" style="font-size: 0.7rem;"><i class="bx bx-user"></i> Custom</span>' : ''}
                         ${isFoundational ? '<i class="bx bx-badge-check text-success me-1"></i>' : ''}
                         ${this.escapeHtml(exercise.name)}
                     </div>
@@ -271,14 +283,23 @@ class ExerciseAutocomplete {
      * Render no results message
      */
     renderNoResults() {
+        const query = this.input.value.trim();
+        
         this.dropdown.innerHTML = `
             <div class="exercise-autocomplete-results">
                 <div class="exercise-autocomplete-item text-muted">
                     <i class="bx bx-search me-2"></i>
                     No exercises found
                 </div>
-                ${this.options.allowCustom ? `
-                    <div class="exercise-autocomplete-item exercise-autocomplete-custom" 
+                ${this.options.allowAutoCreate && query.length >= this.options.minChars ? `
+                    <div class="exercise-autocomplete-item exercise-autocomplete-auto-create"
+                         onclick="window.exerciseAutocompleteInstances['${this.input.id}'].handleAutoCreate()">
+                        <i class="bx bx-plus-circle me-2"></i>
+                        Auto-create "${this.escapeHtml(query)}"
+                    </div>
+                ` : ''}
+                ${this.options.allowCustom && !this.options.allowAutoCreate ? `
+                    <div class="exercise-autocomplete-item exercise-autocomplete-custom"
                          onclick="window.exerciseAutocompleteInstances['${this.input.id}'].showCustomExerciseModal()">
                         <i class="bx bx-plus-circle me-2"></i>
                         Add custom exercise
@@ -359,6 +380,73 @@ class ExerciseAutocomplete {
         } else {
             console.warn('Custom exercise modal not implemented');
             alert('Custom exercise functionality coming soon!');
+        }
+    }
+    
+    /**
+     * Handle auto-creation of exercise
+     */
+    async handleAutoCreate() {
+        const query = this.input.value.trim();
+        if (!query) return;
+        
+        this.close();
+        
+        try {
+            const exercise = await this.autoCreateExercise(query);
+            if (exercise) {
+                this.selectExercise(exercise);
+            }
+        } catch (error) {
+            console.error('❌ Error in auto-creation handler:', error);
+        }
+    }
+    
+    /**
+     * Auto-create exercise if needed
+     * @param {string} exerciseName - Name of exercise to auto-create
+     * @returns {Promise<Object|null>} Created exercise or null
+     */
+    async autoCreateExercise(exerciseName) {
+        if (this.isAutoCreating) {
+            console.warn('Auto-creation already in progress');
+            return null;
+        }
+        
+        try {
+            this.isAutoCreating = true;
+            
+            // Check if auto-create service is available
+            if (!this.autoCreateService) {
+                console.warn('Auto-Create Exercise Service not available');
+                return null;
+            }
+            
+            // Attempt auto-creation
+            const exercise = await this.autoCreateService.autoCreateIfNeeded(exerciseName, {
+                trackUsage: true,
+                showError: true,
+                fallbackToModal: false
+            });
+            
+            if (exercise) {
+                console.log(`✅ Auto-created exercise: ${exerciseName}`);
+                
+                // Call auto-create callback if provided
+                if (this.options.onAutoCreate && typeof this.options.onAutoCreate === 'function') {
+                    this.options.onAutoCreate(exercise);
+                }
+                
+                return exercise;
+            }
+            
+            return null;
+            
+        } catch (error) {
+            console.error('❌ Error in auto-creation:', error);
+            return null;
+        } finally {
+            this.isAutoCreating = false;
         }
     }
     

@@ -24,6 +24,10 @@ class ExerciseCacheService {
         this.CACHE_DURATION = 7 * 24 * 60 * 60 * 1000; // 7 days
         this.CACHE_VERSION = '2.0';
         
+        // Usage tracking for auto-created exercises
+        this.USAGE_CACHE_KEY = 'exercise_usage_cache_v1';
+        this.usageData = this._loadUsageData();
+        
         // Performance metrics
         this.metrics = {
             cacheHits: 0,
@@ -262,44 +266,56 @@ class ExerciseCacheService {
     }
     
     _rankExercises(exercises, query, preferFoundational) {
+        const queryLower = query.toLowerCase();
+        
         // Calculate scores for each exercise
         const scoredExercises = exercises.map(exercise => {
-            // Base relevance score (exact name match gets highest score)
-            let baseScore = 100;
-            if (exercise.name && exercise.name.toLowerCase().includes(query)) {
-                // Exact match gets higher score
-                const nameLower = exercise.name.toLowerCase();
-                if (nameLower === query) {
-                    baseScore = 100;
-                } else if (nameLower.startsWith(query)) {
-                    baseScore = 90;
-                } else {
-                    baseScore = 80;
-                }
-            } else {
-                // Matched on other fields
-                baseScore = 70;
+            const nameLower = (exercise.name || '').toLowerCase();
+            const isCustom = !exercise.isGlobal;
+            const isExactMatch = nameLower === queryLower;
+            const startsWithQuery = nameLower.startsWith(queryLower);
+            const containsQuery = nameLower.includes(queryLower);
+            
+            let score = 0;
+            
+            // PRIORITY 1: Custom Exercise Exact Match (HIGHEST)
+            if (isCustom && isExactMatch) {
+                score = 1000;
+            }
+            // PRIORITY 2: Custom Exercise Partial Match
+            else if (isCustom && containsQuery) {
+                score = 500;
+                // Add enhanced usage boost (0-200 points) for frequently used custom exercises
+                score += this._getUsageBoost(exercise);
+            }
+            // PRIORITY 3: Global Exercise Exact Match
+            else if (!isCustom && isExactMatch) {
+                score = 400;
+            }
+            // PRIORITY 4: Global Exercise Starts With Query
+            else if (!isCustom && startsWithQuery) {
+                score = 300;
+                score += this._getTierBoost(exercise);
+            }
+            // PRIORITY 5: Global Exercise Contains Query
+            else if (!isCustom && containsQuery) {
+                score = 200;
+                score += this._getTierBoost(exercise);
+            }
+            // PRIORITY 6: Muscle Group/Equipment Match
+            else {
+                score = 100;
             }
             
-            // Tier boost (increased to ensure proper tier prioritization)
-            let tierBoost = 0;
-            if (exercise.exerciseTier === 1) {  // Foundation
-                tierBoost = 50;
-            } else if (exercise.exerciseTier === 2) {  // Standard
-                tierBoost = 25;
+            // Add popularity boost for all exercises (0-25 points)
+            score += Math.min(25, (exercise.popularityScore || 0) / 4);
+            
+            // Add foundational preference if requested
+            if (preferFoundational && exercise.isFoundational) {
+                score += 20;
             }
-            // Tier 3 gets no boost
             
-            // Popularity boost (0-25 points)
-            const popularityBoost = Math.min(25, (exercise.popularityScore || 0) / 4);
-            
-            // Foundational preference boost
-            const foundationalBoost = (preferFoundational && exercise.isFoundational) ? 20 : 0;
-            
-            // Calculate total score
-            const totalScore = baseScore + tierBoost + popularityBoost + foundationalBoost;
-            
-            return { exercise, score: totalScore };
+            return { exercise, score };
         });
         
         // Sort by score (descending)
@@ -307,6 +323,16 @@ class ExerciseCacheService {
         
         // Return sorted exercises
         return scoredExercises.map(item => item.exercise);
+    }
+    
+    /**
+     * Get tier boost for global exercises
+     */
+    _getTierBoost(exercise) {
+        const tier = exercise.exerciseTier || 2;
+        if (tier === 1) return 50;
+        if (tier === 2) return 25;
+        return 0;
     }
     
     /**
@@ -448,6 +474,160 @@ class ExerciseCacheService {
             hitRate: `${hitRate}%`,
             avgLoadTime: this.metrics.loadTime ? `${this.metrics.loadTime.toFixed(0)}ms` : 'N/A'
         };
+    }
+    
+    /**
+     * Auto-create custom exercise if needed
+     * Called from workout mode when user enters unknown exercise name
+     */
+    async autoCreateIfNeeded(exerciseName, userId) {
+        try {
+            if (!exerciseName || !userId) {
+                console.warn('⚠️ Missing exercise name or user ID for auto-creation');
+                return null;
+            }
+            
+            console.log(`🔍 AUTO-CREATE DEBUG: Checking exercise "${exerciseName}" (length: ${exerciseName.length} chars)`);
+            
+            // Check if exercise already exists (global or custom)
+            const existingExercise = this.getAllExercises().find(ex =>
+                ex.name.toLowerCase() === exerciseName.toLowerCase()
+            );
+            
+            if (existingExercise) {
+                console.log(`✅ Exercise '${exerciseName}' already exists (ID: ${existingExercise.id}), tracking usage`);
+                this._trackUsage(existingExercise);
+                return existingExercise;
+            }
+            
+            // Create new custom exercise via API
+            // Note: exercise_name must be passed as query parameter, not in body
+            console.log(`🚀 AUTO-CREATE DEBUG: Creating new custom exercise "${exerciseName}"`);
+            const token = await window.dataManager.getAuthToken();
+            const encodedName = encodeURIComponent(exerciseName);
+            const apiUrl = window.getApiUrl(`/api/v3/exercises/auto-create?exercise_name=${encodedName}`);
+            console.log(`📡 AUTO-CREATE DEBUG: API URL: ${apiUrl}`);
+            console.log(`📡 AUTO-CREATE DEBUG: Encoded name: ${encodedName}`);
+            
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            
+            console.log(`📥 AUTO-CREATE DEBUG: Response status: ${response.status} ${response.statusText}`);
+            
+            if (response.ok) {
+                const newExercise = await response.json();
+                console.log(`✅ AUTO-CREATE SUCCESS: Created exercise "${newExercise.name}" (ID: ${newExercise.id})`);
+                console.log(`📊 AUTO-CREATE DEBUG: Full response:`, newExercise);
+                
+                // Verify the name matches what we sent
+                if (newExercise.name !== exerciseName) {
+                    console.warn(`⚠️ AUTO-CREATE WARNING: Name mismatch!`);
+                    console.warn(`   Sent: "${exerciseName}" (${exerciseName.length} chars)`);
+                    console.warn(`   Received: "${newExercise.name}" (${newExercise.name.length} chars)`);
+                }
+                
+                // Add to custom exercises cache
+                this.customExercises.push(newExercise);
+                
+                // Track initial usage
+                this._trackUsage(newExercise);
+                
+                // Notify listeners about new custom exercise
+                this.notifyListeners('customExerciseCreated', { exercise: newExercise });
+                
+                return newExercise;
+            } else {
+                const errorText = await response.text();
+                console.error(`❌ AUTO-CREATE FAILED: ${response.status} ${response.statusText}`);
+                console.error(`❌ Error details:`, errorText);
+                return null;
+            }
+            
+        } catch (error) {
+            console.error('❌ Error in autoCreateIfNeeded:', error);
+            return null;
+        }
+    }
+    
+    /**
+     * Track exercise usage frequency
+     */
+    _trackUsage(exercise) {
+        try {
+            if (!exercise || !exercise.id) return;
+            
+            const exerciseKey = exercise.id;
+            if (!this.usageData[exerciseKey]) {
+                this.usageData[exerciseKey] = {
+                    name: exercise.name,
+                    count: 0,
+                    lastUsed: null,
+                    isCustom: !exercise.isGlobal
+                };
+            }
+            
+            this.usageData[exerciseKey].count++;
+            this.usageData[exerciseKey].lastUsed = Date.now();
+            
+            // Save to localStorage
+            this._saveUsageData();
+            
+            console.log(`📊 Tracked usage for: ${exercise.name} (${this.usageData[exerciseKey].count} times)`);
+            
+        } catch (error) {
+            console.error('❌ Error tracking exercise usage:', error);
+        }
+    }
+    
+    /**
+     * Get usage boost score for exercise ranking
+     * Enhanced to provide 0-200 points for frequently used custom exercises
+     */
+    _getUsageBoost(exercise) {
+        try {
+            if (!exercise || !exercise.id) return 0;
+            
+            const usage = this.usageData[exercise.id];
+            if (!usage) return 0;
+            
+            // ENHANCED: 0-200 points based on usage count (was 0-50)
+            // This ensures frequently-used custom exercises rank very high
+            const boost = Math.min(200, usage.count * 10);
+            
+            return boost;
+            
+        } catch (error) {
+            console.error('❌ Error getting usage boost:', error);
+            return 0;
+        }
+    }
+    
+    /**
+     * Load usage data from localStorage
+     */
+    _loadUsageData() {
+        try {
+            const cached = localStorage.getItem(this.USAGE_CACHE_KEY);
+            return cached ? JSON.parse(cached) : {};
+        } catch (error) {
+            console.error('Error loading usage data:', error);
+            return {};
+        }
+    }
+    
+    /**
+     * Save usage data to localStorage
+     */
+    _saveUsageData() {
+        try {
+            localStorage.setItem(this.USAGE_CACHE_KEY, JSON.stringify(this.usageData));
+        } catch (error) {
+            console.error('Error saving usage data:', error);
+        }
     }
 }
 

@@ -101,8 +101,10 @@ function loadWorkoutIntoEditor(workoutId) {
         toggleWorkoutLibraryContent();
     }
     
-    // Initialize autocompletes
-    if (window.initializeExerciseAutocompletes) {
+    // Initialize autocompletes with auto-creation support
+    if (window.initializeExerciseAutocompletesWithAutoCreate) {
+        setTimeout(() => window.initializeExerciseAutocompletesWithAutoCreate(), 100);
+    } else if (window.initializeExerciseAutocompletes) {
         setTimeout(() => window.initializeExerciseAutocompletes(), 100);
     }
     
@@ -245,8 +247,10 @@ async function createNewWorkoutInEditor() {
         // Highlight in library
         highlightSelectedWorkout(savedWorkout.id);
         
-        // Initialize autocompletes
-        if (window.initializeExerciseAutocompletes) {
+        // Initialize autocompletes with auto-creation support
+        if (window.initializeExerciseAutocompletesWithAutoCreate) {
+            setTimeout(() => window.initializeExerciseAutocompletesWithAutoCreate(), 100);
+        } else if (window.initializeExerciseAutocompletes) {
             setTimeout(() => window.initializeExerciseAutocompletes(), 100);
         }
         
@@ -282,10 +286,91 @@ async function createNewWorkoutInEditor() {
 }
 
 /**
+ * Auto-create custom exercises for any unknown exercise names in groups
+ * @param {Array} exerciseGroups - Array of exercise group objects
+ * @returns {Promise<void>}
+ */
+async function autoCreateExercisesInGroups(exerciseGroups) {
+    if (!exerciseGroups || exerciseGroups.length === 0) {
+        console.log('ℹ️ WORKOUT SAVE DEBUG: No exercise groups to process');
+        return;
+    }
+    if (!window.exerciseCacheService) {
+        console.warn('⚠️ ExerciseCacheService not available');
+        return;
+    }
+    if (!window.dataManager || !window.dataManager.isUserAuthenticated()) {
+        console.log('ℹ️ User not authenticated, skipping auto-create');
+        return;
+    }
+    
+    try {
+        console.log(`📋 WORKOUT SAVE DEBUG: Processing ${exerciseGroups.length} exercise group(s)`);
+        
+        // Get user ID from auth service
+        const userId = window.authService?.currentUser?.uid ||
+                      window.dataManager?.currentUser?.uid ||
+                      'anonymous';
+        
+        console.log(`📋 WORKOUT SAVE DEBUG: User ID: ${userId}`);
+        
+        const allExerciseNames = new Set();
+        
+        // Collect all unique exercise names from all groups
+        exerciseGroups.forEach((group, groupIndex) => {
+            console.log(`📋 WORKOUT SAVE DEBUG: Group ${groupIndex + 1}:`, group);
+            if (group.exercises) {
+                Object.entries(group.exercises).forEach(([key, name]) => {
+                    console.log(`   Exercise ${key}: "${name}" (${name ? name.length : 0} chars)`);
+                    if (name && name.trim()) {
+                        allExerciseNames.add(name.trim());
+                    }
+                });
+            }
+        });
+        
+        if (allExerciseNames.size === 0) {
+            console.log('ℹ️ WORKOUT SAVE DEBUG: No exercise names to process after filtering');
+            return;
+        }
+        
+        console.log(`🔍 WORKOUT SAVE DEBUG: Found ${allExerciseNames.size} unique exercise name(s):`);
+        allExerciseNames.forEach(name => console.log(`   - "${name}" (${name.length} chars)`));
+        
+        // Auto-create each exercise if needed (parallel processing)
+        const createPromises = Array.from(allExerciseNames).map(exerciseName =>
+            window.exerciseCacheService.autoCreateIfNeeded(exerciseName, userId)
+        );
+        
+        const results = await Promise.allSettled(createPromises);
+        
+        // Count results
+        const created = results.filter(r => r.status === 'fulfilled' && r.value && !r.value.isGlobal).length;
+        const existing = results.filter(r => r.status === 'fulfilled' && r.value && r.value.isGlobal).length;
+        const failed = results.filter(r => r.status === 'rejected').length;
+        
+        if (created > 0) {
+            console.log(`✅ Auto-created ${created} custom exercise(s)`);
+        }
+        if (existing > 0) {
+            console.log(`ℹ️ ${existing} exercise(s) already exist in database`);
+        }
+        if (failed > 0) {
+            console.warn(`⚠️ Failed to process ${failed} exercise(s)`);
+        }
+        
+    } catch (error) {
+        console.error('❌ Error in autoCreateExercisesInGroups:', error);
+        // Don't throw - allow workout save to continue even if auto-create fails
+    }
+}
+
+/**
  * Save workout from editor
  * @param {boolean} silent - If true, don't show alerts or update button (for autosave)
  */
 async function saveWorkoutFromEditor(silent = false) {
+    console.log('💾 ========== SAVE WORKOUT START ==========');
     console.log('💾 Saving workout from editor...', silent ? '(autosave)' : '(manual)');
     
     const workoutData = {
@@ -296,6 +381,13 @@ async function saveWorkoutFromEditor(silent = false) {
         exercise_groups: collectExerciseGroups(),
         bonus_exercises: collectBonusExercises()
     };
+    
+    console.log('📊 SAVE DEBUG: Collected workout data:', {
+        name: workoutData.name,
+        exerciseGroupCount: workoutData.exercise_groups.length,
+        bonusExerciseCount: workoutData.bonus_exercises.length
+    });
+    console.log('📊 SAVE DEBUG: Exercise groups:', workoutData.exercise_groups);
     
     // Validate
     if (!workoutData.name) {
@@ -314,6 +406,11 @@ async function saveWorkoutFromEditor(silent = false) {
     }
     
     try {
+        console.log('🚀 SAVE DEBUG: About to call autoCreateExercisesInGroups...');
+        // Auto-create custom exercises for any unknown exercise names
+        await autoCreateExercisesInGroups(workoutData.exercise_groups);
+        console.log('✅ SAVE DEBUG: autoCreateExercisesInGroups completed');
+        
         // Show saving status
         updateSaveStatus('saving');
         
@@ -973,5 +1070,95 @@ window.updateSaveStatus = updateSaveStatus;
 window.highlightSelectedWorkout = highlightSelectedWorkout;
 window.collapseWorkoutLibrary = collapseWorkoutLibrary;
 window.expandWorkoutLibrary = expandWorkoutLibrary;
+window.autoCreateExercisesInGroups = autoCreateExercisesInGroups;
+
+/**
+ * Initialize exercise autocompletes with auto-creation support
+ * This function enables the auto-create custom exercises feature in workout builder
+ */
+function initializeExerciseAutocompletesWithAutoCreate() {
+    console.log('🚀 Initializing exercise autocompletes with auto-creation support');
+    
+    // Check if required services are available
+    if (!window.autoCreateExerciseService) {
+        console.warn('⚠️ Auto-Create Exercise Service not available, falling back to standard initialization');
+        if (window.initializeExerciseAutocompletes) {
+            window.initializeExerciseAutocompletes();
+        }
+        return;
+    }
+    
+    if (!window.initExerciseAutocomplete) {
+        console.error('❌ Exercise autocomplete component not available');
+        return;
+    }
+    
+    // Find all exercise autocomplete inputs
+    const exerciseInputs = document.querySelectorAll('.exercise-autocomplete-input');
+    
+    if (exerciseInputs.length === 0) {
+        console.log('ℹ️ No exercise autocomplete inputs found');
+        return;
+    }
+    
+    console.log(`🔍 Found ${exerciseInputs.length} exercise inputs to initialize`);
+    
+    // Initialize each input with auto-creation support
+    exerciseInputs.forEach((input, index) => {
+        try {
+            // Get the input ID or generate one
+            if (!input.id) {
+                input.id = `exercise-input-${Date.now()}-${index}-${Math.random().toString(36).substr(2, 9)}`;
+            }
+            
+            // Initialize autocomplete with auto-creation enabled
+            const autocomplete = window.initExerciseAutocomplete(input, {
+                allowCustom: true,
+                allowAutoCreate: true,
+                minChars: 2,
+                maxResults: 20,
+                debounceMs: 300,
+                showMuscleGroup: true,
+                showEquipment: true,
+                showDifficulty: true,
+                showTier: true,
+                onSelect: (exercise) => {
+                    console.log('✅ Exercise selected:', exercise.name);
+                    // Trigger dirty state for autosave
+                    if (window.markEditorDirty) {
+                        window.markEditorDirty();
+                    }
+                },
+                onAutoCreate: (exercise) => {
+                    console.log('🚀 Auto-created exercise:', exercise.name);
+                    // Show success notification
+                    if (window.showToast) {
+                        window.showToast({
+                            message: `Created custom exercise: ${exercise.name}`,
+                            type: 'success',
+                            title: 'Exercise Created',
+                            icon: 'bx-plus-circle',
+                            delay: 3000
+                        });
+                    }
+                    // Trigger dirty state for autosave
+                    if (window.markEditorDirty) {
+                        window.markEditorDirty();
+                    }
+                }
+            });
+            
+            console.log(`✅ Initialized autocomplete for input: ${input.id}`);
+            
+        } catch (error) {
+            console.error(`❌ Failed to initialize autocomplete for input ${index}:`, error);
+        }
+    });
+    
+    console.log(`✅ Successfully initialized ${exerciseInputs.length} exercise autocompletes with auto-creation`);
+}
+
+// Make the function globally available
+window.initializeExerciseAutocompletesWithAutoCreate = initializeExerciseAutocompletesWithAutoCreate;
 
 console.log('📦 Workout Editor component loaded');

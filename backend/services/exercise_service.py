@@ -303,6 +303,72 @@ class ExerciseService:
             logger.error(f"Failed to create custom exercise: {str(e)}")
             return None
     
+    def auto_create_or_get_custom_exercise(
+        self,
+        user_id: str,
+        exercise_name: str
+    ) -> Optional[Exercise]:
+        """
+        Auto-create a custom exercise if it doesn't exist, or return existing one
+        Designed for workout mode auto-creation without user interaction
+        
+        Args:
+            user_id: ID of the user
+            exercise_name: Name of the exercise to auto-create or retrieve
+            
+        Returns:
+            Exercise object or None on failure
+        """
+        if not self.is_available():
+            logger.warning("Firestore not available - cannot auto-create custom exercise")
+            return None
+        
+        try:
+            # First check if exercise exists in global database
+            global_exercises = self.search_exercises(exercise_name, limit=1)
+            if global_exercises.exercises:
+                logger.info(f"Exercise '{exercise_name}' found in global database")
+                return global_exercises.exercises[0]
+            
+            # Then check if it already exists as custom exercise
+            custom_exercises = self.get_user_custom_exercises(user_id, limit=1000)
+            for exercise in custom_exercises:
+                if exercise.name.lower() == exercise_name.lower():
+                    logger.info(f"Exercise '{exercise_name}' found in user custom exercises")
+                    return exercise
+            
+            # Create minimal custom exercise with default values
+            exercise = Exercise(
+                name=exercise_name,
+                nameSearchTokens=self._generate_search_tokens(exercise_name),
+                difficultyLevel=2,  # Default to Standard
+                targetMuscleGroup="General",  # Default value
+                primaryEquipment="Bodyweight",  # Default value
+                movementPattern1="Other",  # Default value
+                bodyRegion="Full Body",  # Default value
+                mechanics="Compound",  # Default value
+                isGlobal=False
+            )
+            
+            # Save to Firestore
+            exercise_ref = (self.db.collection('users')
+                          .document(user_id)
+                          .collection('custom_exercises')
+                          .document(exercise.id))
+            
+            exercise_data = exercise.model_dump()
+            exercise_data['createdAt'] = firestore.SERVER_TIMESTAMP
+            exercise_data['updatedAt'] = firestore.SERVER_TIMESTAMP
+            
+            exercise_ref.set(exercise_data)
+            
+            logger.info(f"Auto-created custom exercise {exercise.id} for user {user_id}: {exercise_name}")
+            return exercise
+            
+        except Exception as e:
+            logger.error(f"Failed to auto-create custom exercise: {str(e)}")
+            return None
+    
     def get_user_custom_exercises(
         self,
         user_id: str,

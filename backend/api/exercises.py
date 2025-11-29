@@ -169,3 +169,24 @@ async def get_user_custom_exercises(
     except Exception as e:
         logger.error(f"Error retrieving custom exercises: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error retrieving custom exercises: {str(e)}")
+
+
+@router.post("/exercises/auto-create", response_model=Exercise)
+async def auto_create_custom_exercise(
+    exercise_name: str,
+    user_id: str = Depends(require_auth),
+    exercise_service = Depends(get_exercise_service)
+):
+    """Auto-create a custom exercise if it doesn't exist, or return existing one"""
+    try:
+        exercise = exercise_service.auto_create_or_get_custom_exercise(user_id, exercise_name)
+        if not exercise:
+            raise HTTPException(status_code=500, detail="Failed to auto-create custom exercise")
+        
+        return exercise
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error auto-creating custom exercise: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error auto-creating custom exercise: {str(e)}")

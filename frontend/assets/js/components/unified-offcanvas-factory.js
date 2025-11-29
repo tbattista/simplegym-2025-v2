@@ -596,7 +596,7 @@ class UnifiedOffcanvasFactory {
                         <div class="card-body">
                             <div class="mb-3">
                                 <label class="form-label">Exercise Name</label>
-                                <input type="text" class="form-control" id="bonusExerciseName"
+                                <input type="text" class="form-control exercise-autocomplete-input" id="bonusExerciseName"
                                        placeholder="e.g., Face Pulls, Leg Press" autofocus>
                             </div>
                             <div class="row">
@@ -641,6 +641,41 @@ class UnifiedOffcanvasFactory {
             const nameInput = document.getElementById('bonusExerciseName');
             const previousBonusList = document.getElementById('previousBonusList');
             
+            // Initialize exercise autocomplete with auto-creation support
+            if (window.initExerciseAutocomplete && nameInput) {
+                setTimeout(() => {
+                    const autocomplete = window.initExerciseAutocomplete(nameInput, {
+                        allowCustom: true,
+                        allowAutoCreate: true,
+                        minChars: 2,
+                        maxResults: 10,
+                        debounceMs: 300,
+                        showMuscleGroup: true,
+                        showEquipment: true,
+                        showDifficulty: true,
+                        showTier: true,
+                        onSelect: (exercise) => {
+                            console.log('✅ Exercise selected:', exercise.name);
+                        },
+                        onAutoCreate: (exercise) => {
+                            console.log('🚀 Auto-created exercise:', exercise.name);
+                            // Show success notification
+                            if (window.showToast) {
+                                window.showToast({
+                                    message: `Created custom exercise: ${exercise.name}`,
+                                    type: 'success',
+                                    title: 'Exercise Created',
+                                    icon: 'bx-plus-circle',
+                                    delay: 3000
+                                });
+                            }
+                        }
+                    });
+                    
+                    console.log('✅ Exercise autocomplete initialized for bonus exercise input');
+                }, 100);
+            }
+            
             if (addAndCloseBtn) {
                 addAndCloseBtn.addEventListener('click', async () => {
                     const name = nameInput.value.trim();
@@ -652,6 +687,24 @@ class UnifiedOffcanvasFactory {
                     if (!name) {
                         alert('Please enter an exercise name.');
                         return;
+                    }
+                    
+                    // Auto-create custom exercise if it doesn't exist
+                    try {
+                        if (window.exerciseCacheService && window.dataManager && window.dataManager.isUserAuthenticated()) {
+                            const currentUser = window.dataManager.getCurrentUser();
+                            const userId = currentUser ? currentUser.uid : null;
+                            const exercise = await window.exerciseCacheService.autoCreateIfNeeded(name, userId);
+                            
+                            if (exercise) {
+                                console.log(`✅ Auto-created or found exercise: ${name}`);
+                                // Track usage for ranking
+                                window.exerciseCacheService._trackUsage(exercise);
+                            }
+                        }
+                    } catch (error) {
+                        console.error('❌ Error in auto-creation:', error);
+                        // Continue with normal flow even if auto-creation fails
                     }
                     
                     await onAddNew({ name, sets, reps, weight, unit });
