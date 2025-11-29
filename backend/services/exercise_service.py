@@ -30,6 +30,18 @@ class ExerciseService:
     Handles both global exercises and user-specific custom exercises
     """
     
+    # Default values for auto-created custom exercises
+    DEFAULT_DIFFICULTY = "Standard"  # String, not integer
+    DEFAULT_MUSCLE_GROUP = "General"
+    DEFAULT_EQUIPMENT = "Bodyweight"
+    DEFAULT_MOVEMENT = "Other"
+    DEFAULT_BODY_REGION = "Full Body"
+    DEFAULT_MECHANICS = "Compound"
+    
+    # Validation constants
+    MAX_EXERCISE_NAME_LENGTH = 200
+    MIN_EXERCISE_NAME_LENGTH = 1
+    
     def __init__(self):
         """Initialize Exercise service"""
         if not FIRESTORE_AVAILABLE:
@@ -309,8 +321,12 @@ class ExerciseService:
         exercise_name: str
     ) -> Optional[Exercise]:
         """
-        Auto-create a custom exercise if it doesn't exist, or return existing one
-        Designed for workout mode auto-creation without user interaction
+        Auto-create a custom exercise if it doesn't exist, or return existing one.
+        
+        Search Priority:
+        1. Global exercise database (exact match)
+        2. User's custom exercises (case-insensitive match)
+        3. Create new custom exercise with sensible defaults
         
         Args:
             user_id: ID of the user
@@ -318,55 +334,36 @@ class ExerciseService:
             
         Returns:
             Exercise object or None on failure
+            
+        Raises:
+            None - Returns None on all errors (logged internally)
         """
         if not self.is_available():
             logger.warning("Firestore not available - cannot auto-create custom exercise")
             return None
         
         try:
-            # First check if exercise exists in global database
-            global_exercises = self.search_exercises(exercise_name, limit=1)
-            if global_exercises.exercises:
-                logger.info(f"Exercise '{exercise_name}' found in global database")
-                return global_exercises.exercises[0]
+            # Validate input
+            is_valid, error_msg = self._validate_exercise_name(exercise_name)
+            if not is_valid:
+                logger.error(f"Invalid exercise name: {error_msg}")
+                return None
             
-            # Then check if it already exists as custom exercise
-            custom_exercises = self.get_user_custom_exercises(user_id, limit=1000)
-            for exercise in custom_exercises:
-                if exercise.name.lower() == exercise_name.lower():
-                    logger.info(f"Exercise '{exercise_name}' found in user custom exercises")
-                    return exercise
+            # Sanitize name
+            exercise_name = exercise_name.strip()
             
-            # Create minimal custom exercise with default values
-            exercise = Exercise(
-                name=exercise_name,
-                nameSearchTokens=self._generate_search_tokens(exercise_name),
-                difficultyLevel=2,  # Default to Standard
-                targetMuscleGroup="General",  # Default value
-                primaryEquipment="Bodyweight",  # Default value
-                movementPattern1="Other",  # Default value
-                bodyRegion="Full Body",  # Default value
-                mechanics="Compound",  # Default value
-                isGlobal=False
-            )
+            # Check if exercise already exists (global or custom)
+            existing_exercise = self._find_existing_exercise(exercise_name, user_id)
+            if existing_exercise:
+                return existing_exercise
             
-            # Save to Firestore
-            exercise_ref = (self.db.collection('users')
-                          .document(user_id)
-                          .collection('custom_exercises')
-                          .document(exercise.id))
-            
-            exercise_data = exercise.model_dump()
-            exercise_data['createdAt'] = firestore.SERVER_TIMESTAMP
-            exercise_data['updatedAt'] = firestore.SERVER_TIMESTAMP
-            
-            exercise_ref.set(exercise_data)
-            
-            logger.info(f"Auto-created custom exercise {exercise.id} for user {user_id}: {exercise_name}")
-            return exercise
+            # Create new custom exercise with defaults
+            logger.info(f"Creating new custom exercise: '{exercise_name}'")
+            return self._create_default_custom_exercise(user_id, exercise_name)
             
         except Exception as e:
-            logger.error(f"Failed to auto-create custom exercise: {str(e)}")
+            logger.error(f"Failed to auto-create custom exercise '{exercise_name}': {str(e)}")
+            logger.error(f"Traceback: {traceback.format_exc()}")
             return None
     
     def get_user_custom_exercises(
@@ -412,6 +409,107 @@ class ExerciseService:
         except Exception as e:
             logger.error(f"Failed to get user custom exercises: {str(e)}")
             return []
+    
+    def _find_existing_exercise(
+        self,
+        exercise_name: str,
+        user_id: str
+    ) -> Optional[Exercise]:
+        """
+        Search for existing exercise in global database and user's custom exercises
+        
+        Args:
+            exercise_name: Name of the exercise to find
+            user_id: User ID to search custom exercises
+            
+        Returns:
+            Exercise if found, None otherwise
+        """
+        # Check global database first (more likely to have matches)
+        global_results = self.search_exercises(exercise_name, limit=1)
+        if global_results.exercises:
+            logger.info(f"Found '{exercise_name}' in global database")
+            return global_results.exercises[0]
+        
+        # Check user's custom exercises
+        custom_exercises = self.get_user_custom_exercises(user_id, limit=1000)
+        for exercise in custom_exercises:
+            if exercise.name.lower() == exercise_name.lower():
+                logger.info(f"Found '{exercise_name}' in user's custom exercises")
+                return exercise
+        
+        return None
+    
+    def _validate_exercise_name(self, exercise_name: str) -> tuple[bool, Optional[str]]:
+        """
+        Validate exercise name for auto-creation
+        
+        Args:
+            exercise_name: Name to validate
+            
+        Returns:
+            Tuple of (is_valid, error_message)
+        """
+        if not exercise_name or not exercise_name.strip():
+            return False, "Exercise name cannot be empty"
+        
+        if len(exercise_name) > self.MAX_EXERCISE_NAME_LENGTH:
+            return False, f"Exercise name too long (max {self.MAX_EXERCISE_NAME_LENGTH} chars)"
+        
+        if len(exercise_name) < self.MIN_EXERCISE_NAME_LENGTH:
+            return False, f"Exercise name too short (min {self.MIN_EXERCISE_NAME_LENGTH} char)"
+        
+        return True, None
+    
+    def _create_default_custom_exercise(
+        self,
+        user_id: str,
+        exercise_name: str
+    ) -> Optional[Exercise]:
+        """
+        Create a custom exercise with sensible default values
+        
+        Args:
+            user_id: User ID
+            exercise_name: Name of the exercise
+            
+        Returns:
+            Created Exercise or None on failure
+        """
+        try:
+            # Create exercise with default values
+            exercise = Exercise(
+                name=exercise_name,
+                nameSearchTokens=self._generate_search_tokens(exercise_name),
+                difficultyLevel=self.DEFAULT_DIFFICULTY,  # String, not int
+                targetMuscleGroup=self.DEFAULT_MUSCLE_GROUP,
+                primaryEquipment=self.DEFAULT_EQUIPMENT,
+                movementPattern1=self.DEFAULT_MOVEMENT,
+                bodyRegion=self.DEFAULT_BODY_REGION,
+                mechanics=self.DEFAULT_MECHANICS,
+                isGlobal=False
+            )
+            
+            # Save to Firestore
+            exercise_ref = (
+                self.db.collection('users')
+                .document(user_id)
+                .collection('custom_exercises')
+                .document(exercise.id)
+            )
+            
+            exercise_data = exercise.model_dump()
+            exercise_data['createdAt'] = firestore.SERVER_TIMESTAMP
+            exercise_data['updatedAt'] = firestore.SERVER_TIMESTAMP
+            
+            exercise_ref.set(exercise_data)
+            
+            logger.info(f"✅ Auto-created custom exercise: {exercise.id} - '{exercise_name}'")
+            return exercise
+            
+        except Exception as e:
+            logger.error(f"Failed to create custom exercise in Firestore: {str(e)}")
+            return None
     
     # Utility Methods
     
