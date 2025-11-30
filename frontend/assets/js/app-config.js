@@ -38,6 +38,11 @@
                 path = '/' + path;
             }
             
+            // Remove trailing slash to prevent 404 errors
+            if (path.endsWith('/') && path.length > 1) {
+                path = path.slice(0, -1);
+            }
+            
             // Construct URL using current origin (preserves protocol)
             const url = this.baseUrl + path;
             

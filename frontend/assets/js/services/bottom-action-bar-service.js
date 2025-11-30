@@ -122,8 +122,22 @@
                     const floatingFab = document.getElementById('searchFab');
                     if (floatingFab) {
                         floatingFab.addEventListener('click', (e) => {
-                            e.preventDefault();
-                            this.handleButtonClick('fab');
+                            // Only handle clicks on the FAB itself when collapsed
+                            // When expanded, let clicks pass through to child elements
+                            const searchInput = document.getElementById('searchFabInput');
+                            const searchClose = document.getElementById('searchFabClose');
+                            
+                            // Don't handle if clicking on input or close button
+                            if (e.target === searchInput || searchInput.contains(e.target) ||
+                                e.target === searchClose || searchClose.contains(e.target)) {
+                                console.log('🔍 Click on child element, ignoring');
+                                return;
+                            }
+                            
+                            // Only trigger action if FAB is collapsed
+                            if (!floatingFab.classList.contains('expanded')) {
+                                this.handleButtonClick('fab');
+                            }
                         });
                         console.log('✅ Floating search FAB event listener attached');
                     }
@@ -145,28 +159,34 @@
             }
 
             const fabHTML = `
-                <button class="search-fab floating-search-fab"
+                <div class="search-fab floating-search-fab"
                         id="searchFab"
                         data-action="fab"
-                        title="${fab.title}">
+                        title="${fab.title}"
+                        role="button"
+                        tabindex="0">
                     <!-- FAB Icon (visible when collapsed) -->
                     <i class="bx ${fab.icon} search-fab-icon"></i>
                     
                     <!-- Expanded State Content -->
                     <i class="bx bx-search search-icon-expanded"></i>
                     <input
-                        type="text"
+                        type="search"
                         class="search-fab-input"
                         id="searchFabInput"
                         placeholder="Search..."
+                        inputmode="search"
                         autocomplete="off"
                         autocapitalize="off"
                         spellcheck="false"
+                        enterkeyhint="search"
+                        aria-label="Search"
                     />
                     <button class="search-fab-close" id="searchFabClose" type="button" tabindex="-1">
                         <i class="bx bx-x"></i>
+                        <span>Clear</span>
                     </button>
-                </button>
+                </div>
             `;
 
             // Append to the action bar container so it moves with the bar

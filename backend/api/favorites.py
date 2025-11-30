@@ -35,6 +35,7 @@ async def get_user_favorites(
         raise HTTPException(status_code=500, detail=f"Error getting favorites: {str(e)}")
 
 
+@router.post("", include_in_schema=True)
 @router.post("/")
 async def add_favorite(
     request: Dict[str, str],

@@ -15,13 +15,27 @@
     function openMorphingSearch(searchFab, searchInput) {
         if (window.bottomNavState?.animating) return;
         
-        console.log('🔍 Opening morphing search');
+        console.log('🔍 Opening morphing search with mobile keyboard optimization');
         window.bottomNavState = window.bottomNavState || {};
         window.bottomNavState.animating = true;
         
         // Get elements
         const bottomNav = document.querySelector('.bottom-action-bar');
         const backdrop = getOrCreateBackdrop();
+        
+        // CRITICAL: Focus IMMEDIATELY during user interaction (before any delays)
+        // This maintains the user interaction chain required by mobile browsers
+        if (searchInput) {
+            // Attempt 1: Immediate focus (most important for mobile)
+            searchInput.focus();
+            
+            // iOS Safari workaround: trigger click event as well
+            const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
+            if (isIOS) {
+                searchInput.click();
+                console.log('📱 iOS detected - triggered click for keyboard');
+            }
+        }
         
         // Show backdrop
         backdrop.classList.add('active');
@@ -37,11 +51,31 @@
             searchFab.classList.remove('morphing');
             searchFab.classList.add('expanded');
             
-            // Focus input after expansion
-            setTimeout(() => {
-                searchInput?.focus();
-            }, 50);
+            // Attempt 2: Focus after expansion completes
+            if (searchInput) {
+                searchInput.focus();
+                
+                // Additional iOS workaround
+                const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
+                if (isIOS) {
+                    searchInput.click();
+                }
+            }
         }, 150);
+        
+        // Attempt 3: Final focus attempt after all animations
+        setTimeout(() => {
+            if (searchInput && document.activeElement !== searchInput) {
+                console.log('🔄 Final focus attempt for mobile keyboard');
+                searchInput.focus();
+                
+                // Last resort for iOS
+                const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
+                if (isIOS) {
+                    searchInput.click();
+                }
+            }
+        }, 200);
         
         // Update state
         window.bottomNavState.isHidden = true;
@@ -57,22 +91,20 @@
      * Close search with morphing animation
      * @param {HTMLElement} searchFab - Search FAB element
      */
+    /**
+     * Close search with morphing animation (without clearing)
+     * @param {HTMLElement} searchFab - Search FAB element
+     */
     function closeMorphingSearch(searchFab) {
         if (window.bottomNavState?.animating) return;
         
-        console.log('🔍 Closing morphing search');
+        console.log('🔍 Closing morphing search (keeping search term)');
         window.bottomNavState = window.bottomNavState || {};
         window.bottomNavState.animating = true;
         
         // Get elements
         const bottomNav = document.querySelector('.bottom-action-bar');
         const backdrop = document.querySelector('.search-backdrop');
-        const searchInput = document.getElementById('searchFabInput');
-        
-        // Clear search input
-        if (searchInput) {
-            searchInput.value = '';
-        }
         
         // Hide backdrop
         backdrop?.classList.remove('active');
@@ -100,7 +132,71 @@
     }
 
     /**
-     * Get or create backdrop element for tap-outside detection
+     * Clear search and close
+     * @param {HTMLElement} searchFab - Search FAB element
+     */
+    function clearAndCloseSearch(searchFab) {
+        console.log('🔍 Clearing search and closing');
+        
+        const searchInput = document.getElementById('searchFabInput');
+        const searchClose = document.getElementById('searchFabClose');
+        
+        // Clear search input and trigger search with empty term
+        if (searchInput) {
+            searchInput.value = '';
+            // Trigger search to clear results
+            if (window.currentFilters && window.applyFiltersAndRender) {
+                window.currentFilters.search = '';
+                window.applyFiltersAndRender(window.currentFilters);
+            } else if (window.ghostGym?.workoutDatabase && window.filterWorkouts) {
+                window.ghostGym.workoutDatabase.filters.search = '';
+                window.filterWorkouts();
+            }
+        }
+        
+        // Remove has-text class from close button
+        if (searchClose) {
+            searchClose.classList.remove('has-text');
+        }
+        
+        // Close the search
+        closeMorphingSearch(searchFab);
+    }
+
+    /**
+     * Set up document-level click handler for click-outside detection
+     * This replaces the backdrop approach which was unreliable
+     */
+    let clickOutsideHandlerAttached = false;
+    
+    function setupClickOutsideHandler() {
+        if (clickOutsideHandlerAttached) return;
+        clickOutsideHandlerAttached = true;
+        
+        // Use capture phase to catch clicks before they reach other handlers
+        document.addEventListener('click', (e) => {
+            const searchFab = document.getElementById('searchFab');
+            
+            // Only handle if search is expanded
+            if (!searchFab || !searchFab.classList.contains('expanded')) {
+                return;
+            }
+            
+            // Check if click is inside the search FAB (including all children)
+            if (searchFab.contains(e.target)) {
+                console.log('🔍 Click inside search FAB - keeping open');
+                return;
+            }
+            
+            console.log('🔍 Click outside search FAB - closing');
+            closeMorphingSearch(searchFab);
+        }, true); // true = capture phase
+        
+        console.log('✅ Click-outside handler attached to document');
+    }
+    
+    /**
+     * Get or create backdrop element (now only for visual dimming, no click handling)
      * @returns {HTMLElement} Backdrop element
      */
     function getOrCreateBackdrop() {
@@ -110,17 +206,6 @@
             backdrop = document.createElement('div');
             backdrop.className = 'search-backdrop';
             document.body.appendChild(backdrop);
-            
-            // Click handler for tap-outside
-            backdrop.addEventListener('click', () => {
-                console.log('👆 Tapped outside search - closing');
-                
-                // Find and close morphing search FAB
-                const searchFab = document.getElementById('searchFab');
-                if (searchFab && searchFab.classList.contains('expanded')) {
-                    closeMorphingSearch(searchFab);
-                }
-            });
         }
         
         return backdrop;
@@ -134,6 +219,7 @@
         const searchFab = document.getElementById('searchFab');
         const searchInput = document.getElementById('searchFabInput');
         const searchClose = document.getElementById('searchFabClose');
+        const searchIcon = searchFab?.querySelector('.search-icon-expanded');
         
         if (!searchFab || !searchInput || !searchClose) {
             console.warn('⚠️ Morphing search elements not found');
@@ -142,13 +228,23 @@
         
         console.log('🔧 Initializing morphing search');
         
-        // Close button handler
+        // Set up document-level click-outside handler (replaces backdrop click handling)
+        setupClickOutsideHandler();
+        
+        // Close button handler - CLEARS search and closes
         searchClose.addEventListener('click', (e) => {
             e.stopPropagation();
-            closeMorphingSearch(searchFab);
+            e.preventDefault();
+            
+            // Add pulse animation
+            searchClose.classList.add('pulse');
+            setTimeout(() => searchClose.classList.remove('pulse'), 300);
+            
+            // Clear search and close
+            clearAndCloseSearch(searchFab);
         });
         
-        // ESC key handler
+        // ESC key handler - just closes without clearing
         searchInput.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
                 closeMorphingSearch(searchFab);
@@ -159,6 +255,15 @@
         let searchTimeout;
         searchInput.addEventListener('input', (e) => {
             clearTimeout(searchTimeout);
+            
+            // Update close button visibility based on input
+            const hasText = e.target.value.trim().length > 0;
+            if (hasText) {
+                searchClose.classList.add('has-text');
+            } else {
+                searchClose.classList.remove('has-text');
+            }
+            
             searchTimeout = setTimeout(() => {
                 const searchTerm = e.target.value.trim();
                 console.log('🔍 Search term:', searchTerm);
@@ -416,11 +521,9 @@
                         return;
                     }
                     
-                    // Toggle morphing search
-                    if (searchFab.classList.contains('expanded')) {
-                        // Close search - morph back to FAB
-                        closeMorphingSearch(searchFab);
-                    } else {
+                    // Only toggle if NOT expanded (only open when collapsed)
+                    // When expanded, clicks should be handled by child elements
+                    if (!searchFab.classList.contains('expanded')) {
                         // Open search - morph FAB to search box
                         openMorphingSearch(searchFab, searchInput);
                     }
@@ -843,13 +946,12 @@
                         return;
                     }
                     
-                    // Toggle morphing search
-                    if (searchFab.classList.contains('expanded')) {
-                        // Close search - morph back to FAB
-                        closeMorphingSearch(searchFab);
-                    } else {
+                    // Only open if collapsed - when expanded, do nothing (let clicks pass through)
+                    if (!searchFab.classList.contains('expanded')) {
                         // Open search - morph FAB to search box
                         openMorphingSearch(searchFab, searchInput);
+                    } else {
+                        console.log('🔍 Search already expanded, ignoring click');
                     }
                 }
             }

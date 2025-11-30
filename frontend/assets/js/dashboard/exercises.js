@@ -283,7 +283,7 @@ async function loadAllExerciseData(page) {
         if (totalCount) totalCount.textContent = allExercises.length.toLocaleString();
     }
     
-    // Load user-specific data
+    // Load user-specific data (must complete before rendering)
     await loadUserExerciseData();
 }
 
@@ -321,6 +321,12 @@ async function loadUserExerciseData() {
         }
         
         updateStats();
+        
+        // Refresh table if it exists to update favorite states
+        if (window.exerciseTable) {
+            console.log('🔄 Refreshing table with updated favorites');
+            window.exerciseTable.refresh();
+        }
         
     } catch (error) {
         console.error('❌ Error loading user exercise data:', error);
@@ -675,7 +681,9 @@ async function toggleExerciseFavorite(exerciseId) {
                 }
             }
         } else {
-            const response = await fetch(exercisePage.getApiUrl('/api/v3/users/me/favorites'), {
+            // Construct URL and ensure no trailing slash
+            const url = new URL(exercisePage.getApiUrl('/api/v3/users/me/favorites'));
+            const response = await fetch(url.href, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
