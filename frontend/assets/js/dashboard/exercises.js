@@ -673,6 +673,11 @@ async function toggleExerciseFavorite(exerciseId) {
                     }
                 }
             } else {
+                console.error('❌ Failed to remove favorite:', response.status, response.statusText);
+                const errorData = await response.json().catch(() => ({}));
+                console.error('Error details:', errorData);
+                showAlert(`Failed to remove favorite: ${errorData.detail || response.statusText}`, 'danger');
+                
                 // Revert optimistic update on failure
                 if (button && icon) {
                     icon.className = 'bx bxs-heart';
@@ -695,6 +700,11 @@ async function toggleExerciseFavorite(exerciseId) {
                 window.ghostGym.exercises.favorites.add(exerciseId);
                 console.log('✅ Added to favorites');
             } else {
+                console.error('❌ Failed to add favorite:', response.status, response.statusText);
+                const errorData = await response.json().catch(() => ({}));
+                console.error('Error details:', errorData);
+                showAlert(`Failed to add favorite: ${errorData.detail || response.statusText}`, 'danger');
+                
                 // Revert optimistic update on failure
                 if (button && icon) {
                     icon.className = 'bx bx-heart';

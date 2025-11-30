@@ -50,8 +50,14 @@ async def add_favorite(
         if not exercise_id:
             raise HTTPException(status_code=400, detail="exerciseId is required")
         
-        # Get exercise details
+        # Get exercise details - check both global and custom exercises
         exercise = exercise_service.get_exercise_by_id(exercise_id)
+        
+        # If not found in global exercises, check user's custom exercises
+        if not exercise:
+            custom_exercises = exercise_service.get_user_custom_exercises(user_id, limit=1000)
+            exercise = next((ex for ex in custom_exercises if ex.id == exercise_id), None)
+        
         if not exercise:
             raise HTTPException(status_code=404, detail="Exercise not found")
         
