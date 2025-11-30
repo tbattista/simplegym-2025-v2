@@ -9,11 +9,12 @@ import logging
 from ..models import FavoritesResponse
 from ..api.dependencies import get_favorites_service, get_exercise_service, require_auth
 
-router = APIRouter(prefix="/api/v3/users/me/favorites", tags=["Favorites"])
+router = APIRouter(prefix="/api/v3/users/me", tags=["Favorites"])
 logger = logging.getLogger(__name__)
 
 
-@router.get("/", response_model=FavoritesResponse)
+@router.get("/favorites", response_model=FavoritesResponse)
+@router.get("/favorites/", response_model=FavoritesResponse)
 async def get_user_favorites(
     user_id: str = Depends(require_auth),
     favorites_service = Depends(get_favorites_service)
@@ -35,8 +36,8 @@ async def get_user_favorites(
         raise HTTPException(status_code=500, detail=f"Error getting favorites: {str(e)}")
 
 
-@router.post("", include_in_schema=True)
-@router.post("/")
+@router.post("/favorites", include_in_schema=True)
+@router.post("/favorites/", include_in_schema=True)
 async def add_favorite(
     request: Dict[str, str],
     user_id: str = Depends(require_auth),
@@ -82,7 +83,7 @@ async def add_favorite(
         raise HTTPException(status_code=500, detail=f"Error adding favorite: {str(e)}")
 
 
-@router.delete("/{exercise_id}")
+@router.delete("/favorites/{exercise_id}")
 async def remove_favorite(
     exercise_id: str,
     user_id: str = Depends(require_auth),
@@ -117,7 +118,7 @@ async def remove_favorite(
         raise HTTPException(status_code=500, detail=f"Error removing favorite: {str(e)}")
 
 
-@router.post("/check")
+@router.post("/favorites/check")
 async def check_favorites(
     request: Dict[str, List[str]],
     user_id: str = Depends(require_auth),
