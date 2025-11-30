@@ -45,7 +45,7 @@
 }
 
 /* ============================================================================
-   SEARCH INPUT
+   SEARCH INPUT - SNEAT COMPLIANT
    ============================================================================ */
 
 .filter-search {
@@ -57,24 +57,35 @@
     flex-wrap: nowrap;
 }
 
+/* SNEAT input-group-merge pattern - seamless borders */
+.filter-search .input-group-text {
+    background-color: transparent;
+    border-right: 0;
+}
+
 .filter-search-input {
     min-width: 0;
     font-size: 0.875rem;
+    border-left: 0;
+    border-right: 0;
 }
 
 .filter-clear-search {
     flex-shrink: 0;
+    border-left: 0;
 }
 
-.filter-search .input-group-text {
-    background-color: var(--bs-body-bg);
-    border-color: var(--bs-border-color);
-    color: var(--bs-body-color);
+/* Focus state - highlight entire group */
+.filter-search .input-group:focus-within .input-group-text {
+    border-color: var(--bs-primary);
 }
 
-[data-bs-theme=dark] .filter-search .input-group-text {
-    background-color: var(--bs-body-bg);
-    border-color: rgba(255, 255, 255, 0.12);
+.filter-search .input-group:focus-within .filter-search-input {
+    border-color: var(--bs-primary);
+}
+
+.filter-search .input-group:focus-within .filter-clear-search {
+    border-color: var(--bs-primary);
 }
 
 /* ============================================================================

@@ -371,6 +371,11 @@ function applyFiltersAndRender(filters) {
     if (filters.exerciseTier) {
         const tierValue = parseInt(filters.exerciseTier);
         allExercises = allExercises.filter(e => {
+            // Custom exercises (isGlobal === false) should always pass tier filter
+            if (!e.isGlobal) {
+                return true;
+            }
+            
             const exerciseTier = e.exerciseTier || 2;
             const isFoundational = e.isFoundational || false;
             // Tier 1 includes both exerciseTier === 1 and isFoundational === true

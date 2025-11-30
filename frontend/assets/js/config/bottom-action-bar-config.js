@@ -7,6 +7,113 @@
     'use strict';
 
     /**
+     * Create a Bootstrap dropdown for search
+     * @param {string} type - 'exercise' or 'workout'
+     * @returns {Object} Bootstrap Dropdown instance
+     */
+    function createSearchDropdown(type) {
+        const dropdownId = `${type}SearchDropdown`;
+        const inputId = `${type}SearchInput`;
+        
+        // Check if dropdown already exists
+        let existingDropdown = document.getElementById(dropdownId);
+        if (existingDropdown) {
+            return bootstrap.Dropdown.getInstance(existingDropdown) || new bootstrap.Dropdown(existingDropdown);
+        }
+        
+        // Create dropdown HTML
+        const dropdownHTML = `
+            <div class="dropdown position-fixed" id="${dropdownId}" style="bottom: 80px; left: 50%; transform: translateX(-50%); z-index: 1050; width: 90%; max-width: 500px;">
+                <div class="dropdown-menu show w-100 p-3" style="position: static;">
+                    <div class="input-group">
+                        <span class="input-group-text">
+                            <i class="bx bx-search"></i>
+                        </span>
+                        <input type="text"
+                               class="form-control"
+                               id="${inputId}"
+                               placeholder="Search ${type}s..."
+                               autocomplete="off">
+                        <button class="btn btn-outline-secondary" type="button" onclick="window.${type}SearchDropdown.hide()">
+                            <i class="bx bx-x"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Add to body
+        document.body.insertAdjacentHTML('beforeend', dropdownHTML);
+        
+        // Get the dropdown element
+        const dropdownElement = document.getElementById(dropdownId);
+        const searchInput = document.getElementById(inputId);
+        
+        // Set up search input handler
+        let searchTimeout;
+        searchInput.addEventListener('input', (e) => {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                const searchTerm = e.target.value.trim();
+                console.log(`🔍 ${type} search:`, searchTerm);
+                
+                // Update the appropriate filter
+                if (type === 'exercise' && window.currentFilters) {
+                    window.currentFilters.search = searchTerm;
+                    if (window.applyFiltersAndRender) {
+                        window.applyFiltersAndRender(window.currentFilters);
+                    }
+                } else if (type === 'workout' && window.ghostGym?.workoutDatabase) {
+                    window.ghostGym.workoutDatabase.filters.search = searchTerm;
+                    if (window.filterWorkouts) {
+                        window.filterWorkouts();
+                    }
+                }
+            }, 300);
+        });
+        
+        // Create custom dropdown object with show/hide/toggle methods
+        const dropdown = {
+            element: dropdownElement,
+            input: searchInput,
+            show: function() {
+                this.element.querySelector('.dropdown-menu').classList.add('show');
+                setTimeout(() => this.input.focus(), 100);
+                console.log(`🔍 ${type} search dropdown shown`);
+            },
+            hide: function() {
+                this.element.querySelector('.dropdown-menu').classList.remove('show');
+                console.log(`🔍 ${type} search dropdown hidden`);
+            },
+            toggle: function() {
+                const menu = this.element.querySelector('.dropdown-menu');
+                if (menu.classList.contains('show')) {
+                    this.hide();
+                } else {
+                    this.show();
+                }
+            }
+        };
+        
+        // Close on click outside
+        document.addEventListener('click', (e) => {
+            if (!dropdownElement.contains(e.target) &&
+                !e.target.closest('[data-action="fab"]')) {
+                dropdown.hide();
+            }
+        });
+        
+        // Close on ESC key
+        searchInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                dropdown.hide();
+            }
+        });
+        
+        return dropdown;
+    }
+
+    /**
      * Configuration for each page
      * Structure:
      * - leftActions: Array of left-side buttons
@@ -52,11 +159,12 @@
                 title: 'Search workouts',
                 variant: 'primary',
                 action: function() {
-                    // Toggle FAB search dropdown
-                    if (window.workoutSearchDropdown) {
-                        window.workoutSearchDropdown.toggle();
+                    // Create and show search dropdown if it doesn't exist
+                    if (!window.workoutSearchDropdown) {
+                        window.workoutSearchDropdown = createSearchDropdown('workout');
+                        window.workoutSearchDropdown.show();
                     } else {
-                        console.error('❌ Workout search dropdown not initialized');
+                        window.workoutSearchDropdown.toggle();
                     }
                 }
             },
@@ -426,11 +534,12 @@
                 title: 'Search exercises',
                 variant: 'primary',
                 action: function() {
-                    // Toggle FAB search dropdown
-                    if (window.exerciseSearchDropdown) {
-                        window.exerciseSearchDropdown.toggle();
+                    // Create and show search dropdown if it doesn't exist
+                    if (!window.exerciseSearchDropdown) {
+                        window.exerciseSearchDropdown = createSearchDropdown('exercise');
+                        window.exerciseSearchDropdown.show();
                     } else {
-                        console.error('❌ Exercise search dropdown not initialized');
+                        window.exerciseSearchDropdown.toggle();
                     }
                 }
             },

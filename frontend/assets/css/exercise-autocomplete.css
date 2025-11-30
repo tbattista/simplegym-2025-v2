@@ -1,7 +1,38 @@
 /**
  * Exercise Autocomplete Component Styles
- * Ghost Gym V2 - Dark Theme
+ * Ghost Gym V2 - SNEAT Compliant
+ * @version 2.1.0 - Standardized with SNEAT input-group pattern
  */
+
+/* SNEAT Input Group Wrapper */
+.exercise-autocomplete-wrapper {
+    position: relative;
+}
+
+.exercise-autocomplete-wrapper .input-group-text {
+    background-color: transparent;
+    border-right: 0;
+}
+
+.exercise-autocomplete-wrapper .form-control {
+    border-left: 0;
+    border-right: 0;
+}
+
+.exercise-autocomplete-wrapper .form-control:focus {
+    border-color: var(--bs-primary);
+    box-shadow: none;
+}
+
+/* Clear Button */
+.exercise-autocomplete-clear {
+    flex-shrink: 0;
+    border-left: 0;
+}
+
+.exercise-autocomplete-clear:hover {
+    background-color: var(--bs-secondary-bg);
+}
 
 /* Autocomplete Dropdown Container */
 .exercise-autocomplete-dropdown {
@@ -118,10 +149,17 @@
     background: var(--bs-secondary);
 }
 
-/* Input Focus State */
-.exercise-autocomplete-input:focus {
+/* Input Focus State - Handled by input-group-merge */
+.exercise-autocomplete-wrapper:focus-within .input-group-text {
     border-color: var(--bs-primary);
-    box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.25);
+}
+
+.exercise-autocomplete-wrapper:focus-within .form-control {
+    border-color: var(--bs-primary);
+}
+
+.exercise-autocomplete-wrapper:focus-within .exercise-autocomplete-clear {
+    border-color: var(--bs-primary);
 }
 
 /* Responsive Adjustments */

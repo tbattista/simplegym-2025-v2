@@ -87,18 +87,20 @@ class GhostGymFilterBar {
     createSearchHTML() {
         return `
             <div class="filter-search mb-3">
-                <div class="input-group">
+                <div class="input-group input-group-merge">
                     <span class="input-group-text">
                         <i class="bx bx-search"></i>
                     </span>
-                    <input type="text" 
-                           class="form-control filter-search-input" 
+                    <input type="text"
+                           class="form-control filter-search-input"
                            placeholder="${this.options.searchPlaceholder}"
-                           autocomplete="off">
+                           autocomplete="off"
+                           aria-label="${this.options.searchPlaceholder}">
                     ${this.options.showClearSearch ? `
-                    <button class="btn btn-outline-secondary filter-clear-search" 
-                            type="button" 
-                            style="display: none;">
+                    <button class="btn btn-outline-secondary filter-clear-search"
+                            type="button"
+                            style="display: none;"
+                            aria-label="Clear search">
                         <i class="bx bx-x"></i>
                     </button>
                     ` : ''}

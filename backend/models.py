@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from typing import Dict, Optional, List
 from datetime import date, datetime
 from uuid import uuid4
@@ -482,6 +482,22 @@ class Exercise(BaseModel):
         description="Difficulty level of the exercise",
         example="Beginner"
     )
+    
+    @field_validator('difficultyLevel', mode='before')
+    @classmethod
+    def convert_difficulty_to_string(cls, v):
+        """Convert integer difficulty levels to strings for backward compatibility"""
+        if v is None:
+            return v
+        if isinstance(v, int):
+            # Map integer values to string difficulty levels
+            difficulty_map = {
+                1: "Beginner",
+                2: "Intermediate",
+                3: "Advanced"
+            }
+            return difficulty_map.get(v, "Intermediate")
+        return str(v) if v else None
     
     targetMuscleGroup: Optional[str] = Field(
         default=None,

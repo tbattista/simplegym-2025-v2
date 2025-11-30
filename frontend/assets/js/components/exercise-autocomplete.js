@@ -76,16 +76,56 @@ class ExerciseAutocomplete {
     }
     
     /**
-     * Create dropdown element
+     * Create dropdown element and wrap input in SNEAT input-group
      */
     createDropdown() {
+        // Check if input is already wrapped in input-group
+        const parentElement = this.input.parentElement;
+        const isAlreadyWrapped = parentElement.classList.contains('input-group') ||
+                                 parentElement.classList.contains('exercise-autocomplete-wrapper');
+        
+        if (!isAlreadyWrapped) {
+            // Create SNEAT-style input-group wrapper
+            const wrapper = document.createElement('div');
+            wrapper.className = 'input-group input-group-merge exercise-autocomplete-wrapper';
+            wrapper.style.position = 'relative';
+            
+            // Create search icon
+            const iconSpan = document.createElement('span');
+            iconSpan.className = 'input-group-text';
+            iconSpan.innerHTML = '<i class="bx bx-search"></i>';
+            
+            // Create clear button
+            const clearBtn = document.createElement('button');
+            clearBtn.className = 'btn btn-outline-secondary exercise-autocomplete-clear';
+            clearBtn.type = 'button';
+            clearBtn.style.display = 'none';
+            clearBtn.innerHTML = '<i class="bx bx-x"></i>';
+            clearBtn.setAttribute('aria-label', 'Clear search');
+            clearBtn.addEventListener('click', () => this.clear());
+            
+            // Wrap the input
+            this.input.parentNode.insertBefore(wrapper, this.input);
+            wrapper.appendChild(iconSpan);
+            wrapper.appendChild(this.input);
+            wrapper.appendChild(clearBtn);
+            
+            // Store reference to clear button
+            this.clearButton = clearBtn;
+        } else {
+            // Already wrapped, just find the clear button if it exists
+            this.clearButton = parentElement.querySelector('.exercise-autocomplete-clear');
+        }
+        
+        // Create dropdown element
         this.dropdown = document.createElement('div');
         this.dropdown.className = 'exercise-autocomplete-dropdown';
         this.dropdown.style.display = 'none';
         
-        // Position dropdown below input
-        this.input.parentElement.style.position = 'relative';
-        this.input.parentElement.appendChild(this.dropdown);
+        // Position dropdown below input wrapper
+        const dropdownParent = this.input.closest('.exercise-autocomplete-wrapper') || this.input.parentElement;
+        dropdownParent.style.position = 'relative';
+        dropdownParent.appendChild(this.dropdown);
     }
     
     /**
@@ -125,6 +165,11 @@ class ExerciseAutocomplete {
      */
     handleInput(e) {
         const query = e.target.value.trim();
+        
+        // Show/hide clear button
+        if (this.clearButton) {
+            this.clearButton.style.display = query ? 'block' : 'none';
+        }
         
         // Clear previous timer
         if (this.debounceTimer) {
@@ -486,7 +531,14 @@ class ExerciseAutocomplete {
         delete this.input.dataset.exerciseId;
         delete this.input.dataset.exerciseName;
         delete this.input.dataset.isCustom;
+        
+        // Hide clear button
+        if (this.clearButton) {
+            this.clearButton.style.display = 'none';
+        }
+        
         this.close();
+        this.input.focus();
     }
     
     /**
