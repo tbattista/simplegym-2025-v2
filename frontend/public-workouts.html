@@ -11,7 +11,7 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
 
-    <title>🌐 Discover Workouts - Ghost Gym V0.4.1</title>
+    <title>🌐 Discover Workouts - Ghost Gym V3.0.0</title>
 
     <meta name="description" content="Discover and save shared workout templates" />
 
@@ -94,34 +94,8 @@
                 <p class="text-muted">Browse and save workouts shared by the community</p>
               </div>
 
-              <!-- Loading State -->
-              <div id="loadingState" class="text-center py-5">
-                <div class="spinner-border text-primary mb-3" role="status" style="width: 3rem; height: 3rem;">
-                  <span class="visually-hidden">Loading...</span>
-                </div>
-                <h5 class="mt-3">Loading workouts...</h5>
-              </div>
-
-              <!-- Empty State -->
-              <div id="emptyState" class="text-center py-5" style="display: none;">
-                <i class="bx bx-search display-1 text-muted"></i>
-                <h5 class="mt-3">No workouts found</h5>
-                <p class="text-muted">Try adjusting your filters or check back later</p>
-              </div>
-
-              <!-- Workouts Grid -->
-              <div id="workoutsGrid" class="row g-3" style="display: none;">
-                <!-- Workout cards will be inserted here -->
-              </div>
-
-              <!-- Pagination -->
-              <div id="paginationContainer" class="mt-4" style="display: none;">
-                <nav aria-label="Workout pagination">
-                  <ul class="pagination pagination-sm justify-content-center" id="paginationList">
-                    <!-- Pagination will be inserted here -->
-                  </ul>
-                </nav>
-              </div>
+              <!-- Workouts Grid Container (managed by WorkoutGrid component) -->
+              <div id="publicWorkoutsContainer"></div>
 
             </div>
             <!-- / Content -->
@@ -242,11 +216,13 @@
     <!-- Component Scripts -->
     <script src="/static/assets/js/components/modal-manager.js"></script>
 
-    <!-- Workout Detail Modal Component -->
-    <script src="/static/assets/js/components/workout-detail-modal.js"></script>
+    <!-- Shared Workout Components -->
+    <script src="/static/assets/js/components/workout-card.js"></script>
+    <script src="/static/assets/js/components/workout-grid.js"></script>
+    <script src="/static/assets/js/components/workout-detail-offcanvas.js"></script>
 
     <!-- Public Workouts JS -->
-    <script src="/static/assets/js/dashboard/public-workouts.js"></script>
+    <script src="/static/assets/js/dashboard/public-workouts.js?v=3.0.0"></script>
 
     <!-- Initialize Public Workouts Page -->
     <script>

@@ -191,6 +191,19 @@ async def serve_workout_history():
             status_code=404
         )
 
+@app.get("/public-workouts", response_class=HTMLResponse)
+@app.get("/public-workouts.html", response_class=HTMLResponse)
+async def serve_public_workouts():
+    """Serve the Public Workouts (Discover) page"""
+    try:
+        with open("frontend/public-workouts.html", "r", encoding="utf-8") as f:
+            return HTMLResponse(content=f.read())
+    except FileNotFoundError:
+        return HTMLResponse(
+            content="<h1>Public Workouts not found</h1><p>Please ensure frontend/public-workouts.html exists</p>",
+            status_code=404
+        )
+
 
 if __name__ == "__main__":
     import uvicorn
