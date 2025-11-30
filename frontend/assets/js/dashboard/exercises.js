@@ -845,14 +845,14 @@ function updateFavoritesButtonState(isActive) {
     
     console.log('🔄 Updating favorites button state:', isActive ? 'active' : 'inactive');
     
-    // Update button icon and title (left-0 is now the Favorites button)
-    window.bottomActionBar.updateButton('left-0', {
+    // Update button icon and title (btn-0 is now the Favorites button)
+    window.bottomActionBar.updateButton('btn-0', {
         icon: isActive ? 'bxs-heart' : 'bx-heart',
         title: isActive ? 'Show all exercises' : 'Show only favorites'
     });
     
     // Add/remove active class for color change
-    const btn = document.querySelector('[data-action="left-0"]');
+    const btn = document.querySelector('[data-action="btn-0"]');
     if (btn) {
         btn.classList.toggle('active', isActive);
         console.log('✅ Button class updated:', btn.classList.contains('active') ? 'active' : 'inactive');

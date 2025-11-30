@@ -1,7 +1,8 @@
 /**
  * Bottom Action Bar Component
  * Mobile-first navigation bar with Material Design 3 specifications
- * Based on approved design from bottom-nav-demo.html
+ * Supports both 2-FAB-2 layout (legacy) and 4-button + right FAB layout (alternative)
+ * Based on approved designs from bottom-nav-demo.html and bottom-nav-demo-alt.html
  */
 
 /* ============================================
@@ -15,13 +16,35 @@
     right: 0;
     background: var(--bs-body-bg);
     border-top: 1px solid var(--bs-border-color);
-    padding: 8px 16px;
-    padding-bottom: calc(8px + env(safe-area-inset-bottom));
+    padding: 4px 12px;
+    padding-bottom: calc(4px + env(safe-area-inset-bottom));
     box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.06);
     z-index: 1000;
-    height: 80px;
-    height: calc(80px + env(safe-area-inset-bottom));
-    transition: transform 0.3s ease;
+    height: 56px;
+    height: calc(56px + env(safe-area-inset-bottom));
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Bottom nav hidden state (slides down when search is active) */
+.bottom-action-bar.search-active {
+    transform: translateY(100%);
+}
+
+/* Gradient fade at top of nav bar (alternative layout) */
+.bottom-action-bar::before {
+    content: '';
+    position: absolute;
+    top: -20px;
+    left: 0;
+    right: 0;
+    height: 20px;
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0), rgba(255, 255, 255, 1));
+    pointer-events: none;
+    z-index: -1;
+}
+
+[data-theme="dark"] .bottom-action-bar::before {
+    background: linear-gradient(to bottom, transparent, var(--bs-body-bg));
 }
 
 /* Hidden state */
@@ -40,13 +63,13 @@
 
 .action-bar-container {
     display: flex;
-    justify-content: space-around;
+    justify-content: center;
     align-items: center;
     max-width: 600px;
     margin: 0 auto;
     position: relative;
-    height: 64px;
-    padding: 0 8px;
+    height: 48px;
+    padding: 0 4px;
 }
 
 /* ============================================
@@ -69,27 +92,65 @@
 }
 
 /* ============================================
+   ACTION BUTTONS ROW (ALTERNATIVE LAYOUT)
+   4 buttons evenly distributed
+   ============================================ */
+
+.action-buttons-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    gap: 4px;
+    z-index: 1;
+    padding: 0 4px 0 8px;
+    margin-right: 0;
+}
+
+/* ============================================
    ACTION BUTTONS
    ============================================ */
 
 .action-btn {
-    width: 56px;
-    height: 56px;
-    min-width: 56px;
-    border-radius: 16px;
+    flex: 1 1 0;
+    max-width: none;
+    height: 44px;
+    min-width: 48px;
+    border-radius: 12px;
     background: transparent;
     border: none;
-    color: var(--bs-secondary);
+    color: var(--bs-body-color);
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    font-size: 24px;
+    font-size: 20px;
     cursor: pointer;
     transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
-    padding: 6px 0 0 0;
-    gap: 3px;
+    padding: 0;
+    gap: 2px;
+}
+
+/* Legacy layout: fixed width for action-group buttons ONLY */
+.action-group .action-btn {
+    flex: 0 0 auto !important;
+    width: 56px !important;
+    height: 56px !important;
+    min-width: 56px !important;
+    max-width: 56px !important;
+    border-radius: 16px !important;
+    padding: 6px 0 0 0 !important;
+}
+
+/* New layout: ensure buttons in action-buttons-row fill available space */
+.action-buttons-row .action-btn {
+    flex: 1 1 0 !important;
+    max-width: none !important;
+    height: 44px !important;
+    min-width: 48px !important;
+    border-radius: 12px !important;
+    padding: 0 !important;
 }
 
 .action-btn:hover {
@@ -183,9 +244,9 @@
    ============================================ */
 
 .action-btn-label {
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 600;
-    margin-top: 3px;
+    margin-top: 2px;
     color: inherit;
     line-height: 1;
     letter-spacing: 0.02em;
@@ -199,13 +260,13 @@
 
 .action-fab {
     position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%) translateY(-12px);
-    width: 64px;
-    height: 64px;
-    min-width: 64px;
-    border-radius: 50%;
+    right: 4px;
+    bottom: 100%;
+    transform: translateY(-18px);
+    width: 48px;
+    height: 48px;
+    min-width: 48px;
+    border-radius: 12px;
     background: var(--bs-primary);
     color: white;
     border: none;
@@ -216,16 +277,17 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 28px;
+    font-size: 24px;
     cursor: pointer;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     z-index: 2;
+    pointer-events: auto;
 }
 
 .action-fab:hover {
     background: var(--bs-primary);
     filter: brightness(0.95);
-    transform: translate(-50%, -50%) translateY(-14px);
+    transform: translateY(-20px);
     box-shadow:
         0 5px 5px -3px rgba(0, 0, 0, 0.2),
         0 8px 10px 1px rgba(0, 0, 0, 0.14),
@@ -233,7 +295,7 @@
 }
 
 .action-fab:active {
-    transform: translate(-50%, -50%) translateY(-10px) scale(0.95);
+    transform: translateY(-16px) scale(0.95);
 }
 
 .action-fab:focus {
@@ -248,6 +310,64 @@
 .action-fab.success:hover {
     background: var(--bs-success);
     filter: brightness(0.95);
+}
+
+.action-fab.danger {
+    background: var(--bs-danger);
+}
+
+.action-fab.danger:hover {
+    background: var(--bs-danger);
+    filter: brightness(0.95);
+}
+
+/* ============================================
+   SECONDARY FAB (ALTERNATIVE LAYOUT)
+   Optional secondary action button
+   ============================================ */
+
+.action-fab-secondary {
+    position: absolute;
+    right: 56px;
+    bottom: 100%;
+    transform: translateY(-18px);
+    width: 48px;
+    height: 48px;
+    min-width: 48px;
+    border-radius: 12px;
+    background: var(--bs-secondary);
+    color: white;
+    border: none;
+    box-shadow:
+        0 2px 4px -1px rgba(0, 0, 0, 0.2),
+        0 4px 6px 0 rgba(0, 0, 0, 0.14),
+        0 1px 10px 0 rgba(0, 0, 0, 0.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 2;
+}
+
+.action-fab-secondary:hover {
+    background: var(--bs-secondary);
+    filter: brightness(0.9);
+    transform: translateY(-20px);
+    box-shadow:
+        0 3px 5px -1px rgba(0, 0, 0, 0.2),
+        0 6px 8px 0 rgba(0, 0, 0, 0.14),
+        0 1px 12px 0 rgba(0, 0, 0, 0.12);
+}
+
+.action-fab-secondary:active {
+    transform: translateY(-16px) scale(0.95);
+}
+
+.action-fab-secondary:focus {
+    outline: none;
 }
 
 /* ============================================
@@ -272,6 +392,10 @@
     .action-group {
         gap: 16px;
     }
+    
+    .action-buttons-row {
+        gap: 12px;
+    }
 }
 
 /* Desktop */
@@ -287,7 +411,8 @@
 
 /* Focus visible for keyboard navigation */
 .action-btn:focus-visible,
-.action-fab:focus-visible {
+.action-fab:focus-visible,
+.action-fab-secondary:focus-visible {
     outline: 2px solid var(--bs-primary);
     outline-offset: 2px;
 }
@@ -296,7 +421,8 @@
 @media (prefers-reduced-motion: reduce) {
     .bottom-action-bar,
     .action-btn,
-    .action-fab {
+    .action-fab,
+    .action-fab-secondary {
         transition: none;
     }
 }
@@ -308,5 +434,295 @@
 @media print {
     .bottom-action-bar {
         display: none;
+    }
+}
+
+/* ============================================
+   SEARCH DROPDOWN POSITIONING
+   ============================================ */
+
+.search-dropdown {
+    position: fixed;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1050;
+    width: 90%;
+    max-width: 500px;
+    transition: bottom 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Search dropdown repositions when nav is hidden */
+.search-dropdown.nav-hidden {
+    bottom: 20px;
+}
+
+/* ============================================
+   SEARCH BACKDROP (TAP-OUTSIDE DETECTION)
+   ============================================ */
+
+.search-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: transparent;
+    z-index: 1049;
+    display: none;
+    pointer-events: auto;
+}
+
+.search-backdrop.active {
+    display: block;
+}
+
+/* ============================================
+   MORPHING SEARCH FAB
+   ============================================ */
+
+/* Floating Search FAB - positioned above action bar */
+.floating-search-fab {
+    position: absolute;
+    right: 16px;
+    bottom: calc(100% + 12px);
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: var(--bs-primary);
+    color: #fff;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 1002;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+    box-shadow:
+        0 3px 5px -1px rgba(0, 0, 0, 0.2),
+        0 6px 10px 0 rgba(0, 0, 0, 0.14),
+        0 1px 18px 0 rgba(0, 0, 0, 0.12);
+    pointer-events: auto;
+}
+
+.floating-search-fab .search-fab-icon {
+    font-size: 24px;
+    color: #fff;
+}
+
+.floating-search-fab i {
+    color: #fff;
+}
+
+/* Legacy search FAB (inside action bar) */
+.search-fab:not(.floating-search-fab) {
+    position: absolute;
+    right: 4px;
+    bottom: 100%;
+    transform: translateY(-18px);
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: var(--bs-primary);
+    color: white;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 2;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+    box-shadow:
+        0 3px 5px -1px rgba(0, 0, 0, 0.2),
+        0 6px 10px 0 rgba(0, 0, 0, 0.14),
+        0 1px 18px 0 rgba(0, 0, 0, 0.12);
+    pointer-events: auto;
+}
+
+.floating-search-fab:hover {
+    filter: brightness(0.95);
+    transform: scale(1.05);
+}
+
+.floating-search-fab:active {
+    transform: scale(0.95);
+}
+
+.search-fab:not(.floating-search-fab):hover {
+    filter: brightness(0.95);
+    transform: translateY(-20px);
+}
+
+.search-fab:not(.floating-search-fab):active {
+    transform: translateY(-16px) scale(0.95);
+}
+
+/* Search FAB morphing to search box - STAYS IN PLACE */
+.search-fab.morphing {
+    position: absolute !important;
+    width: calc(100% - 32px) !important;
+    max-width: 500px !important;
+    left: 50% !important;
+    right: auto !important;
+    bottom: calc(100% + 12px) !important;
+    top: auto !important;
+    transform: translateX(-50%) !important;
+    border-radius: 24px;
+    background: var(--bs-body-bg);
+    color: var(--bs-body-color);
+    border: 1px solid var(--bs-border-color);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 1051;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Search FAB fully expanded - STAYS IN PLACE */
+.search-fab.expanded {
+    position: absolute !important;
+    width: calc(100% - 32px) !important;
+    max-width: 500px !important;
+    left: 50% !important;
+    right: auto !important;
+    bottom: calc(100% + 12px) !important;
+    top: auto !important;
+    transform: translateX(-50%) !important;
+    border-radius: 24px;
+    background: var(--bs-body-bg);
+    color: var(--bs-body-color);
+    border: 1px solid var(--bs-border-color);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    padding: 0 16px;
+    padding-bottom: env(safe-area-inset-bottom);
+    justify-content: flex-start;
+    gap: 12px;
+    z-index: 1051;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.search-fab.expanded:hover {
+    filter: none;
+    transform: translateX(-50%) !important;
+}
+
+/* FAB icon (search icon in center when collapsed) */
+.search-fab-icon {
+    font-size: 24px;
+    color: #fff;
+    transition: opacity 0.15s ease;
+    flex-shrink: 0;
+}
+
+.search-fab.morphing .search-fab-icon,
+.search-fab.expanded .search-fab-icon {
+    opacity: 0;
+    position: absolute;
+    pointer-events: none;
+}
+
+/* Search icon in expanded state (left side) */
+.search-icon-expanded {
+    font-size: 22px;
+    color: var(--bs-body-color);
+    opacity: 0;
+    transition: opacity 0.15s ease 0.15s;
+    flex-shrink: 0;
+    position: absolute;
+    pointer-events: none;
+}
+
+.search-fab.expanded .search-icon-expanded {
+    opacity: 1;
+    position: relative;
+    pointer-events: auto;
+}
+
+/* Search input (hidden initially) */
+.search-fab-input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    font-size: 16px;
+    outline: none;
+    opacity: 0;
+    transition: opacity 0.15s ease 0.15s;
+    pointer-events: none;
+    color: var(--bs-body-color);
+    position: absolute;
+}
+
+.search-fab-input::placeholder {
+    color: var(--bs-secondary);
+    opacity: 0.7;
+}
+
+.search-fab.expanded .search-fab-input {
+    opacity: 1;
+    pointer-events: auto;
+    position: relative;
+}
+
+/* Close button (hidden initially) */
+.search-fab-close {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: transparent;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.2s ease 0.1s, background 0.2s ease;
+    flex-shrink: 0;
+    pointer-events: none;
+    color: var(--bs-body-color);
+}
+
+.search-fab.expanded .search-fab-close {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.search-fab-close:hover {
+    background: rgba(var(--bs-body-color-rgb), 0.08);
+}
+
+.search-fab-close:active {
+    background: rgba(var(--bs-body-color-rgb), 0.12);
+    transform: scale(0.92);
+}
+
+.search-fab-close i {
+    font-size: 24px;
+    font-weight: 600;
+}
+
+/* Dark mode adjustments */
+[data-theme="dark"] .search-fab.morphing,
+[data-theme="dark"] .search-fab.expanded {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+[data-theme="dark"] .search-fab-close:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+/* Accessibility */
+.search-fab:focus-visible {
+    outline: 2px solid var(--bs-primary);
+    outline-offset: 2px;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    .search-fab,
+    .search-fab-icon,
+    .search-icon-expanded,
+    .search-fab-input,
+    .search-fab-close {
+        transition: none;
     }
 }

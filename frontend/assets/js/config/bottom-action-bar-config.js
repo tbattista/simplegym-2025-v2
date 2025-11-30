@@ -1,15 +1,187 @@
 /**
  * Bottom Action Bar Configuration
  * Defines button layouts and actions for each page
+ * Supports both 2-FAB-2 layout (legacy) and 4-button + right FAB layout (alternative)
  */
 
 (function() {
     'use strict';
 
     /**
-     * Create a Bootstrap dropdown for search
-     * @param {string} type - 'exercise' or 'workout'
-     * @returns {Object} Bootstrap Dropdown instance
+     * Open search with morphing animation
+     * @param {HTMLElement} searchFab - Search FAB element
+     * @param {HTMLElement} searchInput - Search input element
+     */
+    function openMorphingSearch(searchFab, searchInput) {
+        if (window.bottomNavState?.animating) return;
+        
+        console.log('🔍 Opening morphing search');
+        window.bottomNavState = window.bottomNavState || {};
+        window.bottomNavState.animating = true;
+        
+        // Get elements
+        const bottomNav = document.querySelector('.bottom-action-bar');
+        const backdrop = getOrCreateBackdrop();
+        
+        // Show backdrop
+        backdrop.classList.add('active');
+        
+        // Hide bottom nav
+        bottomNav?.classList.add('search-active');
+        
+        // Stage 1: Start morphing (add morphing class)
+        searchFab.classList.add('morphing');
+        
+        // Stage 2: Complete expansion after 150ms
+        setTimeout(() => {
+            searchFab.classList.remove('morphing');
+            searchFab.classList.add('expanded');
+            
+            // Focus input after expansion
+            setTimeout(() => {
+                searchInput?.focus();
+            }, 50);
+        }, 150);
+        
+        // Update state
+        window.bottomNavState.isHidden = true;
+        window.bottomNavState.searchActive = true;
+        
+        // Animation complete
+        setTimeout(() => {
+            window.bottomNavState.animating = false;
+        }, 300);
+    }
+
+    /**
+     * Close search with morphing animation
+     * @param {HTMLElement} searchFab - Search FAB element
+     */
+    function closeMorphingSearch(searchFab) {
+        if (window.bottomNavState?.animating) return;
+        
+        console.log('🔍 Closing morphing search');
+        window.bottomNavState = window.bottomNavState || {};
+        window.bottomNavState.animating = true;
+        
+        // Get elements
+        const bottomNav = document.querySelector('.bottom-action-bar');
+        const backdrop = document.querySelector('.search-backdrop');
+        const searchInput = document.getElementById('searchFabInput');
+        
+        // Clear search input
+        if (searchInput) {
+            searchInput.value = '';
+        }
+        
+        // Hide backdrop
+        backdrop?.classList.remove('active');
+        
+        // Show bottom nav
+        bottomNav?.classList.remove('search-active');
+        
+        // Stage 1: Start collapsing (remove expanded, add morphing)
+        searchFab.classList.remove('expanded');
+        searchFab.classList.add('morphing');
+        
+        // Stage 2: Complete collapse after 150ms
+        setTimeout(() => {
+            searchFab.classList.remove('morphing');
+        }, 150);
+        
+        // Update state
+        window.bottomNavState.isHidden = false;
+        window.bottomNavState.searchActive = false;
+        
+        // Animation complete
+        setTimeout(() => {
+            window.bottomNavState.animating = false;
+        }, 300);
+    }
+
+    /**
+     * Get or create backdrop element for tap-outside detection
+     * @returns {HTMLElement} Backdrop element
+     */
+    function getOrCreateBackdrop() {
+        let backdrop = document.querySelector('.search-backdrop');
+        
+        if (!backdrop) {
+            backdrop = document.createElement('div');
+            backdrop.className = 'search-backdrop';
+            document.body.appendChild(backdrop);
+            
+            // Click handler for tap-outside
+            backdrop.addEventListener('click', () => {
+                console.log('👆 Tapped outside search - closing');
+                
+                // Find and close morphing search FAB
+                const searchFab = document.getElementById('searchFab');
+                if (searchFab && searchFab.classList.contains('expanded')) {
+                    closeMorphingSearch(searchFab);
+                }
+            });
+        }
+        
+        return backdrop;
+    }
+
+    /**
+     * Initialize morphing search FAB event listeners
+     * Called after bottom action bar is rendered
+     */
+    function initializeMorphingSearch() {
+        const searchFab = document.getElementById('searchFab');
+        const searchInput = document.getElementById('searchFabInput');
+        const searchClose = document.getElementById('searchFabClose');
+        
+        if (!searchFab || !searchInput || !searchClose) {
+            console.warn('⚠️ Morphing search elements not found');
+            return;
+        }
+        
+        console.log('🔧 Initializing morphing search');
+        
+        // Close button handler
+        searchClose.addEventListener('click', (e) => {
+            e.stopPropagation();
+            closeMorphingSearch(searchFab);
+        });
+        
+        // ESC key handler
+        searchInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeMorphingSearch(searchFab);
+            }
+        });
+        
+        // Search input handler with debouncing
+        let searchTimeout;
+        searchInput.addEventListener('input', (e) => {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                const searchTerm = e.target.value.trim();
+                console.log('🔍 Search term:', searchTerm);
+                
+                // Update the appropriate filter based on current page
+                if (window.currentFilters && window.applyFiltersAndRender) {
+                    // Exercise database page
+                    window.currentFilters.search = searchTerm;
+                    window.applyFiltersAndRender(window.currentFilters);
+                } else if (window.ghostGym?.workoutDatabase && window.filterWorkouts) {
+                    // Workout database page
+                    window.ghostGym.workoutDatabase.filters.search = searchTerm;
+                    window.filterWorkouts();
+                }
+            }, 300);
+        });
+        
+        console.log('✅ Morphing search initialized');
+    }
+
+    /**
+     * DEPRECATED: Old dropdown function - kept for compatibility
+     * @deprecated Use morphing search FAB instead
      */
     function createSearchDropdown(type) {
         const dropdownId = `${type}SearchDropdown`;
@@ -21,9 +193,9 @@
             return bootstrap.Dropdown.getInstance(existingDropdown) || new bootstrap.Dropdown(existingDropdown);
         }
         
-        // Create dropdown HTML
+        // Create dropdown HTML with search-dropdown class
         const dropdownHTML = `
-            <div class="dropdown position-fixed" id="${dropdownId}" style="bottom: 80px; left: 50%; transform: translateX(-50%); z-index: 1050; width: 90%; max-width: 500px;">
+            <div class="dropdown search-dropdown" id="${dropdownId}">
                 <div class="dropdown-menu show w-100 p-3" style="position: static;">
                     <div class="input-group">
                         <span class="input-group-text">
@@ -34,7 +206,7 @@
                                id="${inputId}"
                                placeholder="Search ${type}s..."
                                autocomplete="off">
-                        <button class="btn btn-outline-secondary" type="button" onclick="window.${type}SearchDropdown.hide()">
+                        <button class="btn btn-outline-secondary search-close-btn" type="button">
                             <i class="bx bx-x"></i>
                         </button>
                     </div>
@@ -48,6 +220,7 @@
         // Get the dropdown element
         const dropdownElement = document.getElementById(dropdownId);
         const searchInput = document.getElementById(inputId);
+        const closeBtn = dropdownElement.querySelector('.search-close-btn');
         
         // Set up search input handler
         let searchTimeout;
@@ -95,18 +268,16 @@
             }
         };
         
-        // Close on click outside
-        document.addEventListener('click', (e) => {
-            if (!dropdownElement.contains(e.target) &&
-                !e.target.closest('[data-action="fab"]')) {
-                dropdown.hide();
-            }
+        // Close button handler - closes search AND restores nav
+        closeBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            closeSearchWithNav(dropdown);
         });
         
-        // Close on ESC key
+        // ESC key handler - closes search AND restores nav
         searchInput.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
-                dropdown.hide();
+                closeSearchWithNav(dropdown);
             }
         });
         
@@ -126,7 +297,7 @@
         // WORKOUT DATABASE PAGE
         // ============================================
         'workout-database': {
-            leftActions: [
+            buttons: [
                 {
                     icon: 'bx-filter',
                     label: 'Filter',
@@ -152,23 +323,7 @@
                             setTimeout(() => sortSelect.focus(), 300);
                         }
                     }
-                }
-            ],
-            fab: {
-                icon: 'bx-search',
-                title: 'Search workouts',
-                variant: 'primary',
-                action: function() {
-                    // Create and show search dropdown if it doesn't exist
-                    if (!window.workoutSearchDropdown) {
-                        window.workoutSearchDropdown = createSearchDropdown('workout');
-                        window.workoutSearchDropdown.show();
-                    } else {
-                        window.workoutSearchDropdown.toggle();
-                    }
-                }
-            },
-            rightActions: [
+                },
                 {
                     icon: 'bx-plus',
                     label: 'Add',
@@ -247,14 +402,37 @@
                         });
                     }
                 }
-            ]
+            ],
+            fab: {
+                icon: 'bx-search',
+                title: 'Search workouts',
+                variant: 'primary',
+                action: function() {
+                    const searchFab = document.getElementById('searchFab');
+                    const searchInput = document.getElementById('searchFabInput');
+                    
+                    if (!searchFab || !searchInput) {
+                        console.error('❌ Search FAB elements not found');
+                        return;
+                    }
+                    
+                    // Toggle morphing search
+                    if (searchFab.classList.contains('expanded')) {
+                        // Close search - morph back to FAB
+                        closeMorphingSearch(searchFab);
+                    } else {
+                        // Open search - morph FAB to search box
+                        openMorphingSearch(searchFab, searchInput);
+                    }
+                }
+            }
         },
 
         // ============================================
         // WORKOUT BUILDER PAGE
         // ============================================
         'workout-builder': {
-            leftActions: [
+            buttons: [
                 {
                     icon: 'bx-share-alt',
                     label: 'Share',
@@ -296,21 +474,7 @@
                             );
                         }
                     }
-                }
-                
-            ],
-            fab: {
-                icon: 'bx-plus',
-                title: 'Add exercise group',
-                variant: 'primary',
-                action: function() {
-                    const addBtn = document.getElementById('addExerciseGroupBtn');
-                    if (addBtn) {
-                        addBtn.click();
-                    }
-                }
-            },
-            rightActions: [
+                },
                 {
                     icon: 'bx-play',
                     label: 'Go',
@@ -357,8 +521,8 @@
                                         title: 'Share Workout',
                                         description: 'Share publicly or create private link',
                                         onClick: () => {
-                                            // Trigger share button
-                                            const shareAction = window.BOTTOM_BAR_CONFIGS['workout-builder'].leftActions.find(a => a.icon === 'bx-share-alt');
+                                            // Trigger share button - now using buttons array
+                                            const shareAction = window.BOTTOM_BAR_CONFIGS['workout-builder'].buttons.find(a => a.icon === 'bx-share-alt');
                                             if (shareAction && shareAction.action) {
                                                 shareAction.action();
                                             }
@@ -384,14 +548,25 @@
                         }
                     }
                 }
-            ]
+            ],
+            fab: {
+                icon: 'bx-plus',
+                title: 'Add exercise group',
+                variant: 'primary',
+                action: function() {
+                    const addBtn = document.getElementById('addExerciseGroupBtn');
+                    if (addBtn) {
+                        addBtn.click();
+                    }
+                }
+            }
         },
 
         // ============================================
-        // EXERCISE DATABASE PAGE
+        // EXERCISE DATABASE PAGE (NEW 4-BUTTON LAYOUT)
         // ============================================
         'exercise-database': {
-            leftActions: [
+            buttons: [
                 {
                     icon: 'bx-heart',
                     label: 'Favorites',
@@ -418,7 +593,7 @@
                         
                         // Update button visual state with animation
                         if (window.bottomActionBar) {
-                            const btn = document.querySelector('[data-action="left-0"]');
+                            const btn = document.querySelector('[data-action="btn-0"]');
                             
                             // Add pulse animation
                             if (btn) {
@@ -427,7 +602,7 @@
                             }
                             
                             // Update icon and title
-                            window.bottomActionBar.updateButton('left-0', {
+                            window.bottomActionBar.updateButton('btn-0', {
                                 icon: isActive ? 'bxs-heart' : 'bx-heart',
                                 title: isActive ? 'Show all exercises' : 'Show only favorites'
                             });
@@ -527,23 +702,7 @@
                             alert('Filter feature is loading. Please try again in a moment.');
                         }
                     }
-                }
-            ],
-            fab: {
-                icon: 'bx-search',
-                title: 'Search exercises',
-                variant: 'primary',
-                action: function() {
-                    // Create and show search dropdown if it doesn't exist
-                    if (!window.exerciseSearchDropdown) {
-                        window.exerciseSearchDropdown = createSearchDropdown('exercise');
-                        window.exerciseSearchDropdown.show();
-                    } else {
-                        window.exerciseSearchDropdown.toggle();
-                    }
-                }
-            },
-            rightActions: [
+                },
                 {
                     icon: 'bx-sort-alt-2',
                     label: 'Sort',
@@ -670,7 +829,30 @@
                         }
                     }
                 }
-            ]
+            ],
+            fab: {
+                icon: 'bx-search',
+                title: 'Search exercises',
+                variant: 'primary',
+                action: function() {
+                    const searchFab = document.getElementById('searchFab');
+                    const searchInput = document.getElementById('searchFabInput');
+                    
+                    if (!searchFab || !searchInput) {
+                        console.error('❌ Search FAB elements not found');
+                        return;
+                    }
+                    
+                    // Toggle morphing search
+                    if (searchFab.classList.contains('expanded')) {
+                        // Close search - morph back to FAB
+                        closeMorphingSearch(searchFab);
+                    } else {
+                        // Open search - morph FAB to search box
+                        openMorphingSearch(searchFab, searchInput);
+                    }
+                }
+            }
         },
 
         // ============================================
@@ -748,10 +930,10 @@
         },
 
         // ============================================
-        // WORKOUT MODE PAGE (ACTIVE/STARTED)
+        // WORKOUT MODE PAGE (ACTIVE/STARTED) - NEW 4-BUTTON LAYOUT
         // ============================================
         'workout-mode-active': {
-            leftActions: [
+            buttons: [
                 {
                     icon: 'bx-skip-next',
                     label: 'Skip',
@@ -774,20 +956,7 @@
                             alert('Please start your workout session first');
                         }
                     }
-                }
-            ],
-            fab: {
-                icon: 'bx-check',
-                title: 'Complete current set',
-                variant: 'success',
-                action: function() {
-                    // Complete current set
-                    if (window.workoutModeController?.completeSet) {
-                        window.workoutModeController.completeSet();
-                    }
-                }
-            },
-            rightActions: [
+                },
                 {
                     icon: 'bx-note',
                     label: 'Note',
@@ -811,9 +980,32 @@
                         }
                     }
                 }
-            ]
+            ],
+            fab: {
+                icon: 'bx-check',
+                title: 'Complete current set',
+                variant: 'success',
+                action: function() {
+                    // Complete current set
+                    if (window.workoutModeController?.completeSet) {
+                        window.workoutModeController.completeSet();
+                    }
+                }
+            }
         }
     };
+
+    // Initialize morphing search when bottom action bar is ready
+    window.addEventListener('bottomActionBarReady', () => {
+        console.log('🎯 Bottom Action Bar ready, initializing morphing search');
+        initializeMorphingSearch();
+    });
+
+    // Also try to initialize if bottom action bar is already ready
+    if (document.getElementById('searchFab')) {
+        console.log('🎯 Search FAB already exists, initializing morphing search');
+        initializeMorphingSearch();
+    }
 
     console.log('✅ Bottom Action Bar configurations loaded');
 })();
