@@ -76,7 +76,7 @@
         try {
             // Load scripts in order
             await loadScript('/static/assets/js/services/feedback-service.js');
-            await loadScript('/static/assets/js/components/feedback-modal.js');
+            await loadScript('/static/assets/js/components/feedback-dropdown.js');
             
             scriptsLoaded = true;
             scriptsLoading = false;
@@ -122,19 +122,19 @@
     }
 
     /**
-     * Wait for feedback modal to be initialized
+     * Wait for feedback dropdown to be initialized
      * @param {number} maxAttempts - Maximum number of attempts
-     * @returns {Promise} Resolves when modal is ready
+     * @returns {Promise} Resolves when dropdown is ready
      */
-    async function waitForFeedbackModal(maxAttempts = 50) {
+    async function waitForFeedbackDropdown(maxAttempts = 50) {
         for (let i = 0; i < maxAttempts; i++) {
-            if (window.feedbackModal) {
-                console.log('✅ Feedback modal initialized');
+            if (window.feedbackDropdown) {
+                console.log('✅ Feedback dropdown initialized');
                 return true;
             }
             await new Promise(resolve => setTimeout(resolve, 100));
         }
-        console.warn('⚠️ Feedback modal not initialized after waiting');
+        console.warn('⚠️ Feedback dropdown not initialized after waiting');
         return false;
     }
 
@@ -151,8 +151,8 @@
             // Load feedback scripts
             await loadFeedbackScripts();
 
-            // Wait for feedback modal to initialize
-            await waitForFeedbackModal();
+            // Wait for feedback dropdown to initialize
+            await waitForFeedbackDropdown();
 
             console.log('✅ Feedback system initialized and ready');
 

@@ -26,7 +26,7 @@ function getMenuHTML(activePage = 'home') {
         <div class="menu-inner-shadow"></div>
 
         <ul class="menu-inner py-1">
-            <!-- Home (Dashboard) -->
+            <!-- Home -->
             <li class="menu-item ${activePage === 'home' ? 'active' : ''}" data-section="home">
                 <a href="index.html" class="menu-link">
                     <i class="menu-icon tf-icons bx bx-home"></i>
@@ -34,7 +34,15 @@ function getMenuHTML(activePage = 'home') {
                 </a>
             </li>
             
-            <!-- Workout Mode (Promoted to top level) -->
+            <!-- Workouts (formerly Workout Database) -->
+            <li class="menu-item ${activePage === 'workout-database' ? 'active' : ''}">
+                <a href="workout-database.html" class="menu-link">
+                    <i class="menu-icon tf-icons bx bx-library"></i>
+                    <div class="text-truncate">Workouts</div>
+                </a>
+            </li>
+            
+            <!-- Workout Mode -->
             <li class="menu-item ${activePage === 'workout-mode' ? 'active' : ''}">
                 <a href="workout-mode.html" class="menu-link">
                     <i class="menu-icon tf-icons bx bx-play-circle"></i>
@@ -58,6 +66,12 @@ function getMenuHTML(activePage = 'home') {
                     <div class="text-truncate">My Programs</div>
                 </a>
             </li>
+            <li class="menu-item ${activePage === 'public-workouts' ? 'active' : ''}">
+                <a href="public-workouts.html" class="menu-link">
+                    <i class="menu-icon tf-icons bx bx-globe"></i>
+                    <div class="text-truncate">Discover Workouts</div>
+                </a>
+            </li>
             
             <!-- Data Management -->
             <li class="menu-header small text-uppercase">
@@ -67,23 +81,6 @@ function getMenuHTML(activePage = 'home') {
                 <a href="exercise-database.html" class="menu-link">
                     <i class="menu-icon tf-icons bx bx-book-content"></i>
                     <div class="text-truncate">Exercise Database</div>
-                </a>
-            </li>
-            <li class="menu-item ${activePage === 'workout-database' ? 'active' : ''}">
-                <a href="workout-database.html" class="menu-link">
-                    <i class="menu-icon tf-icons bx bx-library"></i>
-                    <div class="text-truncate">Workout Database</div>
-                </a>
-            </li>
-            
-            <!-- Community -->
-            <li class="menu-header small text-uppercase">
-                <span class="menu-header-text">Community</span>
-            </li>
-            <li class="menu-item ${activePage === 'public-workouts' ? 'active' : ''}">
-                <a href="public-workouts.html" class="menu-link">
-                    <i class="menu-icon tf-icons bx bx-globe"></i>
-                    <div class="text-truncate">Discover Workouts</div>
                 </a>
             </li>
         </ul>

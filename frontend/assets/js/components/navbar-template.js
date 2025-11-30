@@ -85,15 +85,21 @@ function getNavbarHTML(pageTitle = 'Ghost Gym', pageIcon = 'bx-home', options = 
                 <!-- Right Section: Utility Icons -->
                 <ul class="navbar-nav flex-row align-items-center ms-auto">
                 
-                <!-- Feedback Button -->
-                <li class="nav-item me-2 me-xl-3">
-                    <a class="nav-link"
+                <!-- Feedback Dropdown -->
+                <li class="nav-item navbar-dropdown dropdown-feedback dropdown me-2 me-xl-3">
+                    <a class="nav-link dropdown-toggle hide-arrow"
                        href="javascript:void(0);"
                        id="navbarFeedbackBtn"
+                       data-bs-toggle="dropdown"
+                       data-bs-auto-close="outside"
+                       aria-expanded="false"
                        title="Send Feedback">
                         <i class="bx bx-message-dots bx-sm"></i>
                         <span class="d-none d-lg-inline ms-1">Feedback</span>
                     </a>
+                    <div class="dropdown-menu dropdown-menu-end feedback-dropdown-menu" id="feedbackDropdown">
+                        <!-- Feedback form will be injected here by feedback-dropdown.js -->
+                    </div>
                 </li>
                 
                 <!-- Dark Mode Toggle -->
@@ -556,7 +562,7 @@ function initializeNavbarSearch() {
  * Connects to the feedback modal
  */
 function initializeNavbarFeedback() {
-    console.log('💬 Initializing navbar feedback button...');
+    console.log('💬 Initializing navbar feedback dropdown...');
     
     const feedbackBtn = document.getElementById('navbarFeedbackBtn');
     if (!feedbackBtn) {
@@ -564,40 +570,37 @@ function initializeNavbarFeedback() {
         return;
     }
 
-    // Set up click handler with improved retry logic
-    feedbackBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        openFeedbackModalWithRetry();
-    });
-
-    // Add keyboard shortcut: Ctrl/Cmd + Shift + F
+    // Dropdown is initialized by Bootstrap automatically via data-bs-toggle="dropdown"
+    // Just add keyboard shortcut
     document.addEventListener('keydown', (e) => {
         if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'F') {
             e.preventDefault();
-            openFeedbackModalWithRetry();
+            if (window.feedbackDropdown) {
+                window.feedbackDropdown.open();
+            } else {
+                // Fallback: trigger Bootstrap dropdown directly
+                const dropdown = bootstrap.Dropdown.getInstance(feedbackBtn) || new bootstrap.Dropdown(feedbackBtn);
+                dropdown.show();
+            }
         }
     });
 
-    console.log('✅ Navbar feedback button initialized');
+    console.log('✅ Navbar feedback dropdown initialized');
     console.log('💡 Tip: Press Ctrl/Cmd + Shift + F to open feedback');
 }
 
 /**
- * Open feedback modal with retry logic
- * Attempts to open the modal, retrying if not yet initialized
+ * Open feedback dropdown (kept for backward compatibility)
  */
-function openFeedbackModalWithRetry(attempt = 1, maxAttempts = 5) {
-    if (window.feedbackModal) {
-        window.feedbackModal.open();
-        console.log('✅ Feedback modal opened');
-    } else if (attempt < maxAttempts) {
-        console.warn(`⚠️ Feedback modal not initialized yet, retrying (${attempt}/${maxAttempts})...`);
-        setTimeout(() => {
-            openFeedbackModalWithRetry(attempt + 1, maxAttempts);
-        }, 200 * attempt); // Exponential backoff: 200ms, 400ms, 600ms, 800ms
+function openFeedbackModalWithRetry() {
+    if (window.feedbackDropdown) {
+        window.feedbackDropdown.open();
     } else {
-        console.error('❌ Feedback modal not available after multiple attempts');
-        alert('Feedback feature is still loading. Please wait a moment and try again.');
+        const feedbackBtn = document.getElementById('navbarFeedbackBtn');
+        if (feedbackBtn) {
+            const dropdown = bootstrap.Dropdown.getInstance(feedbackBtn) || new bootstrap.Dropdown(feedbackBtn);
+            dropdown.show();
+        }
     }
 }
 

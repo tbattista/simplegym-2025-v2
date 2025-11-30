@@ -8,6 +8,26 @@
     'use strict';
 
     console.log('📦 Navbar Injection Service loading...');
+    
+    /**
+     * Load Feedback Dropdown CSS
+     */
+    function loadFeedbackDropdownCSS() {
+        // Check if already loaded
+        if (document.querySelector('link[href*="feedback-dropdown.css"]')) {
+            console.log('ℹ️ Feedback dropdown CSS already loaded');
+            return;
+        }
+        
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = '/static/assets/css/feedback-dropdown.css';
+        document.head.appendChild(link);
+        console.log('✅ Feedback dropdown CSS loaded');
+    }
+    
+    // Load CSS immediately
+    loadFeedbackDropdownCSS();
 
     /**
      * Page configuration mapping
