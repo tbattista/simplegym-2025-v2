@@ -102,35 +102,14 @@
                     <form id="feedbackForm">
                         <!-- Feedback Type -->
                         <div class="mb-3">
-                            <label class="form-label">
+                            <label for="feedbackType" class="form-label">
                                 Feedback Type <span class="text-danger">*</span>
                             </label>
-                            <div class="d-flex flex-column gap-2">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" 
-                                           name="feedbackType" id="typeGeneral" 
-                                           value="general" checked>
-                                    <label class="form-check-label" for="typeGeneral">
-                                        💡 General
-                                    </label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" 
-                                           name="feedbackType" id="typeBug" 
-                                           value="bug">
-                                    <label class="form-check-label" for="typeBug">
-                                        🐛 Bug Report
-                                    </label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" 
-                                           name="feedbackType" id="typeFeature" 
-                                           value="feature">
-                                    <label class="form-check-label" for="typeFeature">
-                                        ✨ Feature Request
-                                    </label>
-                                </div>
-                            </div>
+                            <select class="form-select form-select-sm" id="feedbackType" name="feedbackType" required>
+                                <option value="general" selected>💡 General</option>
+                                <option value="bug">🐛 Bug Report</option>
+                                <option value="feature">✨ Feature Request</option>
+                            </select>
                         </div>
 
                         <!-- Priority (for bugs) -->
@@ -225,10 +204,10 @@
          */
         setupEventListeners() {
             // Type change - show/hide priority field
-            const typeRadios = document.querySelectorAll('input[name="feedbackType"]');
-            typeRadios.forEach(radio => {
-                radio.addEventListener('change', () => this.handleTypeChange());
-            });
+            const typeSelect = document.getElementById('feedbackType');
+            if (typeSelect) {
+                typeSelect.addEventListener('change', () => this.handleTypeChange());
+            }
 
             // Character counters
             const titleInput = document.getElementById('feedbackTitle');
@@ -248,9 +227,9 @@
             if (descriptionInput) {
                 descriptionInput.addEventListener('input', () => this.scheduleAutoSave());
             }
-            typeRadios.forEach(radio => {
-                radio.addEventListener('change', () => this.scheduleAutoSave());
-            });
+            if (typeSelect) {
+                typeSelect.addEventListener('change', () => this.scheduleAutoSave());
+            }
 
             // Cancel button
             const cancelBtn = document.getElementById('cancelFeedbackBtn');
@@ -285,7 +264,8 @@
          * Handle feedback type change
          */
         handleTypeChange() {
-            const selectedType = document.querySelector('input[name="feedbackType"]:checked')?.value;
+            const typeSelect = document.getElementById('feedbackType');
+            const selectedType = typeSelect?.value;
             const priorityField = document.getElementById('priorityField');
             
             if (!priorityField) return;
@@ -354,8 +334,8 @@
             if (descriptionInput) descriptionInput.value = draft.description || '';
             
             if (draft.type) {
-                const typeRadio = document.getElementById(`type${draft.type.charAt(0).toUpperCase() + draft.type.slice(1)}`);
-                if (typeRadio) typeRadio.checked = true;
+                const typeSelect = document.getElementById('feedbackType');
+                if (typeSelect) typeSelect.value = draft.type;
             }
             
             const prioritySelect = document.getElementById('feedbackPriority');
@@ -384,7 +364,8 @@
          * Get form data
          */
         getFormData() {
-            const type = document.querySelector('input[name="feedbackType"]:checked')?.value || 'general';
+            const typeSelect = document.getElementById('feedbackType');
+            const type = typeSelect?.value || 'general';
             const titleInput = document.getElementById('feedbackTitle');
             const descriptionInput = document.getElementById('feedbackDescription');
             const prioritySelect = document.getElementById('feedbackPriority');
