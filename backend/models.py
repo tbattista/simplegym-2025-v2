@@ -912,6 +912,16 @@ class ExerciseHistory(BaseModel):
     
     # Metadata
     updated_at: datetime = Field(default_factory=datetime.now, description="Last update timestamp")
+    
+    @field_validator('last_weight', 'best_weight', mode='before')
+    @classmethod
+    def convert_weight_to_string(cls, v):
+        """Convert numeric weights to strings for backward compatibility with Firestore data"""
+        if v is None:
+            return v
+        if isinstance(v, (int, float)):
+            return str(v)
+        return str(v) if v else None
 
 # Request Models for Workout Sessions
 

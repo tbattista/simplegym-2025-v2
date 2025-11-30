@@ -1072,31 +1072,10 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
             if (sessionIndicator) sessionIndicator.style.display = 'block';
             if (sessionInfo) sessionInfo.style.display = 'block';
             
-            // Update bottom action bar FAB to show "Complete" button
+            // Update floating FAB to show "Complete" state
             if (window.bottomActionBar) {
-                console.log('🔄 Updating bottom action bar FAB to Complete mode');
-                window.bottomActionBar.updateButton('fab', {
-                    icon: 'bx-stop-circle',
-                    title: 'Complete workout',
-                    variant: 'danger'
-                });
-                
-                // Update the FAB action to show complete workout offcanvas
-                const fabBtn = document.querySelector('[data-action="fab"]');
-                if (fabBtn) {
-                    // Remove old listener by cloning
-                    const newFabBtn = fabBtn.cloneNode(true);
-                    fabBtn.parentNode.replaceChild(newFabBtn, fabBtn);
-                    
-                    // Add new listener for complete workout
-                    newFabBtn.addEventListener('click', (e) => {
-                        e.preventDefault();
-                        console.log('⏹️ Complete workout FAB clicked');
-                        if (window.workoutModeController && window.workoutModeController.handleCompleteWorkout) {
-                            window.workoutModeController.handleCompleteWorkout();
-                        }
-                    });
-                }
+                console.log('🔄 Updating floating FAB to Complete mode');
+                window.bottomActionBar.updateWorkoutModeState(true);
             }
             
             // Start session timer
@@ -1107,31 +1086,10 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
             if (sessionIndicator) sessionIndicator.style.display = 'none';
             if (sessionInfo) sessionInfo.style.display = 'none';
             
-            // Update bottom action bar FAB back to "Start" button
+            // Update floating FAB back to "Start" state
             if (window.bottomActionBar) {
-                console.log('🔄 Updating bottom action bar FAB to Start mode');
-                window.bottomActionBar.updateButton('fab', {
-                    icon: 'bx-play',
-                    title: 'Start workout',
-                    variant: 'success'
-                });
-                
-                // Update the FAB action to start workout
-                const fabBtn = document.querySelector('[data-action="fab"]');
-                if (fabBtn) {
-                    // Remove old listener by cloning
-                    const newFabBtn = fabBtn.cloneNode(true);
-                    fabBtn.parentNode.replaceChild(newFabBtn, fabBtn);
-                    
-                    // Add new listener for start workout
-                    newFabBtn.addEventListener('click', (e) => {
-                        e.preventDefault();
-                        console.log('▶️ Start workout FAB clicked');
-                        if (window.workoutModeController && window.workoutModeController.handleStartWorkout) {
-                            window.workoutModeController.handleStartWorkout();
-                        }
-                    });
-                }
+                console.log('🔄 Updating floating FAB to Start mode');
+                window.bottomActionBar.updateWorkoutModeState(false);
             }
             
             // Stop session timer
@@ -1150,10 +1108,16 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
             clearInterval(this.sessionTimerInterval);
         }
         
-        // Show floating timer widget
+        // Show floating timer+end combo (new implementation)
+        const floatingCombo = document.getElementById('floatingTimerEndCombo');
+        if (floatingCombo) {
+            floatingCombo.style.display = 'flex';
+        }
+        
+        // Hide old floating timer widget if it exists
         const floatingWidget = document.getElementById('floatingTimerWidget');
         if (floatingWidget) {
-            floatingWidget.style.display = 'block';
+            floatingWidget.style.display = 'none';
         }
         
         this.sessionTimerInterval = setInterval(() => {
@@ -1162,13 +1126,18 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
             const seconds = elapsed % 60;
             const timeStr = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
             
+            // Update new floating timer in combo
+            const floatingTimer = document.getElementById('floatingTimer');
+            if (floatingTimer) floatingTimer.textContent = timeStr;
+            
+            // Keep old timers for backward compatibility
             const sessionTimer = document.getElementById('sessionTimer');
             const footerTimer = document.getElementById('footerSessionTimer');
-            const floatingTimer = document.getElementById('floatingTimerDisplay');
+            const oldFloatingTimer = document.getElementById('floatingTimerDisplay');
             
             if (sessionTimer) sessionTimer.textContent = timeStr;
             if (footerTimer) footerTimer.textContent = timeStr;
-            if (floatingTimer) floatingTimer.textContent = timeStr;
+            if (oldFloatingTimer) oldFloatingTimer.textContent = timeStr;
         }, 1000);
     }
     
@@ -1181,7 +1150,13 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
             this.sessionTimerInterval = null;
         }
         
-        // Hide floating timer widget
+        // Hide floating timer+end combo (new implementation)
+        const floatingCombo = document.getElementById('floatingTimerEndCombo');
+        if (floatingCombo) {
+            floatingCombo.style.display = 'none';
+        }
+        
+        // Hide old floating timer widget if it exists
         const floatingWidget = document.getElementById('floatingTimerWidget');
         if (floatingWidget) {
             floatingWidget.style.display = 'none';

@@ -113,35 +113,46 @@
             document.body.appendChild(container);
             this.container = container;
 
-            // Render floating FAB if it's a search FAB (new layout only)
-            if (this.isNewLayout && this.config.fab && this.config.fab.icon === 'bx-search') {
-                this.renderFloatingSearchFAB(this.config.fab);
-                
-                // Attach event listener to floating FAB after a short delay
-                setTimeout(() => {
-                    const floatingFab = document.getElementById('searchFab');
-                    if (floatingFab) {
-                        floatingFab.addEventListener('click', (e) => {
-                            // Only handle clicks on the FAB itself when collapsed
-                            // When expanded, let clicks pass through to child elements
-                            const searchInput = document.getElementById('searchFabInput');
-                            const searchClose = document.getElementById('searchFabClose');
-                            
-                            // Don't handle if clicking on input or close button
-                            if (e.target === searchInput || searchInput.contains(e.target) ||
-                                e.target === searchClose || searchClose.contains(e.target)) {
-                                console.log('🔍 Click on child element, ignoring');
-                                return;
-                            }
-                            
-                            // Only trigger action if FAB is collapsed
-                            if (!floatingFab.classList.contains('expanded')) {
-                                this.handleButtonClick('fab');
-                            }
-                        });
-                        console.log('✅ Floating search FAB event listener attached');
-                    }
-                }, 100);
+            // Render floating FAB (new layout only)
+            if (this.isNewLayout && this.config.fab) {
+                if (this.config.fab.icon === 'bx-search') {
+                    // Render search FAB with morphing functionality
+                    this.renderFloatingSearchFAB(this.config.fab);
+                    
+                    // Attach event listener to floating FAB after a short delay
+                    setTimeout(() => {
+                        const floatingFab = document.getElementById('searchFab');
+                        if (floatingFab) {
+                            floatingFab.addEventListener('click', (e) => {
+                                // Only handle clicks on the FAB itself when collapsed
+                                // When expanded, let clicks pass through to child elements
+                                const searchInput = document.getElementById('searchFabInput');
+                                const searchClose = document.getElementById('searchFabClose');
+                                
+                                // Don't handle if clicking on input or close button
+                                if (e.target === searchInput || searchInput.contains(e.target) ||
+                                    e.target === searchClose || searchClose.contains(e.target)) {
+                                    console.log('🔍 Click on child element, ignoring');
+                                    return;
+                                }
+                                
+                                // Only trigger action if FAB is collapsed
+                                if (!floatingFab.classList.contains('expanded')) {
+                                    this.handleButtonClick('fab');
+                                }
+                            });
+                            console.log('✅ Floating search FAB event listener attached');
+                        }
+                    }, 100);
+                } else {
+                    // Render regular floating FAB (for workout mode, etc.)
+                    this.renderFloatingFAB(this.config.fab);
+                }
+            }
+            
+            // Render floating timer+end combo for active workout mode
+            if (this.isNewLayout && this.pageId === 'workout-mode' && this.config.floatingCombo) {
+                this.renderFloatingTimerEndCombo();
             }
 
             console.log('✅ Bottom Action Bar rendered');
@@ -193,6 +204,81 @@
             this.container.insertAdjacentHTML('beforeend', fabHTML);
             
             console.log('✅ Floating search FAB rendered');
+        }
+
+        /**
+         * Render floating FAB above the action bar (for workout mode, etc.)
+         * @param {Object} fab - FAB configuration
+         */
+        renderFloatingFAB(fab) {
+            // Check if FAB already exists
+            if (document.getElementById('floatingFab')) {
+                console.log('ℹ️ Floating FAB already exists');
+                return;
+            }
+
+            const variant = fab.variant || 'primary';
+            const label = fab.label || '';
+            
+            const fabHTML = `
+                <button class="action-fab floating-action-fab ${variant}"
+                        id="floatingFab"
+                        data-action="fab"
+                        title="${fab.title}"
+                        aria-label="${fab.title}">
+                    <i class="bx ${fab.icon}"></i>
+                    ${label ? `<span class="fab-label">${label}</span>` : ''}
+                </button>
+            `;
+
+            // Append to the action bar container so it moves with the bar
+            this.container.insertAdjacentHTML('beforeend', fabHTML);
+            
+            console.log('✅ Floating FAB rendered');
+        }
+
+        /**
+         * Render floating timer + end button combo (for active workout mode)
+         */
+        renderFloatingTimerEndCombo() {
+            // Check if combo already exists
+            if (document.getElementById('floatingTimerEndCombo')) {
+                console.log('ℹ️ Floating timer+end combo already exists');
+                return;
+            }
+
+            const comboHTML = `
+                <div class="floating-timer-end-combo" id="floatingTimerEndCombo">
+                    <!-- Timer Display -->
+                    <div class="floating-timer-display" id="floatingTimerDisplay">
+                        <i class="bx bx-time-five"></i>
+                        <span id="floatingTimer">00:00</span>
+                    </div>
+                    
+                    <!-- End Button -->
+                    <button class="floating-end-button"
+                            id="floatingEndButton"
+                            data-action="end-workout"
+                            title="End workout session"
+                            aria-label="End workout session">
+                        <i class="bx bx-stop-circle"></i>
+                        <span>End</span>
+                    </button>
+                </div>
+            `;
+
+            // Append to the action bar container so it moves with the bar
+            this.container.insertAdjacentHTML('beforeend', comboHTML);
+            
+            // Attach event listener to End button
+            const endButton = document.getElementById('floatingEndButton');
+            if (endButton) {
+                endButton.addEventListener('click', () => {
+                    this.handleButtonClick('end-workout');
+                });
+            }
+            
+            console.log('✅ Floating timer+end combo rendered');
         }
 
         /**
@@ -315,6 +401,10 @@
             } else if (actionKey === 'fab-secondary') {
                 action = this.config.secondaryFab?.action;
                 actionConfig = this.config.secondaryFab;
+            } else if (actionKey === 'end-workout') {
+                // Handle end workout action from floating combo
+                action = this.config.endWorkoutAction;
+                actionConfig = { label: 'End Workout' };
             } else if (actionKey.startsWith('btn-')) {
                 // New layout: btn-0, btn-1, btn-2, btn-3
                 const index = parseInt(actionKey.split('-')[1]);
@@ -468,24 +558,34 @@
         updateWorkoutModeState(isActive) {
             if (this.pageId !== 'workout-mode') return;
 
+            const floatingFab = document.getElementById('floatingFab');
+            const floatingCombo = document.getElementById('floatingTimerEndCombo');
+            
             if (isActive) {
-                // Switch to "Complete" state
-                this.updateButton('fab', {
-                    icon: 'bx-check',
-                    title: 'Complete current set',
-                    variant: 'success'
-                });
+                // Hide regular FAB, show timer+end combo
+                if (floatingFab) {
+                    floatingFab.style.display = 'none';
+                }
+                
+                // Render timer+end combo if it doesn't exist
+                if (!floatingCombo) {
+                    this.renderFloatingTimerEndCombo();
+                } else {
+                    floatingCombo.style.display = 'flex';
+                }
                 
                 // Update config to use active state actions
                 this.config = window.BOTTOM_BAR_CONFIGS['workout-mode-active'];
                 this.attachEventListeners();
             } else {
-                // Switch to "Start" state
-                this.updateButton('fab', {
-                    icon: 'bx-play',
-                    title: 'Start workout',
-                    variant: 'success'
-                });
+                // Show regular FAB, hide timer+end combo
+                if (floatingFab) {
+                    floatingFab.style.display = 'inline-flex';
+                }
+                
+                if (floatingCombo) {
+                    floatingCombo.style.display = 'none';
+                }
                 
                 // Update config to use inactive state actions
                 this.config = window.BOTTOM_BAR_CONFIGS['workout-mode'];

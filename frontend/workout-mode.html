@@ -231,46 +231,8 @@
             timers: {}
         };
 
-        // Initialize page using same pattern as other pages
-        document.addEventListener('DOMContentLoaded', async function() {
-            console.log('📄 Workout Mode Page - DOM Ready');
-            
-            // Wait for Firebase to be ready
-            if (!window.firebaseReady) {
-                await new Promise(resolve => {
-                    window.addEventListener('firebaseReady', resolve, { once: true });
-                });
-            }
-            
-            // Wait for data manager to be ready
-            if (!window.dataManager) {
-                console.error('❌ Data manager not available');
-                return;
-            }
-            
-            // Wait for auth state to settle (important for Firebase mode)
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            
-            // Controller auto-initializes via its own DOMContentLoaded listener
-            // No manual initialization needed - just wait for it
-            console.log('⏳ Waiting for controller to initialize...');
-            
-            // Wait for controller to be ready
-            if (!window.workoutModeController) {
-                await new Promise(resolve => {
-                    const checkController = setInterval(() => {
-                        if (window.workoutModeController) {
-                            clearInterval(checkController);
-                            resolve();
-                        }
-                    }, 100);
-                });
-            }
-            
-            console.log('✅ Workout Mode page ready!');
-        });
-        
-        // Listen for auth state changes
+        // Listen for auth state changes ONLY
+        // Controller handles its own initialization via DOMContentLoaded
         window.addEventListener('authStateChanged', async (event) => {
             const { user, isAuthenticated } = event.detail;
             console.log('🔄 Auth state changed on workout mode page, authenticated:', isAuthenticated);
@@ -279,16 +241,18 @@
             await new Promise(resolve => setTimeout(resolve, 300));
             
             // Reinitialize tooltip with new auth state
-            if (window.initializeStartButtonTooltip) {
-                await window.initializeStartButtonTooltip();
+            if (window.workoutModeController?.initializeStartButtonTooltip) {
+                await window.workoutModeController.initializeStartButtonTooltip();
             }
             
             // Reload workout if needed
             const workoutId = new URLSearchParams(window.location.search).get('id');
-            if (workoutId && window.loadWorkout) {
-                await window.loadWorkout(workoutId);
+            if (workoutId && window.workoutModeController?.loadWorkout) {
+                await window.workoutModeController.loadWorkout(workoutId);
             }
         });
+        
+        console.log('✅ Workout Mode page script loaded - controller will auto-initialize');
     </script>
   </body>
 </html>

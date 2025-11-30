@@ -958,10 +958,10 @@
         },
 
         // ============================================
-        // WORKOUT MODE PAGE (NOT STARTED)
+        // WORKOUT MODE PAGE (NOT STARTED) - NEW 4-BUTTON LAYOUT
         // ============================================
         'workout-mode': {
-            leftActions: [
+            buttons: [
                 {
                     icon: 'bx-skip-next',
                     label: 'Skip',
@@ -985,24 +985,7 @@
                             alert('Please start your workout session first');
                         }
                     }
-                }
-            ],
-            fab: {
-                icon: 'bx-play',
-                title: 'Start workout',
-                variant: 'success',
-                action: function() {
-                    console.log('▶️ Start workout button clicked');
-                    // Call controller method directly since #startWorkoutBtn doesn't exist in HTML
-                    if (window.workoutModeController && window.workoutModeController.handleStartWorkout) {
-                        window.workoutModeController.handleStartWorkout();
-                    } else {
-                        console.error('❌ Workout mode controller not available');
-                        alert('Workout mode is still loading. Please wait a moment and try again.');
-                    }
-                }
-            },
-            rightActions: [
+                },
                 {
                     icon: 'bx-note',
                     label: 'Note',
@@ -1028,7 +1011,23 @@
                         }
                     }
                 }
-            ]
+            ],
+            fab: {
+                icon: 'bx-play',
+                label: 'Start',
+                title: 'Start workout',
+                variant: 'success',
+                action: function() {
+                    console.log('▶️ Start workout button clicked');
+                    // Call controller method directly since #startWorkoutBtn doesn't exist in HTML
+                    if (window.workoutModeController && window.workoutModeController.handleStartWorkout) {
+                        window.workoutModeController.handleStartWorkout();
+                    } else {
+                        console.error('❌ Workout mode controller not available');
+                        alert('Workout mode is still loading. Please wait a moment and try again.');
+                    }
+                }
+            }
         },
 
         // ============================================
@@ -1068,30 +1067,25 @@
                     }
                 },
                 {
-                    icon: 'bx-stop-circle',
-                    label: 'End',
-                    title: 'End workout',
+                    icon: 'bx-dots-vertical-rounded',
+                    label: 'More',
+                    title: 'More options',
                     action: function() {
-                        console.log('⏹️ End workout button clicked (active mode)');
-                        // Call controller method directly since #completeWorkoutBtn doesn't exist in HTML
-                        if (window.workoutModeController && window.workoutModeController.handleCompleteWorkout) {
-                            window.workoutModeController.handleCompleteWorkout();
-                        } else {
-                            console.error('❌ Workout mode controller not available');
-                            alert('Unable to complete workout. Please try again.');
-                        }
+                        // More menu - can add additional options here
+                        alert('More options - Coming soon!');
                     }
                 }
             ],
-            fab: {
-                icon: 'bx-check',
-                title: 'Complete current set',
-                variant: 'success',
-                action: function() {
-                    // Complete current set
-                    if (window.workoutModeController?.completeSet) {
-                        window.workoutModeController.completeSet();
-                    }
+            // Floating timer + end button combo (replaces FAB for active workout)
+            floatingCombo: true,
+            // Handle end workout action
+            endWorkoutAction: function() {
+                console.log('⏹️ End workout button clicked from floating combo');
+                if (window.workoutModeController && window.workoutModeController.handleCompleteWorkout) {
+                    window.workoutModeController.handleCompleteWorkout();
+                } else {
+                    console.error('❌ Workout mode controller not available');
+                    alert('Unable to end workout. Please try again.');
                 }
             }
         }

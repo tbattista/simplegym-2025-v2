@@ -322,6 +322,212 @@
 }
 
 /* ============================================
+   FLOATING ACTION FAB (WORKOUT MODE, ETC.)
+   Regular floating FAB with optional label
+   ============================================ */
+
+.floating-action-fab {
+    position: absolute;
+    right: 16px;
+    bottom: calc(100% + 12px);
+    width: auto;
+    min-width: 90px;
+    height: 48px;
+    border-radius: 12px;
+    background: var(--bs-success);
+    color: #fff;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 0 20px;
+    cursor: pointer;
+    z-index: 1002;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    font-weight: 600;
+    font-size: 15px;
+    white-space: nowrap;
+    pointer-events: auto !important;
+}
+
+/* ============================================
+   FLOATING TIMER + END BUTTON COMBO (WORKOUT MODE ACTIVE)
+   Timer display and End button side-by-side
+   ============================================ */
+
+.floating-timer-end-combo {
+    position: absolute;
+    right: 16px;
+    bottom: calc(100% + 12px);
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    z-index: 1002;
+    pointer-events: auto;
+}
+
+/* Timer Display */
+.floating-timer-display {
+    height: 48px;
+    min-width: 90px;
+    padding: 0 16px;
+    background: var(--bs-body-bg);
+    border: 2px solid var(--bs-primary);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--bs-body-color);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    transition: all 0.2s ease;
+}
+
+.floating-timer-display i {
+    font-size: 20px;
+    color: var(--bs-primary);
+}
+
+/* End Button */
+.floating-end-button {
+    height: 48px;
+    min-width: 90px;
+    padding: 0 20px;
+    background: var(--bs-danger);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.floating-end-button:hover {
+    background: #c82333;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4);
+}
+
+.floating-end-button:active {
+    transform: translateY(0);
+}
+
+.floating-end-button i {
+    font-size: 20px;
+}
+
+/* Dark mode adjustments */
+[data-theme="dark"] .floating-timer-display {
+    background: var(--bs-gray-900);
+    border-color: var(--bs-primary);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+[data-theme="dark"] .floating-end-button {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+[data-theme="dark"] .floating-end-button:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+    .floating-timer-end-combo {
+        right: 12px;
+        bottom: calc(100% + 8px);
+        gap: 6px;
+    }
+    
+    .floating-timer-display,
+    .floating-end-button {
+        height: 44px;
+        min-width: 80px;
+        padding: 0 14px;
+        font-size: 14px;
+    }
+    
+    .floating-timer-display i,
+    .floating-end-button i {
+        font-size: 18px;
+    }
+}
+
+@media (max-width: 576px) {
+    .floating-timer-end-combo {
+        right: 10px;
+        bottom: calc(100% + 6px);
+        gap: 4px;
+    }
+    
+    .floating-timer-display,
+    .floating-end-button {
+        height: 40px;
+        min-width: 70px;
+        padding: 0 12px;
+        font-size: 13px;
+    }
+    
+    .floating-timer-display i,
+    .floating-end-button i {
+        font-size: 16px;
+    }
+}
+
+.floating-action-fab:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.floating-action-fab:active {
+    transform: translateY(0);
+}
+
+.floating-action-fab i {
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+.floating-action-fab .fab-label {
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+}
+
+/* Variant colors */
+.floating-action-fab.primary {
+    background: var(--bs-primary);
+}
+
+.floating-action-fab.success {
+    background: var(--bs-success);
+}
+
+.floating-action-fab.danger {
+    background: var(--bs-danger);
+}
+
+/* Dark mode adjustments */
+[data-theme="dark"] .floating-action-fab {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+[data-theme="dark"] .floating-action-fab:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+/* ============================================
    SECONDARY FAB (ALTERNATIVE LAYOUT)
    Optional secondary action button
    ============================================ */
