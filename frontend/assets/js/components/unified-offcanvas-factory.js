@@ -597,7 +597,7 @@ class UnifiedOffcanvasFactory {
                             <div class="mb-3">
                                 <label class="form-label">Exercise Name</label>
                                 <input type="text" class="form-control exercise-autocomplete-input" id="bonusExerciseName"
-                                       placeholder="e.g., Face Pulls, Leg Press" autofocus>
+                                       placeholder="e.g., Face Pulls, Leg Press">
                             </div>
                             <div class="row">
                                 <div class="col-6 mb-3">
@@ -641,40 +641,61 @@ class UnifiedOffcanvasFactory {
             const nameInput = document.getElementById('bonusExerciseName');
             const previousBonusList = document.getElementById('previousBonusList');
             
-            // Initialize exercise autocomplete with auto-creation support
-            if (window.initExerciseAutocomplete && nameInput) {
-                setTimeout(() => {
-                    const autocomplete = window.initExerciseAutocomplete(nameInput, {
-                        allowCustom: true,
-                        allowAutoCreate: true,
-                        minChars: 2,
-                        maxResults: 10,
-                        debounceMs: 300,
-                        showMuscleGroup: true,
-                        showEquipment: true,
-                        showDifficulty: true,
-                        showTier: true,
-                        onSelect: (exercise) => {
-                            console.log('✅ Exercise selected:', exercise.name);
-                        },
-                        onAutoCreate: (exercise) => {
-                            console.log('🚀 Auto-created exercise:', exercise.name);
-                            // Show success notification
-                            if (window.showToast) {
-                                window.showToast({
-                                    message: `Created custom exercise: ${exercise.name}`,
-                                    type: 'success',
-                                    title: 'Exercise Created',
-                                    icon: 'bx-plus-circle',
-                                    delay: 3000
-                                });
-                            }
-                        }
-                    });
-                    
+            // Initialize exercise autocomplete using batch initialization (matches workout builder)
+            setTimeout(() => {
+                if (window.initializeExerciseAutocompletes) {
+                    window.initializeExerciseAutocompletes();
                     console.log('✅ Exercise autocomplete initialized for bonus exercise input');
-                }, 100);
-            }
+                } else {
+                    console.warn('⚠️ initializeExerciseAutocompletes not available, trying individual init');
+                    
+                    // Fallback to individual initialization
+                    const offcanvasElement = document.getElementById('bonusExerciseOffcanvas');
+                    const nameInput = offcanvasElement?.querySelector('#bonusExerciseName');
+                    
+                    if (window.initExerciseAutocomplete && nameInput) {
+                        window.initExerciseAutocomplete(nameInput, {
+                            allowCustom: true,
+                            allowAutoCreate: true,
+                            minChars: 2,
+                            maxResults: 10,
+                            debounceMs: 200,
+                            showMuscleGroup: true,
+                            showEquipment: true,
+                            showDifficulty: true,
+                            showTier: true,
+                            onSelect: (exercise) => {
+                                console.log('✅ Exercise selected:', exercise.name);
+                            },
+                            onAutoCreate: (exercise) => {
+                                console.log('🚀 Auto-created exercise:', exercise.name);
+                                if (window.showToast) {
+                                    window.showToast({
+                                        message: `Created custom exercise: ${exercise.name}`,
+                                        type: 'success',
+                                        title: 'Exercise Created',
+                                        icon: 'bx-plus-circle',
+                                        delay: 3000
+                                    });
+                                }
+                            }
+                        });
+                        console.log('✅ Fallback: Exercise autocomplete initialized individually');
+                    } else {
+                        console.error('❌ Failed to initialize autocomplete:', {
+                            functionExists: !!window.initExerciseAutocomplete,
+                            inputExists: !!nameInput
+                        });
+                    }
+                }
+                
+                // Conditional autofocus (desktop only)
+                if (nameInput && window.innerWidth > 768) {
+                    setTimeout(() => {
+                        nameInput.focus();
+                    }, 300);
+                }
+            }, 200); // Increased delay to ensure DOM is ready
             
             if (addAndCloseBtn) {
                 addAndCloseBtn.addEventListener('click', async () => {

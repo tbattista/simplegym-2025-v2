@@ -217,3 +217,38 @@
     background-color: var(--bs-warning-bg-subtle);
     font-weight: 600;
 }
+
+/* ============================================
+   MOBILE UX ENHANCEMENTS
+   ============================================ */
+
+/* Z-index fix for offcanvas */
+.offcanvas .exercise-autocomplete-dropdown {
+    z-index: 1060;
+}
+
+/* Prevent iOS zoom on input focus */
+@media (max-width: 576px) {
+    .exercise-autocomplete-input {
+        font-size: 16px !important;
+    }
+    
+    /* Better touch targets */
+    .exercise-autocomplete-item {
+        padding: 1rem 0.75rem;
+        min-height: 56px;
+    }
+    
+    /* Touch feedback */
+    .exercise-autocomplete-item:active {
+        background-color: rgba(var(--bs-primary-rgb), 0.15);
+        transform: scale(0.98);
+        transition: transform 0.1s ease;
+    }
+    
+    /* Keyboard handling */
+    .exercise-autocomplete-dropdown {
+        max-height: 40vh;
+        -webkit-overflow-scrolling: touch;
+    }
+}

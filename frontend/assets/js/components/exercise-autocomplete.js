@@ -239,18 +239,42 @@ class ExerciseAutocomplete {
             return;
         }
         
-        // Use cache service for searching
-        this.filteredResults = this.cacheService.searchExercises(query, {
-            maxResults: this.options.maxResults,
-            includeCustom: true,
-            preferFoundational: this.options.preferFoundational,
-            tierFilter: this.options.tierFilter
-        });
+        // Show loading state
+        this.showLoading();
         
-        console.log(`🔍 Found ${this.filteredResults.length} exercises for "${query}"`);
+        // Clear previous timer
+        if (this.debounceTimer) {
+            clearTimeout(this.debounceTimer);
+        }
         
-        // Render results
-        this.render();
+        // Debounce search
+        this.debounceTimer = setTimeout(() => {
+            // Use cache service for searching
+            this.filteredResults = this.cacheService.searchExercises(query, {
+                maxResults: this.options.maxResults,
+                includeCustom: true,
+                preferFoundational: this.options.preferFoundational,
+                tierFilter: this.options.tierFilter
+            });
+            
+            console.log(`🔍 Found ${this.filteredResults.length} exercises for "${query}"`);
+            
+            // Render results
+            this.render();
+        }, this.options.debounceMs);
+    }
+    
+    /**
+     * Show loading state
+     */
+    showLoading() {
+        this.dropdown.innerHTML = `
+            <div class="exercise-autocomplete-loading">
+                <i class="bx bx-loader-alt bx-spin"></i>
+                <span class="ms-2">Searching...</span>
+            </div>
+        `;
+        this.open();
     }
     
     /**
@@ -394,6 +418,11 @@ class ExerciseAutocomplete {
      * Select an exercise
      */
     selectExercise(exercise) {
+        // Haptic feedback on selection (if supported)
+        if ('vibrate' in navigator) {
+            navigator.vibrate(10);
+        }
+        
         // Set input value
         this.input.value = exercise.name;
         
@@ -501,6 +530,15 @@ class ExerciseAutocomplete {
     open() {
         this.dropdown.style.display = 'block';
         this.isOpen = true;
+        
+        // Ensure dropdown is visible (scroll into view)
+        setTimeout(() => {
+            this.input.scrollIntoView({
+                behavior: 'smooth',
+                block: 'nearest',
+                inline: 'nearest'
+            });
+        }, 100);
     }
     
     /**
