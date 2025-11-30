@@ -66,14 +66,17 @@ def main():
         # Check if we're in production
         is_production = os.environ.get("RAILWAY_ENVIRONMENT") == "production" or os.environ.get("ENVIRONMENT") == "production"
         
+        # TEMPORARY FIX: Disable reload due to Python 3.13 + uvicorn compatibility issues
+        # The file watcher triggers on test_env packages causing constant restarts
+        # To re-enable: change reload=False to reload=not is_production
+        
         # Launch the FastAPI server with uvicorn
         uvicorn.run(
             "backend.main:app",
             host="0.0.0.0",
             port=port,
-            reload=not is_production,  # Disable reload in production
-            reload_dirs=["backend", "frontend"] if not is_production else None,
-            log_level="warning",  # Reduce verbosity to hide invalid HTTP request warnings
+            reload=False,  # Disabled due to Python 3.13 watchfiles issue
+            log_level="info",
             access_log=True
         )
     except KeyboardInterrupt:
