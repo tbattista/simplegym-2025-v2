@@ -291,18 +291,27 @@
             console.log('✅ Workout Database page ready!');
         });
         
-        // Listen for auth state changes and reload workouts
+        // Listen for auth state changes and reload workouts (with debouncing)
+        let authChangeTimeout = null;
+        
         window.addEventListener('authStateChanged', async (event) => {
-            const { user, isAuthenticated } = event.detail;
-            console.log('🔄 Auth state changed on workout database page, reloading workouts...');
-            
-            // Wait a moment for data manager to update its mode
-            await new Promise(resolve => setTimeout(resolve, 300));
-            
-            // Reload workouts with new auth state
-            if (window.loadWorkouts) {
-                await window.loadWorkouts();
+            // Debounce auth state changes to prevent multiple rapid reloads
+            if (authChangeTimeout) {
+                clearTimeout(authChangeTimeout);
             }
+            
+            authChangeTimeout = setTimeout(async () => {
+                const { user, isAuthenticated } = event.detail;
+                console.log('🔄 Auth state changed on workout database page, reloading workouts...');
+                
+                // Wait a moment for data manager to update its mode
+                await new Promise(resolve => setTimeout(resolve, 300));
+                
+                // Reload workouts with new auth state
+                if (window.loadWorkouts) {
+                    await window.loadWorkouts();
+                }
+            }, 500); // Wait 500ms for auth state to settle
         });
 
         function initWorkoutDatabase() {

@@ -172,7 +172,10 @@
     async function loadPublicWorkouts() {
         console.log('📡 Loading public workouts...', { page: currentPage, filters: currentFilters });
 
-        showLoadingState();
+        // Show loading state via grid component
+        if (workoutGrid) {
+            workoutGrid.showLoading();
+        }
 
         try {
             // Build query parameters
@@ -211,11 +214,7 @@
             
             // Use WorkoutGrid component to render
             if (workoutGrid) {
-                workoutGrid.setData(data.workouts, {
-                    currentPage: data.page,
-                    pageSize: data.page_size,
-                    totalCount: data.total_count
-                });
+                workoutGrid.setData(data.workouts);
             }
 
         } catch (error) {

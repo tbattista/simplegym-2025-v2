@@ -15,6 +15,8 @@
 
 let workoutGrid = null;
 let workoutDetailOffcanvas = null;
+let isLoadingWorkouts = false;
+let componentsInitialized = false;
 
 /**
  * ============================================
@@ -26,10 +28,26 @@ let workoutDetailOffcanvas = null;
  * Load all workouts from API
  */
 async function loadWorkouts() {
+    // Prevent multiple simultaneous loads
+    if (isLoadingWorkouts) {
+        console.log('⏳ Already loading workouts, skipping...');
+        return;
+    }
+    
+    isLoadingWorkouts = true;
+    
     try {
-        showWorkoutLoading();
-        
         console.log('📡 Loading workouts from data manager...');
+        
+        // Initialize components first if not already done
+        if (!componentsInitialized) {
+            initializeComponents();
+        }
+        
+        // Show loading state via grid component
+        if (workoutGrid) {
+            workoutGrid.showLoading();
+        }
         
         // Always load fresh data from data manager to ensure we have the latest
         if (!window.dataManager || !window.dataManager.getWorkouts) {
@@ -52,11 +70,6 @@ async function loadWorkouts() {
             totalCountEl.textContent = window.ghostGym.workoutDatabase.stats.total;
         }
         
-        // Initialize components if not already done
-        if (!workoutGrid) {
-            initializeComponents();
-        }
-        
         // Load tag options
         loadTagOptions();
         
@@ -65,7 +78,18 @@ async function loadWorkouts() {
         
     } catch (error) {
         console.error('❌ Failed to load workouts:', error);
-        showWorkoutError('Failed to load workouts: ' + error.message);
+        
+        // Use grid's empty state instead of destroying HTML
+        if (workoutGrid) {
+            workoutGrid.setData([]); // Shows empty state
+        }
+        
+        // Show alert for user feedback
+        if (window.showAlert) {
+            window.showAlert('Failed to load workouts: ' + error.message, 'danger');
+        }
+    } finally {
+        isLoadingWorkouts = false;
     }
 }
 
@@ -320,7 +344,13 @@ function clearFilters() {
  * Initialize shared components
  */
 function initializeComponents() {
+    if (componentsInitialized) {
+        console.log('⏭️ Components already initialized, skipping...');
+        return;
+    }
+    
     console.log('🔧 Initializing shared components...');
+    componentsInitialized = true;
     
     // Initialize WorkoutDetailOffcanvas
     workoutDetailOffcanvas = new WorkoutDetailOffcanvas({
@@ -329,12 +359,14 @@ function initializeComponents() {
         showDates: true,
         actions: [
             {
+                id: 'edit',
                 label: 'Edit',
                 icon: 'bx-edit',
                 variant: 'outline-primary',
                 onClick: (workout) => editWorkout(workout.id)
             },
             {
+                id: 'start',
                 label: 'Start',
                 icon: 'bx-play',
                 variant: 'primary',
@@ -360,24 +392,28 @@ function initializeComponents() {
             showExercisePreview: true,
             actions: [
                 {
+                    id: 'start',
                     label: 'Start',
                     icon: 'bx-play',
                     variant: 'primary',
                     onClick: (workout) => doWorkout(workout.id)
                 },
                 {
+                    id: 'view',
                     label: 'View',
                     icon: 'bx-show',
                     variant: 'outline-secondary',
                     onClick: (workout) => viewWorkoutDetails(workout.id)
                 },
                 {
+                    id: 'history',
                     label: 'History',
                     icon: 'bx-history',
                     variant: 'outline-info',
                     onClick: (workout) => viewWorkoutHistory(workout.id)
                 },
                 {
+                    id: 'edit',
                     label: 'Edit',
                     icon: 'bx-edit',
                     variant: 'outline-secondary',
@@ -631,40 +667,14 @@ function hideSearchOverlay() {
  */
 
 /**
- * Show loading state
+ * DEPRECATED: showWorkoutLoading() - Removed to prevent HTML destruction
+ * The WorkoutGrid component now handles loading state internally via showLoading()
  */
-function showWorkoutLoading() {
-    const container = document.getElementById('workoutTableContainer');
-    if (container) {
-        container.innerHTML = `
-            <div class="text-center py-5">
-                <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Loading workouts...</span>
-                </div>
-                <p class="mt-3 text-muted">Loading workouts...</p>
-            </div>
-        `;
-    }
-}
 
 /**
- * Show error state
+ * DEPRECATED: showWorkoutError() - Removed to prevent HTML destruction
+ * Error handling now uses WorkoutGrid's empty state + alert notifications
  */
-function showWorkoutError(message) {
-    const container = document.getElementById('workoutTableContainer');
-    if (container) {
-        container.innerHTML = `
-            <div class="text-center py-5">
-                <i class="bx bx-error-circle display-1 text-danger"></i>
-                <h5 class="mt-3">Error Loading Workouts</h5>
-                <p class="text-muted">${window.escapeHtml(message)}</p>
-                <button class="btn btn-primary mt-2" onclick="loadWorkouts()">
-                    <i class="bx bx-refresh me-1"></i>Retry
-                </button>
-            </div>
-        `;
-    }
-}
 
 /**
  * ============================================
