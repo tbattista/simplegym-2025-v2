@@ -82,6 +82,7 @@
                 showExercisePreview: false, // Don't show exercise preview for public
                 actions: [
                     {
+                        id: 'view',
                         label: 'View Details',
                         icon: 'bx-show',
                         variant: 'primary',
