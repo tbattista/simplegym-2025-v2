@@ -1539,4 +1539,143 @@ a:focus-visible {
     max-width: 300px;
   }
 }
+
+/* ============================================
+   QUICK ACTIONS CARD - COMPACT STYLE
+   ============================================ */
+
+/* Quick Actions Card - Extra compact button styling */
+.quick-actions-card .btn-xs {
+  padding: 0.25rem 0.375rem;
+  font-size: 0.7rem;
+  font-weight: 500;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  min-height: 32px;
+  line-height: 1.2;
+}
+
+.quick-actions-card .btn-xs i {
+  font-size: 0.8rem;
+  flex-shrink: 0;
+  margin-right: 0.25rem;
+}
+
+/* Ensure consistent button spacing */
+.quick-actions-card .d-grid {
+  gap: 0.25rem !important;
+}
+
+/* Reduce Quick Actions card title spacing */
+.quick-actions-card .fw-semibold {
+  margin-bottom: 0.5rem !important;
+}
+
+/* Ensure all statistics cards have same height */
+#authenticatedDashboard .card.h-100 {
+  min-height: 180px;
+  display: flex;
+  flex-direction: column;
+}
+
+#authenticatedDashboard .card.h-100 .card-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Hover effects for compact buttons */
+.quick-actions-card .btn-outline-primary:hover,
+.quick-actions-card .btn-outline-success:hover,
+.quick-actions-card .btn-outline-info:hover {
+  transform: translateX(2px);
+  transition: all 0.2s ease;
+}
+
+/* Dark mode support for Quick Actions card */
+[data-bs-theme=dark] .quick-actions-card .btn-outline-primary {
+  border-color: var(--ghost-primary);
+  color: var(--ghost-primary);
+}
+
+[data-bs-theme=dark] .quick-actions-card .btn-outline-success {
+  border-color: var(--ghost-success);
+  color: var(--ghost-success);
+}
+
+[data-bs-theme=dark] .quick-actions-card .btn-outline-info {
+  border-color: var(--ghost-accent);
+  color: var(--ghost-accent);
+}
+
+[data-bs-theme=dark] .quick-actions-card .btn-outline-primary:hover {
+  background: var(--ghost-primary);
+  color: white;
+}
+
+[data-bs-theme=dark] .quick-actions-card .btn-outline-success:hover {
+  background: var(--ghost-success);
+  color: white;
+}
+
+[data-bs-theme=dark] .quick-actions-card .btn-outline-info:hover {
+  background: var(--ghost-accent);
+  color: white;
+}
+
+/* ============================================
+   WORKOUT LIST LAYOUT (MOBILE-FIRST)
+   ============================================ */
+
+/* Workouts list container */
+.workouts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Workout list card styling */
+.workout-list-card {
+  width: 100%;
+  margin-bottom: 0;
+  transition: all 0.2s ease;
+}
+
+.workout-list-card:hover {
+  transform: translateX(4px);
+  box-shadow: 0 4px 12px rgba(67, 89, 113, 0.15);
+}
+
+/* Ensure cards take full width in list layout */
+.workout-list-card .card-body {
+  padding: 1.25rem;
+}
+
+/* Dark mode support for workout list */
+[data-bs-theme=dark] .workout-list-card {
+  background: #1e293b;
+  color: #f8fafc;
+  border-color: #475569;
+}
+
+[data-bs-theme=dark] .workout-list-card:hover {
+  border-color: var(--ghost-primary);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+/* Mobile-specific adjustments */
+@media (max-width: 768px) {
+  .workout-list-card .card-body {
+    padding: 1rem;
+  }
+  
+  .workout-list-card .card-title {
+    font-size: 1.1rem;
+  }
+  
+  .workout-list-card .badge {
+    font-size: 0.7rem;
+  }
 }

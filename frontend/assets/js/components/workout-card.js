@@ -13,6 +13,7 @@ class WorkoutCard {
             showStats: false,
             showTags: true,
             showDescription: false,
+            showExercisePreview: false,
             
             // Action buttons
             actions: [],
@@ -20,6 +21,9 @@ class WorkoutCard {
             // Delete mode
             deleteMode: false,
             onDelete: null,
+            
+            // Custom metadata
+            customMetadata: null,
             
             // Callbacks
             onCardClick: null,
@@ -35,31 +39,30 @@ class WorkoutCard {
      * @returns {HTMLElement} The card element
      */
     render() {
-        const col = document.createElement('div');
-        col.className = 'col';
+        const cardClass = this.config.deleteMode ? 'card workout-list-card delete-mode' : 'card workout-list-card';
         
-        const cardClass = this.config.deleteMode ? 'card h-100 delete-mode' : 'card h-100';
+        const card = document.createElement('div');
+        card.className = cardClass;
+        card.setAttribute('data-workout-id', this.workout.id);
         
-        col.innerHTML = `
-            <div class="${cardClass}" data-workout-id="${this.workout.id}">
-                <div class="card-body">
-                    ${this._renderHeader()}
-                    ${this._renderMetadata()}
-                    ${this._renderDescription()}
-                    ${this._renderExercisePreview()}
-                    ${this._renderTags()}
-                    ${this._renderStats()}
-                    <div class="card-actions mt-auto">
-                        ${this._renderActions()}
-                    </div>
+        card.innerHTML = `
+            <div class="card-body">
+                ${this._renderHeader()}
+                ${this._renderMetadata()}
+                ${this._renderDescription()}
+                ${this._renderExercisePreview()}
+                ${this._renderTags()}
+                ${this._renderStats()}
+                <div class="card-actions mt-auto">
+                    ${this._renderActions()}
                 </div>
             </div>
         `;
         
-        this.element = col;
+        this.element = card;
         this._attachEventListeners();
         
-        return col;
+        return card;
     }
     
     /**
@@ -97,6 +100,11 @@ class WorkoutCard {
                     ${this._escapeHtml(this.workout.creator_name)}
                 </p>
             `;
+        }
+        
+        // Allow custom metadata injection
+        if (this.config.customMetadata) {
+            html += this.config.customMetadata(this.workout);
         }
         
         return html;
