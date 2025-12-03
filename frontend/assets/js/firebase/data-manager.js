@@ -75,7 +75,12 @@ class FirebaseDataManager {
         this.currentUser = user;
         this.storageMode = this.isAuthenticated ? 'firestore' : 'localStorage';
         
-        console.log(`🔄 Auth state changed: ${this.storageMode} mode`);
+        console.log(`🔄 Auth state changed: ${this.storageMode} mode`, {
+            isAuthenticated: this.isAuthenticated,
+            userEmail: user?.email,
+            userId: user?.uid,
+            isAnonymous: user?.isAnonymous
+        });
         
         // Migration functionality disabled - users can manually export/import if needed
         // If user just authenticated, check for migration opportunity
@@ -241,16 +246,24 @@ class FirebaseDataManager {
     async getPrograms(options = {}) {
         const { page = 1, pageSize = 20, search = null } = options;
         
-        console.log('🔍 DEBUG: getPrograms called with:', { storageMode: this.storageMode, isOnline: this.isOnline, options });
+        console.log('🔍 DEBUG: getPrograms called with:', {
+            storageMode: this.storageMode,
+            isAuthenticated: this.isAuthenticated,
+            isOnline: this.isOnline,
+            currentUser: this.currentUser?.email,
+            options
+        });
         
         try {
             if (this.storageMode === 'firestore' && this.isOnline) {
+                console.log('📡 Fetching programs from Firestore...');
                 const programs = await this.getFirestorePrograms({ page, pageSize, search });
-                console.log('🔍 DEBUG: Got programs from Firestore:', programs.length);
+                console.log('✅ Got programs from Firestore:', programs.length, programs);
                 return programs;
             } else {
+                console.log('💾 Fetching programs from localStorage...');
                 const programs = this.getLocalStoragePrograms({ page, pageSize, search });
-                console.log('🔍 DEBUG: Got programs from localStorage:', programs.length);
+                console.log('✅ Got programs from localStorage:', programs.length, programs);
                 return programs;
             }
         } catch (error) {

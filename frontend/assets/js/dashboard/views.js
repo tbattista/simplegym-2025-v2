@@ -9,7 +9,7 @@
  */
 function renderProgramsView() {
     const programsList = document.getElementById('programsViewList');
-    if (!programsList || !window.ghostGym) return;
+    if (!programsList || !window.ghostGym || !window.ghostGym.programs) return;
     
     const searchInput = document.getElementById('programsViewSearch');
     const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';

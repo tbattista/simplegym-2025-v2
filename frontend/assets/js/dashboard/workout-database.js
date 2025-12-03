@@ -420,11 +420,7 @@ function initializeComponents() {
                     onClick: (workout) => editWorkout(workout.id)
                 }
             ],
-            deleteAction: {
-                label: 'Delete Workout',
-                icon: 'bx-trash',
-                onClick: (workout) => deleteWorkoutFromDatabase(workout.id, workout.name)
-            }
+            onDelete: (workoutId, workoutName) => deleteWorkoutFromDatabase(workoutId, workoutName)
         },
         onPageChange: (page) => {
             window.ghostGym.workoutDatabase.currentPage = page;
@@ -700,6 +696,24 @@ function toggleDeleteMode() {
     // Update grid delete mode
     if (workoutGrid) {
         workoutGrid.setDeleteMode(isActive);
+    }
+    
+    // Show/hide end delete mode button and search FAB
+    const searchFab = document.getElementById('searchFab');
+    if (window.bottomActionBar) {
+        if (isActive) {
+            window.bottomActionBar.showEndDeleteModeButton();
+            // Hide search FAB when delete mode is active
+            if (searchFab) {
+                searchFab.style.display = 'none';
+            }
+        } else {
+            window.bottomActionBar.hideEndDeleteModeButton();
+            // Show search FAB when delete mode is inactive
+            if (searchFab) {
+                searchFab.style.display = 'flex';
+            }
+        }
     }
     
     // Optional: Add body class for global styling

@@ -638,6 +638,35 @@
 }
 
 /* ============================================
+   EXERCISE PREVIEW IN CARDS
+   ============================================ */
+
+/* Exercise preview in cards */
+.card .exercise-preview {
+    font-size: 0.875rem;
+    line-height: 1.5;
+}
+
+.card .exercise-preview small {
+    color: var(--bs-secondary);
+}
+
+.card .exercise-preview .text-truncate {
+    max-width: 100%;
+}
+
+/* Card actions container */
+.card-actions {
+    margin-top: auto;
+    padding-top: 0.5rem;
+}
+
+/* Ensure proper spacing in delete mode */
+.card.delete-mode .card-actions {
+    padding-top: 0.75rem;
+}
+
+/* ============================================
    DELETE MODE STYLES
    ============================================ */
 

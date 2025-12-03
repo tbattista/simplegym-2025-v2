@@ -151,6 +151,9 @@
             } else if (window.ghostGym?.workoutDatabase && window.filterWorkouts) {
                 window.ghostGym.workoutDatabase.filters.search = '';
                 window.filterWorkouts();
+            } else if (window.ghostGym?.programsPage && window.renderProgramsGrid) {
+                window.ghostGym.programsPage.filters.search = '';
+                window.renderProgramsGrid();
             }
         }
         
@@ -277,6 +280,10 @@
                     // Workout database page
                     window.ghostGym.workoutDatabase.filters.search = searchTerm;
                     window.filterWorkouts();
+                } else if (window.ghostGym?.programsPage && window.renderProgramsGrid) {
+                    // Programs page
+                    window.ghostGym.programsPage.filters.search = searchTerm;
+                    window.renderProgramsGrid();
                 }
             }, 300);
         });
@@ -445,66 +452,98 @@
                     }
                 },
                 {
-                    icon: 'bx-info-circle',
-                    label: 'Info',
-                    title: 'Page information',
+                    icon: 'bx-dots-vertical-rounded',
+                    label: 'More',
+                    title: 'More options',
                     action: function() {
-                        // Show info modal with page explanation
-                        const modalHtml = `
-                            <div class="modal fade" id="workoutDatabaseInfoModal" tabindex="-1" aria-hidden="true">
-                                <div class="modal-dialog modal-dialog-centered">
-                                    <div class="modal-content">
-                                        <div class="modal-header">
-                                            <h5 class="modal-title">
-                                                <i class="bx bx-info-circle me-2"></i>
-                                                Workout Database
-                                            </h5>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                        </div>
-                                        <div class="modal-body">
-                                            <h6 class="mb-3">📚 What is this page?</h6>
-                                            <p class="mb-3">This is your personal workout library where you can browse, search, and manage all your workout templates.</p>
+                        // Use UnifiedOffcanvasFactory to create more menu
+                        if (window.UnifiedOffcanvasFactory) {
+                            window.UnifiedOffcanvasFactory.createMenuOffcanvas({
+                                id: 'moreMenuOffcanvas',
+                                title: 'More Options',
+                                icon: 'bx-dots-vertical-rounded',
+                                menuItems: [
+                                    {
+                                        icon: 'bx-trash',
+                                        title: 'Delete Workouts',
+                                        description: 'Toggle delete mode to remove workouts',
+                                        onClick: () => {
+                                            const toggle = document.getElementById('deleteModeToggle');
+                                            if (toggle) {
+                                                toggle.checked = !toggle.checked;
+                                                toggle.dispatchEvent(new Event('change'));
+                                            }
+                                        }
+                                    },
+                                    {
+                                        icon: 'bx-info-circle',
+                                        title: 'Page Information',
+                                        description: 'Learn how to use this page',
+                                        onClick: () => {
+                                            // Show info modal with page explanation
+                                            const modalHtml = `
+                                                <div class="modal fade" id="workoutDatabaseInfoModal" tabindex="-1" aria-hidden="true">
+                                                    <div class="modal-dialog modal-dialog-centered">
+                                                        <div class="modal-content">
+                                                            <div class="modal-header">
+                                                                <h5 class="modal-title">
+                                                                    <i class="bx bx-info-circle me-2"></i>
+                                                                    Workout Database
+                                                                </h5>
+                                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                            </div>
+                                                            <div class="modal-body">
+                                                                <h6 class="mb-3">📚 What is this page?</h6>
+                                                                <p class="mb-3">This is your personal workout library where you can browse, search, and manage all your workout templates.</p>
+                                                                
+                                                                <h6 class="mb-3">🔍 How to use:</h6>
+                                                                <ul class="mb-3">
+                                                                    <li><strong>Search:</strong> Tap the Search button to find workouts by name, description, or tags</li>
+                                                                    <li><strong>Filter:</strong> Use the Filter button to narrow down by tags</li>
+                                                                    <li><strong>Sort:</strong> Tap Sort to organize by date, name, or exercise count</li>
+                                                                    <li><strong>Create:</strong> Tap the + button to build a new workout</li>
+                                                                </ul>
+                                                                
+                                                                <h6 class="mb-3">💡 Quick Actions:</h6>
+                                                                <ul class="mb-0">
+                                                                    <li><strong>Start Workout:</strong> Tap the purple button on any workout card</li>
+                                                                    <li><strong>View Details:</strong> Tap "View" to see full workout information</li>
+                                                                    <li><strong>Edit:</strong> Tap "Edit" to modify a workout template</li>
+                                                                </ul>
+                                                            </div>
+                                                            <div class="modal-footer">
+                                                                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Got it!</button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            `;
                                             
-                                            <h6 class="mb-3">🔍 How to use:</h6>
-                                            <ul class="mb-3">
-                                                <li><strong>Search:</strong> Tap the Search button to find workouts by name, description, or tags</li>
-                                                <li><strong>Filter:</strong> Use the Filter button to narrow down by tags</li>
-                                                <li><strong>Sort:</strong> Tap Sort to organize by date, name, or exercise count</li>
-                                                <li><strong>Create:</strong> Tap the + button to build a new workout</li>
-                                            </ul>
+                                            // Remove existing modal if present
+                                            const existingModal = document.getElementById('workoutDatabaseInfoModal');
+                                            if (existingModal) {
+                                                existingModal.remove();
+                                            }
                                             
-                                            <h6 class="mb-3">💡 Quick Actions:</h6>
-                                            <ul class="mb-0">
-                                                <li><strong>Start Workout:</strong> Tap the purple button on any workout card</li>
-                                                <li><strong>View Details:</strong> Tap "View" to see full workout information</li>
-                                                <li><strong>Edit:</strong> Tap "Edit" to modify a workout template</li>
-                                            </ul>
-                                        </div>
-                                        <div class="modal-footer">
-                                            <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Got it!</button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        `;
-                        
-                        // Remove existing modal if present
-                        const existingModal = document.getElementById('workoutDatabaseInfoModal');
-                        if (existingModal) {
-                            existingModal.remove();
+                                            // Add modal to body
+                                            document.body.insertAdjacentHTML('beforeend', modalHtml);
+                                            
+                                            // Show modal
+                                            const modal = new bootstrap.Modal(document.getElementById('workoutDatabaseInfoModal'));
+                                            modal.show();
+                                            
+                                            // Clean up after modal is hidden
+                                            document.getElementById('workoutDatabaseInfoModal').addEventListener('hidden.bs.modal', function() {
+                                                this.remove();
+                                            });
+                                        }
+                                    }
+                                ]
+                            });
+                        } else {
+                            console.error('❌ UnifiedOffcanvasFactory not loaded');
+                            alert('More options is loading. Please try again in a moment.');
                         }
-                        
-                        // Add modal to body
-                        document.body.insertAdjacentHTML('beforeend', modalHtml);
-                        
-                        // Show modal
-                        const modal = new bootstrap.Modal(document.getElementById('workoutDatabaseInfoModal'));
-                        modal.show();
-                        
-                        // Clean up after modal is hidden
-                        document.getElementById('workoutDatabaseInfoModal').addEventListener('hidden.bs.modal', function() {
-                            this.remove();
-                        });
                     }
                 }
             ],
@@ -1086,6 +1125,132 @@
                 } else {
                     console.error('❌ Workout mode controller not available');
                     alert('Unable to end workout. Please try again.');
+                }
+            }
+        },
+
+        // ============================================
+        // PROGRAMS PAGE
+        // ============================================
+        'programs': {
+            buttons: [
+                {
+                    icon: 'bx-filter',
+                    label: 'Filter',
+                    title: 'Open filters',
+                    action: function() {
+                        // TODO: Implement filters offcanvas for programs
+                        console.log('🔍 Filter button clicked');
+                        alert('Filter feature coming soon!');
+                    }
+                },
+                {
+                    icon: 'bx-sort',
+                    label: 'Sort',
+                    title: 'Sort programs',
+                    action: function() {
+                        // TODO: Implement sort offcanvas for programs
+                        console.log('📊 Sort button clicked');
+                        alert('Sort feature coming soon!');
+                    }
+                },
+                {
+                    icon: 'bx-plus',
+                    label: 'Add',
+                    title: 'Create new program',
+                    action: function() {
+                        // Open program modal
+                        if (window.showProgramModal) {
+                            window.showProgramModal();
+                        } else {
+                            console.error('❌ showProgramModal not available');
+                        }
+                    }
+                },
+                {
+                    icon: 'bx-info-circle',
+                    label: 'Info',
+                    title: 'Page information',
+                    action: function() {
+                        // Show info modal with page explanation
+                        const modalHtml = `
+                            <div class="modal fade" id="programsInfoModal" tabindex="-1" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">
+                                                <i class="bx bx-info-circle me-2"></i>
+                                                Programs
+                                            </h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <h6 class="mb-3">📚 What is this page?</h6>
+                                            <p class="mb-3">This is your program library where you can organize workouts into structured training programs.</p>
+                                            
+                                            <h6 class="mb-3">🔍 How to use:</h6>
+                                            <ul class="mb-3">
+                                                <li><strong>Search:</strong> Tap the Search button to find programs by name, description, or tags</li>
+                                                <li><strong>Filter:</strong> Use the Filter button to narrow down by tags</li>
+                                                <li><strong>Sort:</strong> Tap Sort to organize by date, name, or workout count</li>
+                                                <li><strong>Create:</strong> Tap the + button to create a new program</li>
+                                            </ul>
+                                            
+                                            <h6 class="mb-3">💡 Quick Actions:</h6>
+                                            <ul class="mb-0">
+                                                <li><strong>Open:</strong> Tap "Open" to view and manage program workouts</li>
+                                                <li><strong>Edit:</strong> Tap "Edit" to modify program details</li>
+                                                <li><strong>Delete Mode:</strong> Toggle delete mode to remove programs</li>
+                                            </ul>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Got it!</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        
+                        // Remove existing modal if present
+                        const existingModal = document.getElementById('programsInfoModal');
+                        if (existingModal) {
+                            existingModal.remove();
+                        }
+                        
+                        // Add modal to body
+                        document.body.insertAdjacentHTML('beforeend', modalHtml);
+                        
+                        // Show modal
+                        const modal = new bootstrap.Modal(document.getElementById('programsInfoModal'));
+                        modal.show();
+                        
+                        // Clean up after modal is hidden
+                        document.getElementById('programsInfoModal').addEventListener('hidden.bs.modal', function() {
+                            this.remove();
+                        });
+                    }
+                }
+            ],
+            fab: {
+                icon: 'bx-search',
+                title: 'Search programs',
+                variant: 'primary',
+                action: function() {
+                    const searchFab = document.getElementById('searchFab');
+                    const searchInput = document.getElementById('searchFabInput');
+                    
+                    if (!searchFab || !searchInput) {
+                        console.error('❌ Search FAB elements not found');
+                        return;
+                    }
+                    
+                    // Only toggle if NOT expanded (only open when collapsed)
+                    if (!searchFab.classList.contains('expanded')) {
+                        // Open search - morph FAB to search box
+                        if (window.openMorphingSearch) {
+                            window.openMorphingSearch(searchFab, searchInput);
+                        }
+                    }
                 }
             }
         }

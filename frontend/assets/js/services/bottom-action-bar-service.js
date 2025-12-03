@@ -650,6 +650,64 @@
         }
 
         /**
+         * Show end delete mode button (for workout database)
+         */
+        showEndDeleteModeButton() {
+            // Check if button already exists
+            let button = document.getElementById('endDeleteModeButton');
+            if (button) {
+                button.style.display = 'flex';
+                console.log('✅ End delete mode button shown (already exists)');
+                return;
+            }
+            
+            // Create the button
+            const buttonHTML = `
+                <button class="floating-end-delete-button"
+                        id="endDeleteModeButton"
+                        title="End delete mode"
+                        aria-label="End delete mode"
+                        style="display: flex;">
+                    <i class="bx bx-x"></i>
+                    <span>End</span>
+                </button>
+            `;
+            
+            // Insert into the container (same parent as search FAB)
+            if (this.container) {
+                this.container.insertAdjacentHTML('beforeend', buttonHTML);
+                
+                // Attach click handler
+                button = document.getElementById('endDeleteModeButton');
+                if (button) {
+                    button.addEventListener('click', () => {
+                        // Toggle off delete mode
+                        const toggle = document.getElementById('deleteModeToggle');
+                        if (toggle) {
+                            toggle.checked = false;
+                            toggle.dispatchEvent(new Event('change'));
+                        }
+                    });
+                }
+                
+                console.log('✅ End delete mode button created and shown');
+            } else {
+                console.error('❌ Container not found, cannot create end delete mode button');
+            }
+        }
+        
+        /**
+         * Hide end delete mode button
+         */
+        hideEndDeleteModeButton() {
+            const button = document.getElementById('endDeleteModeButton');
+            if (button) {
+                button.style.display = 'none';
+                console.log('✅ End delete mode button hidden');
+            }
+        }
+        
+        /**
          * Destroy the bottom action bar
          */
         destroy() {
@@ -706,6 +764,7 @@
         if (filename.includes('workout-builder')) return 'workout-builder';
         if (filename.includes('exercise-database')) return 'exercise-database';
         if (filename.includes('workout-mode')) return 'workout-mode';
+        if (filename.includes('programs')) return 'programs';
 
         return null;
     }

@@ -1,18 +1,20 @@
 /**
- * Ghost Gym - Workout Card Component
- * Reusable workout card with configurable actions and display options
+ * Ghost Gym - Program Card Component
+ * Reusable program card with configurable actions and display options
+ * Matches the WorkoutCard component styling for UI consistency
  * @version 1.0.0
  */
 
-class WorkoutCard {
-    constructor(workout, config = {}) {
-        this.workout = workout;
+class ProgramCard {
+    constructor(program, config = {}) {
+        this.program = program;
         this.config = {
             // Display options
-            showCreator: false,
-            showStats: false,
+            showStats: true,
             showTags: true,
-            showDescription: false,
+            showDescription: true,
+            showDifficulty: true,
+            showDuration: true,
             
             // Action buttons
             actions: [],
@@ -24,6 +26,9 @@ class WorkoutCard {
             // Callbacks
             onCardClick: null,
             
+            // Workouts reference for calculating stats
+            workouts: [],
+            
             ...config
         };
         
@@ -31,7 +36,7 @@ class WorkoutCard {
     }
     
     /**
-     * Render the workout card
+     * Render the program card
      * @returns {HTMLElement} The card element
      */
     render() {
@@ -41,17 +46,13 @@ class WorkoutCard {
         const cardClass = this.config.deleteMode ? 'card h-100 delete-mode' : 'card h-100';
         
         col.innerHTML = `
-            <div class="${cardClass}" data-workout-id="${this.workout.id}">
+            <div class="${cardClass}" data-program-id="${this.program.id}">
                 <div class="card-body">
                     ${this._renderHeader()}
                     ${this._renderMetadata()}
                     ${this._renderDescription()}
-                    ${this._renderExercisePreview()}
                     ${this._renderTags()}
-                    ${this._renderStats()}
-                    <div class="card-actions mt-auto">
-                        ${this._renderActions()}
-                    </div>
+                    ${this._renderActions()}
                 </div>
             </div>
         `;
@@ -63,41 +64,57 @@ class WorkoutCard {
     }
     
     /**
-     * Render card header (title)
+     * Render card header (title with difficulty badge)
      */
     _renderHeader() {
-        const workoutData = this.workout.workout_data || this.workout;
-        const name = workoutData.name || this.workout.name || 'Untitled Workout';
+        const name = this.program.name || 'Untitled Program';
+        
+        let difficultyBadge = '';
+        if (this.config.showDifficulty && this.program.difficulty_level) {
+            const difficultyColors = {
+                'beginner': 'success',
+                'intermediate': 'warning',
+                'advanced': 'danger'
+            };
+            const color = difficultyColors[this.program.difficulty_level] || 'secondary';
+            difficultyBadge = `<span class="badge bg-label-${color} ms-2">${this.program.difficulty_level}</span>`;
+        }
         
         return `
-            <h5 class="card-title mb-2">${this._escapeHtml(name)}</h5>
+            <h5 class="card-title mb-2 d-flex align-items-center">
+                ${this._escapeHtml(name)}
+                ${difficultyBadge}
+            </h5>
         `;
     }
     
     /**
-     * Render metadata (groups, exercises, creator)
+     * Render metadata (workouts, exercises, duration)
      */
     _renderMetadata() {
-        const workoutData = this.workout.workout_data || this.workout;
-        const groupCount = (workoutData.exercise_groups || []).length;
-        const totalExercises = this._getTotalExerciseCount(workoutData);
+        const workoutCount = this.program.workouts?.length || 0;
+        const totalExercises = this._getTotalExerciseCount();
         
         let html = `
             <div class="mb-2">
-                <span class="badge bg-label-primary me-1">${groupCount} ${groupCount === 1 ? 'group' : 'groups'}</span>
-                <span class="badge bg-label-info">${totalExercises} ${totalExercises === 1 ? 'exercise' : 'exercises'}</span>
-            </div>
+                <span class="badge bg-label-primary me-1">
+                    <i class="bx bx-dumbbell me-1"></i>${workoutCount} ${workoutCount === 1 ? 'workout' : 'workouts'}
+                </span>
+                <span class="badge bg-label-info">
+                    <i class="bx bx-list-ul me-1"></i>${totalExercises} ${totalExercises === 1 ? 'exercise' : 'exercises'}
+                </span>
         `;
         
-        // Show creator for public workouts
-        if (this.config.showCreator && this.workout.creator_name) {
+        // Show duration if available
+        if (this.config.showDuration && this.program.duration_weeks) {
             html += `
-                <p class="text-muted small mb-2">
-                    <i class="bx bx-user me-1"></i>
-                    ${this._escapeHtml(this.workout.creator_name)}
-                </p>
+                <span class="badge bg-label-secondary ms-1">
+                    <i class="bx bx-time me-1"></i>${this.program.duration_weeks} ${this.program.duration_weeks === 1 ? 'week' : 'weeks'}
+                </span>
             `;
         }
+        
+        html += `</div>`;
         
         return html;
     }
@@ -108,8 +125,7 @@ class WorkoutCard {
     _renderDescription() {
         if (!this.config.showDescription) return '';
         
-        const workoutData = this.workout.workout_data || this.workout;
-        const description = workoutData.description || this.workout.description;
+        const description = this.program.description;
         
         if (!description) return '';
         
@@ -130,8 +146,7 @@ class WorkoutCard {
     _renderTags() {
         if (!this.config.showTags) return '';
         
-        const workoutData = this.workout.workout_data || this.workout;
-        const tags = workoutData.tags || this.workout.tags || [];
+        const tags = this.program.tags || [];
         
         if (tags.length === 0) return '';
         
@@ -146,81 +161,13 @@ class WorkoutCard {
     }
     
     /**
-     * Render exercise preview (first few exercises)
-     */
-    _renderExercisePreview() {
-        if (!this.config.showExercisePreview) return '';
-        
-        const workoutData = this.workout.workout_data || this.workout;
-        const exercises = [];
-        
-        // Collect exercises from groups
-        if (workoutData.exercise_groups) {
-            workoutData.exercise_groups.forEach(group => {
-                if (group.exercises) {
-                    Object.values(group.exercises).forEach(name => {
-                        if (name) exercises.push(name);
-                    });
-                }
-            });
-        }
-        
-        // Add bonus exercises
-        if (workoutData.bonus_exercises) {
-            workoutData.bonus_exercises.forEach(bonus => {
-                if (bonus.name) exercises.push(bonus.name);
-            });
-        }
-        
-        if (exercises.length === 0) return '';
-        
-        // Show first 3 exercises
-        const displayExercises = exercises.slice(0, 3);
-        const remaining = exercises.length - displayExercises.length;
-        
-        return `
-            <div class="exercise-preview mb-2">
-                <small class="text-muted d-block mb-1">Exercises:</small>
-                ${displayExercises.map(ex =>
-                    `<small class="d-block text-truncate">• ${this._escapeHtml(ex)}</small>`
-                ).join('')}
-                ${remaining > 0 ? `<small class="text-muted">+${remaining} more</small>` : ''}
-            </div>
-        `;
-    }
-    
-    /**
-     * Render stats (views, saves)
-     */
-    _renderStats() {
-        if (!this.config.showStats) return '';
-        
-        const stats = this.workout.stats || {};
-        const viewCount = stats.view_count || 0;
-        const saveCount = stats.save_count || 0;
-        
-        return `
-            <div class="d-flex gap-3 mb-2">
-                <small class="text-muted">
-                    <i class="bx bx-show me-1"></i>
-                    ${viewCount}
-                </small>
-                <small class="text-muted">
-                    <i class="bx bx-bookmark me-1"></i>
-                    ${saveCount}
-                </small>
-            </div>
-        `;
-    }
-    
-    /**
      * Render action buttons
      */
     _renderActions() {
         if (this.config.deleteMode && this.config.onDelete) {
             return `
-                <button class="btn btn-delete-workout w-100 mt-auto" data-action="delete">
-                    <i class="bx bx-trash me-1"></i>Delete Workout
+                <button class="btn btn-delete-program w-100 mt-auto" data-action="delete">
+                    <i class="bx bx-trash me-1"></i>Delete Program
                 </button>
             `;
         }
@@ -262,7 +209,7 @@ class WorkoutCard {
             card.addEventListener('click', (e) => {
                 // Don't trigger if clicking a button
                 if (!e.target.closest('button')) {
-                    this.config.onCardClick(this.workout, e);
+                    this.config.onCardClick(this.program, e);
                 }
             });
         }
@@ -275,13 +222,12 @@ class WorkoutCard {
                 const actionId = button.dataset.action;
                 
                 if (actionId === 'delete' && this.config.onDelete) {
-                    const workoutData = this.workout.workout_data || this.workout;
-                    const name = workoutData.name || this.workout.name || 'Untitled Workout';
-                    this.config.onDelete(this.workout.id, name);
+                    const name = this.program.name || 'Untitled Program';
+                    this.config.onDelete(this.program.id, name);
                 } else {
                     const action = this.config.actions.find(a => a.id === actionId);
                     if (action && action.onClick) {
-                        action.onClick(this.workout);
+                        action.onClick(this.program);
                     }
                 }
             });
@@ -297,29 +243,28 @@ class WorkoutCard {
         
         if (this.element) {
             const card = this.element.querySelector('.card');
-            const cardBody = card.querySelector('.card-body');
-            const actionsWrapper = cardBody.querySelector('.card-actions');
-            
             if (enabled) {
                 card.classList.add('delete-mode');
             } else {
                 card.classList.remove('delete-mode');
             }
             
-            // Replace actions content only
-            if (actionsWrapper) {
-                actionsWrapper.innerHTML = this._renderActions();
+            // Re-render actions
+            const cardBody = card.querySelector('.card-body');
+            const actionsContainer = cardBody.querySelector('.btn-group, .btn-delete-program, button[data-action]')?.parentElement;
+            if (actionsContainer) {
+                actionsContainer.innerHTML = this._renderActions();
                 this._attachEventListeners();
             }
         }
     }
     
     /**
-     * Update workout data
-     * @param {Object} workout
+     * Update program data
+     * @param {Object} program
      */
-    update(workout) {
-        this.workout = workout;
+    update(program) {
+        this.program = program;
         
         if (this.element) {
             const newElement = this.render();
@@ -338,20 +283,26 @@ class WorkoutCard {
     }
     
     /**
-     * Get total exercise count
+     * Get total exercise count from all workouts in program
      */
-    _getTotalExerciseCount(workoutData) {
+    _getTotalExerciseCount() {
         let count = 0;
         
-        // Count exercises in groups
-        if (workoutData.exercise_groups) {
-            workoutData.exercise_groups.forEach(group => {
-                count += Object.keys(group.exercises || {}).length;
+        if (this.program.workouts && this.config.workouts) {
+            this.program.workouts.forEach(programWorkout => {
+                const workout = this.config.workouts.find(w => w.id === programWorkout.workout_id);
+                if (workout) {
+                    // Count exercises in groups
+                    if (workout.exercise_groups) {
+                        workout.exercise_groups.forEach(group => {
+                            count += Object.keys(group.exercises || {}).length;
+                        });
+                    }
+                    // Add bonus exercises
+                    count += (workout.bonus_exercises || []).length;
+                }
             });
         }
-        
-        // Add bonus exercises
-        count += (workoutData.bonus_exercises || []).length;
         
         return count;
     }
@@ -368,11 +319,11 @@ class WorkoutCard {
 }
 
 // Export for global use
-window.WorkoutCard = WorkoutCard;
+window.ProgramCard = ProgramCard;
 
 // Export for module use
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = WorkoutCard;
+    module.exports = ProgramCard;
 }
 
-console.log('📦 WorkoutCard component loaded');
+console.log('📦 ProgramCard component loaded');
