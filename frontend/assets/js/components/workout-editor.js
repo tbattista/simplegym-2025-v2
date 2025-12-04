@@ -406,6 +406,35 @@ async function saveWorkoutFromEditor(silent = false) {
     }
     
     try {
+        // CLIENT-SIDE VALIDATION: Check exercise groups structure before API call
+        console.log('🔍 VALIDATION: Checking exercise groups structure...');
+        const validationErrors = [];
+        
+        workoutData.exercise_groups.forEach((group, index) => {
+            // Check for group_id (required by backend)
+            if (!group.group_id) {
+                validationErrors.push(`Group ${index + 1}: Missing group_id field`);
+            }
+            
+            // Check for exercises object
+            if (!group.exercises || typeof group.exercises !== 'object') {
+                validationErrors.push(`Group ${index + 1}: Invalid or missing exercises object`);
+            }
+            
+            // Check for required fields
+            if (!group.sets) validationErrors.push(`Group ${index + 1}: Missing sets`);
+            if (!group.reps) validationErrors.push(`Group ${index + 1}: Missing reps`);
+            if (!group.rest) validationErrors.push(`Group ${index + 1}: Missing rest`);
+        });
+        
+        if (validationErrors.length > 0) {
+            console.error('❌ VALIDATION FAILED:');
+            validationErrors.forEach(err => console.error(`   - ${err}`));
+            throw new Error('Workout data validation failed: ' + validationErrors.join(', '));
+        }
+        
+        console.log('✅ VALIDATION: Exercise groups structure is valid');
+        
         console.log('🚀 SAVE DEBUG: About to call autoCreateExercisesInGroups...');
         // Auto-create custom exercises for any unknown exercise names
         await autoCreateExercisesInGroups(workoutData.exercise_groups);
@@ -413,6 +442,11 @@ async function saveWorkoutFromEditor(silent = false) {
         
         // Show saving status
         updateSaveStatus('saving');
+        
+        // Save toast notification
+        if (!silent && window.toastNotifications) {
+            window.toastNotifications.saving();
+        }
         
         // Update bottom action bar button state (save button is right-0)
         if (window.bottomActionBar && !silent) {
@@ -490,6 +524,11 @@ async function saveWorkoutFromEditor(silent = false) {
         // Update save status
         updateSaveStatus('saved');
         
+        // Save success toast notification
+        if (!silent && window.toastNotifications) {
+            window.toastNotifications.saved();
+        }
+        
         // Update bottom action bar button state (save button is right-0)
         if (window.bottomActionBar && !silent) {
             window.bottomActionBar.updateButtonState('right-0', 'saved');
@@ -512,6 +551,11 @@ async function saveWorkoutFromEditor(silent = false) {
         }
         
         updateSaveStatus('error');
+        
+        // Save failure toast notification
+        if (!silent && window.toastNotifications) {
+            window.toastNotifications.saveFailed(error.message);
+        }
         
         // Update bottom action bar button state (save button is right-0)
         if (window.bottomActionBar && !silent) {
@@ -769,23 +813,12 @@ function setupWorkoutEditorListeners() {
         newBtn.addEventListener('click', createNewWorkoutInEditor);
     }
     
-    // Add Exercise Group button (both visible and hidden trigger)
+    // Add Exercise Group button (visible inline button only)
     const addGroupBtnVisible = document.getElementById('addExerciseGroupBtnVisible');
-    const addGroupBtnHidden = document.getElementById('addExerciseGroupBtn');
     
     if (addGroupBtnVisible) {
         addGroupBtnVisible.addEventListener('click', () => {
-            console.log('🖱️ Visible Add Exercise Group button clicked');
-            if (window.addExerciseGroup) {
-                window.addExerciseGroup();
-                markEditorDirty();
-            }
-        });
-    }
-    
-    if (addGroupBtnHidden) {
-        addGroupBtnHidden.addEventListener('click', () => {
-            console.log('🖱️ Hidden Add Exercise Group button clicked (from FAB)');
+            console.log('🖱️ Add Exercise Group button clicked');
             if (window.addExerciseGroup) {
                 window.addExerciseGroup();
                 markEditorDirty();

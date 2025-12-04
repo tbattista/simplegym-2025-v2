@@ -17,69 +17,10 @@
  */
 
 /* ============================================
-   SHARED UTILITY CLASSES (Reusable)
+   SHARED UTILITY CLASSES
+   Note: Common utilities moved to components/buttons.css and components/forms.css
+   See components.css for imports
    ============================================ */
-
-/* Sticky Footer Pattern - Shared with workout-database */
-.sticky-footer {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: transparent;
-    padding: 1rem;
-    z-index: 1000;
-    margin-left: var(--layout-menu-width, 260px);
-    transition: margin-left 0.3s ease;
-    display: flex;
-    justify-content: center;
-}
-
-.sticky-footer > div {
-    background: var(--bs-body-bg);
-    border: 1px solid var(--bs-border-color);
-    border-radius: var(--bs-border-radius-lg);
-    padding: 1rem;
-    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
-    width: 100%;
-    max-width: 600px;
-}
-
-.layout-menu-collapsed .sticky-footer {
-    margin-left: var(--layout-menu-collapsed-width, 80px);
-}
-
-/* Standard Button Sizing - Consistent across app */
-.btn-standard {
-    font-weight: 500;
-    padding: 0.5rem 1rem;
-    font-size: 0.875rem;
-    border-radius: 0.375rem;
-    transition: all 0.2s ease;
-    min-width: 100px;
-}
-
-.btn-standard i {
-    font-size: 1rem;
-}
-
-/* Icon Button Pattern - Consistent sizing */
-.btn-icon-only {
-    width: 32px;
-    height: 32px;
-    padding: 0 !important;
-    display: flex !important;
-    align-items: center;
-    justify-content: center;
-    border-radius: 4px;
-    transition: all 0.2s ease;
-}
-
-.btn-icon-only i {
-    font-size: 16px !important;
-    line-height: 1 !important;
-    color: currentColor !important;
-}
 
 /* ============================================
    WORKOUT EDITOR SECTION (Bottom)
@@ -479,6 +420,30 @@
     text-align: center;
     margin-bottom: 0.75rem;
     font-size: 0.875rem;
+}
+
+/* Workout Selection Prompt */
+#workoutSelectionOffcanvas .btn-lg {
+    text-align: left;
+    padding: 1.25rem 1.5rem;
+    border-radius: 0.75rem;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+#workoutSelectionOffcanvas .btn-lg i {
+    font-size: 1.5rem;
+    vertical-align: middle;
+}
+
+#workoutSelectionOffcanvas .btn-lg:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.2);
+}
+
+#workoutSelectionOffcanvas .btn-lg small {
+    font-size: 0.8rem;
+    line-height: 1.2;
+    color: var(--bs-secondary);
 }
 
 /* Button styling - Override to make buttons more compact */
@@ -1392,6 +1357,138 @@ button {
 .offcanvas-footer .btn-label-secondary:hover {
     background-color: rgba(var(--bs-secondary-rgb), 0.2);
     color: var(--bs-secondary);
+}
+
+/* ============================================
+   ALTERNATE EXERCISE DYNAMIC FIELDS
+   ============================================ */
+
+/* Alternate Exercise Container */
+#alternateExercisesContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+/* Individual Alternate Exercise Field */
+.alternate-exercise-field {
+    position: relative;
+    animation: slideIn 0.2s ease-out;
+}
+
+.alternate-exercise-field .form-label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    color: var(--bs-gray-700);
+}
+
+.alternate-exercise-field .input-group {
+    position: relative;
+}
+
+.alternate-exercise-field .form-control {
+    padding-right: 2.5rem; /* Space for remove button */
+}
+
+/* Remove Button (X) */
+.btn-remove-alternate {
+    position: absolute;
+    right: 0.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    background: transparent;
+    border: none;
+    color: var(--bs-danger);
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.btn-remove-alternate:hover {
+    background: var(--bs-danger);
+    color: white;
+    transform: translateY(-50%) scale(1.1);
+}
+
+.btn-remove-alternate i {
+    font-size: 16px;
+    line-height: 1;
+}
+
+/* Add Alt Button */
+#addAlternateBtn {
+    transition: all 0.2s ease;
+}
+
+#addAlternateBtn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+#addAlternateBtn.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Animation */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideOut {
+    from {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+}
+
+/* Dark Mode Support */
+[data-bs-theme="dark"] .alternate-exercise-field .form-label {
+    color: #f8fafc;
+}
+
+[data-bs-theme="dark"] .btn-remove-alternate {
+    color: var(--bs-danger);
+}
+
+[data-bs-theme="dark"] .btn-remove-alternate:hover {
+    background: var(--bs-danger);
+    color: white;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .alternate-exercise-field .form-label {
+        font-size: 0.8125rem;
+    }
+    
+    .btn-remove-alternate {
+        width: 24px;
+        height: 24px;
+    }
+    
+    .btn-remove-alternate i {
+        font-size: 14px;
+    }
 }
 
 /* ============================================

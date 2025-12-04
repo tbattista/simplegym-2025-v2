@@ -690,18 +690,7 @@
                         }
                     }
                 }
-            ],
-            fab: {
-                icon: 'bx-plus',
-                title: 'Add exercise group',
-                variant: 'primary',
-                action: function() {
-                    const addBtn = document.getElementById('addExerciseGroupBtn');
-                    if (addBtn) {
-                        addBtn.click();
-                    }
-                }
-            }
+            ]
         },
 
         // ============================================

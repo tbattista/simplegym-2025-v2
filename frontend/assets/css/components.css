@@ -1,10 +1,15 @@
 /**
  * Ghost Gym - Component Styles Master File
  * Imports all component CSS modules
- * @version 1.0.0
- * 
+ * @version 1.1.0
+ * @date 2025-12-03
+ *
  * Usage: Include this single file in your HTML to get all component styles
  * <link rel="stylesheet" href="/static/assets/css/components.css" />
+ *
+ * CONSOLIDATION UPDATE (v1.1.0):
+ * Added shared button, form, and dark-mode styles to reduce duplication
+ * across ghost-gym-custom.css, workout-mode.css, workout-builder.css, etc.
  */
 
 /* Import all component styles */
@@ -13,6 +18,11 @@
 @import url('components/badges.css');
 @import url('components/sticky-footer.css');
 @import url('components/feedback-button.css');
+
+/* Shared consolidated styles (Phase 1 consolidation) */
+@import url('components/buttons.css');
+@import url('components/forms.css');
+@import url('components/dark-mode.css');
 
 /* ============================================================================
    COMPONENT UTILITIES

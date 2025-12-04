@@ -37,6 +37,9 @@
     <!-- Custom Ghost Gym CSS -->
     <link rel="stylesheet" href="/static/assets/css/ghost-gym-custom.css" />
     
+    <!-- Shared Components CSS -->
+    <link rel="stylesheet" href="/static/assets/css/components.css" />
+    
     <!-- Navbar CSS -->
     <link rel="stylesheet" href="/static/assets/css/navbar-custom.css" />
     
@@ -163,7 +166,7 @@
                         <div id="exerciseGroups" class="accordion accordion-workout-groups mb-2">
                           <!-- Exercise groups will be added here as accordion items -->
                         </div>
-                        <!-- Add Group Button -->
+                        <!-- Add Exercises Button -->
                         <button type="button" class="btn btn-outline-primary w-100" id="addExerciseGroupBtnVisible">
                           <i class="bx bx-plus me-1"></i>
                           Add Exercises
@@ -192,7 +195,6 @@
       <button id="saveWorkoutBtn" type="button">Save Workout</button>
       <button id="cancelEditBtn" type="button">Cancel Edit</button>
       <button id="deleteWorkoutBtn" type="button">Delete Workout</button>
-      <button id="addExerciseGroupBtn" type="button">Add Exercise Group</button>
     </div>
 
     <!-- Workout Modal removed - now using inline editor -->
@@ -302,16 +304,16 @@
                  id="editExerciseA" placeholder="Search exercises...">
         </div>
         
-        <div class="mb-3">
-          <label class="form-label">Alternate Exercise B</label>
-          <input type="text" class="form-control exercise-input exercise-autocomplete-input"
-                 id="editExerciseB" placeholder="Search exercises...">
-        </div>
+        <!-- Container for dynamically added alternates -->
+        <div id="alternateExercisesContainer"></div>
         
-        <div class="mb-3">
-          <label class="form-label">Alternate Exercise C</label>
-          <input type="text" class="form-control exercise-input exercise-autocomplete-input"
-                 id="editExerciseC" placeholder="Search exercises...">
+        <!-- Add Alt Button -->
+        <div class="mb-3" id="addAltButtonContainer">
+          <button type="button" class="btn btn-outline-secondary btn-sm w-100"
+                  id="addAlternateBtn" onclick="addAlternateExercise()">
+            <i class="bx bx-plus me-1"></i>
+            Add Alt
+          </button>
         </div>
         
         <!-- Sets, Reps, Rest -->
@@ -364,20 +366,20 @@
       
       <!-- Footer - Action Buttons -->
       <div class="offcanvas-footer border-top p-3">
-        <div class="d-flex gap-2 mb-2">
-          <button type="button" class="btn btn-label-secondary flex-fill"
-                  data-bs-dismiss="offcanvas">Cancel</button>
+        <div class="d-flex gap-2 workout-builder-buttons">
           <button type="button" class="btn btn-primary flex-fill"
                   id="saveExerciseGroupBtn">
             <i class="bx bx-save me-1"></i>
-            Save Changes
+            Save
+          </button>
+          <button type="button" class="btn btn-label-secondary flex-fill"
+                  data-bs-dismiss="offcanvas">Cancel</button>
+          <button type="button" class="btn btn-outline-danger flex-fill"
+                  id="deleteExerciseGroupBtn">
+            <i class="bx bx-trash me-1"></i>
+            Delete
           </button>
         </div>
-        <button type="button" class="btn btn-outline-danger w-100"
-                id="deleteExerciseGroupBtn">
-          <i class="bx bx-trash me-1"></i>
-          Delete Exercise Group
-        </button>
       </div>
     </div>
 
@@ -427,20 +429,20 @@
       
       <!-- Footer - Action Buttons -->
       <div class="offcanvas-footer border-top p-3">
-        <div class="d-flex gap-2 mb-2">
-          <button type="button" class="btn btn-label-secondary flex-fill"
-                  data-bs-dismiss="offcanvas">Cancel</button>
+        <div class="d-flex gap-2 workout-builder-buttons">
           <button type="button" class="btn btn-primary flex-fill"
                   id="saveBonusExerciseBtn">
             <i class="bx bx-save me-1"></i>
-            Save Changes
+            Save
+          </button>
+          <button type="button" class="btn btn-label-secondary flex-fill"
+                  data-bs-dismiss="offcanvas">Cancel</button>
+          <button type="button" class="btn btn-outline-danger flex-fill"
+                  id="deleteBonusExerciseBtn">
+            <i class="bx bx-trash me-1"></i>
+            Delete
           </button>
         </div>
-        <button type="button" class="btn btn-outline-danger w-100"
-                id="deleteBonusExerciseBtn">
-          <i class="bx bx-trash me-1"></i>
-          Delete Bonus Exercise
-        </button>
       </div>
     </div>
     
@@ -776,17 +778,21 @@
                     }, 2000);
                 }
             } else {
-                // No workout ID provided - create new workout
-                console.log('📝 No workout ID provided, creating new workout...');
+                // No workout ID provided - show selection prompt
+                console.log('📝 No workout ID provided, showing selection prompt...');
                 loadingState.style.display = 'none';
+                emptyState.style.display = 'none';
                 
-                // Create new workout in editor
-                if (window.createNewWorkoutInEditor) {
-                    window.createNewWorkoutInEditor();
+                if (window.UnifiedOffcanvasFactory && window.UnifiedOffcanvasFactory.createWorkoutSelectionPrompt) {
+                    setTimeout(() => window.UnifiedOffcanvasFactory.createWorkoutSelectionPrompt(), 100);
                 } else {
-                    // Fallback: show empty state with message
-                    emptyState.querySelector('h5').textContent = 'Create a New Workout';
-                    emptyState.querySelector('p').innerHTML = 'Start building your workout template';
+                    // Graceful fallback
+                    emptyState.querySelector('h5').textContent = 'Create or open a workout';
+                    emptyState.querySelector('p').innerHTML = `
+                        <a href="workout-database.html" class="btn btn-sm btn-primary me-2 mb-1">Browse My Workouts</a>
+                        <a href="public-workouts.html" class="btn btn-sm btn-outline-primary me-2 mb-1">Browse Public Workouts</a>
+                        <button class="btn btn-sm btn-outline-secondary mb-1" onclick="window.createNewWorkoutInEditor && window.createNewWorkoutInEditor();">Create New Workout</button>
+                    `;
                     emptyState.style.display = 'block';
                 }
             }

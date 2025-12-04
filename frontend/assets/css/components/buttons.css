@@ -1,0 +1,207 @@
+/**
+ * Ghost Gym - Shared Button Styles
+ * Consolidated button styles for consistent appearance across the app
+ * @version 1.0.0
+ * @date 2025-12-03
+ * 
+ * This file consolidates duplicate button styles from:
+ * - ghost-gym-custom.css (lines 157-178)
+ * - workout-mode.css (lines 485-495)
+ */
+
+/* ============================================
+   PRIMARY BUTTON STYLES
+   ============================================ */
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--ghost-primary), var(--ghost-secondary));
+    border: none;
+    box-shadow: 0 2px 4px rgba(105, 108, 255, 0.3);
+    transition: all 0.2s ease;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #5855eb, #7c3aed);
+    box-shadow: 0 4px 8px rgba(105, 108, 255, 0.4);
+    transform: translateY(-1px);
+}
+
+/* ============================================
+   OUTLINE BUTTON STYLES
+   ============================================ */
+
+.btn-outline-primary {
+    border-color: var(--ghost-primary);
+    color: var(--ghost-primary);
+}
+
+.btn-outline-primary:hover {
+    background: var(--ghost-primary);
+    border-color: var(--ghost-primary);
+}
+
+.btn-outline-secondary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.btn-outline-info:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* ============================================
+   BUTTON GROUP STYLES
+   ============================================ */
+
+.btn-group-sm .btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+}
+
+.btn-group .btn i {
+    font-size: 1rem;
+}
+
+/* ============================================
+   STANDARD BUTTON SIZING
+   Consistent sizing across the app
+   ============================================ */
+
+.btn-standard {
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    border-radius: 0.375rem;
+    transition: all 0.2s ease;
+    min-width: 100px;
+}
+
+.btn-standard i {
+    font-size: 1rem;
+}
+
+/* ============================================
+   ICON-ONLY BUTTON PATTERN
+   ============================================ */
+
+.btn-icon-only {
+    width: 32px;
+    height: 32px;
+    padding: 0 !important;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.btn-icon-only i {
+    font-size: 16px !important;
+    line-height: 1 !important;
+    color: currentColor !important;
+}
+
+/* ============================================
+   EXTRA SMALL BUTTONS (Quick Actions)
+   ============================================ */
+
+.btn-xs {
+    padding: 0.25rem 0.375rem;
+    font-size: 0.7rem;
+    font-weight: 500;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    min-height: 32px;
+    line-height: 1.2;
+}
+
+.btn-xs i {
+    font-size: 0.8rem;
+    flex-shrink: 0;
+    margin-right: 0.25rem;
+}
+
+/* ============================================
+   BUTTON TRANSITIONS
+   ============================================ */
+
+button,
+.btn {
+    transition: all 0.2s ease;
+}
+
+/* ============================================
+   FOCUS STATES FOR ACCESSIBILITY
+   ============================================ */
+
+button:focus-visible,
+.btn:focus-visible {
+    outline: 2px solid var(--ghost-primary);
+    outline-offset: 2px;
+}
+
+/* ============================================
+   PULSE ANIMATION FOR IMPORTANT BUTTONS
+   ============================================ */
+
+@keyframes pulse {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(105, 108, 255, 0.4);
+    }
+    50% {
+        box-shadow: 0 0 0 10px rgba(105, 108, 255, 0);
+    }
+}
+
+.btn-primary:focus {
+    animation: pulse 1.5s infinite;
+}
+
+/* ============================================
+   DARK MODE BUTTON STYLES
+   ============================================ */
+
+[data-bs-theme="dark"] .btn-outline-secondary {
+    border-color: #475569;
+    color: #94a3b8;
+}
+
+[data-bs-theme="dark"] .btn-outline-secondary:hover {
+    background: #334155;
+    border-color: #64748b;
+    color: #f8fafc;
+}
+
+/* Quick Actions Card Dark Mode */
+[data-bs-theme="dark"] .quick-actions-card .btn-outline-primary {
+    border-color: var(--ghost-primary);
+    color: var(--ghost-primary);
+}
+
+[data-bs-theme="dark"] .quick-actions-card .btn-outline-success {
+    border-color: var(--ghost-success);
+    color: var(--ghost-success);
+}
+
+[data-bs-theme="dark"] .quick-actions-card .btn-outline-info {
+    border-color: var(--ghost-accent);
+    color: var(--ghost-accent);
+}
+
+[data-bs-theme="dark"] .quick-actions-card .btn-outline-primary:hover {
+    background: var(--ghost-primary);
+    color: white;
+}
+
+[data-bs-theme="dark"] .quick-actions-card .btn-outline-success:hover {
+    background: var(--ghost-success);
+    color: white;
+}
+
+[data-bs-theme="dark"] .quick-actions-card .btn-outline-info:hover {
+    background: var(--ghost-accent);
+    color: white;
+}

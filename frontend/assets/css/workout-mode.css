@@ -481,18 +481,8 @@
     text-align: center;
 }
 
-/* Button styling for grid buttons */
-.workout-grid-btn.btn-primary {
-    background: linear-gradient(135deg, #6366f1, #8b5cf6);
-    border: none;
-    box-shadow: 0 2px 4px rgba(105, 108, 255, 0.3);
-}
-
-.workout-grid-btn.btn-primary:hover {
-    background: linear-gradient(135deg, #5855eb, #7c3aed);
-    box-shadow: 0 4px 8px rgba(105, 108, 255, 0.4);
-    transform: translateY(-1px);
-}
+/* Button styling for grid buttons - inherits from shared buttons.css */
+/* Primary gradient is defined in components/buttons.css */
 
 .workout-grid-btn.btn-outline-primary {
     border-color: #cbd5e1;

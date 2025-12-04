@@ -197,23 +197,38 @@ class WorkoutDetailOffcanvas {
             html += '<h6 class="mb-3">Exercise Groups</h6>';
             
             exerciseGroups.forEach((group, index) => {
+                // Build exercise list
+                const exercises = [];
+                if (group.exercises) {
+                    if (group.exercises.a) exercises.push({ label: '', name: group.exercises.a });
+                    if (group.exercises.b) exercises.push({ label: 'Alt: ', name: group.exercises.b });
+                    if (group.exercises.c) exercises.push({ label: 'Alt2: ', name: group.exercises.c });
+                }
+                
+                // Build exercises HTML - each on new line
+                let exercisesHtml = '';
+                if (exercises.length > 0) {
+                    exercisesHtml = exercises.map(ex =>
+                        `<div class="exercise-line">${ex.label ? `<span class="text-muted">${ex.label}</span>` : ''}${this._escapeHtml(ex.name)}</div>`
+                    ).join('');
+                } else {
+                    exercisesHtml = '<div class="exercise-line text-muted">No exercises</div>';
+                }
+                
+                // Build meta text (plain text with bullet separators)
+                const parts = [`${group.sets || '3'} sets`, `${group.reps || '8-12'} reps`, `${group.rest || '60s'} rest`];
+                if (group.default_weight) {
+                    parts.push(`${group.default_weight} ${group.default_weight_unit || 'lbs'}`);
+                }
+                const metaText = parts.join(' • ');
+                
                 html += `
                     <div class="card mb-3">
                         <div class="card-body">
-                            <h6 class="card-title">Group ${index + 1}</h6>
-                            <div class="exercise-list mb-3">
-                                ${Object.entries(group.exercises || {}).map(([key, name]) => `
-                                    <div class="d-flex align-items-center mb-2">
-                                        <span class="badge bg-primary me-2">${key.toUpperCase()}</span>
-                                        <span>${this._escapeHtml(name)}</span>
-                                    </div>
-                                `).join('')}
+                            <div class="exercise-list mb-2">
+                                ${exercisesHtml}
                             </div>
-                            <div class="d-flex gap-2 flex-wrap">
-                                <span class="badge bg-label-primary">Sets: ${group.sets || '3'}</span>
-                                <span class="badge bg-label-info">Reps: ${group.reps || '8-12'}</span>
-                                <span class="badge bg-label-secondary">Rest: ${group.rest || '60s'}</span>
-                            </div>
+                            <div class="exercise-meta-text text-muted small">${metaText}</div>
                             ${group.notes ? `<div class="mt-2 small text-muted">${this._escapeHtml(group.notes)}</div>` : ''}
                         </div>
                     </div>
@@ -227,17 +242,14 @@ class WorkoutDetailOffcanvas {
             html += '<h6 class="mb-3 mt-4">Bonus Exercises</h6>';
             
             bonusExercises.forEach((bonus) => {
+                // Build meta text (plain text with bullet separators)
+                const metaText = `${bonus.sets || '2'} sets • ${bonus.reps || '15'} reps • ${bonus.rest || '30s'} rest`;
+                
                 html += `
                     <div class="card mb-2">
-                        <div class="card-body py-2">
-                            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-                                <strong>${this._escapeHtml(bonus.name)}</strong>
-                                <div class="d-flex gap-2 flex-wrap">
-                                    <span class="badge bg-label-primary">${bonus.sets || '2'} sets</span>
-                                    <span class="badge bg-label-info">${bonus.reps || '15'} reps</span>
-                                    <span class="badge bg-label-secondary">${bonus.rest || '30s'} rest</span>
-                                </div>
-                            </div>
+                        <div class="card-body">
+                            <div class="exercise-line">${this._escapeHtml(bonus.name)}</div>
+                            <div class="exercise-meta-text text-muted small">${metaText}</div>
                             ${bonus.notes ? `<div class="mt-2 small text-muted">${this._escapeHtml(bonus.notes)}</div>` : ''}
                         </div>
                     </div>

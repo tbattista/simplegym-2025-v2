@@ -170,7 +170,6 @@
         
         eventHandlers: [
             { elementId: 'saveWorkoutBtn', event: 'click', functionName: 'saveWorkout' },
-            { elementId: 'addExerciseGroupBtn', event: 'click', functionName: 'addExerciseGroup' },
             { elementId: 'addBonusExerciseBtn', event: 'click', functionName: 'addBonusExercise' },
             { elementId: 'saveCustomExerciseBtn', event: 'click', functionName: 'saveCustomExercise' }
         ],

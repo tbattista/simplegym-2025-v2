@@ -352,6 +352,7 @@ function collectExerciseGroups() {
                 
                 if (Object.keys(exercises).length > 0) {
                     groups.push({
+                        group_id: groupId,
                         exercises: exercises,
                         sets: groupData.sets || '3',
                         reps: groupData.reps || '8-12',
@@ -383,8 +384,10 @@ function collectExerciseGroups() {
                 const activeUnitBtn = bodyEl?.querySelector('.weight-unit-btn.active');
                 const weightUnit = activeUnitBtn?.getAttribute('data-unit') || 'lbs';
                 const weight = bodyEl?.querySelector('.weight-input')?.value?.trim() || '';
+                const groupId = groupEl.getAttribute('data-group-id') || `group-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
                 
                 groups.push({
+                    group_id: groupId,
                     exercises: exercises,
                     sets: bodyEl?.querySelector('.sets-input')?.value || '3',
                     reps: bodyEl?.querySelector('.reps-input')?.value || '8-12',
@@ -1582,8 +1585,9 @@ function openExerciseGroupEditor(groupId) {
     
     // Populate offcanvas fields
     document.getElementById('editExerciseA').value = groupData.exercises.a || '';
-    document.getElementById('editExerciseB').value = groupData.exercises.b || '';
-    document.getElementById('editExerciseC').value = groupData.exercises.c || '';
+    
+    // Load alternates dynamically
+    loadAlternateExercises(groupData.exercises);
     document.getElementById('editSets').value = groupData.sets || '3';
     document.getElementById('editReps').value = groupData.reps || '8-12';
     document.getElementById('editRest').value = groupData.rest || '60s';
@@ -1630,9 +1634,7 @@ async function saveExerciseGroupFromOffcanvas() {
     // Collect data from offcanvas
     const groupData = {
         exercises: {
-            a: document.getElementById('editExerciseA').value.trim(),
-            b: document.getElementById('editExerciseB').value.trim(),
-            c: document.getElementById('editExerciseC').value.trim()
+            a: document.getElementById('editExerciseA').value.trim()
         },
         sets: document.getElementById('editSets').value,
         reps: document.getElementById('editReps').value,
@@ -1640,6 +1642,18 @@ async function saveExerciseGroupFromOffcanvas() {
         default_weight: document.getElementById('editWeight').value.trim(),
         default_weight_unit: document.querySelector('#exerciseGroupEditOffcanvas .weight-unit-btn.active')?.getAttribute('data-unit') || 'lbs'
     };
+    
+    // Collect alternates dynamically (only if they exist and have values)
+    const exerciseBInput = document.getElementById('editExerciseB');
+    const exerciseCInput = document.getElementById('editExerciseC');
+
+    if (exerciseBInput && exerciseBInput.value.trim()) {
+        groupData.exercises.b = exerciseBInput.value.trim();
+    }
+
+    if (exerciseCInput && exerciseCInput.value.trim()) {
+        groupData.exercises.c = exerciseCInput.value.trim();
+    }
     
     console.log('💾 OFFCANVAS SAVE: Exercise names:', {
         a: groupData.exercises.a,
@@ -1681,9 +1695,21 @@ async function saveExerciseGroupFromOffcanvas() {
     // Remove editing state
     document.querySelector(`[data-group-id="${groupId}"]`)?.classList.remove('editing');
     
-    // Mark as dirty for autosave
-    if (window.markEditorDirty) {
-        window.markEditorDirty();
+    // Trigger full workout save (same as action bar save button)
+    console.log('💾 OFFCANVAS SAVE: Triggering full workout save...');
+    if (window.saveWorkoutFromEditor) {
+        try {
+            await window.saveWorkoutFromEditor(false); // false = show success message
+            console.log('✅ OFFCANVAS SAVE: Full workout saved successfully');
+        } catch (error) {
+            console.error('❌ OFFCANVAS SAVE: Failed to save workout:', error);
+        }
+    } else {
+        console.warn('⚠️ OFFCANVAS SAVE: saveWorkoutFromEditor not available, marking dirty for autosave');
+        // Fallback to autosave
+        if (window.markEditorDirty) {
+            window.markEditorDirty();
+        }
     }
     
     console.log('✅ Exercise group saved:', groupId);
@@ -1731,9 +1757,11 @@ function openBonusExerciseEditor(bonusId) {
 /**
  * Save bonus exercise from offcanvas
  */
-function saveBonusExerciseFromOffcanvas() {
+async function saveBonusExerciseFromOffcanvas() {
     const bonusId = window.currentEditingBonusId;
     if (!bonusId) return;
+    
+    console.log('💾 OFFCANVAS SAVE: Saving bonus exercise');
     
     // Collect data from offcanvas
     const bonusData = {
@@ -1768,9 +1796,21 @@ function saveBonusExerciseFromOffcanvas() {
     // Remove editing state
     document.querySelector(`[data-bonus-id="${bonusId}"]`)?.classList.remove('editing');
     
-    // Mark as dirty for autosave
-    if (window.markEditorDirty) {
-        window.markEditorDirty();
+    // Trigger full workout save (same as action bar save button)
+    console.log('💾 OFFCANVAS SAVE: Triggering full workout save...');
+    if (window.saveWorkoutFromEditor) {
+        try {
+            await window.saveWorkoutFromEditor(false); // false = show success message
+            console.log('✅ OFFCANVAS SAVE: Full workout saved successfully');
+        } catch (error) {
+            console.error('❌ OFFCANVAS SAVE: Failed to save workout:', error);
+        }
+    } else {
+        console.warn('⚠️ OFFCANVAS SAVE: saveWorkoutFromEditor not available, marking dirty for autosave');
+        // Fallback to autosave
+        if (window.markEditorDirty) {
+            window.markEditorDirty();
+        }
     }
     
     console.log('✅ Bonus exercise saved:', bonusId);
@@ -1781,5 +1821,117 @@ window.openExerciseGroupEditor = openExerciseGroupEditor;
 window.saveExerciseGroupFromOffcanvas = saveExerciseGroupFromOffcanvas;
 window.openBonusExerciseEditor = openBonusExerciseEditor;
 window.saveBonusExerciseFromOffcanvas = saveBonusExerciseFromOffcanvas;
+
+// Make alternate exercise functions globally available
+window.addAlternateExercise = addAlternateExercise;
+window.removeAlternateExercise = removeAlternateExercise;
+window.loadAlternateExercises = loadAlternateExercises;
+
+/**
+ * Add alternate exercise field (max 2)
+ */
+function addAlternateExercise() {
+    const container = document.getElementById('alternateExercisesContainer');
+    const addBtn = document.getElementById('addAlternateBtn');
+    const currentCount = container.children.length;
+    
+    // Check max limit
+    if (currentCount >= 2) {
+        console.warn('Maximum 2 alternate exercises allowed');
+        return;
+    }
+    
+    // Determine letter (b or c)
+    const letter = currentCount === 0 ? 'b' : 'c';
+    const fieldId = `editExercise${letter.toUpperCase()}`;
+    
+    // Create alternate field HTML
+    const fieldHtml = `
+        <div class="alternate-exercise-field mb-3" data-alt-letter="${letter}">
+            <label class="form-label">Alternate Exercise</label>
+            <div class="input-group">
+                <input type="text"
+                       class="form-control exercise-input exercise-autocomplete-input"
+                       id="${fieldId}"
+                       placeholder="Search exercises...">
+                <button type="button"
+                        class="btn-remove-alternate"
+                        onclick="removeAlternateExercise('${letter}')"
+                        title="Remove alternate">
+                    <i class="bx bx-x"></i>
+                </button>
+            </div>
+        </div>
+    `;
+    
+    // Add to container
+    container.insertAdjacentHTML('beforeend', fieldHtml);
+    
+    // Initialize autocomplete on new field
+    setTimeout(() => {
+        if (window.initializeExerciseAutocompletesWithAutoCreate) {
+            window.initializeExerciseAutocompletesWithAutoCreate();
+        } else if (window.initializeExerciseAutocompletes) {
+            window.initializeExerciseAutocompletes();
+        }
+    }, 100);
+    
+    // Hide button if max reached
+    if (currentCount + 1 >= 2) {
+        addBtn.style.display = 'none';
+    }
+    
+    console.log(`✅ Added alternate exercise ${letter.toUpperCase()}`);
+}
+
+/**
+ * Remove alternate exercise field
+ * @param {string} letter - 'b' or 'c'
+ */
+function removeAlternateExercise(letter) {
+    const container = document.getElementById('alternateExercisesContainer');
+    const addBtn = document.getElementById('addAlternateBtn');
+    const field = container.querySelector(`[data-alt-letter="${letter}"]`);
+    
+    if (!field) return;
+    
+    // Remove field with animation
+    field.style.animation = 'slideOut 0.2s ease-out';
+    setTimeout(() => {
+        field.remove();
+        
+        // Show add button if under limit
+        const currentCount = container.children.length;
+        if (currentCount < 2) {
+            addBtn.style.display = 'block';
+        }
+        
+        console.log(`✅ Removed alternate exercise ${letter.toUpperCase()}`);
+    }, 200);
+}
+
+/**
+ * Load existing alternates into editor
+ * @param {Object} exercises - Exercise data {a, b, c}
+ */
+function loadAlternateExercises(exercises) {
+    const container = document.getElementById('alternateExercisesContainer');
+    const addBtn = document.getElementById('addAlternateBtn');
+    
+    // Clear existing alternates
+    container.innerHTML = '';
+    addBtn.style.display = 'block';
+    
+    // Add existing alternates
+    if (exercises.b) {
+        addAlternateExercise();
+        document.getElementById('editExerciseB').value = exercises.b;
+    }
+    
+    if (exercises.c) {
+        addAlternateExercise();
+        document.getElementById('editExerciseC').value = exercises.c;
+    }
+}
 
 console.log('📦 Card editor functions loaded');

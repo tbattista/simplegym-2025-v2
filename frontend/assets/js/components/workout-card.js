@@ -46,7 +46,8 @@ class WorkoutCard {
         card.setAttribute('data-workout-id', this.workout.id);
         
         card.innerHTML = `
-            <div class="card-body">
+            <div class="card-body position-relative">
+                ${this._renderDropdownMenu()}
                 ${this._renderHeader()}
                 ${this._renderMetadata()}
                 ${this._renderDescription()}
@@ -66,6 +67,33 @@ class WorkoutCard {
     }
     
     /**
+     * Render dropdown menu (3 dots)
+     */
+    _renderDropdownMenu() {
+        if (this.config.deleteMode) return '';
+        
+        return `
+            <div class="dropdown position-absolute" style="top: 8px; right: 8px; z-index: 10;">
+                <button class="btn btn-icon" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="padding: 0.5rem; line-height: 1;">
+                    <i class="bx bx-dots-vertical-rounded" style="font-size: 1.5rem; color: var(--bs-body-color);"></i>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li>
+                        <a class="dropdown-item" href="javascript:void(0);" data-action="edit">
+                            <i class="bx bx-edit me-2"></i>Edit
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item text-danger" href="javascript:void(0);" data-action="delete">
+                            <i class="bx bx-trash me-2"></i>Delete
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        `;
+    }
+    
+    /**
      * Render card header (title)
      */
     _renderHeader() {
@@ -73,7 +101,7 @@ class WorkoutCard {
         const name = workoutData.name || this.workout.name || 'Untitled Workout';
         
         return `
-            <h5 class="card-title mb-2">${this._escapeHtml(name)}</h5>
+            <h5 class="card-title mb-2" style="padding-right: 30px;">${this._escapeHtml(name)}</h5>
         `;
     }
     
@@ -154,7 +182,7 @@ class WorkoutCard {
     }
     
     /**
-     * Render exercise preview (first few exercises)
+     * Render exercise preview (first few exercises in 2 columns)
      */
     _renderExercisePreview() {
         if (!this.config.showExercisePreview) return '';
@@ -182,16 +210,29 @@ class WorkoutCard {
         
         if (exercises.length === 0) return '';
         
-        // Show first 3 exercises
-        const displayExercises = exercises.slice(0, 3);
+        // Show first 6 exercises (3 per column)
+        const displayExercises = exercises.slice(0, 6);
         const remaining = exercises.length - displayExercises.length;
+        const col1 = displayExercises.slice(0, 3);
+        const col2 = displayExercises.slice(3, 6);
         
         return `
             <div class="exercise-preview mb-2">
                 <small class="text-muted d-block mb-1">Exercises:</small>
-                ${displayExercises.map(ex =>
-                    `<small class="d-block text-truncate">• ${this._escapeHtml(ex)}</small>`
-                ).join('')}
+                <div class="row g-2">
+                    <div class="col-6">
+                        ${col1.map(ex =>
+                            `<small class="d-block text-truncate">• ${this._escapeHtml(ex)}</small>`
+                        ).join('')}
+                    </div>
+                    ${col2.length > 0 ? `
+                    <div class="col-6">
+                        ${col2.map(ex =>
+                            `<small class="d-block text-truncate">• ${this._escapeHtml(ex)}</small>`
+                        ).join('')}
+                    </div>
+                    ` : ''}
+                </div>
                 ${remaining > 0 ? `<small class="text-muted">+${remaining} more</small>` : ''}
             </div>
         `;
@@ -227,7 +268,7 @@ class WorkoutCard {
     _renderActions() {
         if (this.config.deleteMode && this.config.onDelete) {
             return `
-                <button class="btn btn-delete-workout w-100 mt-auto" data-action="delete">
+                <button class="btn btn-danger w-100" data-action="delete">
                     <i class="bx bx-trash me-1"></i>Delete Workout
                 </button>
             `;
@@ -235,20 +276,25 @@ class WorkoutCard {
         
         if (this.config.actions.length === 0) return '';
         
+        // Filter out edit action since it's now in dropdown menu
+        const filteredActions = this.config.actions.filter(action => action.id !== 'edit');
+        
+        if (filteredActions.length === 0) return '';
+        
         // Single action - full width button
-        if (this.config.actions.length === 1) {
-            const action = this.config.actions[0];
+        if (filteredActions.length === 1) {
+            const action = filteredActions[0];
             return `
-                <button class="btn btn-${action.variant} w-100 mt-auto" data-action="${action.id}">
+                <button class="btn btn-${action.variant} w-100" data-action="${action.id}">
                     ${action.icon ? `<i class="bx ${action.icon} me-1"></i>` : ''}${action.label}
                 </button>
             `;
         }
         
-        // Multiple actions - button group
+        // Multiple actions - button group (Sneat style)
         return `
-            <div class="btn-group btn-group-sm w-100 mt-auto" role="group">
-                ${this.config.actions.map(action => `
+            <div class="btn-group w-100" role="group">
+                ${filteredActions.map(action => `
                     <button class="btn btn-${action.variant}" data-action="${action.id}">
                         ${action.icon ? `<i class="bx ${action.icon} me-1"></i>` : ''}${action.label}
                     </button>
@@ -263,11 +309,9 @@ class WorkoutCard {
     _attachEventListeners() {
         if (!this.element) return;
         
-        const card = this.element.querySelector('.card');
-        
         // Card click handler
         if (this.config.onCardClick) {
-            card.addEventListener('click', (e) => {
+            this.element.addEventListener('click', (e) => {
                 // Don't trigger if clicking a button
                 if (!e.target.closest('button')) {
                     this.config.onCardClick(this.workout, e);
@@ -275,12 +319,12 @@ class WorkoutCard {
             });
         }
         
-        // Action button handlers
-        const buttons = this.element.querySelectorAll('[data-action]');
-        buttons.forEach(button => {
-            button.addEventListener('click', (e) => {
+        // Action button and dropdown handlers
+        const actionElements = this.element.querySelectorAll('[data-action]');
+        actionElements.forEach(element => {
+            element.addEventListener('click', (e) => {
                 e.stopPropagation();
-                const actionId = button.dataset.action;
+                const actionId = element.dataset.action;
                 
                 if (actionId === 'delete' && this.config.onDelete) {
                     const workoutData = this.workout.workout_data || this.workout;
@@ -304,14 +348,13 @@ class WorkoutCard {
         this.config.deleteMode = enabled;
         
         if (this.element) {
-            const card = this.element.querySelector('.card');
-            const cardBody = card.querySelector('.card-body');
-            const actionsWrapper = cardBody.querySelector('.card-actions');
+            const cardBody = this.element.querySelector('.card-body');
+            const actionsWrapper = cardBody?.querySelector('.card-actions');
             
             if (enabled) {
-                card.classList.add('delete-mode');
+                this.element.classList.add('delete-mode');
             } else {
-                card.classList.remove('delete-mode');
+                this.element.classList.remove('delete-mode');
             }
             
             // Replace actions content only

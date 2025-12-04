@@ -442,8 +442,8 @@
         font-size: 1rem;
     }
     
-    /* Stack buttons vertically on very small screens */
-    .offcanvas-bottom-base .offcanvas-footer .d-flex {
+    /* Stack buttons vertically on very small screens - EXCEPT workout builder offcanvases */
+    .offcanvas-bottom-base .offcanvas-footer .d-flex:not(.workout-builder-buttons) {
         flex-direction: column;
     }
     

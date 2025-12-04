@@ -571,12 +571,10 @@
     animation: fadeIn 0.3s ease;
 }
 
+/* Card hover effects - base styles in ghost-gym-custom.css */
+/* These are page-specific overrides for workout-database */
 .card {
     transition: box-shadow 0.3s ease;
-}
-
-.card:hover {
-    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
 }
 
 /* ============================================
@@ -596,9 +594,26 @@
 }
 
 /* ============================================
-   DARK MODE SUPPORT (if enabled)
+   DARK MODE SUPPORT
+   Note: Most dark mode styles are now in components/dark-mode.css
+   These are page-specific overrides for workout-database
    ============================================ */
 
+/* Page-specific dark mode styles using data-bs-theme attribute */
+[data-bs-theme="dark"] .datatable-table thead th {
+    background-color: var(--bs-gray-800);
+    color: var(--bs-gray-200);
+}
+
+[data-bs-theme="dark"] .datatable-table tbody tr:hover {
+    background-color: var(--bs-gray-800);
+}
+
+[data-bs-theme="dark"] .exercise-list .d-flex {
+    background-color: var(--bs-gray-800);
+}
+
+/* Fallback for prefers-color-scheme (system preference) */
 @media (prefers-color-scheme: dark) {
     .datatable-table thead th {
         background-color: var(--bs-gray-800);
