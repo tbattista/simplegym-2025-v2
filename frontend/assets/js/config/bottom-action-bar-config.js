@@ -648,6 +648,28 @@
                                 icon: 'bx-dots-vertical-rounded',
                                 menuItems: [
                                     {
+                                        icon: 'bx-plus-circle',
+                                        title: 'New Workout',
+                                        description: 'Start editing a new workout template',
+                                        onClick: () => {
+                                            // Clear localStorage to ensure a fresh workout is created
+                                            try {
+                                                localStorage.removeItem('currentEditingWorkoutId');
+                                                console.log('🗑️ Cleared workout ID from localStorage (creating new workout)');
+                                            } catch (error) {
+                                                console.warn('⚠️ Could not clear localStorage:', error);
+                                            }
+                                            
+                                            // Create new workout using existing function
+                                            if (window.createNewWorkoutInEditor) {
+                                                window.createNewWorkoutInEditor();
+                                            } else {
+                                                console.error('❌ createNewWorkoutInEditor function not found');
+                                                alert('New workout feature is loading. Please try again in a moment.');
+                                            }
+                                        }
+                                    },
+                                    {
                                         icon: 'bx-x',
                                         title: 'Cancel Edit',
                                         description: 'Discard changes and exit',

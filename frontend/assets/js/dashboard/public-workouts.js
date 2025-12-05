@@ -62,6 +62,7 @@
             showDates: true,        // Show creation date
             actions: [
                 {
+                    id: 'save',
                     label: 'Save to My Workouts',
                     icon: 'bx-bookmark',
                     variant: 'primary',
@@ -108,18 +109,89 @@
         
         try {
             // Check if user is authenticated
-            if (!window.dataManager || !window.dataManager.isAuthenticated()) {
-                alert('Please sign in to save workouts');
+            if (!window.dataManager || !window.dataManager.isUserAuthenticated()) {
+                if (window.toastNotifications) {
+                    window.toastNotifications.warning('Please sign in to save workouts');
+                }
+                // Optionally show login modal
+                const loginModal = document.getElementById('authModal');
+                if (loginModal) {
+                    const modal = new bootstrap.Modal(loginModal);
+                    modal.show();
+                }
                 return;
             }
             
-            // TODO: Implement save workout API call
-            // For now, just show a message
-            alert('Save workout feature coming soon!');
+            // Show loading state on the save button
+            const saveButton = document.querySelector('[data-action="save"]');
+            const originalHTML = saveButton ? saveButton.innerHTML : null;
+            if (saveButton) {
+                saveButton.disabled = true;
+                saveButton.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Saving...';
+            }
+            
+            // Get auth token
+            const authToken = await window.dataManager.getAuthToken();
+            
+            // Call API to save workout
+            const url = window.config.api.getUrl(`/api/v3/sharing/public-workouts/${workout.id}/save`);
+            console.log('📡 Saving workout to:', url);
+            
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${authToken}`
+                },
+                body: JSON.stringify({
+                    custom_name: null // Could add UI for custom name later
+                })
+            });
+            
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.detail || `Failed to save workout (${response.status})`);
+            }
+            
+            const savedWorkout = await response.json();
+            console.log('✅ Workout saved successfully:', savedWorkout);
+            
+            // Show success toast
+            if (window.toastNotifications) {
+                window.toastNotifications.success(
+                    `"${savedWorkout.name}" has been added to your workouts!`,
+                    'Workout Saved'
+                );
+            }
+            
+            // Close the detail offcanvas
+            if (workoutDetailOffcanvas) {
+                workoutDetailOffcanvas.hide();
+            }
+            
+            // Restore button state
+            if (saveButton && originalHTML) {
+                saveButton.disabled = false;
+                saveButton.innerHTML = originalHTML;
+            }
             
         } catch (error) {
             console.error('❌ Error saving workout:', error);
-            alert('Failed to save workout: ' + error.message);
+            
+            // Show error toast
+            if (window.toastNotifications) {
+                window.toastNotifications.error(
+                    error.message || 'Failed to save workout. Please try again.',
+                    'Save Failed'
+                );
+            }
+            
+            // Restore button state
+            const saveButton = document.querySelector('[data-action="save"]');
+            if (saveButton) {
+                saveButton.disabled = false;
+                saveButton.innerHTML = '<i class="bx bx-bookmark me-1"></i>Save to My Workouts';
+            }
         }
     }
 

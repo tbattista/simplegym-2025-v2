@@ -443,11 +443,6 @@ async function saveWorkoutFromEditor(silent = false) {
         // Show saving status
         updateSaveStatus('saving');
         
-        // Save toast notification
-        if (!silent && window.toastNotifications) {
-            window.toastNotifications.saving();
-        }
-        
         // Update bottom action bar button state (save button is right-0)
         if (window.bottomActionBar && !silent) {
             window.bottomActionBar.updateButtonState('right-0', 'saving');

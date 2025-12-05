@@ -19,7 +19,7 @@
         if (toastContainer) return;
 
         toastContainer = document.createElement('div');
-        toastContainer.className = 'toast-container position-fixed bottom-0 end-0 p-3';
+        toastContainer.className = 'toast-container position-fixed top-0 start-50 translate-middle-x p-3';
         toastContainer.style.zIndex = '9999';
         document.body.appendChild(toastContainer);
     }
@@ -116,15 +116,6 @@
         error: (message, title = 'Error') => showToast({ message, type: 'danger', title }),
         warning: (message, title = 'Warning') => showToast({ message, type: 'warning', title }),
         info: (message, title = 'Info') => showToast({ message, type: 'info', title }),
-        
-        // Specific for save operations
-        saving: () => showToast({ 
-            message: 'Saving your changes...', 
-            type: 'info', 
-            title: 'Saving',
-            icon: 'bx-loader-alt bx-spin',
-            delay: 2000
-        }),
         
         saved: () => showToast({ 
             message: 'Your changes have been saved successfully!', 

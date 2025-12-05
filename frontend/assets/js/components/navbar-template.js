@@ -28,12 +28,6 @@ function getNavbarHTML(pageTitle = 'Ghost Gym', pageIcon = 'bx-home', options = 
                        aria-label="Toggle navigation menu">
                         <i class="bx bx-menu bx-sm"></i>
                     </a>
-                    
-                    <!-- Page Title with Icon (visible on all screens) -->
-                    <div class="d-flex align-items-center">
-                        <i class="bx ${pageIcon} me-2 text-primary"></i>
-                        <h5 class="mb-0 fw-semibold">${pageTitle}</h5>
-                    </div>
                 </div>
                 
                 <!-- Center Section: Search (responsive) -->
