@@ -110,19 +110,9 @@ class ExerciseCardRenderer {
                         </div>
                     ` : ''}
                     
-                    <!-- 2x3 Grid: Rest Timer | Start Button | Skip/Unskip / Edit Weight | Next | (empty) -->
-                    <div class="workout-button-grid workout-button-grid-2x3">
-                        <!-- Row 1, Column 1: Rest Timer Label -->
-                        <div class="rest-timer-grid-label">
-                            <div class="rest-timer" data-rest-seconds="${restSeconds}" data-timer-id="${timerId}">
-                            </div>
-                        </div>
-                        
-                        <!-- Row 1, Column 2: Start Rest Button (will be rendered by timer) -->
-                        <div class="rest-timer-button-slot">
-                        </div>
-                        
-                        <!-- Row 1, Column 3: Skip/Unskip Button -->
+                    <!-- 2x2 Grid: Skip/Unskip / Edit Weight | Next | (empty) | (empty) -->
+                    <div class="workout-button-grid workout-button-grid-2x2">
+                        <!-- Row 1, Column 1: Skip/Unskip Button -->
                         ${isSessionActive && !isSkipped ? `
                             <button class="btn btn-outline-warning workout-grid-btn"
                                     onclick="window.workoutModeController.handleSkipExercise('${this._escapeHtml(mainExercise)}', ${index}); event.stopPropagation();"
@@ -139,7 +129,7 @@ class ExerciseCardRenderer {
                             <div class="workout-grid-btn-placeholder"></div>
                         `}
                         
-                        <!-- Row 2, Column 1: Edit Weight Button -->
+                        <!-- Row 1, Column 2: Edit Weight Button -->
                         <button
                             class="btn ${currentWeight ? 'btn-outline-primary' : 'btn-outline-warning'} workout-grid-btn"
                             data-exercise-name="${this._escapeHtml(mainExercise)}"
@@ -155,12 +145,12 @@ class ExerciseCardRenderer {
                             <i class="bx ${currentWeight ? 'bx-edit-alt' : 'bx-plus-circle'} me-1"></i>${currentWeight ? 'Edit Weight' : 'Set Weight'}
                         </button>
                         
-                        <!-- Row 2, Column 2: Next/End Button -->
+                        <!-- Row 2, Column 1: Next/End Button -->
                         <button class="btn btn-primary workout-grid-btn" onclick="window.workoutModeController.goToNextExercise(${index})">
                             ${index === totalCards - 1 ? 'End<i class="bx bx-stop-circle ms-1"></i>' : 'Next<i class="bx bx-right-arrow-alt ms-1"></i>'}
                         </button>
                         
-                        <!-- Row 2, Column 3: Empty placeholder for alignment -->
+                        <!-- Row 2, Column 2: Empty placeholder for alignment -->
                         <div class="workout-grid-btn-placeholder"></div>
                     </div>
                 </div>

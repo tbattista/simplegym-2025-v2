@@ -154,6 +154,13 @@
             if (this.isNewLayout && this.pageId === 'workout-mode' && this.config.floatingCombo) {
                 this.renderFloatingTimerEndCombo();
             }
+            
+            // Also initialize global rest timer for non-active workout mode (so it's available when cards expand)
+            if (this.pageId === 'workout-mode') {
+                setTimeout(() => {
+                    this.initializeGlobalRestTimer();
+                }, 100);
+            }
 
             console.log('✅ Bottom Action Bar rendered');
         }
@@ -249,6 +256,9 @@
 
             const comboHTML = `
                 <div class="floating-timer-end-combo" id="floatingTimerEndCombo">
+                    <!-- Global Rest Timer (now as flex item) -->
+                    <div class="global-rest-timer-button" id="globalRestTimerButton"></div>
+                    
                     <!-- Timer Display -->
                     <div class="floating-timer-display" id="floatingTimerDisplay">
                         <i class="bx bx-time-five"></i>
@@ -278,7 +288,25 @@
                 });
             }
             
+            // Initialize global rest timer if class is available
+            this.initializeGlobalRestTimer();
+            
             console.log('✅ Floating timer+end combo rendered');
+        }
+        
+        /**
+         * Initialize global rest timer (extracted for reuse)
+         */
+        initializeGlobalRestTimer() {
+            if (window.GlobalRestTimer && !window.globalRestTimer) {
+                window.globalRestTimer = new GlobalRestTimer();
+                window.globalRestTimer.initialize();
+                console.log('✅ Global rest timer initialized');
+            } else if (window.globalRestTimer) {
+                console.log('ℹ️ Global rest timer already exists');
+            } else {
+                console.warn('⚠️ GlobalRestTimer class not available');
+            }
         }
 
         /**

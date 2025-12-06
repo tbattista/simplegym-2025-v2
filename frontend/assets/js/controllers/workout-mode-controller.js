@@ -18,6 +18,7 @@ class WorkoutModeController {
         // State
         this.currentWorkout = null;
         this.timers = {};
+        this.globalRestTimer = null;
         this.soundEnabled = localStorage.getItem('workoutSoundEnabled') !== 'false';
         this.autoSaveTimer = null;
         this.workoutListComponent = null;
@@ -345,7 +346,10 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
         
         container.innerHTML = html;
         
-        // Initialize timers
+        // Initialize global rest timer
+        this.initializeGlobalRestTimer();
+        
+        // Initialize individual timers (will be removed later)
         this.initializeTimers();
     }
     
@@ -364,6 +368,78 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
             this.timers[timerId] = timer;
             timer.render();
         });
+    }
+    
+    /**
+     * Initialize global rest timer
+     */
+    initializeGlobalRestTimer() {
+        // Wait for global rest timer to be available from bottom action bar service
+        if (window.globalRestTimer) {
+            this.globalRestTimer = window.globalRestTimer;
+            console.log('✅ Global rest timer connected to controller');
+            
+            // Sync with first expanded card if any
+            this.syncGlobalTimerWithExpandedCard();
+        } else {
+            // Try again after a short delay
+            setTimeout(() => {
+                if (window.globalRestTimer) {
+                    this.globalRestTimer = window.globalRestTimer;
+                    console.log('✅ Global rest timer connected to controller (delayed)');
+                    this.syncGlobalTimerWithExpandedCard();
+                } else {
+                    console.warn('⚠️ Global rest timer still not available after delay');
+                }
+            }, 500);
+        }
+    }
+    
+    /**
+     * Sync global timer with currently expanded exercise card
+     */
+    syncGlobalTimerWithExpandedCard() {
+        if (!this.globalRestTimer || !this.currentWorkout) return;
+        
+        // Find currently expanded card
+        const expandedCard = document.querySelector('.exercise-card.expanded');
+        if (!expandedCard) return;
+        
+        const exerciseIndex = parseInt(expandedCard.getAttribute('data-exercise-index'));
+        const exerciseGroup = this.getExerciseGroupByIndex(exerciseIndex);
+        
+        if (exerciseGroup) {
+            const restSeconds = this.parseRestTime(exerciseGroup.rest || '60s');
+            this.globalRestTimer.syncWithCard(exerciseIndex, restSeconds);
+            console.log(`🔄 Global timer synced with exercise ${exerciseIndex}: ${restSeconds}s`);
+        }
+    }
+    
+    /**
+     * Get exercise group by index
+     */
+    getExerciseGroupByIndex(index) {
+        // Check regular exercise groups first
+        if (this.currentWorkout.exercise_groups && index < this.currentWorkout.exercise_groups.length) {
+            return this.currentWorkout.exercise_groups[index];
+        }
+        
+        // Check bonus exercises
+        const bonusExercises = this.sessionService.getBonusExercises();
+        const bonusIndex = index - (this.currentWorkout.exercise_groups?.length || 0);
+        if (bonusExercises && bonusIndex >= 0 && bonusIndex < bonusExercises.length) {
+            const bonus = bonusExercises[bonusIndex];
+            return {
+                exercises: { a: bonus.name },
+                sets: bonus.sets,
+                reps: bonus.reps,
+                rest: bonus.rest || '60s',
+                default_weight: bonus.weight,
+                default_weight_unit: bonus.weight_unit || 'lbs'
+            };
+        }
+        
+        return null;
     }
     
     /**
@@ -1304,6 +1380,9 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
                 this.collapseCard(otherCard);
             });
             this.expandCard(card);
+            
+            // Sync global timer with newly expanded card
+            this.syncGlobalTimerWithExpandedCard();
         }
     }
     

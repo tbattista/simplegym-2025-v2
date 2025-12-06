@@ -115,59 +115,78 @@
     </div>
     <!-- / Layout wrapper -->
 
-    <!-- Filters Offcanvas (Bottom) -->
+    <!-- Filters Offcanvas (Bottom) with Tabs -->
     <div class="offcanvas offcanvas-bottom offcanvas-bottom-base" tabindex="-1" id="filtersOffcanvas" aria-labelledby="filtersOffcanvasLabel" style="height: 60vh;">
       <div class="offcanvas-header">
         <h5 class="offcanvas-title" id="filtersOffcanvasLabel">
           <i class="bx bx-filter-alt me-2"></i>
-          Filters
+          <span id="offcanvasMainTitle">Filters & Sort</span>
         </h5>
         <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
       </div>
       <div class="offcanvas-body">
-        <div class="row">
-          <!-- Left Column -->
-          <div class="col-md-6">
-            <!-- Sort By -->
-            <div class="mb-4">
-              <label class="form-label fw-semibold">Sort By</label>
-              <select class="form-select" id="sortBySelect">
-                <option value="modified_date">Recently Modified</option>
-                <option value="created_date">Recently Created</option>
-                <option value="name">Name (A-Z)</option>
-                <option value="exercise_count">Most Exercises</option>
-              </select>
-            </div>
+        <!-- Nav Tabs -->
+        <ul class="nav nav-tabs mb-3" id="filtersTabs" role="tablist">
+          <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="filters-tab" data-bs-toggle="tab" data-bs-target="#filters-tab-pane" type="button" role="tab" aria-controls="filters-tab-pane" aria-selected="true">
+              <i class="bx bx-filter me-1"></i>Filters
+            </button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="sort-tab" data-bs-toggle="tab" data-bs-target="#sort-tab-pane" type="button" role="tab" aria-controls="sort-tab-pane" aria-selected="false">
+              <i class="bx bx-sort me-1"></i>Sort
+            </button>
+          </li>
+        </ul>
 
-            <!-- Tags Filter -->
-            <div class="mb-4">
-              <label class="form-label fw-semibold">Tags</label>
-              <div id="tagsFilterContainer">
-                <!-- Tags will be loaded dynamically -->
-                <p class="text-muted small">Loading tags...</p>
+        <!-- Tab Content -->
+        <div class="tab-content" id="filtersTabContent">
+          <!-- Filters Tab Pane -->
+          <div class="tab-pane fade show active" id="filters-tab-pane" role="tabpanel" aria-labelledby="filters-tab" tabindex="0">
+            <div class="row">
+              <!-- Tags Filter -->
+              <div class="col-12 mb-4">
+                <label class="form-label fw-semibold">Filter by Tags</label>
+                <div id="tagsFilterContainer">
+                  <!-- Tags will be loaded dynamically -->
+                  <p class="text-muted small">Loading tags...</p>
+                </div>
+              </div>
+
+              <!-- Stats -->
+              <div class="col-12">
+                <label class="form-label fw-semibold">Your Stats</label>
+                <div class="d-flex justify-content-between mb-2">
+                  <span class="text-muted">Total Workouts:</span>
+                  <span class="fw-semibold" id="totalCount">0</span>
+                </div>
+                <div class="d-flex justify-content-between">
+                  <span class="text-muted">Showing:</span>
+                  <span class="fw-semibold" id="showingCount">0</span>
+                </div>
               </div>
             </div>
           </div>
 
-          <!-- Right Column -->
-          <div class="col-md-6">
-            <!-- Stats -->
-            <div class="mb-4">
-              <label class="form-label fw-semibold">Your Stats</label>
-              <div class="d-flex justify-content-between mb-2">
-                <span class="text-muted">Total Workouts:</span>
-                <span class="fw-semibold" id="totalCount">0</span>
-              </div>
-              <div class="d-flex justify-content-between">
-                <span class="text-muted">Showing:</span>
-                <span class="fw-semibold" id="showingCount">0</span>
+          <!-- Sort Tab Pane -->
+          <div class="tab-pane fade" id="sort-tab-pane" role="tabpanel" aria-labelledby="sort-tab" tabindex="0">
+            <div class="row">
+              <div class="col-12 mb-4">
+                <label class="form-label fw-semibold">Sort By</label>
+                <select class="form-select" id="sortBySelect">
+                  <option value="modified_date">Recently Modified</option>
+                  <option value="created_date">Recently Created</option>
+                  <option value="name">Name (A-Z)</option>
+                  <option value="exercise_count">Most Exercises</option>
+                </select>
+                <div class="form-text">Choose how to organize your workouts</div>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Action Buttons -->
-        <div class="row mt-3">
+        <!-- Action Buttons (shown on both tabs) -->
+        <div class="row mt-auto pt-3 border-top">
           <div class="col-12">
             <button type="button" class="btn btn-outline-secondary w-100 mb-2" id="clearFiltersBtn">
               <i class="bx bx-x me-1"></i>
@@ -175,7 +194,7 @@
             </button>
             <button type="button" class="btn btn-primary w-100" data-bs-dismiss="offcanvas">
               <i class="bx bx-check me-1"></i>
-              Apply Filters
+              Done
             </button>
           </div>
         </div>
@@ -317,8 +336,17 @@
             
             // Set up event listeners
             document.getElementById('clearFiltersBtn')?.addEventListener('click', clearFilters);
-            document.getElementById('createNewWorkoutBtn')?.addEventListener('click', createNewWorkout);
-            document.getElementById('sortBySelect')?.addEventListener('change', filterWorkouts);
+            
+            // Connect sort dropdown to filter logic
+            const sortBySelect = document.getElementById('sortBySelect');
+            if (sortBySelect) {
+                sortBySelect.addEventListener('change', (e) => {
+                    const sortBy = e.target.value;
+                    console.log('📊 Sort changed to:', sortBy);
+                    window.ghostGym.workoutDatabase.filters.sortBy = sortBy;
+                    filterWorkouts();
+                });
+            }
             
             // Initialize delete mode toggle
             if (window.initDeleteModeToggle) {

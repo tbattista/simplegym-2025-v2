@@ -485,6 +485,349 @@
     }
 }
 
+/* ============================================
+   GLOBAL REST TIMER BUTTON (WORKOUT MODE)
+   Floating rest timer that morphs between states
+   ============================================ */
+
+.global-rest-timer-button {
+    /* Position as flex item within the floating combo */
+    flex-shrink: 0;
+    margin-right: 8px; /* Space between timer and timer display */
+    z-index: 1002;
+    pointer-events: auto;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    min-width: 90px;
+    height: 48px;
+    /* Remove absolute positioning - will be flex item */
+}
+
+/* Base timer button styling */
+.global-timer-btn {
+    width: 100%;
+    height: 48px;
+    min-width: 90px;
+    padding: 0 20px;
+    border-radius: 12px;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+/* Ready state - green button */
+.global-rest-timer-button.ready .global-timer-btn {
+    background: var(--bs-success);
+    color: white;
+}
+
+.global-rest-timer-button.ready .global-timer-btn:hover {
+    background: #218838;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
+}
+
+/* Counting state - display with pause option */
+.global-timer-countdown {
+    height: 48px;
+    min-width: 120px;
+    padding: 0 16px;
+    background: var(--bs-body-bg);
+    border: 2px solid var(--bs-primary);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--bs-body-color);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    transition: all 0.2s ease;
+}
+
+.global-timer-time {
+    font-size: 16px;
+    font-weight: 700;
+    font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
+}
+
+.global-timer-pause-btn {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    padding: 0;
+    border-radius: 8px;
+    border: none;
+    background: var(--bs-secondary);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.global-timer-pause-btn:hover {
+    background: var(--bs-secondary);
+    filter: brightness(0.9);
+    transform: scale(1.05);
+}
+
+/* Paused state - display with reset/resume controls */
+.global-timer-paused {
+    height: 48px;
+    min-width: 160px;
+    padding: 0 16px;
+    background: var(--bs-warning);
+    border: 2px solid var(--bs-warning);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    font-size: 15px;
+    font-weight: 600;
+    color: white;
+    box-shadow: 0 2px 8px rgba(255, 193, 7, 0.3);
+    transition: all 0.2s ease;
+}
+
+.global-timer-paused .global-timer-time {
+    color: white;
+}
+
+.global-timer-controls {
+    display: flex;
+    gap: 6px;
+}
+
+.global-timer-controls button {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    padding: 0;
+    border-radius: 6px;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 14px;
+}
+
+.global-timer-controls button:first-child {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
+.global-timer-controls button:first-child:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.global-timer-controls button:last-child {
+    background: rgba(40, 167, 69, 0.8);
+    color: white;
+}
+
+.global-timer-controls button:last-child:hover {
+    background: rgba(40, 167, 69, 1);
+}
+
+/* Done state - success button */
+.global-rest-timer-button.done .global-timer-btn {
+    background: var(--bs-success);
+    color: white;
+    animation: timer-complete-pulse 2s ease-in-out;
+}
+
+/* Mobile countdown layout */
+.global-timer-countdown-mobile {
+    height: 48px;
+    min-width: 100px;
+    padding: 0 12px;
+    background: var(--bs-body-bg);
+    border: 2px solid var(--bs-primary);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--bs-body-color);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    transition: all 0.2s ease;
+}
+
+/* Mobile paused layout */
+.global-timer-paused-mobile {
+    height: 48px;
+    min-width: 120px;
+    padding: 0 12px;
+    background: var(--bs-warning);
+    border: 2px solid var(--bs-warning);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    color: white;
+    box-shadow: 0 2px 8px rgba(255, 193, 7, 0.3);
+    transition: all 0.2s ease;
+}
+
+.global-timer-paused-mobile .global-timer-controls {
+    gap: 4px;
+}
+
+.global-timer-paused-mobile .global-timer-controls button {
+    width: 28px;
+    height: 28px;
+    min-width: 28px;
+    font-size: 12px;
+}
+
+/* Pulse animation for timer completion */
+@keyframes timer-complete-pulse {
+    0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
+    }
+    25% {
+        transform: scale(1.05);
+        box-shadow: 0 4px 16px rgba(40, 167, 69, 0.5);
+    }
+    50% {
+        transform: scale(1.08);
+        box-shadow: 0 6px 20px rgba(40, 167, 69, 0.6);
+    }
+    75% {
+        transform: scale(1.05);
+        box-shadow: 0 4px 16px rgba(40, 167, 69, 0.5);
+    }
+}
+
+/* Dark mode adjustments */
+[data-theme="dark"] .global-timer-countdown,
+[data-theme="dark"] .global-timer-countdown-mobile {
+    background: var(--bs-gray-900);
+    border-color: var(--bs-primary);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+[data-theme="dark"] .global-timer-paused,
+[data-theme="dark"] .global-timer-paused-mobile {
+    background: var(--bs-warning);
+    border-color: var(--bs-warning);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 768px) {
+    .global-rest-timer-button {
+        /* Mobile adjustment - reduce size and spacing */
+        min-width: 80px;
+        height: 44px;
+        margin-right: 6px;
+    }
+    
+    .global-timer-btn {
+        height: 44px;
+        min-width: 80px;
+        padding: 0 14px;
+        font-size: 14px;
+    }
+    
+    .global-timer-countdown,
+    .global-timer-countdown-mobile {
+        height: 44px;
+        min-width: 100px;
+        padding: 0 12px;
+        font-size: 14px;
+    }
+    
+    .global-timer-paused,
+    .global-timer-paused-mobile {
+        height: 44px;
+        min-width: 120px;
+        padding: 0 12px;
+        font-size: 14px;
+    }
+    
+    .global-timer-time {
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 576px) {
+    .global-rest-timer-button {
+        /* Tablet adjustment - further reduce size and spacing */
+        min-width: 70px;
+        height: 40px;
+        margin-right: 4px;
+    }
+    
+    .global-timer-btn {
+        height: 40px;
+        min-width: 70px;
+        padding: 0 12px;
+        font-size: 13px;
+    }
+    
+    .global-timer-countdown,
+    .global-timer-countdown-mobile {
+        height: 40px;
+        min-width: 90px;
+        padding: 0 10px;
+        font-size: 13px;
+    }
+    
+    .global-timer-paused,
+    .global-timer-paused-mobile {
+        height: 40px;
+        min-width: 100px;
+        padding: 0 10px;
+        font-size: 13px;
+    }
+    
+    .global-timer-time {
+        font-size: 13px;
+    }
+}
+
+/* Accessibility */
+.global-rest-timer-button:focus-within {
+    outline: 2px solid var(--bs-primary);
+    outline-offset: 2px;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    .global-rest-timer-button,
+    .global-timer-btn,
+    .global-timer-countdown,
+    .global-timer-countdown-mobile,
+    .global-timer-paused,
+    .global-timer-paused-mobile {
+        transition: none;
+    }
+    
+    .global-rest-timer-button.done .global-timer-btn {
+        animation: none;
+    }
+}
+
 .floating-action-fab:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);

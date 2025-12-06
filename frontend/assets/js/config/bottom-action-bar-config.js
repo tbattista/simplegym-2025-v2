@@ -419,6 +419,13 @@
                             document.getElementById('filtersOffcanvas')
                         );
                         offcanvas.show();
+                        
+                        // Activate the Filters tab
+                        const filtersTab = document.getElementById('filters-tab');
+                        if (filtersTab) {
+                            const tab = new bootstrap.Tab(filtersTab);
+                            tab.show();
+                        }
                     }
                 },
                 {
@@ -426,13 +433,16 @@
                     label: 'Sort',
                     title: 'Sort workouts',
                     action: function() {
-                        const sortSelect = document.getElementById('sortBySelect');
-                        if (sortSelect) {
-                            const offcanvas = new bootstrap.Offcanvas(
-                                document.getElementById('filtersOffcanvas')
-                            );
-                            offcanvas.show();
-                            setTimeout(() => sortSelect.focus(), 300);
+                        const offcanvas = new bootstrap.Offcanvas(
+                            document.getElementById('filtersOffcanvas')
+                        );
+                        offcanvas.show();
+                        
+                        // Activate the Sort tab
+                        const sortTab = document.getElementById('sort-tab');
+                        if (sortTab) {
+                            const tab = new bootstrap.Tab(sortTab);
+                            tab.show();
                         }
                     }
                 },
@@ -674,10 +684,7 @@
                                         title: 'Cancel Edit',
                                         description: 'Discard changes and exit',
                                         onClick: () => {
-                                            const cancelBtn = document.getElementById('cancelEditBtn');
-                                            if (cancelBtn) {
-                                                cancelBtn.click();
-                                            }
+                                            window.location.href = 'workout-database.html';
                                         }
                                     },
                                     {

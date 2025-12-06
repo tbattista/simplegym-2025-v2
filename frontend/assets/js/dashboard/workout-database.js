@@ -94,7 +94,7 @@ async function loadWorkouts() {
 }
 
 /**
- * Load available tags and initialize popovers
+ * Load available tags and render filter UI
  */
 function loadTagOptions() {
     // Get all unique tags
@@ -107,11 +107,121 @@ function loadTagOptions() {
     
     console.log(`✅ Loaded ${tags.length} unique tags`);
     
-    // Initialize Sort By popover
-    initializeSortByPopover();
+    // Render tags in offcanvas
+    renderTagFilterCheckboxes(tags);
     
-    // Initialize Tags popover
-    initializeTagsPopover(tags);
+    // Update stats display
+    updateStatsDisplay();
+}
+
+/**
+ * Render tag filter checkboxes in offcanvas
+ */
+function renderTagFilterCheckboxes(tags) {
+    const container = document.getElementById('tagsFilterContainer');
+    if (!container) return;
+    
+    if (tags.length === 0) {
+        container.innerHTML = '<p class="text-muted small">No tags available</p>';
+        return;
+    }
+    
+    // Build checkbox HTML
+    let html = '<div class="tags-list" style="max-height: 200px; overflow-y: auto;">';
+    
+    tags.forEach(tag => {
+        const isChecked = window.ghostGym.workoutDatabase.filters.tags.includes(tag);
+        html += `
+            <div class="form-check mb-2">
+                <input class="form-check-input tag-filter-checkbox"
+                       type="checkbox"
+                       value="${tag}"
+                       id="tag_${tag.replace(/\s+/g, '_')}"
+                       ${isChecked ? 'checked' : ''}>
+                <label class="form-check-label" for="tag_${tag.replace(/\s+/g, '_')}">
+                    <span class="badge bg-label-primary">${tag}</span>
+                </label>
+            </div>
+        `;
+    });
+    
+    html += '</div>';
+    container.innerHTML = html;
+    
+    // Attach event listeners to checkboxes
+    container.querySelectorAll('.tag-filter-checkbox').forEach(checkbox => {
+        checkbox.addEventListener('change', handleTagFilterChange);
+    });
+    
+    console.log('✅ Tag filter checkboxes rendered');
+}
+
+/**
+ * Handle tag filter checkbox change
+ */
+function handleTagFilterChange(e) {
+    const tag = e.target.value;
+    const isChecked = e.target.checked;
+    
+    if (isChecked) {
+        // Add tag to filters
+        if (!window.ghostGym.workoutDatabase.filters.tags.includes(tag)) {
+            window.ghostGym.workoutDatabase.filters.tags.push(tag);
+        }
+    } else {
+        // Remove tag from filters
+        window.ghostGym.workoutDatabase.filters.tags =
+            window.ghostGym.workoutDatabase.filters.tags.filter(t => t !== tag);
+    }
+    
+    console.log('🏷️ Tag filters updated:', window.ghostGym.workoutDatabase.filters.tags);
+    
+    // Apply filters in real-time
+    filterWorkouts();
+    
+    // Update visual feedback
+    updateFilterBadge();
+}
+
+/**
+ * Update stats display in offcanvas
+ */
+function updateStatsDisplay() {
+    const totalCountEl = document.getElementById('totalCount');
+    const showingCountEl = document.getElementById('showingCount');
+    
+    if (totalCountEl) {
+        totalCountEl.textContent = window.ghostGym.workoutDatabase.stats.total;
+    }
+    
+    if (showingCountEl) {
+        const showingCount = window.ghostGym.workoutDatabase.filtered?.length ||
+                            window.ghostGym.workoutDatabase.all.length;
+        showingCountEl.textContent = showingCount;
+        window.ghostGym.workoutDatabase.stats.showing = showingCount;
+    }
+}
+
+/**
+ * Update filter button badge to show active filters
+ */
+function updateFilterBadge() {
+    const selectedTags = window.ghostGym.workoutDatabase.filters.tags || [];
+    const activeFilterCount = selectedTags.length;
+    
+    // Update filter button in bottom action bar if it exists
+    const filterBtn = document.querySelector('[data-action="btn-0"]');
+    if (filterBtn && window.bottomActionBar) {
+        if (activeFilterCount > 0) {
+            window.bottomActionBar.updateButton('btn-0', {
+                badge: activeFilterCount
+            });
+        } else {
+            window.bottomActionBar.updateButton('btn-0', {
+                badge: null
+            });
+        }
+    }
 }
 
 /**
@@ -232,18 +342,17 @@ function filterWorkouts() {
     const selectedTags = window.ghostGym.workoutDatabase.filters.tags || [];
     const sortBy = window.ghostGym.workoutDatabase.filters.sortBy || 'modified_date';
     
+    console.log('🔍 Applying filters:', { searchTerm, selectedTags, sortBy });
+    
     // Apply search filter
     if (searchTerm) {
         const searchLower = searchTerm.toLowerCase();
-        console.log('🔍 Search term:', searchTerm, '→', searchLower);
         
         filtered = filtered.filter(workout => {
             return workout.name.toLowerCase().includes(searchLower) ||
                    (workout.description || '').toLowerCase().includes(searchLower) ||
                    (workout.tags || []).some(tag => tag.toLowerCase().includes(searchLower));
         });
-        
-        console.log('📊 Filtered results:', filtered.length, 'of', window.ghostGym.workoutDatabase.all.length);
     }
     
     // Apply tag filter
@@ -266,6 +375,14 @@ function filterWorkouts() {
     if (workoutGrid) {
         workoutGrid.setData(filtered);
     }
+    
+    // Update stats display
+    updateStatsDisplay();
+    
+    // Update filter badge
+    updateFilterBadge();
+    
+    console.log('📊 Filter results:', filtered.length, 'of', window.ghostGym.workoutDatabase.all.length);
 }
 
 /**
@@ -311,10 +428,12 @@ function sortWorkouts(workouts, sortBy) {
  * Clear all filters
  */
 function clearFilters() {
-    // Clear search overlay input (correct element ID)
-    const searchOverlayInput = document.getElementById('searchOverlayInput');
-    if (searchOverlayInput) {
-        searchOverlayInput.value = '';
+    console.log('🧹 Clearing all filters');
+    
+    // Clear search in morphing FAB
+    const searchFabInput = document.getElementById('searchFabInput');
+    if (searchFabInput) {
+        searchFabInput.value = '';
     }
     
     // Reset filter state (including search)
@@ -322,16 +441,21 @@ function clearFilters() {
     window.ghostGym.workoutDatabase.filters.tags = [];
     window.ghostGym.workoutDatabase.filters.sortBy = 'modified_date';
     
-    // Reset button texts (with null checks)
-    const sortByText = document.getElementById('sortByText');
-    const tagsText = document.getElementById('tagsText');
-    if (sortByText) sortByText.textContent = 'Recently Modified';
-    if (tagsText) tagsText.textContent = 'All Tags';
+    // Reset sort dropdown in offcanvas
+    const sortBySelect = document.getElementById('sortBySelect');
+    if (sortBySelect) {
+        sortBySelect.value = 'modified_date';
+    }
     
-    console.log('🧹 Filters cleared');
+    // Uncheck all tag checkboxes
+    document.querySelectorAll('.tag-filter-checkbox').forEach(checkbox => {
+        checkbox.checked = false;
+    });
     
-    // Re-apply filters
+    // Re-apply filters (will show all workouts)
     filterWorkouts();
+    
+    console.log('✅ Filters cleared');
 }
 
 /**
