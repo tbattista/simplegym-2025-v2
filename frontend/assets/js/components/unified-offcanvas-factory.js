@@ -601,11 +601,12 @@ class UnifiedOffcanvasFactory {
     }
 
     /* ============================================
-       BONUS EXERCISE
+       BONUS EXERCISE (ENHANCED v2.0)
+       Search-first design with improved UX
        ============================================ */
 
     /**
-     * Create bonus exercise offcanvas
+     * Create enhanced bonus exercise offcanvas
      * @param {Object} data - Previous exercises data
      * @param {Function} onAddNew - Callback when adding new exercise
      * @param {Function} onAddPrevious - Callback when adding previous exercise
@@ -616,211 +617,394 @@ class UnifiedOffcanvasFactory {
         const hasPrevious = previousExercises && previousExercises.length > 0;
         
         const offcanvasHtml = `
-            <div class="offcanvas offcanvas-bottom offcanvas-bottom-base offcanvas-bottom-tall" tabindex="-1" id="bonusExerciseOffcanvas"
-                 aria-labelledby="bonusExerciseOffcanvasLabel" data-bs-scroll="false">
+            <div class="offcanvas offcanvas-bottom offcanvas-bottom-base"
+                 tabindex="-1"
+                 id="bonusExerciseOffcanvas"
+                 aria-labelledby="bonusExerciseOffcanvasLabel"
+                 data-bs-scroll="false">
+                
+                <!-- Header -->
                 <div class="offcanvas-header border-bottom">
                     <h5 class="offcanvas-title" id="bonusExerciseOffcanvasLabel">
                         <i class="bx bx-plus-circle me-2"></i>Add Bonus Exercise
                     </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close add exercise dialog"></button>
                 </div>
+                
+                <!-- Body -->
                 <div class="offcanvas-body">
-                    <div class="alert alert-info d-flex align-items-start mb-4">
-                        <i class="bx bx-info-circle me-2 mt-1"></i>
-                        <div>
+                    
+                    <!-- Info Alert -->
+                    <div class="alert alert-info d-flex align-items-start mb-3">
+                        <i class="bx bx-info-circle me-2 mt-1 flex-shrink-0"></i>
+                        <div class="flex-grow-1">
                             <strong>Add a supplementary exercise</strong>
                             <p class="mb-0 small">Bonus exercises are saved in your workout history but don't modify your workout template.</p>
                         </div>
                     </div>
                     
+                    <!-- HERO: Search Section -->
+                    <div class="search-section mb-4" role="search">
+                        <label for="bonusExerciseSearch" class="form-label fw-semibold">
+                            <i class="bx bx-search me-1"></i>Search Exercise
+                        </label>
+                        <div class="input-group input-group-merge input-group-lg search-input-wrapper">
+                            <span class="input-group-text">
+                                <i class="bx bx-search"></i>
+                            </span>
+                            <input type="search"
+                                   class="form-control form-control-lg exercise-autocomplete-input"
+                                   id="bonusExerciseSearch"
+                                   placeholder="e.g., Face Pulls, Leg Press, Cable Rows..."
+                                   aria-label="Search exercises"
+                                   aria-describedby="searchHelp"
+                                   aria-autocomplete="list"
+                                   aria-controls="searchResults"
+                                   autocomplete="off">
+                            <button class="btn btn-outline-secondary search-clear-btn"
+                                    type="button"
+                                    style="display: none;"
+                                    aria-label="Clear search">
+                                <i class="bx bx-x"></i>
+                            </button>
+                        </div>
+                        <div id="searchHelp" class="form-text">
+                            <i class="bx bx-info-circle me-1"></i>
+                            Start typing to search exercises. Use ↑↓ arrows to navigate results.
+                        </div>
+                    </div>
+                    
+                    <!-- Quick Actions: Previous Exercises -->
                     ${hasPrevious ? `
-                        <div class="mb-4">
-                            <h6 class="mb-3">
-                                <i class="bx bx-history me-2"></i>From Last Session
-                            </h6>
-                            <div class="list-group" id="previousBonusList">
-                                ${previousExercises.map((exercise, index) => `
-                                    <div class="list-group-item d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <strong>${this.escapeHtml(exercise.exercise_name)}</strong>
-                                            <div class="text-muted small">
-                                                ${exercise.target_sets} × ${exercise.target_reps}
-                                                ${exercise.weight ? ` • ${exercise.weight} ${exercise.weight_unit}` : ''}
+                        <div class="quick-actions-section mb-4">
+                            <button class="section-toggle btn btn-link text-start w-100 p-0 mb-2"
+                                    type="button"
+                                    data-bs-toggle="collapse"
+                                    data-bs-target="#previousExercisesCollapse"
+                                    aria-expanded="false"
+                                    aria-controls="previousExercisesCollapse">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <h6 class="mb-0 fw-semibold">
+                                        <i class="bx bx-history me-2 text-primary"></i>
+                                        From Last Session
+                                        <span class="badge bg-label-primary ms-2">${previousExercises.length}</span>
+                                    </h6>
+                                    <i class="bx bx-chevron-down toggle-icon"></i>
+                                </div>
+                            </button>
+                            
+                            <div class="collapse" id="previousExercisesCollapse">
+                                <div class="exercise-chips-container" id="previousBonusList">
+                                    ${previousExercises.map((exercise, index) => `
+                                        <div class="exercise-chip" data-index="${index}">
+                                            <div class="chip-content">
+                                                <div class="chip-name">${this.escapeHtml(exercise.exercise_name)}</div>
+                                                <div class="chip-details">
+                                                    ${exercise.target_sets}×${exercise.target_reps}
+                                                    ${exercise.weight ? ` • ${exercise.weight} ${exercise.weight_unit}` : ''}
+                                                </div>
                                             </div>
+                                            <button class="chip-add-btn btn btn-sm btn-primary"
+                                                    data-action="add-previous"
+                                                    data-index="${index}"
+                                                    aria-label="Add ${this.escapeHtml(exercise.exercise_name)}">
+                                                <i class="bx bx-plus"></i>
+                                            </button>
                                         </div>
-                                        <button class="btn btn-sm btn-outline-primary" data-action="add-previous" data-index="${index}">
-                                            <i class="bx bx-plus"></i>
-                                        </button>
-                                    </div>
-                                `).join('')}
+                                    `).join('')}
+                                </div>
                             </div>
                         </div>
                     ` : ''}
                     
-                    <div class="card">
-                        <div class="card-header">
-                            <h6 class="mb-0"><i class="bx bx-plus-circle me-2"></i>New Exercise</h6>
-                        </div>
-                        <div class="card-body">
-                            <div class="mb-3">
-                                <label class="form-label">Exercise Name</label>
-                                <input type="text" class="form-control exercise-autocomplete-input" id="bonusExerciseName"
-                                       placeholder="e.g., Face Pulls, Leg Press">
+                    <!-- Manual Entry Form (Collapsible) -->
+                    <div class="manual-entry-section mb-4">
+                        <button class="section-toggle btn btn-link text-start w-100 p-0 mb-2"
+                                type="button"
+                                data-bs-toggle="collapse"
+                                data-bs-target="#manualEntryCollapse"
+                                aria-expanded="false"
+                                aria-controls="manualEntryCollapse">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <h6 class="mb-0 fw-semibold">
+                                    <i class="bx bx-edit-alt me-2 text-primary"></i>
+                                    Manual Entry
+                                </h6>
+                                <i class="bx bx-chevron-down toggle-icon"></i>
                             </div>
-                            <div class="row">
-                                <div class="col-6 mb-3">
-                                    <label class="form-label">Sets</label>
-                                    <input type="text" class="form-control" id="bonusSets" value="3" placeholder="3">
-                                </div>
-                                <div class="col-6 mb-3">
-                                    <label class="form-label">Reps</label>
-                                    <input type="text" class="form-control" id="bonusReps" value="12" placeholder="12">
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-8 mb-3">
-                                    <label class="form-label">Weight (Optional)</label>
-                                    <input type="text" class="form-control" id="bonusWeight" placeholder="e.g., 135, 4x45">
-                                </div>
-                                <div class="col-4 mb-3">
-                                    <label class="form-label">Unit</label>
-                                    <select class="form-select" id="bonusWeightUnit">
-                                        <option value="lbs">lbs</option>
-                                        <option value="kg">kg</option>
-                                        <option value="other">other</option>
-                                    </select>
+                        </button>
+                        
+                        <div class="collapse" id="manualEntryCollapse">
+                            <div class="card">
+                                <div class="card-body">
+                                    <!-- Sets & Reps -->
+                                    <div class="row g-2 mb-3">
+                                        <div class="col-6">
+                                            <label for="bonusSets" class="form-label">Sets</label>
+                                            <input type="number"
+                                                   class="form-control"
+                                                   id="bonusSets"
+                                                   value="3"
+                                                   min="1"
+                                                   max="10"
+                                                   aria-label="Number of sets">
+                                        </div>
+                                        <div class="col-6">
+                                            <label for="bonusReps" class="form-label">Reps</label>
+                                            <input type="text"
+                                                   class="form-control"
+                                                   id="bonusReps"
+                                                   value="12"
+                                                   placeholder="8-12"
+                                                   aria-label="Number of reps">
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Weight (Optional) -->
+                                    <div class="row g-2 mb-3">
+                                        <div class="col-8">
+                                            <label for="bonusWeight" class="form-label">Weight (Optional)</label>
+                                            <input type="text"
+                                                   class="form-control"
+                                                   id="bonusWeight"
+                                                   placeholder="e.g., 135, 4×45, BW+25"
+                                                   aria-label="Weight amount">
+                                        </div>
+                                        <div class="col-4">
+                                            <label for="bonusWeightUnit" class="form-label">Unit</label>
+                                            <select class="form-select" id="bonusWeightUnit" aria-label="Weight unit">
+                                                <option value="lbs">lbs</option>
+                                                <option value="kg">kg</option>
+                                                <option value="other">other</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="form-text">
+                                        <i class="bx bx-info-circle me-1"></i>
+                                        Weight supports numbers (135) or descriptions (4×45 plates, BW+25)
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                     
-                    <div class="d-flex gap-2 mt-4">
-                        <button type="button" class="btn btn-outline-secondary flex-fill" data-bs-dismiss="offcanvas">Cancel</button>
-                        <button type="button" class="btn btn-success flex-fill" id="addAndCloseBtn">
-                            <i class="bx bx-check me-1"></i>Add Exercise
-                        </button>
+                    <!-- Action Buttons (inside body for proper Bootstrap structure) -->
+                    <div class="bonus-exercise-actions mt-4 pt-3 border-top">
+                        <div class="d-flex gap-2">
+                            <button type="button"
+                                    class="btn btn-outline-secondary flex-fill"
+                                    data-bs-dismiss="offcanvas">
+                                Cancel
+                            </button>
+                            <button type="button"
+                                    class="btn btn-primary flex-fill"
+                                    id="addAndCloseBtn"
+                                    disabled
+                                    aria-label="Add exercise to workout">
+                                <i class="bx bx-plus-circle me-1"></i>
+                                Add Exercise
+                            </button>
+                        </div>
                     </div>
+                    
                 </div>
             </div>
         `;
         
-        return this.createOffcanvas('bonusExerciseOffcanvas', offcanvasHtml, (offcanvas) => {
-            const addAndCloseBtn = document.getElementById('addAndCloseBtn');
-            const nameInput = document.getElementById('bonusExerciseName');
-            const previousBonusList = document.getElementById('previousBonusList');
+        return this.createOffcanvas('bonusExerciseOffcanvas', offcanvasHtml, (offcanvas, offcanvasElement) => {
+            // Get DOM elements
+            const searchInput = offcanvasElement.querySelector('#bonusExerciseSearch');
+            const clearBtn = offcanvasElement.querySelector('.search-clear-btn');
+            const addBtn = offcanvasElement.querySelector('#addAndCloseBtn');
+            const previousBonusList = offcanvasElement.querySelector('#previousBonusList');
+            const setsInput = offcanvasElement.querySelector('#bonusSets');
+            const repsInput = offcanvasElement.querySelector('#bonusReps');
+            const weightInput = offcanvasElement.querySelector('#bonusWeight');
+            const unitSelect = offcanvasElement.querySelector('#bonusWeightUnit');
             
-            // Initialize exercise autocomplete using batch initialization (matches workout builder)
+            // Toggle icons for collapsible sections
+            const toggleButtons = offcanvasElement.querySelectorAll('.section-toggle');
+            toggleButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const icon = btn.querySelector('.toggle-icon');
+                    if (icon) {
+                        setTimeout(() => {
+                            const isExpanded = btn.getAttribute('aria-expanded') === 'true';
+                            icon.style.transform = isExpanded ? 'rotate(180deg)' : 'rotate(0deg)';
+                        }, 50);
+                    }
+                });
+            });
+            
+            // Search input: Show/hide clear button
+            if (searchInput && clearBtn) {
+                searchInput.addEventListener('input', () => {
+                    clearBtn.style.display = searchInput.value.trim() ? 'block' : 'none';
+                    this.validateAddButton(searchInput, addBtn);
+                });
+                
+                clearBtn.addEventListener('click', () => {
+                    searchInput.value = '';
+                    clearBtn.style.display = 'none';
+                    searchInput.focus();
+                    this.validateAddButton(searchInput, addBtn);
+                });
+            }
+            
+            // Initialize exercise autocomplete
             setTimeout(() => {
                 if (window.initializeExerciseAutocompletes) {
                     window.initializeExerciseAutocompletes();
-                    console.log('✅ Exercise autocomplete initialized for bonus exercise input');
-                } else {
-                    console.warn('⚠️ initializeExerciseAutocompletes not available, trying individual init');
-                    
+                    console.log('✅ Exercise autocomplete initialized for bonus exercise search');
+                } else if (window.initExerciseAutocomplete && searchInput) {
                     // Fallback to individual initialization
-                    const offcanvasElement = document.getElementById('bonusExerciseOffcanvas');
-                    const nameInput = offcanvasElement?.querySelector('#bonusExerciseName');
-                    
-                    if (window.initExerciseAutocomplete && nameInput) {
-                        window.initExerciseAutocomplete(nameInput, {
-                            allowCustom: true,
-                            allowAutoCreate: true,
-                            minChars: 2,
-                            maxResults: 10,
-                            debounceMs: 200,
-                            showMuscleGroup: true,
-                            showEquipment: true,
-                            showDifficulty: true,
-                            showTier: true,
-                            onSelect: (exercise) => {
-                                console.log('✅ Exercise selected:', exercise.name);
-                            },
-                            onAutoCreate: (exercise) => {
-                                console.log('🚀 Auto-created exercise:', exercise.name);
-                                if (window.showToast) {
-                                    window.showToast({
-                                        message: `Created custom exercise: ${exercise.name}`,
-                                        type: 'success',
-                                        title: 'Exercise Created',
-                                        icon: 'bx-plus-circle',
-                                        delay: 3000
-                                    });
-                                }
+                    window.initExerciseAutocomplete(searchInput, {
+                        allowCustom: true,
+                        allowAutoCreate: true,
+                        minChars: 2,
+                        maxResults: 10,
+                        debounceMs: 200,
+                        showMuscleGroup: true,
+                        showEquipment: true,
+                        showDifficulty: true,
+                        showTier: true,
+                        onSelect: (exercise) => {
+                            console.log('✅ Exercise selected:', exercise.name);
+                            this.validateAddButton(searchInput, addBtn);
+                        },
+                        onAutoCreate: (exercise) => {
+                            console.log('🚀 Auto-created exercise:', exercise.name);
+                            if (window.showToast) {
+                                window.showToast({
+                                    message: `Created custom exercise: ${exercise.name}`,
+                                    type: 'success',
+                                    title: 'Exercise Created',
+                                    icon: 'bx-plus-circle',
+                                    delay: 3000
+                                });
                             }
-                        });
-                        console.log('✅ Fallback: Exercise autocomplete initialized individually');
-                    } else {
-                        console.error('❌ Failed to initialize autocomplete:', {
-                            functionExists: !!window.initExerciseAutocomplete,
-                            inputExists: !!nameInput
-                        });
-                    }
+                        }
+                    });
+                    console.log('✅ Exercise autocomplete initialized individually');
                 }
                 
-                // Conditional autofocus (desktop only)
-                if (nameInput && window.innerWidth > 768) {
-                    setTimeout(() => {
-                        nameInput.focus();
-                    }, 300);
+                // Auto-focus search on desktop only
+                if (searchInput && window.innerWidth > 768) {
+                    setTimeout(() => searchInput.focus(), 300);
                 }
-            }, 200); // Increased delay to ensure DOM is ready
+            }, 200);
             
-            if (addAndCloseBtn) {
-                addAndCloseBtn.addEventListener('click', async () => {
-                    const name = nameInput.value.trim();
-                    const sets = document.getElementById('bonusSets').value.trim();
-                    const reps = document.getElementById('bonusReps').value.trim();
-                    const weight = document.getElementById('bonusWeight').value.trim();
-                    const unit = document.getElementById('bonusWeightUnit').value;
+            // Add Exercise button handler
+            if (addBtn && searchInput) {
+                addBtn.addEventListener('click', async () => {
+                    const name = searchInput.value.trim();
+                    const sets = setsInput?.value.trim() || '3';
+                    const reps = repsInput?.value.trim() || '12';
+                    const weight = weightInput?.value.trim() || '';
+                    const unit = unitSelect?.value || 'lbs';
                     
                     if (!name) {
-                        alert('Please enter an exercise name.');
+                        if (window.showAlert) {
+                            window.showAlert('Please enter an exercise name', 'warning');
+                        } else {
+                            alert('Please enter an exercise name.');
+                        }
+                        searchInput.focus();
                         return;
                     }
                     
-                    // Auto-create custom exercise if it doesn't exist
+                    // Show loading state
+                    addBtn.disabled = true;
+                    addBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Adding...';
+                    
                     try {
-                        if (window.exerciseCacheService && window.dataManager && window.dataManager.isUserAuthenticated()) {
+                        // Auto-create custom exercise if it doesn't exist
+                        if (window.exerciseCacheService && window.dataManager?.isUserAuthenticated()) {
                             const currentUser = window.dataManager.getCurrentUser();
-                            const userId = currentUser ? currentUser.uid : null;
+                            const userId = currentUser?.uid || null;
                             const exercise = await window.exerciseCacheService.autoCreateIfNeeded(name, userId);
                             
                             if (exercise) {
                                 console.log(`✅ Auto-created or found exercise: ${name}`);
-                                // Track usage for ranking
                                 window.exerciseCacheService._trackUsage(exercise);
                             }
                         }
+                        
+                        // Call the add callback
+                        await onAddNew({ name, sets, reps, weight, unit });
+                        
+                        // Close offcanvas
+                        offcanvas.hide();
+                        
                     } catch (error) {
-                        console.error('❌ Error in auto-creation:', error);
-                        // Continue with normal flow even if auto-creation fails
+                        console.error('❌ Error adding exercise:', error);
+                        
+                        // Reset button state
+                        addBtn.disabled = false;
+                        addBtn.innerHTML = '<i class="bx bx-plus-circle me-1"></i>Add Exercise';
+                        
+                        if (window.showAlert) {
+                            window.showAlert('Failed to add exercise. Please try again.', 'danger');
+                        } else {
+                            alert('Failed to add exercise. Please try again.');
+                        }
                     }
-                    
-                    await onAddNew({ name, sets, reps, weight, unit });
-                    offcanvas.hide();
                 });
             }
             
+            // Previous exercises: Quick add
             if (previousBonusList) {
                 previousBonusList.addEventListener('click', async (e) => {
-                    const addBtn = e.target.closest('[data-action="add-previous"]');
-                    if (addBtn) {
-                        const index = parseInt(addBtn.getAttribute('data-index'));
-                        await onAddPrevious(index);
-                        offcanvas.hide();
+                    const chipAddBtn = e.target.closest('[data-action="add-previous"]');
+                    if (chipAddBtn) {
+                        const index = parseInt(chipAddBtn.getAttribute('data-index'));
+                        
+                        // Show loading state
+                        chipAddBtn.disabled = true;
+                        chipAddBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+                        
+                        try {
+                            await onAddPrevious(index);
+                            offcanvas.hide();
+                        } catch (error) {
+                            console.error('❌ Error adding previous exercise:', error);
+                            chipAddBtn.disabled = false;
+                            chipAddBtn.innerHTML = '<i class="bx bx-plus"></i>';
+                        }
                     }
                 });
             }
             
-            if (nameInput) {
-                nameInput.addEventListener('keypress', async (e) => {
-                    if (e.key === 'Enter') {
+            // Enter key to submit
+            if (searchInput && addBtn) {
+                searchInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter' && !addBtn.disabled) {
                         e.preventDefault();
-                        addAndCloseBtn.click();
+                        addBtn.click();
                     }
                 });
             }
         });
+    }
+    
+    /**
+     * Validate add button state based on search input
+     * @private
+     */
+    static validateAddButton(searchInput, addBtn) {
+        if (!searchInput || !addBtn) return;
+        
+        const hasValue = searchInput.value.trim().length > 0;
+        addBtn.disabled = !hasValue;
+        
+        if (hasValue) {
+            addBtn.classList.remove('btn-secondary');
+            addBtn.classList.add('btn-primary');
+        } else {
+            addBtn.classList.remove('btn-primary');
+            addBtn.classList.add('btn-secondary');
+        }
     }
 
     /* ============================================
@@ -951,20 +1135,19 @@ class UnifiedOffcanvasFactory {
             return null;
         }
         
+        // CRITICAL FIX: Force scroll to false before Bootstrap initialization
+        // This must be set on the element BEFORE creating the Bootstrap instance
+        offcanvasElement.setAttribute('data-bs-scroll', 'false');
+        
         // Wrap Bootstrap initialization in try-catch for graceful error handling
         let offcanvas;
         try {
-            offcanvas = new window.bootstrap.Offcanvas(offcanvasElement);
+            offcanvas = new window.bootstrap.Offcanvas(offcanvasElement, {
+                scroll: false  // Explicitly disable scroll in options
+            });
         } catch (error) {
             console.error('❌ Bootstrap Offcanvas initialization failed:', error);
-            // Fallback: ensure scroll is disabled and try again
-            offcanvasElement.setAttribute('data-bs-scroll', 'false');
-            try {
-                offcanvas = new window.bootstrap.Offcanvas(offcanvasElement);
-            } catch (retryError) {
-                console.error('❌ Bootstrap Offcanvas retry failed:', retryError);
-                return null;
-            }
+            return null;
         }
 
         if (setupCallback) {
@@ -985,7 +1168,28 @@ class UnifiedOffcanvasFactory {
             }, 50); // Small delay to ensure Bootstrap's cleanup has attempted
         });
 
-        offcanvas.show();
+        // CRITICAL FIX: Use double requestAnimationFrame + setTimeout for maximum stability
+        // This prevents Bootstrap's scroll error: "Cannot read properties of null (reading 'scroll')"
+        // AND eliminates the "jutter" effect (open → close → open)
+        //
+        // Why this approach?
+        // - First RAF: Browser schedules next paint frame
+        // - Second RAF: Ensures element is fully rendered and layout is complete
+        // - setTimeout: Additional safety buffer for Bootstrap's internal setup
+        // - This gives Bootstrap a completely stable DOM to work with
+        //
+        // The error occurs when Bootstrap tries to access scroll properties during transition
+        // before the element is fully initialized in the DOM. This multi-step approach ensures
+        // the element is completely settled before show() is called.
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                setTimeout(() => {
+                    if (offcanvas && offcanvasElement.isConnected) {
+                        offcanvas.show();
+                    }
+                }, 0);
+            });
+        });
 
         return { offcanvas, offcanvasElement };
     }

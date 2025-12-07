@@ -68,12 +68,12 @@ document.addEventListener('DOMContentLoaded', function () {
             // Close menu
             layoutMenu.classList.remove('menu-open');
             layoutOverlay.classList.remove('active');
-            document.body.style.overflow = '';
+            document.body.classList.remove('menu-open');
           } else {
             // Open menu
             layoutMenu.classList.add('menu-open');
             layoutOverlay.classList.add('active');
-            document.body.style.overflow = 'hidden';
+            document.body.classList.add('menu-open');
           }
         }
       } else {
@@ -95,7 +95,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (layoutMenu) {
           layoutMenu.classList.remove('menu-open');
           layoutOverlay.classList.remove('active');
-          document.body.style.overflow = '';
+          document.body.classList.remove('menu-open');
         }
       } else {
         // Desktop behavior - only close the menu if it's open
@@ -125,7 +125,7 @@ document.addEventListener('DOMContentLoaded', function () {
           if (layoutOverlay) {
             layoutOverlay.classList.remove('active');
           }
-          document.body.style.overflow = '';
+          document.body.classList.remove('menu-open');
         }
       }
     }

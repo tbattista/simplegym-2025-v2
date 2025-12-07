@@ -397,6 +397,11 @@
    MOBILE MENU OVERLAY
    ============================================ */
 
+/* Body scroll lock when menu is open */
+body.menu-open {
+  overflow: hidden !important;
+}
+
 /* Mobile Menu Overlay */
 .layout-overlay {
   position: fixed;
