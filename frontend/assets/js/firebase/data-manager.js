@@ -25,6 +25,17 @@ class FirebaseDataManager {
         this.requestCache = new Map();
         this.CACHE_TTL = 5000; // 5 seconds cache for identical requests
         
+        // Auth state initialization promise
+        this.authReadyPromise = null;
+        this.authReadyResolve = null;
+        this.isAuthReady = false;
+        this.authStateCallCount = 0; // Track how many times auth state has changed
+        
+        // Create promise that resolves when initial auth state is determined
+        this.authReadyPromise = new Promise((resolve) => {
+            this.authReadyResolve = resolve;
+        });
+        
         // Set API base URL based on environment
         this.apiBase = this.getApiBaseUrl();
         console.log('🔗 API Base URL:', this.apiBase);
@@ -74,13 +85,49 @@ class FirebaseDataManager {
         this.isAuthenticated = !!user;
         this.currentUser = user;
         this.storageMode = this.isAuthenticated ? 'firestore' : 'localStorage';
+        this.authStateCallCount++;
         
-        console.log(`🔄 Auth state changed: ${this.storageMode} mode`, {
+        console.log(`🔄 Auth state changed: ${this.storageMode} mode (call #${this.authStateCallCount})`, {
             isAuthenticated: this.isAuthenticated,
             userEmail: user?.email,
             userId: user?.uid,
             isAnonymous: user?.isAnonymous
         });
+        
+        // Resolve auth ready promise on second auth state change OR after 1 second timeout
+        // Firebase onAuthStateChanged fires:
+        //   1st time: immediately with null (not yet determined)
+        //   2nd time: with actual user state (determined)
+        // We wait for the 2nd call to ensure we have the real auth state
+        if (!this.isAuthReady) {
+            if (this.authStateCallCount >= 2) {
+                // Second call - this is the real auth state
+                this.isAuthReady = true;
+                if (this.authReadyResolve) {
+                    console.log('✅ Auth state determined on second call, resolving promise');
+                    this.authReadyResolve({
+                        isAuthenticated: this.isAuthenticated,
+                        storageMode: this.storageMode,
+                        user: this.currentUser
+                    });
+                }
+            } else if (this.authStateCallCount === 1) {
+                // First call - set a timeout as safety net in case 2nd call never comes
+                setTimeout(() => {
+                    if (!this.isAuthReady) {
+                        this.isAuthReady = true;
+                        if (this.authReadyResolve) {
+                            console.log('⏱️ Auth state timeout reached, resolving with current state');
+                            this.authReadyResolve({
+                                isAuthenticated: this.isAuthenticated,
+                                storageMode: this.storageMode,
+                                user: this.currentUser
+                            });
+                        }
+                    }
+                }, 2000); // 2 second timeout as safety net
+            }
+        }
         
         // Migration functionality disabled - users can manually export/import if needed
         // If user just authenticated, check for migration opportunity
@@ -935,6 +982,23 @@ class FirebaseDataManager {
     
     // Public API
     
+    /**
+     * Wait for initial auth state to be determined
+     * Returns a promise that resolves with auth state info
+     */
+    async waitForAuthReady() {
+        if (this.isAuthReady) {
+            return {
+                isAuthenticated: this.isAuthenticated,
+                storageMode: this.storageMode,
+                user: this.currentUser
+            };
+        }
+        
+        console.log('⏳ Waiting for auth state to be determined...');
+        return this.authReadyPromise;
+    }
+    
     getStorageMode() {
         return this.storageMode;
     }
@@ -952,7 +1016,8 @@ class FirebaseDataManager {
             storageMode: this.storageMode,
             isAuthenticated: this.isAuthenticated,
             isOnline: this.isOnline,
-            offlineQueueSize: this.offlineQueue.length
+            offlineQueueSize: this.offlineQueue.length,
+            isAuthReady: this.isAuthReady
         };
     }
 }

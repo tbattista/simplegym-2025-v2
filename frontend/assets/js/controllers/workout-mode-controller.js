@@ -71,6 +71,9 @@ class WorkoutModeController {
             console.log('🔍 DEBUG: Current storage mode:', this.dataManager?.storageMode);
             console.log('🔍 DEBUG: Is authenticated?', this.authService?.isUserAuthenticated());
             
+            // Update loading message
+            this.updateLoadingMessage('Initializing authentication...');
+            
             // Setup bonus exercise button handler
             this.setupBonusExerciseButton();
             
@@ -97,18 +100,22 @@ class WorkoutModeController {
                 return;
             }
             
-            // IMPORTANT: Wait for auth state to settle before loading workout
-            // This ensures we're in the correct storage mode (localStorage vs firestore)
-            console.log('⏳ Waiting for auth state to settle...');
+            // ✅ FIX: Wait for auth state to be ready using promise-based approach
+            // This replaces the fixed timeout with a reliable promise that resolves when auth is determined
+            console.log('⏳ Waiting for initial auth state...');
+            this.updateLoadingMessage('Determining authentication status...');
             
-            // Use longer timeout in production environments (Railway, etc.)
-            const isProduction = window.location.hostname !== 'localhost' &&
-                                window.location.hostname !== '127.0.0.1';
-            const settleTime = isProduction ? 3000 : 1500;
-            console.log(`⏱️ Using ${settleTime}ms settle time (${isProduction ? 'production' : 'local'})`);
+            const authState = await this.dataManager.waitForAuthReady();
+            console.log('✅ Auth state ready:', authState);
+            console.log('   Storage mode:', authState.storageMode);
+            console.log('   Authenticated:', authState.isAuthenticated);
             
-            await new Promise(resolve => setTimeout(resolve, settleTime));
-            console.log('✅ Auth state settled, storage mode:', this.dataManager.storageMode);
+            // Update loading message based on auth state
+            if (authState.isAuthenticated) {
+                this.updateLoadingMessage('Loading workout from cloud...');
+            } else {
+                this.updateLoadingMessage('Loading workout...');
+            }
             
             // Load workout
             await this.loadWorkout(workoutId);
@@ -1133,8 +1140,6 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
      * Update session UI
      */
     updateSessionUI(isActive) {
-        const startBtn = document.getElementById('startWorkoutBtn');
-        const completeBtn = document.getElementById('completeWorkoutBtn');
         const sessionIndicator = document.getElementById('sessionActiveIndicator');
         const sessionInfo = document.getElementById('sessionInfo');
         const footer = document.getElementById('workoutModeFooter');
@@ -1143,28 +1148,24 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
         if (footer) footer.style.display = 'block';
         
         if (isActive) {
-            if (startBtn) startBtn.style.display = 'none';
-            if (completeBtn) completeBtn.style.display = 'block';
             if (sessionIndicator) sessionIndicator.style.display = 'block';
             if (sessionInfo) sessionInfo.style.display = 'block';
             
-            // Update floating FAB to show "Complete" state
+            // Update floating timer/end combo to show active state
             if (window.bottomActionBar) {
-                console.log('🔄 Updating floating FAB to Complete mode');
+                console.log('🔄 Updating timer/end combo to active mode');
                 window.bottomActionBar.updateWorkoutModeState(true);
             }
             
             // Start session timer
             this.startSessionTimer();
         } else {
-            if (startBtn) startBtn.style.display = 'block';
-            if (completeBtn) completeBtn.style.display = 'none';
             if (sessionIndicator) sessionIndicator.style.display = 'none';
             if (sessionInfo) sessionInfo.style.display = 'none';
             
-            // Update floating FAB back to "Start" state
+            // Update timer/end combo to show inactive state (Start button)
             if (window.bottomActionBar) {
-                console.log('🔄 Updating floating FAB to Start mode');
+                console.log('🔄 Updating timer/end combo to inactive mode');
                 window.bottomActionBar.updateWorkoutModeState(false);
             }
             
@@ -1184,25 +1185,14 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
             clearInterval(this.sessionTimerInterval);
         }
         
-        // Show floating timer+end combo (new implementation)
-        const floatingCombo = document.getElementById('floatingTimerEndCombo');
-        if (floatingCombo) {
-            floatingCombo.style.display = 'flex';
-        }
-        
-        // Hide old floating timer widget if it exists
-        const floatingWidget = document.getElementById('floatingTimerWidget');
-        if (floatingWidget) {
-            floatingWidget.style.display = 'none';
-        }
-        
+        // Timer combo is always visible, just update the timer and button state
         this.sessionTimerInterval = setInterval(() => {
             const elapsed = Math.floor((Date.now() - session.startedAt.getTime()) / 1000);
             const minutes = Math.floor(elapsed / 60);
             const seconds = elapsed % 60;
             const timeStr = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
             
-            // Update new floating timer in combo
+            // Update floating timer in combo
             const floatingTimer = document.getElementById('floatingTimer');
             if (floatingTimer) floatingTimer.textContent = timeStr;
             
@@ -1226,17 +1216,11 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
             this.sessionTimerInterval = null;
         }
         
-        // Hide floating timer+end combo (new implementation)
-        const floatingCombo = document.getElementById('floatingTimerEndCombo');
-        if (floatingCombo) {
-            floatingCombo.style.display = 'none';
-        }
+        // Reset timer display to 00:00
+        const floatingTimer = document.getElementById('floatingTimer');
+        if (floatingTimer) floatingTimer.textContent = '00:00';
         
-        // Hide old floating timer widget if it exists
-        const floatingWidget = document.getElementById('floatingTimerWidget');
-        if (floatingWidget) {
-            floatingWidget.style.display = 'none';
-        }
+        // Timer combo stays visible, just shows 00:00 and "Start" button
     }
     
     /**
@@ -1244,9 +1228,10 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
      */
     async handleAuthStateChange(user) {
         console.log('🔄 Auth state changed:', user ? 'authenticated' : 'anonymous');
-        this.initializeStartButtonTooltip();
         
-        // Auth state changed - no special handling needed since we redirect to workout database
+        // Only update tooltip, don't reload workout
+        // The workout loads once after initial auth state is determined
+        this.initializeStartButtonTooltip();
     }
     
     /**
@@ -1516,6 +1501,16 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
                 }
             }
         );
+    }
+    
+    /**
+     * Update loading message
+     */
+    updateLoadingMessage(message) {
+        const loadingMessage = document.getElementById('loadingMessage');
+        if (loadingMessage) {
+            loadingMessage.textContent = message;
+        }
     }
     
     /**

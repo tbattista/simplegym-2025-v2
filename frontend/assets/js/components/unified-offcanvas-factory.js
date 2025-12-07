@@ -39,7 +39,7 @@ class UnifiedOffcanvasFactory {
         
         const offcanvasHtml = `
             <div class="offcanvas offcanvas-bottom offcanvas-bottom-base" tabindex="-1"
-                 id="${id}" aria-labelledby="${id}Label">
+                 id="${id}" aria-labelledby="${id}Label" data-bs-scroll="false">
                 <div class="offcanvas-header border-bottom">
                     <h5 class="offcanvas-title" id="${id}Label">
                         <i class="bx ${icon} me-2"></i>${this.escapeHtml(title)}
@@ -74,7 +74,7 @@ class UnifiedOffcanvasFactory {
         const offcanvasHtml = `
             <div class="offcanvas offcanvas-bottom offcanvas-bottom-base" tabindex="-1"
                  id="workoutSelectionOffcanvas" aria-labelledby="workoutSelectionOffcanvasLabel"
-                 data-bs-backdrop="static" data-bs-keyboard="false">
+                 data-bs-backdrop="static" data-bs-keyboard="false" data-bs-scroll="false">
                 <div class="offcanvas-header border-bottom">
                     <h5 class="offcanvas-title" id="workoutSelectionOffcanvasLabel">
                         <i class="bx bx-dumbbell me-2"></i>No Workout Selected
@@ -168,7 +168,7 @@ class UnifiedOffcanvasFactory {
         const offcanvasHtml = `
             <div class="offcanvas offcanvas-bottom offcanvas-bottom-base offcanvas-bottom-tall"
                  tabindex="-1" id="${id}" aria-labelledby="${id}Label"
-                 style="height: 85vh;">
+                 data-bs-scroll="false" style="height: 85vh;">
                 <div class="offcanvas-header border-bottom">
                     <h5 class="offcanvas-title" id="${id}Label">
                         <i class="bx ${icon} me-2"></i>${this.escapeHtml(title)}
@@ -272,7 +272,7 @@ class UnifiedOffcanvasFactory {
         `;
 
         const offcanvasHtml = `
-            <div class="offcanvas offcanvas-bottom offcanvas-bottom-base" tabindex="-1" id="weightEditOffcanvas" aria-labelledby="weightEditOffcanvasLabel">
+            <div class="offcanvas offcanvas-bottom offcanvas-bottom-base" tabindex="-1" id="weightEditOffcanvas" aria-labelledby="weightEditOffcanvasLabel" data-bs-scroll="false">
                 <div class="offcanvas-header border-bottom">
                     <h5 class="offcanvas-title" id="weightEditOffcanvasLabel">
                         <i class="bx bx-edit-alt me-2"></i>Edit Weight
@@ -353,7 +353,7 @@ class UnifiedOffcanvasFactory {
         const { workoutName, minutes, totalExercises } = data;
         
         const offcanvasHtml = `
-            <div class="offcanvas offcanvas-bottom offcanvas-bottom-base" tabindex="-1" id="completeWorkoutOffcanvas" aria-labelledby="completeWorkoutOffcanvasLabel">
+            <div class="offcanvas offcanvas-bottom offcanvas-bottom-base" tabindex="-1" id="completeWorkoutOffcanvas" aria-labelledby="completeWorkoutOffcanvasLabel" data-bs-scroll="false">
                 <div class="offcanvas-header border-bottom">
                     <h5 class="offcanvas-title" id="completeWorkoutOffcanvasLabel">
                         <i class="bx bx-check-circle me-2"></i>Complete Workout
@@ -521,7 +521,7 @@ class UnifiedOffcanvasFactory {
         
         const offcanvasHtml = `
             <div class="offcanvas offcanvas-bottom offcanvas-bottom-base" tabindex="-1" id="resumeSessionOffcanvas"
-                 aria-labelledby="resumeSessionOffcanvasLabel" data-bs-backdrop="static" data-bs-keyboard="false">
+                 aria-labelledby="resumeSessionOffcanvasLabel" data-bs-backdrop="static" data-bs-keyboard="false" data-bs-scroll="false">
                 <div class="offcanvas-header border-bottom">
                     <h5 class="offcanvas-title" id="resumeSessionOffcanvasLabel">
                         <i class="bx bx-history me-2"></i>Resume Workout?
@@ -617,7 +617,7 @@ class UnifiedOffcanvasFactory {
         
         const offcanvasHtml = `
             <div class="offcanvas offcanvas-bottom offcanvas-bottom-base offcanvas-bottom-tall" tabindex="-1" id="bonusExerciseOffcanvas"
-                 aria-labelledby="bonusExerciseOffcanvasLabel">
+                 aria-labelledby="bonusExerciseOffcanvasLabel" data-bs-scroll="false">
                 <div class="offcanvas-header border-bottom">
                     <h5 class="offcanvas-title" id="bonusExerciseOffcanvasLabel">
                         <i class="bx bx-plus-circle me-2"></i>Add Bonus Exercise
@@ -839,7 +839,7 @@ class UnifiedOffcanvasFactory {
         
         const offcanvasHtml = `
             <div class="offcanvas offcanvas-bottom offcanvas-bottom-base" tabindex="-1"
-                 id="skipExerciseOffcanvas" aria-labelledby="skipExerciseOffcanvasLabel">
+                 id="skipExerciseOffcanvas" aria-labelledby="skipExerciseOffcanvasLabel" data-bs-scroll="false">
                 <div class="offcanvas-header border-bottom">
                     <h5 class="offcanvas-title" id="skipExerciseOffcanvasLabel">
                         <i class="bx bx-skip-next me-2"></i>Skip Exercise
@@ -926,20 +926,63 @@ class UnifiedOffcanvasFactory {
     static createOffcanvas(id, html, setupCallback = null) {
         const existing = document.getElementById(id);
         if (existing) {
+            // Properly dispose Bootstrap instance before removing
+            const existingInstance = window.bootstrap.Offcanvas.getInstance(existing);
+            if (existingInstance) {
+                existingInstance.dispose();
+            }
             existing.remove();
         }
+        
+        // CRITICAL FIX: Clean up any orphaned backdrops before creating new offcanvas
+        // This prevents backdrop accumulation from previous instances
+        const orphanedBackdrops = document.querySelectorAll('.offcanvas-backdrop');
+        orphanedBackdrops.forEach(backdrop => {
+            backdrop.remove();
+        });
 
         document.body.insertAdjacentHTML('beforeend', html);
 
         const offcanvasElement = document.getElementById(id);
-        const offcanvas = new window.bootstrap.Offcanvas(offcanvasElement);
+        
+        // Ensure element exists before Bootstrap initialization
+        if (!offcanvasElement) {
+            console.error('❌ Failed to create offcanvas element:', id);
+            return null;
+        }
+        
+        // Wrap Bootstrap initialization in try-catch for graceful error handling
+        let offcanvas;
+        try {
+            offcanvas = new window.bootstrap.Offcanvas(offcanvasElement);
+        } catch (error) {
+            console.error('❌ Bootstrap Offcanvas initialization failed:', error);
+            // Fallback: ensure scroll is disabled and try again
+            offcanvasElement.setAttribute('data-bs-scroll', 'false');
+            try {
+                offcanvas = new window.bootstrap.Offcanvas(offcanvasElement);
+            } catch (retryError) {
+                console.error('❌ Bootstrap Offcanvas retry failed:', retryError);
+                return null;
+            }
+        }
 
         if (setupCallback) {
             setupCallback(offcanvas, offcanvasElement);
         }
 
         offcanvasElement.addEventListener('hidden.bs.offcanvas', () => {
+            // Remove the offcanvas element
             offcanvasElement.remove();
+            
+            // CRITICAL FIX: Explicitly remove any lingering backdrops
+            // This fixes the gray screen issue when closing offcanvas
+            setTimeout(() => {
+                const backdrops = document.querySelectorAll('.offcanvas-backdrop');
+                backdrops.forEach(backdrop => {
+                    backdrop.remove();
+                });
+            }, 50); // Small delay to ensure Bootstrap's cleanup has attempted
         });
 
         offcanvas.show();
@@ -955,10 +998,27 @@ class UnifiedOffcanvasFactory {
         div.textContent = text;
         return div.innerHTML;
     }
+    
+    /**
+     * Force cleanup of all offcanvas backdrops
+     * Utility method for debugging or emergency cleanup
+     * Can be called from console: window.cleanupOffcanvasBackdrops()
+     */
+    static forceCleanupBackdrops() {
+        const backdrops = document.querySelectorAll('.offcanvas-backdrop');
+        backdrops.forEach(backdrop => {
+            backdrop.remove();
+        });
+        console.log(`🧹 Cleaned up ${backdrops.length} orphaned backdrop(s)`);
+        return backdrops.length;
+    }
 }
 
 // Export globally
 window.UnifiedOffcanvasFactory = UnifiedOffcanvasFactory;
+
+// Expose cleanup utility globally for debugging
+window.cleanupOffcanvasBackdrops = UnifiedOffcanvasFactory.forceCleanupBackdrops;
 
 // Export for module use
 if (typeof module !== 'undefined' && module.exports) {

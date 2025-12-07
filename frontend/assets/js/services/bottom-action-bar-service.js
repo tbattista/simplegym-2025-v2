@@ -145,14 +145,14 @@
                         }
                     }, 100);
                 } else {
-                    // Render regular floating FAB (for workout mode, etc.)
-                    this.renderFloatingFAB(this.config.fab);
+                    // For workout mode, always render timer combo (not regular FAB)
+                    if (this.pageId === 'workout-mode') {
+                        this.renderFloatingTimerEndCombo();
+                    } else {
+                        // Render regular floating FAB for other pages
+                        this.renderFloatingFAB(this.config.fab);
+                    }
                 }
-            }
-            
-            // Render floating timer+end combo for active workout mode
-            if (this.isNewLayout && this.pageId === 'workout-mode' && this.config.floatingCombo) {
-                this.renderFloatingTimerEndCombo();
             }
             
             // Also initialize global rest timer for non-active workout mode (so it's available when cards expand)
@@ -245,7 +245,8 @@
         }
 
         /**
-         * Render floating timer + end button combo (for active workout mode)
+         * Render floating timer + end button combo (for workout mode)
+         * Always visible - shows "00:00" and "Start" when inactive, timer and "End" when active
          */
         renderFloatingTimerEndCombo() {
             // Check if combo already exists
@@ -253,9 +254,21 @@
                 console.log('ℹ️ Floating timer+end combo already exists');
                 return;
             }
-
+    
             const comboHTML = `
-                <div class="floating-timer-end-combo" id="floatingTimerEndCombo">
+                <!-- Initial Start Button (shown before workout starts) -->
+                <button class="floating-action-fab floating-start-button"
+                        id="floatingStartButton"
+                        data-action="start-workout"
+                        title="Start workout session"
+                        aria-label="Start workout session"
+                        style="display: flex;">
+                    <i class="bx bx-play"></i>
+                    <span>Start</span>
+                </button>
+                
+                <!-- Timer + End Combo (shown during workout) -->
+                <div class="floating-timer-end-combo" id="floatingTimerEndCombo" style="display: none;">
                     <!-- Global Rest Timer (now as flex item) -->
                     <div class="global-rest-timer-button" id="globalRestTimerButton"></div>
                     
@@ -265,33 +278,42 @@
                         <span id="floatingTimer">00:00</span>
                     </div>
                     
-                    <!-- End Button -->
+                    <!-- Start/End Button (changes based on session state) -->
                     <button class="floating-end-button"
                             id="floatingEndButton"
-                            data-action="end-workout"
-                            title="End workout session"
-                            aria-label="End workout session">
-                        <i class="bx bx-stop-circle"></i>
-                        <span>End</span>
+                            data-action="start-workout"
+                            title="Start workout session"
+                            aria-label="Start workout session">
+                        <i class="bx bx-play"></i>
+                        <span>Start</span>
                     </button>
                 </div>
             `;
-
+    
             // Append to the action bar container so it moves with the bar
             this.container.insertAdjacentHTML('beforeend', comboHTML);
             
-            // Attach event listener to End button
-            const endButton = document.getElementById('floatingEndButton');
-            if (endButton) {
-                endButton.addEventListener('click', () => {
-                    this.handleButtonClick('end-workout');
+            // Attach event listener to initial Start button
+            const startButton = document.getElementById('floatingStartButton');
+            if (startButton) {
+                startButton.addEventListener('click', () => {
+                    this.handleButtonClick('start-workout');
+                });
+            }
+            
+            // Attach event listener to End button in combo
+            const actionButton = document.getElementById('floatingEndButton');
+            if (actionButton) {
+                actionButton.addEventListener('click', () => {
+                    const action = actionButton.getAttribute('data-action');
+                    this.handleButtonClick(action);
                 });
             }
             
             // Initialize global rest timer if class is available
             this.initializeGlobalRestTimer();
             
-            console.log('✅ Floating timer+end combo rendered');
+            console.log('✅ Floating timer+end combo rendered (always visible)');
         }
         
         /**
@@ -419,18 +441,22 @@
          */
         handleButtonClick(actionKey) {
             console.log('🖱️ Bottom Action Bar button clicked:', actionKey);
-
+    
             let action = null;
             let actionConfig = null;
-
+    
             if (actionKey === 'fab') {
                 action = this.config.fab?.action;
                 actionConfig = this.config.fab;
             } else if (actionKey === 'fab-secondary') {
                 action = this.config.secondaryFab?.action;
                 actionConfig = this.config.secondaryFab;
+            } else if (actionKey === 'start-workout') {
+                // Handle start workout action from floating combo (inactive state)
+                action = this.config.fab?.action || this.config.startWorkoutAction;
+                actionConfig = { label: 'Start Workout' };
             } else if (actionKey === 'end-workout') {
-                // Handle end workout action from floating combo
+                // Handle end workout action from floating combo (active state)
                 action = this.config.endWorkoutAction;
                 actionConfig = { label: 'End Workout' };
             } else if (actionKey.startsWith('btn-')) {
@@ -585,42 +611,42 @@
          */
         updateWorkoutModeState(isActive) {
             if (this.pageId !== 'workout-mode') return;
-
-            const floatingFab = document.getElementById('floatingFab');
+    
+            const startButton = document.getElementById('floatingStartButton');
             const floatingCombo = document.getElementById('floatingTimerEndCombo');
+            const actionButton = document.getElementById('floatingEndButton');
+            
+            if (!startButton || !floatingCombo || !actionButton) {
+                console.warn('⚠️ Timer combo elements not found');
+                return;
+            }
             
             if (isActive) {
-                // Hide regular FAB, show timer+end combo
-                if (floatingFab) {
-                    floatingFab.style.display = 'none';
-                }
+                // Hide start button, show timer combo
+                startButton.style.display = 'none';
+                floatingCombo.style.display = 'flex';
                 
-                // Render timer+end combo if it doesn't exist
-                if (!floatingCombo) {
-                    this.renderFloatingTimerEndCombo();
-                } else {
-                    floatingCombo.style.display = 'flex';
-                }
+                // Update button to "End" state (red, stop icon)
+                actionButton.setAttribute('data-action', 'end-workout');
+                actionButton.setAttribute('title', 'End workout session');
+                actionButton.setAttribute('aria-label', 'End workout session');
+                actionButton.className = 'floating-end-button'; // Red button
+                actionButton.innerHTML = '<i class="bx bx-stop-circle"></i><span>End</span>';
                 
                 // Update config to use active state actions
                 this.config = window.BOTTOM_BAR_CONFIGS['workout-mode-active'];
                 this.attachEventListeners();
             } else {
-                // Show regular FAB, hide timer+end combo
-                if (floatingFab) {
-                    floatingFab.style.display = 'inline-flex';
-                }
-                
-                if (floatingCombo) {
-                    floatingCombo.style.display = 'none';
-                }
+                // Show start button, hide timer combo
+                startButton.style.display = 'flex';
+                floatingCombo.style.display = 'none';
                 
                 // Update config to use inactive state actions
                 this.config = window.BOTTOM_BAR_CONFIGS['workout-mode'];
                 this.attachEventListeners();
             }
-
-            console.log('✅ Workout mode state updated:', isActive ? 'active' : 'inactive');
+    
+            console.log('✅ Workout mode state updated:', isActive ? 'active (timer combo visible)' : 'inactive (start button visible)');
         }
 
         /**

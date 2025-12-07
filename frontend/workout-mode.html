@@ -47,7 +47,7 @@
     <link rel="stylesheet" href="/static/assets/css/components/unified-offcanvas.css" />
     
     <!-- Workout Mode CSS -->
-    <link rel="stylesheet" href="/static/assets/css/workout-mode.css?v=20251107-03" />
+    <link rel="stylesheet" href="/static/assets/css/workout-mode.css?v=20251207-05" />
     
     <!-- Workout Database CSS (for workout list component) -->
     <link rel="stylesheet" href="/static/assets/css/workout-database.css" />
@@ -203,7 +203,7 @@
     <script src="/static/assets/js/components/modal-manager.js"></script>
     
     <!-- Unified Offcanvas Factory -->
-    <script src="/static/assets/js/components/unified-offcanvas-factory.js"></script>
+    <script src="/static/assets/js/components/unified-offcanvas-factory.js?v=20251207-02"></script>
     
     <!-- Exercise Card Renderer (NEW - Phase 3 refactoring) -->
     <script src="/static/assets/js/components/exercise-card-renderer.js?v=1.0.0"></script>
@@ -232,24 +232,17 @@
             timers: {}
         };
 
-        // Listen for auth state changes ONLY
-        // Controller handles its own initialization via DOMContentLoaded
+        // Listen for auth state changes ONLY for UI updates
+        // Controller handles its own initialization and workout loading via DOMContentLoaded
+        // This prevents duplicate workout loads and race conditions
         window.addEventListener('authStateChanged', async (event) => {
             const { user, isAuthenticated } = event.detail;
             console.log('🔄 Auth state changed on workout mode page, authenticated:', isAuthenticated);
             
-            // Wait a moment for data manager to update its mode
-            await new Promise(resolve => setTimeout(resolve, 300));
-            
-            // Reinitialize tooltip with new auth state
+            // Only update the start button tooltip, don't reload the workout
+            // The workout loads once after initial auth state is determined
             if (window.workoutModeController?.initializeStartButtonTooltip) {
                 await window.workoutModeController.initializeStartButtonTooltip();
-            }
-            
-            // Reload workout if needed
-            const workoutId = new URLSearchParams(window.location.search).get('id');
-            if (workoutId && window.workoutModeController?.loadWorkout) {
-                await window.workoutModeController.loadWorkout(workoutId);
             }
         });
         

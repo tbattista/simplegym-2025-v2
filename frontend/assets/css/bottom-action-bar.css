@@ -329,19 +329,18 @@
 .floating-action-fab {
     position: absolute;
     right: 16px;
-    bottom: calc(100% + 12px);
-    width: auto;
-    min-width: 90px;
+    bottom: calc(100% + 24px); /* Increased spacing from action bar */
     height: 48px;
+    min-width: 100px;
+    padding: 0 24px;
     border-radius: 12px;
     background: var(--bs-success);
     color: #fff;
     border: none;
-    display: inline-flex;
+    display: flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
-    padding: 0 20px;
     cursor: pointer;
     z-index: 1002;
     transition: all 0.2s ease;
@@ -360,7 +359,7 @@
 .floating-timer-end-combo {
     position: absolute;
     right: 16px;
-    bottom: calc(100% + 12px);
+    bottom: calc(100% + 24px); /* Increased spacing from action bar */
     display: flex;
     gap: 8px;
     align-items: center;
@@ -385,6 +384,8 @@
     color: var(--bs-body-color);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
     transition: all 0.2s ease;
+    /* Ensure proper alignment within flex container */
+    align-self: center;
 }
 
 .floating-timer-display i {
@@ -392,13 +393,12 @@
     color: var(--bs-primary);
 }
 
-/* End Button */
-.floating-end-button {
+/* Start/End Button (changes based on session state) */
+.floating-end-button,
+.floating-start-button {
     height: 48px;
     min-width: 90px;
     padding: 0 20px;
-    background: var(--bs-danger);
-    color: white;
     border: none;
     border-radius: 12px;
     display: flex;
@@ -408,9 +408,17 @@
     font-size: 15px;
     font-weight: 600;
     cursor: pointer;
-    box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
     transition: all 0.2s ease;
     white-space: nowrap;
+    /* Ensure proper alignment within flex container */
+    align-self: center;
+    color: white;
+}
+
+/* End Button (red, for active session) */
+.floating-end-button {
+    background: var(--bs-danger);
+    box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
 }
 
 .floating-end-button:hover {
@@ -423,7 +431,24 @@
     transform: translateY(0);
 }
 
-.floating-end-button i {
+/* Start Button (green, for inactive session) */
+.floating-start-button {
+    background: var(--bs-success);
+    box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
+}
+
+.floating-start-button:hover {
+    background: #218838;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
+}
+
+.floating-start-button:active {
+    transform: translateY(0);
+}
+
+.floating-end-button i,
+.floating-start-button i {
     font-size: 20px;
 }
 
@@ -434,11 +459,13 @@
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
 }
 
-[data-theme="dark"] .floating-end-button {
+[data-theme="dark"] .floating-end-button,
+[data-theme="dark"] .floating-start-button {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
 }
 
-[data-theme="dark"] .floating-end-button:hover {
+[data-theme="dark"] .floating-end-button:hover,
+[data-theme="dark"] .floating-start-button:hover {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
 }
 
@@ -446,12 +473,22 @@
 @media (max-width: 768px) {
     .floating-timer-end-combo {
         right: 12px;
-        bottom: calc(100% + 8px);
+        bottom: calc(100% + 16px); /* Increased spacing on mobile */
         gap: 6px;
     }
     
+    .floating-action-fab {
+        right: 12px;
+        bottom: calc(100% + 16px); /* Increased spacing on mobile */
+        height: 44px;
+        min-width: 90px;
+        padding: 0 18px;
+        font-size: 14px;
+    }
+    
     .floating-timer-display,
-    .floating-end-button {
+    .floating-end-button,
+    .floating-start-button {
         height: 44px;
         min-width: 80px;
         padding: 0 14px;
@@ -459,7 +496,9 @@
     }
     
     .floating-timer-display i,
-    .floating-end-button i {
+    .floating-end-button i,
+    .floating-start-button i,
+    .floating-action-fab i {
         font-size: 18px;
     }
 }
@@ -467,12 +506,22 @@
 @media (max-width: 576px) {
     .floating-timer-end-combo {
         right: 10px;
-        bottom: calc(100% + 6px);
+        bottom: calc(100% + 12px); /* Increased spacing on small mobile */
         gap: 4px;
     }
     
+    .floating-action-fab {
+        right: 10px;
+        bottom: calc(100% + 12px); /* Increased spacing on small mobile */
+        height: 40px;
+        min-width: 80px;
+        padding: 0 16px;
+        font-size: 13px;
+    }
+    
     .floating-timer-display,
-    .floating-end-button {
+    .floating-end-button,
+    .floating-start-button {
         height: 40px;
         min-width: 70px;
         padding: 0 12px;
@@ -480,7 +529,9 @@
     }
     
     .floating-timer-display i,
-    .floating-end-button i {
+    .floating-end-button i,
+    .floating-start-button i,
+    .floating-action-fab i {
         font-size: 16px;
     }
 }
@@ -500,6 +551,8 @@
     min-width: 90px;
     height: 48px;
     /* Remove absolute positioning - will be flex item */
+    /* Ensure proper alignment within flex container */
+    align-self: center;
 }
 
 /* Base timer button styling */
@@ -829,12 +882,14 @@
 }
 
 .floating-action-fab:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    background: #218838;
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
 }
 
 .floating-action-fab:active {
-    transform: translateY(0);
+    /* Remove scale transform to prevent button from moving down */
+    transform: none;
+    background: #1d7a3a; /* Darker shade for active feedback */
 }
 
 .floating-action-fab i {

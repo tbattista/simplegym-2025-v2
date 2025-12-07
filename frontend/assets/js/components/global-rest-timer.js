@@ -75,15 +75,11 @@ class GlobalRestTimer extends RestTimer {
      */
     renderReadyState(container, isMobile) {
         container.classList.add('ready');
-        
-        const buttonText = isMobile ?
-            `${this.totalSeconds}s` :
-            `Rest ${this.totalSeconds}s`;
             
         container.innerHTML = `
             <button class="btn btn-primary global-timer-btn" onclick="window.globalRestTimer.start()">
-                <i class="bx bx-time-five me-${isMobile ? '0' : '1'}"></i>
-                <span class="${isMobile ? 'd-none' : ''}">${buttonText}</span>
+                <i class="bx bx-time-five me-1"></i>
+                <span>Rest</span>
             </button>
         `;
     }
