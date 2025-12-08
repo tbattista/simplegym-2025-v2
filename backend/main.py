@@ -152,6 +152,32 @@ async def serve_workout_mode():
             status_code=404
         )
 
+@app.get("/workout-mode-demo", response_class=HTMLResponse)
+@app.get("/workout-mode-demo.html", response_class=HTMLResponse)
+async def serve_workout_mode_demo():
+    """Serve the Workout Mode Demo page"""
+    try:
+        with open("frontend/workout-mode-demo.html", "r", encoding="utf-8") as f:
+            return HTMLResponse(content=f.read())
+    except FileNotFoundError:
+        return HTMLResponse(
+            content="<h1>Workout Mode Demo not found</h1><p>Please ensure frontend/workout-mode-demo.html exists</p>",
+            status_code=404
+        )
+
+@app.get("/workout-mode-demo-v2", response_class=HTMLResponse)
+@app.get("/workout-mode-demo-v2.html", response_class=HTMLResponse)
+async def serve_workout_mode_demo_v2():
+    """Serve the Workout Mode Demo V2 page - Clean demonstration of workout mode features"""
+    try:
+        with open("frontend/workout-mode-demo-v2.html", "r", encoding="utf-8") as f:
+            return HTMLResponse(content=f.read())
+    except FileNotFoundError:
+        return HTMLResponse(
+            content="<h1>Workout Mode Demo V2 not found</h1><p>Please ensure frontend/workout-mode-demo-v2.html exists</p>",
+            status_code=404
+        )
+
 @app.get("/feedback-admin", response_class=HTMLResponse)
 @app.get("/feedback-admin.html", response_class=HTMLResponse)
 async def serve_feedback_admin():

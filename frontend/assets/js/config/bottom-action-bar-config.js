@@ -1020,26 +1020,14 @@
         'workout-mode': {
             buttons: [
                 {
-                    icon: 'bx-skip-next',
-                    label: 'Skip',
-                    title: 'Skip current exercise',
-                    action: function() {
-                        // Skip to next exercise
-                        if (window.workoutModeController?.skipExercise) {
-                            window.workoutModeController.skipExercise();
-                        }
-                    }
-                },
-                {
                     icon: 'bx-plus-circle',
-                    label: 'Bonus',
+                    label: 'Add',
                     title: 'Add bonus exercise',
                     action: function() {
-                        if (window.workoutModeController && window.workoutModeController.handleBonusExercises) {
+                        if (window.workoutModeController?.handleBonusExercises) {
                             window.workoutModeController.handleBonusExercises();
                         } else {
                             console.warn('⚠️ Workout mode controller not ready');
-                            alert('Please start your workout session first');
                         }
                     }
                 },
@@ -1052,20 +1040,23 @@
                     }
                 },
                 {
-                    icon: 'bx-stop-circle',
-                    label: 'End',
-                    title: 'End workout',
+                    icon: 'bx-skip-next',
+                    label: 'Skip',
+                    title: 'Skip current exercise',
                     action: function() {
-                        console.log('⏹️ End workout button clicked');
-                        // Call controller method directly since #completeWorkoutBtn doesn't exist in HTML
-                        if (window.workoutModeController && window.workoutModeController.handleCompleteWorkout) {
-                            window.workoutModeController.handleCompleteWorkout();
+                        if (window.workoutModeController?.skipExercise) {
+                            window.workoutModeController.skipExercise();
                         } else {
-                            // Not started yet or controller not ready, go back to workout database
-                            if (confirm('Exit workout mode?')) {
-                                window.location.href = 'workout-database.html';
-                            }
+                            console.warn('⚠️ Workout mode controller not ready');
                         }
+                    }
+                },
+                {
+                    icon: 'bx-dots-vertical-rounded',
+                    label: 'More',
+                    title: 'More options',
+                    action: function() {
+                        alert('More options - Coming soon!');
                     }
                 }
             ],
@@ -1076,8 +1067,7 @@
                 variant: 'success',
                 action: function() {
                     console.log('▶️ Start workout button clicked');
-                    // Call controller method directly since #startWorkoutBtn doesn't exist in HTML
-                    if (window.workoutModeController && window.workoutModeController.handleStartWorkout) {
+                    if (window.workoutModeController?.handleStartWorkout) {
                         window.workoutModeController.handleStartWorkout();
                     } else {
                         console.error('❌ Workout mode controller not available');
@@ -1093,25 +1083,14 @@
         'workout-mode-active': {
             buttons: [
                 {
-                    icon: 'bx-skip-next',
-                    label: 'Skip',
-                    title: 'Skip current exercise',
-                    action: function() {
-                        if (window.workoutModeController?.skipExercise) {
-                            window.workoutModeController.skipExercise();
-                        }
-                    }
-                },
-                {
                     icon: 'bx-plus-circle',
-                    label: 'Bonus',
+                    label: 'Add',
                     title: 'Add bonus exercise',
                     action: function() {
-                        if (window.workoutModeController && window.workoutModeController.handleBonusExercises) {
+                        if (window.workoutModeController?.handleBonusExercises) {
                             window.workoutModeController.handleBonusExercises();
                         } else {
                             console.warn('⚠️ Workout mode controller not ready');
-                            alert('Please start your workout session first');
                         }
                     }
                 },
@@ -1124,11 +1103,20 @@
                     }
                 },
                 {
+                    icon: 'bx-skip-next',
+                    label: 'Skip',
+                    title: 'Skip current exercise',
+                    action: function() {
+                        if (window.workoutModeController?.skipExercise) {
+                            window.workoutModeController.skipExercise();
+                        }
+                    }
+                },
+                {
                     icon: 'bx-dots-vertical-rounded',
                     label: 'More',
                     title: 'More options',
                     action: function() {
-                        // More menu - can add additional options here
                         alert('More options - Coming soon!');
                     }
                 }
@@ -1271,6 +1259,46 @@
                     }
                 }
             }
+        },
+
+        // ============================================
+        // WORKOUT MODE DEMO PAGE
+        // ============================================
+        'workout-mode-demo': {
+            buttons: [
+                {
+                    icon: 'bx-plus-circle',
+                    label: 'Add Exercise',
+                    title: 'Add bonus exercise',
+                    action: function() {
+                        alert('🏋️ Add Exercise\n\nIn the real app, this would open an offcanvas to add a bonus exercise to your workout.');
+                    }
+                },
+                {
+                    icon: 'bx-note',
+                    label: 'Note',
+                    title: 'Add workout note',
+                    action: function() {
+                        alert('📝 Add Note\n\nIn the real app, this would open a dialog to add notes about your workout session.');
+                    }
+                },
+                {
+                    icon: 'bx-skip-next',
+                    label: 'Skip',
+                    title: 'Skip current exercise',
+                    action: function() {
+                        alert('⏭️ Skip Exercise\n\nIn the real app, this would mark the current exercise as skipped and move to the next one.');
+                    }
+                },
+                {
+                    icon: 'bx-dots-vertical-rounded',
+                    label: 'More',
+                    title: 'More options',
+                    action: function() {
+                        alert('⚙️ More Options\n\nIn the real app, this would show additional options like:\n• End Workout\n• Workout Settings\n• View History\n• Share Workout');
+                    }
+                }
+            ]
         }
     };
 

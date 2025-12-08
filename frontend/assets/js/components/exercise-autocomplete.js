@@ -279,6 +279,7 @@ class ExerciseAutocomplete {
     
     /**
      * Render dropdown with results
+     * Uses Sneat list-group pattern for clean, readable display
      */
     render() {
         if (this.filteredResults.length === 0) {
@@ -290,55 +291,57 @@ class ExerciseAutocomplete {
             return;
         }
         
-        let html = '<div class="exercise-autocomplete-results">';
+        // Use Sneat list-group pattern
+        let html = '<div class="list-group list-group-flush exercise-autocomplete-results">';
         
         this.filteredResults.forEach((exercise, index) => {
             const isSelected = index === this.selectedIndex;
             const isCustom = !exercise.isGlobal;
-            const isFoundational = exercise.isFoundational;
-            const tier = exercise.exerciseTier || 2;
             
-            let tierBadge = '';
-            if (this.options.showTier) {
-                if (tier === 1) {
-                    tierBadge = '<span class="badge bg-label-success">Foundation</span>';
-                } else if (tier === 2) {
-                    tierBadge = '<span class="badge bg-label-primary">Standard</span>';
-                } else if (tier === 3) {
-                    tierBadge = '<span class="badge bg-label-warning">Specialized</span>';
-                }
+            // Build a clean, simple display
+            // Primary info: exercise name with optional custom indicator
+            // Secondary info: muscle group only (most useful for selection)
+            const muscleGroup = exercise.targetMuscleGroup || '';
+            const equipment = exercise.primaryEquipment || '';
+            
+            // Create a simple subtitle with muscle group and equipment
+            let subtitle = '';
+            if (muscleGroup && equipment) {
+                subtitle = `${muscleGroup} • ${equipment}`;
+            } else if (muscleGroup) {
+                subtitle = muscleGroup;
+            } else if (equipment) {
+                subtitle = equipment;
             }
             
             html += `
-                <div class="exercise-autocomplete-item ${isSelected ? 'selected' : ''} ${isFoundational ? 'is-foundational' : ''}"
-                     data-index="${index}"
-                     onclick="window.exerciseAutocompleteInstances['${this.input.id}'].selectExercise(${JSON.stringify(exercise).replace(/"/g, '&quot;')})">
-                    <div class="exercise-name">
-                        ${isCustom ? '<span class="badge bg-label-primary me-1" style="font-size: 0.7rem;"><i class="bx bx-user"></i> Custom</span>' : ''}
-                        ${isFoundational ? '<i class="bx bx-badge-check text-success me-1"></i>' : ''}
-                        ${this.escapeHtml(exercise.name)}
+                <a href="javascript:void(0);"
+                   class="list-group-item list-group-item-action ${isSelected ? 'active' : ''}"
+                   data-index="${index}"
+                   onclick="window.exerciseAutocompleteInstances['${this.input.id}'].selectExercise(${JSON.stringify(exercise).replace(/"/g, '&quot;')})">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="exercise-info">
+                            <div class="exercise-name fw-medium ${isSelected ? '' : 'text-body'}">
+                                ${isCustom ? '<i class="bx bx-user text-primary me-1" title="Custom Exercise"></i>' : ''}
+                                ${this.escapeHtml(exercise.name)}
+                            </div>
+                            ${subtitle ? `<small class="${isSelected ? 'text-white-50' : 'text-muted'}">${this.escapeHtml(subtitle)}</small>` : ''}
+                        </div>
+                        ${isCustom ? '<span class="badge bg-label-primary">Custom</span>' : ''}
                     </div>
-                    <div class="exercise-meta">
-                        ${tierBadge}
-                        ${this.options.showMuscleGroup && exercise.targetMuscleGroup ?
-                            `<span class="badge bg-label-primary">${this.escapeHtml(exercise.targetMuscleGroup)}</span>` : ''}
-                        ${this.options.showEquipment && exercise.primaryEquipment ?
-                            `<span class="badge bg-label-secondary">${this.escapeHtml(exercise.primaryEquipment)}</span>` : ''}
-                        ${this.options.showDifficulty && exercise.difficultyLevel ?
-                            `<span class="badge bg-label-info">${this.escapeHtml(exercise.difficultyLevel)}</span>` : ''}
-                    </div>
-                </div>
+                </a>
             `;
         });
         
-        // Add custom exercise option
+        // Add custom exercise option with distinct styling
         if (this.options.allowCustom) {
             html += `
-                <div class="exercise-autocomplete-item exercise-autocomplete-custom" 
-                     onclick="window.exerciseAutocompleteInstances['${this.input.id}'].showCustomExerciseModal()">
+                <a href="javascript:void(0);"
+                   class="list-group-item list-group-item-action list-group-item-success d-flex align-items-center"
+                   onclick="window.exerciseAutocompleteInstances['${this.input.id}'].showCustomExerciseModal()">
                     <i class="bx bx-plus-circle me-2"></i>
-                    Add custom exercise
-                </div>
+                    <span>Add custom exercise</span>
+                </a>
             `;
         }
         
@@ -350,29 +353,32 @@ class ExerciseAutocomplete {
     
     /**
      * Render no results message
+     * Uses Sneat list-group pattern for consistency
      */
     renderNoResults() {
         const query = this.input.value.trim();
         
         this.dropdown.innerHTML = `
-            <div class="exercise-autocomplete-results">
-                <div class="exercise-autocomplete-item text-muted">
+            <div class="list-group list-group-flush exercise-autocomplete-results">
+                <div class="list-group-item text-muted d-flex align-items-center">
                     <i class="bx bx-search me-2"></i>
-                    No exercises found
+                    <span>No exercises found for "${this.escapeHtml(query)}"</span>
                 </div>
                 ${this.options.allowAutoCreate && query.length >= this.options.minChars ? `
-                    <div class="exercise-autocomplete-item exercise-autocomplete-auto-create"
-                         onclick="window.exerciseAutocompleteInstances['${this.input.id}'].handleAutoCreate()">
+                    <a href="javascript:void(0);"
+                       class="list-group-item list-group-item-action list-group-item-primary d-flex align-items-center"
+                       onclick="window.exerciseAutocompleteInstances['${this.input.id}'].handleAutoCreate()">
                         <i class="bx bx-plus-circle me-2"></i>
-                        Auto-create "${this.escapeHtml(query)}"
-                    </div>
+                        <span>Auto-create "<strong>${this.escapeHtml(query)}</strong>"</span>
+                    </a>
                 ` : ''}
                 ${this.options.allowCustom && !this.options.allowAutoCreate ? `
-                    <div class="exercise-autocomplete-item exercise-autocomplete-custom"
-                         onclick="window.exerciseAutocompleteInstances['${this.input.id}'].showCustomExerciseModal()">
+                    <a href="javascript:void(0);"
+                       class="list-group-item list-group-item-action list-group-item-success d-flex align-items-center"
+                       onclick="window.exerciseAutocompleteInstances['${this.input.id}'].showCustomExerciseModal()">
                         <i class="bx bx-plus-circle me-2"></i>
-                        Add custom exercise
-                    </div>
+                        <span>Add custom exercise</span>
+                    </a>
                 ` : ''}
             </div>
         `;
@@ -401,15 +407,16 @@ class ExerciseAutocomplete {
     
     /**
      * Update visual selection
+     * Works with Sneat list-group pattern
      */
     updateSelection() {
-        const items = this.dropdown.querySelectorAll('.exercise-autocomplete-item:not(.exercise-autocomplete-custom)');
+        const items = this.dropdown.querySelectorAll('.list-group-item[data-index]');
         items.forEach((item, index) => {
             if (index === this.selectedIndex) {
-                item.classList.add('selected');
+                item.classList.add('active');
                 item.scrollIntoView({ block: 'nearest' });
             } else {
-                item.classList.remove('selected');
+                item.classList.remove('active');
             }
         });
     }
@@ -531,14 +538,20 @@ class ExerciseAutocomplete {
         this.dropdown.style.display = 'block';
         this.isOpen = true;
         
-        // Ensure dropdown is visible (scroll into view)
-        setTimeout(() => {
-            this.input.scrollIntoView({
-                behavior: 'smooth',
-                block: 'nearest',
-                inline: 'nearest'
-            });
-        }, 100);
+        // CRITICAL FIX: Only scroll into view if NOT inside an offcanvas
+        // This prevents Bootstrap scroll errors during offcanvas transitions
+        const isInOffcanvas = this.input.closest('.offcanvas');
+        
+        if (!isInOffcanvas) {
+            // Ensure dropdown is visible (scroll into view)
+            setTimeout(() => {
+                this.input.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'nearest',
+                    inline: 'nearest'
+                });
+            }, 100);
+        }
     }
     
     /**

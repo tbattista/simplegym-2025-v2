@@ -351,8 +351,18 @@
     margin-top: 1rem;
 }
 
-/* 2x2 Grid Layout for workout buttons (new layout without timer) */
+/* 1x2 Grid Layout for workout buttons (simplified - Skip moved to action bar) */
+.workout-button-grid-1x2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+/* 2x2 Grid Layout for workout buttons (legacy layout) */
 .workout-button-grid-2x2 {
+    display: grid;
     grid-template-columns: 1fr 1fr;
     grid-template-rows: auto auto;
     gap: 0.5rem;

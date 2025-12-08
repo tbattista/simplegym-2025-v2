@@ -814,6 +814,7 @@
         const filename = path.split('/').pop() || 'index.html';
 
         // Map filenames to page identifiers
+        if (filename.includes('workout-mode-demo')) return 'workout-mode-demo';
         if (filename.includes('workout-database')) return 'workout-database';
         if (filename.includes('workout-builder')) return 'workout-builder';
         if (filename.includes('exercise-database')) return 'exercise-database';

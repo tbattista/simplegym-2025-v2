@@ -1,0 +1,252 @@
+<!doctype html>
+
+<html
+  lang="en"
+  class="layout-menu-fixed layout-compact"
+  data-assets-path="/static/assets/"
+  data-template="vertical-menu-template-free">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+    
+    <title>Workout Mode</title>
+
+    <meta name="description" content="Execute your workout with rest timers and exercise tracking" />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/static/assets/img/favicon/favicon.ico" />
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap"
+      rel="stylesheet" />
+
+    <link rel="stylesheet" href="/static/assets/vendor/fonts/iconify-icons.css" />
+
+    <!-- Core CSS -->
+    <link rel="stylesheet" href="/static/assets/vendor/css/core.css" />
+    <link rel="stylesheet" href="/static/assets/css/demo.css" />
+
+    <!-- Vendors CSS -->
+    <link rel="stylesheet" href="/static/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css" />
+
+    <!-- Custom Ghost Gym CSS -->
+    <link rel="stylesheet" href="/static/assets/css/ghost-gym-custom.css" />
+    
+    <!-- Navbar CSS -->
+    <link rel="stylesheet" href="/static/assets/css/navbar-custom.css" />
+    
+    <!-- Component CSS (includes all component styles) -->
+    <link rel="stylesheet" href="/static/assets/css/components.css" />
+    
+    <!-- Unified Offcanvas CSS -->
+    <link rel="stylesheet" href="/static/assets/css/components/unified-offcanvas.css" />
+    
+    <!-- Workout Mode CSS -->
+    <link rel="stylesheet" href="/static/assets/css/workout-mode.css?v=20251207-05" />
+    
+    <!-- Workout Database CSS (for workout list component) -->
+    <link rel="stylesheet" href="/static/assets/css/workout-database.css" />
+    
+    <!-- Bottom Action Bar CSS -->
+    <link rel="stylesheet" href="/static/assets/css/bottom-action-bar.css" />
+
+    <!-- Helpers -->
+    <script src="/static/assets/vendor/js/helpers.js"></script>
+    <script src="/static/assets/js/config.js"></script>
+
+    <!-- Theme Manager (must load early to prevent flash) -->
+    <script src="/static/assets/js/services/theme-manager.js"></script>
+
+    <!-- Ghost Gym Centralized Configuration -->
+    <script src="/static/assets/js/app-config.js"></script>
+    
+    <!-- Firebase SDK Loader (Centralized) -->
+    <script type="module" src="/static/assets/js/firebase-loader.js"></script>
+  </head>
+
+  <body>
+    
+    <!-- Layout wrapper -->
+    <div class="layout-wrapper layout-content-navbar">
+      <div class="layout-container">
+        <!-- Menu -->
+        <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
+          <!-- Menu will be injected by menu-injection-service.js -->
+        </aside>
+        <!-- / Menu -->
+
+        <!-- Layout container -->
+        <div class="layout-page">
+
+          <!-- Content wrapper -->
+          <div class="content-wrapper">
+            <!-- Content -->
+            <div class="container-xxl flex-grow-1 container-p-y">
+              
+              <!-- Workout Info Header (Above Cards) -->
+              <div class="mb-3" id="workoutInfoHeader" style="display: none;">
+                <h6 class="mb-2">
+                  Workout Name: <span id="workoutName">Loading workout...</span>
+                </h6>
+                <p class="text-muted small mb-3">
+                  Last completed: <span id="lastCompletedDate">Never</span>
+                </p>
+              </div>
+              
+              <!-- Bonus Exercise Button (Hidden, for JS reference) -->
+              <button class="btn btn-sm btn-outline-success" id="addBonusExerciseBtn" style="display: none;" title="Add bonus exercises before starting">
+                <i class="bx bx-plus-circle me-1"></i>Bonus
+              </button>
+
+              <!-- Loading State -->
+              <div id="workoutLoadingState" class="text-center py-5">
+                <div class="spinner-border text-primary" role="status">
+                  <span class="visually-hidden">Loading workout...</span>
+                </div>
+                <p class="mt-3 text-muted" id="loadingMessage">Loading your workout...</p>
+                <small class="text-muted d-block mt-2" id="loadingDetails">Initializing...</small>
+              </div>
+
+              <!-- Error State -->
+              <div id="workoutErrorState" class="text-center py-5" style="display: none;">
+                <i class="bx bx-error-circle display-1 text-danger"></i>
+                <h5 class="mt-3">Error Loading Workout</h5>
+                <p class="text-muted" id="workoutErrorMessage">Something went wrong.</p>
+                <button class="btn btn-primary mt-2" onclick="location.reload()">
+                  <i class="bx bx-refresh me-1"></i>Retry
+                </button>
+              </div>
+
+              <!-- Exercise Cards Container -->
+              <div id="exerciseCardsContainer" style="display: none;">
+                <!-- Cards will be rendered here by JavaScript -->
+              </div>
+
+            </div>
+            <!-- / Content -->
+
+            <div class="content-backdrop fade"></div>
+          </div>
+          <!-- Content wrapper -->
+        </div>
+        <!-- / Layout page -->
+      </div>
+
+      <!-- Overlay -->
+      <div class="layout-overlay layout-menu-toggle"></div>
+      
+      <!-- Floating Timer Widget (shown during active workout) -->
+      <div id="floatingTimerWidget" class="floating-timer-widget" style="display: none;">
+        <div class="timer-label">
+          <i class="bx bx-time-five"></i>
+          <span>Workout Time</span>
+        </div>
+        <div class="timer-display" id="floatingTimerDisplay">00:00</div>
+      </div>
+    </div>
+    <!-- / Layout wrapper -->
+
+    <!-- Core JS -->
+    <script src="/static/assets/vendor/libs/jquery/jquery.js"></script>
+    <script src="/static/assets/vendor/libs/popper/popper.js"></script>
+    <script src="/static/assets/vendor/js/bootstrap.js"></script>
+    <script src="/static/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js"></script>
+    <script src="/static/assets/vendor/js/menu.js"></script>
+
+    <!-- Load templates FIRST (before main.js) -->
+    <script src="/static/assets/js/components/menu-template.js"></script>
+    <script src="/static/assets/js/components/navbar-template.js"></script>
+    <script src="/static/assets/js/components/auth-modals-template.js"></script>
+    
+    <!-- Inject components SECOND (before main.js) -->
+    <script src="/static/assets/js/services/menu-injection-service.js"></script>
+    <script src="/static/assets/js/services/navbar-injection-service.js"></script>
+    
+    <!-- Feedback System (Global) -->
+    <script src="/static/assets/js/services/feedback-injection-service.js"></script>
+
+    <!-- Main JS -->
+    <script src="/static/assets/js/main.js"></script>
+    
+    <!-- Bottom Action Bar (load after main.js) -->
+    <script src="/static/assets/js/config/bottom-action-bar-config.js"></script>
+    <script src="/static/assets/js/services/bottom-action-bar-service.js"></script>
+
+    <!-- Firebase Services -->
+    <script src="/static/assets/js/firebase/firebase-init.js?v=20251020-03"></script>
+    <script src="/static/assets/js/firebase/auth-service.js?v=20251020-03"></script>
+    <script src="/static/assets/js/firebase/auth-ui.js?v=20251020-03"></script>
+    <script src="/static/assets/js/firebase/data-manager.js?v=20251020-05"></script>
+
+    <!-- Common Utilities (MUST load before other dashboard scripts) -->
+    <script src="/static/assets/js/utils/common-utils.js"></script>
+    
+    <!-- Core Services -->
+    <script src="/static/assets/js/services/exercise-cache-service.js?v=20251020-05"></script>
+    
+    <!-- Auto-Create Exercise Service -->
+    <script src="/static/assets/js/services/auto-create-exercise-service.js?v=20251128-01"></script>
+    
+    <!-- Exercise Autocomplete Component -->
+    <script src="/static/assets/js/components/exercise-autocomplete.js?v=20251128-01"></script>
+
+    <!-- Component Scripts -->
+    <script src="/static/assets/js/components/base-page.js"></script>
+    <script src="/static/assets/js/components/data-table.js"></script>
+    <script src="/static/assets/js/components/filter-bar.js"></script>
+    <script src="/static/assets/js/components/pagination.js"></script>
+    <script src="/static/assets/js/components/modal-manager.js"></script>
+    
+    <!-- Unified Offcanvas Factory -->
+    <script src="/static/assets/js/components/unified-offcanvas-factory.js?v=20251207-02"></script>
+    
+    <!-- Exercise Card Renderer (NEW - Phase 3 refactoring) -->
+    <script src="/static/assets/js/components/exercise-card-renderer.js?v=1.0.0"></script>
+    
+    <!-- Workout Database JS (for workout list when no ID selected) -->
+    <script src="/static/assets/js/dashboard/workout-database.js?v=2.0.0"></script>
+    
+    <!-- UI Helpers -->
+    <script src="/static/assets/js/dashboard/ui-helpers.js?v=20251020-04"></script>
+    
+    <!-- Workout Mode JS (Refactored) -->
+    <script src="/static/assets/js/services/workout-session-service.js?v=1.0.0"></script>
+    <script src="/static/assets/js/workout-mode-refactored.js?v=20251109-01"></script>
+    <script src="/static/assets/js/components/global-rest-timer.js?v=1.0.0"></script>
+    <script src="/static/assets/js/controllers/workout-mode-controller.js?v=20251109-03"></script>
+
+    <!-- Initialize Workout Mode -->
+    <script>
+        // Initialize global state for workout mode
+        window.ghostGym = window.ghostGym || {};
+        window.ghostGym.workoutMode = {
+            currentWorkout: null,
+            currentExerciseIndex: 0,
+            expandedCardIndex: null,
+            soundEnabled: localStorage.getItem('workoutSoundEnabled') !== 'false',
+            timers: {}
+        };
+
+        // Listen for auth state changes ONLY for UI updates
+        // Controller handles its own initialization and workout loading via DOMContentLoaded
+        // This prevents duplicate workout loads and race conditions
+        window.addEventListener('authStateChanged', async (event) => {
+            const { user, isAuthenticated } = event.detail;
+            console.log('🔄 Auth state changed on workout mode page, authenticated:', isAuthenticated);
+            
+            // Only update the start button tooltip, don't reload the workout
+            // The workout loads once after initial auth state is determined
+            if (window.workoutModeController?.initializeStartButtonTooltip) {
+                await window.workoutModeController.initializeStartButtonTooltip();
+            }
+        });
+        
+        console.log('✅ Workout Mode page script loaded - controller will auto-initialize');
+    </script>
+  </body>
+</html>

@@ -606,385 +606,314 @@ class UnifiedOffcanvasFactory {
        ============================================ */
 
     /**
-     * Create enhanced bonus exercise offcanvas
-     * @param {Object} data - Previous exercises data
-     * @param {Function} onAddNew - Callback when adding new exercise
-     * @param {Function} onAddPrevious - Callback when adding previous exercise
+     * Create demo-style bonus exercise offcanvas
+     * Simple search with filter chips and clean exercise list
+     * @param {Object} data - Configuration data
+     * @param {Function} onAddExercise - Callback when adding exercise
      * @returns {Object} Offcanvas instance
      */
-    static createBonusExercise(data, onAddNew, onAddPrevious) {
-        const { previousExercises = [] } = data;
-        const hasPrevious = previousExercises && previousExercises.length > 0;
-        
+    static createBonusExercise(data, onAddExercise) {
         const offcanvasHtml = `
             <div class="offcanvas offcanvas-bottom offcanvas-bottom-base"
                  tabindex="-1"
                  id="bonusExerciseOffcanvas"
                  aria-labelledby="bonusExerciseOffcanvasLabel"
-                 data-bs-scroll="false">
+                 data-bs-scroll="false"
+                 style="height: 85vh;">
                 
                 <!-- Header -->
                 <div class="offcanvas-header border-bottom">
                     <h5 class="offcanvas-title" id="bonusExerciseOffcanvasLabel">
                         <i class="bx bx-plus-circle me-2"></i>Add Bonus Exercise
                     </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close add exercise dialog"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
                 </div>
                 
                 <!-- Body -->
-                <div class="offcanvas-body">
-                    
-                    <!-- Info Alert -->
-                    <div class="alert alert-info d-flex align-items-start mb-3">
-                        <i class="bx bx-info-circle me-2 mt-1 flex-shrink-0"></i>
-                        <div class="flex-grow-1">
-                            <strong>Add a supplementary exercise</strong>
-                            <p class="mb-0 small">Bonus exercises are saved in your workout history but don't modify your workout template.</p>
-                        </div>
-                    </div>
-                    
-                    <!-- HERO: Search Section -->
-                    <div class="search-section mb-4" role="search">
-                        <label for="bonusExerciseSearch" class="form-label fw-semibold">
-                            <i class="bx bx-search me-1"></i>Search Exercise
-                        </label>
-                        <div class="input-group input-group-merge input-group-lg search-input-wrapper">
+                <div class="offcanvas-body p-0">
+                    <!-- Search Section -->
+                    <div class="p-3 border-bottom bg-light">
+                        <div class="input-group">
                             <span class="input-group-text">
                                 <i class="bx bx-search"></i>
                             </span>
-                            <input type="search"
-                                   class="form-control form-control-lg exercise-autocomplete-input"
-                                   id="bonusExerciseSearch"
-                                   placeholder="e.g., Face Pulls, Leg Press, Cable Rows..."
-                                   aria-label="Search exercises"
-                                   aria-describedby="searchHelp"
-                                   aria-autocomplete="list"
-                                   aria-controls="searchResults"
-                                   autocomplete="off">
-                            <button class="btn btn-outline-secondary search-clear-btn"
-                                    type="button"
-                                    style="display: none;"
-                                    aria-label="Clear search">
+                            <input
+                                type="text"
+                                class="form-control"
+                                id="bonusExerciseSearch"
+                                placeholder="Search exercises..."
+                                autocomplete="off"
+                            >
+                            <button class="btn btn-outline-secondary" type="button" id="clearSearchBtn" style="display: none;">
                                 <i class="bx bx-x"></i>
                             </button>
                         </div>
-                        <div id="searchHelp" class="form-text">
-                            <i class="bx bx-info-circle me-1"></i>
-                            Start typing to search exercises. Use ↑↓ arrows to navigate results.
-                        </div>
-                    </div>
-                    
-                    <!-- Quick Actions: Previous Exercises -->
-                    ${hasPrevious ? `
-                        <div class="quick-actions-section mb-4">
-                            <button class="section-toggle btn btn-link text-start w-100 p-0 mb-2"
-                                    type="button"
-                                    data-bs-toggle="collapse"
-                                    data-bs-target="#previousExercisesCollapse"
-                                    aria-expanded="false"
-                                    aria-controls="previousExercisesCollapse">
-                                <div class="d-flex align-items-center justify-content-between">
-                                    <h6 class="mb-0 fw-semibold">
-                                        <i class="bx bx-history me-2 text-primary"></i>
-                                        From Last Session
-                                        <span class="badge bg-label-primary ms-2">${previousExercises.length}</span>
-                                    </h6>
-                                    <i class="bx bx-chevron-down toggle-icon"></i>
-                                </div>
-                            </button>
-                            
-                            <div class="collapse" id="previousExercisesCollapse">
-                                <div class="exercise-chips-container" id="previousBonusList">
-                                    ${previousExercises.map((exercise, index) => `
-                                        <div class="exercise-chip" data-index="${index}">
-                                            <div class="chip-content">
-                                                <div class="chip-name">${this.escapeHtml(exercise.exercise_name)}</div>
-                                                <div class="chip-details">
-                                                    ${exercise.target_sets}×${exercise.target_reps}
-                                                    ${exercise.weight ? ` • ${exercise.weight} ${exercise.weight_unit}` : ''}
-                                                </div>
-                                            </div>
-                                            <button class="chip-add-btn btn btn-sm btn-primary"
-                                                    data-action="add-previous"
-                                                    data-index="${index}"
-                                                    aria-label="Add ${this.escapeHtml(exercise.exercise_name)}">
-                                                <i class="bx bx-plus"></i>
-                                            </button>
-                                        </div>
-                                    `).join('')}
-                                </div>
-                            </div>
-                        </div>
-                    ` : ''}
-                    
-                    <!-- Manual Entry Form (Collapsible) -->
-                    <div class="manual-entry-section mb-4">
-                        <button class="section-toggle btn btn-link text-start w-100 p-0 mb-2"
-                                type="button"
-                                data-bs-toggle="collapse"
-                                data-bs-target="#manualEntryCollapse"
-                                aria-expanded="false"
-                                aria-controls="manualEntryCollapse">
-                            <div class="d-flex align-items-center justify-content-between">
-                                <h6 class="mb-0 fw-semibold">
-                                    <i class="bx bx-edit-alt me-2 text-primary"></i>
-                                    Manual Entry
-                                </h6>
-                                <i class="bx bx-chevron-down toggle-icon"></i>
-                            </div>
-                        </button>
                         
-                        <div class="collapse" id="manualEntryCollapse">
-                            <div class="card">
-                                <div class="card-body">
-                                    <!-- Sets & Reps -->
-                                    <div class="row g-2 mb-3">
-                                        <div class="col-6">
-                                            <label for="bonusSets" class="form-label">Sets</label>
-                                            <input type="number"
-                                                   class="form-control"
-                                                   id="bonusSets"
-                                                   value="3"
-                                                   min="1"
-                                                   max="10"
-                                                   aria-label="Number of sets">
-                                        </div>
-                                        <div class="col-6">
-                                            <label for="bonusReps" class="form-label">Reps</label>
-                                            <input type="text"
-                                                   class="form-control"
-                                                   id="bonusReps"
-                                                   value="12"
-                                                   placeholder="8-12"
-                                                   aria-label="Number of reps">
-                                        </div>
-                                    </div>
-                                    
-                                    <!-- Weight (Optional) -->
-                                    <div class="row g-2 mb-3">
-                                        <div class="col-8">
-                                            <label for="bonusWeight" class="form-label">Weight (Optional)</label>
-                                            <input type="text"
-                                                   class="form-control"
-                                                   id="bonusWeight"
-                                                   placeholder="e.g., 135, 4×45, BW+25"
-                                                   aria-label="Weight amount">
-                                        </div>
-                                        <div class="col-4">
-                                            <label for="bonusWeightUnit" class="form-label">Unit</label>
-                                            <select class="form-select" id="bonusWeightUnit" aria-label="Weight unit">
-                                                <option value="lbs">lbs</option>
-                                                <option value="kg">kg</option>
-                                                <option value="other">other</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="form-text">
-                                        <i class="bx bx-info-circle me-1"></i>
-                                        Weight supports numbers (135) or descriptions (4×45 plates, BW+25)
-                                    </div>
-                                </div>
-                            </div>
+                        <!-- Filter Chips -->
+                        <div class="mt-3 d-flex flex-wrap gap-2" id="filterChips">
+                            <button class="btn btn-sm btn-primary active" data-filter="all">All</button>
+                            <button class="btn btn-sm btn-outline-primary" data-filter="chest">Chest</button>
+                            <button class="btn btn-sm btn-outline-primary" data-filter="shoulders">Shoulders</button>
+                            <button class="btn btn-sm btn-outline-primary" data-filter="triceps">Triceps</button>
+                            <button class="btn btn-sm btn-outline-primary" data-filter="back">Back</button>
+                            <button class="btn btn-sm btn-outline-primary" data-filter="legs">Legs</button>
+                            <button class="btn btn-sm btn-outline-primary" data-filter="arms">Arms</button>
                         </div>
                     </div>
-                    
-                    <!-- Action Buttons (inside body for proper Bootstrap structure) -->
-                    <div class="bonus-exercise-actions mt-4 pt-3 border-top">
-                        <div class="d-flex gap-2">
-                            <button type="button"
-                                    class="btn btn-outline-secondary flex-fill"
-                                    data-bs-dismiss="offcanvas">
-                                Cancel
-                            </button>
-                            <button type="button"
-                                    class="btn btn-primary flex-fill"
-                                    id="addAndCloseBtn"
-                                    disabled
-                                    aria-label="Add exercise to workout">
-                                <i class="bx bx-plus-circle me-1"></i>
-                                Add Exercise
-                            </button>
-                        </div>
+
+                    <!-- Exercise List -->
+                    <div class="list-group list-group-flush" id="bonusExerciseList" style="max-height: calc(85vh - 200px); overflow-y: auto;">
+                        <!-- Exercise items will be rendered here -->
+                    </div>
+
+                    <!-- Empty State -->
+                    <div id="emptyState" class="text-center py-5" style="display: none;">
+                        <i class="bx bx-search-alt display-1 text-muted"></i>
+                        <p class="text-muted mt-3">No exercises found</p>
+                        <button class="btn btn-sm btn-outline-primary" id="clearAllBtn">
+                            Clear Search
+                        </button>
                     </div>
                     
+                    <!-- Loading State -->
+                    <div id="loadingState" class="text-center py-5" style="display: none;">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="text-muted mt-3">Loading exercises...</p>
+                    </div>
                 </div>
             </div>
         `;
         
         return this.createOffcanvas('bonusExerciseOffcanvas', offcanvasHtml, (offcanvas, offcanvasElement) => {
+            // State management
+            const state = {
+                searchQuery: '',
+                activeFilter: 'all',
+                allExercises: [],
+                filteredExercises: [],
+                isLoading: false
+            };
+            
             // Get DOM elements
             const searchInput = offcanvasElement.querySelector('#bonusExerciseSearch');
-            const clearBtn = offcanvasElement.querySelector('.search-clear-btn');
-            const addBtn = offcanvasElement.querySelector('#addAndCloseBtn');
-            const previousBonusList = offcanvasElement.querySelector('#previousBonusList');
-            const setsInput = offcanvasElement.querySelector('#bonusSets');
-            const repsInput = offcanvasElement.querySelector('#bonusReps');
-            const weightInput = offcanvasElement.querySelector('#bonusWeight');
-            const unitSelect = offcanvasElement.querySelector('#bonusWeightUnit');
+            const clearBtn = offcanvasElement.querySelector('#clearSearchBtn');
+            const clearAllBtn = offcanvasElement.querySelector('#clearAllBtn');
+            const exerciseList = offcanvasElement.querySelector('#bonusExerciseList');
+            const emptyState = offcanvasElement.querySelector('#emptyState');
+            const loadingState = offcanvasElement.querySelector('#loadingState');
+            const filterChips = offcanvasElement.querySelectorAll('[data-filter]');
             
-            // Toggle icons for collapsible sections
-            const toggleButtons = offcanvasElement.querySelectorAll('.section-toggle');
-            toggleButtons.forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const icon = btn.querySelector('.toggle-icon');
-                    if (icon) {
-                        setTimeout(() => {
-                            const isExpanded = btn.getAttribute('aria-expanded') === 'true';
-                            icon.style.transform = isExpanded ? 'rotate(180deg)' : 'rotate(0deg)';
-                        }, 50);
+            // Load exercises from cache service
+            const loadExercises = async () => {
+                state.isLoading = true;
+                loadingState.style.display = 'block';
+                exerciseList.style.display = 'none';
+                emptyState.style.display = 'none';
+                
+                try {
+                    if (window.exerciseCacheService) {
+                        // Get all exercises from cache
+                        await window.exerciseCacheService.loadExercises();
+                        state.allExercises = window.exerciseCacheService.getAllExercises();
+                        console.log(`✅ Loaded ${state.allExercises.length} exercises from cache`);
+                    } else {
+                        console.warn('⚠️ exerciseCacheService not available');
+                        state.allExercises = [];
                     }
+                } catch (error) {
+                    console.error('❌ Error loading exercises:', error);
+                    state.allExercises = [];
+                }
+                
+                state.isLoading = false;
+                loadingState.style.display = 'none';
+                filterExercises();
+            };
+            
+            // Filter exercises based on search and category
+            const filterExercises = () => {
+                let filtered = [...state.allExercises];
+                
+                // Apply category filter
+                if (state.activeFilter !== 'all') {
+                    filtered = filtered.filter(ex => {
+                        const muscleGroup = (ex.muscle_group || '').toLowerCase();
+                        return muscleGroup.includes(state.activeFilter);
+                    });
+                }
+                
+                // Apply search filter
+                if (state.searchQuery) {
+                    const query = state.searchQuery.toLowerCase();
+                    filtered = filtered.filter(ex =>
+                        (ex.name || '').toLowerCase().includes(query) ||
+                        (ex.muscle_group || '').toLowerCase().includes(query) ||
+                        (ex.equipment || '').toLowerCase().includes(query)
+                    );
+                }
+                
+                state.filteredExercises = filtered;
+                renderExerciseList();
+            };
+            
+            // Render exercise list
+            const renderExerciseList = () => {
+                if (state.filteredExercises.length === 0) {
+                    exerciseList.style.display = 'none';
+                    emptyState.style.display = 'block';
+                    return;
+                }
+                
+                exerciseList.style.display = 'block';
+                emptyState.style.display = 'none';
+                
+                exerciseList.innerHTML = state.filteredExercises.map(exercise => `
+                    <button class="list-group-item list-group-item-action d-flex justify-content-between align-items-start"
+                            data-exercise-id="${this.escapeHtml(exercise.id || exercise.name)}">
+                        <div class="me-auto">
+                            <div class="fw-semibold">${this.escapeHtml(exercise.name)}</div>
+                            <small class="text-muted">
+                                ${exercise.muscle_group ? this.escapeHtml(exercise.muscle_group) : ''}
+                                ${exercise.equipment ? ` • ${this.escapeHtml(exercise.equipment)}` : ''}
+                            </small>
+                        </div>
+                        <span class="badge bg-primary rounded-pill text-capitalize">
+                            ${exercise.muscle_group ? this.escapeHtml(exercise.muscle_group.split(',')[0].trim()) : 'Other'}
+                        </span>
+                    </button>
+                `).join('');
+            };
+            
+            // Search input handler
+            searchInput.addEventListener('input', (e) => {
+                state.searchQuery = e.target.value.toLowerCase();
+                clearBtn.style.display = e.target.value ? 'block' : 'none';
+                filterExercises();
+            });
+            
+            // Clear search button
+            clearBtn.addEventListener('click', () => {
+                searchInput.value = '';
+                state.searchQuery = '';
+                clearBtn.style.display = 'none';
+                filterExercises();
+                searchInput.focus();
+            });
+            
+            // Clear all button (in empty state)
+            clearAllBtn.addEventListener('click', () => {
+                searchInput.value = '';
+                state.searchQuery = '';
+                state.activeFilter = 'all';
+                clearBtn.style.display = 'none';
+                
+                // Reset filter chips
+                filterChips.forEach(chip => {
+                    if (chip.dataset.filter === 'all') {
+                        chip.classList.remove('btn-outline-primary');
+                        chip.classList.add('active', 'btn-primary');
+                    } else {
+                        chip.classList.remove('active', 'btn-primary');
+                        chip.classList.add('btn-outline-primary');
+                    }
+                });
+                
+                filterExercises();
+            });
+            
+            // Filter chip handlers
+            filterChips.forEach(chip => {
+                chip.addEventListener('click', (e) => {
+                    // Update active state
+                    filterChips.forEach(c => {
+                        c.classList.remove('active', 'btn-primary');
+                        c.classList.add('btn-outline-primary');
+                    });
+                    e.target.classList.remove('btn-outline-primary');
+                    e.target.classList.add('active', 'btn-primary');
+                    
+                    // Update filter
+                    state.activeFilter = e.target.dataset.filter;
+                    filterExercises();
                 });
             });
             
-            // Search input: Show/hide clear button
-            if (searchInput && clearBtn) {
-                searchInput.addEventListener('input', () => {
-                    clearBtn.style.display = searchInput.value.trim() ? 'block' : 'none';
-                    this.validateAddButton(searchInput, addBtn);
-                });
+            // Exercise click handler
+            exerciseList.addEventListener('click', async (e) => {
+                const listItem = e.target.closest('[data-exercise-id]');
+                if (!listItem) return;
                 
-                clearBtn.addEventListener('click', () => {
-                    searchInput.value = '';
-                    clearBtn.style.display = 'none';
-                    searchInput.focus();
-                    this.validateAddButton(searchInput, addBtn);
-                });
-            }
-            
-            // Initialize exercise autocomplete
-            setTimeout(() => {
-                if (window.initializeExerciseAutocompletes) {
-                    window.initializeExerciseAutocompletes();
-                    console.log('✅ Exercise autocomplete initialized for bonus exercise search');
-                } else if (window.initExerciseAutocomplete && searchInput) {
-                    // Fallback to individual initialization
-                    window.initExerciseAutocomplete(searchInput, {
-                        allowCustom: true,
-                        allowAutoCreate: true,
-                        minChars: 2,
-                        maxResults: 10,
-                        debounceMs: 200,
-                        showMuscleGroup: true,
-                        showEquipment: true,
-                        showDifficulty: true,
-                        showTier: true,
-                        onSelect: (exercise) => {
-                            console.log('✅ Exercise selected:', exercise.name);
-                            this.validateAddButton(searchInput, addBtn);
-                        },
-                        onAutoCreate: (exercise) => {
-                            console.log('🚀 Auto-created exercise:', exercise.name);
-                            if (window.showToast) {
-                                window.showToast({
-                                    message: `Created custom exercise: ${exercise.name}`,
-                                    type: 'success',
-                                    title: 'Exercise Created',
-                                    icon: 'bx-plus-circle',
-                                    delay: 3000
-                                });
-                            }
-                        }
+                const exerciseId = listItem.dataset.exerciseId;
+                const exercise = state.filteredExercises.find(ex =>
+                    (ex.id || ex.name) === exerciseId
+                );
+                
+                if (!exercise) return;
+                
+                // Show loading state on clicked item
+                listItem.disabled = true;
+                listItem.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Adding...';
+                
+                try {
+                    // Auto-create custom exercise if needed
+                    if (window.exerciseCacheService && window.dataManager?.isUserAuthenticated()) {
+                        const currentUser = window.dataManager.getCurrentUser();
+                        const userId = currentUser?.uid || null;
+                        await window.exerciseCacheService.autoCreateIfNeeded(exercise.name, userId);
+                    }
+                    
+                    // Call the add callback with exercise data
+                    await onAddExercise({
+                        name: exercise.name,
+                        sets: '3',
+                        reps: '12',
+                        weight: '',
+                        unit: 'lbs'
                     });
-                    console.log('✅ Exercise autocomplete initialized individually');
+                    
+                    // Close offcanvas
+                    offcanvas.hide();
+                    
+                    // Show success toast
+                    if (window.showToast) {
+                        window.showToast({
+                            message: `Added ${exercise.name} to workout`,
+                            type: 'success',
+                            title: 'Exercise Added',
+                            icon: 'bx-plus-circle',
+                            delay: 3000
+                        });
+                    }
+                    
+                } catch (error) {
+                    console.error('❌ Error adding exercise:', error);
+                    
+                    // Reset button state
+                    renderExerciseList();
+                    
+                    if (window.showToast) {
+                        window.showToast({
+                            message: 'Failed to add exercise. Please try again.',
+                            type: 'danger',
+                            title: 'Error',
+                            icon: 'bx-error',
+                            delay: 3000
+                        });
+                    }
                 }
+            });
+            
+            // Initialize when offcanvas is shown
+            offcanvasElement.addEventListener('shown.bs.offcanvas', () => {
+                loadExercises();
                 
                 // Auto-focus search on desktop only
                 if (searchInput && window.innerWidth > 768) {
-                    setTimeout(() => searchInput.focus(), 300);
+                    setTimeout(() => searchInput.focus(), 100);
                 }
-            }, 200);
-            
-            // Add Exercise button handler
-            if (addBtn && searchInput) {
-                addBtn.addEventListener('click', async () => {
-                    const name = searchInput.value.trim();
-                    const sets = setsInput?.value.trim() || '3';
-                    const reps = repsInput?.value.trim() || '12';
-                    const weight = weightInput?.value.trim() || '';
-                    const unit = unitSelect?.value || 'lbs';
-                    
-                    if (!name) {
-                        if (window.showAlert) {
-                            window.showAlert('Please enter an exercise name', 'warning');
-                        } else {
-                            alert('Please enter an exercise name.');
-                        }
-                        searchInput.focus();
-                        return;
-                    }
-                    
-                    // Show loading state
-                    addBtn.disabled = true;
-                    addBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Adding...';
-                    
-                    try {
-                        // Auto-create custom exercise if it doesn't exist
-                        if (window.exerciseCacheService && window.dataManager?.isUserAuthenticated()) {
-                            const currentUser = window.dataManager.getCurrentUser();
-                            const userId = currentUser?.uid || null;
-                            const exercise = await window.exerciseCacheService.autoCreateIfNeeded(name, userId);
-                            
-                            if (exercise) {
-                                console.log(`✅ Auto-created or found exercise: ${name}`);
-                                window.exerciseCacheService._trackUsage(exercise);
-                            }
-                        }
-                        
-                        // Call the add callback
-                        await onAddNew({ name, sets, reps, weight, unit });
-                        
-                        // Close offcanvas
-                        offcanvas.hide();
-                        
-                    } catch (error) {
-                        console.error('❌ Error adding exercise:', error);
-                        
-                        // Reset button state
-                        addBtn.disabled = false;
-                        addBtn.innerHTML = '<i class="bx bx-plus-circle me-1"></i>Add Exercise';
-                        
-                        if (window.showAlert) {
-                            window.showAlert('Failed to add exercise. Please try again.', 'danger');
-                        } else {
-                            alert('Failed to add exercise. Please try again.');
-                        }
-                    }
-                });
-            }
-            
-            // Previous exercises: Quick add
-            if (previousBonusList) {
-                previousBonusList.addEventListener('click', async (e) => {
-                    const chipAddBtn = e.target.closest('[data-action="add-previous"]');
-                    if (chipAddBtn) {
-                        const index = parseInt(chipAddBtn.getAttribute('data-index'));
-                        
-                        // Show loading state
-                        chipAddBtn.disabled = true;
-                        chipAddBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
-                        
-                        try {
-                            await onAddPrevious(index);
-                            offcanvas.hide();
-                        } catch (error) {
-                            console.error('❌ Error adding previous exercise:', error);
-                            chipAddBtn.disabled = false;
-                            chipAddBtn.innerHTML = '<i class="bx bx-plus"></i>';
-                        }
-                    }
-                });
-            }
-            
-            // Enter key to submit
-            if (searchInput && addBtn) {
-                searchInput.addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter' && !addBtn.disabled) {
-                        e.preventDefault();
-                        addBtn.click();
-                    }
-                });
-            }
+            }, { once: true });
         });
     }
     
@@ -1139,6 +1068,10 @@ class UnifiedOffcanvasFactory {
         // This must be set on the element BEFORE creating the Bootstrap instance
         offcanvasElement.setAttribute('data-bs-scroll', 'false');
         
+        // CRITICAL: Force a layout reflow before Bootstrap initialization
+        // This ensures the element is fully rendered in the DOM
+        void offcanvasElement.offsetHeight;
+        
         // Wrap Bootstrap initialization in try-catch for graceful error handling
         let offcanvas;
         try {
@@ -1184,10 +1117,21 @@ class UnifiedOffcanvasFactory {
         requestAnimationFrame(() => {
             requestAnimationFrame(() => {
                 setTimeout(() => {
-                    if (offcanvas && offcanvasElement.isConnected) {
-                        offcanvas.show();
+                    // Triple-check that everything is still valid before showing
+                    if (offcanvas && offcanvasElement && offcanvasElement.isConnected) {
+                        try {
+                            // Verify the Bootstrap instance is still valid
+                            const currentInstance = window.bootstrap.Offcanvas.getInstance(offcanvasElement);
+                            if (currentInstance === offcanvas) {
+                                offcanvas.show();
+                            } else {
+                                console.warn('⚠️ Offcanvas instance mismatch, skipping show()');
+                            }
+                        } catch (showError) {
+                            console.error('❌ Error showing offcanvas:', showError);
+                        }
                     }
-                }, 0);
+                }, 10); // Increased delay from 0 to 10ms for more stability
             });
         });
 

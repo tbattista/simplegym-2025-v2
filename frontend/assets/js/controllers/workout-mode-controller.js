@@ -1080,23 +1080,20 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
     }
     
     /**
-     * Show bonus exercise modal (now uses factory)
+     * Show bonus exercise modal (now uses factory with simplified API)
      */
     async showBonusExerciseModal() {
         try {
-            const previousBonusExercises = await this.sessionService
-                .getLastSessionBonusExercises(this.currentWorkout.id);
-            
             window.UnifiedOffcanvasFactory.createBonusExercise(
-                { previousExercises: previousBonusExercises },
+                {},  // Empty data object - no previous exercises in demo style
                 async (data) => {
-                    // Handle adding new exercise
+                    // Handle adding exercise
                     this.sessionService.addBonusExercise({
                         name: data.name,
                         sets: data.sets || '3',
                         reps: data.reps || '12',
                         weight: data.weight || '',
-                        weight_unit: data.unit,
+                        weight_unit: data.unit || 'lbs',
                         rest: '60s'
                     });
                     this.renderWorkout();
@@ -1105,26 +1102,6 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
                         ? `${data.name} added! It will be included when you start the workout. 💪`
                         : `${data.name} added to your workout! 💪`;
                     if (window.showAlert) window.showAlert(message, 'success');
-                },
-                async (index) => {
-                    // Handle adding previous exercise
-                    const exercise = previousBonusExercises[index];
-                    if (exercise) {
-                        this.sessionService.addBonusExercise({
-                            name: exercise.exercise_name,
-                            sets: exercise.target_sets || '3',
-                            reps: exercise.target_reps || '12',
-                            weight: exercise.weight || '',
-                            weight_unit: exercise.weight_unit || 'lbs',
-                            rest: '60s'
-                        });
-                        this.renderWorkout();
-                        
-                        const message = !this.sessionService.isSessionActive()
-                            ? `${exercise.exercise_name} added! It will be included when you start the workout. 💪`
-                            : `${exercise.exercise_name} added to your workout! 💪`;
-                        if (window.showAlert) window.showAlert(message, 'success');
-                    }
                 }
             );
         } catch (error) {
@@ -1501,6 +1478,39 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
                 }
             }
         );
+    }
+    
+    /**
+     * Skip current exercise (called from action bar)
+     * Skips the currently expanded exercise card
+     */
+    skipExercise() {
+        if (!this.sessionService.isSessionActive()) {
+            console.warn('⚠️ Cannot skip exercise - no active session');
+            if (window.showAlert) {
+                window.showAlert('Please start your workout session first', 'warning');
+            }
+            return;
+        }
+        
+        // Find currently expanded card
+        const expandedCard = document.querySelector('.exercise-card.expanded');
+        
+        if (!expandedCard) {
+            console.warn('⚠️ No exercise card is expanded');
+            if (window.showAlert) {
+                window.showAlert('Please expand an exercise to skip it', 'warning');
+            }
+            return;
+        }
+        
+        const exerciseIndex = parseInt(expandedCard.getAttribute('data-exercise-index'));
+        const exerciseName = expandedCard.getAttribute('data-exercise-name');
+        
+        console.log(`⏭️ Skip button clicked for: ${exerciseName} (index: ${exerciseIndex})`);
+        
+        // Call existing skip handler
+        this.handleSkipExercise(exerciseName, exerciseIndex);
     }
     
     /**

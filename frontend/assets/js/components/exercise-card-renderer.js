@@ -65,19 +65,20 @@ class ExerciseCardRenderer {
                            (templateWeight ? 'template' :
                            (lastWeight ? 'history' : 'none'));
         
+        // Calculate plate breakdown for barbell exercises
+        const plateBreakdown = this._calculatePlateBreakdown(currentWeight, currentUnit);
+        
         return `
             <div class="card exercise-card ${bonusClass} ${isSkipped ? 'skipped' : ''}" data-exercise-index="${index}" data-exercise-name="${this._escapeHtml(mainExercise)}">
                 <div class="card-header exercise-card-header" onclick="window.workoutModeController.toggleExerciseCard(${index})">
                     <div class="exercise-card-summary">
-                        <div class="d-flex justify-content-between align-items-start mb-1">
-                            <h6 class="mb-0">
-                                ${isSkipped ? '<i class="bx bx-x-circle text-warning me-1"></i>' : ''}
-                                ${this._escapeHtml(mainExercise)}
-                            </h6>
+                        <h6 class="mb-0">
+                            ${isSkipped ? '<i class="bx bx-x-circle text-warning me-1"></i>' : ''}
+                            ${this._escapeHtml(mainExercise)}
+                        </h6>
+                        <div class="exercise-card-meta">
+                            <span>${sets} sets × ${reps} reps</span>
                             ${this._renderWeightBadge(currentWeight, currentUnit, weightSource, lastWeight, lastWeightUnit)}
-                        </div>
-                        <div class="exercise-card-meta text-muted small">
-                            ${sets} × ${reps} • Rest: ${rest}
                         </div>
                         ${alternates.length > 0 ? `
                             <div class="exercise-card-alts text-muted small mt-1">
@@ -97,41 +98,57 @@ class ExerciseCardRenderer {
                         </div>
                     ` : ''}
                     
-                    ${isSessionActive && lastWeight && lastSessionDate ? `
-                        <div class="text-muted small mb-3">
-                            <i class="bx bx-history me-1"></i>Last: ${lastWeight} ${lastWeightUnit} (${lastSessionDate})
-                        </div>
-                    ` : ''}
-                    
-                    ${notes ? `
-                        <div class="alert alert-info mb-3" style="font-size: 0.875rem; padding: 0.75rem;">
-                            <i class="bx bx-info-circle me-1"></i>
-                            ${this._escapeHtml(notes)}
-                        </div>
-                    ` : ''}
-                    
-                    <!-- 2x2 Grid: Skip/Unskip / Edit Weight | Next | (empty) | (empty) -->
-                    <div class="workout-button-grid workout-button-grid-2x2">
-                        <!-- Row 1, Column 1: Skip/Unskip Button -->
-                        ${isSessionActive && !isSkipped ? `
-                            <button class="btn btn-outline-warning workout-grid-btn"
-                                    onclick="window.workoutModeController.handleSkipExercise('${this._escapeHtml(mainExercise)}', ${index}); event.stopPropagation();"
-                                    title="Skip this exercise">
-                                <i class="bx bx-skip-next me-1"></i>Skip
-                            </button>
-                        ` : isSessionActive && isSkipped ? `
-                            <button class="btn btn-warning workout-grid-btn"
-                                    onclick="window.workoutModeController.handleUnskipExercise('${this._escapeHtml(mainExercise)}', ${index}); event.stopPropagation();"
-                                    title="Unskip this exercise">
-                                <i class="bx bx-undo me-1"></i>Unskip
-                            </button>
-                        ` : `
-                            <div class="workout-grid-btn-placeholder"></div>
-                        `}
+                    <div class="mb-3">
+                        <h5>${this._escapeHtml(mainExercise)}</h5>
                         
-                        <!-- Row 1, Column 2: Edit Weight Button -->
+                        <!-- Compact Weight & Exercise Details (Demo Style) -->
+                        <div class="mb-3 p-2 bg-light rounded">
+                            <div class="row g-2 align-items-center">
+                                <!-- Weight Column -->
+                                <div class="col-5 text-center border-end">
+                                    <small class="text-muted d-block">Weight</small>
+                                    <div class="h3 mb-0 text-primary fw-bold">${currentWeight || '—'} ${currentWeight ? currentUnit : ''}</div>
+                                    ${lastWeight && lastSessionDate ? `
+                                        <small class="text-muted" style="font-size: 0.7rem;">Last: ${lastWeight} ${lastWeightUnit}</small>
+                                    ` : ''}
+                                </div>
+                                
+                                <!-- Sets × Reps & Rest -->
+                                <div class="col-7">
+                                    <div class="d-flex justify-content-around">
+                                        <div class="text-center">
+                                            <small class="text-muted d-block" style="font-size: 0.7rem;">Sets × Reps</small>
+                                            <strong>${sets} × ${reps}</strong>
+                                        </div>
+                                        <div class="text-center">
+                                            <small class="text-muted d-block" style="font-size: 0.7rem;">Rest</small>
+                                            <strong><i class="bx bx-time-five" style="font-size: 0.9rem;"></i>${rest}</strong>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            ${plateBreakdown ? `
+                                <div class="mt-2 pt-2 border-top text-center">
+                                    <small class="text-muted" style="font-size: 0.7rem;">
+                                        <i class="bx bx-dumbbell me-1"></i>${plateBreakdown}
+                                    </small>
+                                </div>
+                            ` : ''}
+                        </div>
+                        
+                        ${notes ? `
+                            <p class="text-muted small mb-3">
+                                <i class="bx bx-info-circle me-1"></i>
+                                ${this._escapeHtml(notes)}
+                            </p>
+                        ` : ''}
+                    </div>
+                    
+                    <!-- Action Buttons -->
+                    <div class="d-grid">
                         <button
-                            class="btn ${currentWeight ? 'btn-outline-primary' : 'btn-outline-warning'} workout-grid-btn"
+                            class="btn ${currentWeight ? 'btn-primary' : 'btn-outline-primary'}"
                             data-exercise-name="${this._escapeHtml(mainExercise)}"
                             data-current-weight="${currentWeight || ''}"
                             data-current-unit="${currentUnit}"
@@ -142,16 +159,9 @@ class ExerciseCardRenderer {
                             data-weight-source="${weightSource}"
                             onclick="window.workoutModeController.handleWeightButtonClick(this); event.stopPropagation();"
                             title="${currentWeight ? 'Edit current weight' : 'Set weight for this exercise'}">
-                            <i class="bx ${currentWeight ? 'bx-edit-alt' : 'bx-plus-circle'} me-1"></i>${currentWeight ? 'Edit Weight' : 'Set Weight'}
+                            <i class="bx ${currentWeight ? 'bx-edit-alt' : 'bx-plus-circle'} me-2"></i>
+                            ${currentWeight ? 'Edit Exercise' : 'Set Weight'}
                         </button>
-                        
-                        <!-- Row 2, Column 1: Next/End Button -->
-                        <button class="btn btn-primary workout-grid-btn" onclick="window.workoutModeController.goToNextExercise(${index})">
-                            ${index === totalCards - 1 ? 'End<i class="bx bx-stop-circle ms-1"></i>' : 'Next<i class="bx bx-right-arrow-alt ms-1"></i>'}
-                        </button>
-                        
-                        <!-- Row 2, Column 2: Empty placeholder for alignment -->
-                        <div class="workout-grid-btn-placeholder"></div>
                     </div>
                 </div>
             </div>
@@ -235,6 +245,54 @@ class ExerciseCardRenderer {
     _parseRestTime(restStr) {
         const match = restStr.match(/(\d+)/);
         return match ? parseInt(match[1]) : 60;
+    }
+
+    /**
+     * Calculate barbell plate breakdown
+     * @private
+     */
+    _calculatePlateBreakdown(weightStr, unit) {
+        // Only calculate for lbs barbell exercises
+        if (unit !== 'lbs') return null;
+        
+        // Extract numeric value from weight string
+        const totalWeight = parseFloat(weightStr);
+        if (isNaN(totalWeight) || totalWeight <= 45) {
+            return null; // No plates needed for bar weight or less
+        }
+        
+        const barWeight = 45;
+        const weightPerSide = (totalWeight - barWeight) / 2;
+        
+        if (weightPerSide <= 0) {
+            return null;
+        }
+        
+        // Available plate weights in descending order
+        const plates = [45, 35, 25, 10, 5, 2.5];
+        const plateCount = {};
+        let remaining = weightPerSide;
+        
+        // Calculate plates needed per side
+        for (const plate of plates) {
+            const count = Math.floor(remaining / plate);
+            if (count > 0) {
+                plateCount[plate] = count;
+                remaining -= count * plate;
+            }
+        }
+        
+        // Format the breakdown string
+        const plateParts = [];
+        for (const [plate, count] of Object.entries(plateCount)) {
+            plateParts.push(`${count}×${plate}lb`);
+        }
+        
+        if (plateParts.length === 0) {
+            return null;
+        }
+        
+        return `45lb bar + (${plateParts.join(' + ')}) each side`;
     }
 
     /**

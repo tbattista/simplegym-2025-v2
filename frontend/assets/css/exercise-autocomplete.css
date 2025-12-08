@@ -1,10 +1,13 @@
 /**
  * Exercise Autocomplete Component Styles
  * Ghost Gym V2 - SNEAT Compliant
- * @version 2.1.0 - Standardized with SNEAT input-group pattern
+ * @version 3.0.0 - Redesigned with Sneat list-group pattern
  */
 
-/* SNEAT Input Group Wrapper */
+/* ============================================
+   INPUT GROUP WRAPPER
+   ============================================ */
+
 .exercise-autocomplete-wrapper {
     position: relative;
 }
@@ -34,7 +37,23 @@
     background-color: var(--bs-secondary-bg);
 }
 
-/* Autocomplete Dropdown Container */
+/* Input Focus State */
+.exercise-autocomplete-wrapper:focus-within .input-group-text {
+    border-color: var(--bs-primary);
+}
+
+.exercise-autocomplete-wrapper:focus-within .form-control {
+    border-color: var(--bs-primary);
+}
+
+.exercise-autocomplete-wrapper:focus-within .exercise-autocomplete-clear {
+    border-color: var(--bs-primary);
+}
+
+/* ============================================
+   DROPDOWN CONTAINER
+   ============================================ */
+
 .exercise-autocomplete-dropdown {
     position: absolute;
     top: 100%;
@@ -44,72 +63,98 @@
     margin-top: 0.25rem;
     background: var(--bs-body-bg);
     border: 1px solid var(--bs-border-color);
-    border-radius: var(--bs-border-radius);
-    box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.15);
-    max-height: 400px;
+    border-radius: var(--bs-border-radius-lg);
+    box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.15);
+    max-height: 350px;
     overflow-y: auto;
+    overflow-x: hidden;
 }
 
-/* Results Container */
-.exercise-autocomplete-results {
-    padding: 0.25rem 0;
+/* Animation */
+.exercise-autocomplete-dropdown {
+    animation: autocompleteSlideDown 0.15s ease-out;
 }
 
-/* Individual Result Item */
-.exercise-autocomplete-item {
-    padding: 0.75rem 1rem;
-    cursor: pointer;
-    transition: background-color 0.15s ease-in-out;
-    border-bottom: 1px solid var(--bs-border-color-translucent);
+@keyframes autocompleteSlideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
-.exercise-autocomplete-item:last-child {
-    border-bottom: none;
+/* ============================================
+   LIST GROUP RESULTS (Sneat Pattern)
+   ============================================ */
+
+.exercise-autocomplete-results.list-group {
+    margin-bottom: 0;
+    border-radius: 0;
 }
 
-.exercise-autocomplete-item:hover,
-.exercise-autocomplete-item.selected {
-    background-color: var(--bs-primary-bg-subtle);
+.exercise-autocomplete-results .list-group-item {
+    border-left: 0;
+    border-right: 0;
+    border-radius: 0 !important;
+    padding: 0.875rem 1rem;
 }
 
-/* Exercise Name */
-.exercise-autocomplete-item .exercise-name {
+.exercise-autocomplete-results .list-group-item:first-child {
+    border-top: 0;
+}
+
+.exercise-autocomplete-results .list-group-item:last-child {
+    border-bottom: 0;
+}
+
+/* Exercise Info Layout */
+.exercise-autocomplete-results .exercise-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.exercise-autocomplete-results .exercise-name {
+    font-size: 0.9375rem;
+    line-height: 1.4;
+    margin-bottom: 0.125rem;
+}
+
+.exercise-autocomplete-results .exercise-name i {
+    font-size: 1rem;
+}
+
+/* Hover state for list items */
+.exercise-autocomplete-results .list-group-item-action:hover:not(.active) {
+    background-color: rgba(var(--bs-primary-rgb), 0.08);
+}
+
+/* Active/Selected state */
+.exercise-autocomplete-results .list-group-item.active {
+    background-color: var(--bs-primary);
+    border-color: var(--bs-primary);
+}
+
+.exercise-autocomplete-results .list-group-item.active .badge {
+    background-color: rgba(255, 255, 255, 0.2) !important;
+    color: white !important;
+}
+
+/* Custom badge styling */
+.exercise-autocomplete-results .badge {
+    font-size: 0.6875rem;
     font-weight: 500;
-    color: var(--bs-body-color);
-    margin-bottom: 0.25rem;
-    display: flex;
-    align-items: center;
-}
-
-/* Exercise Metadata */
-.exercise-autocomplete-item .exercise-meta {
-    display: flex;
-    gap: 0.5rem;
-    flex-wrap: wrap;
-}
-
-.exercise-autocomplete-item .exercise-meta .badge {
-    font-size: 0.75rem;
-    font-weight: 400;
     padding: 0.25rem 0.5rem;
 }
 
-/* Custom Exercise Option */
-.exercise-autocomplete-custom {
-    background-color: var(--bs-success-bg-subtle);
-    color: var(--bs-success-text-emphasis);
-    font-weight: 500;
-    border-top: 2px solid var(--bs-success-border-subtle);
-}
+/* ============================================
+   LOADING STATE
+   ============================================ */
 
-.exercise-autocomplete-custom:hover {
-    background-color: var(--bs-success);
-    color: white;
-}
-
-/* Loading State */
 .exercise-autocomplete-loading {
-    padding: 1rem;
+    padding: 1.25rem;
     text-align: center;
     color: var(--bs-secondary);
 }
@@ -123,132 +168,91 @@
     to { transform: rotate(360deg); }
 }
 
-/* Empty State */
-.exercise-autocomplete-empty {
-    padding: 1rem;
-    text-align: center;
-    color: var(--bs-secondary);
-}
+/* ============================================
+   SCROLLBAR STYLING
+   ============================================ */
 
-/* Scrollbar Styling */
 .exercise-autocomplete-dropdown::-webkit-scrollbar {
-    width: 8px;
+    width: 6px;
 }
 
 .exercise-autocomplete-dropdown::-webkit-scrollbar-track {
-    background: var(--bs-tertiary-bg);
-    border-radius: 4px;
+    background: transparent;
 }
 
 .exercise-autocomplete-dropdown::-webkit-scrollbar-thumb {
     background: var(--bs-border-color);
-    border-radius: 4px;
+    border-radius: 3px;
 }
 
 .exercise-autocomplete-dropdown::-webkit-scrollbar-thumb:hover {
     background: var(--bs-secondary);
 }
 
-/* Input Focus State - Handled by input-group-merge */
-.exercise-autocomplete-wrapper:focus-within .input-group-text {
-    border-color: var(--bs-primary);
-}
-
-.exercise-autocomplete-wrapper:focus-within .form-control {
-    border-color: var(--bs-primary);
-}
-
-.exercise-autocomplete-wrapper:focus-within .exercise-autocomplete-clear {
-    border-color: var(--bs-primary);
-}
-
-/* Responsive Adjustments */
-@media (max-width: 576px) {
-    .exercise-autocomplete-dropdown {
-        max-height: 300px;
-    }
-    
-    .exercise-autocomplete-item {
-        padding: 0.5rem 0.75rem;
-    }
-    
-    .exercise-autocomplete-item .exercise-meta .badge {
-        font-size: 0.7rem;
-        padding: 0.2rem 0.4rem;
-    }
-}
-
-/* Dark Theme Enhancements */
-@media (prefers-color-scheme: dark) {
-    .exercise-autocomplete-dropdown {
-        box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.5);
-    }
-}
-
-/* Accessibility */
-.exercise-autocomplete-item:focus {
-    outline: 2px solid var(--bs-primary);
-    outline-offset: -2px;
-}
-
-/* Animation */
-.exercise-autocomplete-dropdown {
-    animation: slideDown 0.2s ease-out;
-}
-
-@keyframes slideDown {
-    from {
-        opacity: 0;
-        transform: translateY(-10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* Custom Exercise Badge */
-.exercise-autocomplete-item .bx-star {
-    font-size: 1rem;
-}
-
-/* Highlight matching text (future enhancement) */
-.exercise-autocomplete-highlight {
-    background-color: var(--bs-warning-bg-subtle);
-    font-weight: 600;
-}
-
 /* ============================================
-   MOBILE UX ENHANCEMENTS
+   OFFCANVAS CONTEXT
    ============================================ */
 
-/* Z-index fix for offcanvas */
 .offcanvas .exercise-autocomplete-dropdown {
     z-index: 1060;
 }
 
-/* Prevent iOS zoom on input focus */
+/* ============================================
+   MOBILE RESPONSIVE
+   ============================================ */
+
 @media (max-width: 576px) {
+    .exercise-autocomplete-dropdown {
+        max-height: 45vh;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .exercise-autocomplete-results .list-group-item {
+        padding: 0.75rem 0.875rem;
+        min-height: 52px;
+    }
+    
+    .exercise-autocomplete-results .exercise-name {
+        font-size: 0.875rem;
+    }
+    
+    /* Prevent iOS zoom on input focus */
     .exercise-autocomplete-input {
         font-size: 16px !important;
     }
     
-    /* Better touch targets */
-    .exercise-autocomplete-item {
-        padding: 1rem 0.75rem;
-        min-height: 56px;
-    }
-    
     /* Touch feedback */
-    .exercise-autocomplete-item:active {
-        background-color: rgba(var(--bs-primary-rgb), 0.15);
-        transform: scale(0.98);
-        transition: transform 0.1s ease;
+    .exercise-autocomplete-results .list-group-item:active:not(.active) {
+        background-color: rgba(var(--bs-primary-rgb), 0.12);
     }
-    
-    /* Keyboard handling */
+}
+
+/* ============================================
+   DARK THEME
+   ============================================ */
+
+[data-bs-theme="dark"] .exercise-autocomplete-dropdown {
+    box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.4);
+    border-color: var(--bs-gray-700);
+}
+
+[data-bs-theme="dark"] .exercise-autocomplete-results .list-group-item {
+    border-color: var(--bs-gray-700);
+}
+
+/* ============================================
+   ACCESSIBILITY
+   ============================================ */
+
+.exercise-autocomplete-results .list-group-item:focus-visible {
+    outline: 2px solid var(--bs-primary);
+    outline-offset: -2px;
+    z-index: 1;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
     .exercise-autocomplete-dropdown {
-        max-height: 40vh;
-        -webkit-overflow-scrolling: touch;
+        animation: none;
     }
 }
