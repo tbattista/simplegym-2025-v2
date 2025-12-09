@@ -1115,6 +1115,7 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
     /**
      * BONUS EXERCISE METHODS
      * Handle bonus exercise modal and management
+     * UPDATED: Now uses two-offcanvas approach (Add Exercise + Exercise Search)
      */
     
     /**
@@ -1122,39 +1123,89 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
      * Now works BEFORE and DURING workout session
      */
     async handleBonusExercises() {
-        await this.showBonusExerciseModal();
+        await this.showAddExerciseForm();
     }
     
     /**
-     * Show bonus exercise modal (now uses factory with simplified API)
+     * Show add exercise form (new two-offcanvas approach)
+     * Opens the Add Exercise form with search button integration
      */
-    async showBonusExerciseModal() {
+    async showAddExerciseForm() {
         try {
-            window.UnifiedOffcanvasFactory.createBonusExercise(
-                {},  // Empty data object - no previous exercises in demo style
-                async (data) => {
+            window.UnifiedOffcanvasFactory.createAddExerciseForm(
+                {
+                    title: 'Add Bonus Exercise',
+                    showSearchButton: true,
+                    buttonText: 'Add Exercise',
+                    buttonIcon: 'bx-plus-circle'
+                },
+                // onAddExercise callback
+                async (exerciseData) => {
                     // Handle adding exercise
                     this.sessionService.addBonusExercise({
-                        name: data.name,
-                        sets: data.sets || '3',
-                        reps: data.reps || '12',
-                        weight: data.weight || '',
-                        weight_unit: data.unit || 'lbs',
-                        rest: '60s'
+                        name: exerciseData.name,
+                        sets: exerciseData.sets || '3',
+                        reps: exerciseData.reps || '12',
+                        rest: exerciseData.rest || '60s',
+                        weight: '',
+                        weight_unit: 'lbs'
                     });
                     this.renderWorkout();
                     
                     const message = !this.sessionService.isSessionActive()
-                        ? `${data.name} added! It will be included when you start the workout. 💪`
-                        : `${data.name} added to your workout! 💪`;
+                        ? `${exerciseData.name} added! It will be included when you start the workout. 💪`
+                        : `${exerciseData.name} added to your workout! 💪`;
                     if (window.showAlert) window.showAlert(message, 'success');
+                },
+                // onSearchClick callback
+                (populateCallback) => {
+                    // Open Exercise Search offcanvas
+                    this.showExerciseSearchOffcanvas(populateCallback);
                 }
             );
         } catch (error) {
-            console.error('❌ Error showing bonus exercise modal:', error);
+            console.error('❌ Error showing add exercise form:', error);
             const modalManager = this.getModalManager();
-            modalManager.alert('Error', 'Failed to load bonus exercise modal. Please try again.', 'danger');
+            modalManager.alert('Error', 'Failed to load add exercise form. Please try again.', 'danger');
         }
+    }
+    
+    /**
+     * Show exercise search offcanvas
+     * Opens the standalone exercise search interface
+     * @param {Function} populateCallback - Callback to populate the Add Exercise form with selected exercise
+     */
+    showExerciseSearchOffcanvas(populateCallback) {
+        try {
+            window.UnifiedOffcanvasFactory.createExerciseSearchOffcanvas(
+                {
+                    title: 'Search Exercise Library',
+                    showFilters: true,
+                    buttonText: 'Select',
+                    buttonIcon: 'bx-check'
+                },
+                (selectedExercise) => {
+                    // Exercise selected from search
+                    // Populate the Add Exercise form via callback
+                    populateCallback(selectedExercise);
+                    
+                    console.log('✅ Exercise selected:', selectedExercise.name);
+                }
+            );
+        } catch (error) {
+            console.error('❌ Error showing exercise search:', error);
+            const modalManager = this.getModalManager();
+            modalManager.alert('Error', 'Failed to load exercise search. Please try again.', 'danger');
+        }
+    }
+    
+    /**
+     * Show bonus exercise modal (DEPRECATED - kept for backward compatibility)
+     * Use showAddExerciseForm() instead
+     */
+    async showBonusExerciseModal() {
+        console.warn('⚠️ showBonusExerciseModal() is deprecated, use showAddExerciseForm() instead');
+        await this.showAddExerciseForm();
     }
     
     

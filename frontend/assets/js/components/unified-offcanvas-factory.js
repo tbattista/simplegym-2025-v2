@@ -1413,6 +1413,496 @@ class UnifiedOffcanvasFactory {
         });
     }
     
+    /* ============================================
+       EXERCISE SEARCH OFFCANVAS (Reusable)
+       Standalone exercise search with filters
+       ============================================ */
+    
+    /**
+     * Create standalone exercise search offcanvas
+     * REUSABLE across entire app - can be used anywhere that needs exercise selection
+     * @param {Object} config - Configuration options
+     * @param {string} config.title - Offcanvas title (default: 'Search Exercises')
+     * @param {boolean} config.showFilters - Show filter section (default: true)
+     * @param {string} config.buttonText - Selection button text (default: 'Select')
+     * @param {string} config.buttonIcon - Selection button icon (default: 'bx-check')
+     * @param {Function} onSelectExercise - Callback when exercise is selected
+     * @returns {Object} Offcanvas instance
+     */
+    static createExerciseSearchOffcanvas(config = {}, onSelectExercise) {
+        const {
+            title = 'Search Exercises',
+            showFilters = true,
+            buttonText = 'Select',
+            buttonIcon = 'bx-check'
+        } = config;
+        
+        const offcanvasHtml = `
+            <div class="offcanvas offcanvas-bottom offcanvas-bottom-base"
+                 tabindex="-1" id="exerciseSearchOffcanvas"
+                 data-bs-scroll="false" style="height: 85vh;">
+                <div class="offcanvas-header border-bottom">
+                    <h5 class="offcanvas-title" id="exerciseSearchOffcanvasLabel">
+                        <i class="bx bx-search me-2"></i>${this.escapeHtml(title)}
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                </div>
+                <div class="offcanvas-body p-0 d-flex flex-column">
+                    <!-- Search Box -->
+                    <div class="search-section p-3 border-bottom bg-light">
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bx bx-search"></i></span>
+                            <input type="text" class="form-control" id="exerciseSearchInput"
+                                   placeholder="Search exercises..." autocomplete="off">
+                        </div>
+                    </div>
+                    
+                    <!-- Filters Section -->
+                    ${showFilters ? `
+                        <div class="filters-section p-3 border-bottom">
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <label class="form-label small mb-1">Muscle Group</label>
+                                    <select class="form-select form-select-sm" id="muscleGroupFilter">
+                                        <option value="">All</option>
+                                    </select>
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label small mb-1">Difficulty</label>
+                                    <select class="form-select form-select-sm" id="difficultyFilter">
+                                        <option value="">All</option>
+                                        <option value="Beginner">Beginner</option>
+                                        <option value="Intermediate">Intermediate</option>
+                                        <option value="Advanced">Advanced</option>
+                                    </select>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label small mb-1">Equipment</label>
+                                    <select class="form-select form-select-sm" id="equipmentFilter" multiple>
+                                    </select>
+                                    <small class="text-muted d-block mt-1">Tap to select multiple</small>
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label small mb-1">Sort By</label>
+                                    <select class="form-select form-select-sm" id="sortBySelect">
+                                        <option value="name-asc">Name (A-Z)</option>
+                                        <option value="name-desc">Name (Z-A)</option>
+                                        <option value="muscle">Muscle Group</option>
+                                        <option value="tier">Standard First</option>
+                                    </select>
+                                </div>
+                                <div class="col-6 d-flex align-items-end">
+                                    <div class="form-check form-switch mb-0">
+                                        <input class="form-check-input" type="checkbox" id="favoritesOnlyFilter">
+                                        <label class="form-check-label small" for="favoritesOnlyFilter">
+                                            Favorites Only
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    ` : ''}
+                    
+                    <!-- Exercise List -->
+                    <div class="exercise-list-section flex-grow-1 d-flex flex-column">
+                        <div class="p-3 pb-2 border-bottom bg-light">
+                            <h6 class="mb-0 text-muted small">
+                                <i class="bx bx-book-open me-2"></i>Exercise Library
+                            </h6>
+                        </div>
+                        
+                        <div id="exerciseListContainer" class="p-3 flex-grow-1" style="overflow-y: auto;">
+                            <!-- Rendered by search core -->
+                        </div>
+                        
+                        <!-- Pagination -->
+                        <div class="p-2 border-top bg-light" id="paginationFooter" style="display: none;">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted" id="pageInfo"></small>
+                                <div class="btn-group btn-group-sm" id="paginationControls"></div>
+                            </div>
+                        </div>
+                        
+                        <!-- Empty State -->
+                        <div id="emptyState" class="text-center py-5" style="display: none;">
+                            <i class="bx bx-search-alt display-1 text-muted"></i>
+                            <p class="text-muted mt-3">No exercises found</p>
+                            <small class="text-muted d-block">Try adjusting your filters</small>
+                        </div>
+                        
+                        <!-- Loading State -->
+                        <div id="loadingState" class="text-center py-5" style="display: none;">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <p class="text-muted mt-3">Loading exercises...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        return this.createOffcanvas('exerciseSearchOffcanvas', offcanvasHtml, (offcanvas, element) => {
+            // Initialize search core
+            const searchCore = new window.ExerciseSearchCore(config);
+            
+            // Get DOM elements
+            const searchInput = element.querySelector('#exerciseSearchInput');
+            const muscleGroupFilter = element.querySelector('#muscleGroupFilter');
+            const difficultyFilter = element.querySelector('#difficultyFilter');
+            const equipmentFilter = element.querySelector('#equipmentFilter');
+            const favoritesOnlyFilter = element.querySelector('#favoritesOnlyFilter');
+            const sortBySelect = element.querySelector('#sortBySelect');
+            const exerciseListContainer = element.querySelector('#exerciseListContainer');
+            const paginationFooter = element.querySelector('#paginationFooter');
+            const pageInfo = element.querySelector('#pageInfo');
+            const paginationControls = element.querySelector('#paginationControls');
+            const emptyState = element.querySelector('#emptyState');
+            const loadingState = element.querySelector('#loadingState');
+            
+            // Render exercise list
+            const renderExerciseList = () => {
+                const exercises = searchCore.state.paginatedExercises;
+                
+                if (exercises.length === 0) {
+                    exerciseListContainer.style.display = 'none';
+                    emptyState.style.display = 'block';
+                    paginationFooter.style.display = 'none';
+                    return;
+                }
+                
+                exerciseListContainer.style.display = 'block';
+                emptyState.style.display = 'none';
+                
+                exerciseListContainer.innerHTML = exercises.map(exercise => {
+                    const tier = exercise.exerciseTier || '1';
+                    const difficulty = exercise.difficulty || 'Intermediate';
+                    const muscle = exercise.targetMuscleGroup || '';
+                    const equipment = exercise.primaryEquipment || 'None';
+                    
+                    const tierBadge = (parseInt(tier) === 3)
+                        ? '<span class="badge bg-secondary" style="font-size: 0.75rem; padding: 0.25rem 0.5rem; opacity: 0.7;"><i class="bx bx-dots-horizontal-rounded" style="font-size: 0.75rem;"></i></span>'
+                        : '<span class="badge" style="font-size: 0.75rem; padding: 0.25rem 0.5rem; background: rgba(139, 92, 246, 0.1); color: #8b5cf6; border: 1px solid rgba(139, 92, 246, 0.25);"><i class="bx bxs-star" style="font-size: 0.75rem;"></i> Standard</span>';
+                    
+                    const difficultyColors = { 'B': 'success', 'I': 'warning', 'A': 'danger' };
+                    const diffAbbr = difficulty.charAt(0).toUpperCase();
+                    const diffColor = difficultyColors[diffAbbr] || 'secondary';
+                    const difficultyBadge = `<span class="badge badge-outline-${diffColor}" style="font-size: 0.75rem; padding: 0.3rem 0.6rem; background: transparent;">${difficulty}</span>`;
+                    
+                    return `
+                        <div class="card mb-2">
+                            <div class="card-body p-3">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="flex-grow-1">
+                                        <div class="fw-semibold mb-2">${this.escapeHtml(exercise.name)}</div>
+                                        <div class="d-flex gap-2 flex-wrap align-items-center">
+                                            ${tierBadge}
+                                            ${difficultyBadge}
+                                            ${muscle ? `<span class="text-muted small">${this.escapeHtml(muscle)}</span>` : ''}
+                                            ${equipment ? `<span class="text-muted small">• ${this.escapeHtml(equipment)}</span>` : ''}
+                                        </div>
+                                    </div>
+                                    <div class="flex-shrink-0 ms-3">
+                                        <button class="btn btn-sm btn-primary" data-exercise-id="${this.escapeHtml(exercise.id || exercise.name)}">
+                                            <i class="bx ${buttonIcon} me-1"></i>${buttonText}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            };
+            
+            // Render pagination
+            const renderPagination = (paginationData) => {
+                if (paginationData.totalPages <= 1) {
+                    paginationFooter.style.display = 'none';
+                    return;
+                }
+                
+                paginationFooter.style.display = 'flex';
+                pageInfo.textContent = `Showing ${paginationData.startIdx}-${paginationData.endIdx} of ${paginationData.total}`;
+                
+                let buttonsHtml = '';
+                
+                // Previous button
+                buttonsHtml += `<button class="btn btn-sm btn-outline-secondary" ${paginationData.currentPage === 1 ? 'disabled' : ''} data-page="${paginationData.currentPage - 1}">
+                    <i class="bx bx-chevron-left"></i>
+                </button>`;
+                
+                // Page buttons
+                const maxButtons = 5;
+                let startPage = Math.max(1, paginationData.currentPage - Math.floor(maxButtons / 2));
+                let endPage = Math.min(paginationData.totalPages, startPage + maxButtons - 1);
+                
+                if (endPage - startPage < maxButtons - 1) {
+                    startPage = Math.max(1, endPage - maxButtons + 1);
+                }
+                
+                for (let i = startPage; i <= endPage; i++) {
+                    buttonsHtml += `<button class="btn btn-sm ${i === paginationData.currentPage ? 'btn-primary' : 'btn-outline-secondary'}" data-page="${i}">${i}</button>`;
+                }
+                
+                // Next button
+                buttonsHtml += `<button class="btn btn-sm btn-outline-secondary" ${paginationData.currentPage === paginationData.totalPages ? 'disabled' : ''} data-page="${paginationData.currentPage + 1}">
+                    <i class="bx bx-chevron-right"></i>
+                </button>`;
+                
+                paginationControls.innerHTML = buttonsHtml;
+                
+                // Attach click handlers
+                paginationControls.querySelectorAll('[data-page]').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const page = parseInt(btn.dataset.page);
+                        searchCore.goToPage(page);
+                    });
+                });
+            };
+            
+            // Listen to search core events
+            searchCore.addListener((event, data) => {
+                if (event === 'loadingStart') {
+                    loadingState.style.display = 'block';
+                    exerciseListContainer.style.display = 'none';
+                    emptyState.style.display = 'none';
+                } else if (event === 'loadingEnd') {
+                    loadingState.style.display = 'none';
+                } else if (event === 'filtered' || event === 'paginated') {
+                    renderExerciseList();
+                    if (event === 'paginated') {
+                        renderPagination(data);
+                    }
+                }
+            });
+            
+            // Load exercises
+            searchCore.loadExercises().then(() => {
+                // Populate filter dropdowns
+                if (showFilters) {
+                    const muscleGroups = searchCore.getUniqueMuscleGroups();
+                    muscleGroupFilter.innerHTML = '<option value="">All Muscle Groups</option>' +
+                        muscleGroups.map(mg => `<option value="${this.escapeHtml(mg)}">${this.escapeHtml(mg)}</option>`).join('');
+                    
+                    const equipment = searchCore.getUniqueEquipment();
+                    equipmentFilter.innerHTML = equipment.map(eq => `<option value="${this.escapeHtml(eq)}">${this.escapeHtml(eq)}</option>`).join('');
+                }
+            });
+            
+            // Event handlers
+            searchInput?.addEventListener('input', (e) => {
+                searchCore.setSearchQuery(e.target.value);
+            });
+            
+            muscleGroupFilter?.addEventListener('change', (e) => {
+                searchCore.setMuscleGroup(e.target.value);
+            });
+            
+            difficultyFilter?.addEventListener('change', (e) => {
+                searchCore.setDifficulty(e.target.value);
+            });
+            
+            equipmentFilter?.addEventListener('change', (e) => {
+                searchCore.setEquipment(Array.from(e.target.selectedOptions).map(opt => opt.value));
+            });
+            
+            favoritesOnlyFilter?.addEventListener('change', (e) => {
+                searchCore.setFavoritesOnly(e.target.checked);
+            });
+            
+            sortBySelect?.addEventListener('change', (e) => {
+                const [sortBy, order] = e.target.value.split('-');
+                searchCore.setSort(sortBy, order || 'asc');
+            });
+            
+            // Exercise selection handler
+            exerciseListContainer.addEventListener('click', async (e) => {
+                const button = e.target.closest('button[data-exercise-id]');
+                if (!button) return;
+                
+                const exerciseId = button.dataset.exerciseId;
+                const exercise = searchCore.state.filteredExercises.find(ex =>
+                    (ex.id || ex.name) === exerciseId
+                );
+                
+                if (!exercise) return;
+                
+                // Show loading state
+                button.disabled = true;
+                button.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+                
+                try {
+                    // Auto-create custom exercise if needed
+                    if (window.exerciseCacheService && window.dataManager?.isUserAuthenticated()) {
+                        const currentUser = window.dataManager.getCurrentUser();
+                        const userId = currentUser?.uid || null;
+                        await window.exerciseCacheService.autoCreateIfNeeded(exercise.name, userId);
+                    }
+                    
+                    // Call selection callback
+                    onSelectExercise(exercise);
+                    
+                    // Close offcanvas
+                    offcanvas.hide();
+                    
+                } catch (error) {
+                    console.error('❌ Error selecting exercise:', error);
+                    button.disabled = false;
+                    button.innerHTML = `<i class="bx ${buttonIcon} me-1"></i>${buttonText}`;
+                }
+            });
+        });
+    }
+    
+    /* ============================================
+       ADD EXERCISE FORM OFFCANVAS (Reusable)
+       Simple form for exercise details
+       ============================================ */
+    
+    /**
+     * Create standalone add exercise form offcanvas
+     * REUSABLE across entire app - can be used anywhere that needs exercise data collection
+     * @param {Object} config - Configuration options
+     * @param {string} config.title - Offcanvas title (default: 'Add Exercise')
+     * @param {string} config.exerciseName - Pre-fill exercise name
+     * @param {string} config.exerciseId - Link to DB exercise
+     * @param {string} config.sets - Default sets value
+     * @param {string} config.reps - Default reps value
+     * @param {string} config.rest - Default rest value
+     * @param {boolean} config.showSearchButton - Show search button (default: true)
+     * @param {string} config.buttonText - Submit button text (default: 'Add Exercise')
+     * @param {string} config.buttonIcon - Submit button icon (default: 'bx-plus-circle')
+     * @param {Function} onAddExercise - Callback when exercise is added
+     * @param {Function} onSearchClick - Optional callback when search button is clicked
+     * @returns {Object} Offcanvas instance
+     */
+    static createAddExerciseForm(config = {}, onAddExercise, onSearchClick = null) {
+        const {
+            title = 'Add Exercise',
+            exerciseName = '',
+            exerciseId = null,
+            sets = '3',
+            reps = '12',
+            rest = '60s',
+            showSearchButton = true,
+            buttonText = 'Add Exercise',
+            buttonIcon = 'bx-plus-circle'
+        } = config;
+        
+        const offcanvasHtml = `
+            <div class="offcanvas offcanvas-bottom offcanvas-bottom-base"
+                 tabindex="-1" id="addExerciseFormOffcanvas"
+                 data-bs-scroll="false">
+                <div class="offcanvas-header border-bottom">
+                    <h5 class="offcanvas-title" id="addExerciseFormOffcanvasLabel">
+                        <i class="bx ${buttonIcon} me-2"></i>${this.escapeHtml(title)}
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                </div>
+                <div class="offcanvas-body">
+                    <!-- Exercise Name -->
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Exercise Name</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="exerciseNameInput"
+                                   value="${this.escapeHtml(exerciseName)}"
+                                   placeholder="Enter exercise name" autocomplete="off">
+                            ${showSearchButton ? `
+                                <button class="btn btn-outline-secondary" type="button" id="searchExerciseBtn">
+                                    <i class="bx bx-search"></i> Search
+                                </button>
+                            ` : ''}
+                        </div>
+                        <small class="text-muted">Enter custom name or search library</small>
+                    </div>
+                    
+                    <!-- Sets, Reps, Rest -->
+                    <div class="row g-2 mb-3">
+                        <div class="col-4">
+                            <label class="form-label small">Sets</label>
+                            <input type="text" class="form-control" id="setsInput" value="${sets}" maxlength="5">
+                        </div>
+                        <div class="col-4">
+                            <label class="form-label small">Reps</label>
+                            <input type="text" class="form-control" id="repsInput" value="${reps}" maxlength="10">
+                        </div>
+                        <div class="col-4">
+                            <label class="form-label small">Rest</label>
+                            <input type="text" class="form-control" id="restInput" value="${rest}" maxlength="10">
+                        </div>
+                    </div>
+                    
+                    <!-- Submit Button -->
+                    <button class="btn btn-primary w-100" id="submitExerciseBtn" disabled>
+                        <i class="bx ${buttonIcon} me-2"></i>${this.escapeHtml(buttonText)}
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        return this.createOffcanvas('addExerciseFormOffcanvas', offcanvasHtml, (offcanvas, element) => {
+            // Store exercise ID (if linked to DB)
+            let linkedExerciseId = exerciseId;
+            
+            // Get form elements
+            const nameInput = element.querySelector('#exerciseNameInput');
+            const setsInput = element.querySelector('#setsInput');
+            const repsInput = element.querySelector('#repsInput');
+            const restInput = element.querySelector('#restInput');
+            const submitBtn = element.querySelector('#submitExerciseBtn');
+            const searchBtn = element.querySelector('#searchExerciseBtn');
+            
+            // Validation function
+            const validateForm = () => {
+                const isValid = nameInput.value.trim().length > 0;
+                submitBtn.disabled = !isValid;
+            };
+            
+            // Input handlers
+            nameInput?.addEventListener('input', validateForm);
+            
+            // Search button handler
+            if (searchBtn && onSearchClick) {
+                searchBtn.addEventListener('click', () => {
+                    // Call parent's search handler with a callback to populate the form
+                    onSearchClick((selectedExercise) => {
+                        nameInput.value = selectedExercise.name;
+                        linkedExerciseId = selectedExercise.id;
+                        validateForm();
+                    });
+                });
+            }
+            
+            // Submit handler
+            submitBtn?.addEventListener('click', async () => {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Adding...';
+                
+                try {
+                    const exerciseData = {
+                        name: nameInput.value.trim(),
+                        exerciseId: linkedExerciseId,
+                        sets: setsInput.value.trim(),
+                        reps: repsInput.value.trim(),
+                        rest: restInput.value.trim()
+                    };
+                    
+                    await onAddExercise(exerciseData);
+                    offcanvas.hide();
+                    
+                } catch (error) {
+                    console.error('❌ Error adding exercise:', error);
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = `<i class="bx ${buttonIcon} me-2"></i>${this.escapeHtml(buttonText)}`;
+                    throw error;
+                }
+            });
+            
+            // Initial validation
+            validateForm();
+        });
+    }
+    
     /**
      * Validate add button state based on search input
      * @private
