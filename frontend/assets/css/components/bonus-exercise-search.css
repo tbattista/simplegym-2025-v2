@@ -1,0 +1,150 @@
+/* ============================================
+   BONUS EXERCISE SEARCH - EXERCISE DATABASE CARD STYLE
+   ============================================ */
+
+/* Search Section Styling - FIXED HEIGHT to prevent exercise list from compressing it */
+#bonusExerciseOffcanvas .offcanvas-body > .p-3.pb-4.border-bottom.bg-light {
+  padding: 1.25rem !important;
+  padding-bottom: 1.25rem !important;
+  min-height: 140px !important; /* Fixed minimum height */
+  flex-shrink: 0 !important; /* Prevent compression */
+}
+
+/* Ensure the filter toggle section is visible */
+#bonusExerciseOffcanvas #toggleMoreFilters,
+#bonusExerciseOffcanvas .mt-3.d-flex.justify-content-between {
+  margin-top: 1rem !important;
+}
+
+/* More filters section spacing */
+#bonusExerciseOffcanvas #moreFiltersSection {
+  margin-top: 0.75rem !important;
+}
+
+/* Exercise list should scroll, not compress search section */
+#bonusExerciseOffcanvas #bonusExerciseList {
+  flex: 1 1 auto !important;
+  overflow-y: auto !important;
+  max-height: calc(85vh - 200px) !important; /* Ensure it doesn't overflow */
+}
+
+/* Remove list-group styling, use cards instead */
+#bonusExerciseList {
+  padding: 0.75rem !important;
+}
+
+#bonusExerciseList .card {
+  background-color: #fff !important;
+  border: none !important;
+  box-shadow: none !important;
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+[data-bs-theme="dark"] #bonusExerciseList .card {
+  background-color: #2b2c40 !important;
+}
+
+/* Card body styling */
+#bonusExerciseList .card .card-body {
+  padding: 0.875rem !important;
+  position: relative;
+  overflow: visible !important;
+}
+
+/* Exercise title - stretch full width */
+#bonusExerciseList .card .flex-grow-1 {
+  position: relative;
+  z-index: 2;
+  padding-right: 70px; /* Space for Add button */
+  min-width: 0;
+  flex: 1 1 0%;
+  overflow: visible !important;
+}
+
+#bonusExerciseList .card .fw-semibold {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+  width: 100%;
+}
+
+/* Add button positioning */
+#bonusExerciseList .card .flex-shrink-0 {
+  position: absolute;
+  right: 0.875rem;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 3;
+}
+
+#bonusExerciseList .card .flex-shrink-0 .btn {
+  white-space: nowrap;
+}
+
+/* Horizontal scroll filter chips */
+.filter-chips-scroll {
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.filter-chips-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.filter-chips-scroll .d-flex {
+  flex-wrap: nowrap;
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+  #bonusExerciseList {
+    padding: 0.5rem !important;
+  }
+  
+  #bonusExerciseList .card .card-body {
+    padding: 0.75rem !important;
+  }
+  
+  #bonusExerciseList .card .flex-grow-1 {
+    padding-right: 65px;
+  }
+  
+  #bonusExerciseList .card .flex-shrink-0 {
+    right: 0.75rem;
+  }
+}
+
+@media (max-width: 576px) {
+  #bonusExerciseList {
+    padding: 0.5rem !important;
+  }
+  
+  #bonusExerciseList .card .card-body {
+    padding: 0.65rem !important;
+  }
+  
+  #bonusExerciseList .card .flex-grow-1 {
+    padding-right: 60px;
+  }
+  
+  #bonusExerciseList .card .flex-shrink-0 {
+    right: 0.65rem;
+  }
+  
+  #bonusExerciseList .card .fw-semibold {
+    font-size: 0.9rem;
+  }
+  
+  #bonusExerciseList .card .badge {
+    font-size: 0.7rem !important;
+    padding: 0.2rem 0.4rem !important;
+  }
+  
+  #bonusExerciseList .card .text-muted.small {
+    font-size: 0.75rem;
+  }
+}

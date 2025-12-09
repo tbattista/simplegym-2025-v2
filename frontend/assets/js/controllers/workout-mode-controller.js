@@ -23,6 +23,9 @@ class WorkoutModeController {
         this.autoSaveTimer = null;
         this.workoutListComponent = null;
         
+        // 🔧 FIX: Add state flag to prevent concurrent session creation
+        this.isStartingSession = false;
+        
         console.log('🎮 Workout Mode Controller initialized');
         console.log('🔍 DEBUG: Modal manager available?', !!window.ghostGymModalManager);
     }
@@ -531,10 +534,13 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
     
     /**
      * Collect exercise data for session
+     * 🔧 ENHANCED: Added validation and logging for bonus exercises
      */
     collectExerciseData() {
         const exercisesPerformed = [];
         let orderIndex = 0;
+        
+        console.log('📊 Collecting exercise data for session...');
         
         // Collect from exercise groups
         if (this.currentWorkout.exercise_groups) {
@@ -577,11 +583,20 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
             });
         }
         
-        // Collect from SESSION bonus exercises (not template)
+        console.log('✅ Collected', exercisesPerformed.length, 'regular exercises');
+        
+        // 🔧 FIX: Collect from SESSION bonus exercises with enhanced validation
         const bonusExercises = this.sessionService.getBonusExercises();
+        console.log('🔍 Checking for bonus exercises...');
+        console.log('  getBonusExercises() returned:', bonusExercises?.length || 0, 'exercises');
+        
         if (bonusExercises && bonusExercises.length > 0) {
+            console.log('📋 Processing', bonusExercises.length, 'bonus exercises:');
+            
             bonusExercises.forEach((bonus, bonusIndex) => {
                 const exerciseName = bonus.name || bonus.exercise_name;
+                console.log(`  ${bonusIndex + 1}. ${exerciseName}`);
+                
                 const weightData = this.sessionService.getExerciseWeight(exerciseName);
                 const history = this.sessionService.getExerciseHistory(exerciseName);
                 
@@ -596,7 +611,7 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
                     weightChange = finalWeight - previousWeight;
                 }
                 
-                exercisesPerformed.push({
+                const bonusExerciseData = {
                     exercise_name: exerciseName,
                     exercise_id: null,
                     group_id: `bonus-${bonusIndex}`,
@@ -612,9 +627,20 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
                     is_modified: weightData?.is_modified || false,
                     is_skipped: weightData?.is_skipped || false,    // PHASE 2
                     skip_reason: weightData?.skip_reason || null    // PHASE 2
-                });
+                };
+                
+                exercisesPerformed.push(bonusExerciseData);
+                console.log(`     ✅ Added: ${exerciseName} (order: ${bonusExerciseData.order_index})`);
             });
+            
+            console.log('✅ Collected', bonusExercises.length, 'bonus exercises');
+        } else {
+            console.log('ℹ️ No bonus exercises to collect');
         }
+        
+        console.log('📊 Total exercises collected:', exercisesPerformed.length);
+        console.log('   Regular:', exercisesPerformed.filter(e => !e.is_bonus).length);
+        console.log('   Bonus:', exercisesPerformed.filter(e => e.is_bonus).length);
         
         return exercisesPerformed;
     }
@@ -756,29 +782,51 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
             return;
         }
         
+        // 🔧 FIX: Prevent concurrent session creation using state flag
+        if (this.isStartingSession) {
+            console.log('🚫 Session already being created, ignoring click');
+            return;
+        }
+        
         // Check if user is authenticated (reuse existing service)
         if (!this.authService.isUserAuthenticated()) {
             this.showLoginPrompt();
             return;
         }
         
-        // ✨ SESSION PERSISTENCE: Check if there's a different persisted session
-        const persistedSession = this.sessionService.restoreSession();
-        if (persistedSession && persistedSession.workoutId !== this.currentWorkout.id) {
+        try {
+            // Set flag to prevent concurrent calls
+            this.isStartingSession = true;
+            
+            // ✨ SESSION PERSISTENCE: Check if there's a different persisted session
+            const persistedSession = this.sessionService.restoreSession();
+            if (persistedSession && persistedSession.workoutId !== this.currentWorkout.id) {
+                const modalManager = this.getModalManager();
+                modalManager.confirm(
+                    'Active Session Found',
+                    `You have an active session for <strong>${this.escapeHtml(persistedSession.workoutName)}</strong>. Starting a new workout will end that session. Continue?`,
+                    async () => {
+                        // User chose to start fresh - clear old session and start new one
+                        this.sessionService.clearPersistedSession();
+                        await this.startNewSession();
+                    },
+                    () => {
+                        // User cancelled - reset flag
+                        this.isStartingSession = false;
+                    }
+                );
+                return;
+            }
+            
+            await this.startNewSession();
+            
+        } catch (error) {
+            console.error('❌ Error starting workout:', error);
+            this.isStartingSession = false;
+            
             const modalManager = this.getModalManager();
-            modalManager.confirm(
-                'Active Session Found',
-                `You have an active session for <strong>${this.escapeHtml(persistedSession.workoutName)}</strong>. Starting a new workout will end that session. Continue?`,
-                async () => {
-                    // User chose to start fresh - clear old session and start new one
-                    this.sessionService.clearPersistedSession();
-                    await this.startNewSession();
-                }
-            );
-            return;
+            modalManager.alert('Error', error.message, 'danger');
         }
-        
-        await this.startNewSession();
     }
     
     /**
@@ -800,14 +848,12 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
     async startNewSession() {
         try {
             // PHASE 1: Pass workout data to pre-populate exercises
+            // 🔧 FIXED: Transfer happens INSIDE startSession() now
             await this.sessionService.startSession(
                 this.currentWorkout.id,
                 this.currentWorkout.name,
                 this.currentWorkout  // Pass full workout data for template initialization
             );
-            
-            // Transfer pre-workout bonus exercises to session
-            this.sessionService.transferPreWorkoutBonusToSession();
             
             // Fetch exercise history
             await this.sessionService.fetchExerciseHistory(this.currentWorkout.id);

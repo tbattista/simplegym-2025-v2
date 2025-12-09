@@ -632,7 +632,7 @@ class UnifiedOffcanvasFactory {
                 <!-- Body -->
                 <div class="offcanvas-body p-0">
                     <!-- Search Section -->
-                    <div class="p-3 border-bottom bg-light">
+                    <div class="p-3 pb-4 border-bottom bg-light">
                         <div class="input-group">
                             <span class="input-group-text">
                                 <i class="bx bx-search"></i>
@@ -649,21 +649,84 @@ class UnifiedOffcanvasFactory {
                             </button>
                         </div>
                         
-                        <!-- Filter Chips -->
-                        <div class="mt-3 d-flex flex-wrap gap-2" id="filterChips">
-                            <button class="btn btn-sm btn-primary active" data-filter="all">All</button>
-                            <button class="btn btn-sm btn-outline-primary" data-filter="chest">Chest</button>
-                            <button class="btn btn-sm btn-outline-primary" data-filter="shoulders">Shoulders</button>
-                            <button class="btn btn-sm btn-outline-primary" data-filter="triceps">Triceps</button>
-                            <button class="btn btn-sm btn-outline-primary" data-filter="back">Back</button>
-                            <button class="btn btn-sm btn-outline-primary" data-filter="legs">Legs</button>
-                            <button class="btn btn-sm btn-outline-primary" data-filter="arms">Arms</button>
+                        <!-- More Filters Toggle + Favorites Toggle -->
+                        <div class="mt-3 d-flex justify-content-between align-items-center">
+                            <button class="btn btn-sm btn-link text-decoration-none p-0" id="toggleMoreFilters">
+                                <i class="bx bx-filter-alt me-1"></i>More Filters
+                                <i class="bx bx-chevron-down" id="moreFiltersIcon"></i>
+                            </button>
+                            <!-- Favorites Toggle Switch -->
+                            <div class="d-flex align-items-center gap-2">
+                                <small class="text-muted">Favorites</small>
+                                <div class="form-check form-switch m-0">
+                                    <input class="form-check-input" type="checkbox" id="favoritesOnlyFilter" style="cursor: pointer;">
+                                </div>
+                            </div>
+                        </div>
+                        <div id="moreFiltersSection" style="display: none;" class="mt-2">
+                                <div class="row g-2">
+                                    <!-- Muscle Group Filter -->
+                                    <div class="col-12">
+                                        <label class="small text-muted mb-1">Muscle Group:</label>
+                                        <select class="form-select form-select-sm" id="muscleGroupFilter">
+                                            <option value="">All Muscle Groups</option>
+                                            <!-- Populated dynamically from exercise data -->
+                                        </select>
+                                    </div>
+                                    
+                                    <!-- Sort By -->
+                                    <div class="col-12">
+                                        <label class="small text-muted mb-1">Sort by:</label>
+                                        <select class="form-select form-select-sm" id="sortBySelect">
+                                            <option value="name-asc">Name (A-Z)</option>
+                                            <option value="name-desc">Name (Z-A)</option>
+                                            <option value="muscle">Muscle Group</option>
+                                            <option value="tier">Standard First</option>
+                                            <option value="difficulty">Difficulty</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="col-6">
+                                        <select class="form-select form-select-sm" id="difficultyFilter">
+                                            <option value="">All Difficulties</option>
+                                            <option value="Beginner">Beginner</option>
+                                            <option value="Intermediate">Intermediate</option>
+                                            <option value="Advanced">Advanced</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-6">
+                                        <select class="form-select form-select-sm" id="tierFilter">
+                                            <option value="">All Tiers</option>
+                                            <option value="1">⭐ Standard (Tier 1)</option>
+                                            <option value="2">⭐ Standard (Tier 2)</option>
+                                            <option value="3">◦ Specialized</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-12">
+                                        <label class="small text-muted mb-1">Equipment:</label>
+                                        <select class="form-select form-select-sm" id="equipmentFilter" multiple>
+                                            <!-- Populated dynamically -->
+                                        </select>
+                                        <small class="text-muted d-block mt-1">Tap to select multiple</small>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
                     <!-- Exercise List -->
-                    <div class="list-group list-group-flush" id="bonusExerciseList" style="max-height: calc(85vh - 200px); overflow-y: auto;">
+                    <div class="list-group list-group-flush" id="bonusExerciseList" style="overflow-y: auto; flex: 1;">
                         <!-- Exercise items will be rendered here -->
+                    </div>
+
+                    <!-- Pagination Footer -->
+                    <div class="p-2 border-top bg-light" id="paginationFooter" style="display: none;">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-muted" id="pageInfo">Showing 1-30 of 250</small>
+                            <div class="btn-group btn-group-sm" id="paginationControls">
+                                <!-- Rendered by renderPagination() -->
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Empty State -->
@@ -687,12 +750,21 @@ class UnifiedOffcanvasFactory {
         `;
         
         return this.createOffcanvas('bonusExerciseOffcanvas', offcanvasHtml, (offcanvas, offcanvasElement) => {
-            // State management
+            // State management (PHASE 2: Enhanced with pagination & filters)
             const state = {
                 searchQuery: '',
-                activeFilter: 'all',
+                muscleGroup: '',       // CHANGED: From activeFilter to muscleGroup
+                difficulty: '',
+                tier: '',
+                equipment: [],
+                favoritesOnly: false,
+                sortBy: 'name',        // NEW: Sort field
+                sortOrder: 'asc',      // NEW: Sort direction
                 allExercises: [],
                 filteredExercises: [],
+                paginatedExercises: [],
+                currentPage: 1,
+                pageSize: window.innerWidth <= 768 ? 20 : 30,
                 isLoading: false
             };
             
@@ -703,7 +775,17 @@ class UnifiedOffcanvasFactory {
             const exerciseList = offcanvasElement.querySelector('#bonusExerciseList');
             const emptyState = offcanvasElement.querySelector('#emptyState');
             const loadingState = offcanvasElement.querySelector('#loadingState');
-            const filterChips = offcanvasElement.querySelectorAll('[data-filter]');
+            const muscleGroupFilter = offcanvasElement.querySelector('#muscleGroupFilter');
+            const toggleMoreFilters = offcanvasElement.querySelector('#toggleMoreFilters');
+            const moreFiltersSection = offcanvasElement.querySelector('#moreFiltersSection');
+            const moreFiltersIcon = offcanvasElement.querySelector('#moreFiltersIcon');
+            const difficultyFilter = offcanvasElement.querySelector('#difficultyFilter');
+            const tierFilter = offcanvasElement.querySelector('#tierFilter');
+            const equipmentFilter = offcanvasElement.querySelector('#equipmentFilter');
+            const favoritesOnlyFilter = offcanvasElement.querySelector('#favoritesOnlyFilter');
+            const paginationFooter = offcanvasElement.querySelector('#paginationFooter');
+            const pageInfo = offcanvasElement.querySelector('#pageInfo');
+            const paginationControls = offcanvasElement.querySelector('#paginationControls');
             
             // Load exercises from cache service
             const loadExercises = async () => {
@@ -722,6 +804,10 @@ class UnifiedOffcanvasFactory {
                         console.warn('⚠️ exerciseCacheService not available');
                         state.allExercises = [];
                     }
+                    
+                    // Load user favorites for filtering
+                    await loadUserFavorites();
+                    
                 } catch (error) {
                     console.error('❌ Error loading exercises:', error);
                     state.allExercises = [];
@@ -729,61 +815,306 @@ class UnifiedOffcanvasFactory {
                 
                 state.isLoading = false;
                 loadingState.style.display = 'none';
+                
+                // Populate muscle group filter with unique values
+                const uniqueMuscleGroups = [...new Set(
+                    state.allExercises
+                        .map(ex => ex.targetMuscleGroup)
+                        .filter(mg => mg && mg.trim() !== '')
+                )].sort();
+                
+                muscleGroupFilter.innerHTML = '<option value="">All Muscle Groups</option>' +
+                    uniqueMuscleGroups.map(mg =>
+                        `<option value="${this.escapeHtml(mg)}">${this.escapeHtml(mg)}</option>`
+                    ).join('');
+                
+                // Populate equipment filter with unique values
+                const uniqueEquipment = [...new Set(
+                    state.allExercises
+                        .map(ex => ex.primaryEquipment)
+                        .filter(eq => eq && eq.toLowerCase() !== 'none')
+                )].sort();
+                
+                equipmentFilter.innerHTML = uniqueEquipment.map(eq =>
+                    `<option value="${this.escapeHtml(eq)}">${this.escapeHtml(eq)}</option>`
+                ).join('');
+                
                 filterExercises();
             };
             
-            // Filter exercises based on search and category
+            // Load user favorites from API
+            const loadUserFavorites = async () => {
+                // Initialize favorites Set if it doesn't exist
+                if (!window.ghostGym) {
+                    window.ghostGym = {};
+                }
+                if (!window.ghostGym.exercises) {
+                    window.ghostGym.exercises = {};
+                }
+                if (!window.ghostGym.exercises.favorites) {
+                    window.ghostGym.exercises.favorites = new Set();
+                }
+                
+                // Only load if user is authenticated
+                if (!window.firebaseAuth?.currentUser) {
+                    console.log('ℹ️ User not authenticated, skipping favorites load');
+                    return;
+                }
+                
+                try {
+                    const token = await window.firebaseAuth.currentUser.getIdToken();
+                    const response = await fetch(window.getApiUrl('/api/v3/users/me/favorites'), {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        window.ghostGym.exercises.favorites = new Set(data.favorites.map(f => f.exerciseId));
+                        console.log(`✅ Loaded ${window.ghostGym.exercises.favorites.size} favorites for filtering`);
+                    } else {
+                        console.warn('⚠️ Failed to load favorites:', response.status);
+                    }
+                } catch (error) {
+                    console.error('❌ Error loading favorites:', error);
+                }
+            };
+            
+            // PHASE 3: Multi-criteria filtering
             const filterExercises = () => {
                 let filtered = [...state.allExercises];
                 
-                // Apply category filter
-                if (state.activeFilter !== 'all') {
-                    filtered = filtered.filter(ex => {
-                        const muscleGroup = (ex.muscle_group || '').toLowerCase();
-                        return muscleGroup.includes(state.activeFilter);
-                    });
-                }
-                
-                // Apply search filter
+                // 1. Search query (highest priority)
                 if (state.searchQuery) {
                     const query = state.searchQuery.toLowerCase();
                     filtered = filtered.filter(ex =>
                         (ex.name || '').toLowerCase().includes(query) ||
-                        (ex.muscle_group || '').toLowerCase().includes(query) ||
-                        (ex.equipment || '').toLowerCase().includes(query)
+                        (ex.targetMuscleGroup || '').toLowerCase().includes(query) ||
+                        (ex.primaryEquipment || '').toLowerCase().includes(query)
                     );
                 }
                 
+                // 2. Muscle group filter
+                if (state.muscleGroup) {
+                    filtered = filtered.filter(ex => {
+                        return ex.targetMuscleGroup === state.muscleGroup;
+                    });
+                }
+                
+                // 3. Difficulty filter
+                if (state.difficulty) {
+                    filtered = filtered.filter(ex =>
+                        (ex.difficulty || '').toLowerCase() === state.difficulty.toLowerCase()
+                    );
+                }
+                
+                // 4. Tier filter
+                if (state.tier) {
+                    const tierNum = parseInt(state.tier);
+                    filtered = filtered.filter(ex => {
+                        const exTier = parseInt(ex.exerciseTier || '1');
+                        if (tierNum === 3) {
+                            return exTier === 3;
+                        } else {
+                            return exTier === tierNum;
+                        }
+                    });
+                }
+                
+                // 5. Equipment filter (multi-select)
+                if (state.equipment.length > 0) {
+                    filtered = filtered.filter(ex => {
+                        const exEquip = (ex.primaryEquipment || '').toLowerCase();
+                        return state.equipment.some(eq => exEquip.includes(eq.toLowerCase()));
+                    });
+                }
+                
+                // 6. Favorites filter
+                if (state.favoritesOnly) {
+                    // Check if favorites are available
+                    if (window.ghostGym?.exercises?.favorites) {
+                        filtered = filtered.filter(ex => {
+                            // Check if exercise ID exists in favorites Set
+                            return window.ghostGym.exercises.favorites.has(ex.id);
+                        });
+                    } else {
+                        console.warn('⚠️ Favorites filter enabled but favorites data not available');
+                        // Show empty results if favorites aren't loaded
+                        filtered = [];
+                    }
+                }
+                
                 state.filteredExercises = filtered;
-                renderExerciseList();
+                applySorting();         // NEW: Apply sorting after filtering
+                state.currentPage = 1; // Reset to first page on new filter
+                applyPagination();
             };
             
-            // Render exercise list
+            // PHASE 5: Sorting logic
+            const applySorting = () => {
+                switch (state.sortBy) {
+                    case 'name':
+                        state.filteredExercises.sort((a, b) => {
+                            const nameA = (a.name || '').toLowerCase();
+                            const nameB = (b.name || '').toLowerCase();
+                            return state.sortOrder === 'asc'
+                                ? nameA.localeCompare(nameB)
+                                : nameB.localeCompare(nameA);
+                        });
+                        break;
+                        
+                    case 'muscle':
+                        state.filteredExercises.sort((a, b) => {
+                            const muscleA = (a.targetMuscleGroup || '').toLowerCase();
+                            const muscleB = (b.targetMuscleGroup || '').toLowerCase();
+                            if (muscleA === muscleB) {
+                                return (a.name || '').localeCompare(b.name || '');
+                            }
+                            return muscleA.localeCompare(muscleB);
+                        });
+                        break;
+                        
+                    case 'tier':
+                        state.filteredExercises.sort((a, b) => {
+                            const tierA = parseInt(a.exerciseTier || '1');
+                            const tierB = parseInt(b.exerciseTier || '1');
+                            if (tierA === tierB) {
+                                return (a.name || '').localeCompare(b.name || '');
+                            }
+                            return tierA - tierB;  // Lower tiers (1, 2) first
+                        });
+                        break;
+                        
+                    case 'difficulty':
+                        const diffOrder = { 'beginner': 1, 'intermediate': 2, 'advanced': 3 };
+                        state.filteredExercises.sort((a, b) => {
+                            const diffA = diffOrder[(a.difficulty || 'intermediate').toLowerCase()] || 2;
+                            const diffB = diffOrder[(b.difficulty || 'intermediate').toLowerCase()] || 2;
+                            if (diffA === diffB) {
+                                return (a.name || '').localeCompare(b.name || '');
+                            }
+                            return diffA - diffB;
+                        });
+                        break;
+                }
+            };
+            
+            // PHASE 4: Pagination logic
+            const applyPagination = () => {
+                const totalPages = Math.ceil(state.filteredExercises.length / state.pageSize);
+                const startIdx = (state.currentPage - 1) * state.pageSize;
+                const endIdx = startIdx + state.pageSize;
+                
+                state.paginatedExercises = state.filteredExercises.slice(startIdx, endIdx);
+                
+                renderExerciseList();
+                renderPagination(totalPages);
+            };
+            
+            const renderPagination = (totalPages) => {
+                if (totalPages <= 1) {
+                    paginationFooter.style.display = 'none';
+                    return;
+                }
+                
+                paginationFooter.style.display = 'flex';
+                
+                const startIdx = (state.currentPage - 1) * state.pageSize + 1;
+                const endIdx = Math.min(state.currentPage * state.pageSize, state.filteredExercises.length);
+                pageInfo.textContent = `Showing ${startIdx}-${endIdx} of ${state.filteredExercises.length}`;
+                
+                // Render page buttons
+                let buttonsHtml = '';
+                
+                // Previous button
+                buttonsHtml += `<button class="btn btn-sm btn-outline-secondary" ${state.currentPage === 1 ? 'disabled' : ''} data-page="${state.currentPage - 1}">
+                    <i class="bx bx-chevron-left"></i>
+                </button>`;
+                
+                // Page number buttons (show max 5 pages)
+                const maxButtons = 5;
+                let startPage = Math.max(1, state.currentPage - Math.floor(maxButtons / 2));
+                let endPage = Math.min(totalPages, startPage + maxButtons - 1);
+                
+                if (endPage - startPage < maxButtons - 1) {
+                    startPage = Math.max(1, endPage - maxButtons + 1);
+                }
+                
+                for (let i = startPage; i <= endPage; i++) {
+                    buttonsHtml += `<button class="btn btn-sm ${i === state.currentPage ? 'btn-primary' : 'btn-outline-secondary'}" data-page="${i}">${i}</button>`;
+                }
+                
+                // Next button
+                buttonsHtml += `<button class="btn btn-sm btn-outline-secondary" ${state.currentPage === totalPages ? 'disabled' : ''} data-page="${state.currentPage + 1}">
+                    <i class="bx bx-chevron-right"></i>
+                </button>`;
+                
+                paginationControls.innerHTML = buttonsHtml;
+                
+                // Attach click handlers
+                paginationControls.querySelectorAll('[data-page]').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const page = parseInt(btn.dataset.page);
+                        if (page >= 1 && page <= totalPages) {
+                            state.currentPage = page;
+                            applyPagination();
+                            exerciseList.scrollTop = 0;
+                        }
+                    });
+                });
+            };
+            
+            // PHASE 5: Enhanced card rendering with metadata
             const renderExerciseList = () => {
-                if (state.filteredExercises.length === 0) {
+                if (state.paginatedExercises.length === 0) {
                     exerciseList.style.display = 'none';
                     emptyState.style.display = 'block';
+                    paginationFooter.style.display = 'none';
                     return;
                 }
                 
                 exerciseList.style.display = 'block';
                 emptyState.style.display = 'none';
                 
-                exerciseList.innerHTML = state.filteredExercises.map(exercise => `
-                    <button class="list-group-item list-group-item-action d-flex justify-content-between align-items-start"
-                            data-exercise-id="${this.escapeHtml(exercise.id || exercise.name)}">
-                        <div class="me-auto">
-                            <div class="fw-semibold">${this.escapeHtml(exercise.name)}</div>
-                            <small class="text-muted">
-                                ${exercise.muscle_group ? this.escapeHtml(exercise.muscle_group) : ''}
-                                ${exercise.equipment ? ` • ${this.escapeHtml(exercise.equipment)}` : ''}
-                            </small>
+                exerciseList.innerHTML = state.paginatedExercises.map(exercise => {
+                    const tier = exercise.exerciseTier || '1';
+                    const difficulty = exercise.difficulty || 'Intermediate';
+                    const muscle = exercise.targetMuscleGroup || '';
+                    const equipment = exercise.primaryEquipment || 'None';
+                    
+                    // Tier badge (matching exercise database)
+                    const tierBadge = (parseInt(tier) === 3)
+                        ? '<span class="badge bg-secondary" style="font-size: 0.75rem; padding: 0.25rem 0.5rem; opacity: 0.7;"><i class="bx bx-dots-horizontal-rounded" style="font-size: 0.75rem;"></i></span>'
+                        : '<span class="badge" style="font-size: 0.75rem; padding: 0.25rem 0.5rem; background: rgba(139, 92, 246, 0.1); color: #8b5cf6; border: 1px solid rgba(139, 92, 246, 0.25);"><i class="bx bxs-star" style="font-size: 0.75rem;"></i> Standard</span>';
+                    
+                    // Difficulty badge
+                    const difficultyColors = { 'B': 'success', 'I': 'warning', 'A': 'danger' };
+                    const diffAbbr = difficulty.charAt(0).toUpperCase();
+                    const diffColor = difficultyColors[diffAbbr] || 'secondary';
+                    const difficultyBadge = `<span class="badge badge-outline-${diffColor}" style="font-size: 0.75rem; padding: 0.3rem 0.6rem; background: transparent;">${difficulty}</span>`;
+                    
+                    return `
+                        <div class="card mb-0" style="margin-bottom: 0.375rem !important;">
+                            <div class="card-body p-3">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="flex-grow-1">
+                                        <div class="fw-semibold mb-2">${this.escapeHtml(exercise.name)}</div>
+                                        <div class="d-flex gap-2 flex-wrap align-items-center">
+                                            ${tierBadge}
+                                            ${difficultyBadge}
+                                            ${muscle ? `<span class="text-muted small">${this.escapeHtml(muscle)}</span>` : ''}
+                                            ${equipment ? `<span class="text-muted small">• ${this.escapeHtml(equipment)}</span>` : ''}
+                                        </div>
+                                    </div>
+                                    <div class="flex-shrink-0 ms-3">
+                                        <button class="btn btn-sm btn-primary" data-exercise-id="${this.escapeHtml(exercise.id || exercise.name)}">
+                                            Add
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <span class="badge bg-primary rounded-pill text-capitalize">
-                            ${exercise.muscle_group ? this.escapeHtml(exercise.muscle_group.split(',')[0].trim()) : 'Other'}
-                        </span>
-                    </button>
-                `).join('');
+                    `;
+                }).join('');
             };
             
             // Search input handler
@@ -806,55 +1137,89 @@ class UnifiedOffcanvasFactory {
             clearAllBtn.addEventListener('click', () => {
                 searchInput.value = '';
                 state.searchQuery = '';
-                state.activeFilter = 'all';
+                state.muscleGroup = '';
+                state.difficulty = '';
+                state.tier = '';
+                state.equipment = [];
+                state.favoritesOnly = false;
                 clearBtn.style.display = 'none';
                 
-                // Reset filter chips
-                filterChips.forEach(chip => {
-                    if (chip.dataset.filter === 'all') {
-                        chip.classList.remove('btn-outline-primary');
-                        chip.classList.add('active', 'btn-primary');
-                    } else {
-                        chip.classList.remove('active', 'btn-primary');
-                        chip.classList.add('btn-outline-primary');
-                    }
-                });
+                // Reset all filter dropdowns
+                muscleGroupFilter.value = '';
+                difficultyFilter.value = '';
+                tierFilter.value = '';
+                equipmentFilter.selectedIndex = -1;
+                
+                // Reset favorites toggle
+                favoritesOnlyFilter.checked = false;
                 
                 filterExercises();
             });
             
-            // Filter chip handlers
-            filterChips.forEach(chip => {
-                chip.addEventListener('click', (e) => {
-                    // Update active state
-                    filterChips.forEach(c => {
-                        c.classList.remove('active', 'btn-primary');
-                        c.classList.add('btn-outline-primary');
-                    });
-                    e.target.classList.remove('btn-outline-primary');
-                    e.target.classList.add('active', 'btn-primary');
-                    
-                    // Update filter
-                    state.activeFilter = e.target.dataset.filter;
-                    filterExercises();
-                });
+            // Muscle group filter handler
+            muscleGroupFilter?.addEventListener('change', (e) => {
+                state.muscleGroup = e.target.value;
+                filterExercises();
             });
             
-            // Exercise click handler
+            // PHASE 6: Event handlers for advanced filters
+            
+            // Toggle "More Filters" section
+            toggleMoreFilters?.addEventListener('click', () => {
+                const isHidden = moreFiltersSection.style.display === 'none';
+                moreFiltersSection.style.display = isHidden ? 'block' : 'none';
+                moreFiltersIcon.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
+            });
+            
+            // Difficulty filter
+            difficultyFilter?.addEventListener('change', (e) => {
+                state.difficulty = e.target.value;
+                filterExercises();
+            });
+            
+            // Tier filter
+            tierFilter?.addEventListener('change', (e) => {
+                state.tier = e.target.value;
+                filterExercises();
+            });
+            
+            // Equipment filter (multi-select)
+            equipmentFilter?.addEventListener('change', (e) => {
+                state.equipment = Array.from(e.target.selectedOptions).map(opt => opt.value);
+                filterExercises();
+            });
+            
+            // Favorites toggle switch
+            favoritesOnlyFilter?.addEventListener('change', (e) => {
+                state.favoritesOnly = e.target.checked;
+                filterExercises();
+            });
+            
+            // Sort handler
+            const sortBySelect = offcanvasElement.querySelector('#sortBySelect');
+            sortBySelect?.addEventListener('change', (e) => {
+                const [sortBy, order] = e.target.value.split('-');
+                state.sortBy = sortBy;
+                state.sortOrder = order || 'asc';
+                applySorting();
+                applyPagination();
+            });
+            
+            // Exercise click handler - delegate to button only
             exerciseList.addEventListener('click', async (e) => {
-                const listItem = e.target.closest('[data-exercise-id]');
-                if (!listItem) return;
+                const button = e.target.closest('button[data-exercise-id]');
+                if (!button) return;
                 
-                const exerciseId = listItem.dataset.exerciseId;
+                const exerciseId = button.dataset.exerciseId;
                 const exercise = state.filteredExercises.find(ex =>
                     (ex.id || ex.name) === exerciseId
                 );
                 
                 if (!exercise) return;
                 
-                // Show loading state on clicked item
-                listItem.disabled = true;
-                listItem.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Adding...';
+                // Show loading state
+                button.disabled = true;
+                button.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
                 
                 try {
                     // Auto-create custom exercise if needed
@@ -889,9 +1254,8 @@ class UnifiedOffcanvasFactory {
                     
                 } catch (error) {
                     console.error('❌ Error adding exercise:', error);
-                    
-                    // Reset button state
-                    renderExerciseList();
+                    button.disabled = false;
+                    button.innerHTML = 'Add';
                     
                     if (window.showToast) {
                         window.showToast({

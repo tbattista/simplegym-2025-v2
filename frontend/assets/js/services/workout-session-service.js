@@ -71,6 +71,12 @@ class WorkoutSessionService {
                 console.log('✅ Pre-populated', Object.keys(this.currentSession.exercises).length, 'exercises from template');
             }
             
+            // 🔧 FIX: Transfer pre-workout bonuses IMMEDIATELY after session creation
+            if (this.preWorkoutBonusExercises.length > 0) {
+                console.log('🔄 Transferring pre-workout bonuses to new session...');
+                this._transferPreWorkoutBonusesImmediate();
+            }
+            
             console.log('✅ Workout session started:', session.id);
             this.notifyListeners('sessionStarted', this.currentSession);
             
@@ -507,6 +513,7 @@ class WorkoutSessionService {
                 notes: notes || ''
             });
             this.notifyListeners('preWorkoutBonusExerciseAdded', { name });
+            console.log(`✅ Pre-workout bonus added. Total pre-workout bonuses: ${this.preWorkoutBonusExercises.length}`);
             return;
         }
         
@@ -515,20 +522,29 @@ class WorkoutSessionService {
             this.currentSession.exercises = {};
         }
         
+        // 🔧 FIX: Calculate order_index based on existing exercises
+        // This ensures bonus exercises maintain proper order in history
+        const existingExerciseCount = Object.keys(this.currentSession.exercises).length;
+        const order_index = existingExerciseCount;
+        
         const bonusExercise = {
             weight: weight || '',
             weight_unit: weight_unit,
             previous_weight: null,
             weight_change: 0,
-            target_sets: sets,
-            target_reps: reps,
-            rest: rest,
-            notes: notes,
-            is_bonus: true
+            target_sets: sets || '3',
+            target_reps: reps || '12',
+            rest: rest || '60s',
+            notes: notes || '',
+            is_bonus: true,
+            order_index: order_index,  // 🔧 FIX: Add order_index for proper sequencing
+            is_modified: false,
+            is_skipped: false
         };
         
         this.currentSession.exercises[name] = bonusExercise;
-        console.log('✅ Bonus exercise added to session:', name);
+        console.log('✅ Bonus exercise added to session:', name, 'at order_index:', order_index);
+        console.log('📊 Session now has', Object.keys(this.currentSession.exercises).length, 'total exercises');
         this.notifyListeners('bonusExerciseAdded', { exerciseName: name, ...bonusExercise });
         this.persistSession();
     }
@@ -559,25 +575,44 @@ class WorkoutSessionService {
     
     /**
      * Get all bonus exercises from current session OR pre-workout list
+     * 🔧 FIXED: Normalize property names for consistent rendering
      * @returns {Array} Array of bonus exercise objects
      */
     getBonusExercises() {
         // If no active session, return pre-workout list
         if (!this.currentSession) {
+            console.log('📋 getBonusExercises(): Returning pre-workout list (' + this.preWorkoutBonusExercises.length + ' exercises)');
             return this.preWorkoutBonusExercises;
         }
         
         // Active session - return from session exercises
         if (!this.currentSession.exercises) {
+            console.log('📋 getBonusExercises(): No session exercises, returning empty array');
             return [];
         }
         
-        return Object.entries(this.currentSession.exercises)
+        // 🔧 FIX: Normalize property names to match what renderWorkout() expects
+        // renderWorkout() expects: sets, reps, rest, weight, weight_unit
+        // session stores as: target_sets, target_reps, rest, weight, weight_unit
+        const bonusExercises = Object.entries(this.currentSession.exercises)
             .filter(([name, data]) => data.is_bonus)
             .map(([name, data]) => ({
                 name: name,
-                ...data
+                sets: data.target_sets || data.sets || '3',           // 🔧 Normalize to 'sets'
+                reps: data.target_reps || data.reps || '12',          // 🔧 Normalize to 'reps'
+                rest: data.rest || '60s',
+                weight: data.weight || '',
+                weight_unit: data.weight_unit || 'lbs',
+                notes: data.notes || '',
+                // Keep original session data for reference
+                target_sets: data.target_sets,
+                target_reps: data.target_reps,
+                is_bonus: true,
+                order_index: data.order_index
             }));
+        
+        console.log(`📋 getBonusExercises(): Returning ${bonusExercises.length} bonus exercises from session`);
+        return bonusExercises;
     }
     
     /**
@@ -598,21 +633,97 @@ class WorkoutSessionService {
     
     /**
      * Transfer pre-workout bonus exercises to active session
+     * @deprecated This method is now called internally by startSession()
+     * Kept for backwards compatibility
      */
     transferPreWorkoutBonusToSession() {
+        if (!this.currentSession) {
+            console.warn('⚠️ Cannot transfer bonus exercises - no active session');
+            return;
+        }
+        
+        if (this.preWorkoutBonusExercises.length === 0) {
+            console.log('ℹ️ No pre-workout bonus exercises to transfer');
+            return;
+        }
+        
+        console.log('🔄 Transferring', this.preWorkoutBonusExercises.length, 'pre-workout bonus exercises to session...');
+        console.log('📋 Pre-workout bonuses:', this.preWorkoutBonusExercises.map(b => b.name));
+        
+        // Count exercises before transfer
+        const exerciseCountBefore = Object.keys(this.currentSession.exercises || {}).length;
+        console.log('📊 Session exercises before transfer:', exerciseCountBefore);
+        
+        // Transfer each bonus exercise
+        let transferredCount = 0;
+        this.preWorkoutBonusExercises.forEach((bonus, index) => {
+            console.log(`  ${index + 1}. Transferring: ${bonus.name}`);
+            this.addBonusExercise(bonus);
+            transferredCount++;
+        });
+        
+        // Count exercises after transfer
+        const exerciseCountAfter = Object.keys(this.currentSession.exercises || {}).length;
+        console.log('📊 Session exercises after transfer:', exerciseCountAfter);
+        console.log('✅ Successfully transferred', transferredCount, 'bonus exercises');
+        
+        // Validate transfer
+        if (exerciseCountAfter !== exerciseCountBefore + transferredCount) {
+            console.error('❌ Transfer validation failed! Expected', exerciseCountBefore + transferredCount, 'but got', exerciseCountAfter);
+        }
+        
+        // Clear pre-workout list after transfer
+        this.preWorkoutBonusExercises = [];
+        console.log('🧹 Pre-workout bonus list cleared');
+        
+        // Persist session with transferred bonuses
+        this.persistSession();
+        console.log('💾 Session persisted with transferred bonus exercises');
+    }
+    
+    /**
+     * Internal method to transfer pre-workout bonuses to session
+     * Called ONLY during session creation (not async, no API calls)
+     * @private
+     */
+    _transferPreWorkoutBonusesImmediate() {
         if (!this.currentSession || this.preWorkoutBonusExercises.length === 0) {
             return;
         }
         
-        console.log('🔄 Transferring pre-workout bonus exercises to session...');
+        const exerciseCountBefore = Object.keys(this.currentSession.exercises || {}).length;
+        console.log('📊 Session exercises before transfer:', exerciseCountBefore);
         
-        this.preWorkoutBonusExercises.forEach(bonus => {
-            this.addBonusExercise(bonus);
+        // Transfer each bonus exercise
+        this.preWorkoutBonusExercises.forEach((bonus, index) => {
+            console.log(`  ${index + 1}. Adding: ${bonus.name}`);
+            
+            // Calculate order_index based on current exercise count
+            const order_index = Object.keys(this.currentSession.exercises).length;
+            
+            this.currentSession.exercises[bonus.name] = {
+                weight: bonus.weight || '',
+                weight_unit: bonus.weight_unit || 'lbs',
+                previous_weight: null,
+                weight_change: 0,
+                target_sets: bonus.sets || '3',
+                target_reps: bonus.reps || '12',
+                rest: bonus.rest || '60s',
+                notes: bonus.notes || '',
+                is_bonus: true,
+                order_index: order_index,
+                is_modified: false,
+                is_skipped: false
+            };
         });
         
-        // Clear pre-workout list after transfer
+        const exerciseCountAfter = Object.keys(this.currentSession.exercises || {}).length;
+        console.log('✅ Transferred', this.preWorkoutBonusExercises.length, 'bonuses');
+        console.log('📊 Session exercises after transfer:', exerciseCountAfter);
+        
+        // Clear pre-workout list
         this.preWorkoutBonusExercises = [];
-        console.log('✅ Pre-workout bonus exercises transferred to session');
+        console.log('🧹 Pre-workout bonus list cleared');
     }
     
     /**
@@ -818,6 +929,83 @@ class WorkoutSessionService {
      */
     hasPersistedSession() {
         return !!localStorage.getItem('ghost_gym_active_workout_session');
+    }
+    
+    /**
+     * 🔧 DEBUG HELPER: Get comprehensive bonus exercise state
+     * Call from console: window.workoutSessionService.debugBonusExercises()
+     * @returns {Object} Complete bonus exercise state information
+     */
+    debugBonusExercises() {
+        const state = {
+            hasActiveSession: !!this.currentSession,
+            sessionId: this.currentSession?.id || null,
+            preWorkoutBonuses: {
+                count: this.preWorkoutBonusExercises.length,
+                exercises: this.preWorkoutBonusExercises.map(b => ({
+                    name: b.name,
+                    sets: b.sets,
+                    reps: b.reps,
+                    weight: b.weight
+                }))
+            },
+            sessionBonuses: {
+                count: 0,
+                exercises: []
+            },
+            allSessionExercises: {
+                count: 0,
+                regular: [],
+                bonus: []
+            }
+        };
+        
+        if (this.currentSession?.exercises) {
+            const allExercises = Object.entries(this.currentSession.exercises);
+            state.allSessionExercises.count = allExercises.length;
+            
+            allExercises.forEach(([name, data]) => {
+                const exerciseInfo = {
+                    name,
+                    is_bonus: data.is_bonus,
+                    order_index: data.order_index,
+                    sets: data.target_sets,
+                    reps: data.target_reps,
+                    weight: data.weight,
+                    weight_unit: data.weight_unit
+                };
+                
+                if (data.is_bonus) {
+                    state.sessionBonuses.exercises.push(exerciseInfo);
+                    state.allSessionExercises.bonus.push(exerciseInfo);
+                } else {
+                    state.allSessionExercises.regular.push(exerciseInfo);
+                }
+            });
+            
+            state.sessionBonuses.count = state.sessionBonuses.exercises.length;
+        }
+        
+        console.group('🔍 Bonus Exercise Debug State');
+        console.log('Session Active:', state.hasActiveSession);
+        console.log('Session ID:', state.sessionId);
+        console.log('---');
+        console.log('Pre-Workout Bonuses:', state.preWorkoutBonuses.count);
+        if (state.preWorkoutBonuses.count > 0) {
+            console.table(state.preWorkoutBonuses.exercises);
+        }
+        console.log('---');
+        console.log('Session Bonuses:', state.sessionBonuses.count);
+        if (state.sessionBonuses.count > 0) {
+            console.table(state.sessionBonuses.exercises);
+        }
+        console.log('---');
+        console.log('All Session Exercises:', state.allSessionExercises.count);
+        console.log('  Regular:', state.allSessionExercises.regular.length);
+        console.log('  Bonus:', state.allSessionExercises.bonus.length);
+        console.groupEnd();
+        
+        return state;
     }
 }
 
