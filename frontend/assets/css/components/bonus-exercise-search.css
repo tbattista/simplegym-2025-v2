@@ -1,5 +1,69 @@
 /* ============================================
-   BONUS EXERCISE SEARCH - EXERCISE DATABASE CARD STYLE
+   BONUS EXERCISE SEARCH - ADD-FIRST UX v2.0
+   ============================================ */
+
+/* ============================================
+   ADD EXERCISE SECTION (Focal Point)
+   ============================================ */
+.add-exercise-section {
+  background-color: var(--bs-gray-100);
+}
+
+[data-bs-theme="dark"] .add-exercise-section {
+  background-color: #2b2c40;
+}
+
+.add-exercise-section .form-label {
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.add-exercise-section #addExerciseBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ============================================
+   FILTER ACCORDION
+   ============================================ */
+.filter-accordion-section .btn-link {
+  color: var(--bs-body-color);
+  transition: background-color 0.2s ease;
+  text-decoration: none;
+}
+
+.filter-accordion-section .btn-link:hover {
+  background-color: var(--bs-gray-100);
+}
+
+[data-bs-theme="dark"] .filter-accordion-section .btn-link:hover {
+  background-color: #2b2c40;
+}
+
+.filter-accordion-section #filterChevron {
+  transition: transform 0.3s ease;
+}
+
+#filterAccordionContent {
+  transition: max-height 0.3s ease, opacity 0.2s ease;
+}
+
+/* ============================================
+   EXERCISE LIBRARY SECTION
+   ============================================ */
+.exercise-library-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+#exerciseList {
+  flex: 1;
+  padding: 0.75rem !important;
+}
+
+/* ============================================
+   EXERCISE DATABASE CARD STYLE
    ============================================ */
 
 /* Search Section Styling - FIXED HEIGHT to prevent exercise list from compressing it */
@@ -28,7 +92,7 @@
   max-height: calc(85vh - 200px) !important; /* Ensure it doesn't overflow */
 }
 
-/* Remove list-group styling, use cards instead */
+/* Exercise list ID reference (for backward compatibility) */
 #bonusExerciseList {
   padding: 0.75rem !important;
 }

@@ -631,135 +631,182 @@ class UnifiedOffcanvasFactory {
                 
                 <!-- Body -->
                 <div class="offcanvas-body p-0">
-                    <!-- Search Section -->
-                    <div class="p-3 pb-4 border-bottom bg-light">
-                        <div class="input-group">
-                            <span class="input-group-text">
-                                <i class="bx bx-search"></i>
-                            </span>
-                            <input
-                                type="text"
-                                class="form-control"
-                                id="bonusExerciseSearch"
-                                placeholder="Search exercises..."
-                                autocomplete="off"
-                            >
-                            <button class="btn btn-outline-secondary" type="button" id="clearSearchBtn" style="display: none;">
-                                <i class="bx bx-x"></i>
-                            </button>
+                    <!-- Add Exercise Section (FOCAL POINT) -->
+                    <div class="add-exercise-section p-3 border-bottom bg-light">
+                        <!-- Exercise Name Input -->
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold mb-2">Exercise Name</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="bx bx-search"></i>
+                                </span>
+                                <input
+                                    type="text"
+                                    class="form-control"
+                                    id="exerciseNameInput"
+                                    placeholder="Enter exercise name or search library..."
+                                    autocomplete="off"
+                                >
+                                <button class="btn btn-outline-secondary" type="button" id="clearNameBtn" style="display: none;">
+                                    <i class="bx bx-x"></i>
+                                </button>
+                            </div>
+                            <small class="text-muted">Type to search library or enter custom exercise name</small>
                         </div>
                         
-                        <!-- More Filters Toggle + Favorites Toggle -->
-                        <div class="mt-3 d-flex justify-content-between align-items-center">
-                            <button class="btn btn-sm btn-link text-decoration-none p-0" id="toggleMoreFilters">
-                                <i class="bx bx-filter-alt me-1"></i>More Filters
-                                <i class="bx bx-chevron-down" id="moreFiltersIcon"></i>
-                            </button>
-                            <!-- Favorites Toggle Switch -->
-                            <div class="d-flex align-items-center gap-2">
-                                <small class="text-muted">Favorites</small>
-                                <div class="form-check form-switch m-0">
-                                    <input class="form-check-input" type="checkbox" id="favoritesOnlyFilter" style="cursor: pointer;">
-                                </div>
+                        <!-- Sets, Reps, Rest Row -->
+                        <div class="row g-2 mb-3">
+                            <div class="col-4">
+                                <label class="form-label small mb-1">Sets</label>
+                                <input type="text" class="form-control" id="setsInput" value="3" maxlength="5">
+                            </div>
+                            <div class="col-4">
+                                <label class="form-label small mb-1">Reps</label>
+                                <input type="text" class="form-control" id="repsInput" value="12" maxlength="10">
+                            </div>
+                            <div class="col-4">
+                                <label class="form-label small mb-1">Rest</label>
+                                <input type="text" class="form-control" id="restInput" value="60s" maxlength="10">
                             </div>
                         </div>
-                        <div id="moreFiltersSection" style="display: none;" class="mt-2">
-                                <div class="row g-2">
-                                    <!-- Muscle Group Filter -->
-                                    <div class="col-12">
-                                        <label class="small text-muted mb-1">Muscle Group:</label>
-                                        <select class="form-select form-select-sm" id="muscleGroupFilter">
-                                            <option value="">All Muscle Groups</option>
-                                            <!-- Populated dynamically from exercise data -->
-                                        </select>
-                                    </div>
-                                    
-                                    <!-- Sort By -->
-                                    <div class="col-12">
-                                        <label class="small text-muted mb-1">Sort by:</label>
-                                        <select class="form-select form-select-sm" id="sortBySelect">
-                                            <option value="name-asc">Name (A-Z)</option>
-                                            <option value="name-desc">Name (Z-A)</option>
-                                            <option value="muscle">Muscle Group</option>
-                                            <option value="tier">Standard First</option>
-                                            <option value="difficulty">Difficulty</option>
-                                        </select>
-                                    </div>
-                                    
-                                    <div class="col-6">
-                                        <select class="form-select form-select-sm" id="difficultyFilter">
-                                            <option value="">All Difficulties</option>
-                                            <option value="Beginner">Beginner</option>
-                                            <option value="Intermediate">Intermediate</option>
-                                            <option value="Advanced">Advanced</option>
-                                        </select>
-                                    </div>
-                                    <div class="col-6">
-                                        <select class="form-select form-select-sm" id="tierFilter">
-                                            <option value="">All Tiers</option>
-                                            <option value="1">⭐ Standard (Tier 1)</option>
-                                            <option value="2">⭐ Standard (Tier 2)</option>
-                                            <option value="3">◦ Specialized</option>
-                                        </select>
-                                    </div>
-                                    <div class="col-12">
-                                        <label class="small text-muted mb-1">Equipment:</label>
-                                        <select class="form-select form-select-sm" id="equipmentFilter" multiple>
-                                            <!-- Populated dynamically -->
-                                        </select>
-                                        <small class="text-muted d-block mt-1">Tap to select multiple</small>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Exercise List -->
-                    <div class="list-group list-group-flush" id="bonusExerciseList" style="overflow-y: auto; flex: 1;">
-                        <!-- Exercise items will be rendered here -->
-                    </div>
-
-                    <!-- Pagination Footer -->
-                    <div class="p-2 border-top bg-light" id="paginationFooter" style="display: none;">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <small class="text-muted" id="pageInfo">Showing 1-30 of 250</small>
-                            <div class="btn-group btn-group-sm" id="paginationControls">
-                                <!-- Rendered by renderPagination() -->
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Empty State -->
-                    <div id="emptyState" class="text-center py-5" style="display: none;">
-                        <i class="bx bx-search-alt display-1 text-muted"></i>
-                        <p class="text-muted mt-3">No exercises found</p>
-                        <button class="btn btn-sm btn-outline-primary" id="clearAllBtn">
-                            Clear Search
+                        
+                        <!-- Add Exercise Button (Prominent) -->
+                        <button class="btn btn-primary w-100" id="addExerciseBtn" disabled>
+                            <i class="bx bx-plus-circle me-2"></i>Add Exercise
                         </button>
                     </div>
                     
-                    <!-- Loading State -->
-                    <div id="loadingState" class="text-center py-5" style="display: none;">
-                        <div class="spinner-border text-primary" role="status">
-                            <span class="visually-hidden">Loading...</span>
+                    <!-- Filter Accordion (Collapsed by Default) -->
+                    <div class="filter-accordion-section border-bottom">
+                        <!-- Toggle Button -->
+                        <button class="btn btn-link w-100 text-start p-3 text-decoration-none" id="toggleFiltersBtn" type="button">
+                            <i class="bx bx-filter-alt me-2"></i>
+                            <span>Filters</span>
+                            <i class="bx bx-chevron-down float-end" id="filterChevron"></i>
+                        </button>
+                        
+                        <!-- Accordion Content (Hidden by Default) -->
+                        <div id="filterAccordionContent" style="display: none;" class="p-3 pt-0">
+                            <div class="row g-2">
+                                <!-- Muscle Group -->
+                                <div class="col-6">
+                                    <label class="form-label small mb-1">Muscle Group</label>
+                                    <select class="form-select form-select-sm" id="muscleGroupFilter">
+                                        <option value="">All</option>
+                                        <!-- Populated dynamically -->
+                                    </select>
+                                </div>
+                                
+                                <!-- Difficulty -->
+                                <div class="col-6">
+                                    <label class="form-label small mb-1">Difficulty</label>
+                                    <select class="form-select form-select-sm" id="difficultyFilter">
+                                        <option value="">All</option>
+                                        <option value="Beginner">Beginner</option>
+                                        <option value="Intermediate">Intermediate</option>
+                                        <option value="Advanced">Advanced</option>
+                                    </select>
+                                </div>
+                                
+                                <!-- Equipment -->
+                                <div class="col-12">
+                                    <label class="form-label small mb-1">Equipment</label>
+                                    <select class="form-select form-select-sm" id="equipmentFilter" multiple>
+                                        <!-- Populated dynamically -->
+                                    </select>
+                                    <small class="text-muted d-block mt-1">Tap to select multiple</small>
+                                </div>
+                                
+                                <!-- Sort By -->
+                                <div class="col-6">
+                                    <label class="form-label small mb-1">Sort By</label>
+                                    <select class="form-select form-select-sm" id="sortBySelect">
+                                        <option value="name-asc">Name (A-Z)</option>
+                                        <option value="name-desc">Name (Z-A)</option>
+                                        <option value="muscle">Muscle Group</option>
+                                        <option value="tier">Standard First</option>
+                                    </select>
+                                </div>
+                                
+                                <!-- Favorites Toggle -->
+                                <div class="col-6 d-flex align-items-end">
+                                    <div class="form-check form-switch mb-0">
+                                        <input class="form-check-input" type="checkbox" id="favoritesOnlyFilter">
+                                        <label class="form-check-label small" for="favoritesOnlyFilter">
+                                            Favorites Only
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-6" style="display: none;">
+                                    <select class="form-select form-select-sm" id="tierFilter">
+                                        <option value="">All Tiers</option>
+                                        <option value="1">⭐ Standard (Tier 1)</option>
+                                        <option value="2">⭐ Standard (Tier 2)</option>
+                                        <option value="3">◦ Specialized</option>
+                                    </select>
+                                </div>
+                            </div>
                         </div>
-                        <p class="text-muted mt-3">Loading exercises...</p>
+                    </div>
+                    
+                    <!-- Exercise Library Section -->
+                    <div class="exercise-library-section">
+                        <div class="p-3 pb-2 border-bottom bg-light">
+                            <h6 class="mb-0 text-muted small">
+                                <i class="bx bx-book-open me-2"></i>Exercise Library
+                            </h6>
+                        </div>
+
+                        <!-- Exercise List (Scrollable) -->
+                        <div id="exerciseList" class="p-3" style="overflow-y: auto; max-height: calc(85vh - 450px);">
+                            <!-- Exercise cards rendered here -->
+                        </div>
+                        
+                        <!-- Pagination Footer -->
+                        <div class="p-2 border-top bg-light" id="paginationFooter" style="display: none;">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted" id="pageInfo">Showing 1-30 of 250</small>
+                                <div class="btn-group btn-group-sm" id="paginationControls">
+                                    <!-- Rendered by renderPagination() -->
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Empty State -->
+                        <div id="emptyState" class="text-center py-5" style="display: none;">
+                            <i class="bx bx-search-alt display-1 text-muted"></i>
+                            <p class="text-muted mt-3">No exercises found</p>
+                            <small class="text-muted d-block">Try adjusting your filters or use the "Add Exercise" button above to create a custom exercise</small>
+                        </div>
+                        
+                        <!-- Loading State -->
+                        <div id="loadingState" class="text-center py-5" style="display: none;">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <p class="text-muted mt-3">Loading exercises...</p>
+                        </div>
                     </div>
                 </div>
             </div>
         `;
         
         return this.createOffcanvas('bonusExerciseOffcanvas', offcanvasHtml, (offcanvas, offcanvasElement) => {
-            // State management (PHASE 2: Enhanced with pagination & filters)
+            // State management - UPDATED for new UX (exercise name as focal point)
             const state = {
-                searchQuery: '',
-                muscleGroup: '',       // CHANGED: From activeFilter to muscleGroup
+                exerciseName: '',      // Primary: Exercise name (also used for filtering)
+                sets: '3',
+                reps: '12',
+                rest: '60s',
+                searchQuery: '',       // Synced with exerciseName for filtering
+                muscleGroup: '',
                 difficulty: '',
                 tier: '',
                 equipment: [],
                 favoritesOnly: false,
-                sortBy: 'name',        // NEW: Sort field
-                sortOrder: 'asc',      // NEW: Sort direction
+                sortBy: 'name',
+                sortOrder: 'asc',
                 allExercises: [],
                 filteredExercises: [],
                 paginatedExercises: [],
@@ -768,17 +815,20 @@ class UnifiedOffcanvasFactory {
                 isLoading: false
             };
             
-            // Get DOM elements
-            const searchInput = offcanvasElement.querySelector('#bonusExerciseSearch');
-            const clearBtn = offcanvasElement.querySelector('#clearSearchBtn');
-            const clearAllBtn = offcanvasElement.querySelector('#clearAllBtn');
-            const exerciseList = offcanvasElement.querySelector('#bonusExerciseList');
+            // Get DOM elements - UPDATED for new structure
+            const exerciseNameInput = offcanvasElement.querySelector('#exerciseNameInput');
+            const clearNameBtn = offcanvasElement.querySelector('#clearNameBtn');
+            const setsInput = offcanvasElement.querySelector('#setsInput');
+            const repsInput = offcanvasElement.querySelector('#repsInput');
+            const restInput = offcanvasElement.querySelector('#restInput');
+            const addExerciseBtn = offcanvasElement.querySelector('#addExerciseBtn');
+            const toggleFiltersBtn = offcanvasElement.querySelector('#toggleFiltersBtn');
+            const filterAccordionContent = offcanvasElement.querySelector('#filterAccordionContent');
+            const filterChevron = offcanvasElement.querySelector('#filterChevron');
+            const exerciseList = offcanvasElement.querySelector('#exerciseList');
             const emptyState = offcanvasElement.querySelector('#emptyState');
             const loadingState = offcanvasElement.querySelector('#loadingState');
             const muscleGroupFilter = offcanvasElement.querySelector('#muscleGroupFilter');
-            const toggleMoreFilters = offcanvasElement.querySelector('#toggleMoreFilters');
-            const moreFiltersSection = offcanvasElement.querySelector('#moreFiltersSection');
-            const moreFiltersIcon = offcanvasElement.querySelector('#moreFiltersIcon');
             const difficultyFilter = offcanvasElement.querySelector('#difficultyFilter');
             const tierFilter = offcanvasElement.querySelector('#tierFilter');
             const equipmentFilter = offcanvasElement.querySelector('#equipmentFilter');
@@ -786,6 +836,7 @@ class UnifiedOffcanvasFactory {
             const paginationFooter = offcanvasElement.querySelector('#paginationFooter');
             const pageInfo = offcanvasElement.querySelector('#pageInfo');
             const paginationControls = offcanvasElement.querySelector('#paginationControls');
+            const clearAllBtn = offcanvasElement.querySelector('#clearAllBtn');
             
             // Load exercises from cache service
             const loadExercises = async () => {
@@ -1117,58 +1168,139 @@ class UnifiedOffcanvasFactory {
                 }).join('');
             };
             
-            // Search input handler
-            searchInput.addEventListener('input', (e) => {
-                state.searchQuery = e.target.value.toLowerCase();
-                clearBtn.style.display = e.target.value ? 'block' : 'none';
+            // Exercise name input handler (DUAL PURPOSE: name + search filter)
+            exerciseNameInput.addEventListener('input', (e) => {
+                const value = e.target.value.trim();
+                state.exerciseName = value;
+                state.searchQuery = value.toLowerCase();
+                
+                // Update UI
+                clearNameBtn.style.display = value ? 'block' : 'none';
+                addExerciseBtn.disabled = !value;
+                
+                // Filter library as user types
                 filterExercises();
             });
             
-            // Clear search button
-            clearBtn.addEventListener('click', () => {
-                searchInput.value = '';
+            // Clear name button
+            clearNameBtn.addEventListener('click', () => {
+                exerciseNameInput.value = '';
+                state.exerciseName = '';
                 state.searchQuery = '';
-                clearBtn.style.display = 'none';
+                clearNameBtn.style.display = 'none';
+                addExerciseBtn.disabled = true;
                 filterExercises();
-                searchInput.focus();
+                exerciseNameInput.focus();
             });
             
-            // Clear all button (in empty state)
-            clearAllBtn.addEventListener('click', () => {
-                searchInput.value = '';
-                state.searchQuery = '';
-                state.muscleGroup = '';
-                state.difficulty = '';
-                state.tier = '';
-                state.equipment = [];
-                state.favoritesOnly = false;
-                clearBtn.style.display = 'none';
-                
-                // Reset all filter dropdowns
-                muscleGroupFilter.value = '';
-                difficultyFilter.value = '';
-                tierFilter.value = '';
-                equipmentFilter.selectedIndex = -1;
-                
-                // Reset favorites toggle
-                favoritesOnlyFilter.checked = false;
-                
-                filterExercises();
+            // Sets/Reps/Rest input handlers
+            setsInput.addEventListener('input', (e) => {
+                state.sets = e.target.value.trim() || '3';
             });
+            
+            repsInput.addEventListener('input', (e) => {
+                state.reps = e.target.value.trim() || '12';
+            });
+            
+            restInput.addEventListener('input', (e) => {
+                state.rest = e.target.value.trim() || '60s';
+            });
+            
+            // Add Exercise Button handler (PRIMARY ACTION)
+            addExerciseBtn.addEventListener('click', async () => {
+                if (!state.exerciseName) return;
+                
+                // Show loading state
+                addExerciseBtn.disabled = true;
+                addExerciseBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Adding...';
+                
+                try {
+                    // Auto-create custom exercise if needed
+                    if (window.exerciseCacheService && window.dataManager?.isUserAuthenticated()) {
+                        const currentUser = window.dataManager.getCurrentUser();
+                        const userId = currentUser?.uid || null;
+                        await window.exerciseCacheService.autoCreateIfNeeded(state.exerciseName, userId);
+                    }
+                    
+                    // Call the add callback with exercise data
+                    await onAddExercise({
+                        name: state.exerciseName,
+                        sets: state.sets,
+                        reps: state.reps,
+                        rest: state.rest,
+                        weight: '',
+                        unit: 'lbs'
+                    });
+                    
+                    // Close offcanvas
+                    offcanvas.hide();
+                    
+                    // Show success toast
+                    if (window.showToast) {
+                        window.showToast({
+                            message: `Added ${state.exerciseName} to workout`,
+                            type: 'success',
+                            title: 'Exercise Added',
+                            icon: 'bx-plus-circle',
+                            delay: 3000
+                        });
+                    }
+                    
+                } catch (error) {
+                    console.error('❌ Error adding exercise:', error);
+                    addExerciseBtn.disabled = false;
+                    addExerciseBtn.innerHTML = '<i class="bx bx-plus-circle me-2"></i>Add Exercise';
+                    
+                    if (window.showToast) {
+                        window.showToast({
+                            message: 'Failed to add exercise. Please try again.',
+                            type: 'danger',
+                            title: 'Error',
+                            icon: 'bx-error',
+                            delay: 3000
+                        });
+                    }
+                }
+            });
+            
+            // Toggle Filters Accordion
+            toggleFiltersBtn.addEventListener('click', () => {
+                const isHidden = filterAccordionContent.style.display === 'none';
+                filterAccordionContent.style.display = isHidden ? 'block' : 'none';
+                filterChevron.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
+            });
+            
+            // Clear all button (in empty state) - only exists when empty state is shown
+            if (clearAllBtn) {
+                clearAllBtn.addEventListener('click', () => {
+                    exerciseNameInput.value = '';
+                    state.exerciseName = '';
+                    state.searchQuery = '';
+                    state.muscleGroup = '';
+                    state.difficulty = '';
+                    state.tier = '';
+                    state.equipment = [];
+                    state.favoritesOnly = false;
+                    clearNameBtn.style.display = 'none';
+                    addExerciseBtn.disabled = true;
+                    
+                    // Reset all filter dropdowns
+                    muscleGroupFilter.value = '';
+                    difficultyFilter.value = '';
+                    tierFilter.value = '';
+                    equipmentFilter.selectedIndex = -1;
+                    
+                    // Reset favorites toggle
+                    favoritesOnlyFilter.checked = false;
+                    
+                    filterExercises();
+                });
+            }
             
             // Muscle group filter handler
             muscleGroupFilter?.addEventListener('change', (e) => {
                 state.muscleGroup = e.target.value;
                 filterExercises();
-            });
-            
-            // PHASE 6: Event handlers for advanced filters
-            
-            // Toggle "More Filters" section
-            toggleMoreFilters?.addEventListener('click', () => {
-                const isHidden = moreFiltersSection.style.display === 'none';
-                moreFiltersSection.style.display = isHidden ? 'block' : 'none';
-                moreFiltersIcon.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
             });
             
             // Difficulty filter
@@ -1273,9 +1405,9 @@ class UnifiedOffcanvasFactory {
             offcanvasElement.addEventListener('shown.bs.offcanvas', () => {
                 loadExercises();
                 
-                // Auto-focus search on desktop only
-                if (searchInput && window.innerWidth > 768) {
-                    setTimeout(() => searchInput.focus(), 100);
+                // Auto-focus exercise name input on desktop only
+                if (exerciseNameInput && window.innerWidth > 768) {
+                    setTimeout(() => exerciseNameInput.focus(), 100);
                 }
             }, { once: true });
         });
