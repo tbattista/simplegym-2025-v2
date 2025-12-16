@@ -1796,12 +1796,12 @@ class UnifiedOffcanvasFactory {
             <div class="offcanvas offcanvas-bottom offcanvas-bottom-base" tabindex="-1"
                  id="exerciseFilterOffcanvas" data-bs-scroll="false" style="height: 85vh;">
                 
-                <!-- Header with Clear/Cancel (smaller buttons) -->
+                <!-- Header with Clear/Cancel (smaller buttons, right-aligned) -->
                 <div class="offcanvas-header border-bottom">
                     <h5 class="offcanvas-title">
                         <i class="bx bx-filter-alt me-2"></i>Filters
                     </h5>
-                    <div class="d-flex gap-1">
+                    <div class="d-flex gap-1 ms-auto">
                         <button type="button" class="btn btn-xs btn-outline-secondary px-2 py-1" id="clearAllFiltersBtn" style="font-size: 0.75rem;">
                             Clear
                         </button>
