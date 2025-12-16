@@ -1434,7 +1434,8 @@ class UnifiedOffcanvasFactory {
             title = 'Search Exercises',
             showFilters = true,
             buttonText = 'Select',
-            buttonIcon = 'bx-check'
+            buttonIcon = 'bx-check',
+            initialQuery = ''
         } = config;
         
         const offcanvasHtml = `
@@ -1449,59 +1450,22 @@ class UnifiedOffcanvasFactory {
                 </div>
                 <div class="offcanvas-body p-0 d-flex flex-column">
                     <!-- Search Box -->
-                    <div class="search-section p-3 border-bottom bg-light">
+                    <div class="search-section p-3 border-bottom">
+                        <label class="form-label fw-semibold mb-2">Exercise Name</label>
                         <div class="input-group">
-                            <span class="input-group-text"><i class="bx bx-search"></i></span>
                             <input type="text" class="form-control" id="exerciseSearchInput"
-                                   placeholder="Search exercises..." autocomplete="off">
+                                   placeholder="Enter exercise name" autocomplete="off">
+                            <button class="btn btn-outline-secondary" type="button" id="filterExercisesBtn" title="Filters">
+                                <i class="bx bx-filter-alt"></i>
+                            </button>
+                            <button class="btn btn-outline-secondary" type="button" id="searchExercisesBtn" title="Search library">
+                                <i class="bx bx-search"></i>
+                            </button>
+                            <button class="btn btn-outline-secondary" type="button" id="clearSearchBtn" title="Clear" style="display: none;">
+                                <i class="bx bx-x"></i>
+                            </button>
                         </div>
                     </div>
-                    
-                    <!-- Filters Section -->
-                    ${showFilters ? `
-                        <div class="filters-section p-3 border-bottom">
-                            <div class="row g-2">
-                                <div class="col-6">
-                                    <label class="form-label small mb-1">Muscle Group</label>
-                                    <select class="form-select form-select-sm" id="muscleGroupFilter">
-                                        <option value="">All</option>
-                                    </select>
-                                </div>
-                                <div class="col-6">
-                                    <label class="form-label small mb-1">Difficulty</label>
-                                    <select class="form-select form-select-sm" id="difficultyFilter">
-                                        <option value="">All</option>
-                                        <option value="Beginner">Beginner</option>
-                                        <option value="Intermediate">Intermediate</option>
-                                        <option value="Advanced">Advanced</option>
-                                    </select>
-                                </div>
-                                <div class="col-12">
-                                    <label class="form-label small mb-1">Equipment</label>
-                                    <select class="form-select form-select-sm" id="equipmentFilter" multiple>
-                                    </select>
-                                    <small class="text-muted d-block mt-1">Tap to select multiple</small>
-                                </div>
-                                <div class="col-6">
-                                    <label class="form-label small mb-1">Sort By</label>
-                                    <select class="form-select form-select-sm" id="sortBySelect">
-                                        <option value="name-asc">Name (A-Z)</option>
-                                        <option value="name-desc">Name (Z-A)</option>
-                                        <option value="muscle">Muscle Group</option>
-                                        <option value="tier">Standard First</option>
-                                    </select>
-                                </div>
-                                <div class="col-6 d-flex align-items-end">
-                                    <div class="form-check form-switch mb-0">
-                                        <input class="form-check-input" type="checkbox" id="favoritesOnlyFilter">
-                                        <label class="form-check-label small" for="favoritesOnlyFilter">
-                                            Favorites Only
-                                        </label>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    ` : ''}
                     
                     <!-- Exercise List -->
                     <div class="exercise-list-section flex-grow-1 d-flex flex-column">
@@ -1548,11 +1512,9 @@ class UnifiedOffcanvasFactory {
             
             // Get DOM elements
             const searchInput = element.querySelector('#exerciseSearchInput');
-            const muscleGroupFilter = element.querySelector('#muscleGroupFilter');
-            const difficultyFilter = element.querySelector('#difficultyFilter');
-            const equipmentFilter = element.querySelector('#equipmentFilter');
-            const favoritesOnlyFilter = element.querySelector('#favoritesOnlyFilter');
-            const sortBySelect = element.querySelector('#sortBySelect');
+            const filterBtn = element.querySelector('#filterExercisesBtn');
+            const searchBtn = element.querySelector('#searchExercisesBtn');
+            const clearBtn = element.querySelector('#clearSearchBtn');
             const exerciseListContainer = element.querySelector('#exerciseListContainer');
             const paginationFooter = element.querySelector('#paginationFooter');
             const pageInfo = element.querySelector('#pageInfo');
@@ -1676,43 +1638,74 @@ class UnifiedOffcanvasFactory {
                 }
             });
             
+            // Create filter offcanvas
+            let filterOffcanvas = null;
+            
+            const openFiltersOffcanvas = () => {
+                // Get current filter state
+                const muscleGroups = searchCore.getUniqueMuscleGroups();
+                const equipment = searchCore.getUniqueEquipment();
+                const currentState = searchCore.getState();
+                
+                // Create filter offcanvas with search core instance for live count
+                filterOffcanvas = UnifiedOffcanvasFactory.createExerciseFilterOffcanvas({
+                    muscleGroups,
+                    equipment,
+                    currentFilters: {
+                        muscleGroup: currentState.muscleGroup,
+                        difficulty: currentState.difficulty,
+                        equipment: currentState.equipment,
+                        favoritesOnly: currentState.favoritesOnly,
+                        sortBy: currentState.sortBy,
+                        sortOrder: currentState.sortOrder
+                    },
+                    searchCore: searchCore  // Pass search core for preview count
+                }, (filters) => {
+                    // Apply filters callback
+                    searchCore.setMuscleGroup(filters.muscleGroup);
+                    searchCore.setDifficulty(filters.difficulty);
+                    searchCore.setEquipment(filters.equipment);
+                    searchCore.setFavoritesOnly(filters.favoritesOnly);
+                    searchCore.setSort(filters.sortBy, filters.sortOrder);
+                });
+            };
+            
             // Load exercises
             searchCore.loadExercises().then(() => {
-                // Populate filter dropdowns
-                if (showFilters) {
-                    const muscleGroups = searchCore.getUniqueMuscleGroups();
-                    muscleGroupFilter.innerHTML = '<option value="">All Muscle Groups</option>' +
-                        muscleGroups.map(mg => `<option value="${this.escapeHtml(mg)}">${this.escapeHtml(mg)}</option>`).join('');
-                    
-                    const equipment = searchCore.getUniqueEquipment();
-                    equipmentFilter.innerHTML = equipment.map(eq => `<option value="${this.escapeHtml(eq)}">${this.escapeHtml(eq)}</option>`).join('');
+                // Apply initial search query if provided
+                if (initialQuery) {
+                    searchInput.value = initialQuery;
+                    searchCore.setSearchQuery(initialQuery);
                 }
             });
             
             // Event handlers
             searchInput?.addEventListener('input', (e) => {
-                searchCore.setSearchQuery(e.target.value);
+                const value = e.target.value;
+                searchCore.setSearchQuery(value);
+                
+                // Show/hide clear button based on input
+                if (clearBtn) {
+                    clearBtn.style.display = value.trim() ? 'block' : 'none';
+                }
             });
             
-            muscleGroupFilter?.addEventListener('change', (e) => {
-                searchCore.setMuscleGroup(e.target.value);
+            // Clear button handler
+            clearBtn?.addEventListener('click', () => {
+                searchInput.value = '';
+                searchCore.setSearchQuery('');
+                clearBtn.style.display = 'none';
+                searchInput.focus();
             });
             
-            difficultyFilter?.addEventListener('change', (e) => {
-                searchCore.setDifficulty(e.target.value);
+            // Search button handler (optional - just focuses the input)
+            searchBtn?.addEventListener('click', () => {
+                searchInput.focus();
             });
             
-            equipmentFilter?.addEventListener('change', (e) => {
-                searchCore.setEquipment(Array.from(e.target.selectedOptions).map(opt => opt.value));
-            });
-            
-            favoritesOnlyFilter?.addEventListener('change', (e) => {
-                searchCore.setFavoritesOnly(e.target.checked);
-            });
-            
-            sortBySelect?.addEventListener('change', (e) => {
-                const [sortBy, order] = e.target.value.split('-');
-                searchCore.setSort(sortBy, order || 'asc');
+            // Filter button handler
+            filterBtn?.addEventListener('click', () => {
+                openFiltersOffcanvas();
             });
             
             // Exercise selection handler
@@ -1755,6 +1748,324 @@ class UnifiedOffcanvasFactory {
     }
     
     /* ============================================
+       EXERCISE FILTER OFFCANVAS (List-style with checkmarks)
+       ============================================ */
+    
+    /**
+     * Create exercise filter offcanvas with list-style selections
+     * @param {Object} config - Filter configuration
+     * @param {Array} config.muscleGroups - Available muscle groups
+     * @param {Array} config.equipment - Available equipment
+     * @param {Object} config.currentFilters - Current filter state
+     * @param {Function} onApply - Callback when filters are applied
+     * @returns {Object} Offcanvas instance
+     */
+    static createExerciseFilterOffcanvas(config, onApply) {
+        const {
+            muscleGroups = [],
+            equipment = [],
+            currentFilters = {
+                muscleGroup: '',
+                difficulty: '',
+                equipment: [],
+                favoritesOnly: false,
+                sortBy: 'name',
+                sortOrder: 'asc'
+            },
+            searchCore = null  // Accept search core for preview count
+        } = config;
+        
+        // Track filter state
+        const filterState = { ...currentFilters };
+        
+        const difficulties = ['Beginner', 'Intermediate', 'Advanced'];
+        const sortOptions = [
+            { value: 'name-asc', label: 'Name (A-Z)' },
+            { value: 'name-desc', label: 'Name (Z-A)' },
+            { value: 'muscle', label: 'Muscle Group' },
+            { value: 'tier', label: 'Standard First' }
+        ];
+        
+        const renderCheckmark = (isSelected) => {
+            return isSelected
+                ? '<i class="bx bx-check text-primary fw-bold" style="font-size: 1.25rem;"></i>'
+                : '<span style="width: 20px; display: inline-block;"></span>';
+        };
+        
+        const offcanvasHtml = `
+            <div class="offcanvas offcanvas-bottom offcanvas-bottom-base" tabindex="-1"
+                 id="exerciseFilterOffcanvas" data-bs-scroll="false" style="height: 85vh;">
+                
+                <!-- Header with Clear/Cancel (smaller buttons) -->
+                <div class="offcanvas-header border-bottom">
+                    <h5 class="offcanvas-title">
+                        <i class="bx bx-filter-alt me-2"></i>Filters
+                    </h5>
+                    <div class="d-flex gap-1">
+                        <button type="button" class="btn btn-xs btn-outline-secondary px-2 py-1" id="clearAllFiltersBtn" style="font-size: 0.75rem;">
+                            Clear
+                        </button>
+                        <button type="button" class="btn btn-xs btn-outline-secondary px-2 py-1" id="cancelFiltersBtn" style="font-size: 0.75rem;">
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Body - Scrollable list of filters -->
+                <div class="offcanvas-body p-0 pb-0" style="overflow-y: auto;">
+                    <!-- Muscle Group Section (Multi-select) -->
+                    <div class="filter-category border-bottom">
+                        <div class="p-3 bg-light">
+                            <h6 class="mb-0 fw-semibold">Muscle Group</h6>
+                        </div>
+                        <div class="filter-options">
+                            <div class="filter-option p-3 border-bottom" data-filter="muscleGroup" data-value="">
+                                <div class="d-flex align-items-center">
+                                    <span class="checkmark me-3">${renderCheckmark(!Array.isArray(filterState.muscleGroup) || filterState.muscleGroup.length === 0)}</span>
+                                    <span class="flex-grow-1 fw-semibold">All Muscle Groups</span>
+                                </div>
+                            </div>
+                            ${muscleGroups.map(mg => `
+                                <div class="filter-option p-3 border-bottom" data-filter="muscleGroup" data-value="${this.escapeHtml(mg)}">
+                                    <div class="d-flex align-items-center">
+                                        <span class="checkmark me-3">${renderCheckmark(Array.isArray(filterState.muscleGroup) ? filterState.muscleGroup.includes(mg) : filterState.muscleGroup === mg)}</span>
+                                        <span class="flex-grow-1">${this.escapeHtml(mg)}</span>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                    
+                    <!-- Difficulty Section -->
+                    <div class="filter-category border-bottom">
+                        <div class="p-3 bg-light">
+                            <h6 class="mb-0 fw-semibold">Difficulty</h6>
+                        </div>
+                        <div class="filter-options">
+                            <div class="filter-option p-3 border-bottom" data-filter="difficulty" data-value="">
+                                <div class="d-flex align-items-center">
+                                    <span class="checkmark me-3">${renderCheckmark(!filterState.difficulty)}</span>
+                                    <span class="flex-grow-1">All Levels</span>
+                                </div>
+                            </div>
+                            ${difficulties.map(diff => `
+                                <div class="filter-option p-3 border-bottom" data-filter="difficulty" data-value="${diff}">
+                                    <div class="d-flex align-items-center">
+                                        <span class="checkmark me-3">${renderCheckmark(filterState.difficulty === diff)}</span>
+                                        <span class="flex-grow-1">${diff}</span>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                    
+                    <!-- Equipment Section (Multi-select) -->
+                    <div class="filter-category border-bottom">
+                        <div class="p-3 bg-light">
+                            <h6 class="mb-0 fw-semibold">Equipment</h6>
+                        </div>
+                        <div class="filter-options">
+                            ${equipment.map(eq => `
+                                <div class="filter-option p-3 border-bottom" data-filter="equipment" data-value="${this.escapeHtml(eq)}">
+                                    <div class="d-flex align-items-center">
+                                        <span class="checkmark me-3">${renderCheckmark(filterState.equipment.includes(eq))}</span>
+                                        <span class="flex-grow-1">${this.escapeHtml(eq)}</span>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                    
+                    <!-- Sort By Section -->
+                    <div class="filter-category border-bottom">
+                        <div class="p-3 bg-light">
+                            <h6 class="mb-0 fw-semibold">Sort By</h6>
+                        </div>
+                        <div class="filter-options">
+                            ${sortOptions.map(opt => {
+                                const currentSort = `${filterState.sortBy}-${filterState.sortOrder}`;
+                                return `
+                                    <div class="filter-option p-3 border-bottom" data-filter="sort" data-value="${opt.value}">
+                                        <div class="d-flex align-items-center">
+                                            <span class="checkmark me-3">${renderCheckmark(currentSort === opt.value)}</span>
+                                            <span class="flex-grow-1">${opt.label}</span>
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+                    
+                    <!-- Favorites Toggle -->
+                    <div class="filter-category">
+                        <div class="filter-option p-3" data-filter="favorites" data-value="toggle">
+                            <div class="d-flex align-items-center">
+                                <span class="checkmark me-3">${renderCheckmark(filterState.favoritesOnly)}</span>
+                                <span class="flex-grow-1">Favorites Only</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Footer - Apply Button -->
+                <div class="offcanvas-footer border-top p-3">
+                    <button type="button" class="btn btn-primary w-100" id="applyFiltersBtn">
+                        <span id="applyBtnText">Apply</span>
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        return this.createOffcanvas('exerciseFilterOffcanvas', offcanvasHtml, (offcanvas, element) => {
+            // Function to update preview count
+            const updatePreviewCount = () => {
+                if (!searchCore) return;
+                
+                const count = searchCore.previewFilterCount(filterState);
+                const applyBtnText = element.querySelector('#applyBtnText');
+                
+                if (applyBtnText) {
+                    applyBtnText.textContent = count > 0 ? `Show ${count} exercises` : 'No exercises';
+                }
+            };
+            
+            // Get all filter options
+            const filterOptions = element.querySelectorAll('.filter-option');
+            
+            // Update checkmark display
+            const updateCheckmark = (option, isSelected) => {
+                const checkmark = option.querySelector('.checkmark');
+                if (checkmark) {
+                    checkmark.innerHTML = isSelected
+                        ? '<i class="bx bx-check text-primary fw-bold" style="font-size: 1.25rem;"></i>'
+                        : '<span style="width: 20px; display: inline-block;"></span>';
+                }
+            };
+            
+            // Handle filter option clicks
+            filterOptions.forEach(option => {
+                option.addEventListener('click', () => {
+                    const filterType = option.dataset.filter;
+                    const value = option.dataset.value;
+                    
+                    if (filterType === 'muscleGroup') {
+                        // Handle "All" option (value is empty string)
+                        if (value === '') {
+                            // Clear all muscle group selections
+                            filterState.muscleGroup = [];
+                            // Update all checkmarks
+                            element.querySelectorAll('[data-filter="muscleGroup"]').forEach(opt => {
+                                updateCheckmark(opt, opt.dataset.value === '');
+                            });
+                        } else {
+                            // Multi-select - toggle individual muscle group
+                            if (!Array.isArray(filterState.muscleGroup)) {
+                                filterState.muscleGroup = filterState.muscleGroup ? [filterState.muscleGroup] : [];
+                            }
+                            const isSelected = filterState.muscleGroup.includes(value);
+                            if (isSelected) {
+                                filterState.muscleGroup = filterState.muscleGroup.filter(mg => mg !== value);
+                            } else {
+                                filterState.muscleGroup.push(value);
+                            }
+                            
+                            // Update checkmarks for this option and "All"
+                            updateCheckmark(option, !isSelected);
+                            const allOption = element.querySelector('[data-filter="muscleGroup"][data-value=""]');
+                            if (allOption) {
+                                updateCheckmark(allOption, filterState.muscleGroup.length === 0);
+                            }
+                        }
+                        
+                    } else if (filterType === 'difficulty') {
+                        // Single select - clear others
+                        element.querySelectorAll('[data-filter="difficulty"]').forEach(opt => {
+                            updateCheckmark(opt, opt === option);
+                        });
+                        filterState.difficulty = value;
+                        
+                    } else if (filterType === 'equipment') {
+                        // Multi-select - toggle
+                        const isSelected = filterState.equipment.includes(value);
+                        if (isSelected) {
+                            filterState.equipment = filterState.equipment.filter(eq => eq !== value);
+                        } else {
+                            filterState.equipment.push(value);
+                        }
+                        updateCheckmark(option, !isSelected);
+                        
+                    } else if (filterType === 'sort') {
+                        // Single select - clear others
+                        element.querySelectorAll('[data-filter="sort"]').forEach(opt => {
+                            updateCheckmark(opt, opt === option);
+                        });
+                        const [sortBy, sortOrder] = value.split('-');
+                        filterState.sortBy = sortBy;
+                        filterState.sortOrder = sortOrder || 'asc';
+                        
+                    } else if (filterType === 'favorites') {
+                        // Toggle
+                        filterState.favoritesOnly = !filterState.favoritesOnly;
+                        updateCheckmark(option, filterState.favoritesOnly);
+                    }
+                    
+                    // Update preview count after any filter change
+                    updatePreviewCount();
+                });
+            });
+            
+            // Initialize preview count
+            updatePreviewCount();
+            
+            // Apply button
+            element.querySelector('#applyFiltersBtn')?.addEventListener('click', () => {
+                onApply(filterState);
+                offcanvas.hide();
+            });
+            
+            // Clear all filters button
+            element.querySelector('#clearAllFiltersBtn')?.addEventListener('click', () => {
+                // Reset all filters to default
+                filterState.muscleGroup = [];
+                filterState.difficulty = '';
+                filterState.equipment = [];
+                filterState.favoritesOnly = false;
+                filterState.sortBy = 'name';
+                filterState.sortOrder = 'asc';
+                
+                // Update all checkmarks
+                element.querySelectorAll('.filter-option').forEach(opt => {
+                    const filterType = opt.dataset.filter;
+                    const value = opt.dataset.value;
+                    
+                    if (filterType === 'muscleGroup') {
+                        updateCheckmark(opt, value === '');
+                    } else if (filterType === 'difficulty') {
+                        updateCheckmark(opt, value === '');
+                    } else if (filterType === 'equipment') {
+                        updateCheckmark(opt, false);
+                    } else if (filterType === 'sort') {
+                        updateCheckmark(opt, value === 'name-asc');
+                    } else if (filterType === 'favorites') {
+                        updateCheckmark(opt, false);
+                    }
+                });
+                
+                // Update preview count
+                updatePreviewCount();
+            });
+            
+            // Cancel button
+            element.querySelector('#cancelFiltersBtn')?.addEventListener('click', () => {
+                offcanvas.hide();
+            });
+            
+            // Initialize preview count
+            updatePreviewCount();
+        });
+    }
+    
+    /* ============================================
        ADD EXERCISE FORM OFFCANVAS (Reusable)
        Simple form for exercise details
        ============================================ */
@@ -1784,6 +2095,8 @@ class UnifiedOffcanvasFactory {
             sets = '3',
             reps = '12',
             rest = '60s',
+            weight = '',
+            weightUnit = 'lbs',
             showSearchButton = true,
             buttonText = 'Add Exercise',
             buttonIcon = 'bx-plus-circle'
@@ -1832,6 +2145,24 @@ class UnifiedOffcanvasFactory {
                         </div>
                     </div>
                     
+                    <!-- Weight (Optional) -->
+                    <div class="mb-3">
+                        <label class="form-label small"><i class="bx bx-dumbbell me-1"></i>Weight (Optional)</label>
+                        <div class="d-flex gap-2">
+                            <input type="text" class="form-control" id="weightInput"
+                                   value="${this.escapeHtml(weight)}"
+                                   placeholder="135 or 4x45 plates"
+                                   maxlength="50"
+                                   style="flex: 1;">
+                            <select class="form-select" id="weightUnitSelect" style="width: 100px;">
+                                <option value="lbs" ${weightUnit === 'lbs' ? 'selected' : ''}>lbs</option>
+                                <option value="kg" ${weightUnit === 'kg' ? 'selected' : ''}>kg</option>
+                                <option value="other" ${weightUnit === 'other' ? 'selected' : ''}>other</option>
+                            </select>
+                        </div>
+                        <small class="text-muted">Enter weight as number or description (e.g., "4x45 plates", "135", "BW+25")</small>
+                    </div>
+                    
                     <!-- Submit Button -->
                     <button class="btn btn-primary w-100" id="submitExerciseBtn" disabled>
                         <i class="bx ${buttonIcon} me-2"></i>${this.escapeHtml(buttonText)}
@@ -1849,6 +2180,8 @@ class UnifiedOffcanvasFactory {
             const setsInput = element.querySelector('#setsInput');
             const repsInput = element.querySelector('#repsInput');
             const restInput = element.querySelector('#restInput');
+            const weightInput = element.querySelector('#weightInput');
+            const weightUnitSelect = element.querySelector('#weightUnitSelect');
             const submitBtn = element.querySelector('#submitExerciseBtn');
             const searchBtn = element.querySelector('#searchExerciseBtn');
             
@@ -1884,7 +2217,9 @@ class UnifiedOffcanvasFactory {
                         exerciseId: linkedExerciseId,
                         sets: setsInput.value.trim(),
                         reps: repsInput.value.trim(),
-                        rest: restInput.value.trim()
+                        rest: restInput.value.trim(),
+                        weight: weightInput.value.trim(),
+                        weight_unit: weightUnitSelect.value
                     };
                     
                     await onAddExercise(exerciseData);
@@ -2013,6 +2348,420 @@ class UnifiedOffcanvasFactory {
                 });
             }
         });
+    }
+
+    /* ============================================
+       EXERCISE GROUP EDITOR (for Workout Builder)
+       Button-based exercise selection with search integration
+       ============================================ */
+    
+    /**
+     * Create exercise group editor offcanvas with button-based exercise selection
+     * Uses search offcanvas for exercise selection instead of autocomplete inputs
+     * @param {Object} config - Configuration options
+     * @param {string} config.groupId - Unique group identifier
+     * @param {string} config.title - Offcanvas title (default: 'Edit Exercise Group')
+     * @param {Object} config.exercises - Exercise data {a: 'name', b: 'name', c: 'name'}
+     * @param {string} config.sets - Default sets value
+     * @param {string} config.reps - Default reps value
+     * @param {string} config.rest - Default rest value
+     * @param {string} config.weight - Default weight value
+     * @param {string} config.weightUnit - Weight unit (lbs/kg/other)
+     * @param {boolean} config.isNew - Whether this is a new group
+     * @param {Function} onSave - Callback when group is saved: (groupData) => void
+     * @param {Function} onDelete - Callback when group is deleted: () => void
+     * @param {Function} onSearchClick - Callback when search is requested: (slotKey, populateCallback) => void
+     * @returns {Object} Offcanvas instance
+     */
+    static createExerciseGroupEditor(config, onSave, onDelete, onSearchClick) {
+        const {
+            groupId = `group-${Date.now()}`,
+            title = 'Edit Exercise Group',
+            exercises = { a: '', b: '', c: '' },
+            sets = '3',
+            reps = '8-12',
+            rest = '60s',
+            weight = '',
+            weightUnit = 'lbs',
+            isNew = false
+        } = config;
+        
+        // Track selected exercises in state
+        const state = {
+            exercises: { ...exercises },
+            sets,
+            reps,
+            rest,
+            weight,
+            weightUnit,
+            alternateCount: (exercises.b ? 1 : 0) + (exercises.c ? 1 : 0)
+        };
+        
+        const offcanvasHtml = `
+            <div class="offcanvas offcanvas-bottom offcanvas-bottom-base" tabindex="-1"
+                 id="exerciseGroupEditorOffcanvas"
+                 aria-labelledby="exerciseGroupEditorLabel"
+                 data-bs-scroll="false">
+                
+                <!-- Header -->
+                <div class="offcanvas-header border-bottom">
+                    <h5 class="offcanvas-title" id="exerciseGroupEditorLabel">
+                        <i class="bx bx-dumbbell me-2"></i>
+                        <span id="exerciseGroupEditorTitle">${this.escapeHtml(title)}</span>
+                    </h5>
+                    <button type="button" class="btn-close"
+                            data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                </div>
+                
+                <!-- Body - Scrollable -->
+                <div class="offcanvas-body" id="exerciseGroupEditorBody">
+                    <!-- Primary Exercise Slot -->
+                    <div class="mb-3">
+                        <label class="form-label">Primary Exercise *</label>
+                        <div class="exercise-slot ${exercises.a ? 'filled' : ''}" id="primaryExerciseSlot" data-slot="a">
+                            <div class="input-group">
+                                <input type="text" class="form-control exercise-slot-input"
+                                       id="primaryExerciseInput"
+                                       value="${this.escapeHtml(exercises.a || '')}"
+                                       placeholder="Enter exercise name"
+                                       autocomplete="off">
+                                <button type="button" class="btn btn-outline-secondary" id="searchPrimaryBtn" title="Search library">
+                                    <i class="bx bx-search"></i>
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary" id="clearPrimaryBtn" title="Clear">
+                                    <i class="bx bx-x"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Alternate Exercises Container -->
+                    <div id="alternateExercisesContainer">
+                        ${exercises.b ? this.renderAlternateSlot('b', exercises.b) : ''}
+                        ${exercises.c ? this.renderAlternateSlot('c', exercises.c) : ''}
+                    </div>
+                    
+                    <!-- Add Alternate Button (max 2) -->
+                    <div class="mb-3" id="addAltButtonContainer" style="${state.alternateCount >= 2 ? 'display: none;' : ''}">
+                        <button type="button" class="btn btn-outline-secondary btn-sm w-100" id="addAlternateSlotBtn">
+                            <i class="bx bx-plus me-1"></i>Add Alternate
+                        </button>
+                    </div>
+                    
+                    <!-- Sets, Reps, Rest -->
+                    <div class="row g-2 mb-3">
+                        <div class="col-4">
+                            <label class="form-label">Sets</label>
+                            <input type="text" class="form-control sets-input text-center"
+                                   id="editorSets" value="${this.escapeHtml(sets)}" placeholder="3">
+                        </div>
+                        <div class="col-4">
+                            <label class="form-label">Reps</label>
+                            <input type="text" class="form-control reps-input text-center"
+                                   id="editorReps" value="${this.escapeHtml(reps)}" placeholder="8-12">
+                        </div>
+                        <div class="col-4">
+                            <label class="form-label">Rest</label>
+                            <input type="text" class="form-control rest-input text-center"
+                                   id="editorRest" value="${this.escapeHtml(rest)}" placeholder="60s">
+                        </div>
+                    </div>
+                    
+                    <!-- Weight -->
+                    <div class="mb-3">
+                        <label class="form-label">
+                            <i class="bx bx-dumbbell me-1"></i>Default Weight
+                        </label>
+                        <div class="row g-2">
+                            <div class="col-4">
+                                <input type="text" class="form-control weight-input text-center"
+                                       id="editorWeight" value="${this.escapeHtml(weight)}" placeholder="0">
+                            </div>
+                            <div class="col-8">
+                                <div class="btn-group w-100" role="group">
+                                    <button type="button" class="btn btn-outline-secondary weight-unit-btn ${weightUnit === 'lbs' ? 'active' : ''}"
+                                            data-unit="lbs">lbs</button>
+                                    <button type="button" class="btn btn-outline-secondary weight-unit-btn ${weightUnit === 'kg' ? 'active' : ''}"
+                                            data-unit="kg">kg</button>
+                                    <button type="button" class="btn btn-outline-secondary weight-unit-btn ${weightUnit === 'other' ? 'active' : ''}"
+                                            data-unit="other">other</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-text">
+                            <i class="bx bx-info-circle me-1"></i>
+                            This weight auto-syncs from your workout history
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Footer - Action Buttons -->
+                <div class="offcanvas-footer border-top p-3">
+                    <div class="d-flex gap-2 workout-builder-buttons">
+                        <button type="button" class="btn btn-primary flex-fill" id="saveExerciseGroupEditorBtn">
+                            <i class="bx bx-save me-1"></i>Save
+                        </button>
+                        <button type="button" class="btn btn-label-secondary flex-fill"
+                                data-bs-dismiss="offcanvas">Cancel</button>
+                        <button type="button" class="btn btn-outline-danger flex-fill" id="deleteExerciseGroupEditorBtn"
+                                ${isNew ? 'style="display: none;"' : ''}>
+                            <i class="bx bx-trash me-1"></i>Delete
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        return this.createOffcanvas('exerciseGroupEditorOffcanvas', offcanvasHtml, (offcanvas, element) => {
+            // Get DOM elements
+            const primaryExerciseInput = element.querySelector('#primaryExerciseInput');
+            const searchPrimaryBtn = element.querySelector('#searchPrimaryBtn');
+            const clearPrimaryBtn = element.querySelector('#clearPrimaryBtn');
+            const primarySlot = element.querySelector('#primaryExerciseSlot');
+            const alternateContainer = element.querySelector('#alternateExercisesContainer');
+            const addAltBtn = element.querySelector('#addAlternateSlotBtn');
+            const addAltContainer = element.querySelector('#addAltButtonContainer');
+            const setsInput = element.querySelector('#editorSets');
+            const repsInput = element.querySelector('#editorReps');
+            const restInput = element.querySelector('#editorRest');
+            const weightInput = element.querySelector('#editorWeight');
+            const weightUnitBtns = element.querySelectorAll('.weight-unit-btn');
+            const saveBtn = element.querySelector('#saveExerciseGroupEditorBtn');
+            const deleteBtn = element.querySelector('#deleteExerciseGroupEditorBtn');
+            
+            // Populate exercise slot helper
+            const populateSlot = (slotKey, exerciseName) => {
+                state.exercises[slotKey] = exerciseName;
+                
+                if (slotKey === 'a') {
+                    primaryExerciseInput.value = exerciseName;
+                    clearPrimaryBtn.classList.remove('d-none');
+                    primarySlot.classList.add('filled');
+                } else {
+                    const slotInput = element.querySelector(`#alternateExercise${slotKey.toUpperCase()}Input`);
+                    const slotClearBtn = element.querySelector(`#clearAlternate${slotKey.toUpperCase()}Btn`);
+                    const slotContainer = element.querySelector(`[data-slot="${slotKey}"]`);
+                    
+                    if (slotInput) slotInput.value = exerciseName;
+                    if (slotClearBtn) slotClearBtn.classList.remove('d-none');
+                    if (slotContainer) slotContainer.classList.add('filled');
+                }
+            };
+            
+            // Clear slot helper
+            const clearSlot = (slotKey) => {
+                state.exercises[slotKey] = '';
+                
+                if (slotKey === 'a') {
+                    primaryExerciseInput.value = '';
+                    clearPrimaryBtn.classList.add('d-none');
+                    primarySlot.classList.remove('filled');
+                } else {
+                    // Remove alternate slot entirely
+                    const slotElement = element.querySelector(`[data-slot="${slotKey}"]`);
+                    if (slotElement) {
+                        slotElement.parentElement.remove();
+                        state.alternateCount--;
+                        addAltContainer.style.display = state.alternateCount >= 2 ? 'none' : '';
+                    }
+                }
+            };
+            
+            // Open search with initial query helper
+            const openSearchWithQuery = (slotKey, initialQuery = '') => {
+                onSearchClick(slotKey, (selectedExercise) => {
+                    populateSlot(slotKey, selectedExercise.name);
+                }, initialQuery);
+            };
+            
+            // Setup input handlers for a slot
+            // NOTE: Auto-search behavior REMOVED - user must click search button to browse library
+            // Text field is now for entering custom exercise names directly
+            const setupSlotInputHandlers = (slotKey, inputElement, searchBtn, clearBtn) => {
+                if (!inputElement) return;
+                
+                // On input: just store value, NO auto-search
+                inputElement.addEventListener('input', (e) => {
+                    const value = e.target.value.trim();
+                    state.exercises[slotKey] = value;
+                    
+                    // Show/hide clear button
+                    if (clearBtn) {
+                        clearBtn.classList.toggle('d-none', !value);
+                    }
+                    // NO auto-search - user controls when to search via button
+                });
+                
+                // Search button: open search with current value as initial query
+                searchBtn?.addEventListener('click', () => {
+                    const value = inputElement.value.trim();
+                    openSearchWithQuery(slotKey, value);
+                });
+                
+                // Clear button
+                clearBtn?.addEventListener('click', () => {
+                    clearSlot(slotKey);
+                    inputElement.focus();
+                });
+            };
+            
+            // Add alternate slot helper
+            const addAlternateSlot = () => {
+                if (state.alternateCount >= 2) return;
+                
+                const slotKey = state.exercises.b === undefined || state.exercises.b === '' ? 'b' : 'c';
+                if (slotKey === 'b' && state.exercises.b !== '' && state.exercises.b !== undefined) return;
+                if (slotKey === 'c' && state.exercises.c !== '' && state.exercises.c !== undefined) return;
+                
+                const nextKey = !state.exercises.b ? 'b' : 'c';
+                state.exercises[nextKey] = '';
+                state.alternateCount++;
+                
+                const slotHtml = UnifiedOffcanvasFactory.renderAlternateSlot(nextKey, '');
+                alternateContainer.insertAdjacentHTML('beforeend', slotHtml);
+                
+                // Hide add button if at max
+                if (state.alternateCount >= 2) {
+                    addAltContainer.style.display = 'none';
+                }
+                
+                // Get new slot elements and attach handlers
+                const keyUpper = nextKey.toUpperCase();
+                const newInput = element.querySelector(`#alternateExercise${keyUpper}Input`);
+                const newSearchBtn = element.querySelector(`#searchAlternate${keyUpper}Btn`);
+                const newClearBtn = element.querySelector(`#clearAlternate${keyUpper}Btn`);
+                
+                setupSlotInputHandlers(nextKey, newInput, newSearchBtn, newClearBtn);
+                
+                // Focus the new input
+                newInput?.focus();
+            };
+            
+            // Setup primary exercise slot handlers
+            setupSlotInputHandlers('a', primaryExerciseInput, searchPrimaryBtn, clearPrimaryBtn);
+            
+            // Add alternate button
+            addAltBtn?.addEventListener('click', () => {
+                addAlternateSlot();
+            });
+            
+            // Attach handlers to existing alternate slots
+            ['b', 'c'].forEach(key => {
+                const keyUpper = key.toUpperCase();
+                const slotInput = element.querySelector(`#alternateExercise${keyUpper}Input`);
+                const searchBtn = element.querySelector(`#searchAlternate${keyUpper}Btn`);
+                const clearBtn = element.querySelector(`#clearAlternate${keyUpper}Btn`);
+                
+                setupSlotInputHandlers(key, slotInput, searchBtn, clearBtn);
+            });
+            
+            // Weight unit buttons
+            weightUnitBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    weightUnitBtns.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    state.weightUnit = btn.dataset.unit;
+                });
+            });
+            
+            // Save button
+            saveBtn?.addEventListener('click', async () => {
+                // Validate
+                if (!state.exercises.a) {
+                    alert('Primary exercise is required');
+                    return;
+                }
+                
+                saveBtn.disabled = true;
+                saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Saving...';
+                
+                try {
+                    // Clean up exercises - only include non-empty
+                    const cleanExercises = {};
+                    if (state.exercises.a) cleanExercises.a = state.exercises.a;
+                    if (state.exercises.b) cleanExercises.b = state.exercises.b;
+                    if (state.exercises.c) cleanExercises.c = state.exercises.c;
+                    
+                    // Auto-create custom exercises if needed (checks for existing before creating)
+                    if (window.exerciseCacheService && window.dataManager?.isUserAuthenticated()) {
+                        const currentUser = window.dataManager.getCurrentUser();
+                        const userId = currentUser?.uid || null;
+                        for (const exerciseName of Object.values(cleanExercises)) {
+                            if (exerciseName) {
+                                await window.exerciseCacheService.autoCreateIfNeeded(exerciseName, userId);
+                            }
+                        }
+                    }
+                    
+                    const groupData = {
+                        groupId,
+                        exercises: cleanExercises,
+                        sets: setsInput.value || '3',
+                        reps: repsInput.value || '8-12',
+                        rest: restInput.value || '60s',
+                        default_weight: weightInput.value || '',
+                        default_weight_unit: state.weightUnit
+                    };
+                    
+                    await onSave(groupData);
+                    offcanvas.hide();
+                    
+                } catch (error) {
+                    console.error('❌ Error saving exercise group:', error);
+                    saveBtn.disabled = false;
+                    saveBtn.innerHTML = '<i class="bx bx-save me-1"></i>Save';
+                }
+            });
+            
+            // Delete button
+            deleteBtn?.addEventListener('click', async () => {
+                if (!confirm('Are you sure you want to delete this exercise group?')) return;
+                
+                deleteBtn.disabled = true;
+                deleteBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Deleting...';
+                
+                try {
+                    await onDelete();
+                    offcanvas.hide();
+                } catch (error) {
+                    console.error('❌ Error deleting exercise group:', error);
+                    deleteBtn.disabled = false;
+                    deleteBtn.innerHTML = '<i class="bx bx-trash me-1"></i>Delete';
+                }
+            });
+        });
+    }
+    
+    /**
+     * Render alternate exercise slot HTML
+     * @param {string} slotKey - 'b' or 'c'
+     * @param {string} exerciseName - Current exercise name (empty for new slot)
+     * @returns {string} HTML string
+     */
+    static renderAlternateSlot(slotKey, exerciseName) {
+        const keyUpper = slotKey.toUpperCase();
+        const filled = exerciseName ? 'filled' : '';
+        
+        return `
+            <div class="mb-3 alternate-exercise-slot-container" data-alt-key="${slotKey}">
+                <label class="form-label">Alternate Exercise</label>
+                <div class="exercise-slot ${filled}" data-slot="${slotKey}">
+                    <div class="input-group">
+                        <input type="text" class="form-control exercise-slot-input"
+                               id="alternateExercise${keyUpper}Input"
+                               value="${UnifiedOffcanvasFactory.escapeHtml(exerciseName || '')}"
+                               placeholder="Enter exercise name"
+                               autocomplete="off">
+                        <button type="button" class="btn btn-outline-secondary" id="searchAlternate${keyUpper}Btn" title="Search library">
+                            <i class="bx bx-search"></i>
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" id="clearAlternate${keyUpper}Btn" title="Clear">
+                            <i class="bx bx-x"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
     }
 
     /* ============================================

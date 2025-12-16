@@ -1570,7 +1570,8 @@ console.log('📦 Workouts module loaded');
  */
 
 /**
- * Open exercise group editor offcanvas
+ * Open exercise group editor offcanvas using UnifiedOffcanvasFactory
+ * Uses button-based exercise selection with search offcanvas integration
  * @param {string} groupId - ID of group to edit
  */
 function openExerciseGroupEditor(groupId) {
@@ -1583,24 +1584,6 @@ function openExerciseGroupEditor(groupId) {
         default_weight_unit: 'lbs'
     };
     
-    // Populate offcanvas fields
-    document.getElementById('editExerciseA').value = groupData.exercises.a || '';
-    
-    // Load alternates dynamically
-    loadAlternateExercises(groupData.exercises);
-    document.getElementById('editSets').value = groupData.sets || '3';
-    document.getElementById('editReps').value = groupData.reps || '8-12';
-    document.getElementById('editRest').value = groupData.rest || '60s';
-    document.getElementById('editWeight').value = groupData.default_weight || '';
-    
-    // Set weight unit
-    document.querySelectorAll('#exerciseGroupEditOffcanvas .weight-unit-btn').forEach(btn => {
-        const isActive = btn.getAttribute('data-unit') === (groupData.default_weight_unit || 'lbs');
-        btn.classList.toggle('active', isActive);
-        btn.classList.toggle('btn-secondary', isActive);
-        btn.classList.toggle('btn-outline-secondary', !isActive);
-    });
-    
     // Store current group ID for saving
     window.currentEditingGroupId = groupId;
     
@@ -1608,60 +1591,167 @@ function openExerciseGroupEditor(groupId) {
     document.querySelectorAll('.exercise-group-card').forEach(c => c.classList.remove('editing'));
     document.querySelector(`[data-group-id="${groupId}"]`)?.classList.add('editing');
     
-    // Initialize autocompletes
-    setTimeout(() => {
-        if (window.initializeExerciseAutocompletes) {
-            window.initializeExerciseAutocompletes();
+    // Check if this is a new group (no primary exercise set)
+    const isNew = !groupData.exercises.a;
+    
+    // Use UnifiedOffcanvasFactory to create the editor
+    window.UnifiedOffcanvasFactory.createExerciseGroupEditor(
+        {
+            groupId: groupId,
+            title: isNew ? 'Add Exercise Group' : 'Edit Exercise Group',
+            exercises: groupData.exercises,
+            sets: groupData.sets || '3',
+            reps: groupData.reps || '8-12',
+            rest: groupData.rest || '60s',
+            weight: groupData.default_weight || '',
+            weightUnit: groupData.default_weight_unit || 'lbs',
+            isNew: isNew
+        },
+        // onSave callback
+        async (data) => {
+            console.log('💾 Saving exercise group from factory editor:', data);
+            
+            // Auto-create custom exercises
+            if (window.autoCreateExercisesInGroups) {
+                console.log('🚀 Auto-creating custom exercises...');
+                await window.autoCreateExercisesInGroups([data]);
+            }
+            
+            // Store data in global state
+            window.exerciseGroupsData[groupId] = {
+                exercises: data.exercises,
+                sets: data.sets,
+                reps: data.reps,
+                rest: data.rest,
+                default_weight: data.default_weight,
+                default_weight_unit: data.default_weight_unit
+            };
+            
+            // Update card preview using CardRenderer
+            if (window.updateExerciseGroupCardPreview) {
+                window.updateExerciseGroupCardPreview(groupId, window.exerciseGroupsData[groupId]);
+            }
+            
+            // Remove editing state
+            document.querySelector(`[data-group-id="${groupId}"]`)?.classList.remove('editing');
+            
+            // Trigger full workout save
+            if (window.saveWorkoutFromEditor) {
+                try {
+                    await window.saveWorkoutFromEditor(false);
+                    console.log('✅ Full workout saved successfully');
+                } catch (error) {
+                    console.error('❌ Failed to save workout:', error);
+                }
+            } else if (window.markEditorDirty) {
+                window.markEditorDirty();
+            }
+            
+            console.log('✅ Exercise group saved:', groupId);
+        },
+        // onDelete callback
+        async () => {
+            console.log('🗑️ Deleting exercise group:', groupId);
+            
+            // Remove from global state
+            delete window.exerciseGroupsData[groupId];
+            
+            // Remove the card from DOM
+            const card = document.querySelector(`[data-group-id="${groupId}"]`);
+            if (card) {
+                card.remove();
+            }
+            
+            // Renumber remaining groups
+            if (window.renumberExerciseGroups) {
+                window.renumberExerciseGroups();
+            }
+            
+            // Trigger save
+            if (window.saveWorkoutFromEditor) {
+                try {
+                    await window.saveWorkoutFromEditor(false);
+                    console.log('✅ Workout saved after group deletion');
+                } catch (error) {
+                    console.error('❌ Failed to save after deletion:', error);
+                }
+            } else if (window.markEditorDirty) {
+                window.markEditorDirty();
+            }
+            
+            // Show toast
+            if (window.showToast) {
+                window.showToast('Exercise group deleted', 'success');
+            }
+        },
+        // onSearchClick callback - opens exercise search offcanvas
+        (slotKey, populateCallback, initialQuery = '') => {
+            console.log('🔍 Opening exercise search for slot:', slotKey, 'with initial query:', initialQuery);
+            
+            // Create and show exercise search offcanvas
+            window.UnifiedOffcanvasFactory.createExerciseSearchOffcanvas(
+                {
+                    title: slotKey === 'a' ? 'Select Primary Exercise' : 'Select Alternate Exercise',
+                    showFilters: true,
+                    buttonText: 'Select',
+                    buttonIcon: 'bx-check',
+                    initialQuery: initialQuery
+                },
+                // onSelectExercise callback
+                (selectedExercise) => {
+                    console.log('✅ Exercise selected:', selectedExercise.name);
+                    // Populate the slot with the selected exercise
+                    populateCallback(selectedExercise);
+                }
+            );
         }
-    }, 100);
+    );
     
-    // Open offcanvas
-    const offcanvas = new bootstrap.Offcanvas(document.getElementById('exerciseGroupEditOffcanvas'));
-    offcanvas.show();
-    
-    console.log('✅ Opened exercise group editor:', groupId);
+    console.log('✅ Opened exercise group editor (factory):', groupId);
 }
 
 /**
  * Save exercise group from offcanvas
+ * @deprecated This function is now handled by UnifiedOffcanvasFactory.createExerciseGroupEditor's onSave callback
+ * Kept for backward compatibility with any direct calls
  */
 async function saveExerciseGroupFromOffcanvas() {
+    console.warn('⚠️ saveExerciseGroupFromOffcanvas is deprecated. Use UnifiedOffcanvasFactory.createExerciseGroupEditor instead.');
+    
     const groupId = window.currentEditingGroupId;
     if (!groupId) return;
     
-    console.log('💾 OFFCANVAS SAVE: Saving exercise group and auto-creating custom exercises');
+    // Check if old offcanvas exists (backward compatibility)
+    const oldOffcanvas = document.getElementById('exerciseGroupEditOffcanvas');
+    if (!oldOffcanvas) {
+        console.log('ℹ️ Old offcanvas not found, using factory-based editor');
+        return;
+    }
     
-    // Collect data from offcanvas
+    console.log('💾 LEGACY OFFCANVAS SAVE: Saving exercise group');
+    
     const groupData = {
         exercises: {
-            a: document.getElementById('editExerciseA').value.trim()
+            a: document.getElementById('editExerciseA')?.value?.trim() || ''
         },
-        sets: document.getElementById('editSets').value,
-        reps: document.getElementById('editReps').value,
-        rest: document.getElementById('editRest').value,
-        default_weight: document.getElementById('editWeight').value.trim(),
+        sets: document.getElementById('editSets')?.value || '3',
+        reps: document.getElementById('editReps')?.value || '8-12',
+        rest: document.getElementById('editRest')?.value || '60s',
+        default_weight: document.getElementById('editWeight')?.value?.trim() || '',
         default_weight_unit: document.querySelector('#exerciseGroupEditOffcanvas .weight-unit-btn.active')?.getAttribute('data-unit') || 'lbs'
     };
     
-    // Collect alternates dynamically (only if they exist and have values)
     const exerciseBInput = document.getElementById('editExerciseB');
     const exerciseCInput = document.getElementById('editExerciseC');
 
-    if (exerciseBInput && exerciseBInput.value.trim()) {
+    if (exerciseBInput?.value?.trim()) {
         groupData.exercises.b = exerciseBInput.value.trim();
     }
 
-    if (exerciseCInput && exerciseCInput.value.trim()) {
+    if (exerciseCInput?.value?.trim()) {
         groupData.exercises.c = exerciseCInput.value.trim();
     }
     
-    console.log('💾 OFFCANVAS SAVE: Exercise names:', {
-        a: groupData.exercises.a,
-        b: groupData.exercises.b,
-        c: groupData.exercises.c
-    });
-    
-    // Validate
     if (!groupData.exercises.a) {
         if (window.showAlert) {
             showAlert('Primary exercise is required', 'danger');
@@ -1671,48 +1761,32 @@ async function saveExerciseGroupFromOffcanvas() {
         return;
     }
     
-    // Auto-create custom exercises immediately
     if (window.autoCreateExercisesInGroups) {
-        console.log('🚀 OFFCANVAS SAVE: Auto-creating custom exercises...');
         await window.autoCreateExercisesInGroups([groupData]);
-        console.log('✅ OFFCANVAS SAVE: Auto-create completed');
-    } else {
-        console.warn('⚠️ OFFCANVAS SAVE: autoCreateExercisesInGroups not available');
     }
     
-    // Store data
     window.exerciseGroupsData[groupId] = groupData;
     
-    // Update card preview using CardRenderer
     if (window.updateExerciseGroupCardPreview) {
         window.updateExerciseGroupCardPreview(groupId, groupData);
     }
     
-    // Close offcanvas
-    const offcanvas = bootstrap.Offcanvas.getInstance(document.getElementById('exerciseGroupEditOffcanvas'));
+    const offcanvas = bootstrap.Offcanvas.getInstance(oldOffcanvas);
     if (offcanvas) offcanvas.hide();
     
-    // Remove editing state
     document.querySelector(`[data-group-id="${groupId}"]`)?.classList.remove('editing');
     
-    // Trigger full workout save (same as action bar save button)
-    console.log('💾 OFFCANVAS SAVE: Triggering full workout save...');
     if (window.saveWorkoutFromEditor) {
         try {
-            await window.saveWorkoutFromEditor(false); // false = show success message
-            console.log('✅ OFFCANVAS SAVE: Full workout saved successfully');
+            await window.saveWorkoutFromEditor(false);
         } catch (error) {
-            console.error('❌ OFFCANVAS SAVE: Failed to save workout:', error);
+            console.error('❌ Failed to save workout:', error);
         }
-    } else {
-        console.warn('⚠️ OFFCANVAS SAVE: saveWorkoutFromEditor not available, marking dirty for autosave');
-        // Fallback to autosave
-        if (window.markEditorDirty) {
-            window.markEditorDirty();
-        }
+    } else if (window.markEditorDirty) {
+        window.markEditorDirty();
     }
     
-    console.log('✅ Exercise group saved:', groupId);
+    console.log('✅ Exercise group saved (legacy):', groupId);
 }
 
 /**
@@ -1740,12 +1814,39 @@ function openBonusExerciseEditor(bonusId) {
     document.querySelectorAll('.bonus-exercise-card').forEach(c => c.classList.remove('editing'));
     document.querySelector(`[data-bonus-id="${bonusId}"]`)?.classList.add('editing');
     
-    // Initialize autocompletes
-    setTimeout(() => {
-        if (window.initializeExerciseAutocompletes) {
-            window.initializeExerciseAutocompletes();
-        }
-    }, 100);
+    // Set up search button click handler
+    const searchBtn = document.getElementById('bonusSearchBtn');
+    if (searchBtn) {
+        searchBtn.onclick = () => {
+            const currentValue = document.getElementById('editBonusName')?.value?.trim() || '';
+            
+            window.UnifiedOffcanvasFactory.createExerciseSearchOffcanvas(
+                {
+                    title: 'Select Exercise',
+                    showFilters: true,
+                    buttonText: 'Select',
+                    buttonIcon: 'bx-check',
+                    initialQuery: currentValue
+                },
+                (selectedExercise) => {
+                    console.log('✅ Exercise selected for bonus:', selectedExercise.name);
+                    document.getElementById('editBonusName').value = selectedExercise.name;
+                }
+            );
+        };
+    }
+    
+    // Set up clear button click handler
+    const clearBtn = document.getElementById('bonusClearBtn');
+    if (clearBtn) {
+        clearBtn.onclick = () => {
+            const nameInput = document.getElementById('editBonusName');
+            if (nameInput) {
+                nameInput.value = '';
+                nameInput.focus();
+            }
+        };
+    }
     
     // Open offcanvas
     const offcanvas = new bootstrap.Offcanvas(document.getElementById('bonusExerciseEditOffcanvas'));
@@ -1779,6 +1880,17 @@ async function saveBonusExerciseFromOffcanvas() {
             alert('Exercise name is required');
         }
         return;
+    }
+    
+    // Auto-create custom exercise if it doesn't exist
+    if (window.exerciseCacheService && window.exerciseCacheService.autoCreateIfNeeded) {
+        try {
+            const userId = window.authService?.getCurrentUserId?.() || null;
+            console.log('🚀 Auto-creating custom exercise if needed:', bonusData.name);
+            await window.exerciseCacheService.autoCreateIfNeeded(bonusData.name, userId);
+        } catch (error) {
+            console.warn('⚠️ Could not auto-create exercise:', error);
+        }
     }
     
     // Store data

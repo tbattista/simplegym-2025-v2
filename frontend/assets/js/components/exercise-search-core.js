@@ -16,7 +16,7 @@ class ExerciseSearchCore {
         
         this.state = {
             searchQuery: '',
-            muscleGroup: '',
+            muscleGroup: [],
             difficulty: '',
             equipment: [],
             favoritesOnly: false,
@@ -34,7 +34,7 @@ class ExerciseSearchCore {
     }
     
     /**
-     * Load exercises from cache service
+     * Load exercises from cache service with instant fallback
      */
     async loadExercises() {
         this.state.isLoading = true;
@@ -42,15 +42,19 @@ class ExerciseSearchCore {
         
         try {
             if (window.exerciseCacheService) {
-                await window.exerciseCacheService.loadExercises();
-                this.state.allExercises = window.exerciseCacheService.getAllExercises();
+                this.state.allExercises = await window.exerciseCacheService.getExercisesWithInstantFallback();
                 console.log(`✅ ExerciseSearchCore: Loaded ${this.state.allExercises.length} exercises`);
+                
+                window.exerciseCacheService.on('fullDataLoaded', (data) => {
+                    console.log(`[SearchCore] Full data ready: ${data.count} exercises`);
+                    this.state.allExercises = [...window.exerciseCacheService.exercises, ...window.exerciseCacheService.customExercises];
+                    this.filterExercises();
+                });
             } else {
                 console.warn('⚠️ exerciseCacheService not available');
                 this.state.allExercises = [];
             }
             
-            // Load user favorites if enabled
             if (this.config.showFavorites) {
                 await this.loadUserFavorites();
             }
@@ -63,7 +67,6 @@ class ExerciseSearchCore {
         this.state.isLoading = false;
         this.notifyListeners('loadingEnd');
         
-        // Initial filter
         this.filterExercises();
         
         return this.state.allExercises;
@@ -101,39 +104,50 @@ class ExerciseSearchCore {
     }
     
     /**
-     * Filter exercises based on current state
+     * Filter exercises based on current state with fuzzy search
      */
     filterExercises() {
         let filtered = [...this.state.allExercises];
         
-        // Search query
-        if (this.state.searchQuery) {
-            const query = this.state.searchQuery.toLowerCase();
-            filtered = filtered.filter(ex =>
-                (ex.name || '').toLowerCase().includes(query) ||
-                (ex.targetMuscleGroup || '').toLowerCase().includes(query) ||
-                (ex.primaryEquipment || '').toLowerCase().includes(query)
-            );
-        }
-        
-        // Muscle group filter
-        if (this.state.muscleGroup) {
-            filtered = filtered.filter(ex => ex.targetMuscleGroup === this.state.muscleGroup);
-        }
-        
-        // Difficulty filter
-        if (this.state.difficulty) {
-            filtered = filtered.filter(ex =>
-                (ex.difficulty || '').toLowerCase() === this.state.difficulty.toLowerCase()
-            );
-        }
-        
-        // Equipment filter (multi-select)
-        if (this.state.equipment.length > 0) {
-            filtered = filtered.filter(ex => {
-                const exEquip = (ex.primaryEquipment || '').toLowerCase();
-                return this.state.equipment.some(eq => exEquip.includes(eq.toLowerCase()));
+        if (this.state.searchQuery && window.exerciseCacheService) {
+            const filters = {};
+            if (this.state.muscleGroup) filters.muscleGroup = this.state.muscleGroup;
+            if (this.state.difficulty) filters.difficulty = this.state.difficulty;
+            if (this.state.equipment.length > 0) filters.equipment = this.state.equipment;
+            
+            filtered = window.exerciseCacheService.searchExercises(this.state.searchQuery, {
+                limit: 1000,
+                filters,
+                useFuzzy: true
             });
+        } else {
+            if (this.state.searchQuery) {
+                const query = this.state.searchQuery.toLowerCase();
+                filtered = filtered.filter(ex =>
+                    (ex.name || '').toLowerCase().includes(query) ||
+                    (ex.targetMuscleGroup || '').toLowerCase().includes(query) ||
+                    (ex.primaryEquipment || '').toLowerCase().includes(query)
+                );
+            }
+        
+            if (this.state.muscleGroup && this.state.muscleGroup.length > 0) {
+                filtered = filtered.filter(ex => {
+                    return this.state.muscleGroup.includes(ex.targetMuscleGroup);
+                });
+            }
+            
+            if (this.state.difficulty) {
+                filtered = filtered.filter(ex =>
+                    (ex.difficulty || '').toLowerCase() === this.state.difficulty.toLowerCase()
+                );
+            }
+            
+            if (this.state.equipment.length > 0) {
+                filtered = filtered.filter(ex => {
+                    const exEquip = (ex.primaryEquipment || '').toLowerCase();
+                    return this.state.equipment.some(eq => exEquip.includes(eq.toLowerCase()));
+                });
+            }
         }
         
         // Favorites filter
@@ -243,9 +257,10 @@ class ExerciseSearchCore {
     
     /**
      * Update muscle group filter
+     * @param {string|Array} muscleGroup - Single muscle group or array of muscle groups
      */
     setMuscleGroup(muscleGroup) {
-        this.state.muscleGroup = muscleGroup;
+        this.state.muscleGroup = Array.isArray(muscleGroup) ? muscleGroup : (muscleGroup ? [muscleGroup] : []);
         this.filterExercises();
     }
     
@@ -299,7 +314,7 @@ class ExerciseSearchCore {
      */
     clearFilters() {
         this.state.searchQuery = '';
-        this.state.muscleGroup = '';
+        this.state.muscleGroup = [];
         this.state.difficulty = '';
         this.state.equipment = [];
         this.state.favoritesOnly = false;
@@ -326,6 +341,78 @@ class ExerciseSearchCore {
                 console.error('Error in ExerciseSearchCore listener:', error);
             }
         });
+    }
+    
+    /**
+     * Preview filter count without changing state
+     * Calculates how many exercises match the given filters
+     * @param {Object} previewFilters - Temporary filter state to preview
+     * @returns {number} Number of exercises that match
+     */
+    previewFilterCount(previewFilters = {}) {
+        let filtered = [...this.state.allExercises];
+        
+        // Use preview filters or current state
+        const searchQuery = previewFilters.searchQuery !== undefined ? previewFilters.searchQuery : this.state.searchQuery;
+        const muscleGroup = previewFilters.muscleGroup !== undefined ? previewFilters.muscleGroup : this.state.muscleGroup;
+        const difficulty = previewFilters.difficulty !== undefined ? previewFilters.difficulty : this.state.difficulty;
+        const equipment = previewFilters.equipment !== undefined ? previewFilters.equipment : this.state.equipment;
+        const favoritesOnly = previewFilters.favoritesOnly !== undefined ? previewFilters.favoritesOnly : this.state.favoritesOnly;
+        
+        // Apply search query with fuzzy search if available
+        if (searchQuery && window.exerciseCacheService) {
+            const filters = {};
+            if (muscleGroup) filters.muscleGroup = muscleGroup;
+            if (difficulty) filters.difficulty = difficulty;
+            if (equipment.length > 0) filters.equipment = equipment;
+            
+            filtered = window.exerciseCacheService.searchExercises(searchQuery, {
+                limit: 10000,
+                filters,
+                useFuzzy: true
+            });
+        } else {
+            // Simple string search
+            if (searchQuery) {
+                const query = searchQuery.toLowerCase();
+                filtered = filtered.filter(ex =>
+                    (ex.name || '').toLowerCase().includes(query) ||
+                    (ex.targetMuscleGroup || '').toLowerCase().includes(query) ||
+                    (ex.primaryEquipment || '').toLowerCase().includes(query)
+                );
+            }
+            
+            // Muscle group filter
+            if (muscleGroup && muscleGroup.length > 0) {
+                filtered = filtered.filter(ex => muscleGroup.includes(ex.targetMuscleGroup));
+            }
+            
+            // Difficulty filter
+            if (difficulty) {
+                filtered = filtered.filter(ex =>
+                    (ex.difficulty || '').toLowerCase() === difficulty.toLowerCase()
+                );
+            }
+            
+            // Equipment filter
+            if (equipment.length > 0) {
+                filtered = filtered.filter(ex => {
+                    const exEquip = (ex.primaryEquipment || '').toLowerCase();
+                    return equipment.some(eq => exEquip.includes(eq.toLowerCase()));
+                });
+            }
+        }
+        
+        // Favorites filter
+        if (favoritesOnly) {
+            if (window.ghostGym?.exercises?.favorites) {
+                filtered = filtered.filter(ex => window.ghostGym.exercises.favorites.has(ex.id));
+            } else {
+                filtered = [];
+            }
+        }
+        
+        return filtered.length;
     }
     
     /**

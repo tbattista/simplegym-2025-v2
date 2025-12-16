@@ -5,6 +5,8 @@ Handles global exercise database and user custom exercises
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Header
 from typing import Optional, Set
+from datetime import datetime
+from firebase_admin import firestore
 import logging
 from ..models import (
     Exercise, CreateExerciseRequest,
@@ -14,6 +16,54 @@ from ..api.dependencies import get_exercise_service, require_auth, get_favorites
 
 router = APIRouter(prefix="/api/v3", tags=["Exercises"])
 logger = logging.getLogger(__name__)
+
+
+@router.get("/exercises/metadata")
+async def get_exercise_metadata():
+    """
+    Returns exercise database version and stats for cache invalidation.
+    Frontend uses this to determine if cached data is stale.
+    """
+    try:
+        db = firestore.client()
+        
+        metadata_ref = db.collection("exercises_metadata").document("global")
+        doc = metadata_ref.get()
+        
+        if doc.exists:
+            data = doc.to_dict()
+            return {
+                "version": data.get("version", "1.0.0"),
+                "lastUpdated": data.get("lastUpdated"),
+                "exerciseCount": data.get("exerciseCount", 0),
+                "checksum": data.get("checksum"),
+                "status": "ok"
+            }
+        
+        exercises_ref = db.collection("global_exercises")
+        exercises = list(exercises_ref.stream())
+        count = len(exercises)
+        
+        initial_metadata = {
+            "version": "1.0.0",
+            "lastUpdated": datetime.utcnow().isoformat(),
+            "exerciseCount": count,
+            "checksum": None
+        }
+        metadata_ref.set(initial_metadata)
+        
+        return {
+            **initial_metadata,
+            "status": "initialized"
+        }
+        
+    except Exception as e:
+        return {
+            "version": "1.0.0",
+            "exerciseCount": 0,
+            "status": "error",
+            "error": str(e)
+        }
 
 
 @router.get("/exercises", response_model=ExerciseListResponse)

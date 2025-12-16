@@ -280,109 +280,7 @@
         </div>
     </div>
 
-    <!-- Exercise Group Edit Offcanvas (Bottom) -->
-    <div class="offcanvas offcanvas-bottom offcanvas-bottom-base" tabindex="-1"
-         id="exerciseGroupEditOffcanvas"
-         aria-labelledby="exerciseGroupEditLabel"
-         data-bs-scroll="false">
-      
-      <!-- Header -->
-      <div class="offcanvas-header border-bottom">
-        <h5 class="offcanvas-title" id="exerciseGroupEditLabel">
-          <i class="bx bx-dumbbell me-2"></i>
-          <span id="exerciseGroupTitle">Edit Exercise Group</span>
-        </h5>
-        <button type="button" class="btn-close"
-                data-bs-dismiss="offcanvas" aria-label="Close"></button>
-      </div>
-      
-      <!-- Body - Scrollable -->
-      <div class="offcanvas-body" id="exerciseGroupEditBody">
-        <!-- Exercise Inputs -->
-        <div class="mb-3">
-          <label class="form-label">Primary Exercise *</label>
-          <input type="text" class="form-control exercise-input exercise-autocomplete-input"
-                 id="editExerciseA" placeholder="Search exercises...">
-        </div>
-        
-        <!-- Container for dynamically added alternates -->
-        <div id="alternateExercisesContainer"></div>
-        
-        <!-- Add Alt Button -->
-        <div class="mb-3" id="addAltButtonContainer">
-          <button type="button" class="btn btn-outline-secondary btn-sm w-100"
-                  id="addAlternateBtn" onclick="addAlternateExercise()">
-            <i class="bx bx-plus me-1"></i>
-            Add Alt
-          </button>
-        </div>
-        
-        <!-- Sets, Reps, Rest -->
-        <div class="row g-2 mb-3">
-          <div class="col-4">
-            <label class="form-label">Sets</label>
-            <input type="text" class="form-control sets-input text-center"
-                   id="editSets" value="3" placeholder="3">
-          </div>
-          <div class="col-4">
-            <label class="form-label">Reps</label>
-            <input type="text" class="form-control reps-input text-center"
-                   id="editReps" value="8-12" placeholder="8-12">
-          </div>
-          <div class="col-4">
-            <label class="form-label">Rest</label>
-            <input type="text" class="form-control rest-input text-center"
-                   id="editRest" value="60s" placeholder="60s">
-          </div>
-        </div>
-        
-        <!-- Weight -->
-        <div class="mb-3">
-          <label class="form-label">
-            <i class="bx bx-dumbbell me-1"></i>
-            Default Weight
-          </label>
-          <div class="row g-2">
-            <div class="col-4">
-              <input type="text" class="form-control weight-input text-center"
-                     id="editWeight" placeholder="0">
-            </div>
-            <div class="col-8">
-              <div class="btn-group w-100" role="group">
-                <button type="button" class="btn btn-outline-secondary weight-unit-btn active"
-                        data-unit="lbs">lbs</button>
-                <button type="button" class="btn btn-outline-secondary weight-unit-btn"
-                        data-unit="kg">kg</button>
-                <button type="button" class="btn btn-outline-secondary weight-unit-btn"
-                        data-unit="other">other</button>
-              </div>
-            </div>
-          </div>
-          <div class="form-text">
-            <i class="bx bx-info-circle me-1"></i>
-            This weight auto-syncs from your workout history
-          </div>
-        </div>
-      </div>
-      
-      <!-- Footer - Action Buttons -->
-      <div class="offcanvas-footer border-top p-3">
-        <div class="d-flex gap-2 workout-builder-buttons">
-          <button type="button" class="btn btn-primary flex-fill"
-                  id="saveExerciseGroupBtn">
-            <i class="bx bx-save me-1"></i>
-            Save
-          </button>
-          <button type="button" class="btn btn-label-secondary flex-fill"
-                  data-bs-dismiss="offcanvas">Cancel</button>
-          <button type="button" class="btn btn-outline-danger flex-fill"
-                  id="deleteExerciseGroupBtn">
-            <i class="bx bx-trash me-1"></i>
-            Delete
-          </button>
-        </div>
-      </div>
-    </div>
+    <!-- Exercise Group Edit Offcanvas is now created dynamically by UnifiedOffcanvasFactory.createExerciseGroupEditor() -->
 
     <!-- Bonus Exercise Edit Offcanvas (Bottom) -->
     <div class="offcanvas offcanvas-bottom offcanvas-bottom-base" tabindex="-1"
@@ -405,8 +303,16 @@
         <!-- Exercise Name -->
         <div class="mb-3">
           <label class="form-label">Exercise Name *</label>
-          <input type="text" class="form-control exercise-input exercise-autocomplete-input"
-                 id="editBonusName" placeholder="Search exercises...">
+          <div class="input-group">
+            <input type="text" class="form-control exercise-input"
+                   id="editBonusName" placeholder="Enter exercise name">
+            <button type="button" class="btn btn-outline-secondary" id="bonusSearchBtn" title="Search library">
+              <i class="bx bx-search"></i>
+            </button>
+            <button type="button" class="btn btn-outline-secondary" id="bonusClearBtn" title="Clear">
+              <i class="bx bx-x"></i>
+            </button>
+          </div>
         </div>
         
         <!-- Sets, Reps, Rest -->
@@ -497,8 +403,15 @@
     <!-- Card Renderer Module (MUST load before workouts.js) -->
     <script src="/static/assets/js/modules/card-renderer.js"></script>
 
+    <!-- Exercise Search Dependencies (load in order) -->
+    <script src="/static/assets/js/data/exercise-seed-data.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+    
     <!-- Core Services -->
-    <script src="/static/assets/js/services/exercise-cache-service.js?v=20251020-05"></script>
+    <script src="/static/assets/js/services/exercise-cache-service.js?v=20251214-01"></script>
+    
+    <!-- Exercise Search Core (Reusable) -->
+    <script src="/static/assets/js/components/exercise-search-core.js?v=1.0.0"></script>
     
     <!-- Auto-Create Exercise Service -->
     <script src="/static/assets/js/services/auto-create-exercise-service.js?v=20251128-01"></script>
@@ -507,13 +420,13 @@
     <script src="/static/assets/js/components/exercise-autocomplete.js?v=20251128-01"></script>
     
     <!-- Unified Offcanvas Factory -->
-    <script src="/static/assets/js/components/unified-offcanvas-factory.js?v=20251207-02"></script>
+    <script src="/static/assets/js/components/unified-offcanvas-factory.js?v=20251214-02"></script>
 
     <!-- UI Helpers -->
     <script src="/static/assets/js/dashboard/ui-helpers.js?v=20251020-04"></script>
 
     <!-- Workout Management -->
-    <script src="/static/assets/js/dashboard/workouts.js?v=20251020-04"></script>
+    <script src="/static/assets/js/dashboard/workouts.js?v=20251214-02"></script>
     <script src="/static/assets/js/dashboard/exercises.js?v=20251020-05"></script>
     <script src="/static/assets/js/dashboard/views.js?v=20251020-04"></script>
 

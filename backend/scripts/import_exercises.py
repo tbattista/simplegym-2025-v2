@@ -7,6 +7,7 @@ import sys
 import os
 import pandas as pd
 import logging
+import hashlib
 from pathlib import Path
 from typing import Dict, Any, List
 from datetime import datetime
@@ -28,6 +29,59 @@ logging.basicConfig(
     format='%(asctime)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
+
+
+def get_exercise_checksum(exercises: list) -> str:
+    """Generate checksum from exercise IDs for change detection"""
+    ids = sorted([ex.get('id', ex.get('name', '')) for ex in exercises])
+    return hashlib.md5(''.join(ids).encode()).hexdigest()[:12]
+
+
+def bump_version(current: str, change_type: str = 'patch') -> str:
+    """Bump semantic version: major.minor.patch"""
+    try:
+        parts = current.split('.')
+        major, minor, patch = int(parts[0]), int(parts[1]), int(parts[2])
+        
+        if change_type == 'major':
+            return f"{major + 1}.0.0"
+        elif change_type == 'minor':
+            return f"{major}.{minor + 1}.0"
+        else:  # patch
+            return f"{major}.{minor}.{patch + 1}"
+    except:
+        return "1.0.1"
+
+
+def update_exercise_metadata(db, exercises: list, change_type: str = 'minor'):
+    """Update exercises_metadata document after successful import"""
+    
+    metadata_ref = db.collection("exercises_metadata").document("global")
+    current_doc = metadata_ref.get()
+    
+    current_version = "1.0.0"
+    if current_doc.exists:
+        current_version = current_doc.to_dict().get("version", "1.0.0")
+    
+    new_version = bump_version(current_version, change_type)
+    checksum = get_exercise_checksum(exercises)
+    
+    metadata = {
+        "version": new_version,
+        "lastUpdated": datetime.utcnow().isoformat(),
+        "exerciseCount": len(exercises),
+        "checksum": checksum,
+        "previousVersion": current_version,
+        "importedAt": datetime.utcnow().isoformat()
+    }
+    
+    metadata_ref.set(metadata)
+    
+    logger.info(f"[Metadata] Updated version: {current_version} -> {new_version}")
+    logger.info(f"[Metadata] Exercise count: {len(exercises)}")
+    logger.info(f"[Metadata] Checksum: {checksum}")
+    
+    return new_version
 
 class ExerciseImporter:
     """Handles importing exercises from CSV to Firestore"""
@@ -293,12 +347,13 @@ class ExerciseImporter:
         logger.info(f"Upload complete: {stats['uploaded']} uploaded, {stats['failed']} failed")
         return stats
     
-    def import_exercises(self, dry_run: bool = False) -> Dict[str, int]:
+    def import_exercises(self, dry_run: bool = False, change_type: str = 'minor') -> Dict[str, int]:
         """
         Main import method - parse CSV and upload to Firestore
         
         Args:
             dry_run: If True, parse but don't upload
+            change_type: Version bump type (major, minor, patch)
             
         Returns:
             Dictionary with import statistics
@@ -316,6 +371,10 @@ class ExerciseImporter:
         
         # Upload to Firestore
         stats = self.upload_to_firestore(exercises, dry_run=dry_run)
+        
+        # Update metadata if upload successful
+        if not dry_run and stats['uploaded'] > 0:
+            update_exercise_metadata(self.service.db, exercises, change_type)
         
         logger.info("=" * 60)
         logger.info("IMPORT SUMMARY")
@@ -348,6 +407,12 @@ def main():
         default=500,
         help='Number of exercises per batch (default: 500)'
     )
+    parser.add_argument(
+        '--change-type',
+        choices=['major', 'minor', 'patch'],
+        default='minor',
+        help='Version bump type (default: minor)'
+    )
     
     args = parser.parse_args()
     
@@ -359,7 +424,7 @@ def main():
     try:
         # Create importer and run
         importer = ExerciseImporter(args.csv_file, batch_size=args.batch_size)
-        stats = importer.import_exercises(dry_run=args.dry_run)
+        stats = importer.import_exercises(dry_run=args.dry_run, change_type=args.change_type)
         
         # Exit with error code if any failures
         if stats['failed'] > 0:

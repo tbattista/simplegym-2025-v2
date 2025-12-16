@@ -252,14 +252,12 @@ class WorkoutTemplate(BaseModel):
     
     exercise_groups: List[ExerciseGroup] = Field(
         default_factory=list,
-        description="List of exercise groups in this workout",
-        max_items=6
+        description="List of exercise groups in this workout"
     )
     
     bonus_exercises: List[BonusExercise] = Field(
         default_factory=list,
-        description="List of bonus exercises",
-        max_items=2
+        description="List of bonus exercises"
     )
     
     is_template: bool = Field(
@@ -369,8 +367,8 @@ class CreateWorkoutRequest(BaseModel):
     
     name: str = Field(..., min_length=1, max_length=100)
     description: Optional[str] = Field(default="", max_length=500)
-    exercise_groups: List[ExerciseGroup] = Field(default_factory=list, max_items=6)
-    bonus_exercises: List[BonusExercise] = Field(default_factory=list, max_items=2)
+    exercise_groups: List[ExerciseGroup] = Field(default_factory=list)
+    bonus_exercises: List[BonusExercise] = Field(default_factory=list)
     tags: List[str] = Field(default_factory=list, max_items=10)
 
 class UpdateWorkoutRequest(BaseModel):
@@ -378,8 +376,8 @@ class UpdateWorkoutRequest(BaseModel):
     
     name: Optional[str] = Field(None, min_length=1, max_length=100)
     description: Optional[str] = Field(None, max_length=500)
-    exercise_groups: Optional[List[ExerciseGroup]] = Field(None, max_items=6)
-    bonus_exercises: Optional[List[BonusExercise]] = Field(None, max_items=2)
+    exercise_groups: Optional[List[ExerciseGroup]] = Field(None)
+    bonus_exercises: Optional[List[BonusExercise]] = Field(None)
     tags: Optional[List[str]] = Field(None, max_items=10)
 
 class CreateProgramRequest(BaseModel):

@@ -1141,14 +1141,14 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
                 },
                 // onAddExercise callback
                 async (exerciseData) => {
-                    // Handle adding exercise
+                    // Handle adding exercise with weight data
                     this.sessionService.addBonusExercise({
                         name: exerciseData.name,
                         sets: exerciseData.sets || '3',
                         reps: exerciseData.reps || '12',
                         rest: exerciseData.rest || '60s',
-                        weight: '',
-                        weight_unit: 'lbs'
+                        weight: exerciseData.weight || '',
+                        weight_unit: exerciseData.weight_unit || 'lbs'
                     });
                     this.renderWorkout();
                     
