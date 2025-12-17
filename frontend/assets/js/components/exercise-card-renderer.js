@@ -72,21 +72,29 @@ class ExerciseCardRenderer {
             <div class="card exercise-card ${bonusClass} ${isSkipped ? 'skipped' : ''}" data-exercise-index="${index}" data-exercise-name="${this._escapeHtml(mainExercise)}">
                 <div class="card-header exercise-card-header" onclick="window.workoutModeController.toggleExerciseCard(${index})">
                     <div class="exercise-card-summary">
-                        <h6 class="mb-0">
+                        <!-- MORPH: Exercise Name -->
+                        <h6 class="mb-0 morph-title" data-morph-id="title-${index}">
                             ${isSkipped ? '<i class="bx bx-x-circle text-warning me-1"></i>' : ''}
                             ${this._escapeHtml(mainExercise)}
                         </h6>
-                        <div class="exercise-card-meta">
-                            <span>${sets} sets × ${reps} reps</span>
-                            ${this._renderWeightBadge(currentWeight, currentUnit, weightSource, lastWeight, lastWeightUnit)}
+                        
+                        <!-- MORPH: Meta info (visible when collapsed, hidden when expanded) -->
+                        <div class="exercise-card-meta morph-meta" data-morph-id="meta-${index}">
+                            <span class="morph-sets-reps">${sets} sets × ${reps} reps • ${rest}</span>
                         </div>
+                        
                         ${alternates.length > 0 ? `
-                            <div class="exercise-card-alts text-muted small mt-1">
+                            <div class="exercise-card-alts text-muted small mt-1 morph-alts">
                                 ${alternates.map(alt => `<div>${alt.label}: ${this._escapeHtml(alt.name)}</div>`).join('')}
                             </div>
                         ` : ''}
                     </div>
-                    <i class="bx bx-chevron-down expand-icon"></i>
+                    
+                    <!-- Right-aligned weight badge -->
+                    <div class="exercise-card-weight-container">
+                        ${this._renderWeightBadge(currentWeight, currentUnit, weightSource, lastWeight, lastWeightUnit)}
+                        <i class="bx bx-chevron-down expand-icon"></i>
+                    </div>
                 </div>
                 
                 <div class="card-body exercise-card-body" style="display: none;">
@@ -98,16 +106,15 @@ class ExerciseCardRenderer {
                         </div>
                     ` : ''}
                     
-                    <div class="mb-3">
-                        <h5>${this._escapeHtml(mainExercise)}</h5>
-                        
-                        <!-- Compact Weight & Exercise Details (Demo Style) -->
-                        <div class="mb-3 p-2 bg-light rounded">
+                    <!-- MORPH: Expanded details panel -->
+                    <div class="exercise-details-panel">
+                        <!-- Compact Weight & Exercise Details -->
+                        <div class="detail-grid mb-3 p-2 bg-light rounded">
                             <div class="row g-2 align-items-center">
                                 <!-- Weight Column -->
                                 <div class="col-5 text-center border-end">
                                     <small class="text-muted d-block">Weight</small>
-                                    <div class="h3 mb-0 text-primary fw-bold">${currentWeight || '—'} ${currentWeight ? currentUnit : ''}</div>
+                                    <div class="h3 mb-0 text-primary fw-bold morph-weight-target">${currentWeight || '—'} ${currentWeight ? currentUnit : ''}</div>
                                     ${lastWeight && lastSessionDate ? `
                                         <small class="text-muted" style="font-size: 0.7rem;">Last: ${lastWeight} ${lastWeightUnit}</small>
                                     ` : ''}
@@ -118,11 +125,11 @@ class ExerciseCardRenderer {
                                     <div class="d-flex justify-content-around">
                                         <div class="text-center">
                                             <small class="text-muted d-block" style="font-size: 0.7rem;">Sets × Reps</small>
-                                            <strong>${sets} × ${reps}</strong>
+                                            <strong class="morph-sets-target">${sets} × ${reps}</strong>
                                         </div>
                                         <div class="text-center">
                                             <small class="text-muted d-block" style="font-size: 0.7rem;">Rest</small>
-                                            <strong><i class="bx bx-time-five" style="font-size: 0.9rem;"></i>${rest}</strong>
+                                            <strong class="morph-rest-target"><i class="bx bx-time-five" style="font-size: 0.9rem;"></i>${rest}</strong>
                                         </div>
                                     </div>
                                 </div>

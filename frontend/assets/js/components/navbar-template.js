@@ -89,7 +89,7 @@ function getNavbarHTML(pageTitle = 'Ghost Gym', pageIcon = 'bx-home', options = 
                        aria-expanded="false"
                        title="Send Feedback">
                         <i class="bx bx-message-dots bx-sm"></i>
-                        <span class="d-none d-lg-inline ms-1">Feedback</span>
+                        <span class="ms-1">Feedback</span>
                     </a>
                     <div class="dropdown-menu dropdown-menu-end feedback-dropdown-menu" id="feedbackDropdown">
                         <!-- Feedback form will be injected here by feedback-dropdown.js -->

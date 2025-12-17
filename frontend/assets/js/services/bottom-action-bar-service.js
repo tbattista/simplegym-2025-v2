@@ -51,8 +51,8 @@
             // Attach event listeners
             this.attachEventListeners();
 
-            // Enable auto-hide on scroll for new layout
-            if (this.isNewLayout) {
+            // Enable auto-hide on scroll for new layout (except workout-builder)
+            if (this.isNewLayout && this.pageId !== 'workout-builder') {
                 this.enableAutoHide();
             }
 

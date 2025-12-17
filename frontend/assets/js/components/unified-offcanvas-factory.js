@@ -764,10 +764,10 @@ class UnifiedOffcanvasFactory {
                         </div>
                         
                         <!-- Pagination Footer -->
-                        <div class="p-2 border-top bg-light" id="paginationFooter" style="display: none;">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <small class="text-muted" id="pageInfo">Showing 1-30 of 250</small>
-                                <div class="btn-group btn-group-sm" id="paginationControls">
+                        <div class="p-2 border-top bg-light" id="paginationFooter" style="display: none; position: sticky; bottom: 0; z-index: 1020;">
+                            <div class="text-center">
+                                <small class="text-muted d-block mb-2" id="pageInfo">Showing 1-30 of 250</small>
+                                <div class="d-flex justify-content-center" id="paginationControls">
                                     <!-- Rendered by renderPagination() -->
                                 </div>
                             </div>
@@ -1067,22 +1067,25 @@ class UnifiedOffcanvasFactory {
                     return;
                 }
                 
-                paginationFooter.style.display = 'flex';
+                paginationFooter.style.display = 'block';
                 
                 const startIdx = (state.currentPage - 1) * state.pageSize + 1;
                 const endIdx = Math.min(state.currentPage * state.pageSize, state.filteredExercises.length);
                 pageInfo.textContent = `Showing ${startIdx}-${endIdx} of ${state.filteredExercises.length}`;
                 
-                // Render page buttons
-                let buttonsHtml = '';
+                // Render Bootstrap 5 pagination with center alignment
+                let paginationHtml = '<nav aria-label="Exercise pagination"><ul class="pagination pagination-sm mb-0 justify-content-center">';
                 
                 // Previous button
-                buttonsHtml += `<button class="btn btn-sm btn-outline-secondary" ${state.currentPage === 1 ? 'disabled' : ''} data-page="${state.currentPage - 1}">
-                    <i class="bx bx-chevron-left"></i>
-                </button>`;
+                paginationHtml += `
+                    <li class="page-item ${state.currentPage === 1 ? 'disabled' : ''}">
+                        <a class="page-link" href="javascript:void(0);" data-page="${state.currentPage - 1}">
+                            <i class="bx bx-chevron-left"></i>
+                        </a>
+                    </li>`;
                 
-                // Page number buttons (show max 5 pages)
-                const maxButtons = 5;
+                // Page number buttons (show max 9 pages)
+                const maxButtons = 9;
                 let startPage = Math.max(1, state.currentPage - Math.floor(maxButtons / 2));
                 let endPage = Math.min(totalPages, startPage + maxButtons - 1);
                 
@@ -1091,20 +1094,29 @@ class UnifiedOffcanvasFactory {
                 }
                 
                 for (let i = startPage; i <= endPage; i++) {
-                    buttonsHtml += `<button class="btn btn-sm ${i === state.currentPage ? 'btn-primary' : 'btn-outline-secondary'}" data-page="${i}">${i}</button>`;
+                    paginationHtml += `
+                        <li class="page-item ${i === state.currentPage ? 'active' : ''}">
+                            <a class="page-link" href="javascript:void(0);" data-page="${i}">${i}</a>
+                        </li>`;
                 }
                 
                 // Next button
-                buttonsHtml += `<button class="btn btn-sm btn-outline-secondary" ${state.currentPage === totalPages ? 'disabled' : ''} data-page="${state.currentPage + 1}">
-                    <i class="bx bx-chevron-right"></i>
-                </button>`;
+                paginationHtml += `
+                    <li class="page-item ${state.currentPage === totalPages ? 'disabled' : ''}">
+                        <a class="page-link" href="javascript:void(0);" data-page="${state.currentPage + 1}">
+                            <i class="bx bx-chevron-right"></i>
+                        </a>
+                    </li>`;
                 
-                paginationControls.innerHTML = buttonsHtml;
+                paginationHtml += '</ul></nav>';
+                
+                paginationControls.innerHTML = paginationHtml;
                 
                 // Attach click handlers
-                paginationControls.querySelectorAll('[data-page]').forEach(btn => {
-                    btn.addEventListener('click', () => {
-                        const page = parseInt(btn.dataset.page);
+                paginationControls.querySelectorAll('[data-page]').forEach(link => {
+                    link.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        const page = parseInt(link.dataset.page);
                         if (page >= 1 && page <= totalPages) {
                             state.currentPage = page;
                             applyPagination();
@@ -1452,9 +1464,9 @@ class UnifiedOffcanvasFactory {
                     <!-- Search Box -->
                     <div class="search-section p-3 border-bottom">
                         <label class="form-label fw-semibold mb-2">Exercise Name</label>
-                        <div class="input-group">
+                        <div class="input-group" style="gap: 0.25rem;">
                             <input type="text" class="form-control" id="exerciseSearchInput"
-                                   placeholder="Enter exercise name" autocomplete="off">
+                                   placeholder="Enter exercise name" autocomplete="off" style="padding-right: 0.75rem;">
                             <button class="btn btn-outline-secondary" type="button" id="filterExercisesBtn" title="Filters">
                                 <i class="bx bx-filter-alt"></i>
                             </button>
@@ -1480,10 +1492,10 @@ class UnifiedOffcanvasFactory {
                         </div>
                         
                         <!-- Pagination -->
-                        <div class="p-2 border-top bg-light" id="paginationFooter" style="display: none;">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <small class="text-muted" id="pageInfo"></small>
-                                <div class="btn-group btn-group-sm" id="paginationControls"></div>
+                        <div class="p-2 border-top bg-light" id="paginationFooter" style="display: none; position: sticky; bottom: 0; z-index: 1020;">
+                            <div class="text-center">
+                                <small class="text-muted d-block mb-2" id="pageInfo"></small>
+                                <div class="d-flex justify-content-center" id="paginationControls"></div>
                             </div>
                         </div>
                         
@@ -1583,18 +1595,22 @@ class UnifiedOffcanvasFactory {
                     return;
                 }
                 
-                paginationFooter.style.display = 'flex';
+                paginationFooter.style.display = 'block';
                 pageInfo.textContent = `Showing ${paginationData.startIdx}-${paginationData.endIdx} of ${paginationData.total}`;
                 
-                let buttonsHtml = '';
+                // Render Bootstrap 5 pagination with center alignment
+                let paginationHtml = '<nav aria-label="Exercise pagination"><ul class="pagination pagination-sm mb-0 justify-content-center">';
                 
                 // Previous button
-                buttonsHtml += `<button class="btn btn-sm btn-outline-secondary" ${paginationData.currentPage === 1 ? 'disabled' : ''} data-page="${paginationData.currentPage - 1}">
-                    <i class="bx bx-chevron-left"></i>
-                </button>`;
+                paginationHtml += `
+                    <li class="page-item ${paginationData.currentPage === 1 ? 'disabled' : ''}">
+                        <a class="page-link" href="javascript:void(0);" data-page="${paginationData.currentPage - 1}">
+                            <i class="bx bx-chevron-left"></i>
+                        </a>
+                    </li>`;
                 
-                // Page buttons
-                const maxButtons = 5;
+                // Page buttons (show max 9 pages)
+                const maxButtons = 9;
                 let startPage = Math.max(1, paginationData.currentPage - Math.floor(maxButtons / 2));
                 let endPage = Math.min(paginationData.totalPages, startPage + maxButtons - 1);
                 
@@ -1603,20 +1619,29 @@ class UnifiedOffcanvasFactory {
                 }
                 
                 for (let i = startPage; i <= endPage; i++) {
-                    buttonsHtml += `<button class="btn btn-sm ${i === paginationData.currentPage ? 'btn-primary' : 'btn-outline-secondary'}" data-page="${i}">${i}</button>`;
+                    paginationHtml += `
+                        <li class="page-item ${i === paginationData.currentPage ? 'active' : ''}">
+                            <a class="page-link" href="javascript:void(0);" data-page="${i}">${i}</a>
+                        </li>`;
                 }
                 
                 // Next button
-                buttonsHtml += `<button class="btn btn-sm btn-outline-secondary" ${paginationData.currentPage === paginationData.totalPages ? 'disabled' : ''} data-page="${paginationData.currentPage + 1}">
-                    <i class="bx bx-chevron-right"></i>
-                </button>`;
+                paginationHtml += `
+                    <li class="page-item ${paginationData.currentPage === paginationData.totalPages ? 'disabled' : ''}">
+                        <a class="page-link" href="javascript:void(0);" data-page="${paginationData.currentPage + 1}">
+                            <i class="bx bx-chevron-right"></i>
+                        </a>
+                    </li>`;
                 
-                paginationControls.innerHTML = buttonsHtml;
+                paginationHtml += '</ul></nav>';
+                
+                paginationControls.innerHTML = paginationHtml;
                 
                 // Attach click handlers
-                paginationControls.querySelectorAll('[data-page]').forEach(btn => {
-                    btn.addEventListener('click', () => {
-                        const page = parseInt(btn.dataset.page);
+                paginationControls.querySelectorAll('[data-page]').forEach(link => {
+                    link.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        const page = parseInt(link.dataset.page);
                         searchCore.goToPage(page);
                     });
                 });
@@ -2023,7 +2048,7 @@ class UnifiedOffcanvasFactory {
                 offcanvas.hide();
             });
             
-            // Clear all filters button
+            // Clear all filters button - immediately apply and close
             element.querySelector('#clearAllFiltersBtn')?.addEventListener('click', () => {
                 // Reset all filters to default
                 filterState.muscleGroup = [];
@@ -2033,26 +2058,11 @@ class UnifiedOffcanvasFactory {
                 filterState.sortBy = 'name';
                 filterState.sortOrder = 'asc';
                 
-                // Update all checkmarks
-                element.querySelectorAll('.filter-option').forEach(opt => {
-                    const filterType = opt.dataset.filter;
-                    const value = opt.dataset.value;
-                    
-                    if (filterType === 'muscleGroup') {
-                        updateCheckmark(opt, value === '');
-                    } else if (filterType === 'difficulty') {
-                        updateCheckmark(opt, value === '');
-                    } else if (filterType === 'equipment') {
-                        updateCheckmark(opt, false);
-                    } else if (filterType === 'sort') {
-                        updateCheckmark(opt, value === 'name-asc');
-                    } else if (filterType === 'favorites') {
-                        updateCheckmark(opt, false);
-                    }
-                });
+                // Apply the cleared filters immediately
+                onApply(filterState);
                 
-                // Update preview count
-                updatePreviewCount();
+                // Close the offcanvas
+                offcanvas.hide();
             });
             
             // Cancel button
@@ -2072,15 +2082,16 @@ class UnifiedOffcanvasFactory {
     
     /**
      * Create standalone add exercise form offcanvas
-     * REUSABLE across entire app - can be used anywhere that needs exercise data collection
+     * @deprecated Use createExerciseGroupEditor({ mode: 'single', ... }) instead
+     * This method is now a thin wrapper for backward compatibility
      * @param {Object} config - Configuration options
      * @param {string} config.title - Offcanvas title (default: 'Add Exercise')
      * @param {string} config.exerciseName - Pre-fill exercise name
-     * @param {string} config.exerciseId - Link to DB exercise
      * @param {string} config.sets - Default sets value
      * @param {string} config.reps - Default reps value
      * @param {string} config.rest - Default rest value
-     * @param {boolean} config.showSearchButton - Show search button (default: true)
+     * @param {string} config.weight - Default weight value
+     * @param {string} config.weightUnit - Weight unit (lbs/kg/other)
      * @param {string} config.buttonText - Submit button text (default: 'Add Exercise')
      * @param {string} config.buttonIcon - Submit button icon (default: 'bx-plus-circle')
      * @param {Function} onAddExercise - Callback when exercise is added
@@ -2088,16 +2099,72 @@ class UnifiedOffcanvasFactory {
      * @returns {Object} Offcanvas instance
      */
     static createAddExerciseForm(config = {}, onAddExercise, onSearchClick = null) {
+        console.warn('⚠️ createAddExerciseForm is deprecated. Use createExerciseGroupEditor({ mode: "single", ... }) instead.');
+        
+        // Extract config options
         const {
             title = 'Add Exercise',
             exerciseName = '',
-            exerciseId = null,
             sets = '3',
             reps = '12',
             rest = '60s',
             weight = '',
             weightUnit = 'lbs',
-            showSearchButton = true,
+            buttonText = 'Add Exercise',
+            buttonIcon = 'bx-plus-circle'
+        } = config;
+        
+        // Delegate to createExerciseGroupEditor with mode='single'
+        return this.createExerciseGroupEditor(
+            {
+                mode: 'single',
+                title,
+                exercises: { a: exerciseName, b: '', c: '' },
+                sets,
+                reps,
+                rest,
+                weight,
+                weightUnit,
+                isNew: true
+            },
+            // onSave callback - transform groupData to match old exerciseData format
+            async (groupData) => {
+                const exerciseData = {
+                    name: groupData.exercises.a,
+                    sets: groupData.sets,
+                    reps: groupData.reps,
+                    rest: groupData.rest,
+                    weight: groupData.default_weight,
+                    weight_unit: groupData.default_weight_unit
+                };
+                await onAddExercise(exerciseData);
+            },
+            // onDelete callback (not used)
+            async () => {
+                console.warn('⚠️ Delete not applicable in deprecated createAddExerciseForm');
+            },
+            // onSearchClick callback
+            onSearchClick ? (slotKey, populateCallback) => {
+                // Old API expects just populateCallback
+                onSearchClick(populateCallback);
+            } : null
+        );
+    }
+    
+    /**
+     * Create standalone add exercise form offcanvas (ORIGINAL IMPLEMENTATION - DEPRECATED)
+     * Kept for reference, but no longer used
+     * @private
+     */
+    static _createAddExerciseForm_ORIGINAL(config = {}, onAddExercise, onSearchClick = null) {
+        const {
+            title = 'Add Exercise',
+            exerciseName = '',
+            sets = '3',
+            reps = '12',
+            rest = '60s',
+            weight = '',
+            weightUnit = 'lbs',
             buttonText = 'Add Exercise',
             buttonIcon = 'bx-plus-circle'
         } = config;
@@ -2383,7 +2450,8 @@ class UnifiedOffcanvasFactory {
             rest = '60s',
             weight = '',
             weightUnit = 'lbs',
-            isNew = false
+            isNew = false,
+            mode = 'group'  // 'single' or 'group' - controls alternate exercises visibility
         } = config;
         
         // Track selected exercises in state
@@ -2419,12 +2487,13 @@ class UnifiedOffcanvasFactory {
                     <div class="mb-3">
                         <label class="form-label">Primary Exercise *</label>
                         <div class="exercise-slot ${exercises.a ? 'filled' : ''}" id="primaryExerciseSlot" data-slot="a">
-                            <div class="input-group">
+                            <div class="input-group" style="gap: 0.375rem;">
                                 <input type="text" class="form-control exercise-slot-input"
                                        id="primaryExerciseInput"
                                        value="${this.escapeHtml(exercises.a || '')}"
                                        placeholder="Enter exercise name"
-                                       autocomplete="off">
+                                       autocomplete="off"
+                                       style="padding-right: 0.75rem;">
                                 <button type="button" class="btn btn-outline-secondary" id="searchPrimaryBtn" title="Search library">
                                     <i class="bx bx-search"></i>
                                 </button>
@@ -2435,14 +2504,14 @@ class UnifiedOffcanvasFactory {
                         </div>
                     </div>
                     
-                    <!-- Alternate Exercises Container -->
-                    <div id="alternateExercisesContainer">
+                    <!-- Alternate Exercises Container (hidden in single mode) -->
+                    <div id="alternateExercisesContainer" style="${mode === 'single' ? 'display: none;' : ''}">
                         ${exercises.b ? this.renderAlternateSlot('b', exercises.b) : ''}
                         ${exercises.c ? this.renderAlternateSlot('c', exercises.c) : ''}
                     </div>
                     
-                    <!-- Add Alternate Button (max 2) -->
-                    <div class="mb-3" id="addAltButtonContainer" style="${state.alternateCount >= 2 ? 'display: none;' : ''}">
+                    <!-- Add Alternate Button (max 2, hidden in single mode) -->
+                    <div class="mb-3" id="addAltButtonContainer" style="${mode === 'single' || state.alternateCount >= 2 ? 'display: none;' : ''}">
                         <button type="button" class="btn btn-outline-secondary btn-sm w-100" id="addAlternateSlotBtn">
                             <i class="bx bx-plus me-1"></i>Add Alternate
                         </button>
@@ -2504,7 +2573,7 @@ class UnifiedOffcanvasFactory {
                         <button type="button" class="btn btn-label-secondary flex-fill"
                                 data-bs-dismiss="offcanvas">Cancel</button>
                         <button type="button" class="btn btn-outline-danger flex-fill" id="deleteExerciseGroupEditorBtn"
-                                ${isNew ? 'style="display: none;"' : ''}>
+                                ${isNew || mode === 'single' ? 'style="display: none;"' : ''}>
                             <i class="bx bx-trash me-1"></i>Delete
                         </button>
                     </div>
@@ -2557,12 +2626,16 @@ class UnifiedOffcanvasFactory {
                     clearPrimaryBtn.classList.add('d-none');
                     primarySlot.classList.remove('filled');
                 } else {
-                    // Remove alternate slot entirely
-                    const slotElement = element.querySelector(`[data-slot="${slotKey}"]`);
-                    if (slotElement) {
-                        slotElement.parentElement.remove();
+                    // Find the container with data-alt-key attribute
+                    const containerElement = element.querySelector(`[data-alt-key="${slotKey}"]`);
+                    if (containerElement) {
+                        containerElement.remove();
                         state.alternateCount--;
-                        addAltContainer.style.display = state.alternateCount >= 2 ? 'none' : '';
+                        
+                        // Show add button if we're below max
+                        if (addAltContainer) {
+                            addAltContainer.style.display = state.alternateCount >= 2 ? 'none' : '';
+                        }
                     }
                 }
             };
@@ -2746,12 +2819,13 @@ class UnifiedOffcanvasFactory {
             <div class="mb-3 alternate-exercise-slot-container" data-alt-key="${slotKey}">
                 <label class="form-label">Alternate Exercise</label>
                 <div class="exercise-slot ${filled}" data-slot="${slotKey}">
-                    <div class="input-group">
+                    <div class="input-group" style="gap: 0.375rem;">
                         <input type="text" class="form-control exercise-slot-input"
                                id="alternateExercise${keyUpper}Input"
                                value="${UnifiedOffcanvasFactory.escapeHtml(exerciseName || '')}"
                                placeholder="Enter exercise name"
-                               autocomplete="off">
+                               autocomplete="off"
+                               style="padding-right: 0.75rem;">
                         <button type="button" class="btn btn-outline-secondary" id="searchAlternate${keyUpper}Btn" title="Search library">
                             <i class="bx bx-search"></i>
                         </button>

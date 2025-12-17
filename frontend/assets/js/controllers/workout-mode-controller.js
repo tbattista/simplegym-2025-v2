@@ -1132,33 +1132,42 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
      */
     async showAddExerciseForm() {
         try {
-            window.UnifiedOffcanvasFactory.createAddExerciseForm(
+            window.UnifiedOffcanvasFactory.createExerciseGroupEditor(
                 {
+                    mode: 'single',
                     title: 'Add Bonus Exercise',
-                    showSearchButton: true,
-                    buttonText: 'Add Exercise',
-                    buttonIcon: 'bx-plus-circle'
+                    exercises: { a: '', b: '', c: '' },
+                    sets: '3',
+                    reps: '12',
+                    rest: '60s',
+                    weight: '',
+                    weightUnit: 'lbs',
+                    isNew: true
                 },
-                // onAddExercise callback
-                async (exerciseData) => {
+                // onSave callback
+                async (groupData) => {
                     // Handle adding exercise with weight data
                     this.sessionService.addBonusExercise({
-                        name: exerciseData.name,
-                        sets: exerciseData.sets || '3',
-                        reps: exerciseData.reps || '12',
-                        rest: exerciseData.rest || '60s',
-                        weight: exerciseData.weight || '',
-                        weight_unit: exerciseData.weight_unit || 'lbs'
+                        name: groupData.exercises.a,
+                        sets: groupData.sets || '3',
+                        reps: groupData.reps || '12',
+                        rest: groupData.rest || '60s',
+                        weight: groupData.default_weight || '',
+                        weight_unit: groupData.default_weight_unit || 'lbs'
                     });
                     this.renderWorkout();
                     
                     const message = !this.sessionService.isSessionActive()
-                        ? `${exerciseData.name} added! It will be included when you start the workout. 💪`
-                        : `${exerciseData.name} added to your workout! 💪`;
+                        ? `${groupData.exercises.a} added! It will be included when you start the workout. 💪`
+                        : `${groupData.exercises.a} added to your workout! 💪`;
                     if (window.showAlert) window.showAlert(message, 'success');
                 },
+                // onDelete callback (not used in single mode)
+                async () => {
+                    console.warn('⚠️ Delete not applicable in single mode');
+                },
                 // onSearchClick callback
-                (populateCallback) => {
+                (slotKey, populateCallback) => {
                     // Open Exercise Search offcanvas
                     this.showExerciseSearchOffcanvas(populateCallback);
                 }
@@ -1446,22 +1455,36 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
     }
     
     expandCard(card) {
-        card.classList.add('expanded');
+        // Show body immediately so CSS transitions can take effect
         const body = card.querySelector('.exercise-card-body');
         if (body) {
             body.style.display = 'block';
+            // Force reflow to ensure initial state is set before transition
+            void body.offsetHeight;
         }
         
+        // Add expanded class to trigger CSS transitions
+        card.classList.add('expanded');
+        
+        // Scroll into view after animation starts
         setTimeout(() => {
             card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }, 100);
+        }, 150);
     }
     
     collapseCard(card) {
+        // Remove expanded class to trigger reverse CSS transitions
         card.classList.remove('expanded');
+        
+        // Wait for transitions to complete before hiding
         const body = card.querySelector('.exercise-card-body');
         if (body) {
-            body.style.display = 'none';
+            setTimeout(() => {
+                // Only hide if card is still collapsed (user didn't re-expand)
+                if (!card.classList.contains('expanded')) {
+                    body.style.display = 'none';
+                }
+            }, 350); // Match CSS transition duration
         }
     }
     
