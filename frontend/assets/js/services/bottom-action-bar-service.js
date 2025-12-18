@@ -51,8 +51,8 @@
             // Attach event listeners
             this.attachEventListeners();
 
-            // Enable auto-hide on scroll for new layout (except workout-builder)
-            if (this.isNewLayout && this.pageId !== 'workout-builder') {
+            // Enable auto-hide on scroll for new layout (except workout-builder and workout-database)
+            if (this.isNewLayout && this.pageId !== 'workout-builder' && this.pageId !== 'workout-database') {
                 this.enableAutoHide();
             }
 
@@ -114,37 +114,17 @@
             this.container = container;
 
             // Render floating FAB (new layout only)
-            if (this.isNewLayout && this.config.fab) {
-                if (this.config.fab.icon === 'bx-search') {
-                    // Render search FAB with morphing functionality
-                    this.renderFloatingSearchFAB(this.config.fab);
-                    
-                    // Attach event listener to floating FAB after a short delay
-                    setTimeout(() => {
-                        const floatingFab = document.getElementById('searchFab');
-                        if (floatingFab) {
-                            floatingFab.addEventListener('click', (e) => {
-                                // Only handle clicks on the FAB itself when collapsed
-                                // When expanded, let clicks pass through to child elements
-                                const searchInput = document.getElementById('searchFabInput');
-                                const searchClose = document.getElementById('searchFabClose');
-                                
-                                // Don't handle if clicking on input or close button
-                                if (e.target === searchInput || searchInput.contains(e.target) ||
-                                    e.target === searchClose || searchClose.contains(e.target)) {
-                                    console.log('🔍 Click on child element, ignoring');
-                                    return;
-                                }
-                                
-                                // Only trigger action if FAB is collapsed
-                                if (!floatingFab.classList.contains('expanded')) {
-                                    this.handleButtonClick('fab');
-                                }
-                            });
-                            console.log('✅ Floating search FAB event listener attached');
-                        }
-                    }, 100);
-                } else {
+            if (this.isNewLayout) {
+                // Render search FAB if configured (either as main FAB or searchFab)
+                const searchConfig = this.config.searchFab || (this.config.fab?.icon === 'bx-search' ? this.config.fab : null);
+                if (searchConfig) {
+                    // Render search FAB with morphing functionality (hidden, triggered by button)
+                    this.renderFloatingSearchFAB(searchConfig);
+                    // Note: No click handler attached - search FAB is triggered by the Search button
+                }
+                
+                // Render main FAB if it's not a search FAB
+                if (this.config.fab && this.config.fab.icon !== 'bx-search') {
                     // For workout mode, always render timer combo (not regular FAB)
                     if (this.pageId === 'workout-mode') {
                         this.renderFloatingTimerEndCombo();
@@ -179,10 +159,10 @@
             const fabHTML = `
                 <div class="search-fab floating-search-fab"
                         id="searchFab"
-                        data-action="fab"
                         title="${fab.title}"
                         role="button"
-                        tabindex="0">
+                        tabindex="0"
+                        style="display: none;">
                     <!-- FAB Icon (visible when collapsed) -->
                     <i class="bx ${fab.icon} search-fab-icon"></i>
                     

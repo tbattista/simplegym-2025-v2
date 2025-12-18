@@ -21,7 +21,6 @@
         
         // Get elements
         const bottomNav = document.querySelector('.bottom-action-bar');
-        const backdrop = getOrCreateBackdrop();
         
         // CRITICAL: Focus IMMEDIATELY during user interaction (before any delays)
         // This maintains the user interaction chain required by mobile browsers
@@ -37,11 +36,9 @@
             }
         }
         
-        // Show backdrop
-        backdrop.classList.add('active');
+        // Note: No backdrop needed - search stays above action bar
         
-        // Hide bottom nav
-        bottomNav?.classList.add('search-active');
+        // Note: Bottom nav stays visible - no need to hide
         
         // Stage 1: Start morphing (add morphing class)
         searchFab.classList.add('morphing');
@@ -102,15 +99,8 @@
         window.bottomNavState = window.bottomNavState || {};
         window.bottomNavState.animating = true;
         
-        // Get elements
-        const bottomNav = document.querySelector('.bottom-action-bar');
-        const backdrop = document.querySelector('.search-backdrop');
-        
-        // Hide backdrop
-        backdrop?.classList.remove('active');
-        
-        // Show bottom nav
-        bottomNav?.classList.remove('search-active');
+        // Note: No backdrop to hide
+        // Note: Bottom nav stays visible
         
         // Stage 1: Start collapsing (remove expanded, add morphing)
         searchFab.classList.remove('expanded');
@@ -447,18 +437,23 @@
                     }
                 },
                 {
-                    icon: 'bx-plus',
-                    label: 'Add',
-                    title: 'Create new workout',
+                    icon: 'bx-search',
+                    label: 'Search',
+                    title: 'Search workouts',
                     action: function() {
-                        // Clear localStorage to ensure a fresh workout is created
-                        try {
-                            localStorage.removeItem('currentEditingWorkoutId');
-                            console.log('🗑️ Cleared workout ID from localStorage (creating new workout)');
-                        } catch (error) {
-                            console.warn('⚠️ Could not clear localStorage:', error);
+                        const searchFab = document.getElementById('searchFab');
+                        const searchInput = document.getElementById('searchFabInput');
+                        
+                        if (!searchFab || !searchInput) {
+                            console.error('❌ Search FAB elements not found');
+                            return;
                         }
-                        window.location.href = 'workout-builder.html';
+                        
+                        // Only open if collapsed
+                        if (!searchFab.classList.contains('expanded')) {
+                            // Open search - morph FAB to search box
+                            openMorphingSearch(searchFab, searchInput);
+                        }
                     }
                 },
                 {
@@ -558,25 +553,33 @@
                 }
             ],
             fab: {
-                icon: 'bx-search',
-                title: 'Search workouts',
+                icon: 'bx-plus',
+                title: 'Create new workout',
                 variant: 'primary',
                 action: function() {
-                    const searchFab = document.getElementById('searchFab');
-                    const searchInput = document.getElementById('searchFabInput');
+                    console.log('➕ Create new workout FAB clicked');
                     
-                    if (!searchFab || !searchInput) {
-                        console.error('❌ Search FAB elements not found');
-                        return;
-                    }
-                    
-                    // Only toggle if NOT expanded (only open when collapsed)
-                    // When expanded, clicks should be handled by child elements
-                    if (!searchFab.classList.contains('expanded')) {
-                        // Open search - morph FAB to search box
-                        openMorphingSearch(searchFab, searchInput);
+                    // Call createNewWorkoutInEditor directly
+                    if (window.createNewWorkoutInEditor) {
+                        window.createNewWorkoutInEditor();
+                    } else {
+                        console.error('❌ createNewWorkoutInEditor function not available');
+                        // Fallback to navigation
+                        try {
+                            localStorage.removeItem('currentEditingWorkoutId');
+                            console.log('🗑️ Cleared workout ID from localStorage (creating new workout)');
+                        } catch (error) {
+                            console.warn('⚠️ Could not clear localStorage:', error);
+                        }
+                        window.location.href = 'workout-builder.html';
                     }
                 }
+            },
+            // Hidden search FAB config (renders the morphing search elements but triggered by button)
+            searchFab: {
+                icon: 'bx-search',
+                title: 'Search workouts',
+                variant: 'primary'
             }
         },
 

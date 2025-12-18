@@ -266,7 +266,7 @@
     width: 48px;
     height: 48px;
     min-width: 48px;
-    border-radius: 12px;
+    border-radius: 8px; /* Less rounded for more square appearance */
     background: var(--bs-primary);
     color: white;
     border: none;
@@ -331,9 +331,10 @@
     right: 16px;
     bottom: calc(100% + 24px); /* Increased spacing from action bar */
     height: 48px;
-    min-width: 100px;
-    padding: 0 24px;
-    border-radius: 12px;
+    width: 48px; /* Square dimensions */
+    min-width: 48px;
+    padding: 0; /* Remove padding for true square */
+    border-radius: 8px; /* Less rounded for square appearance */
     background: var(--bs-success);
     color: #fff;
     border: none;
@@ -343,13 +344,15 @@
     gap: 8px;
     cursor: pointer;
     z-index: 1002;
-    transition: all 0.2s ease;
+    transition: all 0.3s ease; /* Smooth transition for movement */
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
     font-weight: 600;
-    font-size: 15px;
+    font-size: 24px; /* Larger icon for square FAB */
     white-space: nowrap;
     pointer-events: auto !important;
 }
+
+/* No need to move FAB up since search is now at top */
 
 /* ============================================
    FLOATING TIMER + END BUTTON COMBO (WORKOUT MODE ACTIVE)
@@ -480,10 +483,7 @@
     .floating-action-fab {
         right: 12px;
         bottom: calc(100% + 16px); /* Increased spacing on mobile */
-        height: 44px;
-        min-width: 90px;
-        padding: 0 18px;
-        font-size: 14px;
+        /* Keep square dimensions - no width/padding overrides */
     }
     
     .floating-timer-display,
@@ -497,8 +497,7 @@
     
     .floating-timer-display i,
     .floating-end-button i,
-    .floating-start-button i,
-    .floating-action-fab i {
+    .floating-start-button i {
         font-size: 18px;
     }
 }
@@ -513,10 +512,7 @@
     .floating-action-fab {
         right: 10px;
         bottom: calc(100% + 12px); /* Increased spacing on small mobile */
-        height: 40px;
-        min-width: 80px;
-        padding: 0 16px;
-        font-size: 13px;
+        /* Keep square dimensions - no width/padding overrides */
     }
     
     .floating-timer-display,
@@ -530,8 +526,7 @@
     
     .floating-timer-display i,
     .floating-end-button i,
-    .floating-start-button i,
-    .floating-action-fab i {
+    .floating-start-button i {
         font-size: 16px;
     }
 }
@@ -883,6 +878,7 @@
 
 .floating-action-fab:hover {
     background: #218838;
+    transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
 }
 
@@ -893,14 +889,12 @@
 }
 
 .floating-action-fab i {
-    font-size: 20px;
+    font-size: 24px; /* Larger icon for square FAB */
     flex-shrink: 0;
 }
 
 .floating-action-fab .fab-label {
-    font-size: 14px;
-    font-weight: 600;
-    letter-spacing: 0.02em;
+    display: none; /* Hide label for square FAB */
 }
 
 /* Variant colors */
@@ -1052,7 +1046,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.1);
+    background: transparent; /* No gray overlay */
     z-index: 1049;
     display: none;
     pointer-events: none; /* ALWAYS none - clicks pass through to document handler */
@@ -1110,8 +1104,8 @@
     color: #fff;
 }
 
-/* Search FAB expanded state - Clean Sneat design */
-/* Uses fixed positioning to stay visible when bottom nav slides down */
+/* Search FAB expanded state - Top of screen */
+/* Uses fixed positioning at top for better visibility */
 .search-fab.expanded {
     position: fixed !important;
     width: calc(100% - 32px) !important;
@@ -1119,7 +1113,8 @@
     height: 48px !important;
     left: 50% !important;
     right: auto !important;
-    bottom: 72px !important;
+    top: 16px !important; /* Top of screen */
+    bottom: auto !important;
     transform: translateX(-50%) !important;
     border-radius: 24px !important;
     background: var(--bs-body-bg) !important;
@@ -1129,7 +1124,7 @@
     display: flex !important;
     align-items: center !important;
     gap: 12px !important;
-    z-index: 1052 !important;
+    z-index: 1060 !important; /* Higher than action bar (1000) and offcanvas (1045) */
     transition: all 0.25s ease !important;
     pointer-events: auto !important;
 }
