@@ -1466,17 +1466,17 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
         // Add expanded class to trigger CSS transitions
         card.classList.add('expanded');
         
-        // Scroll into view after animation starts
+        // OPTIMIZED: Faster scroll for snappier feel
         setTimeout(() => {
             card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }, 150);
+        }, 100);
     }
     
     collapseCard(card) {
         // Remove expanded class to trigger reverse CSS transitions
         card.classList.remove('expanded');
         
-        // Wait for transitions to complete before hiding
+        // OPTIMIZED: Wait for faster transitions to complete before hiding
         const body = card.querySelector('.exercise-card-body');
         if (body) {
             setTimeout(() => {
@@ -1484,7 +1484,7 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
                 if (!card.classList.contains('expanded')) {
                     body.style.display = 'none';
                 }
-            }, 350); // Match CSS transition duration
+            }, 200); // Match new faster CSS transition duration (0.2s)
         }
     }
     
@@ -1500,6 +1500,7 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
     
     /**
      * Go to next exercise
+     * OPTIMIZED: Overlapping animations for snappier transitions
      */
     goToNextExercise(currentIndex) {
         const allCards = document.querySelectorAll('.exercise-card');
@@ -1509,9 +1510,10 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
             const currentCard = allCards[currentIndex];
             this.collapseCard(currentCard);
             
+            // OPTIMIZED: Start next card opening while current is still closing (overlapping animations)
             setTimeout(() => {
                 this.toggleExerciseCard(nextIndex);
-            }, 300);
+            }, 50); // Reduced from 300ms to 50ms for overlapping effect
         } else {
             // Last exercise - show complete workout dialog
             console.log('🎉 Last exercise completed, showing complete workout dialog');

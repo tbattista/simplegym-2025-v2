@@ -1089,7 +1089,7 @@ if (document.readyState === 'loading') {
 
 // Make functions globally available
 window.loadWorkoutIntoEditor = loadWorkoutIntoEditor;
-window.createNewWorkoutIntoEditor = createNewWorkoutInEditor;
+window.createNewWorkoutInEditor = createNewWorkoutInEditor;
 window.saveWorkoutFromEditor = saveWorkoutFromEditor;
 window.cancelEditWorkout = cancelEditWorkout;
 window.deleteWorkoutFromEditor = deleteWorkoutFromEditor;

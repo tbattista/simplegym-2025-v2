@@ -330,6 +330,12 @@ class WorkoutCard {
                     const workoutData = this.workout.workout_data || this.workout;
                     const name = workoutData.name || this.workout.name || 'Untitled Workout';
                     this.config.onDelete(this.workout.id, name);
+                } else if (actionId === 'edit') {
+                    // Edit action from dropdown - look in full actions array (not filtered)
+                    const editAction = this.config.actions.find(a => a.id === 'edit');
+                    if (editAction && editAction.onClick) {
+                        editAction.onClick(this.workout);
+                    }
                 } else {
                     const action = this.config.actions.find(a => a.id === actionId);
                     if (action && action.onClick) {

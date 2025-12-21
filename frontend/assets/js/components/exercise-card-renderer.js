@@ -99,77 +99,76 @@ class ExerciseCardRenderer {
                 
                 <div class="card-body exercise-card-body" style="display: none;">
                     ${isSkipped ? `
-                        <div class="alert alert-warning mb-3">
+                        <div class="alert alert-warning">
                             <i class="bx bx-info-circle me-2"></i>
                             <strong>Exercise Skipped</strong>
                             ${skipReason ? `<p class="mb-0 mt-1 small">${this._escapeHtml(skipReason)}</p>` : ''}
                         </div>
                     ` : ''}
                     
-                    <!-- MORPH: Expanded details panel -->
-                    <div class="exercise-details-panel">
-                        <!-- Compact Weight & Exercise Details -->
-                        <div class="detail-grid mb-3 p-2 bg-light rounded">
-                            <div class="row g-2 align-items-center">
-                                <!-- Weight Column -->
-                                <div class="col-5 text-center border-end">
-                                    <small class="text-muted d-block">Weight</small>
-                                    <div class="h3 mb-0 text-primary fw-bold morph-weight-target">${currentWeight || '—'} ${currentWeight ? currentUnit : ''}</div>
-                                    ${lastWeight && lastSessionDate ? `
-                                        <small class="text-muted" style="font-size: 0.7rem;">Last: ${lastWeight} ${lastWeightUnit}</small>
-                                    ` : ''}
-                                </div>
-                                
-                                <!-- Sets × Reps & Rest -->
-                                <div class="col-7">
-                                    <div class="d-flex justify-content-around">
-                                        <div class="text-center">
-                                            <small class="text-muted d-block" style="font-size: 0.7rem;">Sets × Reps</small>
-                                            <strong class="morph-sets-target">${sets} × ${reps}</strong>
-                                        </div>
-                                        <div class="text-center">
-                                            <small class="text-muted d-block" style="font-size: 0.7rem;">Rest</small>
-                                            <strong class="morph-rest-target"><i class="bx bx-time-five" style="font-size: 0.9rem;"></i>${rest}</strong>
-                                        </div>
-                                    </div>
-                                </div>
+                    <!-- Weight Section -->
+                    <div class="exercise-weight-section">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="exercise-weight-display">
+                                <span class="exercise-weight-value">${currentWeight || '—'}</span>
+                                ${currentWeight && currentUnit !== 'other' ? `<span class="exercise-weight-unit">${currentUnit}</span>` : ''}
                             </div>
-                            
-                            ${plateBreakdown ? `
-                                <div class="mt-2 pt-2 border-top text-center">
-                                    <small class="text-muted" style="font-size: 0.7rem;">
-                                        <i class="bx bx-dumbbell me-1"></i>${plateBreakdown}
-                                    </small>
-                                </div>
-                            ` : ''}
+                            <div class="btn-group btn-group-sm" role="group">
+                                <button class="btn btn-outline-secondary" onclick="event.stopPropagation();" title="Decrease weight">
+                                    <i class="bx bx-minus"></i>
+                                </button>
+                                <button class="btn btn-outline-secondary" onclick="event.stopPropagation();" title="Increase weight">
+                                    <i class="bx bx-plus"></i>
+                                </button>
+                                <button class="btn btn-outline-primary" onclick="window.workoutModeController.handleWeightButtonClick(this); event.stopPropagation();"
+                                        data-exercise-name="${this._escapeHtml(mainExercise)}"
+                                        data-current-weight="${currentWeight || ''}"
+                                        data-current-unit="${currentUnit}"
+                                        data-last-weight="${lastWeight || ''}"
+                                        data-last-weight-unit="${lastWeightUnit || ''}"
+                                        data-last-session-date="${lastSessionDate || ''}"
+                                        data-is-session-active="${isSessionActive}"
+                                        data-weight-source="${weightSource}"
+                                        title="Edit weight">
+                                    <i class="bx bx-edit-alt"></i>
+                                </button>
+                            </div>
                         </div>
-                        
-                        ${notes ? `
-                            <p class="text-muted small mb-3">
-                                <i class="bx bx-info-circle me-1"></i>
-                                ${this._escapeHtml(notes)}
-                            </p>
+                        ${lastWeight && lastSessionDate ? `
+                            <small class="exercise-weight-history">Last: ${lastWeight}${lastWeightUnit !== 'other' ? ` ${lastWeightUnit}` : ''} on ${lastSessionDate}</small>
                         ` : ''}
                     </div>
                     
-                    <!-- Action Buttons -->
-                    <div class="d-grid">
-                        <button
-                            class="btn ${currentWeight ? 'btn-primary' : 'btn-outline-primary'}"
-                            data-exercise-name="${this._escapeHtml(mainExercise)}"
-                            data-current-weight="${currentWeight || ''}"
-                            data-current-unit="${currentUnit}"
-                            data-last-weight="${lastWeight || ''}"
-                            data-last-weight-unit="${lastWeightUnit || ''}"
-                            data-last-session-date="${lastSessionDate || ''}"
-                            data-is-session-active="${isSessionActive}"
-                            data-weight-source="${weightSource}"
-                            onclick="window.workoutModeController.handleWeightButtonClick(this); event.stopPropagation();"
-                            title="${currentWeight ? 'Edit current weight' : 'Set weight for this exercise'}">
-                            <i class="bx ${currentWeight ? 'bx-edit-alt' : 'bx-plus-circle'} me-2"></i>
-                            ${currentWeight ? 'Edit Exercise' : 'Set Weight'}
-                        </button>
-                    </div>
+                    <!-- Exercise Details - List Group Style -->
+                    <ul class="list-group list-group-flush exercise-details-list">
+                        <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                            <span class="text-muted">Sets × Reps</span>
+                            <div class="d-flex align-items-center gap-2">
+                                <strong>${sets} × ${reps}</strong>
+                                <i class="bx bx-edit-alt text-muted exercise-detail-edit-icon" style="font-size: 0.9rem; cursor: pointer;" title="Edit sets/reps"></i>
+                            </div>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                            <span class="text-muted">Rest</span>
+                            <div class="d-flex align-items-center gap-2">
+                                <strong><i class="bx bx-time-five me-1"></i>${rest}</strong>
+                                <i class="bx bx-edit-alt text-muted exercise-detail-edit-icon" style="font-size: 0.9rem; cursor: pointer;" title="Edit rest time"></i>
+                            </div>
+                        </li>
+                        ${plateBreakdown ? `
+                            <li class="list-group-item d-flex justify-content-between align-items-start px-0">
+                                <span class="text-muted"><i class="bx bx-dumbbell me-1"></i>Plates</span>
+                                <span class="text-muted small text-end">${plateBreakdown}</span>
+                            </li>
+                        ` : ''}
+                    </ul>
+                    
+                    ${notes ? `
+                        <div class="exercise-notes">
+                            <i class="bx bx-info-circle me-1"></i>
+                            <span>${this._escapeHtml(notes)}</span>
+                        </div>
+                    ` : ''}
                 </div>
             </div>
         `;

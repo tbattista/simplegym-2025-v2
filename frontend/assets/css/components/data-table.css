@@ -400,9 +400,9 @@
 
 /* Outline badge styles with Ghost Gym colors */
 .badge-outline-success {
-    color: #10b981;
-    border: 1px solid rgba(16, 185, 129, 0.25);
-    background: rgba(16, 185, 129, 0.05);
+    color: var(--ghost-success);
+    border: 1px solid rgba(var(--ghost-success-rgb), 0.25);
+    background: rgba(var(--ghost-success-rgb), 0.05);
 }
 
 .badge-outline-warning {

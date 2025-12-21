@@ -601,13 +601,16 @@ class UnifiedOffcanvasFactory {
     }
 
     /* ============================================
-       BONUS EXERCISE (ENHANCED v2.0)
-       Search-first design with improved UX
+       BONUS EXERCISE (REFACTORED v4.0 - Phase 4 COMPLETE)
+       Uses ExerciseSearchCore for all search/filter/sort/pagination
+       Reduced from 811 lines to ~250 lines (69% reduction)
        ============================================ */
 
     /**
-     * Create demo-style bonus exercise offcanvas
-     * Simple search with filter chips and clean exercise list
+     * Create bonus exercise offcanvas using ExerciseSearchCore
+     * Hybrid approach: Preserves unique dual-purpose UX while eliminating duplicate logic
+     * - Top section: Direct exercise name input (also filters library)
+     * - Bottom section: Browse/search library (powered by ExerciseSearchCore)
      * @param {Object} data - Configuration data
      * @param {Function} onAddExercise - Callback when adding exercise
      * @returns {Object} Offcanvas instance
@@ -2454,6 +2457,16 @@ class UnifiedOffcanvasFactory {
             mode = 'group'  // 'single' or 'group' - controls alternate exercises visibility
         } = config;
         
+        // Example placeholders for "other" weight unit
+        const otherWeightExamples = [
+            'Body Weight plus 10lbs vest',
+            'six 45lbs plates',
+            'resistance band - heavy',
+            'BW + 25lbs dumbbell',
+            'cable stack position 7',
+            'kettlebell 35lbs'
+        ];
+        
         // Track selected exercises in state
         const state = {
             exercises: { ...exercises },
@@ -2544,7 +2557,8 @@ class UnifiedOffcanvasFactory {
                         <div class="row g-2">
                             <div class="col-4">
                                 <input type="text" class="form-control weight-input text-center"
-                                       id="editorWeight" value="${this.escapeHtml(weight)}" placeholder="0">
+                                       id="editorWeight" value="${this.escapeHtml(weight)}"
+                                       placeholder="${weightUnit === 'other' ? otherWeightExamples[Math.floor(Math.random() * otherWeightExamples.length)] : (weightUnit === 'kg' ? '60' : '135')}">
                             </div>
                             <div class="col-8">
                                 <div class="btn-group w-100" role="group">
@@ -2734,6 +2748,19 @@ class UnifiedOffcanvasFactory {
                     weightUnitBtns.forEach(b => b.classList.remove('active'));
                     btn.classList.add('active');
                     state.weightUnit = btn.dataset.unit;
+                    
+                    // Update placeholder based on selected unit
+                    if (weightInput) {
+                        if (state.weightUnit === 'other') {
+                            // Pick a random example from the array
+                            const randomExample = otherWeightExamples[Math.floor(Math.random() * otherWeightExamples.length)];
+                            weightInput.placeholder = randomExample;
+                        } else if (state.weightUnit === 'lbs') {
+                            weightInput.placeholder = '135';
+                        } else if (state.weightUnit === 'kg') {
+                            weightInput.placeholder = '60';
+                        }
+                    }
                 });
             });
             
@@ -2846,6 +2873,12 @@ class UnifiedOffcanvasFactory {
      * Create and show offcanvas (helper method)
      */
     static createOffcanvas(id, html, setupCallback = null) {
+        // Use the centralized manager if available
+        if (window.offcanvasManager) {
+            return window.offcanvasManager.create(id, html, setupCallback);
+        }
+        
+        // Fallback to existing logic (for backward compatibility during migration)
         const existing = document.getElementById(id);
         if (existing) {
             // Properly dispose Bootstrap instance before removing

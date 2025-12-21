@@ -352,6 +352,20 @@
     pointer-events: auto !important;
 }
 
+/* When floating-action-fab is ALSO a start/end button, use button dimensions */
+.floating-action-fab.floating-start-button,
+.floating-action-fab.floating-end-button {
+    height: 48px !important;        /* Standard button height */
+    width: auto !important;
+    min-width: 120px !important;     /* Moderate width */
+    padding: 0 16px !important;      /* Bootstrap standard .btn-lg is 0.5rem 1rem */
+    border-radius: 12px !important;
+    gap: 8px !important;
+    font-size: 15px !important;
+    font-weight: 600 !important;     /* Bootstrap standard */
+    line-height: 1.5 !important;
+}
+
 /* No need to move FAB up since search is now at top */
 
 /* ============================================
@@ -399,17 +413,18 @@
 /* Start/End Button (changes based on session state) */
 .floating-end-button,
 .floating-start-button {
-    height: 48px;
-    min-width: 90px;
-    padding: 0 20px;
+    height: 56px;           /* Bootstrap large button height */
+    min-width: 140px;
+    padding: 0 20px;        /* Bootstrap-like padding */
     border: none;
     border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
-    font-size: 15px;
-    font-weight: 600;
+    gap: 10px;
+    font-size: 16px;
+    font-weight: 600;       /* Bootstrap standard weight */
+    line-height: 1.5;
     cursor: pointer;
     transition: all 0.2s ease;
     white-space: nowrap;
@@ -434,16 +449,16 @@
     transform: translateY(0);
 }
 
-/* Start Button (green, for inactive session) */
+/* Start Button (Kelly Green, for inactive session) */
 .floating-start-button {
     background: var(--bs-success);
-    box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
+    box-shadow: 0 4px 12px rgba(76, 187, 23, 0.4);  /* Kelly Green shadow */
 }
 
 .floating-start-button:hover {
-    background: #218838;
+    background: #3D9912;  /* Dark Kelly Green */
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
+    box-shadow: 0 6px 16px rgba(76, 187, 23, 0.5);  /* Enhanced Kelly Green shadow */
 }
 
 .floating-start-button:active {
@@ -489,10 +504,10 @@
     .floating-timer-display,
     .floating-end-button,
     .floating-start-button {
-        height: 44px;
-        min-width: 80px;
-        padding: 0 14px;
-        font-size: 14px;
+        height: 48px;
+        min-width: 110px;
+        padding: 0 16px;    /* Proportional to desktop */
+        font-size: 15px;
     }
     
     .floating-timer-display i,
@@ -579,7 +594,7 @@
 .global-rest-timer-button.ready .global-timer-btn:hover {
     background: #218838;
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
+    box-shadow: 0 4px 12px rgba(var(--ghost-success-rgb), 0.4);
 }
 
 /* Counting state - display with pause option */
@@ -682,12 +697,12 @@
 }
 
 .global-timer-controls button:last-child {
-    background: rgba(40, 167, 69, 0.8);
+    background: rgba(var(--ghost-success-rgb), 0.8);
     color: white;
 }
 
 .global-timer-controls button:last-child:hover {
-    background: rgba(40, 167, 69, 1);
+    background: rgba(var(--ghost-success-rgb), 1);
 }
 
 /* Done state - success button */
@@ -750,19 +765,19 @@
 @keyframes timer-complete-pulse {
     0%, 100% {
         transform: scale(1);
-        box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
+        box-shadow: 0 2px 8px rgba(var(--ghost-success-rgb), 0.3);
     }
     25% {
         transform: scale(1.05);
-        box-shadow: 0 4px 16px rgba(40, 167, 69, 0.5);
+        box-shadow: 0 4px 16px rgba(var(--ghost-success-rgb), 0.5);
     }
     50% {
         transform: scale(1.08);
-        box-shadow: 0 6px 20px rgba(40, 167, 69, 0.6);
+        box-shadow: 0 6px 20px rgba(var(--ghost-success-rgb), 0.6);
     }
     75% {
         transform: scale(1.05);
-        box-shadow: 0 4px 16px rgba(40, 167, 69, 0.5);
+        box-shadow: 0 4px 16px rgba(var(--ghost-success-rgb), 0.5);
     }
 }
 
@@ -879,7 +894,7 @@
 .floating-action-fab:hover {
     background: #218838;
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
+    box-shadow: 0 4px 12px rgba(var(--ghost-success-rgb), 0.4);
 }
 
 .floating-action-fab:active {

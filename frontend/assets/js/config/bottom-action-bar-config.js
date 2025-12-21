@@ -558,21 +558,8 @@
                 variant: 'primary',
                 action: function() {
                     console.log('➕ Create new workout FAB clicked');
-                    
-                    // Call createNewWorkoutInEditor directly
-                    if (window.createNewWorkoutInEditor) {
-                        window.createNewWorkoutInEditor();
-                    } else {
-                        console.error('❌ createNewWorkoutInEditor function not available');
-                        // Fallback to navigation
-                        try {
-                            localStorage.removeItem('currentEditingWorkoutId');
-                            console.log('🗑️ Cleared workout ID from localStorage (creating new workout)');
-                        } catch (error) {
-                            console.warn('⚠️ Could not clear localStorage:', error);
-                        }
-                        window.location.href = 'workout-builder.html';
-                    }
+                    // Navigate with URL parameter (sessionStorage no longer used)
+                    window.location.href = 'workout-builder.html?new=true';
                 }
             },
             // Hidden search FAB config (renders the morphing search elements but triggered by button)

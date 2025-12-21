@@ -125,8 +125,8 @@
 
 /* Bonus Exercise Specific */
 [data-bs-theme="dark"] .bonus-exercise .card-header {
-    background: rgba(16, 185, 129, 0.1);
-    border-color: rgba(16, 185, 129, 0.3);
+    background: rgba(var(--ghost-success-rgb), 0.1);
+    border-color: rgba(var(--ghost-success-rgb), 0.3);
 }
 
 [data-bs-theme="dark"] .bonus-exercise-title {
@@ -194,7 +194,7 @@
    ============================================ */
 
 [data-bs-theme="dark"] .alert-success {
-    background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(16, 185, 129, 0.1));
+    background: linear-gradient(135deg, rgba(var(--ghost-success-rgb), 0.2), rgba(var(--ghost-success-rgb), 0.1));
     color: #6ee7b7;
 }
 
@@ -274,7 +274,7 @@
 }
 
 [data-bs-theme="dark"] .autosave-indicator.saved {
-    background: rgba(16, 185, 129, 0.2);
+    background: rgba(var(--ghost-success-rgb), 0.2);
 }
 
 [data-bs-theme="dark"] .autosave-indicator.unsaved {

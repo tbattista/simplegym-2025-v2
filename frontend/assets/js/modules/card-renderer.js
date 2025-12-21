@@ -61,7 +61,8 @@ class CardRenderer {
         if (hasData) {
             const parts = [`${data.sets} sets`, `${data.reps} reps`, `${data.rest} rest`];
             if (data.default_weight) {
-                parts.push(`${data.default_weight} ${data.default_weight_unit}`);
+                const unitDisplay = data.default_weight_unit !== 'other' ? ` ${data.default_weight_unit}` : '';
+                parts.push(`${data.default_weight}${unitDisplay}`);
             }
             metaText = parts.join(' • ');
         }
@@ -123,7 +124,8 @@ class CardRenderer {
         if (hasData) {
             const parts = [`${groupData.sets} sets`, `${groupData.reps} reps`, `${groupData.rest} rest`];
             if (groupData.default_weight) {
-                parts.push(`${groupData.default_weight} ${groupData.default_weight_unit}`);
+                const unitDisplay = groupData.default_weight_unit !== 'other' ? ` ${groupData.default_weight_unit}` : '';
+                parts.push(`${groupData.default_weight}${unitDisplay}`);
             }
             metaText = parts.join(' • ');
         }

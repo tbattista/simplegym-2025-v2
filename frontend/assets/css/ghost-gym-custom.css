@@ -5,11 +5,18 @@
   --ghost-primary: #6366f1;
   --ghost-secondary: #8b5cf6;
   --ghost-accent: #06b6d4;
-  --ghost-success: #10b981;
+  --ghost-success: #4CBB17;        /* Kelly Green */
+  --ghost-success-light: #5DD91E;  /* Light variant for hover states */
+  --ghost-success-dark: #3D9912;   /* Dark variant for active states */
+  --ghost-success-rgb: 76, 187, 23; /* RGB for rgba() usage */
   --ghost-warning: #f59e0b;
   --ghost-danger: #ef4444;
   --ghost-dark: #1e293b;
   --ghost-light: #f8fafc;
+  
+  /* Override Bootstrap success color to use Kelly Green */
+  --bs-success: #4CBB17;
+  --bs-success-rgb: 76, 187, 23;
 }
 
 /* Ghost Gym Branding */
@@ -264,8 +271,8 @@
 
 /* Bonus Exercise Styling */
 .bonus-exercise {
-  background: rgba(16, 185, 129, 0.04);
-  border: 1px solid rgba(16, 185, 129, 0.2);
+  background: rgba(var(--ghost-success-rgb), 0.04);
+  border: 1px solid rgba(var(--ghost-success-rgb), 0.2);
   border-radius: 8px;
   padding: 1rem;
   margin-bottom: 1rem;
@@ -292,7 +299,7 @@
 }
 
 .alert-success {
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.05));
+  background: linear-gradient(135deg, rgba(var(--ghost-success-rgb), 0.1), rgba(var(--ghost-success-rgb), 0.05));
   color: #065f46;
 }
 
@@ -608,7 +615,7 @@ body.menu-open {
 
 /* Dark Mode - Alerts */
 [data-bs-theme=dark] .alert-success {
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(16, 185, 129, 0.1));
+  background: linear-gradient(135deg, rgba(var(--ghost-success-rgb), 0.2), rgba(var(--ghost-success-rgb), 0.1));
   color: #6ee7b7;
 }
 
@@ -652,8 +659,8 @@ body.menu-open {
 
 /* Dark Mode - Bonus Exercises */
 [data-bs-theme=dark] .bonus-exercise {
-  background: rgba(16, 185, 129, 0.1);
-  border-color: rgba(16, 185, 129, 0.3);
+  background: rgba(var(--ghost-success-rgb), 0.1);
+  border-color: rgba(var(--ghost-success-rgb), 0.3);
 }
 
 [data-bs-theme=dark] .bonus-exercise-title {
@@ -725,7 +732,7 @@ body.menu-open {
 }
 
 [data-bs-theme=dark] .autosave-indicator.saved {
-  background: rgba(16, 185, 129, 0.2);
+  background: rgba(var(--ghost-success-rgb), 0.2);
 }
 
 [data-bs-theme=dark] .autosave-indicator.unsaved {
@@ -1131,6 +1138,7 @@ body.menu-open {
   #workoutTableContainer .btn-group {
     flex-direction: row !important;
   }
+}
 
 /* ============================================
    PHASE 3: VIEW TRANSITION ANIMATIONS
@@ -1419,7 +1427,7 @@ a:focus-visible {
 
 /* Saved state */
 .autosave-indicator.saved {
-  background: rgba(16, 185, 129, 0.1);
+  background: rgba(var(--ghost-success-rgb), 0.1);
   color: var(--ghost-success);
 }
 

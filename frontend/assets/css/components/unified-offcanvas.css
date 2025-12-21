@@ -702,3 +702,55 @@
         display: none;
     }
 }
+
+/* ============================================
+   WEIGHT INPUT DIY MODE LAYOUT
+   Responsive layout that expands input and moves buttons on DIY selection
+   ============================================ */
+
+/* Override forms.css box styling - remove nested appearance */
+.offcanvas-bottom-base .weight-input-container {
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+/* Default layout: input takes ~33%, buttons take ~67% */
+.weight-input-container .weight-input {
+    flex: 0 0 calc(33.333% - 0.25rem);
+    transition: flex 0.3s ease;
+}
+
+.weight-input-container .btn-group {
+    flex: 0 0 calc(66.667% - 0.25rem);
+    transition: flex 0.3s ease;
+}
+
+/* DIY mode: input expands to full width, buttons move to new line */
+.weight-input-container.diy-mode .weight-input {
+    flex: 0 0 100%;
+}
+
+.weight-input-container.diy-mode .btn-group {
+    flex: 0 0 100%;
+}
+
+/* Dark theme support */
+[data-bs-theme="dark"] .weight-input-container .weight-input {
+    background-color: var(--bs-gray-800);
+    border-color: var(--bs-gray-700);
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    .weight-input-container,
+    .weight-input-container .weight-input,
+    .weight-input-container .btn-group {
+        transition: none;
+    }
+}

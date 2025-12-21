@@ -419,8 +419,11 @@
     <!-- Exercise Autocomplete Component -->
     <script src="/static/assets/js/components/exercise-autocomplete.js?v=20251128-01"></script>
     
-    <!-- Unified Offcanvas Factory -->
-    <script src="/static/assets/js/components/unified-offcanvas-factory.js?v=20251214-02"></script>
+    <!-- Offcanvas Manager (Phase 1 - Centralized lifecycle) -->
+    <script src="/static/assets/js/components/offcanvas/offcanvas-manager.js?v=20251220-01"></script>
+    
+    <!-- Unified Offcanvas Factory (Modular v3.0.0) -->
+    <script type="module" src="/static/assets/js/components/offcanvas/index.js?v=20251220-02"></script>
 
     <!-- UI Helpers -->
     <script src="/static/assets/js/dashboard/ui-helpers.js?v=20251020-04"></script>
@@ -589,8 +592,8 @@
             const shareId = urlParams.get('share_id');
             const shareToken = urlParams.get('share_token');
             const urlWorkoutId = urlParams.get('id');
-            const sessionWorkoutId = sessionStorage.getItem('editWorkoutId');
             const localStorageWorkoutId = localStorage.getItem('currentEditingWorkoutId');
+            // sessionStorage removed - all navigation now uses URL parameters
             
             const loadingState = document.getElementById('workoutEditorLoadingState');
             const emptyState = document.getElementById('workoutEditorEmptyState');
@@ -644,21 +647,16 @@
                 return; // Exit early, don't load regular workout
             }
             
-            // Priority 2: Load user's own workout
-            const editWorkoutId = urlWorkoutId || sessionWorkoutId || localStorageWorkoutId;
+            // Priority 2: Load user's own workout (URL param or localStorage for refresh recovery)
+            const editWorkoutId = urlWorkoutId || localStorageWorkoutId;
             
             if (editWorkoutId) {
-                const source = urlWorkoutId ? '(from URL)' : sessionWorkoutId ? '(from sessionStorage)' : '(from localStorage - page refresh)';
+                const source = urlWorkoutId ? '(from URL)' : '(from localStorage - page refresh)';
                 console.log('📝 Auto-loading workout:', editWorkoutId, source);
                 
                 // Show loading state
                 loadingState.style.display = 'block';
                 emptyState.style.display = 'none';
-                
-                // Clear the session storage if it was used
-                if (sessionWorkoutId) {
-                    sessionStorage.removeItem('editWorkoutId');
-                }
                 
                 try {
                     // Load workout data first, then load into editor
@@ -693,22 +691,47 @@
                     }, 2000);
                 }
             } else {
-                // No workout ID provided - show selection prompt
-                console.log('📝 No workout ID provided, showing selection prompt...');
-                loadingState.style.display = 'none';
-                emptyState.style.display = 'none';
+                // Check if this is a "create new" request
+                const isNewWorkout = urlParams.get('new') === 'true';
                 
-                if (window.UnifiedOffcanvasFactory && window.UnifiedOffcanvasFactory.createWorkoutSelectionPrompt) {
-                    setTimeout(() => window.UnifiedOffcanvasFactory.createWorkoutSelectionPrompt(), 100);
+                if (isNewWorkout) {
+                    console.log('📝 Creating new workout from plus FAB...');
+                    loadingState.style.display = 'none';
+                    emptyState.style.display = 'none';
+                    
+                    // Create new workout directly
+                    if (window.createNewWorkoutInEditor) {
+                        window.createNewWorkoutInEditor();
+                    } else {
+                        // Function not loaded yet, wait and try again
+                        setTimeout(() => {
+                            if (window.createNewWorkoutInEditor) {
+                                window.createNewWorkoutInEditor();
+                            } else {
+                                console.error('❌ createNewWorkoutInEditor function not available');
+                                alert('Unable to create workout. Please try again.');
+                                window.location.href = 'workout-database.html';
+                            }
+                        }, 500);
+                    }
                 } else {
-                    // Graceful fallback
-                    emptyState.querySelector('h5').textContent = 'Create or open a workout';
-                    emptyState.querySelector('p').innerHTML = `
-                        <a href="workout-database.html" class="btn btn-sm btn-primary me-2 mb-1">Browse My Workouts</a>
-                        <a href="public-workouts.html" class="btn btn-sm btn-outline-primary me-2 mb-1">Browse Public Workouts</a>
-                        <button class="btn btn-sm btn-outline-secondary mb-1" onclick="window.createNewWorkoutInEditor && window.createNewWorkoutInEditor();">Create New Workout</button>
-                    `;
-                    emptyState.style.display = 'block';
+                    // No workout ID provided - show selection prompt
+                    console.log('📝 No workout ID provided, showing selection prompt...');
+                    loadingState.style.display = 'none';
+                    emptyState.style.display = 'none';
+                    
+                    if (window.UnifiedOffcanvasFactory && window.UnifiedOffcanvasFactory.createWorkoutSelectionPrompt) {
+                        setTimeout(() => window.UnifiedOffcanvasFactory.createWorkoutSelectionPrompt(), 100);
+                    } else {
+                        // Graceful fallback
+                        emptyState.querySelector('h5').textContent = 'Create or open a workout';
+                        emptyState.querySelector('p').innerHTML = `
+                            <a href="workout-database.html" class="btn btn-sm btn-primary me-2 mb-1">Browse My Workouts</a>
+                            <a href="public-workouts.html" class="btn btn-sm btn-outline-primary me-2 mb-1">Browse Public Workouts</a>
+                            <button class="btn btn-sm btn-outline-secondary mb-1" onclick="window.createNewWorkoutInEditor && window.createNewWorkoutInEditor();">Create New Workout</button>
+                        `;
+                        emptyState.style.display = 'block';
+                    }
                 }
             }
             
