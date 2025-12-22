@@ -230,6 +230,45 @@ async def serve_public_workouts():
             status_code=404
         )
 
+@app.get("/dashboard-demo", response_class=HTMLResponse)
+@app.get("/dashboard-demo.html", response_class=HTMLResponse)
+async def serve_dashboard_demo():
+    """Serve the Dashboard Demo page - Mobile-first user dashboard"""
+    try:
+        with open("frontend/dashboard-demo.html", "r", encoding="utf-8") as f:
+            return HTMLResponse(content=f.read())
+    except FileNotFoundError:
+        return HTMLResponse(
+            content="<h1>Dashboard Demo not found</h1><p>Please ensure frontend/dashboard-demo.html exists</p>",
+            status_code=404
+        )
+
+@app.get("/workout-sessions-demo", response_class=HTMLResponse)
+@app.get("/workout-sessions-demo.html", response_class=HTMLResponse)
+async def serve_workout_sessions_demo():
+    """Serve the Workout Sessions Demo page - Workout history viewer"""
+    try:
+        with open("frontend/workout-sessions-demo.html", "r", encoding="utf-8") as f:
+            return HTMLResponse(content=f.read())
+    except FileNotFoundError:
+        return HTMLResponse(
+            content="<h1>Workout Sessions Demo not found</h1><p>Please ensure frontend/workout-sessions-demo.html exists</p>",
+            status_code=404
+        )
+
+@app.get("/exercise-history-demo", response_class=HTMLResponse)
+@app.get("/exercise-history-demo.html", response_class=HTMLResponse)
+async def serve_exercise_history_demo():
+    """Serve the Exercise History Demo page - Side-by-side workout comparison"""
+    try:
+        with open("frontend/exercise-history-demo.html", "r", encoding="utf-8") as f:
+            return HTMLResponse(content=f.read())
+    except FileNotFoundError:
+        return HTMLResponse(
+            content="<h1>Exercise History Demo not found</h1><p>Please ensure frontend/exercise-history-demo.html exists</p>",
+            status_code=404
+        )
+
 
 if __name__ == "__main__":
     import uvicorn
