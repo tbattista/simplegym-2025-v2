@@ -79,8 +79,12 @@ class ExerciseCardRenderer {
             <div class="card exercise-card ${bonusClass} ${isSkipped ? 'skipped' : ''} ${isCompleted ? 'completed' : ''}" data-exercise-index="${index}" data-exercise-name="${this._escapeHtml(mainExercise)}">
                 <div class="card-header exercise-card-header" onclick="window.workoutModeController.toggleExerciseCard(${index})">
                     <!-- PHASE 2: Drag Handle -->
-                    <div class="exercise-drag-handle" title="Drag to reorder">
-                        <i class="bx bx-menu"></i>
+                    <div class="exercise-drag-handle"
+                         title="Drag to reorder"
+                         role="button"
+                         tabindex="0"
+                         aria-label="Drag handle to reorder ${this._escapeHtml(mainExercise)}">
+                        <i class="bx bx-menu" aria-hidden="true"></i>
                     </div>
                     
                     <div class="exercise-card-summary">

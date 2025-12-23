@@ -509,8 +509,10 @@ class WorkoutSessionService {
     }
     
     /**
-     * PHASE 2: Set custom exercise order (for reordering)
-     * @param {Array<string>} exerciseNames - Ordered array of exercise names
+     * PHASE 2: Set custom exercise order for reordering
+     * Stores the exercise order for drag-and-drop reordering before session starts
+     * @param {string[]} exerciseNames - Ordered array of exercise names
+     * @fires exerciseOrderUpdated - Notifies listeners when order changes
      */
     setExerciseOrder(exerciseNames) {
         console.log('📋 Setting custom exercise order:', exerciseNames);
@@ -519,24 +521,28 @@ class WorkoutSessionService {
     }
     
     /**
-     * PHASE 2: Get custom exercise order
-     * @returns {Array<string>} Ordered array of exercise names
+     * PHASE 2: Get current exercise order
+     * Returns the custom exercise order if set, or empty array
+     * @returns {string[]} Array of exercise names in custom order
      */
     getExerciseOrder() {
         return this.preSessionOrder;
     }
     
     /**
-     * PHASE 2: Clear custom exercise order
+     * PHASE 2: Clear exercise order
+     * Resets the custom order back to empty (template order will be used)
+     * @fires exerciseOrderCleared - Notifies listeners when order is cleared
      */
     clearExerciseOrder() {
         this.preSessionOrder = [];
         console.log('🧹 Custom exercise order cleared');
+        this.notifyListeners('exerciseOrderCleared', {});
     }
     
     /**
-     * PHASE 2: Check if custom order exists
-     * @returns {boolean} True if custom order is set
+     * PHASE 2: Check if custom exercise order is set
+     * @returns {boolean} True if exercises have been reordered from template order
      */
     hasCustomOrder() {
         return this.preSessionOrder.length > 0;

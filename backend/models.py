@@ -876,6 +876,16 @@ class WorkoutSession(BaseModel):
         description="Custom order of exercises (list of exercise names). If present, overrides template order."
     )
     
+    @field_validator('exercise_order', mode='before')
+    @classmethod
+    def validate_exercise_order_unique(cls, v):
+        """Ensure exercise order contains unique exercise names."""
+        if v is None:
+            return v
+        if len(v) != len(set(v)):
+            raise ValueError("Exercise order must contain unique exercise names")
+        return v
+    
     # Status
     status: str = Field(
         default="in_progress",
@@ -965,6 +975,16 @@ class CompleteSessionRequest(BaseModel):
         None,
         description="Custom order of exercises (list of exercise names). Saves user's preferred exercise sequence."
     )
+    
+    @field_validator('exercise_order', mode='before')
+    @classmethod
+    def validate_exercise_order_unique(cls, v):
+        """Ensure exercise order contains unique exercise names."""
+        if v is None:
+            return v
+        if len(v) != len(set(v)):
+            raise ValueError("Exercise order must contain unique exercise names")
+        return v
 
 # Response Models for Workout Sessions
 
