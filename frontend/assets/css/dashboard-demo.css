@@ -672,6 +672,36 @@
 }
 
 /* ============================================
+   PROGRESS STAT BADGES (Flat Design)
+   ============================================ */
+
+.progress-stat-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+  padding: 0;
+  background: transparent;
+}
+
+.progress-stat-badge i {
+  font-size: 1.25rem;
+}
+
+.progress-stat-badge.improved {
+  color: #28a745;
+}
+
+.progress-stat-badge.same {
+  color: var(--bs-secondary);
+}
+
+.progress-stat-badge.decreased {
+  color: #dc3545;
+}
+
+/* ============================================
    EXERCISE HISTORY TABLE - SNEAT STYLE
    ============================================ */
 
@@ -733,83 +763,121 @@
   padding: 0.75rem 0.5rem;
 }
 
-/* Weight Display */
+/* Weight Display - Typography-first */
 .exercise-history-table .weight-display {
-  font-size: 1.125rem;
-  font-weight: 600;
+  font-size: 1.25rem;
+  font-weight: 700;
   line-height: 1.2;
+  color: var(--bs-body-color);
+}
+
+/* Progress state colors applied to text only */
+.exercise-history-table td.increased .weight-display {
+  color: #28a745;
+}
+
+.exercise-history-table td.decreased .weight-display {
+  color: #dc3545;
 }
 
 .exercise-history-table .delta {
   font-size: 0.6875rem;
-  font-weight: 600;
+  font-weight: 400;
   margin-top: 0.125rem;
+  color: var(--bs-secondary);
 }
 
-/* Progress State Colors */
+.exercise-history-table td.increased .delta {
+  color: #28a745;
+}
+
+.exercise-history-table td.decreased .delta {
+  color: #dc3545;
+}
+
+/* Progress State - NO cell backgrounds (clean design) */
 .exercise-history-table td.increased {
-  background-color: rgba(40, 167, 69, 0.08);
+  /* No background - color on text only */
 }
 
 .exercise-history-table td.decreased {
-  background-color: rgba(220, 53, 69, 0.08);
+  /* No background - color on text only */
 }
 
 .exercise-history-table td.same {
-  background-color: rgba(108, 117, 125, 0.05);
+  /* No background */
 }
 
 .exercise-history-table td.skipped {
-  background-color: rgba(255, 193, 7, 0.08);
+  /* No background */
+  color: var(--bs-secondary);
+  font-style: italic;
 }
 
 .exercise-history-table td.not-present {
-  background-color: rgba(108, 117, 125, 0.03);
+  /* No background */
+  color: var(--bs-gray-400);
 }
 
-/* Bonus Exercise Row Styling */
+/* Bonus Exercise Row Styling - Subtle indicator */
 .exercise-history-table .bonus-exercise-row {
-  border-left: 3px solid var(--bs-info);
+  /* No heavy left border */
 }
 
-.exercise-history-table .bonus-exercise-row .sticky-col {
-  border-left: 3px solid var(--bs-info);
-}
-
-/* Small badge for Added indicator */
-.badge-sm {
+/* Bonus indicator as text, not badge */
+.exercise-history-table .bonus-indicator {
   font-size: 0.625rem;
-  padding: 0.15rem 0.35rem;
-  vertical-align: middle;
+  color: var(--bs-info);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: inline-block;
+  margin-left: 0.5rem;
 }
 
 /* Session Header Styling */
 .exercise-history-table thead th {
   font-weight: 600;
-  font-size: 0.875rem;
-  border-bottom: 2px solid var(--bs-border-color);
+  font-size: 0.8125rem;
+  border-bottom: 1px solid var(--bs-border-color);
+  padding: 0.75rem 0.5rem;
 }
 
 .exercise-history-table thead th small {
   font-weight: 400;
   font-size: 0.6875rem;
+  display: block;
+  margin-top: 0.125rem;
 }
 
-/* Hover Effect */
+/* Clean row separators - dashed instead of solid */
+.exercise-history-table tbody tr {
+  border-bottom: 1px dashed var(--bs-gray-200);
+}
+
+.exercise-history-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+/* Remove hover background - keep clean */
 .exercise-history-table tbody tr:hover {
-  background-color: var(--bs-gray-50);
+  background-color: transparent;
 }
 
 .exercise-history-table tbody tr:hover .sticky-col {
-  background-color: var(--bs-gray-50);
+  background-color: var(--bs-card-bg);
+}
+
+[data-bs-theme="dark"] .exercise-history-table tbody tr {
+  border-bottom: 1px dashed var(--bs-gray-700);
 }
 
 [data-bs-theme="dark"] .exercise-history-table tbody tr:hover {
-  background-color: var(--bs-gray-800);
+  background-color: transparent;
 }
 
 [data-bs-theme="dark"] .exercise-history-table tbody tr:hover .sticky-col {
-  background-color: var(--bs-gray-800);
+  background-color: var(--bs-card-bg);
 }
 
 /* Responsive: Show 3 sessions on mobile, 5 on tablet+ */

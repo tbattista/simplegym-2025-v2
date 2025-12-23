@@ -237,6 +237,12 @@ function renderExerciseHistory() {
   const sessions = window.exerciseHistory.sessions;
   const workoutName = window.exerciseHistory.workoutName || 'Workout';
   
+  // Update the header text
+  const headerEl = document.getElementById('workoutNameHeader');
+  if (headerEl) {
+    headerEl.textContent = `${workoutName} - Progress History`;
+  }
+  
   if (exercises.length === 0) {
     container.innerHTML = `
       <div class="card">
@@ -261,16 +267,6 @@ function renderExerciseHistory() {
   
   container.innerHTML = `
     <div class="card">
-      <h5 class="card-header d-flex justify-content-between align-items-center">
-        <span>
-          <i class="bx bx-trending-up me-2"></i>
-          ${escapeHtml(workoutName)} - Progress History
-        </span>
-        <a href="dashboard-demo.html" class="btn btn-sm btn-outline-secondary">
-          <i class="bx bx-arrow-back"></i>
-        </a>
-      </h5>
-      
       ${renderProgressSummary(progressStats)}
       
       <div class="table-responsive exercise-history-table-wrapper">
@@ -319,22 +315,28 @@ function calculateProgressStats(exercises) {
  */
 function renderProgressSummary(stats) {
   return `
-    <div class="card-body pb-0">
-      <div class="row g-2 mb-3">
+    <div class="card-body pb-2 pt-3">
+      <div class="row g-2 mb-2">
         <div class="col-4 text-center">
-          <span class="badge bg-label-success fs-6">
-            <i class="bx bx-trending-up"></i> ${stats.increased} Improved
-          </span>
+          <div class="progress-stat-badge improved">
+            <i class="bx bx-trending-up"></i>
+            <span>${stats.increased}</span>
+          </div>
+          <small class="text-muted d-block mt-1" style="font-size: 0.6875rem;">Improved</small>
         </div>
         <div class="col-4 text-center">
-          <span class="badge bg-label-secondary fs-6">
-            <i class="bx bx-minus"></i> ${stats.same} Same
-          </span>
+          <div class="progress-stat-badge same">
+            <i class="bx bx-minus"></i>
+            <span>${stats.same}</span>
+          </div>
+          <small class="text-muted d-block mt-1" style="font-size: 0.6875rem;">Same</small>
         </div>
         <div class="col-4 text-center">
-          <span class="badge bg-label-danger fs-6">
-            <i class="bx bx-trending-down"></i> ${stats.decreased} Decreased
-          </span>
+          <div class="progress-stat-badge decreased">
+            <i class="bx bx-trending-down"></i>
+            <span>${stats.decreased}</span>
+          </div>
+          <small class="text-muted d-block mt-1" style="font-size: 0.6875rem;">Decreased</small>
         </div>
       </div>
     </div>
@@ -369,8 +371,8 @@ function renderTableRow(exercise, sessions) {
   return `
     <tr${rowClass}>
       <td class="sticky-col exercise-col">
-        <span class="fw-medium">${escapeHtml(exercise.name)}</span>
-        ${exercise.isBonus ? '<span class="badge bg-label-info badge-sm ms-1">Added</span>' : ''}
+        <div class="fw-medium">${escapeHtml(exercise.name)}</div>
+        ${exercise.isBonus ? '<div class="bonus-indicator">+ Added</div>' : ''}
       </td>
       ${sessions.map((session, index) => renderTableCell(exercise, index, sessions)).join('')}
     </tr>
@@ -396,7 +398,7 @@ function renderTableCell(exercise, sessionIndex, sessions) {
   if (sessionData.isSkipped) {
     return `
       <td class="session-col text-center skipped">
-        <span class="badge bg-label-warning">Skipped</span>
+        <span>Skipped</span>
       </td>
     `;
   }

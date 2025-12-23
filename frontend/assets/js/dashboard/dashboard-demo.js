@@ -163,7 +163,7 @@ function renderCompactHeader() {
       </div>
       
       <!-- Greeting -->
-      <h4 class="mb-3 greeting-text">${greeting}, ${escapeHtml(userName)}! 💪</h4>
+      <h4 class="mb-3 greeting-text">${greeting}, ${escapeHtml(userName)}!</h4>
       
       <!-- Quick Action Buttons (3 columns) -->
       <div class="quick-action-grid">

@@ -42,7 +42,8 @@ import {
     createFilterOffcanvas,
     createSkipExercise,
     createExerciseGroupEditor,
-    renderAlternateSlot
+    renderAlternateSlot,
+    createExerciseDetailsEditor
 } from './offcanvas-forms.js';
 
 /**
@@ -137,6 +138,10 @@ class UnifiedOffcanvasFactory {
     
     static renderAlternateSlot(slotKey, exerciseName) {
         return renderAlternateSlot(slotKey, exerciseName);
+    }
+    
+    static createExerciseDetailsEditor(data, onSave) {
+        return createExerciseDetailsEditor(data, onSave);
     }
     
     /* ============================================
@@ -251,7 +256,8 @@ export {
     createFilterOffcanvas,
     createSkipExercise,
     createExerciseGroupEditor,
-    renderAlternateSlot
+    renderAlternateSlot,
+    createExerciseDetailsEditor
 };
 
 console.log('📦 UnifiedOffcanvasFactory v3.0.0 (modular) loaded');

@@ -170,6 +170,7 @@ async def complete_session(
     2. Calculates workout duration
     3. Updates exercise history for all exercises
     4. Records personal records if applicable
+    5. Saves custom exercise order (if provided) for future sessions
     """
     try:
         user_id = extract_user_id(current_user)
@@ -327,10 +328,30 @@ async def get_workout_history(
             workout_id
         )
         
+        # PHASE 3: Get last session's custom exercise order
+        last_exercise_order = None
+        try:
+            sessions = await firestore_data_service.get_user_sessions(
+                user_id,
+                workout_id=workout_id,
+                status="completed",
+                limit=1
+            )
+            
+            if sessions and len(sessions) > 0:
+                last_session = sessions[0]
+                if hasattr(last_session, 'exercise_order') and last_session.exercise_order:
+                    last_exercise_order = last_session.exercise_order
+                    logger.info(f"Found custom exercise order from last session: {len(last_exercise_order)} exercises")
+        except Exception as order_error:
+            logger.warning(f"Could not retrieve last exercise order: {str(order_error)}")
+            # Non-fatal - continue without order
+        
         return ExerciseHistoryResponse(
             workout_id=workout_id,
             workout_name=workout_name,
-            exercises=histories
+            exercises=histories,
+            last_exercise_order=last_exercise_order
         )
         
     except HTTPException:

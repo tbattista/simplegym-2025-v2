@@ -26,17 +26,21 @@ class ExerciseCardRenderer {
         const mainExercise = exercises.a || 'Unknown Exercise';
         const alternates = this._getAlternates(exercises);
         
-        const sets = group.sets || '3';
-        const reps = group.reps || '8-12';
-        const rest = group.rest || '60s';
-        const notes = group.notes || '';
+        // PHASE 1: Check data in priority order: Session > Pre-Session Edits > Template
+        // This ensures edited values are displayed correctly before and during workout
+        const isSessionActive = this.sessionService.isSessionActive();
+        const exerciseData = this.sessionService.getExerciseWeight(mainExercise);
+        const preSessionEdit = !isSessionActive ? this.sessionService.getPreSessionEdits(mainExercise) : null;
+        
+        // Priority: Active Session > Pre-Session Edit > Template
+        const sets = exerciseData?.target_sets || preSessionEdit?.target_sets || group.sets || '3';
+        const reps = exerciseData?.target_reps || preSessionEdit?.target_reps || group.reps || '8-12';
+        const rest = exerciseData?.rest || preSessionEdit?.rest || group.rest || '60s';
+        const notes = exerciseData?.notes || group.notes || '';
         
         const restSeconds = this._parseRestTime(rest);
         const timerId = `timer-${index}`;
         const bonusClass = isBonus ? 'bonus-exercise' : '';
-        
-        // Check if session is active
-        const isSessionActive = this.sessionService.isSessionActive();
         
         // Get exercise history
         const history = this.sessionService.getExerciseHistory(mainExercise);
@@ -55,6 +59,9 @@ class ExerciseCardRenderer {
         const isSkipped = weightData?.is_skipped || false;
         const skipReason = weightData?.skip_reason || '';
         
+        // PHASE 3: Check if exercise is completed
+        const isCompleted = weightData?.is_completed || false;
+        
         // Determine current weight with proper fallback
         const currentWeight = weightData?.weight || templateWeight || lastWeight || '';
         const currentUnit = weightData?.weight_unit ||
@@ -69,11 +76,17 @@ class ExerciseCardRenderer {
         const plateBreakdown = this._calculatePlateBreakdown(currentWeight, currentUnit);
         
         return `
-            <div class="card exercise-card ${bonusClass} ${isSkipped ? 'skipped' : ''}" data-exercise-index="${index}" data-exercise-name="${this._escapeHtml(mainExercise)}">
+            <div class="card exercise-card ${bonusClass} ${isSkipped ? 'skipped' : ''} ${isCompleted ? 'completed' : ''}" data-exercise-index="${index}" data-exercise-name="${this._escapeHtml(mainExercise)}">
                 <div class="card-header exercise-card-header" onclick="window.workoutModeController.toggleExerciseCard(${index})">
+                    <!-- PHASE 2: Drag Handle -->
+                    <div class="exercise-drag-handle" title="Drag to reorder">
+                        <i class="bx bx-menu"></i>
+                    </div>
+                    
                     <div class="exercise-card-summary">
                         <!-- MORPH: Exercise Name -->
                         <h6 class="mb-0 morph-title" data-morph-id="title-${index}">
+                            ${isCompleted ? '<i class="bx bx-check-circle text-success me-1"></i>' : ''}
                             ${isSkipped ? '<i class="bx bx-x-circle text-warning me-1"></i>' : ''}
                             ${this._escapeHtml(mainExercise)}
                         </h6>
@@ -169,6 +182,9 @@ class ExerciseCardRenderer {
                             <span>${this._escapeHtml(notes)}</span>
                         </div>
                     ` : ''}
+                    
+                    <!-- Card Action Buttons (Complete/Skip/Edit) -->
+                    ${this._renderCardActionButtons(mainExercise, index, isSkipped, isCompleted, isSessionActive)}
                 </div>
             </div>
         `;
@@ -299,6 +315,67 @@ class ExerciseCardRenderer {
         }
         
         return `45lb bar + (${plateParts.join(' + ')}) each side`;
+    }
+
+    /**
+     * Render card action buttons (Complete/Skip/Edit)
+     * PHASE 1: Edit button now shows BEFORE session starts for pre-session editing
+     * @private
+     */
+    _renderCardActionButtons(exerciseName, index, isSkipped, isCompleted, isSessionActive) {
+        // PHASE 1: Always show Edit button, even before session starts
+        // Before session: Show only Edit button
+        // During session: Show Complete, Skip, and Edit buttons
+        
+        if (!isSessionActive) {
+            // PRE-SESSION: Only show Edit button
+            return `
+                <div class="card-action-buttons mt-3 pt-3 border-top d-flex gap-2">
+                    <button class="btn btn-sm btn-outline-primary flex-fill"
+                            onclick="window.workoutModeController.handleEditExercise('${this._escapeHtml(exerciseName)}', ${index}); event.stopPropagation();"
+                            title="Edit exercise details before starting workout">
+                        <i class="bx bx-edit me-1"></i>Edit
+                    </button>
+                </div>
+            `;
+        }
+        
+        // ACTIVE SESSION: Show all action buttons
+        return `
+            <div class="card-action-buttons mt-3 pt-3 border-top d-flex gap-2">
+                ${isSkipped ? `
+                    <button class="btn btn-sm btn-warning flex-fill"
+                            onclick="window.workoutModeController.handleUnskipExercise('${this._escapeHtml(exerciseName)}', ${index}); event.stopPropagation();"
+                            title="Resume this exercise">
+                        <i class="bx bx-undo me-1"></i>Unskip
+                    </button>
+                ` : `
+                    ${isCompleted ? `
+                        <button class="btn btn-sm btn-success flex-fill"
+                                onclick="window.workoutModeController.handleUncompleteExercise('${this._escapeHtml(exerciseName)}', ${index}); event.stopPropagation();"
+                                title="Mark as not completed">
+                            <i class="bx bx-check-circle me-1"></i>Completed
+                        </button>
+                    ` : `
+                        <button class="btn btn-sm btn-outline-success flex-fill"
+                                onclick="window.workoutModeController.handleCompleteExercise('${this._escapeHtml(exerciseName)}', ${index}); event.stopPropagation();"
+                                title="Mark exercise as complete">
+                            <i class="bx bx-check me-1"></i>Complete
+                        </button>
+                    `}
+                    <button class="btn btn-sm btn-outline-warning flex-fill"
+                            onclick="window.workoutModeController.handleSkipExercise('${this._escapeHtml(exerciseName)}', ${index}); event.stopPropagation();"
+                            title="Skip this exercise">
+                        <i class="bx bx-skip-next me-1"></i>Skip
+                    </button>
+                `}
+                <button class="btn btn-sm btn-outline-primary flex-fill"
+                        onclick="window.workoutModeController.handleEditExercise('${this._escapeHtml(exerciseName)}', ${index}); event.stopPropagation();"
+                        title="Edit exercise details">
+                    <i class="bx bx-edit me-1"></i>Edit
+                </button>
+            </div>
+        `;
     }
 
     /**

@@ -315,6 +315,7 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
     
     /**
      * Render workout cards (now uses ExerciseCardRenderer)
+     * PHASE 2: Now respects custom exercise order
      */
     renderWorkout() {
         const container = document.getElementById('exerciseCardsContainer');
@@ -329,30 +330,70 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
         const bonusCount = bonusExercises?.length || 0;
         const totalCards = regularCount + bonusCount;
         
-        // Render regular exercise groups
+        // PHASE 2: Build combined exercise list
+        const allExercises = [];
+        
+        // Add regular exercises
         if (this.currentWorkout.exercise_groups && this.currentWorkout.exercise_groups.length > 0) {
             this.currentWorkout.exercise_groups.forEach((group) => {
-                html += this.cardRenderer.renderCard(group, exerciseIndex, false, totalCards);
-                exerciseIndex++;
+                allExercises.push({
+                    type: 'regular',
+                    data: group,
+                    name: group.exercises?.a
+                });
             });
         }
         
-        // Render bonus exercises from SESSION or PRE-WORKOUT list
+        // Add bonus exercises
         if (bonusExercises && bonusExercises.length > 0) {
             bonusExercises.forEach((bonus) => {
-                const bonusGroup = {
-                    exercises: { a: bonus.name },
-                    sets: bonus.sets,
-                    reps: bonus.reps,
-                    rest: bonus.rest || '60s',
-                    default_weight: bonus.weight,
-                    default_weight_unit: bonus.weight_unit || 'lbs',
-                    notes: bonus.notes
-                };
-                html += this.cardRenderer.renderCard(bonusGroup, exerciseIndex, true, totalCards);
-                exerciseIndex++;
+                allExercises.push({
+                    type: 'bonus',
+                    data: {
+                        exercises: { a: bonus.name },
+                        sets: bonus.sets,
+                        reps: bonus.reps,
+                        rest: bonus.rest || '60s',
+                        default_weight: bonus.weight,
+                        default_weight_unit: bonus.weight_unit || 'lbs',
+                        notes: bonus.notes
+                    },
+                    name: bonus.name
+                });
             });
         }
+        
+        // PHASE 2: Apply custom order if exists
+        const customOrder = this.sessionService.getExerciseOrder();
+        if (customOrder.length > 0) {
+            console.log('📋 Applying custom exercise order:', customOrder);
+            
+            // Reorder exercises based on custom order
+            const orderedExercises = [];
+            customOrder.forEach(name => {
+                const exercise = allExercises.find(ex => ex.name === name);
+                if (exercise) {
+                    orderedExercises.push(exercise);
+                }
+            });
+            
+            // Add any exercises not in custom order (shouldn't happen, but safety)
+            allExercises.forEach(ex => {
+                if (!customOrder.includes(ex.name)) {
+                    orderedExercises.push(ex);
+                }
+            });
+            
+            // Replace with ordered list
+            allExercises.splice(0, allExercises.length, ...orderedExercises);
+        }
+        
+        // Render exercises in order
+        allExercises.forEach((exercise) => {
+            const isBonus = exercise.type === 'bonus';
+            html += this.cardRenderer.renderCard(exercise.data, exerciseIndex, isBonus, totalCards);
+            exerciseIndex++;
+        });
         
         container.innerHTML = html;
         
@@ -361,6 +402,9 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
         
         // Initialize individual timers (will be removed later)
         this.initializeTimers();
+        
+        // PHASE 2: Initialize drag-and-drop reordering
+        this.initializeSortable();
     }
     
     /**
@@ -423,6 +467,81 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
             this.globalRestTimer.syncWithCard(exerciseIndex, restSeconds);
             console.log(`🔄 Global timer synced with exercise ${exerciseIndex}: ${restSeconds}s`);
         }
+    }
+    
+    /**
+     * PHASE 2: Initialize drag-and-drop sorting with SortableJS
+     */
+    initializeSortable() {
+        const container = document.getElementById('exerciseCardsContainer');
+        if (!container || typeof Sortable === 'undefined') {
+            console.warn('⚠️ Sortable not initialized - container or library missing');
+            return;
+        }
+        
+        this.sortable = Sortable.create(container, {
+            animation: 150,
+            handle: '.exercise-drag-handle',
+            ghostClass: 'sortable-ghost',
+            chosenClass: 'sortable-chosen',
+            dragClass: 'sortable-drag',
+            fallbackClass: 'sortable-fallback',
+            forceFallback: false,
+            scroll: true,
+            scrollSensitivity: 60,
+            scrollSpeed: 10,
+            bubbleScroll: true,
+            
+            // Only allow dragging when not in active session (for now)
+            // Later we can enable during session too
+            filter: function(evt, target) {
+                // Disable dragging when session is active (for Phase 2)
+                // We'll enable it in future when we add session-time reordering
+                return window.workoutModeController.sessionService.isSessionActive();
+            },
+            
+            onStart: (evt) => {
+                console.log('🎯 Drag started:', evt.oldIndex);
+                container.classList.add('sortable-container-dragging');
+            },
+            
+            onEnd: (evt) => {
+                console.log('🎯 Drag ended:', evt.oldIndex, '→', evt.newIndex);
+                container.classList.remove('sortable-container-dragging');
+                
+                // If order changed, update the session service
+                if (evt.oldIndex !== evt.newIndex) {
+                    this.handleExerciseReorder(evt.oldIndex, evt.newIndex);
+                }
+            }
+        });
+        
+        console.log('✅ SortableJS initialized for exercise reordering');
+    }
+    
+    /**
+     * PHASE 2: Handle exercise reorder event
+     * @param {number} oldIndex - Original index
+     * @param {number} newIndex - New index
+     */
+    handleExerciseReorder(oldIndex, newIndex) {
+        console.log(`📋 Reordering exercise from ${oldIndex} to ${newIndex}`);
+        
+        // Get current exercise order from the DOM
+        const cards = document.querySelectorAll('.exercise-card');
+        const exerciseNames = Array.from(cards).map(card =>
+            card.getAttribute('data-exercise-name')
+        );
+        
+        // Save the new order
+        this.sessionService.setExerciseOrder(exerciseNames);
+        
+        // Show feedback
+        if (window.showAlert) {
+            window.showAlert('Exercise order updated - changes will apply when you start the workout', 'success');
+        }
+        
+        console.log('✅ New exercise order saved:', exerciseNames);
     }
     
     /**
@@ -548,13 +667,18 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
                 const mainExercise = group.exercises?.a;
                 if (!mainExercise) return;
                 
-                const weightData = this.sessionService.getExerciseWeight(mainExercise);
+                const exerciseData = this.sessionService.getExerciseWeight(mainExercise);
                 const history = this.sessionService.getExerciseHistory(mainExercise);
                 
                 // PHASE 1: Use nullish coalescing to preserve template defaults
                 // Support both numeric and text weights (Body, BW+25, 4x45, etc.)
-                const finalWeight = weightData?.weight ?? group.default_weight ?? null;
-                const finalUnit = weightData?.weight_unit || group.default_weight_unit || 'lbs';
+                const finalWeight = exerciseData?.weight ?? group.default_weight ?? null;
+                const finalUnit = exerciseData?.weight_unit || group.default_weight_unit || 'lbs';
+                
+                // 🔧 FIX: Read sets/reps/rest from session first, then fall back to template
+                const finalSets = exerciseData?.target_sets || group.sets || '3';
+                const finalReps = exerciseData?.target_reps || group.reps || '8-12';
+                const finalRest = exerciseData?.rest || group.rest || '60s';
                 
                 // PHASE 3: Calculate weight change properly
                 const previousWeight = history?.last_weight || null;
@@ -567,18 +691,19 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
                     exercise_name: mainExercise,
                     exercise_id: null,
                     group_id: group.group_id || `group-${groupIndex}`,
-                    sets_completed: parseInt(group.sets) || 0,
-                    target_sets: group.sets || '3',
-                    target_reps: group.reps || '8-12',
+                    sets_completed: parseInt(finalSets) || 0,
+                    target_sets: finalSets,
+                    target_reps: finalReps,
+                    rest: finalRest,  // 🔧 FIX: Include rest in session data
                     weight: finalWeight,  // Can be string or null
                     weight_unit: finalUnit,
                     previous_weight: previousWeight,
                     weight_change: weightChange,  // PHASE 3: Calculated from current - previous
                     order_index: orderIndex++,
                     is_bonus: false,
-                    is_modified: weightData?.is_modified || false,  // PHASE 1
-                    is_skipped: weightData?.is_skipped || false,    // PHASE 2
-                    skip_reason: weightData?.skip_reason || null    // PHASE 2
+                    is_modified: exerciseData?.is_modified || false,  // PHASE 1
+                    is_skipped: exerciseData?.is_skipped || false,    // PHASE 2
+                    skip_reason: exerciseData?.skip_reason || null    // PHASE 2
                 });
             });
         }
@@ -597,12 +722,17 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
                 const exerciseName = bonus.name || bonus.exercise_name;
                 console.log(`  ${bonusIndex + 1}. ${exerciseName}`);
                 
-                const weightData = this.sessionService.getExerciseWeight(exerciseName);
+                const exerciseData = this.sessionService.getExerciseWeight(exerciseName);
                 const history = this.sessionService.getExerciseHistory(exerciseName);
                 
                 // PHASE 1: Use nullish coalescing for bonus exercises too
                 // Support both numeric and text weights
-                const finalWeight = weightData?.weight ?? bonus.weight ?? null;
+                const finalWeight = exerciseData?.weight ?? bonus.weight ?? null;
+                
+                // 🔧 FIX: Read sets/reps/rest from session first, then fall back to bonus template
+                const finalSets = exerciseData?.target_sets || bonus.sets || bonus.target_sets || '3';
+                const finalReps = exerciseData?.target_reps || bonus.reps || bonus.target_reps || '12';
+                const finalRest = exerciseData?.rest || bonus.rest || '60s';
                 
                 // PHASE 3: Calculate weight change properly
                 const previousWeight = history?.last_weight || null;
@@ -615,18 +745,19 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
                     exercise_name: exerciseName,
                     exercise_id: null,
                     group_id: `bonus-${bonusIndex}`,
-                    sets_completed: parseInt(bonus.sets || bonus.target_sets) || 0,
-                    target_sets: bonus.sets || bonus.target_sets || '3',
-                    target_reps: bonus.reps || bonus.target_reps || '12',
+                    sets_completed: parseInt(finalSets) || 0,
+                    target_sets: finalSets,
+                    target_reps: finalReps,
+                    rest: finalRest,  // 🔧 FIX: Include rest in session data
                     weight: finalWeight,  // Can be string or null
-                    weight_unit: weightData?.weight_unit || bonus.weight_unit || 'lbs',
+                    weight_unit: exerciseData?.weight_unit || bonus.weight_unit || 'lbs',
                     previous_weight: previousWeight,
                     weight_change: weightChange,  // PHASE 3: Calculated from current - previous
                     order_index: orderIndex++,
                     is_bonus: true,
-                    is_modified: weightData?.is_modified || false,
-                    is_skipped: weightData?.is_skipped || false,    // PHASE 2
-                    skip_reason: weightData?.skip_reason || null    // PHASE 2
+                    is_modified: exerciseData?.is_modified || false,
+                    is_skipped: exerciseData?.is_skipped || false,    // PHASE 2
+                    skip_reason: exerciseData?.skip_reason || null    // PHASE 2
                 };
                 
                 exercisesPerformed.push(bonusExerciseData);
@@ -1439,15 +1570,30 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
         if (!card) return;
         
         const isExpanded = card.classList.contains('expanded');
+        const exerciseName = card.getAttribute('data-exercise-name');
         
         if (isExpanded) {
             this.collapseCard(card);
+            // Clear auto-complete timer when collapsing
+            if (exerciseName && this.sessionService.isSessionActive()) {
+                this.sessionService.clearAutoCompleteTimer(exerciseName);
+            }
         } else {
-            // Collapse all other cards
+            // Collapse all other cards and clear their timers
             document.querySelectorAll('.exercise-card.expanded').forEach(otherCard => {
+                const otherName = otherCard.getAttribute('data-exercise-name');
                 this.collapseCard(otherCard);
+                // Clear timer for collapsed cards
+                if (otherName && this.sessionService.isSessionActive()) {
+                    this.sessionService.clearAutoCompleteTimer(otherName);
+                }
             });
             this.expandCard(card);
+            
+            // Start auto-complete timer when expanding (only during active session)
+            if (exerciseName && this.sessionService.isSessionActive()) {
+                this.sessionService.startAutoCompleteTimer(exerciseName, 10); // 10 minutes
+            }
             
             // Sync global timer with newly expanded card
             this.syncGlobalTimerWithExpandedCard();
@@ -1597,6 +1743,169 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
                     await this.autoSave(null);
                 } catch (error) {
                     console.error('❌ Failed to auto-save after unskip:', error);
+                }
+            }
+        );
+    }
+    
+    /**
+     * Handle editing an exercise's details (sets, reps, rest, weight)
+     * PHASE 1: Now works BEFORE and DURING workout session
+     * @param {string} exerciseName - Exercise name
+     * @param {number} index - Exercise index
+     */
+    handleEditExercise(exerciseName, index) {
+        // PHASE 1: Get current exercise data from appropriate source
+        const currentData = this._getCurrentExerciseData(exerciseName, index);
+        
+        console.log('✏️ Opening exercise editor for:', exerciseName, currentData);
+        
+        const isSessionActive = this.sessionService.isSessionActive();
+        
+        // Show edit offcanvas
+        window.UnifiedOffcanvasFactory.createExerciseDetailsEditor(
+            currentData,
+            async (updatedData) => {
+                console.log('💾 Saving updated exercise details:', updatedData);
+                
+                if (isSessionActive) {
+                    // ACTIVE SESSION: Save to session (existing behavior)
+                    this.sessionService.updateExerciseDetails(exerciseName, updatedData);
+                    
+                    // Auto-save to server
+                    try {
+                        await this.autoSave(null);
+                        if (window.showAlert) {
+                            window.showAlert(`${exerciseName} updated`, 'success');
+                        }
+                    } catch (error) {
+                        console.error('❌ Failed to save exercise updates:', error);
+                        if (window.showAlert) {
+                            window.showAlert('Failed to save changes. Please try again.', 'danger');
+                        }
+                    }
+                } else {
+                    // PRE-SESSION: Save to pre-session edits (new behavior)
+                    this.sessionService.updatePreSessionExercise(exerciseName, updatedData);
+                    
+                    if (window.showAlert) {
+                        window.showAlert(`${exerciseName} updated - changes will apply when you start the workout`, 'success');
+                    }
+                }
+                
+                // Re-render to show updated values
+                this.renderWorkout();
+            }
+        );
+    }
+    
+    /**
+     * PHASE 1: Get current exercise data from appropriate source
+     * Priority: Active Session > Pre-Session Edits > Template
+     * @param {string} exerciseName - Exercise name
+     * @param {number} index - Exercise index
+     * @returns {Object} Current exercise data
+     * @private
+     */
+    _getCurrentExerciseData(exerciseName, index) {
+        const exerciseGroup = this.getExerciseGroupByIndex(index);
+        
+        // Check if session is active
+        if (this.sessionService.isSessionActive()) {
+            // ACTIVE SESSION: Get from session data
+            const exerciseData = this.sessionService.getExerciseWeight(exerciseName);
+            
+            return {
+                exerciseName,
+                sets: exerciseData?.target_sets || exerciseGroup?.sets || '3',
+                reps: exerciseData?.target_reps || exerciseGroup?.reps || '8-12',
+                rest: exerciseData?.rest || exerciseGroup?.rest || '60s',
+                weight: exerciseData?.weight || exerciseGroup?.default_weight || '',
+                weightUnit: exerciseData?.weight_unit || exerciseGroup?.default_weight_unit || 'lbs'
+            };
+        } else {
+            // PRE-SESSION: Check pre-session edits first, then template
+            const preSessionEdit = this.sessionService.getPreSessionEdits(exerciseName);
+            
+            return {
+                exerciseName,
+                sets: preSessionEdit?.target_sets || exerciseGroup?.sets || '3',
+                reps: preSessionEdit?.target_reps || exerciseGroup?.reps || '8-12',
+                rest: preSessionEdit?.rest || exerciseGroup?.rest || '60s',
+                weight: preSessionEdit?.weight || exerciseGroup?.default_weight || '',
+                weightUnit: preSessionEdit?.weight_unit || exerciseGroup?.default_weight_unit || 'lbs'
+            };
+        }
+    }
+    
+    /**
+     * Handle completing an exercise
+     * @param {string} exerciseName - Exercise name
+     * @param {number} index - Exercise index
+     */
+    handleCompleteExercise(exerciseName, index) {
+        if (!this.sessionService.isSessionActive()) {
+            console.warn('⚠️ Cannot complete exercise - no active session');
+            return;
+        }
+        
+        // Clear auto-complete timer since user manually completed
+        this.sessionService.clearAutoCompleteTimer(exerciseName);
+        
+        // Mark as completed
+        this.sessionService.completeExercise(exerciseName);
+        
+        // Re-render to show completed state
+        this.renderWorkout();
+        
+        // Show success message
+        if (window.showAlert) {
+            window.showAlert(`${exerciseName} completed! 💪`, 'success');
+        }
+        
+        // Auto-save session
+        this.autoSave(null).catch(error => {
+            console.error('❌ Failed to auto-save after completion:', error);
+        });
+        
+        // Auto-advance to next exercise after short delay
+        setTimeout(() => {
+            this.goToNextExercise(index);
+        }, 500);
+    }
+    
+    /**
+     * Handle uncompleting an exercise
+     * @param {string} exerciseName - Exercise name
+     * @param {number} index - Exercise index
+     */
+    handleUncompleteExercise(exerciseName, index) {
+        if (!this.sessionService.isSessionActive()) {
+            console.warn('⚠️ Cannot uncomplete exercise - no active session');
+            return;
+        }
+        
+        const modalManager = this.getModalManager();
+        modalManager.confirm(
+            'Uncomplete Exercise',
+            `Mark <strong>${this.escapeHtml(exerciseName)}</strong> as not completed?`,
+            async () => {
+                // Mark as not completed
+                this.sessionService.uncompleteExercise(exerciseName);
+                
+                // Re-render to remove completed state
+                this.renderWorkout();
+                
+                // Show message
+                if (window.showAlert) {
+                    window.showAlert(`${exerciseName} marked as not completed`, 'info');
+                }
+                
+                // Auto-save session
+                try {
+                    await this.autoSave(null);
+                } catch (error) {
+                    console.error('❌ Failed to auto-save after uncomplete:', error);
                 }
             }
         );

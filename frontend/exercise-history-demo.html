@@ -82,21 +82,36 @@
             <!-- Content -->
             <div class="container-xxl flex-grow-1 container-p-y">
               
-              <!-- Loading State -->
-              <div id="historyLoading" style="display: none;">
-                <div class="text-center py-5">
-                  <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Loading...</span>
-                  </div>
-                  <p class="text-muted mt-3">Loading exercise history...</p>
+              <!-- Exercise History Section -->
+              <div class="mb-3">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <h6 class="mb-0">
+                    <i class="bx bx-trending-up me-2"></i>
+                    <span id="workoutNameHeader">Push Day A - Progress History</span>
+                  </h6>
+                  <a href="dashboard-demo.html" class="btn btn-sm btn-outline-secondary">
+                    <i class="bx bx-arrow-back me-1"></i>
+                    Back
+                  </a>
                 </div>
-              </div>
+                <p class="text-muted small mb-3">Track your performance and progression across workout sessions</p>
+                
+                <!-- Loading State -->
+                <div id="historyLoading" style="display: none;">
+                  <div class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                      <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="text-muted mt-3">Loading exercise history...</p>
+                  </div>
+                </div>
 
-              <!-- History Content -->
-              <div id="historyContent">
-                <!-- Exercise History Table Card will be rendered by JS -->
+                <!-- History Content -->
+                <div id="historyContent">
+                  <!-- Exercise History Table Card will be rendered by JS -->
+                </div>
+                <!-- / History Content -->
               </div>
-              <!-- / History Content -->
 
             </div>
             <!-- / Content -->

@@ -12,6 +12,12 @@ class WorkoutSessionService {
         this.autoSaveTimer = null;
         this.listeners = new Set();
         this.preWorkoutBonusExercises = []; // Store bonus exercises before session starts
+        this.exerciseStartTimes = {}; // Track when each exercise was expanded
+        this.autoCompleteTimers = {}; // Store auto-complete timers
+        
+        // PHASE 1: Pre-session editing storage
+        this.preSessionEdits = {}; // Store exercise edits before session starts
+        this.preSessionOrder = []; // Store custom exercise order before session starts
         
         console.log('📦 Workout Session Service initialized');
     }
@@ -69,6 +75,12 @@ class WorkoutSessionService {
             if (workoutData) {
                 this.currentSession.exercises = this._initializeExercisesFromTemplate(workoutData);
                 console.log('✅ Pre-populated', Object.keys(this.currentSession.exercises).length, 'exercises from template');
+            }
+            
+            // PHASE 1: Apply pre-session edits to new session
+            if (Object.keys(this.preSessionEdits).length > 0) {
+                console.log('🔄 Applying pre-session edits to new session...');
+                this._applyPreSessionEdits();
             }
             
             // 🔧 FIX: Transfer pre-workout bonuses IMMEDIATELY after session creation
@@ -170,17 +182,26 @@ class WorkoutSessionService {
             // Use centralized API config
             const url = window.config.api.getUrl(`/api/v3/workout-sessions/${this.currentSession.id}/complete`);
             
+            // Prepare request body
+            const requestBody = {
+                completed_at: new Date().toISOString(),
+                exercises_performed: exercisesPerformed,
+                notes: ''
+            };
+            
+            // PHASE 3: Include custom exercise order if present
+            if (this.preSessionOrder && this.preSessionOrder.length > 0) {
+                requestBody.exercise_order = this.preSessionOrder;
+                console.log('📋 Including custom exercise order in completion:', this.preSessionOrder.length, 'exercises');
+            }
+            
             const response = await fetch(url, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({
-                    completed_at: new Date().toISOString(),
-                    exercises_performed: exercisesPerformed,
-                    notes: ''
-                })
+                body: JSON.stringify(requestBody)
             });
             
             if (!response.ok) {
@@ -295,6 +316,15 @@ class WorkoutSessionService {
             this.exerciseHistory = historyData.exercises || {};
             
             console.log('✅ Exercise history loaded:', Object.keys(this.exerciseHistory).length, 'exercises');
+            
+            // PHASE 3: Check for last session's custom exercise order
+            if (historyData.last_exercise_order && Array.isArray(historyData.last_exercise_order)) {
+                console.log('📋 Last session had custom order:', historyData.last_exercise_order.length, 'exercises');
+                // Store as pre-session order so it will be applied when workout loads
+                this.setExerciseOrder(historyData.last_exercise_order);
+                console.log('✅ Custom order from last session applied');
+            }
+            
             this.notifyListeners('historyLoaded', this.exerciseHistory);
             
             return this.exerciseHistory;
@@ -350,6 +380,169 @@ class WorkoutSessionService {
     }
     
     /**
+     * Update exercise details (sets, reps, rest, weight) in current session
+     * @param {string} exerciseName - Exercise name
+     * @param {Object} details - Updated details
+     * @param {string} details.sets - Target sets
+     * @param {string} details.reps - Target reps
+     * @param {string} details.rest - Rest time
+     * @param {string} details.weight - Weight value
+     * @param {string} details.weightUnit - Weight unit
+     */
+    updateExerciseDetails(exerciseName, details) {
+        if (!this.currentSession) {
+            console.warn('⚠️ No active session to update');
+            return;
+        }
+        
+        if (!this.currentSession.exercises) {
+            this.currentSession.exercises = {};
+        }
+        
+        // Get previous weight for change calculation
+        const history = this.exerciseHistory[exerciseName];
+        const previousWeight = history?.last_weight || 0;
+        const weightValue = parseFloat(details.weight) || 0;
+        const weightChange = weightValue - previousWeight;
+        
+        // Merge with existing data to preserve flags like is_bonus
+        const existingData = this.currentSession.exercises[exerciseName] || {};
+        this.currentSession.exercises[exerciseName] = {
+            ...existingData,
+            target_sets: details.sets || existingData.target_sets || '3',
+            target_reps: details.reps || existingData.target_reps || '8-12',
+            rest: details.rest || existingData.rest || '60s',
+            weight: details.weight,
+            weight_unit: details.weightUnit || 'lbs',
+            previous_weight: previousWeight,
+            weight_change: weightChange,
+            is_modified: true,
+            modified_at: new Date().toISOString()
+        };
+        
+        console.log('📝 Updated exercise details:', exerciseName, details);
+        this.notifyListeners('exerciseDetailsUpdated', { exerciseName, details });
+        
+        // Persist after update
+        this.persistSession();
+    }
+    
+    /**
+     * PHASE 1: Update exercise details BEFORE session starts (pre-session editing)
+     * @param {string} exerciseName - Exercise name
+     * @param {Object} details - Updated details
+     * @param {string} details.sets - Target sets
+     * @param {string} details.reps - Target reps
+     * @param {string} details.rest - Rest time
+     * @param {string} details.weight - Weight value
+     * @param {string} details.weightUnit - Weight unit
+     */
+    updatePreSessionExercise(exerciseName, details) {
+        console.log('📝 Storing pre-session edit for:', exerciseName, details);
+        
+        // Store in pre-session edits
+        this.preSessionEdits[exerciseName] = {
+            target_sets: details.sets || '3',
+            target_reps: details.reps || '8-12',
+            rest: details.rest || '60s',
+            weight: details.weight || '',
+            weight_unit: details.weightUnit || 'lbs',
+            edited_at: new Date().toISOString()
+        };
+        
+        console.log('✅ Pre-session edit stored. Total edits:', Object.keys(this.preSessionEdits).length);
+        this.notifyListeners('preSessionExerciseUpdated', { exerciseName, details });
+    }
+    
+    /**
+     * PHASE 1: Get pre-session edits for an exercise
+     * @param {string} exerciseName - Exercise name
+     * @returns {Object|null} Pre-session edit data or null
+     */
+    getPreSessionEdits(exerciseName) {
+        return this.preSessionEdits[exerciseName] || null;
+    }
+    
+    /**
+     * PHASE 1: Apply all pre-session edits to the active session
+     * Called internally by startSession()
+     * @private
+     */
+    _applyPreSessionEdits() {
+        if (!this.currentSession?.exercises) {
+            console.warn('⚠️ No session exercises to apply edits to');
+            return;
+        }
+        
+        let appliedCount = 0;
+        
+        Object.keys(this.preSessionEdits).forEach(exerciseName => {
+            const edits = this.preSessionEdits[exerciseName];
+            
+            // Only apply if exercise exists in session
+            if (this.currentSession.exercises[exerciseName]) {
+                this.currentSession.exercises[exerciseName] = {
+                    ...this.currentSession.exercises[exerciseName],
+                    ...edits,
+                    is_modified: true,
+                    modified_at: edits.edited_at
+                };
+                appliedCount++;
+                console.log(`  ✅ Applied pre-session edit to: ${exerciseName}`);
+            } else {
+                console.warn(`  ⚠️ Exercise not found in session: ${exerciseName}`);
+            }
+        });
+        
+        console.log(`✅ Applied ${appliedCount} pre-session edits to session`);
+        
+        // Clear pre-session edits after applying
+        this.preSessionEdits = {};
+    }
+    
+    /**
+     * PHASE 1: Clear all pre-session edits
+     */
+    clearPreSessionEdits() {
+        this.preSessionEdits = {};
+        console.log('🧹 Pre-session edits cleared');
+    }
+    
+    /**
+     * PHASE 2: Set custom exercise order (for reordering)
+     * @param {Array<string>} exerciseNames - Ordered array of exercise names
+     */
+    setExerciseOrder(exerciseNames) {
+        console.log('📋 Setting custom exercise order:', exerciseNames);
+        this.preSessionOrder = [...exerciseNames];
+        this.notifyListeners('exerciseOrderUpdated', { order: this.preSessionOrder });
+    }
+    
+    /**
+     * PHASE 2: Get custom exercise order
+     * @returns {Array<string>} Ordered array of exercise names
+     */
+    getExerciseOrder() {
+        return this.preSessionOrder;
+    }
+    
+    /**
+     * PHASE 2: Clear custom exercise order
+     */
+    clearExerciseOrder() {
+        this.preSessionOrder = [];
+        console.log('🧹 Custom exercise order cleared');
+    }
+    
+    /**
+     * PHASE 2: Check if custom order exists
+     * @returns {boolean} True if custom order is set
+     */
+    hasCustomOrder() {
+        return this.preSessionOrder.length > 0;
+    }
+    
+    /**
      * PHASE 2: Mark exercise as skipped
      * @param {string} exerciseName - Exercise name
      * @param {string} reason - Optional reason for skipping (max 200 chars)
@@ -394,6 +587,118 @@ class WorkoutSessionService {
     }
     
     /**
+     * PHASE 3: Mark exercise as completed
+     * @param {string} exerciseName - Exercise name
+     */
+    completeExercise(exerciseName) {
+        if (!this.currentSession?.exercises) {
+            console.warn('⚠️ No active session to complete exercise');
+            return;
+        }
+        
+        const existingData = this.currentSession.exercises[exerciseName] || {};
+        
+        this.currentSession.exercises[exerciseName] = {
+            ...existingData,
+            is_completed: true,
+            completed_at: new Date().toISOString()
+        };
+        
+        console.log('✅ Exercise completed:', exerciseName);
+        this.notifyListeners('exerciseCompleted', { exerciseName });
+        this.persistSession();
+    }
+    
+    /**
+     * PHASE 3: Uncomplete exercise (if user changes mind)
+     * @param {string} exerciseName - Exercise name
+     */
+    uncompleteExercise(exerciseName) {
+        if (!this.currentSession?.exercises?.[exerciseName]) {
+            console.warn('⚠️ Exercise not found in session:', exerciseName);
+            return;
+        }
+        
+        this.currentSession.exercises[exerciseName].is_completed = false;
+        delete this.currentSession.exercises[exerciseName].completed_at;
+        
+        console.log('↩️ Exercise uncompleted:', exerciseName);
+        this.notifyListeners('exerciseUncompleted', { exerciseName });
+        this.persistSession();
+    }
+    
+    /**
+     * Start auto-complete timer for an exercise
+     * Called when exercise card is expanded
+     * @param {string} exerciseName - Exercise name
+     * @param {number} timeoutMinutes - Minutes until auto-complete (default 10)
+     */
+    startAutoCompleteTimer(exerciseName, timeoutMinutes = 10) {
+        if (!this.isSessionActive()) return;
+        
+        // Don't start timer if already completed or skipped
+        const exerciseData = this.currentSession?.exercises?.[exerciseName];
+        if (exerciseData?.is_completed || exerciseData?.is_skipped) {
+            console.log('⏭️ Skipping auto-complete timer - exercise already completed/skipped');
+            return;
+        }
+        
+        // Clear existing timer for this exercise
+        this.clearAutoCompleteTimer(exerciseName);
+        
+        // Track start time
+        this.exerciseStartTimes[exerciseName] = Date.now();
+        
+        // Set timer for auto-complete
+        const timeoutMs = timeoutMinutes * 60 * 1000;
+        this.autoCompleteTimers[exerciseName] = setTimeout(() => {
+            console.log(`⏰ Auto-completing ${exerciseName} after ${timeoutMinutes} minutes`);
+            this.completeExercise(exerciseName);
+            this.notifyListeners('exerciseAutoCompleted', { exerciseName, timeoutMinutes });
+        }, timeoutMs);
+        
+        console.log(`⏱️ Auto-complete timer started for ${exerciseName}: ${timeoutMinutes} minutes`);
+    }
+    
+    /**
+     * Clear auto-complete timer for an exercise
+     * Called when card is collapsed or manually completed
+     * @param {string} exerciseName - Exercise name
+     */
+    clearAutoCompleteTimer(exerciseName) {
+        if (this.autoCompleteTimers[exerciseName]) {
+            clearTimeout(this.autoCompleteTimers[exerciseName]);
+            delete this.autoCompleteTimers[exerciseName];
+            delete this.exerciseStartTimes[exerciseName];
+            console.log(`⏱️ Auto-complete timer cleared for ${exerciseName}`);
+        }
+    }
+    
+    /**
+     * Clear all auto-complete timers
+     * Called when session ends
+     */
+    clearAllAutoCompleteTimers() {
+        Object.keys(this.autoCompleteTimers).forEach(exerciseName => {
+            this.clearAutoCompleteTimer(exerciseName);
+        });
+        console.log('🧹 All auto-complete timers cleared');
+    }
+    
+    /**
+     * Get remaining time for auto-complete
+     * @param {string} exerciseName - Exercise name
+     * @returns {number|null} Seconds remaining or null if no timer
+     */
+    getAutoCompleteRemainingTime(exerciseName) {
+        if (!this.exerciseStartTimes[exerciseName]) return null;
+        
+        const elapsed = (Date.now() - this.exerciseStartTimes[exerciseName]) / 1000;
+        const remaining = (10 * 60) - elapsed; // 10 minutes default
+        return Math.max(0, Math.floor(remaining));
+    }
+    
+    /**
      * Get exercise history for a specific exercise
      * @param {string} exerciseName - Exercise name
      * @returns {Object|null} Exercise history or null
@@ -434,6 +739,9 @@ class WorkoutSessionService {
      * Clear current session
      */
     clearSession() {
+        // Clear all auto-complete timers first
+        this.clearAllAutoCompleteTimers();
+        
         this.currentSession = null;
         this.exerciseHistory = {};
         

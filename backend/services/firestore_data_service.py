@@ -928,6 +928,11 @@ class FirestoreDataService:
             if complete_request.notes:
                 completion_data['notes'] = complete_request.notes
             
+            # Save custom exercise order if provided (Phase 3 - Exercise Reordering)
+            if hasattr(complete_request, 'exercise_order') and complete_request.exercise_order:
+                completion_data['exercise_order'] = complete_request.exercise_order
+                logger.info(f"Saving custom exercise order with {len(complete_request.exercise_order)} exercises")
+            
             # Update session
             session_ref.update(completion_data)
             

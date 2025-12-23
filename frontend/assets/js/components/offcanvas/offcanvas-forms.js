@@ -635,4 +635,121 @@ export function renderAlternateSlot(slotKey, exerciseName) {
     `;
 }
 
+/* ============================================
+   EXERCISE DETAILS EDITOR (for Workout Mode)
+   ============================================ */
+
+/**
+ * Create exercise details editor offcanvas
+ * For editing sets, reps, rest, and weight during a workout
+ * @param {Object} data - Current exercise data
+ * @param {string} data.exerciseName - Exercise name
+ * @param {string} data.sets - Current sets
+ * @param {string} data.reps - Current reps
+ * @param {string} data.rest - Current rest
+ * @param {string} data.weight - Current weight
+ * @param {string} data.weightUnit - Current weight unit
+ * @param {Function} onSave - Callback when user saves changes
+ * @returns {Object} Offcanvas instance
+ */
+export function createExerciseDetailsEditor(data, onSave) {
+    const { exerciseName, sets, reps, rest, weight, weightUnit } = data;
+    
+    const offcanvasHtml = `
+        <div class="offcanvas offcanvas-bottom offcanvas-bottom-base" tabindex="-1"
+             id="exerciseDetailsEditorOffcanvas" aria-labelledby="exerciseDetailsEditorLabel" data-bs-scroll="false">
+            <div class="offcanvas-header border-bottom">
+                <h5 class="offcanvas-title" id="exerciseDetailsEditorLabel">
+                    <i class="bx bx-edit me-2"></i>Edit Exercise
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+            </div>
+            <div class="offcanvas-body">
+                <h6 class="mb-4">${escapeHtml(exerciseName)}</h6>
+                
+                <!-- Sets, Reps, Rest Row -->
+                <div class="row g-2 mb-3">
+                    <div class="col-4">
+                        <label class="form-label">Sets</label>
+                        <input type="text" class="form-control text-center" id="editSetsInput"
+                               value="${escapeHtml(sets)}" placeholder="3">
+                    </div>
+                    <div class="col-4">
+                        <label class="form-label">Reps</label>
+                        <input type="text" class="form-control text-center" id="editRepsInput"
+                               value="${escapeHtml(reps)}" placeholder="8-12">
+                    </div>
+                    <div class="col-4">
+                        <label class="form-label">Rest</label>
+                        <input type="text" class="form-control text-center" id="editRestInput"
+                               value="${escapeHtml(rest)}" placeholder="60s">
+                    </div>
+                </div>
+                
+                <!-- Weight -->
+                <div class="mb-3">
+                    <label class="form-label"><i class="bx bx-dumbbell me-1"></i>Weight</label>
+                    <div class="d-flex gap-2">
+                        <input type="text" class="form-control" id="editWeightInput"
+                               value="${escapeHtml(weight)}" placeholder="135" style="flex: 1;">
+                        <select class="form-select" id="editWeightUnitSelect" style="width: 100px;">
+                            <option value="lbs" ${weightUnit === 'lbs' ? 'selected' : ''}>lbs</option>
+                            <option value="kg" ${weightUnit === 'kg' ? 'selected' : ''}>kg</option>
+                            <option value="other" ${weightUnit === 'other' ? 'selected' : ''}>DIY</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="alert alert-info mb-4">
+                    <i class="bx bx-info-circle me-2"></i>
+                    <small>Changes will be saved to your workout session history.</small>
+                </div>
+                
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-outline-secondary flex-fill" data-bs-dismiss="offcanvas">
+                        Cancel
+                    </button>
+                    <button type="button" class="btn btn-primary flex-fill" id="saveExerciseDetailsBtn">
+                        <i class="bx bx-save me-1"></i>Save Changes
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    return createOffcanvas('exerciseDetailsEditorOffcanvas', offcanvasHtml, (offcanvas) => {
+        const saveBtn = document.getElementById('saveExerciseDetailsBtn');
+        const setsInput = document.getElementById('editSetsInput');
+        const repsInput = document.getElementById('editRepsInput');
+        const restInput = document.getElementById('editRestInput');
+        const weightInput = document.getElementById('editWeightInput');
+        const unitSelect = document.getElementById('editWeightUnitSelect');
+        
+        if (saveBtn) {
+            saveBtn.addEventListener('click', async () => {
+                saveBtn.disabled = true;
+                saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Saving...';
+                
+                try {
+                    const updatedData = {
+                        sets: setsInput.value.trim() || '3',
+                        reps: repsInput.value.trim() || '8-12',
+                        rest: restInput.value.trim() || '60s',
+                        weight: weightInput.value.trim(),
+                        weightUnit: unitSelect.value
+                    };
+                    
+                    await onSave(updatedData);
+                    offcanvas.hide();
+                } catch (error) {
+                    console.error('❌ Error saving exercise details:', error);
+                    saveBtn.disabled = false;
+                    saveBtn.innerHTML = '<i class="bx bx-save me-1"></i>Save Changes';
+                    alert('Failed to save changes. Please try again.');
+                }
+            });
+        }
+    });
+}
+
 console.log('📦 Offcanvas form components loaded');

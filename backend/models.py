@@ -870,6 +870,12 @@ class WorkoutSession(BaseModel):
     )
     notes: Optional[str] = Field(None, max_length=500, description="Session notes")
     
+    # Custom Exercise Order (Phase 3 - Exercise Reordering)
+    exercise_order: Optional[List[str]] = Field(
+        None,
+        description="Custom order of exercises (list of exercise names). If present, overrides template order."
+    )
+    
     # Status
     status: str = Field(
         default="in_progress",
@@ -955,6 +961,10 @@ class CompleteSessionRequest(BaseModel):
         description="Final list of all exercises performed"
     )
     notes: Optional[str] = Field(None, max_length=500, description="Final session notes")
+    exercise_order: Optional[List[str]] = Field(
+        None,
+        description="Custom order of exercises (list of exercise names). Saves user's preferred exercise sequence."
+    )
 
 # Response Models for Workout Sessions
 
@@ -974,6 +984,10 @@ class ExerciseHistoryResponse(BaseModel):
     exercises: Dict[str, ExerciseHistory] = Field(
         ...,
         description="Exercise histories keyed by exercise name"
+    )
+    last_exercise_order: Optional[List[str]] = Field(
+        None,
+        description="Custom exercise order from last completed session (Phase 3 - Exercise Reordering)"
     )
 
 
