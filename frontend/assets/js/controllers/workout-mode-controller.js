@@ -26,6 +26,9 @@ class WorkoutModeController {
         // 🔧 FIX: Add state flag to prevent concurrent session creation
         this.isStartingSession = false;
         
+        // Reorder mode state
+        this.reorderModeEnabled = false;
+        
         console.log('🎮 Workout Mode Controller initialized');
         console.log('🔍 DEBUG: Modal manager available?', !!window.ghostGymModalManager);
     }
@@ -127,6 +130,7 @@ class WorkoutModeController {
             this.setupEventListeners();
             this.initializeSoundToggle();
             this.initializeShareButton();
+            this.initializeReorderMode();
             
             console.log('✅ Workout Mode Controller ready');
             
@@ -471,6 +475,7 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
     
     /**
      * PHASE 2: Initialize drag-and-drop sorting with SortableJS
+     * UPDATED: Starts disabled, enabled via reorder mode toggle
      */
     initializeSortable() {
         const container = document.getElementById('exerciseCardsContainer');
@@ -492,13 +497,8 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
             scrollSpeed: 10,
             bubbleScroll: true,
             
-            // Only allow dragging when not in active session (for now)
-            // Later we can enable during session too
-            filter: function(evt, target) {
-                // Disable dragging when session is active (for Phase 2)
-                // We'll enable it in future when we add session-time reordering
-                return window.workoutModeController.sessionService.isSessionActive();
-            },
+            // Start disabled, enabled via toggle
+            disabled: !this.reorderModeEnabled,
             
             onStart: (evt) => {
                 console.log('🎯 Drag started:', evt.oldIndex);
@@ -517,6 +517,79 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
         });
         
         console.log('✅ SortableJS initialized for exercise reordering');
+    }
+    
+    /**
+     * Initialize reorder mode toggle
+     */
+    initializeReorderMode() {
+        const toggle = document.getElementById('reorderModeToggle');
+        if (!toggle) return;
+        
+        toggle.addEventListener('change', () => {
+            if (toggle.checked) {
+                this.enterReorderMode();
+            } else {
+                this.exitReorderMode();
+            }
+        });
+        
+        console.log('✅ Reorder mode toggle initialized');
+    }
+    
+    /**
+     * Enter reorder mode
+     */
+    enterReorderMode() {
+        const container = document.getElementById('exerciseCardsContainer');
+        if (!container) return;
+        
+        this.reorderModeEnabled = true;
+        
+        // Add active class to container
+        container.classList.add('reorder-mode-active');
+        
+        // Collapse any expanded cards for cleaner drag experience
+        document.querySelectorAll('.exercise-card.expanded').forEach(card => {
+            this.collapseCard(card);
+        });
+        
+        // Ensure sortable is initialized
+        if (!this.sortable) {
+            this.initializeSortable();
+        }
+        
+        // Enable sortable
+        if (this.sortable) {
+            this.sortable.option('disabled', false);
+        }
+        
+        // Show feedback
+        if (window.showAlert) {
+            window.showAlert('Reorder mode active - Drag exercises to reorder', 'info');
+        }
+        
+        console.log('✅ Reorder mode entered');
+    }
+    
+    /**
+     * Exit reorder mode
+     */
+    exitReorderMode() {
+        const container = document.getElementById('exerciseCardsContainer');
+        if (!container) return;
+        
+        this.reorderModeEnabled = false;
+        
+        // Remove active class from container
+        container.classList.remove('reorder-mode-active');
+        
+        // Disable sortable to prevent accidental dragging
+        if (this.sortable) {
+            this.sortable.option('disabled', true);
+        }
+        
+        console.log('✅ Reorder mode exited');
     }
     
     /**
@@ -1979,11 +2052,13 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
         const content = document.getElementById('exerciseCardsContainer');
         const footer = document.getElementById('workoutModeFooter');
         const workoutInfoHeader = document.getElementById('workoutInfoHeader');
+        const exerciseCardsHeader = document.getElementById('exerciseCardsHeader');
         
         if (loading) loading.style.display = 'none';
         if (content) content.style.display = 'block';
         if (footer) footer.style.display = 'block';
         if (workoutInfoHeader) workoutInfoHeader.style.display = 'block';
+        if (exerciseCardsHeader) exerciseCardsHeader.style.display = 'flex';
         
         // Update session UI to show correct button
         const isActive = this.sessionService.isSessionActive();

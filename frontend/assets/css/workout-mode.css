@@ -1779,6 +1779,60 @@
    PHASE 2: DRAG-AND-DROP EXERCISE REORDERING
    ============================================ */
 
+/* ============================================
+   REORDER MODE TOGGLE STATES
+   ============================================ */
+
+/* Default: Hide drag handles when reorder mode is disabled */
+#exerciseCardsContainer:not(.reorder-mode-active) .exercise-drag-handle {
+    display: none;
+}
+
+/* Show drag handles when reorder mode is active */
+#exerciseCardsContainer.reorder-mode-active .exercise-drag-handle {
+    display: flex;
+    opacity: 0.6;
+}
+
+#exerciseCardsContainer.reorder-mode-active .exercise-drag-handle:hover {
+    opacity: 1;
+}
+
+/* Visual indicator that cards are draggable in reorder mode */
+#exerciseCardsContainer.reorder-mode-active .exercise-card {
+    cursor: move;
+}
+
+#exerciseCardsContainer.reorder-mode-active .exercise-card-header {
+    cursor: grab;
+}
+
+/* Reorder mode active indicator */
+#exerciseCardsContainer.reorder-mode-active {
+    border: 2px dashed rgba(var(--bs-primary-rgb), 0.3);
+    border-radius: 8px;
+    padding: 0.5rem;
+    margin: -0.5rem;
+    margin-bottom: 0.25rem;
+}
+
+/* Toggle label styling */
+.reorder-mode-label {
+    font-size: 0.875rem;
+    color: var(--bs-body-color);
+}
+
+/* Active toggle label */
+#reorderModeToggle:checked + label .reorder-mode-label {
+    color: var(--bs-primary);
+    font-weight: 500;
+}
+
+/* Dark theme adjustments for reorder mode */
+[data-bs-theme="dark"] #exerciseCardsContainer.reorder-mode-active {
+    border-color: rgba(var(--bs-primary-rgb), 0.4);
+}
+
 /* Drag handle styling */
 .exercise-drag-handle {
     display: flex;
