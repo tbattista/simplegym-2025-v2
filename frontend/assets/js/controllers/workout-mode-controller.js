@@ -2033,13 +2033,13 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
     showLoadingState() {
         const loading = document.getElementById('workoutLoadingState');
         const error = document.getElementById('workoutErrorState');
-        const content = document.getElementById('exerciseCardsContainer');
+        const exerciseCardsSection = document.getElementById('exerciseCardsSection');
         const footer = document.getElementById('workoutModeFooter');
         const workoutInfoHeader = document.getElementById('workoutInfoHeader');
         
         if (loading) loading.style.display = 'block';
         if (error) error.style.display = 'none';
-        if (content) content.style.display = 'none';
+        if (exerciseCardsSection) exerciseCardsSection.style.display = 'none';
         if (footer) footer.style.display = 'none';
         if (workoutInfoHeader) workoutInfoHeader.style.display = 'none';
     }
@@ -2049,16 +2049,14 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
      */
     hideLoadingState() {
         const loading = document.getElementById('workoutLoadingState');
-        const content = document.getElementById('exerciseCardsContainer');
+        const exerciseCardsSection = document.getElementById('exerciseCardsSection');
         const footer = document.getElementById('workoutModeFooter');
         const workoutInfoHeader = document.getElementById('workoutInfoHeader');
-        const exerciseCardsHeader = document.getElementById('exerciseCardsHeader');
         
         if (loading) loading.style.display = 'none';
-        if (content) content.style.display = 'block';
+        if (exerciseCardsSection) exerciseCardsSection.style.display = 'block';
         if (footer) footer.style.display = 'block';
         if (workoutInfoHeader) workoutInfoHeader.style.display = 'block';
-        if (exerciseCardsHeader) exerciseCardsHeader.style.display = 'flex';
         
         // Update session UI to show correct button
         const isActive = this.sessionService.isSessionActive();
@@ -2074,13 +2072,13 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
         const loading = document.getElementById('workoutLoadingState');
         const error = document.getElementById('workoutErrorState');
         const errorMessage = document.getElementById('workoutErrorMessage');
-        const content = document.getElementById('exerciseCardsContainer');
+        const exerciseCardsSection = document.getElementById('exerciseCardsSection');
         const footer = document.getElementById('workoutModeFooter');
         const workoutInfoHeader = document.getElementById('workoutInfoHeader');
         
         // Hide all other states
         if (loading) loading.style.display = 'none';
-        if (content) content.style.display = 'none';
+        if (exerciseCardsSection) exerciseCardsSection.style.display = 'none';
         if (footer) footer.style.display = 'none';
         if (workoutInfoHeader) workoutInfoHeader.style.display = 'none';
         

@@ -125,24 +125,27 @@
                 </button>
               </div>
 
-              <!-- Exercise Cards Header (with Reorder Toggle) -->
-              <div id="exerciseCardsHeader" class="d-flex justify-content-between align-items-center mb-3" style="display: none;">
-                <h6 class="mb-0">
-                  <i class="bx bx-list-ul me-1"></i>
-                  Exercises
-                </h6>
-                <div class="form-check form-switch mb-0">
-                  <input class="form-check-input" type="checkbox" role="switch"
-                         id="reorderModeToggle" style="cursor: pointer;">
-                  <label class="form-check-label" for="reorderModeToggle" style="cursor: pointer;">
-                    <span class="edit-mode-label">Reorder</span>
-                  </label>
+              <!-- Exercise Cards Section (Header + Container) -->
+              <div id="exerciseCardsSection" style="display: none;">
+                <!-- Exercise Cards Header (with Reorder Toggle) -->
+                <div id="exerciseCardsHeader" class="d-flex justify-content-between align-items-center mb-3">
+                  <h6 class="mb-0">
+                    <i class="bx bx-list-ul me-1"></i>
+                    Exercises
+                  </h6>
+                  <div class="form-check form-switch mb-0">
+                    <input class="form-check-input" type="checkbox" role="switch"
+                           id="reorderModeToggle" style="cursor: pointer;">
+                    <label class="form-check-label" for="reorderModeToggle" style="cursor: pointer;">
+                      <span class="edit-mode-label">Reorder</span>
+                    </label>
+                  </div>
                 </div>
-              </div>
 
-              <!-- Exercise Cards Container -->
-              <div id="exerciseCardsContainer" style="display: none;">
-                <!-- Cards will be rendered here by JavaScript -->
+                <!-- Exercise Cards Container -->
+                <div id="exerciseCardsContainer">
+                  <!-- Cards will be rendered here by JavaScript -->
+                </div>
               </div>
 
             </div>
