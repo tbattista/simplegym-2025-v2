@@ -50,6 +50,12 @@ class ExerciseCardRenderer {
             ? new Date(history.last_session_date).toLocaleDateString()
             : null;
         
+        // Get last weight direction from history (for display on new session)
+        const lastDirection = this.sessionService.getLastWeightDirection(mainExercise);
+        
+        // Get current direction for this session
+        const currentDirection = this.sessionService.getWeightDirection(mainExercise);
+        
         // Get weight data with proper fallback chain
         const weightData = this.sessionService.getExerciseWeight(mainExercise);
         const templateWeight = group.default_weight || '';
@@ -93,18 +99,18 @@ class ExerciseCardRenderer {
                             ${isCompleted ? '<i class="bx bx-check-circle text-success me-1"></i>' : ''}
                             ${isSkipped ? '<i class="bx bx-x-circle text-warning me-1"></i>' : ''}
                             ${this._escapeHtml(mainExercise)}
+                            ${lastDirection && !isSessionActive ? `
+                                <span class="badge bg-label-${lastDirection === 'up' ? 'success' : 'warning'} ms-2 weight-direction-indicator"
+                                      title="From last session">
+                                    <i class="bx bx-chevron-${lastDirection}"></i> ${lastDirection === 'up' ? 'Increase' : 'Decrease'}
+                                </span>
+                            ` : ''}
                         </h6>
                         
                         <!-- MORPH: Meta info (visible when collapsed, hidden when expanded) -->
                         <div class="exercise-card-meta morph-meta" data-morph-id="meta-${index}">
                             <span class="morph-sets-reps">${sets} sets × ${reps} reps • ${rest}</span>
                         </div>
-                        
-                        ${alternates.length > 0 ? `
-                            <div class="exercise-card-alts text-muted small mt-1 morph-alts">
-                                ${alternates.map(alt => `<div>${alt.label}: ${this._escapeHtml(alt.name)}</div>`).join('')}
-                            </div>
-                        ` : ''}
                     </div>
                     
                     <!-- Right-aligned weight badge -->
@@ -115,6 +121,13 @@ class ExerciseCardRenderer {
                 </div>
                 
                 <div class="card-body exercise-card-body" style="display: none;">
+                    <!-- Alternate Exercises - Discreet Subtitle -->
+                    ${alternates.length > 0 ? `
+                        <div class="alternate-exercises-subtitle">
+                            ${alternates.map(alt => `<span>${alt.label}: ${this._escapeHtml(alt.name)}</span>`).join(' · ')}
+                        </div>
+                    ` : ''}
+                    
                     ${isSkipped ? `
                         <div class="alert alert-warning">
                             <i class="bx bx-info-circle me-2"></i>
@@ -130,26 +143,26 @@ class ExerciseCardRenderer {
                                 <span class="exercise-weight-value">${currentWeight || '—'}</span>
                                 ${currentWeight && currentUnit !== 'other' ? `<span class="exercise-weight-unit">${currentUnit}</span>` : ''}
                             </div>
-                            <div class="btn-group btn-group-sm" role="group">
-                                <button class="btn btn-outline-secondary" onclick="event.stopPropagation();" title="Decrease weight">
-                                    <i class="bx bx-minus"></i>
-                                </button>
-                                <button class="btn btn-outline-secondary" onclick="event.stopPropagation();" title="Increase weight">
-                                    <i class="bx bx-plus"></i>
-                                </button>
-                                <button class="btn btn-outline-primary" onclick="window.workoutModeController.handleWeightButtonClick(this); event.stopPropagation();"
-                                        data-exercise-name="${this._escapeHtml(mainExercise)}"
-                                        data-current-weight="${currentWeight || ''}"
-                                        data-current-unit="${currentUnit}"
-                                        data-last-weight="${lastWeight || ''}"
-                                        data-last-weight-unit="${lastWeightUnit || ''}"
-                                        data-last-session-date="${lastSessionDate || ''}"
-                                        data-is-session-active="${isSessionActive}"
-                                        data-weight-source="${weightSource}"
-                                        title="Edit weight">
-                                    <i class="bx bx-edit-alt"></i>
-                                </button>
-                            </div>
+                            ${isSessionActive ? `
+                                <div class="btn-group btn-group-sm weight-direction-group" role="group" aria-label="Weight progression for next session">
+                                    <button class="btn weight-direction-btn ${currentDirection === 'down' ? 'btn-warning active' : 'btn-outline-secondary'}"
+                                            data-exercise-name="${this._escapeHtml(mainExercise)}"
+                                            data-direction="down"
+                                            onclick="window.workoutModeController.handleWeightDirection(this); event.stopPropagation();"
+                                            title="Decrease weight next time"
+                                            aria-label="Mark to decrease weight next session">
+                                        <i class="bx bx-chevron-down"></i>
+                                    </button>
+                                    <button class="btn weight-direction-btn ${currentDirection === 'up' ? 'btn-success active' : 'btn-outline-secondary'}"
+                                            data-exercise-name="${this._escapeHtml(mainExercise)}"
+                                            data-direction="up"
+                                            onclick="window.workoutModeController.handleWeightDirection(this); event.stopPropagation();"
+                                            title="Increase weight next time"
+                                            aria-label="Mark to increase weight next session">
+                                        <i class="bx bx-chevron-up"></i>
+                                    </button>
+                                </div>
+                            ` : ''}
                         </div>
                         ${lastWeight && lastSessionDate ? `
                             <small class="exercise-weight-history">Last: ${lastWeight}${lastWeightUnit !== 'other' ? ` ${lastWeightUnit}` : ''} on ${lastSessionDate}</small>
@@ -160,22 +173,23 @@ class ExerciseCardRenderer {
                     <ul class="list-group list-group-flush exercise-details-list">
                         <li class="list-group-item d-flex justify-content-between align-items-center px-0">
                             <span class="text-muted">Sets × Reps</span>
-                            <div class="d-flex align-items-center gap-2">
-                                <strong>${sets} × ${reps}</strong>
-                                <i class="bx bx-edit-alt text-muted exercise-detail-edit-icon" style="font-size: 0.9rem; cursor: pointer;" title="Edit sets/reps"></i>
-                            </div>
+                            <strong>${sets} × ${reps}</strong>
                         </li>
                         <li class="list-group-item d-flex justify-content-between align-items-center px-0">
                             <span class="text-muted">Rest</span>
-                            <div class="d-flex align-items-center gap-2">
-                                <strong><i class="bx bx-time-five me-1"></i>${rest}</strong>
-                                <i class="bx bx-edit-alt text-muted exercise-detail-edit-icon" style="font-size: 0.9rem; cursor: pointer;" title="Edit rest time"></i>
-                            </div>
+                            <strong><i class="bx bx-time-five me-1"></i>${rest}</strong>
                         </li>
                         ${plateBreakdown ? `
-                            <li class="list-group-item d-flex justify-content-between align-items-start px-0">
+                            <li class="list-group-item d-flex justify-content-between align-items-center px-0">
                                 <span class="text-muted"><i class="bx bx-dumbbell me-1"></i>Plates</span>
-                                <span class="text-muted small text-end">${plateBreakdown}</span>
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="text-muted small text-end">${plateBreakdown}</span>
+                                    <button class="btn btn-sm btn-outline-secondary plate-settings-btn"
+                                            onclick="window.workoutModeController.showPlateSettings(); event.stopPropagation();"
+                                            title="Configure available plates">
+                                        <i class="bx bx-cog"></i>
+                                    </button>
+                                </div>
                             </li>
                         ` : ''}
                     </ul>
@@ -274,17 +288,21 @@ class ExerciseCardRenderer {
     }
 
     /**
-     * Calculate barbell plate breakdown
+     * Calculate barbell plate breakdown using plate calculator service
      * @private
      */
     _calculatePlateBreakdown(weightStr, unit) {
-        // Only calculate for lbs barbell exercises
+        // Use plate calculator service if available
+        if (window.plateCalculatorService) {
+            return window.plateCalculatorService.calculateBreakdown(weightStr, unit);
+        }
+        
+        // Fallback to basic calculation if service not loaded
         if (unit !== 'lbs') return null;
         
-        // Extract numeric value from weight string
         const totalWeight = parseFloat(weightStr);
         if (isNaN(totalWeight) || totalWeight <= 45) {
-            return null; // No plates needed for bar weight or less
+            return null;
         }
         
         const barWeight = 45;
@@ -294,12 +312,10 @@ class ExerciseCardRenderer {
             return null;
         }
         
-        // Available plate weights in descending order
         const plates = [45, 35, 25, 10, 5, 2.5];
         const plateCount = {};
         let remaining = weightPerSide;
         
-        // Calculate plates needed per side
         for (const plate of plates) {
             const count = Math.floor(remaining / plate);
             if (count > 0) {
@@ -308,7 +324,6 @@ class ExerciseCardRenderer {
             }
         }
         
-        // Format the breakdown string
         const plateParts = [];
         for (const [plate, count] of Object.entries(plateCount)) {
             plateParts.push(`${count}×${plate}lb`);

@@ -1092,7 +1092,8 @@ class FirestoreDataService:
         user_id: str,
         workout_id: str,
         exercise_name: str,
-        session_data: Dict[str, Any]
+        session_data: Dict[str, Any],
+        next_weight_direction: Optional[str] = None
     ) -> bool:
         """Update exercise history after session completion"""
         if not self.is_available():
@@ -1128,6 +1129,7 @@ class FirestoreDataService:
                     'last_weight_unit': session_data.get('weight_unit', 'lbs'),
                     'last_session_id': session_data.get('session_id'),
                     'last_session_date': session_data.get('date'),
+                    'last_weight_direction': next_weight_direction,
                     'total_sessions': current_history.get('total_sessions', 0) + 1,
                     'recent_sessions': recent_sessions,
                     'updated_at': firestore.SERVER_TIMESTAMP
@@ -1139,6 +1141,7 @@ class FirestoreDataService:
                     update_data['best_weight_date'] = session_data.get('date')
                 
                 history_ref.update(update_data)
+                logger.debug(f"Updated exercise history: {exercise_name} (direction: {next_weight_direction or 'none'})")
                 
             else:
                 # Create new history
@@ -1150,6 +1153,7 @@ class FirestoreDataService:
                     last_weight_unit=session_data.get('weight_unit', 'lbs'),
                     last_session_id=session_data.get('session_id'),
                     last_session_date=session_data.get('date'),
+                    last_weight_direction=next_weight_direction,
                     total_sessions=1,
                     first_session_date=session_data.get('date'),
                     best_weight=session_data.get('weight'),
@@ -1160,6 +1164,7 @@ class FirestoreDataService:
                 history_data = new_history.model_dump()
                 history_data['updated_at'] = firestore.SERVER_TIMESTAMP
                 history_ref.set(history_data)
+                logger.debug(f"Created exercise history: {exercise_name} (direction: {next_weight_direction or 'none'})")
             
             return True
             
@@ -1182,11 +1187,15 @@ class FirestoreDataService:
                     'sets': exercise.sets_completed
                 }
                 
+                # Extract weight direction if available
+                next_weight_direction = getattr(exercise, 'next_weight_direction', None)
+                
                 await self.update_exercise_history(
                     user_id,
                     session.workout_id,
                     exercise.exercise_name,
-                    session_data
+                    session_data,
+                    next_weight_direction=next_weight_direction
                 )
             
             logger.info(f"Updated {len(session.exercises_performed)} exercise histories for session {session.id}")

@@ -843,6 +843,12 @@ class ExercisePerformance(BaseModel):
     is_skipped: bool = Field(default=False, description="Whether exercise was skipped")
     skip_reason: Optional[str] = Field(None, max_length=200, description="Reason for skipping exercise")
     
+    # Weight Progression Indicator (NEW)
+    next_weight_direction: Optional[str] = Field(
+        None,
+        description="User intent for next session: 'up', 'down', or null"
+    )
+    
     # Metadata
     order_index: int = Field(..., ge=0, description="Position in workout (0-based)")
     is_bonus: bool = Field(default=False, description="Whether this is a bonus exercise")
@@ -910,6 +916,12 @@ class ExerciseHistory(BaseModel):
     last_weight_unit: str = Field(default="lbs", description="Unit for last weight")
     last_session_id: Optional[str] = Field(None, description="Reference to last workout session")
     last_session_date: Optional[datetime] = Field(None, description="Date of last session")
+    
+    # Weight Progression Indicator (NEW)
+    last_weight_direction: Optional[str] = Field(
+        None,
+        description="Weight direction from last session: 'up', 'down', or null"
+    )
     
     # Historical Tracking
     total_sessions: int = Field(default=0, ge=0, description="Total number of sessions logged")

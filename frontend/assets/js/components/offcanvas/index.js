@@ -34,7 +34,8 @@ import {
     setupWeightEditListeners,
     createCompleteWorkout,
     createCompletionSummary,
-    createResumeSession
+    createResumeSession,
+    createPlateSettings
 } from './offcanvas-workout.js';
 
 // Import form components
@@ -118,6 +119,10 @@ class UnifiedOffcanvasFactory {
     
     static createResumeSession(data, onResume, onStartFresh) {
         return createResumeSession(data, onResume, onStartFresh);
+    }
+    
+    static createPlateSettings(onSave) {
+        return createPlateSettings(onSave);
     }
     
     /* ============================================
@@ -251,6 +256,7 @@ export {
     createCompleteWorkout,
     createCompletionSummary,
     createResumeSession,
+    createPlateSettings,
     
     // Forms
     createFilterOffcanvas,

@@ -674,6 +674,102 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
         });
     }
     
+    /**
+     * Handle weight direction indicator toggle
+     * Replaces the old +5/-5 weight adjustment functionality
+     * @param {HTMLElement} button - The direction button that was clicked
+     */
+    handleWeightDirection(button) {
+        const exerciseName = button.getAttribute('data-exercise-name');
+        const direction = button.getAttribute('data-direction');
+        
+        if (!this.sessionService.isSessionActive()) {
+            if (window.showAlert) {
+                window.showAlert('Start your workout to set weight direction', 'warning');
+            }
+            return;
+        }
+        
+        // Toggle behavior: if already set to this direction, clear it
+        const currentDirection = this.sessionService.getWeightDirection(exerciseName);
+        const newDirection = currentDirection === direction ? null : direction;
+        
+        console.log(`🎯 Weight direction for ${exerciseName}: ${currentDirection || 'none'} → ${newDirection || 'cleared'}`);
+        
+        // Update session service
+        this.sessionService.setWeightDirection(exerciseName, newDirection);
+        
+        // Haptic feedback
+        if (navigator.vibrate) {
+            navigator.vibrate(newDirection ? 15 : 5);
+        }
+        
+        // Auto-save
+        this.autoSave(null).catch(error => {
+            console.error('❌ Failed to auto-save after direction change:', error);
+        });
+        
+        // Re-render to update button states
+        this.renderWorkout();
+        
+        // Show feedback
+        if (window.showAlert && newDirection) {
+            const message = newDirection === 'up'
+                ? `${exerciseName}: ⬆️ Increase weight next time`
+                : `${exerciseName}: ⬇️ Decrease weight next time`;
+            window.showAlert(message, 'info');
+        }
+    }
+    
+    /**
+     * Show plate calculator settings
+     * PHASE 4: Opens offcanvas for configuring gym plate availability
+     */
+    showPlateSettings() {
+        console.log('⚙️ Opening plate calculator settings...');
+        
+        // Use the unified factory to create the offcanvas
+        window.UnifiedOffcanvasFactory.createPlateSettings((newConfig) => {
+            console.log('✅ Plate settings saved:', newConfig);
+            
+            // Re-render workout to update plate calculations with new settings
+            this.renderWorkout();
+        });
+    }
+    
+    /**
+     * Find exercise group by exercise name
+     * Helper for weight adjustment
+     * @param {string} exerciseName - Exercise name to find
+     * @returns {Object|null} Exercise group or null if not found
+     * @private
+     */
+    _findExerciseGroupByName(exerciseName) {
+        // Check regular exercise groups
+        if (this.currentWorkout?.exercise_groups) {
+            const group = this.currentWorkout.exercise_groups.find(g => g.exercises?.a === exerciseName);
+            if (group) return group;
+        }
+        
+        // Check bonus exercises
+        const bonusExercises = this.sessionService.getBonusExercises();
+        if (bonusExercises) {
+            const bonus = bonusExercises.find(b => b.name === exerciseName);
+            if (bonus) {
+                return {
+                    exercises: { a: bonus.name },
+                    sets: bonus.sets,
+                    reps: bonus.reps,
+                    rest: bonus.rest || '60s',
+                    default_weight: bonus.weight,
+                    default_weight_unit: bonus.weight_unit || 'lbs'
+                };
+            }
+        }
+        
+        return null;
+    }
+    
     
     /**
      * Auto-save session
@@ -776,7 +872,8 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
                     is_bonus: false,
                     is_modified: exerciseData?.is_modified || false,  // PHASE 1
                     is_skipped: exerciseData?.is_skipped || false,    // PHASE 2
-                    skip_reason: exerciseData?.skip_reason || null    // PHASE 2
+                    skip_reason: exerciseData?.skip_reason || null,   // PHASE 2
+                    next_weight_direction: exerciseData?.next_weight_direction || null  // Weight Progression Indicator
                 });
             });
         }
@@ -830,7 +927,8 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
                     is_bonus: true,
                     is_modified: exerciseData?.is_modified || false,
                     is_skipped: exerciseData?.is_skipped || false,    // PHASE 2
-                    skip_reason: exerciseData?.skip_reason || null    // PHASE 2
+                    skip_reason: exerciseData?.skip_reason || null,   // PHASE 2
+                    next_weight_direction: exerciseData?.next_weight_direction || null  // Weight Progression Indicator
                 };
                 
                 exercisesPerformed.push(bonusExerciseData);

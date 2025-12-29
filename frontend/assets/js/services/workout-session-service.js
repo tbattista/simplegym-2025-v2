@@ -634,6 +634,54 @@ class WorkoutSessionService {
     }
     
     /**
+     * Set weight direction indicator for an exercise
+     * @param {string} exerciseName - Exercise name
+     * @param {string|null} direction - 'up', 'down', or null to clear
+     */
+    setWeightDirection(exerciseName, direction) {
+        if (!this.currentSession?.exercises) {
+            console.warn('⚠️ No active session to set weight direction');
+            return;
+        }
+        
+        const validDirections = ['up', 'down', null];
+        if (!validDirections.includes(direction)) {
+            console.error('❌ Invalid weight direction:', direction);
+            return;
+        }
+        
+        const existingData = this.currentSession.exercises[exerciseName] || {};
+        this.currentSession.exercises[exerciseName] = {
+            ...existingData,
+            next_weight_direction: direction,
+            direction_set_at: direction ? new Date().toISOString() : null
+        };
+        
+        const directionIcon = direction === 'up' ? '⬆️' : direction === 'down' ? '⬇️' : '⏹️';
+        console.log(`${directionIcon} Weight direction set for ${exerciseName}: ${direction || 'cleared'}`);
+        this.notifyListeners('weightDirectionUpdated', { exerciseName, direction });
+        this.persistSession();
+    }
+    
+    /**
+     * Get weight direction for an exercise
+     * @param {string} exerciseName - Exercise name
+     * @returns {string|null} 'up', 'down', or null
+     */
+    getWeightDirection(exerciseName) {
+        return this.currentSession?.exercises?.[exerciseName]?.next_weight_direction || null;
+    }
+    
+    /**
+     * Get last weight direction from history (for display on load)
+     * @param {string} exerciseName - Exercise name
+     * @returns {string|null} 'up', 'down', or null
+     */
+    getLastWeightDirection(exerciseName) {
+        return this.exerciseHistory?.[exerciseName]?.last_weight_direction || null;
+    }
+    
+    /**
      * Start auto-complete timer for an exercise
      * Called when exercise card is expanded
      * @param {string} exerciseName - Exercise name
