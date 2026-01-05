@@ -26,8 +26,9 @@
 }
 
 /* Bottom nav hidden state (slides down when search is active) */
+/* DISABLED: Keep action bar always visible */
 .bottom-action-bar.search-active {
-    transform: translateY(100%);
+    transform: translateY(0);
 }
 
 /* Gradient fade at top of nav bar (alternative layout) */
@@ -48,8 +49,9 @@
 }
 
 /* Hidden state */
+/* DISABLED: Keep action bar always visible */
 .bottom-action-bar.hidden {
-    transform: translateY(100%);
+    transform: translateY(0);
 }
 
 /* Dark mode adjustments */

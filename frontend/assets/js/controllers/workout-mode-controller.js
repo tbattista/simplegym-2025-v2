@@ -15,16 +15,71 @@ class WorkoutModeController {
         // Initialize card renderer
         this.cardRenderer = new window.ExerciseCardRenderer(this.sessionService);
         
+        // Phase 1: Initialize UI State Manager
+        this.uiStateManager = new WorkoutUIStateManager({
+            loading: 'workoutLoadingState',
+            error: 'workoutErrorState',
+            loadingMessage: 'loadingMessage',
+            errorMessage: 'workoutErrorMessage',
+            content: 'exerciseCardsSection',
+            footer: 'workoutModeFooter',
+            header: 'workoutInfoHeader'
+        });
+        
+        // Phase 2: Initialize Timer Manager
+        this.timerManager = new WorkoutTimerManager(this.sessionService);
+        
+        // Phase 3: Initialize Card Manager (will be configured after workout loads)
+        this.cardManager = null;
+        
+        // Phase 4: Initialize Workout Data Manager
+        this.workoutDataManager = new WorkoutDataManager({
+            sessionService: this.sessionService,
+            dataManager: this.dataManager
+        });
+        
+        // Phase 5: Initialize Lifecycle Manager
+        this.lifecycleManager = new WorkoutLifecycleManager({
+            sessionService: this.sessionService,
+            uiStateManager: this.uiStateManager,
+            authService: this.authService,
+            dataManager: this.dataManager,
+            timerManager: this.timerManager,
+            onRenderWorkout: () => this.renderWorkout(),
+            onExpandFirstCard: () => this.expandFirstExerciseCard(),
+            onCollectExerciseData: () => this.collectExerciseData(),
+            onUpdateTemplateWeights: async (exercises) => await this.updateWorkoutTemplateWeights(exercises),
+            onLoadWorkout: async (workoutId) => await this.loadWorkout(workoutId)
+        });
+        
+        // Phase 6: Initialize Weight Manager
+        this.weightManager = new WorkoutWeightManager({
+            sessionService: this.sessionService,
+            onWeightUpdated: (exerciseName, weight) => this.renderWorkout(),
+            onRenderWorkout: () => this.renderWorkout(),
+            onAutoSave: () => this.autoSave(null)
+        });
+        
+        // Phase 7: Initialize Exercise Operations Manager
+        this.exerciseOpsManager = new WorkoutExerciseOperationsManager({
+            sessionService: this.sessionService,
+            dataManager: this.dataManager,
+            authService: this.authService,
+            onRenderWorkout: () => this.renderWorkout(),
+            onAutoSave: () => this.autoSave(null),
+            onGoToNext: (index) => this.goToNextExercise(index),
+            onGetCurrentExerciseData: (name, index) => this._getCurrentExerciseData(name, index)
+        });
+        
         // State
         this.currentWorkout = null;
-        this.timers = {};
-        this.globalRestTimer = null;
+        this.timers = {}; // Kept for backward compatibility, delegated to timerManager
+        this.globalRestTimer = null; // Kept for backward compatibility, delegated to timerManager
         this.soundEnabled = localStorage.getItem('workoutSoundEnabled') !== 'false';
         this.autoSaveTimer = null;
         this.workoutListComponent = null;
         
-        // 🔧 FIX: Add state flag to prevent concurrent session creation
-        this.isStartingSession = false;
+        // Phase 5: isStartingSession moved to lifecycleManager
         
         // Reorder mode state
         this.reorderModeEnabled = false;
@@ -59,11 +114,10 @@ class WorkoutModeController {
     
     /**
      * Strip HTML tags from string
+     * Phase 1: Delegates to WorkoutUtils
      */
     stripHtml(html) {
-        const tmp = document.createElement('div');
-        tmp.innerHTML = html;
-        return tmp.textContent || tmp.innerText || '';
+        return WorkoutUtils.stripHtml(html);
     }
     
     /**
@@ -78,7 +132,7 @@ class WorkoutModeController {
             console.log('🔍 DEBUG: Is authenticated?', this.authService?.isUserAuthenticated());
             
             // Update loading message
-            this.updateLoadingMessage('Initializing authentication...');
+            this.uiStateManager.updateLoadingMessage('Initializing authentication...');
             
             // Setup bonus exercise button handler
             this.setupBonusExerciseButton();
@@ -88,12 +142,9 @@ class WorkoutModeController {
                 this.handleAuthStateChange(user);
             });
             
-            // ✨ SESSION PERSISTENCE: Check for persisted session FIRST
-            const persistedSession = this.sessionService.restoreSession();
-            
-            if (persistedSession) {
-                console.log('🔄 Found persisted session, showing resume prompt...');
-                await this.showResumeSessionPrompt(persistedSession);
+            // ✨ Phase 5: Check for persisted session using lifecycleManager
+            const hasSession = await this.lifecycleManager.checkPersistedSession();
+            if (hasSession) {
                 return; // Stop normal initialization - user will choose to resume or start fresh
             }
             
@@ -109,7 +160,7 @@ class WorkoutModeController {
             // ✅ FIX: Wait for auth state to be ready using promise-based approach
             // This replaces the fixed timeout with a reliable promise that resolves when auth is determined
             console.log('⏳ Waiting for initial auth state...');
-            this.updateLoadingMessage('Determining authentication status...');
+            this.uiStateManager.updateLoadingMessage('Determining authentication status...');
             
             const authState = await this.dataManager.waitForAuthReady();
             console.log('✅ Auth state ready:', authState);
@@ -118,9 +169,9 @@ class WorkoutModeController {
             
             // Update loading message based on auth state
             if (authState.isAuthenticated) {
-                this.updateLoadingMessage('Loading workout from cloud...');
+                this.uiStateManager.updateLoadingMessage('Loading workout from cloud...');
             } else {
-                this.updateLoadingMessage('Loading workout...');
+                this.uiStateManager.updateLoadingMessage('Loading workout...');
             }
             
             // Load workout
@@ -136,7 +187,7 @@ class WorkoutModeController {
             
         } catch (error) {
             console.error('❌ Controller initialization failed:', error);
-            this.showError(error.message);
+            this.uiStateManager.showError(error.message);
         }
     }
     
@@ -156,7 +207,7 @@ class WorkoutModeController {
             console.log('📥 Loading workout:', workoutId);
             
             // Show loading state
-            this.showLoadingState();
+            this.uiStateManager.showLoading('Loading workout...');
             
             // Debug environment info
             console.log('🔍 DEBUG: Environment Info:', {
@@ -234,20 +285,23 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
                 await this.sessionService.fetchExerciseHistory(this.currentWorkout.id);
             }
             
+            // Set workout context for lifecycle manager
+            this.lifecycleManager.setWorkout(this.currentWorkout);
+            
             // Render workout (now has history available)
             this.renderWorkout();
             
             // Initialize start button tooltip
-            await this.initializeStartButtonTooltip();
+            await this.uiStateManager.updateStartButtonTooltip(this.authService.isUserAuthenticated());
             
             // Hide loading, show content
-            this.hideLoadingState();
+            this.uiStateManager.hideLoading();
             
             console.log('✅ Workout loaded:', this.currentWorkout.name);
             
         } catch (error) {
             console.error('❌ Error loading workout:', error);
-            this.showError(error.message);
+            this.uiStateManager.showError(error.message);
         }
     }
     
@@ -401,76 +455,49 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
         
         container.innerHTML = html;
         
-        // Initialize global rest timer
-        this.initializeGlobalRestTimer();
+        // Phase 3: Initialize Card Manager with workout data
+        if (!this.cardManager) {
+            this.cardManager = new ExerciseCardManager({
+                containerSelector: '#exerciseCardsContainer',
+                sessionService: this.sessionService,
+                timerManager: this.timerManager,
+                workout: this.currentWorkout
+            });
+        } else {
+            // Update existing manager with new workout data
+            this.cardManager.updateWorkout(this.currentWorkout);
+        }
         
-        // Initialize individual timers (will be removed later)
-        this.initializeTimers();
+        // Phase 2: Delegate to timer manager
+        this.timerManager.initializeGlobalTimer();
+        this.timerManager.initializeCardTimers();
         
         // PHASE 2: Initialize drag-and-drop reordering
         this.initializeSortable();
     }
     
     /**
-     * Initialize timers
+     * Initialize timers (FACADE - delegates to timerManager)
+     * @deprecated Use timerManager.initializeCardTimers() directly
      */
     initializeTimers() {
-        const timerElements = document.querySelectorAll('.rest-timer[data-timer-id]');
-        
-        timerElements.forEach(element => {
-            const timerId = element.getAttribute('data-timer-id');
-            const restSeconds = parseInt(element.getAttribute('data-rest-seconds')) || 60;
-            
-            // Use existing RestTimer class from workout-mode.js
-            const timer = new RestTimer(timerId, restSeconds);
-            this.timers[timerId] = timer;
-            timer.render();
-        });
+        this.timerManager.initializeCardTimers();
     }
     
     /**
-     * Initialize global rest timer
+     * Initialize global rest timer (FACADE - delegates to timerManager)
+     * @deprecated Use timerManager.initializeGlobalTimer() directly
      */
     initializeGlobalRestTimer() {
-        // Wait for global rest timer to be available from bottom action bar service
-        if (window.globalRestTimer) {
-            this.globalRestTimer = window.globalRestTimer;
-            console.log('✅ Global rest timer connected to controller');
-            
-            // Sync with first expanded card if any
-            this.syncGlobalTimerWithExpandedCard();
-        } else {
-            // Try again after a short delay
-            setTimeout(() => {
-                if (window.globalRestTimer) {
-                    this.globalRestTimer = window.globalRestTimer;
-                    console.log('✅ Global rest timer connected to controller (delayed)');
-                    this.syncGlobalTimerWithExpandedCard();
-                } else {
-                    console.warn('⚠️ Global rest timer still not available after delay');
-                }
-            }, 500);
-        }
+        this.timerManager.initializeGlobalTimer();
     }
     
     /**
-     * Sync global timer with currently expanded exercise card
+     * Sync global timer with currently expanded exercise card (FACADE - delegates to timerManager)
+     * @deprecated Use timerManager.syncWithExpandedCard() directly
      */
     syncGlobalTimerWithExpandedCard() {
-        if (!this.globalRestTimer || !this.currentWorkout) return;
-        
-        // Find currently expanded card
-        const expandedCard = document.querySelector('.exercise-card.expanded');
-        if (!expandedCard) return;
-        
-        const exerciseIndex = parseInt(expandedCard.getAttribute('data-exercise-index'));
-        const exerciseGroup = this.getExerciseGroupByIndex(exerciseIndex);
-        
-        if (exerciseGroup) {
-            const restSeconds = this.parseRestTime(exerciseGroup.rest || '60s');
-            this.globalRestTimer.syncWithCard(exerciseIndex, restSeconds);
-            console.log(`🔄 Global timer synced with exercise ${exerciseIndex}: ${restSeconds}s`);
-        }
+        this.timerManager.syncWithExpandedCard(this.currentWorkout);
     }
     
     /**
@@ -618,53 +645,35 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
     }
     
     /**
-     * Get exercise group by index
+     * Get exercise group by index (FACADE - delegates to cardManager)
+     * @deprecated Use cardManager.getExerciseGroup() directly
      */
     getExerciseGroupByIndex(index) {
-        // Check regular exercise groups first
+        if (this.cardManager) {
+            return this.cardManager.getExerciseGroup(index);
+        }
+        // Fallback for before cardManager is initialized
         if (this.currentWorkout.exercise_groups && index < this.currentWorkout.exercise_groups.length) {
             return this.currentWorkout.exercise_groups[index];
         }
-        
-        // Check bonus exercises
-        const bonusExercises = this.sessionService.getBonusExercises();
-        const bonusIndex = index - (this.currentWorkout.exercise_groups?.length || 0);
-        if (bonusExercises && bonusIndex >= 0 && bonusIndex < bonusExercises.length) {
-            const bonus = bonusExercises[bonusIndex];
-            return {
-                exercises: { a: bonus.name },
-                sets: bonus.sets,
-                reps: bonus.reps,
-                rest: bonus.rest || '60s',
-                default_weight: bonus.weight,
-                default_weight_unit: bonus.weight_unit || 'lbs'
-            };
-        }
-        
         return null;
     }
     
     /**
      * Handle weight button click
+     * Phase 6: Delegates to WorkoutWeightManager
      */
     handleWeightButtonClick(button) {
-        const exerciseName = button.getAttribute('data-exercise-name');
-        const currentWeight = button.getAttribute('data-current-weight');
-        const currentUnit = button.getAttribute('data-current-unit');
-        const lastWeight = button.getAttribute('data-last-weight');
-        const lastWeightUnit = button.getAttribute('data-last-weight-unit');
-        const lastSessionDate = button.getAttribute('data-last-session-date');
-        const isSessionActive = button.getAttribute('data-is-session-active') === 'true';
-        
-        this.showWeightModal(exerciseName, currentWeight, currentUnit, lastWeight, lastWeightUnit, lastSessionDate, isSessionActive);
+        return this.weightManager.handleWeightButtonClick(button);
     }
     
     /**
-     * Show weight modal (now delegates to factory)
+     * Show weight modal (DEPRECATED - for backward compatibility)
+     * Phase 6: Delegates to WorkoutWeightManager
+     * @deprecated Use weightManager.showWeightModal() directly
      */
     showWeightModal(exerciseName, currentWeight, currentUnit, lastWeight, lastWeightUnit, lastSessionDate, isSessionActive) {
-        // Use the unified factory to create the offcanvas
-        window.UnifiedOffcanvasFactory.createWeightEdit(exerciseName, {
+        return this.weightManager.showWeightModal(exerciseName, {
             currentWeight,
             currentUnit,
             lastWeight,
@@ -676,320 +685,111 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
     
     /**
      * Handle weight direction indicator toggle
-     * Two-button layout: decrease, increase (with toggle behavior)
-     * @param {HTMLElement} button - The direction button that was clicked
+     * Phase 6: Delegates to WorkoutWeightManager
      */
     handleWeightDirection(button) {
-        const exerciseName = button.getAttribute('data-exercise-name');
-        const direction = button.getAttribute('data-direction');
-        
-        if (!this.sessionService.isSessionActive()) {
-            if (window.showAlert) {
-                window.showAlert('Start your workout to set weight direction', 'warning');
-            }
-            return;
-        }
-        
-        // Get current direction to check if toggling off
-        const currentDirection = this.sessionService.getWeightDirection(exerciseName);
-        const newDirection = (currentDirection === direction) ? null : direction;
-        
-        console.log(`🎯 Weight direction for ${exerciseName}: ${newDirection || 'cleared'}`);
-        
-        // Update session service
-        this.sessionService.setWeightDirection(exerciseName, newDirection);
-        
-        // Haptic feedback
-        if (navigator.vibrate) {
-            navigator.vibrate(15);
-        }
-        
-        // Auto-save (fire and forget)
-        this.autoSave(null).catch(error => {
-            console.error('❌ Failed to auto-save after direction change:', error);
-        });
-        
-        // UPDATE UI DIRECTLY - Don't re-render entire workout (prevents card from closing)
-        this.updateWeightDirectionButtons(exerciseName, newDirection);
-        
-        // Show toast notification (only when setting a direction, not when clearing)
-        if (window.showAlert && newDirection) {
-            const messages = {
-                'up': 'Increase weight next session ⬆️',
-                'down': 'Decrease weight next session ⬇️'
-            };
-            window.showAlert(messages[newDirection], 'success');
-        }
+        return this.weightManager.handleWeightDirection(button);
     }
     
     /**
-     * Update weight direction button states in DOM without re-rendering
-     * This prevents the card from collapsing when direction buttons are clicked
-     * @param {string} exerciseName - Name of exercise
-     * @param {string|null} direction - 'up', 'down', or null
+     * Update weight direction button states (DEPRECATED - for backward compatibility)
+     * Phase 6: Delegates to WorkoutWeightManager
+     * @deprecated Use weightManager.updateWeightDirectionButtons() directly
      */
     updateWeightDirectionButtons(exerciseName, direction) {
-        // Find the card for this exercise
-        const card = document.querySelector(`.exercise-card[data-exercise-name="${exerciseName}"]`);
-        if (!card) return;
-        
-        // Find all direction buttons in this card
-        const buttons = card.querySelectorAll('.weight-direction-btn');
-        const dot = card.querySelector('.weight-direction-dot');
-        
-        // Update button states
-        buttons.forEach(btn => {
-            const btnDirection = btn.getAttribute('data-direction');
-            btn.classList.remove('active', 'btn-direction-up', 'btn-direction-down', 'btn-outline-secondary');
-            
-            if (btnDirection === direction) {
-                // This button is active
-                btn.classList.add('active', `btn-direction-${direction}`);
-            } else {
-                // This button is inactive
-                btn.classList.add('btn-outline-secondary');
-            }
-        });
-        
-        // Toggle dot visibility
-        if (dot) {
-            if (direction) {
-                // A direction is selected, hide the dot
-                dot.classList.add('hidden');
-            } else {
-                // No direction selected, show the dot
-                dot.classList.remove('hidden');
-            }
-        }
+        return this.weightManager.updateWeightDirectionButtons(exerciseName, direction);
     }
     
     /**
-     * Show quick notes popover for weight direction
-     * @param {HTMLElement} trigger - The trigger button element
+     * Toggle weight direction with inline buttons
+     * Phase 6: Delegates to WorkoutWeightManager
+     */
+    toggleWeightDirection(button, exerciseName, direction) {
+        return this.weightManager.toggleWeightDirection(button, exerciseName, direction);
+    }
+    
+    /**
+     * Update weight direction button states in the DOM without re-rendering
+     * Phase 6: Delegates to WorkoutWeightManager
+     * @private
+     */
+    _updateWeightDirectionButtonsUI(exerciseName, direction) {
+        return this.weightManager._updateWeightDirectionButtonsUI(exerciseName, direction);
+    }
+    
+    /**
+     * Toggle weight history expansion
+     * Phase 6: Delegates to WorkoutWeightManager
+     */
+    toggleWeightHistory(historyId) {
+        return this.weightManager.toggleWeightHistory(historyId);
+    }
+    
+    /**
+     * Show quick notes popover for weight direction (DEPRECATED)
+     * Phase 6: Delegates to WorkoutWeightManager
+     * @deprecated Replaced by toggleWeightDirection() inline button system
      */
     showQuickNotes(trigger) {
-        const exerciseName = trigger.getAttribute('data-exercise-name');
-        const noteType = trigger.getAttribute('data-note-type');
-        const currentValue = trigger.getAttribute('data-current-value');
-        
-        // Create and show the popover
-        const popover = new QuickNotesPopover(trigger, {
-            type: noteType,
-            entityId: exerciseName,
-            currentValue: currentValue || null,
-            onAction: (action, data) => {
-                this.handleQuickNoteAction(exerciseName, action, data);
-            }
-        });
-        
-        popover.show();
+        return this.weightManager.showQuickNotes(trigger);
     }
     
     /**
-     * Handle quick note action
-     * @param {string} exerciseName - Exercise name
-     * @param {string} action - Action taken (e.g., 'up', 'down')
-     * @param {Object} data - Additional data
+     * Handle quick note action (DEPRECATED - for backward compatibility)
+     * Phase 6: Delegates to WorkoutWeightManager
+     * @deprecated Use weightManager.handleQuickNoteAction() directly
      */
     handleQuickNoteAction(exerciseName, action, data) {
-        if (data.noteType === 'weight-direction') {
-            // Get current direction to check if toggling off
-            const currentDirection = this.sessionService.getWeightDirection(exerciseName);
-            const newDirection = (currentDirection === action) ? null : action;
-            
-            // Update session service
-            this.sessionService.setWeightDirection(exerciseName, newDirection);
-            
-            // Update trigger button state
-            this.updateQuickNoteTrigger(exerciseName, newDirection);
-            
-            // Show toast
-            if (window.showAlert && newDirection) {
-                const messages = {
-                    'up': 'Increase weight next session ⬆️',
-                    'down': 'Decrease weight next session ⬇️'
-                };
-                window.showAlert(messages[newDirection], 'success');
-            }
-            
-            // Auto-save
-            this.autoSave(null);
-        }
+        return this.weightManager.handleQuickNoteAction(exerciseName, action, data);
     }
     
     /**
-     * Update quick note trigger button state and label display
-     * @param {string} exerciseName - Exercise name
-     * @param {*} value - Current value ('up', 'down', 'same', or null)
+     * Update quick note trigger button state (DEPRECATED - for backward compatibility)
+     * Phase 6: Delegates to WorkoutWeightManager
+     * @deprecated Use weightManager.updateQuickNoteTrigger() directly
      */
     updateQuickNoteTrigger(exerciseName, value) {
-        // Find the card for this exercise
-        const card = document.querySelector(`.exercise-card[data-exercise-name="${exerciseName}"]`);
-        if (!card) return;
-        
-        // Find trigger button
-        const trigger = card.querySelector('.quick-notes-trigger');
-        if (!trigger) return;
-        
-        // Find label display on the right
-        const labelDisplay = card.querySelector('.quick-notes-label-display');
-        
-        const icon = trigger.querySelector('i');
-        
-        // Always use 'same' as default if no value
-        const effectiveValue = value || 'same';
-        
-        // Update trigger button state
-        if (value) {
-            trigger.classList.add('has-note');
-            trigger.setAttribute('data-current-value', value);
-        } else {
-            trigger.classList.remove('has-note');
-            trigger.setAttribute('data-current-value', 'same');
-        }
-        
-        // Update icon (filled when has a note that's not 'same')
-        if (icon) {
-            if (value && value !== 'same') {
-                icon.classList.remove('bx-pencil');
-                icon.classList.add('bxs-pencil');
-            } else {
-                icon.classList.remove('bxs-pencil');
-                icon.classList.add('bx-pencil');
-            }
-        }
-        
-        // Update label display text
-        if (labelDisplay) {
-            labelDisplay.textContent = this._getDirectionLabel(effectiveValue);
-        }
-        
-        // Also update the collapsed card badge
-        this._updateCollapsedBadge(exerciseName, value);
+        return this.weightManager.updateQuickNoteTrigger(exerciseName, value);
     }
     
     /**
-     * Update the weight badge on collapsed card to show current direction
-     * @param {string} exerciseName - Exercise name
-     * @param {string|null} direction - Direction value ('up', 'down', 'same', or null)
+     * Update collapsed badge (DEPRECATED - for backward compatibility)
+     * Phase 6: Delegates to WorkoutWeightManager
+     * @deprecated Use weightManager._updateCollapsedBadge() directly
      * @private
      */
     _updateCollapsedBadge(exerciseName, direction) {
-        const card = document.querySelector(`.exercise-card[data-exercise-name="${exerciseName}"]`);
-        if (!card) return;
-        
-        const badge = card.querySelector('.weight-badge');
-        if (!badge) return;
-        
-        // Update data attribute
-        badge.setAttribute('data-direction', direction || 'none');
-        
-        // Remove existing direction classes
-        badge.classList.remove('direction-up', 'direction-down', 'direction-reminder');
-        
-        // Add new direction class if applicable (and not 'same')
-        if (direction && direction !== 'same') {
-            badge.classList.add(`direction-${direction}`);
-        }
-        
-        // Update badge icon and text
-        const badgeText = badge.textContent.trim();
-        
-        // Extract just the weight value (strip any existing icons/arrows)
-        // Match pattern: optional icon/emoji/arrow, then number with optional decimal, then optional unit
-        const weightMatch = badgeText.match(/([\d.]+)\s*(\w+)?$/);
-        
-        if (weightMatch) {
-            const weightValue = weightMatch[1];
-            const weightUnit = weightMatch[2] || '';
-            const weightPart = weightUnit ? `${weightValue} ${weightUnit}` : weightValue;
-            
-            let icon = '';
-            let tooltipText = '';
-            
-            if (direction === 'up') {
-                icon = '✓↑';
-                tooltipText = `${weightPart} - Next: Increase weight`;
-            } else if (direction === 'down') {
-                icon = '✓↓';
-                tooltipText = `${weightPart} - Next: Decrease weight`;
-            } else {
-                // No direction or 'same' - use default arrow
-                icon = '→';
-                tooltipText = weightPart;
-            }
-            
-            // Update badge content with icon prefix
-            badge.textContent = `${icon} ${weightPart}`;
-            
-            // Update tooltip
-            badge.setAttribute('title', tooltipText);
-            badge.setAttribute('data-bs-original-title', tooltipText);
-        }
+        return this.weightManager._updateCollapsedBadge(exerciseName, direction);
     }
     
     /**
-     * Get direction label text
-     * @param {string} direction - 'up', 'down', or 'same'
-     * @returns {string} Label text
+     * Get direction label (DEPRECATED - for backward compatibility)
+     * Phase 6: Delegates to WorkoutWeightManager
+     * @deprecated Use weightManager.getDirectionLabel() directly
      * @private
      */
     _getDirectionLabel(direction) {
-        const labelMap = {
-            'up': 'Increase',
-            'down': 'Decrease',
-            'same': 'No change'
-        };
-        return labelMap[direction] || 'No change';
+        return this.weightManager.getDirectionLabel(direction);
     }
     
     /**
      * Show plate calculator settings
-     * PHASE 4: Opens offcanvas for configuring gym plate availability
+     * Phase 6: Delegates to WorkoutWeightManager
      */
     showPlateSettings() {
-        console.log('⚙️ Opening plate calculator settings...');
-        
-        // Use the unified factory to create the offcanvas
-        window.UnifiedOffcanvasFactory.createPlateSettings((newConfig) => {
-            console.log('✅ Plate settings saved:', newConfig);
-            
-            // Re-render workout to update plate calculations with new settings
-            this.renderWorkout();
-        });
+        return this.weightManager.showPlateSettings();
     }
     
     /**
      * Find exercise group by exercise name
      * Helper for weight adjustment
+     * Phase 4: Delegates to WorkoutDataManager
      * @param {string} exerciseName - Exercise name to find
      * @returns {Object|null} Exercise group or null if not found
      * @private
      */
     _findExerciseGroupByName(exerciseName) {
-        // Check regular exercise groups
-        if (this.currentWorkout?.exercise_groups) {
-            const group = this.currentWorkout.exercise_groups.find(g => g.exercises?.a === exerciseName);
-            if (group) return group;
-        }
-        
-        // Check bonus exercises
-        const bonusExercises = this.sessionService.getBonusExercises();
-        if (bonusExercises) {
-            const bonus = bonusExercises.find(b => b.name === exerciseName);
-            if (bonus) {
-                return {
-                    exercises: { a: bonus.name },
-                    sets: bonus.sets,
-                    reps: bonus.reps,
-                    rest: bonus.rest || '60s',
-                    default_weight: bonus.weight,
-                    default_weight_unit: bonus.weight_unit || 'lbs'
-                };
-            }
-        }
-        
-        return null;
+        return this.workoutDataManager.findExerciseByName(exerciseName, this.currentWorkout);
     }
     
     
@@ -1002,7 +802,7 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
             await this.sessionService.autoSaveSession(exercisesPerformed);
             
             if (card) {
-                this.showSaveIndicator(card, 'success');
+                this.uiStateManager.showSaveIndicator(card, 'success');
             }
             
             console.log('✅ Auto-save successful');
@@ -1010,229 +810,34 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
         } catch (error) {
             console.error('❌ Auto-save failed:', error);
             if (card) {
-                this.showSaveIndicator(card, 'error');
+                this.uiStateManager.showSaveIndicator(card, 'error');
             }
         }
     }
     
     /**
      * Show save indicator
+     * Phase 1: Delegates to WorkoutUIStateManager
      */
     showSaveIndicator(card, state) {
-        if (!card) return;
-        
-        const saveIndicator = card.querySelector('.save-indicator');
-        const saveSuccess = card.querySelector('.save-success');
-        
-        if (!saveIndicator || !saveSuccess) return;
-        
-        saveIndicator.style.display = 'none';
-        saveSuccess.style.display = 'none';
-        
-        switch (state) {
-            case 'saving':
-                saveIndicator.style.display = 'inline-block';
-                break;
-            case 'success':
-                saveSuccess.style.display = 'inline-block';
-                setTimeout(() => {
-                    saveSuccess.style.display = 'none';
-                }, 2000);
-                break;
-        }
+        return this.uiStateManager.showSaveIndicator(card, state);
     }
     
     /**
      * Collect exercise data for session
-     * 🔧 ENHANCED: Added validation and logging for bonus exercises
-     * 🔧 FIX: Respect custom exercise order when collecting data
+     * Phase 4: Delegates to WorkoutDataManager
      */
     collectExerciseData() {
-        const exercisesPerformed = [];
-        let orderIndex = 0;
-        
-        console.log('📊 Collecting exercise data for session...');
-        
-        // 🔧 FIX: Build exercise list in the SAME order as rendered on screen
-        // This ensures data collection matches the visual order
-        const allExercises = [];
-        
-        // Add regular exercises
-        if (this.currentWorkout.exercise_groups) {
-            this.currentWorkout.exercise_groups.forEach((group) => {
-                const mainExercise = group.exercises?.a;
-                if (mainExercise) {
-                    allExercises.push({
-                        type: 'regular',
-                        data: group,
-                        name: mainExercise
-                    });
-                }
-            });
-        }
-        
-        // Add bonus exercises  
-        const bonusExercises = this.sessionService.getBonusExercises();
-        if (bonusExercises && bonusExercises.length > 0) {
-            bonusExercises.forEach((bonus) => {
-                const exerciseName = bonus.name || bonus.exercise_name;
-                allExercises.push({
-                    type: 'bonus',
-                    data: bonus,
-                    name: exerciseName
-                });
-            });
-        }
-        
-        // Apply custom order if exists (SAME logic as renderWorkout)
-        const customOrder = this.sessionService.getExerciseOrder();
-        if (customOrder.length > 0) {
-            console.log('📋 Applying custom exercise order to data collection:', customOrder);
-            
-            const orderedExercises = [];
-            customOrder.forEach(name => {
-                const exercise = allExercises.find(ex => ex.name === name);
-                if (exercise) {
-                    orderedExercises.push(exercise);
-                }
-            });
-            
-            // Add any exercises not in custom order
-            allExercises.forEach(ex => {
-                if (!customOrder.includes(ex.name)) {
-                    orderedExercises.push(ex);
-                }
-            });
-            
-            // Replace with ordered list
-            allExercises.splice(0, allExercises.length, ...orderedExercises);
-        }
-        
-        // Collect data in display order
-        allExercises.forEach((exercise, index) => {
-            const mainExercise = exercise.name;
-            const isBonus = exercise.type === 'bonus';
-            const group = exercise.data;
-            
-            const exerciseData = this.sessionService.getExerciseWeight(mainExercise);
-            const history = this.sessionService.getExerciseHistory(mainExercise);
-            
-            // PHASE 1: Use nullish coalescing to preserve template defaults
-            // Support both numeric and text weights (Body, BW+25, 4x45, etc.)
-            const finalWeight = exerciseData?.weight ?? group.default_weight ?? null;
-            const finalUnit = exerciseData?.weight_unit || group.default_weight_unit || 'lbs';
-            
-            // 🔧 FIX: Read sets/reps/rest from session first, then fall back to template
-            const finalSets = exerciseData?.target_sets || group.sets || '3';
-            const finalReps = exerciseData?.target_reps || group.reps || '8-12';
-            const finalRest = exerciseData?.rest || group.rest || '60s';
-            
-            // PHASE 3: Calculate weight change properly
-            const previousWeight = history?.last_weight || null;
-            let weightChange = null;
-            if (finalWeight !== null && previousWeight !== null && typeof finalWeight === 'number' && typeof previousWeight === 'number') {
-                weightChange = finalWeight - previousWeight;
-            }
-            
-            // 🔍 DEBUG: Log direction being saved
-            const directionToSave = exerciseData?.next_weight_direction || null;
-            console.log(`🔍 [SAVE] Exercise ${index}: "${mainExercise}"`);
-            console.log(`  📝 Direction to save:`, directionToSave);
-            console.log(`  📊 Exercise data:`, exerciseData);
-            
-            exercisesPerformed.push({
-                exercise_name: mainExercise,
-                exercise_id: null,
-                group_id: isBonus ? `bonus-${index}` : (group.group_id || `group-${index}`),
-                sets_completed: parseInt(finalSets) || 0,
-                target_sets: finalSets,
-                target_reps: finalReps,
-                rest: finalRest,  // 🔧 FIX: Include rest in session data
-                weight: finalWeight,  // Can be string or null
-                weight_unit: finalUnit,
-                previous_weight: previousWeight,
-                weight_change: weightChange,  // PHASE 3: Calculated from current - previous
-                order_index: orderIndex++,
-                is_bonus: isBonus,
-                is_modified: exerciseData?.is_modified || false,  // PHASE 1
-                is_skipped: exerciseData?.is_skipped || false,    // PHASE 2
-                skip_reason: exerciseData?.skip_reason || null,   // PHASE 2
-                next_weight_direction: directionToSave  // Weight Progression Indicator
-            });
-        });
-        
-        console.log('📊 Total exercises collected:', exercisesPerformed.length);
-        console.log('   Regular:', exercisesPerformed.filter(e => !e.is_bonus).length);
-        console.log('   Bonus:', exercisesPerformed.filter(e => e.is_bonus).length);
-        
-        return exercisesPerformed;
+        return this.workoutDataManager.collectExerciseData(this.currentWorkout);
     }
     
     /**
      * Update workout template with final weights from completed session
      * This ensures the workout builder shows the most recent weights
+     * Phase 4: Delegates to WorkoutDataManager
      */
     async updateWorkoutTemplateWeights(exercisesPerformed) {
-        try {
-            if (!this.currentWorkout || !exercisesPerformed || exercisesPerformed.length === 0) {
-                console.log('⏭️ Skipping template weight update - no data to update');
-                return;
-            }
-            
-            console.log('🔄 Updating workout template with final weights...');
-            
-            // Create a map of exercise names to their weights
-            const weightMap = new Map();
-            exercisesPerformed.forEach(exercise => {
-                if (exercise.weight) {
-                    weightMap.set(exercise.exercise_name, {
-                        weight: exercise.weight,
-                        weight_unit: exercise.weight_unit || 'lbs'
-                    });
-                }
-            });
-            
-            // Update exercise groups with new weights
-            let updated = false;
-            if (this.currentWorkout.exercise_groups) {
-                this.currentWorkout.exercise_groups.forEach(group => {
-                    const mainExercise = group.exercises?.a;
-                    if (mainExercise && weightMap.has(mainExercise)) {
-                        const weightData = weightMap.get(mainExercise);
-                        group.default_weight = weightData.weight;
-                        group.default_weight_unit = weightData.weight_unit;
-                        updated = true;
-                        console.log(`✅ Updated ${mainExercise}: ${weightData.weight} ${weightData.weight_unit}`);
-                    }
-                });
-            }
-            
-            // Update bonus exercises with new weights
-            if (this.currentWorkout.bonus_exercises) {
-                this.currentWorkout.bonus_exercises.forEach(bonus => {
-                    if (bonus.name && weightMap.has(bonus.name)) {
-                        const weightData = weightMap.get(bonus.name);
-                        bonus.default_weight = weightData.weight;
-                        bonus.default_weight_unit = weightData.weight_unit;
-                        updated = true;
-                        console.log(`✅ Updated bonus ${bonus.name}: ${weightData.weight} ${weightData.weight_unit}`);
-                    }
-                });
-            }
-            
-            // Save updated workout template to database
-            if (updated) {
-                await this.dataManager.updateWorkout(this.currentWorkout.id, this.currentWorkout);
-                console.log('✅ Workout template weights updated successfully');
-            } else {
-                console.log('ℹ️ No weights to update in template');
-            }
-            
-        } catch (error) {
-            console.error('❌ Error updating workout template weights:', error);
-            // Don't throw - this is a non-critical enhancement
-            // The workout completion should still succeed even if template update fails
-        }
+        return await this.workoutDataManager.updateWorkoutTemplate(this.currentWorkout, exercisesPerformed);
     }
     
     /**
@@ -1266,90 +871,18 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
     
     /**
      * Initialize start button tooltip
+     * Phase 1: Delegates to WorkoutUIStateManager
      */
     async initializeStartButtonTooltip() {
-        const startBtn = document.getElementById('startWorkoutBtn');
-        if (!startBtn) return;
-        
-        // Destroy existing tooltip
-        const existingTooltip = window.bootstrap?.Tooltip?.getInstance(startBtn);
-        if (existingTooltip) {
-            existingTooltip.dispose();
-        }
-        
-        // Check if user is authenticated
-        const isAuthenticated = this.authService.isUserAuthenticated();
-        
-        if (isAuthenticated) {
-            startBtn.setAttribute('data-bs-original-title', 'Start tracking your workout with weight logging');
-            startBtn.classList.remove('btn-outline-primary');
-            startBtn.classList.add('btn-primary');
-        } else {
-            startBtn.setAttribute('data-bs-original-title', '🔒 Log in to track weights and save progress');
-            startBtn.classList.remove('btn-primary');
-            startBtn.classList.add('btn-outline-primary');
-        }
-        
-        // Initialize Bootstrap tooltip
-        if (window.bootstrap && window.bootstrap.Tooltip) {
-            new window.bootstrap.Tooltip(startBtn);
-        }
+        return this.uiStateManager.updateStartButtonTooltip(this.authService.isUserAuthenticated());
     }
     
     /**
      * Handle start workout
+     * Phase 5: Delegates to WorkoutLifecycleManager
      */
     async handleStartWorkout() {
-        if (!this.currentWorkout) {
-            console.error('No workout loaded');
-            return;
-        }
-        
-        // 🔧 FIX: Prevent concurrent session creation using state flag
-        if (this.isStartingSession) {
-            console.log('🚫 Session already being created, ignoring click');
-            return;
-        }
-        
-        // Check if user is authenticated (reuse existing service)
-        if (!this.authService.isUserAuthenticated()) {
-            this.showLoginPrompt();
-            return;
-        }
-        
-        try {
-            // Set flag to prevent concurrent calls
-            this.isStartingSession = true;
-            
-            // ✨ SESSION PERSISTENCE: Check if there's a different persisted session
-            const persistedSession = this.sessionService.restoreSession();
-            if (persistedSession && persistedSession.workoutId !== this.currentWorkout.id) {
-                const modalManager = this.getModalManager();
-                modalManager.confirm(
-                    'Active Session Found',
-                    `You have an active session for <strong>${this.escapeHtml(persistedSession.workoutName)}</strong>. Starting a new workout will end that session. Continue?`,
-                    async () => {
-                        // User chose to start fresh - clear old session and start new one
-                        this.sessionService.clearPersistedSession();
-                        await this.startNewSession();
-                    },
-                    () => {
-                        // User cancelled - reset flag
-                        this.isStartingSession = false;
-                    }
-                );
-                return;
-            }
-            
-            await this.startNewSession();
-            
-        } catch (error) {
-            console.error('❌ Error starting workout:', error);
-            this.isStartingSession = false;
-            
-            const modalManager = this.getModalManager();
-            modalManager.alert('Error', error.message, 'danger');
-        }
+        return await this.lifecycleManager.handleStartWorkout();
     }
     
     /**
@@ -1366,42 +899,12 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
     }
     
     /**
-     * Start a new workout session (extracted for reuse)
+     * Start a new workout session (DEPRECATED - for backward compatibility)
+     * Phase 5: Delegates to WorkoutLifecycleManager
+     * @deprecated Use lifecycleManager.startNewSession() directly
      */
     async startNewSession() {
-        try {
-            // PHASE 1: Pass workout data to pre-populate exercises
-            // 🔧 FIXED: Transfer happens INSIDE startSession() now
-            await this.sessionService.startSession(
-                this.currentWorkout.id,
-                this.currentWorkout.name,
-                this.currentWorkout  // Pass full workout data for template initialization
-            );
-            
-            // Fetch exercise history
-            await this.sessionService.fetchExerciseHistory(this.currentWorkout.id);
-            
-            // Update UI
-            this.updateSessionUI(true);
-            
-            // Re-render to show weight inputs and transferred bonus exercises
-            this.renderWorkout();
-            
-            // Auto-expand first exercise card after render completes
-            setTimeout(() => {
-                this.expandFirstExerciseCard();
-            }, 300);
-            
-            // Show success (reuse existing modal manager)
-            if (window.showAlert) {
-                window.showAlert('Workout session started! 💪', 'success');
-            }
-            
-        } catch (error) {
-            console.error('❌ Error starting workout:', error);
-            const modalManager = this.getModalManager();
-            modalManager.alert('Error', error.message, 'danger');
-        }
+        return await this.lifecycleManager.startNewSession();
     }
     
     /**
@@ -1417,123 +920,37 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
     
     /**
      * Handle complete workout
+     * Phase 5: Delegates to WorkoutLifecycleManager
      */
     async handleCompleteWorkout() {
-        // Show bottom offcanvas for workout completion (Sneat standard)
-        this.showCompleteWorkoutOffcanvas();
+        return this.lifecycleManager.handleCompleteWorkout();
     }
     
     /**
-     * Show complete workout offcanvas (now uses factory)
+     * Show complete workout offcanvas (DEPRECATED - for backward compatibility)
+     * Phase 5: Delegates to WorkoutLifecycleManager
+     * @deprecated Use lifecycleManager.showCompleteWorkoutOffcanvas() directly
      */
     showCompleteWorkoutOffcanvas() {
-        const session = this.sessionService.getCurrentSession();
-        if (!session) return;
-        
-        // Calculate session stats
-        const elapsed = Math.floor((Date.now() - session.startedAt.getTime()) / 1000);
-        const minutes = Math.floor(elapsed / 60);
-        const exerciseCount = this.currentWorkout?.exercise_groups?.length || 0;
-        const bonusCount = this.currentWorkout?.bonus_exercises?.length || 0;
-        const totalExercises = exerciseCount + bonusCount;
-        
-        // Use unified factory to create offcanvas
-        window.UnifiedOffcanvasFactory.createCompleteWorkout({
-            workoutName: this.currentWorkout.name,
-            minutes,
-            totalExercises
-        }, async () => {
-            const exercisesPerformed = this.collectExerciseData();
-            const completedSession = await this.sessionService.completeSession(exercisesPerformed);
-            await this.updateWorkoutTemplateWeights(exercisesPerformed);
-            this.showCompletionSummary(completedSession);
-        });
+        return this.lifecycleManager.showCompleteWorkoutOffcanvas();
     }
     
     /**
-     * Show completion summary (now uses factory)
+     * Show completion summary (DEPRECATED - for backward compatibility)
+     * Phase 5: Delegates to WorkoutLifecycleManager
+     * @deprecated Use lifecycleManager.showCompletionSummary() directly
      */
     showCompletionSummary(session) {
-        window.UnifiedOffcanvasFactory.createCompletionSummary({
-            duration: session.duration_minutes || 0,
-            exerciseCount: session.exercises_performed?.length || 0,
-            workoutId: this.currentWorkout?.id  // Pass workout ID for history link
-        });
+        return this.lifecycleManager.showCompletionSummary(session);
     }
     
     /**
-     * Show login prompt
+     * Show login prompt (DEPRECATED - for backward compatibility)
+     * Phase 5: Delegates to WorkoutLifecycleManager
+     * @deprecated Use lifecycleManager.showLoginPrompt() directly
      */
     showLoginPrompt() {
-        const modalHtml = `
-            <div class="modal fade" id="loginPromptModal" tabindex="-1" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content">
-                        <div class="modal-header border-0 pb-0">
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body text-center pt-0">
-                            <div class="mb-4">
-                                <i class="bx bx-lock-alt" style="font-size: 4rem; color: var(--bs-primary);"></i>
-                            </div>
-                            <h4 class="mb-3">Login Required</h4>
-                            <p class="text-muted mb-4">You need to be logged in to track your workouts and save weight progress.</p>
-                            
-                            <div class="mb-4">
-                                <p class="mb-3"><strong>With an account you can:</strong></p>
-                                <ul class="list-unstyled text-start" style="max-width: 300px; margin: 0 auto;">
-                                    <li class="mb-2">
-                                        <i class="bx bx-check-circle text-success me-2"></i>
-                                        Track weight progress
-                                    </li>
-                                    <li class="mb-2">
-                                        <i class="bx bx-check-circle text-success me-2"></i>
-                                        Save workout history
-                                    </li>
-                                    <li class="mb-2">
-                                        <i class="bx bx-check-circle text-success me-2"></i>
-                                        See personal records
-                                    </li>
-                                    <li class="mb-2">
-                                        <i class="bx bx-check-circle text-success me-2"></i>
-                                        Auto-save during workouts
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
-                        <div class="modal-footer border-0 justify-content-center">
-                            <button type="button" class="btn btn-primary" onclick="window.authService.showLoginModal(); bootstrap.Modal.getInstance(document.getElementById('loginPromptModal')).hide();">
-                                <i class="bx bx-log-in me-2"></i>Log In
-                            </button>
-                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
-                                Maybe Later
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
-        
-        // Remove existing modal if any
-        const existingModal = document.getElementById('loginPromptModal');
-        if (existingModal) {
-            existingModal.remove();
-        }
-        
-        // Add modal to body
-        document.body.insertAdjacentHTML('beforeend', modalHtml);
-        
-        // Initialize Bootstrap modal
-        const modalElement = document.getElementById('loginPromptModal');
-        const modal = new window.bootstrap.Modal(modalElement);
-        
-        // Cleanup modal on hide
-        modalElement.addEventListener('hidden.bs.modal', () => {
-            modalElement.remove();
-        });
-        
-        // Show modal
-        modal.show();
+        return this.lifecycleManager.showLoginPrompt();
     }
     
     /**
@@ -1542,291 +959,86 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
      */
     
     /**
-     * Show resume session prompt (now uses factory)
+     * Show resume session prompt (DEPRECATED - for backward compatibility)
+     * Phase 5: Delegates to WorkoutLifecycleManager
      * @param {Object} sessionData - Persisted session data
+     * @deprecated Use lifecycleManager.showResumeSessionPrompt() directly
      */
     async showResumeSessionPrompt(sessionData) {
-        // Calculate elapsed time
-        const startedAt = new Date(sessionData.startedAt);
-        const elapsedMinutes = Math.floor((Date.now() - startedAt.getTime()) / (1000 * 60));
-        const elapsedHours = Math.floor(elapsedMinutes / 60);
-        const remainingMinutes = elapsedMinutes % 60;
-        
-        // Format elapsed time display
-        const elapsedDisplay = elapsedHours > 0
-            ? `${elapsedHours}h ${remainingMinutes}m ago`
-            : `${elapsedMinutes} minutes ago`;
-        
-        // Count exercises with weights
-        const exercisesWithWeights = Object.keys(sessionData.exercises || {})
-            .filter(name => sessionData.exercises[name].weight).length;
-        const totalExercises = Object.keys(sessionData.exercises || {}).length;
-        
-        // Use unified factory to create offcanvas
-        window.UnifiedOffcanvasFactory.createResumeSession({
-            workoutName: sessionData.workoutName,
-            elapsedDisplay,
-            exercisesWithWeights,
-            totalExercises
-        },
-        async () => await this.resumeSession(sessionData),
-        () => {
-            this.sessionService.clearPersistedSession();
-            setTimeout(() => this.initialize(), 300);
-        });
+        return await this.lifecycleManager.showResumeSessionPrompt(sessionData);
     }
     
     /**
-     * Resume a persisted session
+     * Resume a persisted session (DEPRECATED - for backward compatibility)
+     * Phase 5: Delegates to WorkoutLifecycleManager
      * @param {Object} sessionData - Persisted session data
+     * @deprecated Use lifecycleManager.resumeSession() directly
      */
     async resumeSession(sessionData) {
-        try {
-            console.log('🔄 Resuming workout session...');
-            
-            // Restore session to service
-            this.sessionService.currentSession = {
-                id: sessionData.sessionId,
-                workoutId: sessionData.workoutId,
-                workoutName: sessionData.workoutName,
-                startedAt: new Date(sessionData.startedAt),
-                status: sessionData.status,
-                exercises: sessionData.exercises || {}
-            };
-            
-            // Load the workout
-            await this.loadWorkout(sessionData.workoutId);
-            
-            // Update UI to show active session
-            this.updateSessionUI(true);
-            
-            // Start timer (will calculate from original start time)
-            this.startSessionTimer();
-            
-            // Calculate elapsed time for display
-            const elapsedMinutes = Math.floor(
-                (Date.now() - this.sessionService.currentSession.startedAt.getTime()) / (1000 * 60)
-            );
-            
-            // Show success message
-            if (window.showAlert) {
-                window.showAlert(
-                    `Workout resumed! You've been working out for ${elapsedMinutes} minutes.`,
-                    'success'
-                );
-            }
-            
-            console.log('✅ Session resumed successfully');
-            
-        } catch (error) {
-            console.error('❌ Error resuming session:', error);
-            
-            // Clear invalid session
-            this.sessionService.clearPersistedSession();
-            
-            // Show error and redirect
-            this.showError('Failed to resume workout. The workout may have been deleted.');
-            
-            setTimeout(() => {
-                window.location.href = 'workout-database.html';
-            }, 3000);
-            
-            throw error;
-        }
+        return await this.lifecycleManager.resumeSession(sessionData);
     }
     
     /**
      * BONUS EXERCISE METHODS
-     * Handle bonus exercise modal and management
-     * UPDATED: Now uses two-offcanvas approach (Add Exercise + Exercise Search)
+     * Phase 7: Delegates to WorkoutExerciseOperationsManager
      */
     
     /**
      * Handle bonus exercises button click
-     * Now works BEFORE and DURING workout session
+     * Phase 7: Delegates to WorkoutExerciseOperationsManager
      */
     async handleBonusExercises() {
-        await this.showAddExerciseForm();
+        return await this.exerciseOpsManager.handleBonusExercises();
     }
     
     /**
-     * Show add exercise form (new two-offcanvas approach)
-     * Opens the Add Exercise form with search button integration
+     * Show add exercise form
+     * Phase 7: Delegates to WorkoutExerciseOperationsManager
      */
     async showAddExerciseForm() {
-        try {
-            window.UnifiedOffcanvasFactory.createExerciseGroupEditor(
-                {
-                    mode: 'single',
-                    title: 'Add Bonus Exercise',
-                    exercises: { a: '', b: '', c: '' },
-                    sets: '3',
-                    reps: '12',
-                    rest: '60s',
-                    weight: '',
-                    weightUnit: 'lbs',
-                    isNew: true
-                },
-                // onSave callback
-                async (groupData) => {
-                    // Handle adding exercise with weight data
-                    this.sessionService.addBonusExercise({
-                        name: groupData.exercises.a,
-                        sets: groupData.sets || '3',
-                        reps: groupData.reps || '12',
-                        rest: groupData.rest || '60s',
-                        weight: groupData.default_weight || '',
-                        weight_unit: groupData.default_weight_unit || 'lbs'
-                    });
-                    this.renderWorkout();
-                    
-                    const message = !this.sessionService.isSessionActive()
-                        ? `${groupData.exercises.a} added! It will be included when you start the workout. 💪`
-                        : `${groupData.exercises.a} added to your workout! 💪`;
-                    if (window.showAlert) window.showAlert(message, 'success');
-                },
-                // onDelete callback (not used in single mode)
-                async () => {
-                    console.warn('⚠️ Delete not applicable in single mode');
-                },
-                // onSearchClick callback
-                (slotKey, populateCallback) => {
-                    // Open Exercise Search offcanvas
-                    this.showExerciseSearchOffcanvas(populateCallback);
-                }
-            );
-        } catch (error) {
-            console.error('❌ Error showing add exercise form:', error);
-            const modalManager = this.getModalManager();
-            modalManager.alert('Error', 'Failed to load add exercise form. Please try again.', 'danger');
-        }
+        return await this.exerciseOpsManager.showAddExerciseForm();
     }
     
     /**
      * Show exercise search offcanvas
-     * Opens the standalone exercise search interface
-     * @param {Function} populateCallback - Callback to populate the Add Exercise form with selected exercise
+     * Phase 7: Delegates to WorkoutExerciseOperationsManager
      */
     showExerciseSearchOffcanvas(populateCallback) {
-        try {
-            window.UnifiedOffcanvasFactory.createExerciseSearchOffcanvas(
-                {
-                    title: 'Search Exercise Library',
-                    showFilters: true,
-                    buttonText: 'Select',
-                    buttonIcon: 'bx-check'
-                },
-                (selectedExercise) => {
-                    // Exercise selected from search
-                    // Populate the Add Exercise form via callback
-                    populateCallback(selectedExercise);
-                    
-                    console.log('✅ Exercise selected:', selectedExercise.name);
-                }
-            );
-        } catch (error) {
-            console.error('❌ Error showing exercise search:', error);
-            const modalManager = this.getModalManager();
-            modalManager.alert('Error', 'Failed to load exercise search. Please try again.', 'danger');
-        }
+        return this.exerciseOpsManager.showExerciseSearchOffcanvas(populateCallback);
     }
     
     /**
-     * Show bonus exercise modal (DEPRECATED - kept for backward compatibility)
-     * Use showAddExerciseForm() instead
+     * Show bonus exercise modal (DEPRECATED)
+     * Phase 7: Delegates to WorkoutExerciseOperationsManager
      */
     async showBonusExerciseModal() {
-        console.warn('⚠️ showBonusExerciseModal() is deprecated, use showAddExerciseForm() instead');
-        await this.showAddExerciseForm();
+        return await this.exerciseOpsManager.showBonusExerciseModal();
     }
     
     
     
     /**
      * Update session UI
+     * Phase 5: Delegates to WorkoutLifecycleManager
      */
     updateSessionUI(isActive) {
-        const sessionIndicator = document.getElementById('sessionActiveIndicator');
-        const sessionInfo = document.getElementById('sessionInfo');
-        const footer = document.getElementById('workoutModeFooter');
-        
-        // Always show footer when workout is loaded
-        if (footer) footer.style.display = 'block';
-        
-        if (isActive) {
-            if (sessionIndicator) sessionIndicator.style.display = 'block';
-            if (sessionInfo) sessionInfo.style.display = 'block';
-            
-            // Update floating timer/end combo to show active state
-            if (window.bottomActionBar) {
-                console.log('🔄 Updating timer/end combo to active mode');
-                window.bottomActionBar.updateWorkoutModeState(true);
-            }
-            
-            // Start session timer
-            this.startSessionTimer();
-        } else {
-            if (sessionIndicator) sessionIndicator.style.display = 'none';
-            if (sessionInfo) sessionInfo.style.display = 'none';
-            
-            // Update timer/end combo to show inactive state (Start button)
-            if (window.bottomActionBar) {
-                console.log('🔄 Updating timer/end combo to inactive mode');
-                window.bottomActionBar.updateWorkoutModeState(false);
-            }
-            
-            // Stop session timer
-            this.stopSessionTimer();
-        }
+        return this.lifecycleManager.updateSessionUI(isActive);
     }
     
     /**
-     * Start session timer
+     * Start session timer (FACADE - delegates to timerManager)
+     * @deprecated Use timerManager.startSessionTimer() directly
      */
     startSessionTimer() {
-        const session = this.sessionService.getCurrentSession();
-        if (!session) return;
-        
-        if (this.sessionTimerInterval) {
-            clearInterval(this.sessionTimerInterval);
-        }
-        
-        // Timer combo is always visible, just update the timer and button state
-        this.sessionTimerInterval = setInterval(() => {
-            const elapsed = Math.floor((Date.now() - session.startedAt.getTime()) / 1000);
-            const minutes = Math.floor(elapsed / 60);
-            const seconds = elapsed % 60;
-            const timeStr = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-            
-            // Update floating timer in combo
-            const floatingTimer = document.getElementById('floatingTimer');
-            if (floatingTimer) floatingTimer.textContent = timeStr;
-            
-            // Keep old timers for backward compatibility
-            const sessionTimer = document.getElementById('sessionTimer');
-            const footerTimer = document.getElementById('footerSessionTimer');
-            const oldFloatingTimer = document.getElementById('floatingTimerDisplay');
-            
-            if (sessionTimer) sessionTimer.textContent = timeStr;
-            if (footerTimer) footerTimer.textContent = timeStr;
-            if (oldFloatingTimer) oldFloatingTimer.textContent = timeStr;
-        }, 1000);
+        this.timerManager.startSessionTimer(this.sessionService.getCurrentSession());
     }
     
     /**
-     * Stop session timer
+     * Stop session timer (FACADE - delegates to timerManager)
+     * @deprecated Use timerManager.stopSessionTimer() directly
      */
     stopSessionTimer() {
-        if (this.sessionTimerInterval) {
-            clearInterval(this.sessionTimerInterval);
-            this.sessionTimerInterval = null;
-        }
-        
-        // Reset timer display to 00:00
-        const floatingTimer = document.getElementById('floatingTimer');
-        if (floatingTimer) floatingTimer.textContent = '00:00';
-        
-        // Timer combo stays visible, just shows 00:00 and "Start" button
+        this.timerManager.stopSessionTimer();
     }
     
     /**
@@ -1837,7 +1049,7 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
         
         // Only update tooltip, don't reload workout
         // The workout loads once after initial auth state is determined
-        this.initializeStartButtonTooltip();
+        this.uiStateManager.updateStartButtonTooltip(this.authService.isUserAuthenticated());
     }
     
     /**
@@ -1955,107 +1167,53 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
     }
     
     /**
-     * Toggle exercise card
+     * Toggle exercise card (FACADE - delegates to cardManager)
+     * @deprecated Use cardManager.toggle() directly
      */
     toggleExerciseCard(index) {
-        const card = document.querySelector(`.exercise-card[data-exercise-index="${index}"]`);
-        if (!card) return;
-        
-        const isExpanded = card.classList.contains('expanded');
-        const exerciseName = card.getAttribute('data-exercise-name');
-        
-        if (isExpanded) {
-            this.collapseCard(card);
-            // Clear auto-complete timer when collapsing
-            if (exerciseName && this.sessionService.isSessionActive()) {
-                this.sessionService.clearAutoCompleteTimer(exerciseName);
-            }
-        } else {
-            // Collapse all other cards and clear their timers
-            document.querySelectorAll('.exercise-card.expanded').forEach(otherCard => {
-                const otherName = otherCard.getAttribute('data-exercise-name');
-                this.collapseCard(otherCard);
-                // Clear timer for collapsed cards
-                if (otherName && this.sessionService.isSessionActive()) {
-                    this.sessionService.clearAutoCompleteTimer(otherName);
-                }
-            });
-            this.expandCard(card);
-            
-            // Start auto-complete timer when expanding (only during active session)
-            if (exerciseName && this.sessionService.isSessionActive()) {
-                this.sessionService.startAutoCompleteTimer(exerciseName, 10); // 10 minutes
-            }
-            
-            // Sync global timer with newly expanded card
-            this.syncGlobalTimerWithExpandedCard();
-        }
-    }
-    
-    expandCard(card) {
-        // Show body immediately so CSS transitions can take effect
-        const body = card.querySelector('.exercise-card-body');
-        if (body) {
-            body.style.display = 'block';
-            // Force reflow to ensure initial state is set before transition
-            void body.offsetHeight;
-        }
-        
-        // Add expanded class to trigger CSS transitions
-        card.classList.add('expanded');
-        
-        // OPTIMIZED: Faster scroll for snappier feel
-        setTimeout(() => {
-            card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }, 100);
-    }
-    
-    collapseCard(card) {
-        // Remove expanded class to trigger reverse CSS transitions
-        card.classList.remove('expanded');
-        
-        // OPTIMIZED: Wait for faster transitions to complete before hiding
-        const body = card.querySelector('.exercise-card-body');
-        if (body) {
-            setTimeout(() => {
-                // Only hide if card is still collapsed (user didn't re-expand)
-                if (!card.classList.contains('expanded')) {
-                    body.style.display = 'none';
-                }
-            }, 200); // Match new faster CSS transition duration (0.2s)
+        if (this.cardManager) {
+            this.cardManager.toggle(index);
         }
     }
     
     /**
-     * Stop current exercise (placeholder)
+     * Expand exercise card (FACADE - delegates to cardManager)
+     * @deprecated Use cardManager.expand() directly
+     */
+    expandCard(card) {
+        if (this.cardManager) {
+            this.cardManager.expand(card);
+        }
+    }
+    
+    /**
+     * Collapse exercise card (FACADE - delegates to cardManager)
+     * @deprecated Use cardManager.collapse() directly
+     */
+    collapseCard(card) {
+        if (this.cardManager) {
+            this.cardManager.collapse(card);
+        }
+    }
+    
+    /**
+     * Stop current exercise (FACADE - delegates to cardManager)
+     * @deprecated Use cardManager methods directly
      */
     stopExercise(index) {
         const card = document.querySelector(`.exercise-card[data-exercise-index="${index}"]`);
-        if (card) {
-            this.collapseCard(card);
+        if (card && this.cardManager) {
+            this.cardManager.collapse(card);
         }
     }
     
     /**
-     * Go to next exercise
-     * OPTIMIZED: Overlapping animations for snappier transitions
+     * Go to next exercise (FACADE - delegates to cardManager)
+     * @deprecated Use cardManager.goToNext() directly
      */
     goToNextExercise(currentIndex) {
-        const allCards = document.querySelectorAll('.exercise-card');
-        const nextIndex = currentIndex + 1;
-        
-        if (nextIndex < allCards.length) {
-            const currentCard = allCards[currentIndex];
-            this.collapseCard(currentCard);
-            
-            // OPTIMIZED: Start next card opening while current is still closing (overlapping animations)
-            setTimeout(() => {
-                this.toggleExerciseCard(nextIndex);
-            }, 50); // Reduced from 300ms to 50ms for overlapping effect
-        } else {
-            // Last exercise - show complete workout dialog
-            console.log('🎉 Last exercise completed, showing complete workout dialog');
-            this.handleCompleteWorkout();
+        if (this.cardManager) {
+            this.cardManager.goToNext(currentIndex, () => this.handleCompleteWorkout());
         }
     }
     
@@ -2117,7 +1275,7 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
         const modalManager = this.getModalManager();
         modalManager.confirm(
             'Unskip Exercise',
-            `Resume <strong>${this.escapeHtml(exerciseName)}</strong>?`,
+            `Resume <strong>${WorkoutUtils.escapeHtml(exerciseName)}</strong>?`,
             async () => {
                 // Mark as not skipped in session
                 this.sessionService.unskipExercise(exerciseName);
@@ -2194,40 +1352,14 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
     /**
      * PHASE 1: Get current exercise data from appropriate source
      * Priority: Active Session > Pre-Session Edits > Template
+     * Phase 4: Delegates to WorkoutDataManager
      * @param {string} exerciseName - Exercise name
      * @param {number} index - Exercise index
      * @returns {Object} Current exercise data
      * @private
      */
     _getCurrentExerciseData(exerciseName, index) {
-        const exerciseGroup = this.getExerciseGroupByIndex(index);
-        
-        // Check if session is active
-        if (this.sessionService.isSessionActive()) {
-            // ACTIVE SESSION: Get from session data
-            const exerciseData = this.sessionService.getExerciseWeight(exerciseName);
-            
-            return {
-                exerciseName,
-                sets: exerciseData?.target_sets || exerciseGroup?.sets || '3',
-                reps: exerciseData?.target_reps || exerciseGroup?.reps || '8-12',
-                rest: exerciseData?.rest || exerciseGroup?.rest || '60s',
-                weight: exerciseData?.weight || exerciseGroup?.default_weight || '',
-                weightUnit: exerciseData?.weight_unit || exerciseGroup?.default_weight_unit || 'lbs'
-            };
-        } else {
-            // PRE-SESSION: Check pre-session edits first, then template
-            const preSessionEdit = this.sessionService.getPreSessionEdits(exerciseName);
-            
-            return {
-                exerciseName,
-                sets: preSessionEdit?.target_sets || exerciseGroup?.sets || '3',
-                reps: preSessionEdit?.target_reps || exerciseGroup?.reps || '8-12',
-                rest: preSessionEdit?.rest || exerciseGroup?.rest || '60s',
-                weight: preSessionEdit?.weight || exerciseGroup?.default_weight || '',
-                weightUnit: preSessionEdit?.weight_unit || exerciseGroup?.default_weight_unit || 'lbs'
-            };
-        }
+        return this.workoutDataManager.getCurrentExerciseData(exerciseName, this.currentWorkout, index);
     }
     
     /**
@@ -2280,7 +1412,7 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
         const modalManager = this.getModalManager();
         modalManager.confirm(
             'Uncomplete Exercise',
-            `Mark <strong>${this.escapeHtml(exerciseName)}</strong> as not completed?`,
+            `Mark <strong>${WorkoutUtils.escapeHtml(exerciseName)}</strong> as not completed?`,
             async () => {
                 // Mark as not completed
                 this.sessionService.uncompleteExercise(exerciseName);
@@ -2338,105 +1470,50 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
     
     /**
      * Update loading message
+     * Phase 1: Delegates to WorkoutUIStateManager
      */
     updateLoadingMessage(message) {
-        const loadingMessage = document.getElementById('loadingMessage');
-        if (loadingMessage) {
-            loadingMessage.textContent = message;
-        }
+        return this.uiStateManager.updateLoadingMessage(message);
     }
     
     /**
      * Show loading state
+     * Phase 1: Delegates to WorkoutUIStateManager
      */
     showLoadingState() {
-        const loading = document.getElementById('workoutLoadingState');
-        const error = document.getElementById('workoutErrorState');
-        const exerciseCardsSection = document.getElementById('exerciseCardsSection');
-        const footer = document.getElementById('workoutModeFooter');
-        const workoutInfoHeader = document.getElementById('workoutInfoHeader');
-        
-        if (loading) loading.style.display = 'block';
-        if (error) error.style.display = 'none';
-        if (exerciseCardsSection) exerciseCardsSection.style.display = 'none';
-        if (footer) footer.style.display = 'none';
-        if (workoutInfoHeader) workoutInfoHeader.style.display = 'none';
+        return this.uiStateManager.showLoading('Loading...');
     }
     
     /**
      * Hide loading state
+     * Phase 1: Delegates to WorkoutUIStateManager
      */
     hideLoadingState() {
-        const loading = document.getElementById('workoutLoadingState');
-        const exerciseCardsSection = document.getElementById('exerciseCardsSection');
-        const footer = document.getElementById('workoutModeFooter');
-        const workoutInfoHeader = document.getElementById('workoutInfoHeader');
-        
-        if (loading) loading.style.display = 'none';
-        if (exerciseCardsSection) exerciseCardsSection.style.display = 'block';
-        if (footer) footer.style.display = 'block';
-        if (workoutInfoHeader) workoutInfoHeader.style.display = 'block';
-        
-        // Update session UI to show correct button
-        const isActive = this.sessionService.isSessionActive();
-        this.updateSessionUI(isActive);
+        return this.uiStateManager.hideLoading();
     }
     
     /**
      * Show error state
+     * Phase 1: Delegates to WorkoutUIStateManager
      */
     showError(message) {
-        console.error('❌ Showing error:', message);
-        
-        const loading = document.getElementById('workoutLoadingState');
-        const error = document.getElementById('workoutErrorState');
-        const errorMessage = document.getElementById('workoutErrorMessage');
-        const exerciseCardsSection = document.getElementById('exerciseCardsSection');
-        const footer = document.getElementById('workoutModeFooter');
-        const workoutInfoHeader = document.getElementById('workoutInfoHeader');
-        
-        // Hide all other states
-        if (loading) loading.style.display = 'none';
-        if (exerciseCardsSection) exerciseCardsSection.style.display = 'none';
-        if (footer) footer.style.display = 'none';
-        if (workoutInfoHeader) workoutInfoHeader.style.display = 'none';
-        
-        // Show error with detailed message and troubleshooting tips
-        if (error) {
-            error.style.display = 'block';
-            if (errorMessage && message) {
-                errorMessage.innerHTML = `
-                    <strong>${this.escapeHtml(message)}</strong>
-                    <br><br>
-                    <small class="text-muted">
-                        <strong>Troubleshooting tips:</strong><br>
-                        1. Refresh the page (Ctrl+R or Cmd+R)<br>
-                        2. Clear browser cache and try again<br>
-                        3. Check browser console for details (F12)<br>
-                        4. Try a different browser<br>
-                        <br>
-                        <em>If this persists, the app may still be initializing. Wait a moment and refresh.</em>
-                    </small>
-                `;
-            }
-        }
+        return this.uiStateManager.showError(message);
     }
     
     /**
      * Utility: Parse rest time
+     * Phase 1: Delegates to WorkoutUtils
      */
     parseRestTime(restStr) {
-        const match = restStr.match(/(\d+)/);
-        return match ? parseInt(match[1]) : 60;
+        return WorkoutUtils.parseRestTime(restStr);
     }
     
     /**
      * Utility: Escape HTML
+     * Phase 1: Delegates to WorkoutUtils
      */
     escapeHtml(text) {
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
+        return WorkoutUtils.escapeHtml(text);
     }
     
     /**

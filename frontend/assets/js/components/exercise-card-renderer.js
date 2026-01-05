@@ -46,9 +46,8 @@ class ExerciseCardRenderer {
         const history = this.sessionService.getExerciseHistory(mainExercise);
         const lastWeight = history?.last_weight || '';
         const lastWeightUnit = history?.last_weight_unit || 'lbs';
-        const lastSessionDate = history?.last_session_date
-            ? new Date(history.last_session_date).toLocaleDateString()
-            : null;
+        const lastSessionDate = history?.last_session_date || null;
+        const recentSessions = history?.recent_sessions || [];
         
         // Get last weight direction from history (for display on new session)
         const lastDirection = this.sessionService.getLastWeightDirection(mainExercise);
@@ -136,30 +135,53 @@ class ExerciseCardRenderer {
                         </div>
                     ` : ''}
                     
-                    <!-- Weight Section -->
-                    <div class="exercise-weight-section">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div class="exercise-weight-display">
-                                <span class="exercise-weight-value">${currentWeight || '—'}</span>
-                                ${currentWeight && currentUnit !== 'other' ? `<span class="exercise-weight-unit">${currentUnit}</span>` : ''}
+                    <!-- Weight Direction Reminder from Last Session (shows always if exists) -->
+                    ${lastDirection ? `
+                        <div class="alert alert-${lastDirection === 'up' ? 'success' : 'warning'} d-flex align-items-center mb-3" role="alert">
+                            <i class="bx bx-chevron-${lastDirection} me-2" style="font-size: 1.5rem;"></i>
+                            <div>
+                                <strong>From last session:</strong> ${lastDirection === 'up' ? 'Increase' : 'Decrease'} weight
                             </div>
+                        </div>
+                    ` : ''}
+                    
+                    <!-- Weight Section (2-Column Layout) -->
+                    <div class="exercise-weight-section">
+                        <div class="weight-section-row">
+                            <!-- Left Column: Weight Display -->
+                            <div class="weight-section-left">
+                                <div class="exercise-weight-display">
+                                    <span class="exercise-weight-value">${currentWeight || '—'}</span>
+                                    ${currentWeight && currentUnit !== 'other' ? `<span class="exercise-weight-unit">${currentUnit}</span>` : ''}
+                                </div>
+                                ${this._renderWeightHistory(mainExercise, lastWeight, lastWeightUnit, lastSessionDate, recentSessions)}
+                            </div>
+                            
+                            <!-- Right Column: Weight Direction Buttons (During Active Session Only) -->
                             ${isSessionActive ? `
-                                <div class="d-flex align-items-center gap-2">
-                                    <span class="quick-notes-label-display">${this._getDirectionLabel(currentDirection || 'same')}</span>
-                                    <button class="btn btn-sm quick-notes-trigger ${currentDirection && currentDirection !== 'same' ? 'has-note' : ''}"
-                                            data-exercise-name="${this._escapeHtml(mainExercise)}"
-                                            data-note-type="weight-direction"
-                                            data-current-value="${currentDirection || 'same'}"
-                                            onclick="window.workoutModeController.showQuickNotes(this); event.stopPropagation();"
-                                            aria-label="Quick notes for next session">
-                                        <i class="bx ${currentDirection && currentDirection !== 'same' ? 'bxs-pencil' : 'bx-pencil'}"></i>
-                                    </button>
+                                <div class="weight-section-right">
+                                    <div class="weight-direction-section">
+                                        <span class="weight-direction-label">Next session:</span>
+                                        <div class="weight-direction-toggle">
+                                            <button class="btn btn-sm weight-direction-btn increase ${currentDirection === 'up' ? 'active' : ''}"
+                                                    data-exercise-name="${this._escapeHtml(mainExercise)}"
+                                                    data-direction="up"
+                                                    onclick="window.workoutModeController.toggleWeightDirection(this, '${this._escapeHtml(mainExercise)}', 'up'); event.stopPropagation();"
+                                                    title="Increase weight next session">
+                                                <i class="bx bx-chevron-up"></i> More Weight
+                                            </button>
+                                            <button class="btn btn-sm weight-direction-btn decrease ${currentDirection === 'down' ? 'active' : ''}"
+                                                    data-exercise-name="${this._escapeHtml(mainExercise)}"
+                                                    data-direction="down"
+                                                    onclick="window.workoutModeController.toggleWeightDirection(this, '${this._escapeHtml(mainExercise)}', 'down'); event.stopPropagation();"
+                                                    title="Decrease weight next session">
+                                                <i class="bx bx-chevron-down"></i> Less Weight
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
                             ` : ''}
                         </div>
-                        ${lastWeight && lastSessionDate ? `
-                            <small class="exercise-weight-history">Last: ${lastWeight}${lastWeightUnit !== 'other' ? ` ${lastWeightUnit}` : ''} on ${lastSessionDate}</small>
-                        ` : ''}
                     </div>
                     
                     <!-- Exercise Details - List Group Style -->
@@ -191,16 +213,6 @@ class ExerciseCardRenderer {
                         <div class="exercise-notes">
                             <i class="bx bx-info-circle me-1"></i>
                             <span>${this._escapeHtml(notes)}</span>
-                        </div>
-                    ` : ''}
-                    
-                    <!-- Weight Direction Reminder from Last Session -->
-                    ${lastDirection && !isSessionActive ? `
-                        <div class="alert alert-${lastDirection === 'up' ? 'success' : 'warning'} d-flex align-items-center mb-0" role="alert">
-                            <i class="bx bx-chevron-${lastDirection} me-2" style="font-size: 1.5rem;"></i>
-                            <div>
-                                <strong>Last session reminder:</strong> ${lastDirection === 'up' ? 'Increase' : 'Decrease'} weight
-                            </div>
                         </div>
                     ` : ''}
                     
@@ -457,14 +469,83 @@ class ExerciseCardRenderer {
     }
 
     /**
+     * Render weight history with expandable list
+     * Shows 2 most recent sessions by default, rest in expandable dropdown
+     * @private
+     */
+    _renderWeightHistory(exerciseName, lastWeight, lastWeightUnit, lastSessionDate, recentSessions) {
+        if (!lastWeight || !lastSessionDate) {
+            return '';
+        }
+        
+        const hasMultipleSessions = recentSessions && recentSessions.length > 1;
+        const hasMoreThanTwo = recentSessions && recentSessions.length > 2;
+        const historyId = `history-${this._escapeHtml(exerciseName).replace(/\s+/g, '-')}`;
+        
+        // Helper to format date consistently
+        const formatDate = (dateStr) => {
+            if (!dateStr) return '';
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        };
+        
+        return `
+            <div class="exercise-weight-history-container">
+                <!-- Most recent session (always visible) -->
+                <div class="exercise-weight-history-item">
+                    <small class="exercise-weight-history">
+                        Last: ${lastWeight}${lastWeightUnit !== 'other' ? ` ${lastWeightUnit}` : ''} on ${formatDate(lastSessionDate)}
+                    </small>
+                </div>
+                
+                ${hasMultipleSessions ? `
+                    <!-- Second most recent session with inline expand arrow -->
+                    <div class="weight-history-item visible-item ${hasMoreThanTwo ? 'clickable' : ''}"
+                         ${hasMoreThanTwo ? `data-history-id="${historyId}" onclick="window.workoutModeController.toggleWeightHistory('${historyId}'); event.stopPropagation();"` : ''}>
+                        <span class="weight-history-connector">├─</span>
+                        <span class="weight-history-content">
+                            <span class="weight-history-weight">${recentSessions[1].weight || '—'}${recentSessions[1].weight_unit !== 'other' ? ` ${recentSessions[1].weight_unit || 'lbs'}` : ''}</span>
+                            <span class="weight-history-date">on ${formatDate(recentSessions[1].date)}</span>
+                        </span>
+                        ${hasMoreThanTwo ? `
+                            <i class="bx bx-chevron-down weight-history-arrow" id="arrow-${historyId}"></i>
+                        ` : ''}
+                    </div>
+                ` : ''}
+                
+                ${hasMoreThanTwo ? `
+                    <!-- Hidden sessions list -->
+                    <div class="weight-history-list" id="list-${historyId}" style="display: none;">
+                        ${recentSessions.slice(2).map((session, index) => {
+                            const isLast = index === recentSessions.length - 3;
+                            const connector = isLast ? '└─' : '├─';
+                            const weight = session.weight || '—';
+                            const unit = session.weight_unit || 'lbs';
+                            return `
+                                <div class="weight-history-item ${isLast ? 'last' : ''}">
+                                    <span class="weight-history-connector">${connector}</span>
+                                    <span class="weight-history-content">
+                                        <span class="weight-history-weight">${weight}${unit !== 'other' ? ` ${unit}` : ''}</span>
+                                        <span class="weight-history-date">on ${formatDate(session.date)}</span>
+                                    </span>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                ` : ''}
+            </div>
+        `;
+    }
+    
+    /**
      * Get label for weight direction
      * @private
      */
     _getDirectionLabel(direction) {
         const labels = {
-            'down': 'Decrease',
-            'same': 'No change',
-            'up': 'Increase'
+            'down': 'Decrease weight next session',
+            'same': 'Keep same weight next session',
+            'up': 'Increase weight next session'
         };
         return labels[direction] || '';
     }

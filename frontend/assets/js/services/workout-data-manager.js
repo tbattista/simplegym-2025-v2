@@ -1,0 +1,329 @@
+/**
+ * Ghost Gym - Workout Data Manager
+ * Manages exercise data collection, transformation, and template updates
+ * @version 1.0.0
+ * @date 2026-01-05
+ * 
+ * Phase 4: Exercise Data Management
+ * Extracted from WorkoutModeController to provide:
+ * - Clean separation of data logic from UI logic
+ * - Reusable data operations across different contexts
+ * - Foundation for session lifecycle management (Phase 5)
+ */
+
+class WorkoutDataManager {
+    constructor(options) {
+        this.sessionService = options.sessionService;
+        this.dataManager = options.dataManager;
+        
+        console.log('📊 Workout Data Manager initialized');
+    }
+    
+    /**
+     * Find exercise group by exercise name
+     * Searches both regular and bonus exercises
+     * @param {string} exerciseName - Exercise name to find
+     * @param {Object} workout - Current workout object
+     * @returns {Object|null} Exercise group or null if not found
+     */
+    findExerciseByName(exerciseName, workout) {
+        // Check regular exercise groups
+        if (workout?.exercise_groups) {
+            const group = workout.exercise_groups.find(g => g.exercises?.a === exerciseName);
+            if (group) return group;
+        }
+        
+        // Check bonus exercises
+        const bonusExercises = this.sessionService.getBonusExercises();
+        if (bonusExercises) {
+            const bonus = bonusExercises.find(b => b.name === exerciseName);
+            if (bonus) {
+                return {
+                    exercises: { a: bonus.name },
+                    sets: bonus.sets,
+                    reps: bonus.reps,
+                    rest: bonus.rest || '60s',
+                    default_weight: bonus.weight,
+                    default_weight_unit: bonus.weight_unit || 'lbs'
+                };
+            }
+        }
+        
+        return null;
+    }
+    
+    /**
+     * Get current exercise data from appropriate source
+     * Priority: Active Session > Pre-Session Edits > Template
+     * @param {string} exerciseName - Exercise name
+     * @param {Object} workout - Current workout object
+     * @param {number} index - Exercise index (for fallback lookup)
+     * @returns {Object} Exercise data
+     */
+    getCurrentExerciseData(exerciseName, workout, index = null) {
+        // Find the exercise group
+        let exerciseGroup = null;
+        
+        if (index !== null && workout?.exercise_groups && index < workout.exercise_groups.length) {
+            exerciseGroup = workout.exercise_groups[index];
+        } else {
+            exerciseGroup = this.findExerciseByName(exerciseName, workout);
+        }
+        
+        // Check if session is active
+        if (this.sessionService.isSessionActive()) {
+            // ACTIVE SESSION: Get from session data
+            const exerciseData = this.sessionService.getExerciseWeight(exerciseName);
+            
+            return {
+                exerciseName,
+                sets: exerciseData?.target_sets || exerciseGroup?.sets || '3',
+                reps: exerciseData?.target_reps || exerciseGroup?.reps || '8-12',
+                rest: exerciseData?.rest || exerciseGroup?.rest || '60s',
+                weight: exerciseData?.weight || exerciseGroup?.default_weight || '',
+                weightUnit: exerciseData?.weight_unit || exerciseGroup?.default_weight_unit || 'lbs'
+            };
+        } else {
+            // PRE-SESSION: Check pre-session edits first, then template
+            const preSessionEdit = this.sessionService.getPreSessionEdits(exerciseName);
+            
+            return {
+                exerciseName,
+                sets: preSessionEdit?.target_sets || exerciseGroup?.sets || '3',
+                reps: preSessionEdit?.target_reps || exerciseGroup?.reps || '8-12',
+                rest: preSessionEdit?.rest || exerciseGroup?.rest || '60s',
+                weight: preSessionEdit?.weight || exerciseGroup?.default_weight || '',
+                weightUnit: preSessionEdit?.weight_unit || exerciseGroup?.default_weight_unit || 'lbs'
+            };
+        }
+    }
+    
+    /**
+     * Build combined exercise list (regular + bonus)
+     * @param {Object} workout - Current workout object
+     * @returns {Array} Combined exercise list
+     */
+    buildExerciseList(workout) {
+        const allExercises = [];
+        
+        // Add regular exercises
+        if (workout.exercise_groups) {
+            workout.exercise_groups.forEach((group) => {
+                const mainExercise = group.exercises?.a;
+                if (mainExercise) {
+                    allExercises.push({
+                        type: 'regular',
+                        data: group,
+                        name: mainExercise
+                    });
+                }
+            });
+        }
+        
+        // Add bonus exercises  
+        const bonusExercises = this.sessionService.getBonusExercises();
+        if (bonusExercises && bonusExercises.length > 0) {
+            bonusExercises.forEach((bonus) => {
+                const exerciseName = bonus.name || bonus.exercise_name;
+                allExercises.push({
+                    type: 'bonus',
+                    data: bonus,
+                    name: exerciseName
+                });
+            });
+        }
+        
+        return allExercises;
+    }
+    
+    /**
+     * Apply custom order to exercise list
+     * @param {Array} exercises - Exercise list
+     * @returns {Array} Ordered exercise list
+     */
+    applyCustomOrder(exercises) {
+        const customOrder = this.sessionService.getExerciseOrder();
+        
+        if (customOrder.length === 0) {
+            return exercises;
+        }
+        
+        console.log('📋 Applying custom exercise order:', customOrder);
+        
+        // Reorder exercises based on custom order
+        const orderedExercises = [];
+        customOrder.forEach(name => {
+            const exercise = exercises.find(ex => ex.name === name);
+            if (exercise) {
+                orderedExercises.push(exercise);
+            }
+        });
+        
+        // Add any exercises not in custom order (shouldn't happen, but safety)
+        exercises.forEach(ex => {
+            if (!customOrder.includes(ex.name)) {
+                orderedExercises.push(ex);
+            }
+        });
+        
+        return orderedExercises;
+    }
+    
+    /**
+     * Collect all exercise data for the current session
+     * Respects custom order, includes regular + bonus exercises
+     * @param {Object} workout - Current workout object
+     * @returns {Array} Array of exercise data objects
+     */
+    collectExerciseData(workout) {
+        const exercisesPerformed = [];
+        let orderIndex = 0;
+        
+        console.log('📊 Collecting exercise data for session...');
+        
+        // Build exercise list in display order
+        let allExercises = this.buildExerciseList(workout);
+        
+        // Apply custom order if exists
+        allExercises = this.applyCustomOrder(allExercises);
+        
+        // Collect data in display order
+        allExercises.forEach((exercise, index) => {
+            const mainExercise = exercise.name;
+            const isBonus = exercise.type === 'bonus';
+            const group = exercise.data;
+            
+            const exerciseData = this.sessionService.getExerciseWeight(mainExercise);
+            const history = this.sessionService.getExerciseHistory(mainExercise);
+            
+            // Use nullish coalescing to preserve template defaults
+            // Support both numeric and text weights (Body, BW+25, 4x45, etc.)
+            const finalWeight = exerciseData?.weight ?? group.default_weight ?? null;
+            const finalUnit = exerciseData?.weight_unit || group.default_weight_unit || 'lbs';
+            
+            // Read sets/reps/rest from session first, then fall back to template
+            const finalSets = exerciseData?.target_sets || group.sets || '3';
+            const finalReps = exerciseData?.target_reps || group.reps || '8-12';
+            const finalRest = exerciseData?.rest || group.rest || '60s';
+            
+            // Calculate weight change properly
+            const previousWeight = history?.last_weight || null;
+            let weightChange = null;
+            if (finalWeight !== null && previousWeight !== null && typeof finalWeight === 'number' && typeof previousWeight === 'number') {
+                weightChange = finalWeight - previousWeight;
+            }
+            
+            // Get direction being saved
+            const directionToSave = exerciseData?.next_weight_direction || null;
+            console.log(`🔍 [SAVE] Exercise ${index}: "${mainExercise}"`);
+            console.log(`  📝 Direction to save:`, directionToSave);
+            console.log(`  📊 Exercise data:`, exerciseData);
+            
+            exercisesPerformed.push({
+                exercise_name: mainExercise,
+                exercise_id: null,
+                group_id: isBonus ? `bonus-${index}` : (group.group_id || `group-${index}`),
+                sets_completed: parseInt(finalSets) || 0,
+                target_sets: finalSets,
+                target_reps: finalReps,
+                rest: finalRest,
+                weight: finalWeight,  // Can be string or null
+                weight_unit: finalUnit,
+                previous_weight: previousWeight,
+                weight_change: weightChange,
+                order_index: orderIndex++,
+                is_bonus: isBonus,
+                is_modified: exerciseData?.is_modified || false,
+                is_skipped: exerciseData?.is_skipped || false,
+                skip_reason: exerciseData?.skip_reason || null,
+                next_weight_direction: directionToSave  // Weight Progression Indicator
+            });
+        });
+        
+        console.log('📊 Total exercises collected:', exercisesPerformed.length);
+        console.log('   Regular:', exercisesPerformed.filter(e => !e.is_bonus).length);
+        console.log('   Bonus:', exercisesPerformed.filter(e => e.is_bonus).length);
+        
+        return exercisesPerformed;
+    }
+    
+    /**
+     * Update workout template with final weights from session
+     * Ensures builder shows most recent weights
+     * @param {Object} workout - Current workout object
+     * @param {Array} exercisesPerformed - Completed exercise data
+     * @returns {Promise<boolean>} Success status
+     */
+    async updateWorkoutTemplate(workout, exercisesPerformed) {
+        try {
+            if (!workout || !exercisesPerformed || exercisesPerformed.length === 0) {
+                console.log('⏭️ Skipping template weight update - no data to update');
+                return false;
+            }
+            
+            console.log('🔄 Updating workout template with final weights...');
+            
+            // Create a map of exercise names to their weights
+            const weightMap = new Map();
+            exercisesPerformed.forEach(exercise => {
+                if (exercise.weight) {
+                    weightMap.set(exercise.exercise_name, {
+                        weight: exercise.weight,
+                        weight_unit: exercise.weight_unit || 'lbs'
+                    });
+                }
+            });
+            
+            // Update exercise groups with new weights
+            let updated = false;
+            if (workout.exercise_groups) {
+                workout.exercise_groups.forEach(group => {
+                    const mainExercise = group.exercises?.a;
+                    if (mainExercise && weightMap.has(mainExercise)) {
+                        const weightData = weightMap.get(mainExercise);
+                        group.default_weight = weightData.weight;
+                        group.default_weight_unit = weightData.weight_unit;
+                        updated = true;
+                        console.log(`✅ Updated ${mainExercise}: ${weightData.weight} ${weightData.weight_unit}`);
+                    }
+                });
+            }
+            
+            // Update bonus exercises with new weights
+            if (workout.bonus_exercises) {
+                workout.bonus_exercises.forEach(bonus => {
+                    if (bonus.name && weightMap.has(bonus.name)) {
+                        const weightData = weightMap.get(bonus.name);
+                        bonus.default_weight = weightData.weight;
+                        bonus.default_weight_unit = weightData.weight_unit;
+                        updated = true;
+                        console.log(`✅ Updated bonus ${bonus.name}: ${weightData.weight} ${weightData.weight_unit}`);
+                    }
+                });
+            }
+            
+            // Save updated workout template to database
+            if (updated) {
+                await this.dataManager.updateWorkout(workout.id, workout);
+                console.log('✅ Workout template weights updated successfully');
+                return true;
+            } else {
+                console.log('ℹ️ No weights to update in template');
+                return false;
+            }
+            
+        } catch (error) {
+            console.error('❌ Error updating workout template weights:', error);
+            // Don't throw - this is a non-critical enhancement
+            // The workout completion should still succeed even if template update fails
+            return false;
+        }
+    }
+}
+
+// Export for module use
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = WorkoutDataManager;
+}
+
+console.log('📦 Workout Data Manager loaded');
