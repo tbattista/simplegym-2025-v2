@@ -53,6 +53,12 @@ class ExerciseCardRenderer {
         // Get last weight direction from history (for display on new session)
         const lastDirection = this.sessionService.getLastWeightDirection(mainExercise);
         
+        // 🔍 DEBUG: Log direction retrieval for each exercise
+        console.log(`🔍 [Card ${index}] Exercise: "${mainExercise}"`);
+        console.log(`  📊 History object:`, history);
+        console.log(`  📝 Last direction from history:`, lastDirection);
+        console.log(`  ⚙️ Is session active:`, isSessionActive);
+        
         // Get current direction for this session
         const currentDirection = this.sessionService.getWeightDirection(mainExercise);
         
@@ -99,12 +105,6 @@ class ExerciseCardRenderer {
                             ${isCompleted ? '<i class="bx bx-check-circle text-success me-1"></i>' : ''}
                             ${isSkipped ? '<i class="bx bx-x-circle text-warning me-1"></i>' : ''}
                             ${this._escapeHtml(mainExercise)}
-                            ${lastDirection && !isSessionActive ? `
-                                <span class="badge bg-label-${lastDirection === 'up' ? 'success' : 'warning'} ms-2 weight-direction-indicator"
-                                      title="From last session">
-                                    <i class="bx bx-chevron-${lastDirection}"></i> ${lastDirection === 'up' ? 'Increase' : 'Decrease'}
-                                </span>
-                            ` : ''}
                         </h6>
                         
                         <!-- MORPH: Meta info (visible when collapsed, hidden when expanded) -->
@@ -115,7 +115,7 @@ class ExerciseCardRenderer {
                     
                     <!-- Right-aligned weight badge -->
                     <div class="exercise-card-weight-container">
-                        ${this._renderWeightBadge(currentWeight, currentUnit, weightSource, lastWeight, lastWeightUnit)}
+                        ${this._renderWeightBadge(currentWeight, currentUnit, weightSource, lastWeight, lastWeightUnit, lastDirection, currentDirection, isSessionActive)}
                         <i class="bx bx-chevron-down expand-icon"></i>
                     </div>
                 </div>
@@ -144,22 +144,15 @@ class ExerciseCardRenderer {
                                 ${currentWeight && currentUnit !== 'other' ? `<span class="exercise-weight-unit">${currentUnit}</span>` : ''}
                             </div>
                             ${isSessionActive ? `
-                                <div class="btn-group btn-group-sm weight-direction-group" role="group" aria-label="Weight progression for next session">
-                                    <button class="btn weight-direction-btn ${currentDirection === 'down' ? 'btn-warning active' : 'btn-outline-secondary'}"
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="quick-notes-label-display">${this._getDirectionLabel(currentDirection || 'same')}</span>
+                                    <button class="btn btn-sm quick-notes-trigger ${currentDirection && currentDirection !== 'same' ? 'has-note' : ''}"
                                             data-exercise-name="${this._escapeHtml(mainExercise)}"
-                                            data-direction="down"
-                                            onclick="window.workoutModeController.handleWeightDirection(this); event.stopPropagation();"
-                                            title="Decrease weight next time"
-                                            aria-label="Mark to decrease weight next session">
-                                        <i class="bx bx-chevron-down"></i>
-                                    </button>
-                                    <button class="btn weight-direction-btn ${currentDirection === 'up' ? 'btn-success active' : 'btn-outline-secondary'}"
-                                            data-exercise-name="${this._escapeHtml(mainExercise)}"
-                                            data-direction="up"
-                                            onclick="window.workoutModeController.handleWeightDirection(this); event.stopPropagation();"
-                                            title="Increase weight next time"
-                                            aria-label="Mark to increase weight next session">
-                                        <i class="bx bx-chevron-up"></i>
+                                            data-note-type="weight-direction"
+                                            data-current-value="${currentDirection || 'same'}"
+                                            onclick="window.workoutModeController.showQuickNotes(this); event.stopPropagation();"
+                                            aria-label="Quick notes for next session">
+                                        <i class="bx ${currentDirection && currentDirection !== 'same' ? 'bxs-pencil' : 'bx-pencil'}"></i>
                                     </button>
                                 </div>
                             ` : ''}
@@ -201,6 +194,16 @@ class ExerciseCardRenderer {
                         </div>
                     ` : ''}
                     
+                    <!-- Weight Direction Reminder from Last Session -->
+                    ${lastDirection && !isSessionActive ? `
+                        <div class="alert alert-${lastDirection === 'up' ? 'success' : 'warning'} d-flex align-items-center mb-0" role="alert">
+                            <i class="bx bx-chevron-${lastDirection} me-2" style="font-size: 1.5rem;"></i>
+                            <div>
+                                <strong>Last session reminder:</strong> ${lastDirection === 'up' ? 'Increase' : 'Decrease'} weight
+                            </div>
+                        </div>
+                    ` : ''}
+                    
                     <!-- Card Action Buttons (Complete/Skip/Edit) -->
                     ${this._renderCardActionButtons(mainExercise, index, isSkipped, isCompleted, isSessionActive)}
                 </div>
@@ -210,9 +213,10 @@ class ExerciseCardRenderer {
 
     /**
      * Render weight badge with visual progression feedback (Phase 3)
+     * Enhanced to show weight direction notes from last session AND current session
      * @private
      */
-    _renderWeightBadge(currentWeight, currentUnit, weightSource, lastWeight, lastWeightUnit) {
+    _renderWeightBadge(currentWeight, currentUnit, weightSource, lastWeight, lastWeightUnit, lastDirection, currentDirection, isSessionActive) {
         // No current weight - show placeholder
         if (!currentWeight) {
             if (lastWeight) {
@@ -228,7 +232,46 @@ class ExerciseCardRenderer {
         let tooltipText = '';
         const unitDisplay = currentUnit !== 'other' ? ` ${currentUnit}` : '';
         
-        if (!lastWeight) {
+        // Determine which direction to display
+        // Priority: Active session current direction > Last session reminder
+        const displayDirection = isSessionActive ? currentDirection : lastDirection;
+        
+        // QUICK NOTES: Show direction indicator
+        // During active session: Show current direction set by user (✓)
+        // Before session: Show reminder from last session (📝)
+        if (displayDirection) {
+            if (isSessionActive) {
+                // Current session direction (user just set this)
+                if (displayDirection === 'up') {
+                    progressionClass = 'direction-up';
+                    progressionIcon = '✓↑';
+                    tooltipText = `${currentWeight}${unitDisplay} - Next: Increase weight`;
+                } else if (displayDirection === 'down') {
+                    progressionClass = 'direction-down';
+                    progressionIcon = '✓↓';
+                    tooltipText = `${currentWeight}${unitDisplay} - Next: Decrease weight`;
+                } else if (displayDirection === 'same') {
+                    progressionClass = 'direction-same';
+                    progressionIcon = '✓→';
+                    tooltipText = `${currentWeight}${unitDisplay} - Next: Keep same weight`;
+                }
+            } else {
+                // Last session reminder (what they noted last time)
+                if (displayDirection === 'up') {
+                    progressionClass = 'direction-reminder direction-up';
+                    progressionIcon = '📝↑';
+                    tooltipText = `${currentWeight}${unitDisplay} - Last session reminder: Increase weight`;
+                } else if (displayDirection === 'down') {
+                    progressionClass = 'direction-reminder direction-down';
+                    progressionIcon = '📝↓';
+                    tooltipText = `${currentWeight}${unitDisplay} - Last session reminder: Decrease weight`;
+                } else if (displayDirection === 'same') {
+                    progressionClass = 'direction-reminder direction-same';
+                    progressionIcon = '📝→';
+                    tooltipText = `${currentWeight}${unitDisplay} - Last session reminder: Keep same weight`;
+                }
+            }
+        } else if (!lastWeight) {
             // First time doing this exercise
             progressionClass = 'new';
             progressionIcon = '★';
@@ -260,6 +303,7 @@ class ExerciseCardRenderer {
         }
         
         return `<span class="badge weight-badge ${progressionClass} ${modifiedClass}"
+                      data-direction="${displayDirection || 'none'}"
                       data-bs-toggle="tooltip"
                       data-bs-placement="top"
                       title="${tooltipText}">
@@ -337,64 +381,92 @@ class ExerciseCardRenderer {
     }
 
     /**
-     * Render card action buttons (Complete/Skip/Edit)
-     * PHASE 1: Edit button now shows BEFORE session starts for pre-session editing
+     * Render card action buttons (Complete/Skip/Modify)
+     * PHASE 1: Modify button now shows BEFORE session starts for pre-session editing
+     * Layout: 2 lines - Completed on top, Modify and Skip on bottom
      * @private
      */
     _renderCardActionButtons(exerciseName, index, isSkipped, isCompleted, isSessionActive) {
-        // PHASE 1: Always show Edit button, even before session starts
-        // Before session: Show only Edit button
-        // During session: Show Complete, Skip, and Edit buttons
+        // PHASE 1: Always show Modify button, even before session starts
+        // Before session: Show only Modify button
+        // During session: Show Complete, Skip, and Modify buttons
         
         if (!isSessionActive) {
-            // PRE-SESSION: Only show Edit button
+            // PRE-SESSION: Only show Modify button
             return `
                 <div class="card-action-buttons mt-3 pt-3 border-top d-flex gap-2">
                     <button class="btn btn-sm btn-outline-primary flex-fill"
                             onclick="window.workoutModeController.handleEditExercise('${this._escapeHtml(exerciseName)}', ${index}); event.stopPropagation();"
-                            title="Edit exercise details before starting workout">
-                        <i class="bx bx-edit me-1"></i>Edit
+                            title="Modify exercise details before starting workout">
+                        <i class="bx bx-edit me-1"></i>Modify
                     </button>
                 </div>
             `;
         }
         
-        // ACTIVE SESSION: Show all action buttons
+        // ACTIVE SESSION: Show all action buttons in 2-line layout
+        // Line 1: Completed button (full width)
+        // Line 2: Modify and Skip buttons (side by side)
         return `
-            <div class="card-action-buttons mt-3 pt-3 border-top d-flex gap-2">
+            <div class="card-action-buttons mt-3 pt-3 border-top">
                 ${isSkipped ? `
-                    <button class="btn btn-sm btn-warning flex-fill"
+                    <!-- Skipped state: Show Unskip button full width -->
+                    <button class="btn btn-sm btn-warning w-100 mb-2"
                             onclick="window.workoutModeController.handleUnskipExercise('${this._escapeHtml(exerciseName)}', ${index}); event.stopPropagation();"
                             title="Resume this exercise">
                         <i class="bx bx-undo me-1"></i>Unskip
                     </button>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-sm btn-outline-primary flex-fill"
+                                onclick="window.workoutModeController.handleEditExercise('${this._escapeHtml(exerciseName)}', ${index}); event.stopPropagation();"
+                                title="Modify exercise details">
+                            <i class="bx bx-edit me-1"></i>Modify
+                        </button>
+                    </div>
                 ` : `
+                    <!-- Line 1: Complete/Completed button (full width) -->
                     ${isCompleted ? `
-                        <button class="btn btn-sm btn-success flex-fill"
+                        <button class="btn btn-sm btn-success w-100 mb-2"
                                 onclick="window.workoutModeController.handleUncompleteExercise('${this._escapeHtml(exerciseName)}', ${index}); event.stopPropagation();"
                                 title="Mark as not completed">
                             <i class="bx bx-check-circle me-1"></i>Completed
                         </button>
                     ` : `
-                        <button class="btn btn-sm btn-outline-success flex-fill"
+                        <button class="btn btn-sm btn-outline-success w-100 mb-2"
                                 onclick="window.workoutModeController.handleCompleteExercise('${this._escapeHtml(exerciseName)}', ${index}); event.stopPropagation();"
                                 title="Mark exercise as complete">
                             <i class="bx bx-check me-1"></i>Complete
                         </button>
                     `}
-                    <button class="btn btn-sm btn-outline-warning flex-fill"
-                            onclick="window.workoutModeController.handleSkipExercise('${this._escapeHtml(exerciseName)}', ${index}); event.stopPropagation();"
-                            title="Skip this exercise">
-                        <i class="bx bx-skip-next me-1"></i>Skip
-                    </button>
+                    <!-- Line 2: Modify and Skip buttons (side by side) -->
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-sm btn-outline-primary flex-fill"
+                                onclick="window.workoutModeController.handleEditExercise('${this._escapeHtml(exerciseName)}', ${index}); event.stopPropagation();"
+                                title="Modify exercise details">
+                            <i class="bx bx-edit me-1"></i>Modify
+                        </button>
+                        <button class="btn btn-sm btn-outline-warning flex-fill"
+                                onclick="window.workoutModeController.handleSkipExercise('${this._escapeHtml(exerciseName)}', ${index}); event.stopPropagation();"
+                                title="Skip this exercise">
+                            <i class="bx bx-skip-next me-1"></i>Skip
+                        </button>
+                    </div>
                 `}
-                <button class="btn btn-sm btn-outline-primary flex-fill"
-                        onclick="window.workoutModeController.handleEditExercise('${this._escapeHtml(exerciseName)}', ${index}); event.stopPropagation();"
-                        title="Edit exercise details">
-                    <i class="bx bx-edit me-1"></i>Edit
-                </button>
             </div>
         `;
+    }
+
+    /**
+     * Get label for weight direction
+     * @private
+     */
+    _getDirectionLabel(direction) {
+        const labels = {
+            'down': 'Decrease',
+            'same': 'No change',
+            'up': 'Increase'
+        };
+        return labels[direction] || '';
     }
 
     /**

@@ -676,7 +676,7 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
     
     /**
      * Handle weight direction indicator toggle
-     * Replaces the old +5/-5 weight adjustment functionality
+     * Two-button layout: decrease, increase (with toggle behavior)
      * @param {HTMLElement} button - The direction button that was clicked
      */
     handleWeightDirection(button) {
@@ -690,35 +690,257 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
             return;
         }
         
-        // Toggle behavior: if already set to this direction, clear it
+        // Get current direction to check if toggling off
         const currentDirection = this.sessionService.getWeightDirection(exerciseName);
-        const newDirection = currentDirection === direction ? null : direction;
+        const newDirection = (currentDirection === direction) ? null : direction;
         
-        console.log(`🎯 Weight direction for ${exerciseName}: ${currentDirection || 'none'} → ${newDirection || 'cleared'}`);
+        console.log(`🎯 Weight direction for ${exerciseName}: ${newDirection || 'cleared'}`);
         
         // Update session service
         this.sessionService.setWeightDirection(exerciseName, newDirection);
         
         // Haptic feedback
         if (navigator.vibrate) {
-            navigator.vibrate(newDirection ? 15 : 5);
+            navigator.vibrate(15);
         }
         
-        // Auto-save
+        // Auto-save (fire and forget)
         this.autoSave(null).catch(error => {
             console.error('❌ Failed to auto-save after direction change:', error);
         });
         
-        // Re-render to update button states
-        this.renderWorkout();
+        // UPDATE UI DIRECTLY - Don't re-render entire workout (prevents card from closing)
+        this.updateWeightDirectionButtons(exerciseName, newDirection);
         
-        // Show feedback
+        // Show toast notification (only when setting a direction, not when clearing)
         if (window.showAlert && newDirection) {
-            const message = newDirection === 'up'
-                ? `${exerciseName}: ⬆️ Increase weight next time`
-                : `${exerciseName}: ⬇️ Decrease weight next time`;
-            window.showAlert(message, 'info');
+            const messages = {
+                'up': 'Increase weight next session ⬆️',
+                'down': 'Decrease weight next session ⬇️'
+            };
+            window.showAlert(messages[newDirection], 'success');
         }
+    }
+    
+    /**
+     * Update weight direction button states in DOM without re-rendering
+     * This prevents the card from collapsing when direction buttons are clicked
+     * @param {string} exerciseName - Name of exercise
+     * @param {string|null} direction - 'up', 'down', or null
+     */
+    updateWeightDirectionButtons(exerciseName, direction) {
+        // Find the card for this exercise
+        const card = document.querySelector(`.exercise-card[data-exercise-name="${exerciseName}"]`);
+        if (!card) return;
+        
+        // Find all direction buttons in this card
+        const buttons = card.querySelectorAll('.weight-direction-btn');
+        const dot = card.querySelector('.weight-direction-dot');
+        
+        // Update button states
+        buttons.forEach(btn => {
+            const btnDirection = btn.getAttribute('data-direction');
+            btn.classList.remove('active', 'btn-direction-up', 'btn-direction-down', 'btn-outline-secondary');
+            
+            if (btnDirection === direction) {
+                // This button is active
+                btn.classList.add('active', `btn-direction-${direction}`);
+            } else {
+                // This button is inactive
+                btn.classList.add('btn-outline-secondary');
+            }
+        });
+        
+        // Toggle dot visibility
+        if (dot) {
+            if (direction) {
+                // A direction is selected, hide the dot
+                dot.classList.add('hidden');
+            } else {
+                // No direction selected, show the dot
+                dot.classList.remove('hidden');
+            }
+        }
+    }
+    
+    /**
+     * Show quick notes popover for weight direction
+     * @param {HTMLElement} trigger - The trigger button element
+     */
+    showQuickNotes(trigger) {
+        const exerciseName = trigger.getAttribute('data-exercise-name');
+        const noteType = trigger.getAttribute('data-note-type');
+        const currentValue = trigger.getAttribute('data-current-value');
+        
+        // Create and show the popover
+        const popover = new QuickNotesPopover(trigger, {
+            type: noteType,
+            entityId: exerciseName,
+            currentValue: currentValue || null,
+            onAction: (action, data) => {
+                this.handleQuickNoteAction(exerciseName, action, data);
+            }
+        });
+        
+        popover.show();
+    }
+    
+    /**
+     * Handle quick note action
+     * @param {string} exerciseName - Exercise name
+     * @param {string} action - Action taken (e.g., 'up', 'down')
+     * @param {Object} data - Additional data
+     */
+    handleQuickNoteAction(exerciseName, action, data) {
+        if (data.noteType === 'weight-direction') {
+            // Get current direction to check if toggling off
+            const currentDirection = this.sessionService.getWeightDirection(exerciseName);
+            const newDirection = (currentDirection === action) ? null : action;
+            
+            // Update session service
+            this.sessionService.setWeightDirection(exerciseName, newDirection);
+            
+            // Update trigger button state
+            this.updateQuickNoteTrigger(exerciseName, newDirection);
+            
+            // Show toast
+            if (window.showAlert && newDirection) {
+                const messages = {
+                    'up': 'Increase weight next session ⬆️',
+                    'down': 'Decrease weight next session ⬇️'
+                };
+                window.showAlert(messages[newDirection], 'success');
+            }
+            
+            // Auto-save
+            this.autoSave(null);
+        }
+    }
+    
+    /**
+     * Update quick note trigger button state and label display
+     * @param {string} exerciseName - Exercise name
+     * @param {*} value - Current value ('up', 'down', 'same', or null)
+     */
+    updateQuickNoteTrigger(exerciseName, value) {
+        // Find the card for this exercise
+        const card = document.querySelector(`.exercise-card[data-exercise-name="${exerciseName}"]`);
+        if (!card) return;
+        
+        // Find trigger button
+        const trigger = card.querySelector('.quick-notes-trigger');
+        if (!trigger) return;
+        
+        // Find label display on the right
+        const labelDisplay = card.querySelector('.quick-notes-label-display');
+        
+        const icon = trigger.querySelector('i');
+        
+        // Always use 'same' as default if no value
+        const effectiveValue = value || 'same';
+        
+        // Update trigger button state
+        if (value) {
+            trigger.classList.add('has-note');
+            trigger.setAttribute('data-current-value', value);
+        } else {
+            trigger.classList.remove('has-note');
+            trigger.setAttribute('data-current-value', 'same');
+        }
+        
+        // Update icon (filled when has a note that's not 'same')
+        if (icon) {
+            if (value && value !== 'same') {
+                icon.classList.remove('bx-pencil');
+                icon.classList.add('bxs-pencil');
+            } else {
+                icon.classList.remove('bxs-pencil');
+                icon.classList.add('bx-pencil');
+            }
+        }
+        
+        // Update label display text
+        if (labelDisplay) {
+            labelDisplay.textContent = this._getDirectionLabel(effectiveValue);
+        }
+        
+        // Also update the collapsed card badge
+        this._updateCollapsedBadge(exerciseName, value);
+    }
+    
+    /**
+     * Update the weight badge on collapsed card to show current direction
+     * @param {string} exerciseName - Exercise name
+     * @param {string|null} direction - Direction value ('up', 'down', 'same', or null)
+     * @private
+     */
+    _updateCollapsedBadge(exerciseName, direction) {
+        const card = document.querySelector(`.exercise-card[data-exercise-name="${exerciseName}"]`);
+        if (!card) return;
+        
+        const badge = card.querySelector('.weight-badge');
+        if (!badge) return;
+        
+        // Update data attribute
+        badge.setAttribute('data-direction', direction || 'none');
+        
+        // Remove existing direction classes
+        badge.classList.remove('direction-up', 'direction-down', 'direction-reminder');
+        
+        // Add new direction class if applicable (and not 'same')
+        if (direction && direction !== 'same') {
+            badge.classList.add(`direction-${direction}`);
+        }
+        
+        // Update badge icon and text
+        const badgeText = badge.textContent.trim();
+        
+        // Extract just the weight value (strip any existing icons/arrows)
+        // Match pattern: optional icon/emoji/arrow, then number with optional decimal, then optional unit
+        const weightMatch = badgeText.match(/([\d.]+)\s*(\w+)?$/);
+        
+        if (weightMatch) {
+            const weightValue = weightMatch[1];
+            const weightUnit = weightMatch[2] || '';
+            const weightPart = weightUnit ? `${weightValue} ${weightUnit}` : weightValue;
+            
+            let icon = '';
+            let tooltipText = '';
+            
+            if (direction === 'up') {
+                icon = '✓↑';
+                tooltipText = `${weightPart} - Next: Increase weight`;
+            } else if (direction === 'down') {
+                icon = '✓↓';
+                tooltipText = `${weightPart} - Next: Decrease weight`;
+            } else {
+                // No direction or 'same' - use default arrow
+                icon = '→';
+                tooltipText = weightPart;
+            }
+            
+            // Update badge content with icon prefix
+            badge.textContent = `${icon} ${weightPart}`;
+            
+            // Update tooltip
+            badge.setAttribute('title', tooltipText);
+            badge.setAttribute('data-bs-original-title', tooltipText);
+        }
+    }
+    
+    /**
+     * Get direction label text
+     * @param {string} direction - 'up', 'down', or 'same'
+     * @returns {string} Label text
+     * @private
+     */
+    _getDirectionLabel(direction) {
+        const labelMap = {
+            'up': 'Increase',
+            'down': 'Decrease',
+            'same': 'No change'
+        };
+        return labelMap[direction] || 'No change';
     }
     
     /**
@@ -823,6 +1045,7 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
     /**
      * Collect exercise data for session
      * 🔧 ENHANCED: Added validation and logging for bonus exercises
+     * 🔧 FIX: Respect custom exercise order when collecting data
      */
     collectExerciseData() {
         const exercisesPerformed = [];
@@ -830,115 +1053,113 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
         
         console.log('📊 Collecting exercise data for session...');
         
-        // Collect from exercise groups
+        // 🔧 FIX: Build exercise list in the SAME order as rendered on screen
+        // This ensures data collection matches the visual order
+        const allExercises = [];
+        
+        // Add regular exercises
         if (this.currentWorkout.exercise_groups) {
-            this.currentWorkout.exercise_groups.forEach((group, groupIndex) => {
+            this.currentWorkout.exercise_groups.forEach((group) => {
                 const mainExercise = group.exercises?.a;
-                if (!mainExercise) return;
-                
-                const exerciseData = this.sessionService.getExerciseWeight(mainExercise);
-                const history = this.sessionService.getExerciseHistory(mainExercise);
-                
-                // PHASE 1: Use nullish coalescing to preserve template defaults
-                // Support both numeric and text weights (Body, BW+25, 4x45, etc.)
-                const finalWeight = exerciseData?.weight ?? group.default_weight ?? null;
-                const finalUnit = exerciseData?.weight_unit || group.default_weight_unit || 'lbs';
-                
-                // 🔧 FIX: Read sets/reps/rest from session first, then fall back to template
-                const finalSets = exerciseData?.target_sets || group.sets || '3';
-                const finalReps = exerciseData?.target_reps || group.reps || '8-12';
-                const finalRest = exerciseData?.rest || group.rest || '60s';
-                
-                // PHASE 3: Calculate weight change properly
-                const previousWeight = history?.last_weight || null;
-                let weightChange = null;
-                if (finalWeight !== null && previousWeight !== null && typeof finalWeight === 'number' && typeof previousWeight === 'number') {
-                    weightChange = finalWeight - previousWeight;
+                if (mainExercise) {
+                    allExercises.push({
+                        type: 'regular',
+                        data: group,
+                        name: mainExercise
+                    });
                 }
-                
-                exercisesPerformed.push({
-                    exercise_name: mainExercise,
-                    exercise_id: null,
-                    group_id: group.group_id || `group-${groupIndex}`,
-                    sets_completed: parseInt(finalSets) || 0,
-                    target_sets: finalSets,
-                    target_reps: finalReps,
-                    rest: finalRest,  // 🔧 FIX: Include rest in session data
-                    weight: finalWeight,  // Can be string or null
-                    weight_unit: finalUnit,
-                    previous_weight: previousWeight,
-                    weight_change: weightChange,  // PHASE 3: Calculated from current - previous
-                    order_index: orderIndex++,
-                    is_bonus: false,
-                    is_modified: exerciseData?.is_modified || false,  // PHASE 1
-                    is_skipped: exerciseData?.is_skipped || false,    // PHASE 2
-                    skip_reason: exerciseData?.skip_reason || null,   // PHASE 2
-                    next_weight_direction: exerciseData?.next_weight_direction || null  // Weight Progression Indicator
+            });
+        }
+        
+        // Add bonus exercises  
+        const bonusExercises = this.sessionService.getBonusExercises();
+        if (bonusExercises && bonusExercises.length > 0) {
+            bonusExercises.forEach((bonus) => {
+                const exerciseName = bonus.name || bonus.exercise_name;
+                allExercises.push({
+                    type: 'bonus',
+                    data: bonus,
+                    name: exerciseName
                 });
             });
         }
         
-        console.log('✅ Collected', exercisesPerformed.length, 'regular exercises');
-        
-        // 🔧 FIX: Collect from SESSION bonus exercises with enhanced validation
-        const bonusExercises = this.sessionService.getBonusExercises();
-        console.log('🔍 Checking for bonus exercises...');
-        console.log('  getBonusExercises() returned:', bonusExercises?.length || 0, 'exercises');
-        
-        if (bonusExercises && bonusExercises.length > 0) {
-            console.log('📋 Processing', bonusExercises.length, 'bonus exercises:');
+        // Apply custom order if exists (SAME logic as renderWorkout)
+        const customOrder = this.sessionService.getExerciseOrder();
+        if (customOrder.length > 0) {
+            console.log('📋 Applying custom exercise order to data collection:', customOrder);
             
-            bonusExercises.forEach((bonus, bonusIndex) => {
-                const exerciseName = bonus.name || bonus.exercise_name;
-                console.log(`  ${bonusIndex + 1}. ${exerciseName}`);
-                
-                const exerciseData = this.sessionService.getExerciseWeight(exerciseName);
-                const history = this.sessionService.getExerciseHistory(exerciseName);
-                
-                // PHASE 1: Use nullish coalescing for bonus exercises too
-                // Support both numeric and text weights
-                const finalWeight = exerciseData?.weight ?? bonus.weight ?? null;
-                
-                // 🔧 FIX: Read sets/reps/rest from session first, then fall back to bonus template
-                const finalSets = exerciseData?.target_sets || bonus.sets || bonus.target_sets || '3';
-                const finalReps = exerciseData?.target_reps || bonus.reps || bonus.target_reps || '12';
-                const finalRest = exerciseData?.rest || bonus.rest || '60s';
-                
-                // PHASE 3: Calculate weight change properly
-                const previousWeight = history?.last_weight || null;
-                let weightChange = null;
-                if (finalWeight !== null && previousWeight !== null && typeof finalWeight === 'number' && typeof previousWeight === 'number') {
-                    weightChange = finalWeight - previousWeight;
+            const orderedExercises = [];
+            customOrder.forEach(name => {
+                const exercise = allExercises.find(ex => ex.name === name);
+                if (exercise) {
+                    orderedExercises.push(exercise);
                 }
-                
-                const bonusExerciseData = {
-                    exercise_name: exerciseName,
-                    exercise_id: null,
-                    group_id: `bonus-${bonusIndex}`,
-                    sets_completed: parseInt(finalSets) || 0,
-                    target_sets: finalSets,
-                    target_reps: finalReps,
-                    rest: finalRest,  // 🔧 FIX: Include rest in session data
-                    weight: finalWeight,  // Can be string or null
-                    weight_unit: exerciseData?.weight_unit || bonus.weight_unit || 'lbs',
-                    previous_weight: previousWeight,
-                    weight_change: weightChange,  // PHASE 3: Calculated from current - previous
-                    order_index: orderIndex++,
-                    is_bonus: true,
-                    is_modified: exerciseData?.is_modified || false,
-                    is_skipped: exerciseData?.is_skipped || false,    // PHASE 2
-                    skip_reason: exerciseData?.skip_reason || null,   // PHASE 2
-                    next_weight_direction: exerciseData?.next_weight_direction || null  // Weight Progression Indicator
-                };
-                
-                exercisesPerformed.push(bonusExerciseData);
-                console.log(`     ✅ Added: ${exerciseName} (order: ${bonusExerciseData.order_index})`);
             });
             
-            console.log('✅ Collected', bonusExercises.length, 'bonus exercises');
-        } else {
-            console.log('ℹ️ No bonus exercises to collect');
+            // Add any exercises not in custom order
+            allExercises.forEach(ex => {
+                if (!customOrder.includes(ex.name)) {
+                    orderedExercises.push(ex);
+                }
+            });
+            
+            // Replace with ordered list
+            allExercises.splice(0, allExercises.length, ...orderedExercises);
         }
+        
+        // Collect data in display order
+        allExercises.forEach((exercise, index) => {
+            const mainExercise = exercise.name;
+            const isBonus = exercise.type === 'bonus';
+            const group = exercise.data;
+            
+            const exerciseData = this.sessionService.getExerciseWeight(mainExercise);
+            const history = this.sessionService.getExerciseHistory(mainExercise);
+            
+            // PHASE 1: Use nullish coalescing to preserve template defaults
+            // Support both numeric and text weights (Body, BW+25, 4x45, etc.)
+            const finalWeight = exerciseData?.weight ?? group.default_weight ?? null;
+            const finalUnit = exerciseData?.weight_unit || group.default_weight_unit || 'lbs';
+            
+            // 🔧 FIX: Read sets/reps/rest from session first, then fall back to template
+            const finalSets = exerciseData?.target_sets || group.sets || '3';
+            const finalReps = exerciseData?.target_reps || group.reps || '8-12';
+            const finalRest = exerciseData?.rest || group.rest || '60s';
+            
+            // PHASE 3: Calculate weight change properly
+            const previousWeight = history?.last_weight || null;
+            let weightChange = null;
+            if (finalWeight !== null && previousWeight !== null && typeof finalWeight === 'number' && typeof previousWeight === 'number') {
+                weightChange = finalWeight - previousWeight;
+            }
+            
+            // 🔍 DEBUG: Log direction being saved
+            const directionToSave = exerciseData?.next_weight_direction || null;
+            console.log(`🔍 [SAVE] Exercise ${index}: "${mainExercise}"`);
+            console.log(`  📝 Direction to save:`, directionToSave);
+            console.log(`  📊 Exercise data:`, exerciseData);
+            
+            exercisesPerformed.push({
+                exercise_name: mainExercise,
+                exercise_id: null,
+                group_id: isBonus ? `bonus-${index}` : (group.group_id || `group-${index}`),
+                sets_completed: parseInt(finalSets) || 0,
+                target_sets: finalSets,
+                target_reps: finalReps,
+                rest: finalRest,  // 🔧 FIX: Include rest in session data
+                weight: finalWeight,  // Can be string or null
+                weight_unit: finalUnit,
+                previous_weight: previousWeight,
+                weight_change: weightChange,  // PHASE 3: Calculated from current - previous
+                order_index: orderIndex++,
+                is_bonus: isBonus,
+                is_modified: exerciseData?.is_modified || false,  // PHASE 1
+                is_skipped: exerciseData?.is_skipped || false,    // PHASE 2
+                skip_reason: exerciseData?.skip_reason || null,   // PHASE 2
+                next_weight_direction: directionToSave  // Weight Progression Indicator
+            });
+        });
         
         console.log('📊 Total exercises collected:', exercisesPerformed.length);
         console.log('   Regular:', exercisesPerformed.filter(e => !e.is_bonus).length);

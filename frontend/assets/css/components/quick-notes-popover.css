@@ -1,0 +1,260 @@
+/**
+ * Ghost Gym - Quick Notes Popover Component
+ * Reusable popover for inline note-taking
+ * @version 1.0.0
+ * @date 2026-01-05
+ */
+
+/* ============================================
+   TRIGGER BUTTON
+   ============================================ */
+
+.quick-notes-trigger {
+    min-width: 32px;
+    height: 32px;
+    padding: 0 !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.375rem;
+    border-radius: 6px;
+    border: 1px solid var(--bs-border-color);
+    background: var(--bs-body-bg);
+    color: var(--bs-body-color);
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+/* When button has a label, add padding */
+.quick-notes-trigger:has(.quick-notes-label) {
+    padding: 0 0.5rem !important;
+}
+
+.quick-notes-trigger:hover {
+    border-color: var(--bs-primary);
+    color: var(--bs-primary);
+    background: rgba(var(--bs-primary-rgb), 0.08);
+}
+
+/* Trigger with value set */
+.quick-notes-trigger.has-note {
+    color: var(--bs-primary);
+    border-color: var(--bs-primary);
+    background: rgba(var(--bs-primary-rgb), 0.1);
+}
+
+.quick-notes-trigger.has-note i {
+    color: var(--bs-primary);
+}
+
+.quick-notes-trigger i {
+    font-size: 1.35rem;
+}
+
+/* Label text next to icon (DEPRECATED - not used) */
+.quick-notes-label {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+/* Label display on the right side */
+.quick-notes-label-display {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--bs-secondary);
+    white-space: nowrap;
+}
+
+/* ============================================
+   POPOVER CONTAINER
+   ============================================ */
+
+.quick-notes-popover {
+    min-width: 200px;
+    max-width: 280px;
+    background: var(--bs-card-bg);
+    border: 1px solid var(--bs-border-color);
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* ============================================
+   POPOVER HEADER
+   ============================================ */
+
+.quick-notes-header {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid var(--bs-border-color);
+}
+
+/* When title exists, space between title and close button */
+.quick-notes-header:has(.quick-notes-title) {
+    justify-content: space-between;
+    padding: 0.75rem 1rem;
+}
+
+.quick-notes-title {
+    font-weight: 600;
+    font-size: 0.875rem;
+    color: var(--bs-heading-color);
+}
+
+.quick-notes-close {
+    background: none;
+    border: none;
+    padding: 0;
+    color: var(--bs-secondary);
+    cursor: pointer;
+    font-size: 1.25rem;
+    line-height: 1;
+    transition: color 0.2s ease;
+}
+
+.quick-notes-close:hover {
+    color: var(--bs-body-color);
+}
+
+/* ============================================
+   POPOVER BODY
+   ============================================ */
+
+.quick-notes-body {
+    padding: 0.75rem 1rem;
+}
+
+/* ============================================
+   ACTION BUTTONS
+   ============================================ */
+
+.quick-notes-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.quick-notes-action {
+    width: 100%;
+    font-size: 0.8125rem;
+    padding: 0.5rem 0.75rem;
+    font-weight: 500;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+/* Active state - when this action is currently selected */
+.quick-notes-action.active.btn-outline-warning {
+    background: var(--bs-warning);
+    border-color: var(--bs-warning);
+    color: #fff;
+}
+
+.quick-notes-action.active.btn-outline-success {
+    background: var(--bs-success);
+    border-color: var(--bs-success);
+    color: #fff;
+}
+
+.quick-notes-action.active.btn-outline-primary {
+    background: var(--bs-primary);
+    border-color: var(--bs-primary);
+    color: #fff;
+}
+
+.quick-notes-action.active.btn-outline-danger {
+    background: var(--bs-danger);
+    border-color: var(--bs-danger);
+    color: #fff;
+}
+
+/* ============================================
+   TEXT INPUT SECTION (FUTURE)
+   ============================================ */
+
+.quick-notes-text-section {
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--bs-border-color);
+}
+
+.quick-notes-textarea {
+    font-size: 0.875rem;
+    resize: none;
+    min-height: 60px;
+}
+
+.quick-notes-save-text {
+    margin-top: 0.5rem;
+    width: 100%;
+}
+
+/* ============================================
+   DARK THEME
+   ============================================ */
+
+[data-bs-theme="dark"] .quick-notes-popover {
+    background: var(--bs-gray-900);
+    border-color: var(--bs-gray-700);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+[data-bs-theme="dark"] .quick-notes-header {
+    border-bottom-color: var(--bs-gray-700);
+}
+
+[data-bs-theme="dark"] .quick-notes-trigger {
+    border-color: var(--bs-gray-600);
+}
+
+[data-bs-theme="dark"] .quick-notes-text-section {
+    border-top-color: var(--bs-gray-700);
+}
+
+/* ============================================
+   MOBILE RESPONSIVE
+   ============================================ */
+
+@media (max-width: 576px) {
+    .quick-notes-popover {
+        min-width: 180px;
+    }
+    
+    .quick-notes-action {
+        font-size: 0.75rem;
+        padding: 0.4rem 0.5rem;
+    }
+    
+    .quick-notes-trigger {
+        width: 30px;
+        height: 30px;
+    }
+    
+    .quick-notes-trigger i {
+        font-size: 1.25rem;
+    }
+}
+
+/* ============================================
+   ACCESSIBILITY
+   ============================================ */
+
+.quick-notes-trigger:focus-visible {
+    outline: 2px solid var(--bs-primary);
+    outline-offset: 2px;
+}
+
+.quick-notes-action:focus-visible {
+    box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.5);
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    .quick-notes-trigger,
+    .quick-notes-action,
+    .quick-notes-close {
+        transition: none !important;
+    }
+}

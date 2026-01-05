@@ -317,6 +317,18 @@ class WorkoutSessionService {
             
             console.log('✅ Exercise history loaded:', Object.keys(this.exerciseHistory).length, 'exercises');
             
+            // 🔍 DEBUG: Log each exercise history with direction data
+            console.group('🔍 DEBUG: Exercise History Details');
+            Object.entries(this.exerciseHistory).forEach(([exerciseName, history]) => {
+                console.log(`📋 ${exerciseName}:`, {
+                    last_weight: history.last_weight,
+                    last_weight_unit: history.last_weight_unit,
+                    last_weight_direction: history.last_weight_direction,
+                    last_session_date: history.last_session_date
+                });
+            });
+            console.groupEnd();
+            
             // PHASE 3: Check for last session's custom exercise order
             if (historyData.last_exercise_order && Array.isArray(historyData.last_exercise_order)) {
                 console.log('📋 Last session had custom order:', historyData.last_exercise_order.length, 'exercises');
@@ -636,7 +648,7 @@ class WorkoutSessionService {
     /**
      * Set weight direction indicator for an exercise
      * @param {string} exerciseName - Exercise name
-     * @param {string|null} direction - 'up', 'down', or null to clear
+     * @param {string|null} direction - 'up', 'down', 'same', or null to clear
      */
     setWeightDirection(exerciseName, direction) {
         if (!this.currentSession?.exercises) {
@@ -644,7 +656,7 @@ class WorkoutSessionService {
             return;
         }
         
-        const validDirections = ['up', 'down', null];
+        const validDirections = ['up', 'down', 'same', null];
         if (!validDirections.includes(direction)) {
             console.error('❌ Invalid weight direction:', direction);
             return;

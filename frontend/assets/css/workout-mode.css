@@ -66,8 +66,120 @@
     box-shadow: 0 0 0 1px #ffd33d !important;
 }
 
+/* Weight direction reminder badges (from last session notes) */
+.weight-badge.direction-reminder {
+    font-weight: 700;
+    border: 2px solid currentColor;
+    animation: subtlePulse 2s ease-in-out infinite;
+}
+
+.weight-badge.direction-reminder.direction-up {
+    background-color: var(--color-weight-increased) !important;
+    color: white !important;
+}
+
+.weight-badge.direction-reminder.direction-down {
+    background-color: var(--color-weight-decreased) !important;
+    color: white !important;
+}
+
+.weight-badge.direction-reminder.direction-same {
+    background-color: #6366f1 !important; /* Primary blue for "no change" */
+    color: white !important;
+}
+
+/* Subtle pulse animation for direction reminders */
+@keyframes subtlePulse {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.05);
+        opacity: 0.9;
+    }
+}
+
+/* Dark theme adjustments for direction reminder badges */
+[data-bs-theme="dark"] .weight-badge.direction-reminder.direction-up {
+    background-color: #5DD91E !important;  /* Light Kelly Green for dark mode */
+}
+
+[data-bs-theme="dark"] .weight-badge.direction-reminder.direction-down {
+    background-color: #f85149 !important;
+}
+
+[data-bs-theme="dark"] .weight-badge.direction-reminder.direction-same {
+    background-color: #58a6ff !important; /* Brighter blue for dark mode */
+}
+
+/* Disable animation on reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+    .weight-badge.direction-reminder {
+        animation: none !important;
+    }
+}
+
+/* Current session direction badges (active workout) */
+.weight-badge.direction-up:not(.direction-reminder) {
+    background-color: var(--color-weight-increased) !important;
+    color: white !important;
+    font-weight: 600;
+}
+
+.weight-badge.direction-down:not(.direction-reminder) {
+    background-color: var(--color-weight-decreased) !important;
+    color: white !important;
+    font-weight: 600;
+}
+
+/* Dark theme for current session directions */
+[data-bs-theme="dark"] .weight-badge.direction-up:not(.direction-reminder) {
+    background-color: #5DD91E !important;  /* Light Kelly Green for dark mode */
+}
+
+[data-bs-theme="dark"] .weight-badge.direction-down:not(.direction-reminder) {
+    background-color: #f85149 !important;
+}
+
+/* Data attribute selectors for dynamic updates */
+.weight-badge[data-direction="up"]:not(.direction-reminder) {
+    background-color: var(--color-weight-increased) !important;
+    color: white !important;
+    font-weight: 600;
+}
+
+.weight-badge[data-direction="down"]:not(.direction-reminder) {
+    background-color: var(--color-weight-decreased) !important;
+    color: white !important;
+    font-weight: 600;
+}
+
+[data-bs-theme="dark"] .weight-badge[data-direction="up"]:not(.direction-reminder) {
+    background-color: #5DD91E !important;
+}
+
+[data-bs-theme="dark"] .weight-badge[data-direction="down"]:not(.direction-reminder) {
+    background-color: #f85149 !important;
+}
+
 /* ============================================
-   WEIGHT DIRECTION INDICATOR & BUTTONS (Phase 4)
+   WEIGHT DIRECTION INDICATOR & BUTTONS (DEPRECATED)
+   
+   ⚠️ DEPRECATED: These styles are being replaced by Quick Notes Popover.
+   The inline Decrease/Increase buttons have been replaced with a single
+   note trigger button that opens a popover with the same actions.
+   
+   Old: [Decrease] • [Increase] inline buttons
+   New: [📝] trigger button → popover with [Decrease] [Increase]
+   
+   Keep for backwards compatibility until fully migrated.
+   Phase 1 migration completed: 2026-01-05
+   
+   Related files:
+   - CSS: /static/assets/css/components/quick-notes-popover.css
+   - JS: /static/assets/js/components/quick-notes/quick-notes-popover.js
+   - Config: /static/assets/js/components/quick-notes/quick-notes-config.js
    ============================================ */
 
 /* Weight direction indicator badge in collapsed header */
@@ -104,27 +216,42 @@
     transform: scale(0.85);
 }
 
-/* Weight direction toggle buttons in expanded view */
-.weight-direction-btn {
+/* Weight Direction Container - Two-button with dot layout */
+.weight-direction-container {
     display: flex;
     align-items: center;
-    justify-content: center;
-    gap: 0.375rem;
-    font-size: 0.8125rem;
-    padding: 0.5rem;
-    font-weight: 500;
-    border-radius: 8px;
-    transition: all 0.2s ease;
-    min-height: 44px;
-    height: 44px;
-    border: 1.5px solid var(--bs-border-color);
-    background: transparent;
-    color: var(--bs-body-color);
+    gap: 0.5rem;
 }
 
-.weight-direction-btn i {
-    font-size: 1.1rem;
-    transition: transform 0.2s ease;
+/* Dot separator between buttons - same height as buttons */
+.weight-direction-dot {
+    font-size: 1.5rem;
+    color: var(--bs-secondary);
+    line-height: 1;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    transition: opacity 0.2s ease;
+    user-select: none;
+}
+
+.weight-direction-dot.hidden {
+    opacity: 0;
+}
+
+/* Compact text buttons */
+.weight-direction-btn {
+    font-size: 0.75rem;
+    font-weight: 500;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    min-height: 28px;
+    height: 28px;
+    border: 1px solid var(--bs-border-color);
+    background: transparent;
+    color: var(--bs-body-color);
+    transition: all 0.2s ease;
+    white-space: nowrap;
 }
 
 .weight-direction-btn:hover:not(.active) {
@@ -133,29 +260,20 @@
     color: var(--bs-primary);
 }
 
-.weight-direction-btn:hover:not(.active) i {
-    transform: scale(1.1);
-}
-
-/* Active state for selected direction */
-.weight-direction-btn.active.btn-direction-up {
-    background: linear-gradient(135deg, rgba(var(--bs-success-rgb), 0.15), rgba(var(--bs-success-rgb), 0.2));
-    border-color: var(--bs-success);
-    color: var(--bs-success);
-    font-weight: 600;
-    box-shadow: 0 2px 6px rgba(var(--bs-success-rgb), 0.25);
-}
-
+/* Active state for DOWN direction */
 .weight-direction-btn.active.btn-direction-down {
-    background: linear-gradient(135deg, rgba(var(--bs-danger-rgb), 0.15), rgba(var(--bs-danger-rgb), 0.2));
-    border-color: var(--bs-danger);
-    color: var(--bs-danger);
+    background: var(--bs-warning);
+    border-color: var(--bs-warning);
+    color: #fff;
     font-weight: 600;
-    box-shadow: 0 2px 6px rgba(var(--bs-danger-rgb), 0.25);
 }
 
-.weight-direction-btn.active i {
-    transform: scale(1.15);
+/* Active state for UP direction */
+.weight-direction-btn.active.btn-direction-up {
+    background: var(--bs-success);
+    border-color: var(--bs-success);
+    color: #fff;
+    font-weight: 600;
 }
 
 /* Dark theme adjustments for direction buttons */
@@ -169,6 +287,10 @@
     border-color: rgba(var(--bs-danger-rgb), 0.4);
 }
 
+[data-bs-theme="dark"] .weight-direction-dot {
+    color: var(--bs-gray-400);
+}
+
 [data-bs-theme="dark"] .weight-direction-btn {
     border-color: var(--bs-gray-600);
 }
@@ -177,14 +299,14 @@
     background: rgba(var(--bs-primary-rgb), 0.12);
 }
 
-[data-bs-theme="dark"] .weight-direction-btn.active.btn-direction-up {
-    background: linear-gradient(135deg, rgba(var(--bs-success-rgb), 0.2), rgba(var(--bs-success-rgb), 0.25));
-    box-shadow: 0 2px 8px rgba(var(--bs-success-rgb), 0.35);
+[data-bs-theme="dark"] .weight-direction-btn.active.btn-direction-down {
+    background: var(--bs-warning);
+    border-color: var(--bs-warning);
 }
 
-[data-bs-theme="dark"] .weight-direction-btn.active.btn-direction-down {
-    background: linear-gradient(135deg, rgba(var(--bs-danger-rgb), 0.2), rgba(var(--bs-danger-rgb), 0.25));
-    box-shadow: 0 2px 8px rgba(var(--bs-danger-rgb), 0.35);
+[data-bs-theme="dark"] .weight-direction-btn.active.btn-direction-up {
+    background: var(--bs-success);
+    border-color: var(--bs-success);
 }
 
 /* Mobile responsive for direction buttons */
@@ -198,15 +320,20 @@
         font-size: 0.9rem;
     }
     
-    .weight-direction-btn {
-        font-size: 0.75rem;
-        padding: 0.45rem;
-        min-height: 42px;
-        height: 42px;
+    .weight-direction-container {
+        gap: 0.4rem;
     }
     
-    .weight-direction-btn i {
-        font-size: 1rem;
+    .weight-direction-dot {
+        font-size: 1.4rem;
+        height: 26px;
+    }
+    
+    .weight-direction-btn {
+        font-size: 0.7rem;
+        padding: 0.2rem 0.4rem;
+        min-height: 26px;
+        height: 26px;
     }
 }
 
@@ -220,15 +347,20 @@
         font-size: 0.85rem;
     }
     
-    .weight-direction-btn {
-        font-size: 0.7rem;
-        padding: 0.4rem;
-        min-height: 40px;
-        height: 40px;
+    .weight-direction-container {
+        gap: 0.35rem;
     }
     
-    .weight-direction-btn i {
-        font-size: 0.95rem;
+    .weight-direction-dot {
+        font-size: 1.3rem;
+        height: 24px;
+    }
+    
+    .weight-direction-btn {
+        font-size: 0.65rem;
+        padding: 0.2rem 0.35rem;
+        min-height: 24px;
+        height: 24px;
     }
 }
 
@@ -480,7 +612,7 @@
 .exercise-card.expanded .exercise-card-header {
     background: rgba(var(--bs-primary-rgb), 0.05);
     cursor: default;
-    padding: 0.875rem 1rem; /* Increased padding for larger title */
+    padding: 0.625rem 0.875rem; /* Reduced padding for compact layout */
 }
 
 /* ============================================
@@ -497,7 +629,7 @@
 
 /* Title morphs to larger size when expanded */
 .exercise-card.expanded .morph-title {
-    font-size: 1.15rem;
+    font-size: 1rem;
     color: var(--bs-primary);
     font-weight: 600;
 }
@@ -1323,7 +1455,7 @@
     
     /* Mobile: Adjust morph animations for smaller screens */
     .exercise-card.expanded .morph-title {
-        font-size: 1.1rem;
+        font-size: 0.95rem;
     }
     
     /* OPTIMIZED: Even faster animations on mobile for better performance */

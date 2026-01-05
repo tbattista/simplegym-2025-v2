@@ -12,6 +12,7 @@ class PlateCalculatorService {
             barWeight: 45,
             barUnit: 'lbs',
             availablePlates: {
+                55: true,
                 45: true,
                 35: true,
                 25: true,

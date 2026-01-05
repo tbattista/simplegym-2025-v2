@@ -407,12 +407,20 @@ export function createPlateSettings(onSave) {
     // Load current config from service
     const config = window.plateCalculatorService?.getConfig() || {
         barWeight: 45,
-        unit: 'lbs',
-        availablePlates: [45, 35, 25, 10, 5, 2.5],
+        barUnit: 'lbs',
+        availablePlates: {
+            55: true,
+            45: true,
+            35: true,
+            25: true,
+            10: true,
+            5: true,
+            2.5: true
+        },
         customPlates: []
     };
     
-    const standardPlates = [45, 35, 25, 10, 5, 2.5];
+    const standardPlates = [55, 45, 35, 25, 10, 5, 2.5];
     
     const offcanvasHtml = `
         <div class="offcanvas offcanvas-bottom offcanvas-bottom-base" tabindex="-1" id="plateSettingsOffcanvas" aria-labelledby="plateSettingsOffcanvasLabel" data-bs-scroll="false">
@@ -428,8 +436,8 @@ export function createPlateSettings(onSave) {
                     <div class="d-flex gap-2">
                         <input type="number" class="form-control" id="barWeightInput" value="${config.barWeight}" min="0" step="5" style="flex: 1;">
                         <select class="form-select" id="unitSelect" style="width: 100px;">
-                            <option value="lbs" ${config.unit === 'lbs' ? 'selected' : ''}>lbs</option>
-                            <option value="kg" ${config.unit === 'kg' ? 'selected' : ''}>kg</option>
+                            <option value="lbs" ${config.barUnit === 'lbs' ? 'selected' : ''}>lbs</option>
+                            <option value="kg" ${config.barUnit === 'kg' ? 'selected' : ''}>kg</option>
                         </select>
                     </div>
                     <small class="text-muted">Standard barbell is 45 lbs / 20 kg</small>
@@ -439,13 +447,16 @@ export function createPlateSettings(onSave) {
                     <h6 class="mb-3">Available Plates</h6>
                     <p class="small text-muted mb-2">Select which plates are available at your gym</p>
                     <div class="d-flex flex-wrap gap-2" id="standardPlatesContainer">
-                        ${standardPlates.map(weight => `
-                            <label class="btn btn-sm ${config.availablePlates.includes(weight) ? 'btn-primary' : 'btn-outline-primary'}" style="cursor: pointer;">
-                                <input type="checkbox" class="plate-checkbox" data-weight="${weight}"
-                                       ${config.availablePlates.includes(weight) ? 'checked' : ''} style="display: none;">
-                                ${weight}
-                            </label>
-                        `).join('')}
+                        ${standardPlates.map(weight => {
+                            const isEnabled = config.availablePlates[weight] === true;
+                            return `
+                                <label class="btn btn-sm ${isEnabled ? 'btn-primary' : 'btn-outline-primary'}" style="cursor: pointer;">
+                                    <input type="checkbox" class="plate-checkbox" data-weight="${weight}"
+                                           ${isEnabled ? 'checked' : ''} style="display: none;">
+                                    ${weight}
+                                </label>
+                            `;
+                        }).join('')}
                     </div>
                 </div>
                 
@@ -506,15 +517,21 @@ function setupPlateSettingsListeners(offcanvas, onSave) {
     
     // Toggle standard plate selection
     standardPlatesContainer.addEventListener('click', (e) => {
-        const checkbox = e.target.closest('.plate-checkbox');
-        if (checkbox) {
-            const label = checkbox.closest('label');
-            if (checkbox.checked) {
-                label.classList.remove('btn-outline-primary');
-                label.classList.add('btn-primary');
-            } else {
-                label.classList.remove('btn-primary');
-                label.classList.add('btn-outline-primary');
+        const label = e.target.closest('label');
+        if (label) {
+            const checkbox = label.querySelector('.plate-checkbox');
+            if (checkbox) {
+                // Toggle checkbox
+                checkbox.checked = !checkbox.checked;
+                
+                // Update button styling
+                if (checkbox.checked) {
+                    label.classList.remove('btn-outline-primary');
+                    label.classList.add('btn-primary');
+                } else {
+                    label.classList.remove('btn-primary');
+                    label.classList.add('btn-outline-primary');
+                }
             }
         }
     });
@@ -563,12 +580,14 @@ function setupPlateSettingsListeners(offcanvas, onSave) {
     // Save settings
     saveBtn.addEventListener('click', () => {
         const barWeight = parseFloat(barWeightInput.value) || 45;
-        const unit = unitSelect.value;
+        const barUnit = unitSelect.value;
         
-        // Get selected standard plates
-        const availablePlates = [];
-        document.querySelectorAll('.plate-checkbox:checked').forEach(checkbox => {
-            availablePlates.push(parseFloat(checkbox.getAttribute('data-weight')));
+        // Get selected standard plates as object
+        const availablePlates = {};
+        const standardPlates = [55, 45, 35, 25, 10, 5, 2.5];
+        standardPlates.forEach(weight => {
+            const checkbox = document.querySelector(`.plate-checkbox[data-weight="${weight}"]`);
+            availablePlates[weight] = checkbox ? checkbox.checked : false;
         });
         
         // Get custom plates
@@ -583,7 +602,7 @@ function setupPlateSettingsListeners(offcanvas, onSave) {
         // Save to service
         const newConfig = {
             barWeight,
-            unit,
+            barUnit,
             availablePlates,
             customPlates
         };
