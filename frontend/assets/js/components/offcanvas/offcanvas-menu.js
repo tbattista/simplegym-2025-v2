@@ -1,16 +1,16 @@
 /**
  * Ghost Gym - Menu Offcanvas Components
  * Creates menu-style offcanvas for Share/More menus and workout selection prompts
- * 
+ *
  * @module offcanvas-menu
- * @version 3.0.0
- * @date 2025-12-20
+ * @version 3.1.0
+ * @date 2026-01-06
  */
 
 import { createOffcanvas, escapeHtml } from './offcanvas-helpers.js';
 
 /**
- * Create menu-style offcanvas with clickable items
+ * Create menu-style offcanvas with clickable items and toggle switches
  * @param {Object} config - Menu configuration
  * @param {string} config.id - Unique offcanvas ID
  * @param {string} config.title - Header title
@@ -21,16 +21,39 @@ import { createOffcanvas, escapeHtml } from './offcanvas-helpers.js';
 export function createMenuOffcanvas(config) {
     const { id, title, icon, menuItems = [] } = config;
     
-    const menuHtml = menuItems.map((item, index) => `
-        <div class="more-menu-item ${item.variant === 'danger' ? 'danger' : ''}"
-             data-menu-action="${index}">
-            <i class="bx ${item.icon}"></i>
-            <div class="more-menu-item-content">
-                <div class="more-menu-item-title">${escapeHtml(item.title)}</div>
-                <small class="more-menu-item-description">${escapeHtml(item.description || '')}</small>
-            </div>
-        </div>
-    `).join('');
+    const menuHtml = menuItems.map((item, index) => {
+        if (item.type === 'toggle') {
+            // Toggle switch item
+            return `
+                <div class="more-menu-item toggle-item" data-menu-action="${index}">
+                    <i class="bx ${item.icon}"></i>
+                    <div class="more-menu-item-content">
+                        <div class="more-menu-item-title">${escapeHtml(item.title)}</div>
+                        <small class="more-menu-item-description">${escapeHtml(item.description || '')}</small>
+                    </div>
+                    <div class="form-check form-switch mb-0">
+                        <input class="form-check-input" type="checkbox"
+                               id="menuToggle${index}"
+                               data-toggle-index="${index}"
+                               ${item.checked ? 'checked' : ''}
+                               style="cursor: pointer;">
+                    </div>
+                </div>
+            `;
+        } else {
+            // Regular clickable item
+            return `
+                <div class="more-menu-item ${item.variant === 'danger' ? 'danger' : ''}"
+                     data-menu-action="${index}">
+                    <i class="bx ${item.icon}"></i>
+                    <div class="more-menu-item-content">
+                        <div class="more-menu-item-title">${escapeHtml(item.title)}</div>
+                        <small class="more-menu-item-description">${escapeHtml(item.description || '')}</small>
+                    </div>
+                </div>
+            `;
+        }
+    }).join('');
     
     const offcanvasHtml = `
         <div class="offcanvas offcanvas-bottom offcanvas-bottom-base" tabindex="-1"
@@ -48,18 +71,44 @@ export function createMenuOffcanvas(config) {
     `;
     
     return createOffcanvas(id, offcanvasHtml, (offcanvas, offcanvasElement) => {
-        // Attach click handlers to menu items
+        // Attach event handlers to menu items
         menuItems.forEach((item, index) => {
-            const element = offcanvasElement.querySelector(`[data-menu-action="${index}"]`);
-            if (element && item.onClick) {
-                element.addEventListener('click', async () => {
-                    try {
-                        await item.onClick();
-                        offcanvas.hide();
-                    } catch (error) {
-                        console.error('Menu item action failed:', error);
-                    }
-                });
+            if (item.type === 'toggle') {
+                // Toggle switch item - attach change listener to checkbox
+                const toggleInput = offcanvasElement.querySelector(`#menuToggle${index}`);
+                if (toggleInput && item.onChange) {
+                    toggleInput.addEventListener('change', async (e) => {
+                        try {
+                            const isChecked = e.target.checked;
+                            console.log(`🔄 Toggle "${item.title}" changed to:`, isChecked);
+                            
+                            // Save to localStorage if storageKey provided
+                            if (item.storageKey) {
+                                localStorage.setItem(item.storageKey, isChecked);
+                            }
+                            
+                            // Call onChange callback
+                            await item.onChange(isChecked);
+                        } catch (error) {
+                            console.error('Toggle change failed:', error);
+                            // Revert toggle on error
+                            e.target.checked = !e.target.checked;
+                        }
+                    });
+                }
+            } else {
+                // Regular clickable item - attach click listener
+                const element = offcanvasElement.querySelector(`[data-menu-action="${index}"]`);
+                if (element && item.onClick) {
+                    element.addEventListener('click', async () => {
+                        try {
+                            await item.onClick();
+                            offcanvas.hide();
+                        } catch (error) {
+                            console.error('Menu item action failed:', error);
+                        }
+                    });
+                }
             }
         });
     });

@@ -377,7 +377,7 @@ function renderExerciseRow(ex) {
         statusBadge = '<span class="badge bg-warning">Skipped</span>';
         rowClass = 'text-muted';
     } else if (ex.is_bonus) {
-        statusBadge = '<span class="badge bg-success">Bonus</span>';
+        statusBadge = '<span class="badge bg-success">Added</span>';
     } else if (ex.is_modified) {
         statusBadge = '<span class="badge bg-info">Modified</span>';
     } else {

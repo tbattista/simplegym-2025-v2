@@ -36,7 +36,7 @@ export function createBonusExercise(data, onAddExercise) {
             <!-- Header -->
             <div class="offcanvas-header border-bottom">
                 <h5 class="offcanvas-title" id="bonusExerciseOffcanvasLabel">
-                    <i class="bx bx-plus-circle me-2"></i>Add Bonus Exercise
+                    <i class="bx bx-plus-circle me-2"></i>Add Exercise
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
             </div>

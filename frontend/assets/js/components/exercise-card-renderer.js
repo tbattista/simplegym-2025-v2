@@ -99,8 +99,9 @@ class ExerciseCardRenderer {
                     </div>
                     
                     <div class="exercise-card-summary">
-                        <!-- MORPH: Exercise Name -->
+                        <!-- MORPH: Exercise Name with inline badge -->
                         <h6 class="mb-0 morph-title" data-morph-id="title-${index}">
+                            ${isBonus ? '<span class="additional-exercise-badge" title="Additional exercise - added to this workout session, not part of the workout template">+</span>' : ''}
                             ${isCompleted ? '<i class="bx bx-check-circle text-success me-1"></i>' : ''}
                             ${isSkipped ? '<i class="bx bx-x-circle text-warning me-1"></i>' : ''}
                             ${this._escapeHtml(mainExercise)}
@@ -161,21 +162,28 @@ class ExerciseCardRenderer {
                             ${isSessionActive ? `
                                 <div class="weight-section-right">
                                     <div class="weight-direction-section">
-                                        <span class="weight-direction-label">Next session:</span>
+                                        <span class="weight-direction-label">Next session (optional):</span>
                                         <div class="weight-direction-toggle">
                                             <button class="btn btn-sm weight-direction-btn increase ${currentDirection === 'up' ? 'active' : ''}"
                                                     data-exercise-name="${this._escapeHtml(mainExercise)}"
                                                     data-direction="up"
                                                     onclick="window.workoutModeController.toggleWeightDirection(this, '${this._escapeHtml(mainExercise)}', 'up'); event.stopPropagation();"
                                                     title="Increase weight next session">
-                                                <i class="bx bx-chevron-up"></i> More Weight
+                                                <i class="bx bx-chevron-up"></i> Increase
+                                            </button>
+                                            <button class="btn btn-sm weight-direction-btn same ${!currentDirection || currentDirection === 'same' ? 'active' : ''}"
+                                                    data-exercise-name="${this._escapeHtml(mainExercise)}"
+                                                    data-direction="same"
+                                                    onclick="window.workoutModeController.toggleWeightDirection(this, '${this._escapeHtml(mainExercise)}', 'same'); event.stopPropagation();"
+                                                    title="Keep same weight next session">
+                                                <i class="bx bx-minus"></i> No Change
                                             </button>
                                             <button class="btn btn-sm weight-direction-btn decrease ${currentDirection === 'down' ? 'active' : ''}"
                                                     data-exercise-name="${this._escapeHtml(mainExercise)}"
                                                     data-direction="down"
                                                     onclick="window.workoutModeController.toggleWeightDirection(this, '${this._escapeHtml(mainExercise)}', 'down'); event.stopPropagation();"
                                                     title="Decrease weight next session">
-                                                <i class="bx bx-chevron-down"></i> Less Weight
+                                                <i class="bx bx-chevron-down"></i> Decrease
                                             </button>
                                         </div>
                                     </div>
@@ -450,12 +458,17 @@ class ExerciseCardRenderer {
                             <i class="bx bx-check me-1"></i>Complete
                         </button>
                     `}
-                    <!-- Line 2: Modify and Skip buttons (side by side) -->
+                    <!-- Line 2: Modify, Replace, and Skip buttons (side by side) -->
                     <div class="d-flex gap-2">
                         <button class="btn btn-sm btn-outline-primary flex-fill"
                                 onclick="window.workoutModeController.handleEditExercise('${this._escapeHtml(exerciseName)}', ${index}); event.stopPropagation();"
                                 title="Modify exercise details">
                             <i class="bx bx-edit me-1"></i>Modify
+                        </button>
+                        <button class="btn btn-sm btn-outline-info flex-fill"
+                                onclick="window.workoutModeController.handleReplaceExercise('${this._escapeHtml(exerciseName)}', ${index}); event.stopPropagation();"
+                                title="Skip this exercise and add a replacement">
+                            <i class="bx bx-refresh me-1"></i>Replace
                         </button>
                         <button class="btn btn-sm btn-outline-warning flex-fill"
                                 onclick="window.workoutModeController.handleSkipExercise('${this._escapeHtml(exerciseName)}', ${index}); event.stopPropagation();"
@@ -470,7 +483,7 @@ class ExerciseCardRenderer {
 
     /**
      * Render weight history with expandable list
-     * Shows 2 most recent sessions by default, rest in expandable dropdown
+     * Shows 3 most recent sessions by default, rest in expandable dropdown
      * @private
      */
     _renderWeightHistory(exerciseName, lastWeight, lastWeightUnit, lastSessionDate, recentSessions) {
@@ -479,7 +492,8 @@ class ExerciseCardRenderer {
         }
         
         const hasMultipleSessions = recentSessions && recentSessions.length > 1;
-        const hasMoreThanTwo = recentSessions && recentSessions.length > 2;
+        const hasThreeSessions = recentSessions && recentSessions.length > 2;
+        const hasMoreThanThree = recentSessions && recentSessions.length > 3;
         const historyId = `history-${this._escapeHtml(exerciseName).replace(/\s+/g, '-')}`;
         
         // Helper to format date consistently
@@ -499,25 +513,36 @@ class ExerciseCardRenderer {
                 </div>
                 
                 ${hasMultipleSessions ? `
-                    <!-- Second most recent session with inline expand arrow -->
-                    <div class="weight-history-item visible-item ${hasMoreThanTwo ? 'clickable' : ''}"
-                         ${hasMoreThanTwo ? `data-history-id="${historyId}" onclick="window.workoutModeController.toggleWeightHistory('${historyId}'); event.stopPropagation();"` : ''}>
+                    <!-- Second most recent session (always visible) -->
+                    <div class="weight-history-item visible-item">
                         <span class="weight-history-connector">├─</span>
                         <span class="weight-history-content">
                             <span class="weight-history-weight">${recentSessions[1].weight || '—'}${recentSessions[1].weight_unit !== 'other' ? ` ${recentSessions[1].weight_unit || 'lbs'}` : ''}</span>
                             <span class="weight-history-date">on ${formatDate(recentSessions[1].date)}</span>
                         </span>
-                        ${hasMoreThanTwo ? `
+                    </div>
+                ` : ''}
+                
+                ${hasThreeSessions ? `
+                    <!-- Third most recent session with inline expand arrow -->
+                    <div class="weight-history-item visible-item ${hasMoreThanThree ? 'clickable' : ''}"
+                         ${hasMoreThanThree ? `data-history-id="${historyId}" onclick="window.workoutModeController.toggleWeightHistory('${historyId}'); event.stopPropagation();"` : ''}>
+                        <span class="weight-history-connector">├─</span>
+                        <span class="weight-history-content">
+                            <span class="weight-history-weight">${recentSessions[2].weight || '—'}${recentSessions[2].weight_unit !== 'other' ? ` ${recentSessions[2].weight_unit || 'lbs'}` : ''}</span>
+                            <span class="weight-history-date">on ${formatDate(recentSessions[2].date)}</span>
+                        </span>
+                        ${hasMoreThanThree ? `
                             <i class="bx bx-chevron-down weight-history-arrow" id="arrow-${historyId}"></i>
                         ` : ''}
                     </div>
                 ` : ''}
                 
-                ${hasMoreThanTwo ? `
-                    <!-- Hidden sessions list -->
+                ${hasMoreThanThree ? `
+                    <!-- Hidden sessions list (4th session onwards) -->
                     <div class="weight-history-list" id="list-${historyId}" style="display: none;">
-                        ${recentSessions.slice(2).map((session, index) => {
-                            const isLast = index === recentSessions.length - 3;
+                        ${recentSessions.slice(3).map((session, index) => {
+                            const isLast = index === recentSessions.length - 4;
                             const connector = isLast ? '└─' : '├─';
                             const weight = session.weight || '—';
                             const unit = session.weight_unit || 'lbs';

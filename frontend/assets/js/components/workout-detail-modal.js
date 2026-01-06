@@ -84,7 +84,7 @@
 
                                     <!-- Bonus Exercises -->
                                     <div id="detailBonusContainer" class="mb-4" style="display: none;">
-                                        <h6 class="mb-3">Bonus Exercises</h6>
+                                        <h6 class="mb-3">Additional Exercises</h6>
                                         <div id="detailBonusExercises"></div>
                                     </div>
                                 </div>

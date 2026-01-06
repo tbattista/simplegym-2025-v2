@@ -210,7 +210,7 @@ class CardRenderer {
         // Store data
         this.bonusExercisesData[bonusId] = data;
         
-        const exerciseName = data.name || `New Bonus Exercise ${bonusNumber}`;
+        const exerciseName = data.name || `New Additional Exercise ${bonusNumber}`;
         const hasData = data.name;
         
         // Build meta text (plain text, not badges)
@@ -227,7 +227,7 @@ class CardRenderer {
                     <div class="card-body">
                         <button type="button" class="btn btn-sm btn-icon btn-edit-compact"
                                 onclick="event.preventDefault(); event.stopPropagation(); openBonusExerciseEditor('${bonusId}');"
-                                title="Edit bonus exercise">
+                                title="Edit additional exercise">
                             <i class="bx bx-edit"></i>
                         </button>
                         <div class="exercise-content">
@@ -249,7 +249,7 @@ class CardRenderer {
         const card = document.querySelector(`[data-bonus-id="${bonusId}"]`);
         if (!card) return;
         
-        const exerciseName = bonusData.name || 'New Bonus Exercise';
+        const exerciseName = bonusData.name || 'New Additional Exercise';
         const hasData = bonusData.name;
         
         // Build meta text (plain text, not badges)

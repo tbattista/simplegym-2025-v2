@@ -297,6 +297,31 @@
     margin-bottom: 0.75rem;
 }
 
+/* Toggle menu item - not clickable as whole item */
+.offcanvas-bottom-base .more-menu-item.toggle-item {
+    cursor: default;
+}
+
+.offcanvas-bottom-base .more-menu-item.toggle-item:hover {
+    background: var(--bs-body-bg);
+    border-color: var(--bs-border-color);
+    transform: none;
+    box-shadow: none;
+}
+
+/* Toggle switch styling */
+.offcanvas-bottom-base .more-menu-item.toggle-item .form-check-input {
+    width: 3rem;
+    height: 1.5rem;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.offcanvas-bottom-base .more-menu-item.toggle-item .form-check-input:checked {
+    background-color: var(--bs-primary);
+    border-color: var(--bs-primary);
+}
+
 .offcanvas-bottom-base .more-menu-item:last-child {
     margin-bottom: 0;
 }
@@ -509,6 +534,11 @@
 [data-bs-theme="dark"] .offcanvas-bottom-base .more-menu-item:hover {
     background: rgba(255, 255, 255, 0.05);
     border-color: var(--bs-primary);
+}
+
+[data-bs-theme="dark"] .offcanvas-bottom-base .more-menu-item.toggle-item:hover {
+    background: var(--bs-gray-900);
+    border-color: var(--bs-gray-700);
 }
 
 [data-bs-theme="dark"] .offcanvas-bottom-base .more-menu-item.danger:hover {

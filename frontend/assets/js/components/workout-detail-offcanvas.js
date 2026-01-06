@@ -239,7 +239,7 @@ class WorkoutDetailOffcanvas {
         // Bonus Exercises
         const bonusExercises = workoutData.bonus_exercises || [];
         if (bonusExercises.length > 0) {
-            html += '<h6 class="mb-3 mt-4">Bonus Exercises</h6>';
+            html += '<h6 class="mb-3 mt-4">Additional Exercises</h6>';
             
             bonusExercises.forEach((bonus) => {
                 // Build meta text (plain text with bullet separators)

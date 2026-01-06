@@ -137,6 +137,52 @@ class WorkoutExerciseOperationsManager {
     }
     
     /**
+     * Handle replacing an exercise (skip + add new)
+     * This chains skip and add exercise functionality for a seamless replacement flow
+     * @param {string} exerciseName - Exercise name to replace
+     * @param {number} index - Exercise index
+     */
+    async handleReplaceExercise(exerciseName, index) {
+        if (!this.sessionService.isSessionActive()) {
+            console.warn('⚠️ Cannot replace exercise - no active session');
+            if (window.showAlert) {
+                window.showAlert('Please start your workout session first', 'warning');
+            }
+            return;
+        }
+        
+        console.log(`🔄 Replace button clicked for: ${exerciseName} (index: ${index})`);
+        
+        // Step 1: Skip the current exercise with "Replaced" reason
+        this.sessionService.skipExercise(exerciseName, 'Replaced with alternative exercise');
+        
+        // Step 2: Update UI to show skipped state
+        this.onRenderWorkout();
+        
+        // Step 3: Show success message for skip
+        if (window.showAlert) {
+            window.showAlert(`${exerciseName} marked as skipped`, 'info');
+        }
+        
+        // Step 4: Auto-save the skip
+        try {
+            await this.onAutoSave();
+        } catch (error) {
+            console.error('❌ Failed to auto-save after skip:', error);
+        }
+        
+        // Step 5: Open Add Exercise form for replacement (with slight delay for UX)
+        setTimeout(() => {
+            this.showAddExerciseForm();
+        }, 300);
+        
+        // Step 6: Auto-advance to next exercise after adding (handled by showAddExerciseForm callback)
+        setTimeout(() => {
+            this.onGoToNext(index);
+        }, 600);
+    }
+    
+    /**
      * Handle editing an exercise's details (sets, reps, rest, weight)
      * Works BEFORE and DURING workout session
      * @param {string} exerciseName - Exercise name
@@ -277,7 +323,7 @@ class WorkoutExerciseOperationsManager {
             window.UnifiedOffcanvasFactory.createExerciseGroupEditor(
                 {
                     mode: 'single',
-                    title: 'Add Bonus Exercise',
+                    title: 'Add Exercise',
                     exercises: { a: '', b: '', c: '' },
                     sets: '3',
                     reps: '12',

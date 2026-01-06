@@ -180,6 +180,7 @@ class WorkoutModeController {
             // Setup UI
             this.setupEventListeners();
             this.initializeSoundToggle();
+            this.initializeRestTimerSetting();
             this.initializeShareButton();
             this.initializeReorderMode();
             
@@ -474,6 +475,13 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
         
         // PHASE 2: Initialize drag-and-drop reordering
         this.initializeSortable();
+        
+        // ✅ FIX: Restore reorder mode visual state if it was active before re-render
+        if (this.reorderModeEnabled) {
+            console.log('🔄 Re-applying reorder mode after re-render');
+            container.classList.add('reorder-mode-active');
+            // Sortable was already created with disabled: false due to reorderModeEnabled being true
+        }
     }
     
     /**
@@ -503,8 +511,17 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
     /**
      * PHASE 2: Initialize drag-and-drop sorting with SortableJS
      * UPDATED: Starts disabled, enabled via reorder mode toggle
+     * MOBILE FIX: Enhanced configuration for better touch support
+     * FIX: Properly destroy existing sortable before creating new one
      */
     initializeSortable() {
+        // ✅ FIX: Destroy existing sortable before creating new one to prevent stale references
+        if (this.sortable) {
+            console.log('🧹 Destroying existing sortable before reinitializing');
+            this.sortable.destroy();
+            this.sortable = null;
+        }
+        
         const container = document.getElementById('exerciseCardsContainer');
         if (!container || typeof Sortable === 'undefined') {
             console.warn('⚠️ Sortable not initialized - container or library missing');
@@ -518,11 +535,25 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
             chosenClass: 'sortable-chosen',
             dragClass: 'sortable-drag',
             fallbackClass: 'sortable-fallback',
-            forceFallback: false,
+            
+            // MOBILE FIX: Enable fallback for better touch support
+            forceFallback: true,
+            fallbackOnBody: true,
+            fallbackTolerance: 5,  // Slight tolerance to differentiate tap from drag
+            
             scroll: true,
             scrollSensitivity: 60,
             scrollSpeed: 10,
             bubbleScroll: true,
+            
+            // Delay before drag starts (helps distinguish scroll from drag on mobile)
+            delay: 150,
+            delayOnTouchOnly: true,  // Only apply delay on touch devices
+            
+            // ✅ FIX: Prevent Sortable from interfering with action buttons and interactive elements
+            // This ensures button clicks work properly even when reorder mode is active
+            filter: '.btn, .weight-badge, button, a, input, select, textarea',
+            preventOnFilter: false,  // Don't prevent default behavior on filtered elements
             
             // Start disabled, enabled via toggle
             disabled: !this.reorderModeEnabled,
@@ -543,7 +574,7 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
             }
         });
         
-        console.log('✅ SortableJS initialized for exercise reordering');
+        console.log('✅ SortableJS initialized for exercise reordering (mobile-optimized)');
     }
     
     /**
@@ -566,10 +597,18 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
     
     /**
      * Enter reorder mode
+     * FIX: Improved timer handling and sortable state management
      */
     enterReorderMode() {
         const container = document.getElementById('exerciseCardsContainer');
         if (!container) return;
+        
+        // ✅ FIX: Get fresh reference to timer SPAN element (not the container div)
+        const timerSpan = document.getElementById('floatingTimer');
+        const preservedTime = timerSpan ? timerSpan.textContent : null;
+        
+        // ✅ FIX: Check if session is active (don't mess with timer if no session)
+        const isSessionActive = this.sessionService.isSessionActive();
         
         this.reorderModeEnabled = true;
         
@@ -581,14 +620,21 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
             this.collapseCard(card);
         });
         
-        // Ensure sortable is initialized
+        // Ensure sortable is initialized and enabled
         if (!this.sortable) {
             this.initializeSortable();
         }
-        
-        // Enable sortable
         if (this.sortable) {
             this.sortable.option('disabled', false);
+        }
+        
+        // ✅ FIX: Only restore timer if session is active and it was accidentally reset
+        if (isSessionActive && preservedTime && preservedTime !== '00:00') {
+            const currentTimerSpan = document.getElementById('floatingTimer');
+            if (currentTimerSpan && currentTimerSpan.textContent === '00:00') {
+                currentTimerSpan.textContent = preservedTime;
+                console.warn('⚠️ Timer was reset during reorder mode - restored:', preservedTime);
+            }
         }
         
         // Show feedback
@@ -1071,6 +1117,20 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
         });
     }
     
+    /**
+     * Initialize rest timer setting
+     * Ensures rest timer respects enabled/disabled state on page load
+     */
+    initializeRestTimerSetting() {
+        // Rest timer will be initialized by timerManager.initializeGlobalTimer()
+        // during renderWorkout(), but we ensure the setting is ready
+        const enabled = localStorage.getItem('workoutRestTimerEnabled') !== 'false';
+        console.log(`🕐 Rest timer setting initialized: ${enabled ? 'enabled' : 'disabled'}`);
+        
+        // The actual timer initialization happens in timerManager during renderWorkout()
+        // This method just ensures the setting is logged and ready
+    }
+    
     updateSoundUI() {
         const soundIcon = document.getElementById('soundIcon');
         const soundStatus = document.getElementById('soundStatus');
@@ -1218,135 +1278,43 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
     }
     
     /**
-     * PHASE 2: Handle skipping an exercise
+     * Handle skipping an exercise
+     * Phase 7: Delegates to WorkoutExerciseOperationsManager
      * @param {string} exerciseName - Exercise name
      * @param {number} index - Exercise index
      */
     handleSkipExercise(exerciseName, index) {
-        if (!this.sessionService.isSessionActive()) {
-            console.warn('⚠️ Cannot skip exercise - no active session');
-            return;
-        }
-        
-        // Show skip reason offcanvas
-        window.UnifiedOffcanvasFactory.createSkipExercise(
-            { exerciseName },
-            async (reason) => {
-                // Mark as skipped in session
-                this.sessionService.skipExercise(exerciseName, reason);
-                
-                // Update UI - re-render to show skipped state
-                this.renderWorkout();
-                
-                // Auto-advance to next exercise
-                setTimeout(() => {
-                    this.goToNextExercise(index);
-                }, 300);
-                
-                // Show success message
-                if (window.showAlert) {
-                    const message = reason
-                        ? `${exerciseName} skipped: ${reason}`
-                        : `${exerciseName} skipped`;
-                    window.showAlert(message, 'warning');
-                }
-                
-                // Auto-save session
-                try {
-                    await this.autoSave(null);
-                } catch (error) {
-                    console.error('❌ Failed to auto-save after skip:', error);
-                }
-            }
-        );
+        return this.exerciseOpsManager.handleSkipExercise(exerciseName, index);
     }
     
     /**
-     * PHASE 2: Handle unskipping an exercise
+     * Handle unskipping an exercise
+     * Phase 7: Delegates to WorkoutExerciseOperationsManager
      * @param {string} exerciseName - Exercise name
      * @param {number} index - Exercise index
      */
     handleUnskipExercise(exerciseName, index) {
-        if (!this.sessionService.isSessionActive()) {
-            console.warn('⚠️ Cannot unskip exercise - no active session');
-            return;
-        }
-        
-        const modalManager = this.getModalManager();
-        modalManager.confirm(
-            'Unskip Exercise',
-            `Resume <strong>${WorkoutUtils.escapeHtml(exerciseName)}</strong>?`,
-            async () => {
-                // Mark as not skipped in session
-                this.sessionService.unskipExercise(exerciseName);
-                
-                // Update UI - re-render to remove skipped state
-                this.renderWorkout();
-                
-                // Show success message
-                if (window.showAlert) {
-                    window.showAlert(`${exerciseName} resumed`, 'success');
-                }
-                
-                // Auto-save session
-                try {
-                    await this.autoSave(null);
-                } catch (error) {
-                    console.error('❌ Failed to auto-save after unskip:', error);
-                }
-            }
-        );
+        return this.exerciseOpsManager.handleUnskipExercise(exerciseName, index);
+    }
+    
+    /**
+     * Handle replacing an exercise (skip + add new)
+     * Phase 7: Delegates to WorkoutExerciseOperationsManager
+     * @param {string} exerciseName - Exercise name to replace
+     * @param {number} index - Exercise index
+     */
+    async handleReplaceExercise(exerciseName, index) {
+        return await this.exerciseOpsManager.handleReplaceExercise(exerciseName, index);
     }
     
     /**
      * Handle editing an exercise's details (sets, reps, rest, weight)
-     * PHASE 1: Now works BEFORE and DURING workout session
+     * Phase 7: Delegates to WorkoutExerciseOperationsManager
      * @param {string} exerciseName - Exercise name
      * @param {number} index - Exercise index
      */
     handleEditExercise(exerciseName, index) {
-        // PHASE 1: Get current exercise data from appropriate source
-        const currentData = this._getCurrentExerciseData(exerciseName, index);
-        
-        console.log('✏️ Opening exercise editor for:', exerciseName, currentData);
-        
-        const isSessionActive = this.sessionService.isSessionActive();
-        
-        // Show edit offcanvas
-        window.UnifiedOffcanvasFactory.createExerciseDetailsEditor(
-            currentData,
-            async (updatedData) => {
-                console.log('💾 Saving updated exercise details:', updatedData);
-                
-                if (isSessionActive) {
-                    // ACTIVE SESSION: Save to session (existing behavior)
-                    this.sessionService.updateExerciseDetails(exerciseName, updatedData);
-                    
-                    // Auto-save to server
-                    try {
-                        await this.autoSave(null);
-                        if (window.showAlert) {
-                            window.showAlert(`${exerciseName} updated`, 'success');
-                        }
-                    } catch (error) {
-                        console.error('❌ Failed to save exercise updates:', error);
-                        if (window.showAlert) {
-                            window.showAlert('Failed to save changes. Please try again.', 'danger');
-                        }
-                    }
-                } else {
-                    // PRE-SESSION: Save to pre-session edits (new behavior)
-                    this.sessionService.updatePreSessionExercise(exerciseName, updatedData);
-                    
-                    if (window.showAlert) {
-                        window.showAlert(`${exerciseName} updated - changes will apply when you start the workout`, 'success');
-                    }
-                }
-                
-                // Re-render to show updated values
-                this.renderWorkout();
-            }
-        );
+        return this.exerciseOpsManager.handleEditExercise(exerciseName, index);
     }
     
     /**
@@ -1364,108 +1332,30 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
     
     /**
      * Handle completing an exercise
+     * Phase 7: Delegates to WorkoutExerciseOperationsManager
      * @param {string} exerciseName - Exercise name
      * @param {number} index - Exercise index
      */
     handleCompleteExercise(exerciseName, index) {
-        if (!this.sessionService.isSessionActive()) {
-            console.warn('⚠️ Cannot complete exercise - no active session');
-            return;
-        }
-        
-        // Clear auto-complete timer since user manually completed
-        this.sessionService.clearAutoCompleteTimer(exerciseName);
-        
-        // Mark as completed
-        this.sessionService.completeExercise(exerciseName);
-        
-        // Re-render to show completed state
-        this.renderWorkout();
-        
-        // Show success message
-        if (window.showAlert) {
-            window.showAlert(`${exerciseName} completed! 💪`, 'success');
-        }
-        
-        // Auto-save session
-        this.autoSave(null).catch(error => {
-            console.error('❌ Failed to auto-save after completion:', error);
-        });
-        
-        // Auto-advance to next exercise after short delay
-        setTimeout(() => {
-            this.goToNextExercise(index);
-        }, 500);
+        return this.exerciseOpsManager.handleCompleteExercise(exerciseName, index);
     }
     
     /**
      * Handle uncompleting an exercise
+     * Phase 7: Delegates to WorkoutExerciseOperationsManager
      * @param {string} exerciseName - Exercise name
      * @param {number} index - Exercise index
      */
     handleUncompleteExercise(exerciseName, index) {
-        if (!this.sessionService.isSessionActive()) {
-            console.warn('⚠️ Cannot uncomplete exercise - no active session');
-            return;
-        }
-        
-        const modalManager = this.getModalManager();
-        modalManager.confirm(
-            'Uncomplete Exercise',
-            `Mark <strong>${WorkoutUtils.escapeHtml(exerciseName)}</strong> as not completed?`,
-            async () => {
-                // Mark as not completed
-                this.sessionService.uncompleteExercise(exerciseName);
-                
-                // Re-render to remove completed state
-                this.renderWorkout();
-                
-                // Show message
-                if (window.showAlert) {
-                    window.showAlert(`${exerciseName} marked as not completed`, 'info');
-                }
-                
-                // Auto-save session
-                try {
-                    await this.autoSave(null);
-                } catch (error) {
-                    console.error('❌ Failed to auto-save after uncomplete:', error);
-                }
-            }
-        );
+        return this.exerciseOpsManager.handleUncompleteExercise(exerciseName, index);
     }
     
     /**
      * Skip current exercise (called from action bar)
-     * Skips the currently expanded exercise card
+     * Phase 7: Delegates to WorkoutExerciseOperationsManager
      */
     skipExercise() {
-        if (!this.sessionService.isSessionActive()) {
-            console.warn('⚠️ Cannot skip exercise - no active session');
-            if (window.showAlert) {
-                window.showAlert('Please start your workout session first', 'warning');
-            }
-            return;
-        }
-        
-        // Find currently expanded card
-        const expandedCard = document.querySelector('.exercise-card.expanded');
-        
-        if (!expandedCard) {
-            console.warn('⚠️ No exercise card is expanded');
-            if (window.showAlert) {
-                window.showAlert('Please expand an exercise to skip it', 'warning');
-            }
-            return;
-        }
-        
-        const exerciseIndex = parseInt(expandedCard.getAttribute('data-exercise-index'));
-        const exerciseName = expandedCard.getAttribute('data-exercise-name');
-        
-        console.log(`⏭️ Skip button clicked for: ${exerciseName} (index: ${exerciseIndex})`);
-        
-        // Call existing skip handler
-        this.handleSkipExercise(exerciseName, exerciseIndex);
+        return this.exerciseOpsManager.skipExercise();
     }
     
     /**

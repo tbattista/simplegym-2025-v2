@@ -425,6 +425,25 @@
     font-size: 0.875rem;
 }
 
+/* No Change button (outline state) - neutral/default */
+.weight-direction-btn.same {
+    border-color: var(--bs-secondary);
+    color: var(--bs-secondary);
+}
+
+.weight-direction-btn.same:hover:not(.active) {
+    background: rgba(var(--bs-secondary-rgb), 0.1);
+    border-color: var(--bs-secondary);
+}
+
+/* No Change button (active/filled state) */
+.weight-direction-btn.same.active {
+    background: var(--bs-secondary);
+    border-color: var(--bs-secondary);
+    color: white;
+    font-weight: 600;
+}
+
 /* Decrease button (outline state) */
 .weight-direction-btn.decrease {
     border-color: var(--bs-warning);
@@ -480,6 +499,20 @@
 [data-bs-theme="dark"] .weight-direction-btn.decrease.active {
     background: #ffc107;
     color: #000;
+}
+
+[data-bs-theme="dark"] .weight-direction-btn.same {
+    border-color: #94a3b8;
+    color: #94a3b8;
+}
+
+[data-bs-theme="dark"] .weight-direction-btn.same:hover:not(.active) {
+    background: rgba(148, 163, 184, 0.15);
+}
+
+[data-bs-theme="dark"] .weight-direction-btn.same.active {
+    background: #64748b;
+    color: white;
 }
 
 [data-bs-theme="dark"] .weight-direction-btn.increase {
@@ -1364,13 +1397,13 @@
     }
 }
 
-/* Bonus Exercise Badge */
+/* Additional Exercise Badge */
 .exercise-card.bonus-exercise .exercise-card-header {
     background: rgba(var(--bs-success-rgb), 0.05);
 }
 
 .exercise-card.bonus-exercise .exercise-card-summary h6::before {
-    content: "🎁 BONUS: ";
+    content: "+ ";
     color: var(--bs-success);
 }
 
@@ -2221,54 +2254,72 @@
    BONUS EXERCISE CARD STYLING
    ============================================ */
 
-/* Enhanced bonus exercise card styling */
+/* Enhanced bonus exercise card styling - Subtle indicator approach */
 .exercise-card.bonus-exercise {
-    border: 2px solid var(--bs-success);
-    background: linear-gradient(135deg, rgba(var(--bs-success-rgb), 0.03), rgba(var(--bs-success-rgb), 0.08));
+    /* No border - use subtle background instead with info/blue color */
+    background: rgba(var(--bs-info-rgb), 0.02);
 }
 
 .exercise-card.bonus-exercise:hover {
-    border-color: var(--bs-success);
-    box-shadow: 0 4px 12px rgba(var(--bs-success-rgb), 0.25);
+    background: rgba(var(--bs-info-rgb), 0.04);
 }
 
 .exercise-card.bonus-exercise .exercise-card-header {
-    background: linear-gradient(135deg, rgba(var(--bs-success-rgb), 0.08), rgba(var(--bs-success-rgb), 0.12));
-    border-bottom: 1px solid rgba(var(--bs-success-rgb), 0.2);
+    background: rgba(var(--bs-info-rgb), 0.03);
 }
 
 .exercise-card.bonus-exercise.expanded .exercise-card-header {
-    background: linear-gradient(135deg, rgba(var(--bs-success-rgb), 0.12), rgba(var(--bs-success-rgb), 0.16));
+    background: rgba(var(--bs-info-rgb), 0.05);
 }
 
-.exercise-card.bonus-exercise .exercise-card-summary h6 {
-    color: var(--bs-success);
-}
-
+/* Remove the "+" prefix - we'll use a badge instead */
 .exercise-card.bonus-exercise .exercise-card-summary h6::before {
-    content: "🎁 ";
-    font-size: 1.1rem;
-    margin-right: 0.25rem;
+    content: "";
 }
 
-/* Bonus badge in weight display */
-.exercise-card.bonus-exercise .badge {
-    background-color: var(--bs-success) !important;
-    color: white !important;
+/* Additional exercise badge - Inline before exercise name, blue color */
+.additional-exercise-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    margin-right: 6px;
+    background: rgba(var(--bs-info-rgb), 0.15);
+    color: var(--bs-info);
+    border-radius: 9px;
+    font-size: 10px;
+    font-weight: 600;
+    line-height: 1;
+    cursor: help;
+    border: 1px solid rgba(var(--bs-info-rgb), 0.3);
+    backdrop-filter: blur(4px);
+    transition: all 0.2s ease;
+    vertical-align: middle;
 }
 
-/* Dark theme adjustments for bonus cards */
+.additional-exercise-badge:hover {
+    background: rgba(var(--bs-info-rgb), 0.25);
+    border-color: rgba(var(--bs-info-rgb), 0.5);
+    transform: scale(1.08);
+}
+
+/* Dark theme adjustments for bonus cards with info/blue color */
 [data-bs-theme="dark"] .exercise-card.bonus-exercise {
-    background: linear-gradient(135deg, rgba(var(--bs-success-rgb), 0.08), rgba(var(--bs-success-rgb), 0.12));
-    border-color: var(--bs-success);
+    background: rgba(var(--bs-info-rgb), 0.05);
+}
+
+[data-bs-theme="dark"] .exercise-card.bonus-exercise:hover {
+    background: rgba(var(--bs-info-rgb), 0.08);
 }
 
 [data-bs-theme="dark"] .exercise-card.bonus-exercise .exercise-card-header {
-    background: linear-gradient(135deg, rgba(var(--bs-success-rgb), 0.12), rgba(var(--bs-success-rgb), 0.16));
+    background: rgba(var(--bs-info-rgb), 0.08);
 }
 
 [data-bs-theme="dark"] .exercise-card.bonus-exercise.expanded .exercise-card-header {
-    background: linear-gradient(135deg, rgba(var(--bs-success-rgb), 0.16), rgba(var(--bs-success-rgb), 0.2));
+    background: rgba(var(--bs-info-rgb), 0.12);
 }
 /* ============================================
    SKIPPED EXERCISE STYLING (Phase 2)
@@ -2468,12 +2519,15 @@
 }
 
 /* Visual indicator that cards are draggable in reorder mode */
+/* MOBILE FIX: Allow vertical scrolling on cards, only drag handle captures touch */
 #exerciseCardsContainer.reorder-mode-active .exercise-card {
-    cursor: move;
+    /* cursor: move removed - only drag handle should show drag cursor */
+    touch-action: pan-y; /* Allow vertical scrolling */
 }
 
 #exerciseCardsContainer.reorder-mode-active .exercise-card-header {
-    cursor: grab;
+    /* cursor: grab removed - only drag handle should show drag cursor */
+    touch-action: pan-y; /* Allow vertical scrolling */
 }
 
 /* Reorder mode active indicator */
@@ -2516,6 +2570,22 @@
     transition: all 0.2s ease;
     border-radius: 4px;
     flex-shrink: 0;
+}
+
+/* MOBILE FIX: Only drag handle captures touch events for dragging */
+#exerciseCardsContainer.reorder-mode-active .exercise-drag-handle {
+    cursor: grab;
+    touch-action: none; /* Drag handle captures all touch events */
+}
+
+#exerciseCardsContainer.reorder-mode-active .exercise-drag-handle:hover {
+    opacity: 1;
+    background-color: rgba(var(--bs-primary-rgb), 0.1);
+    color: var(--bs-primary);
+}
+
+#exerciseCardsContainer.reorder-mode-active .exercise-drag-handle:active {
+    cursor: grabbing;
 }
 
 .exercise-drag-handle:hover {

@@ -38,18 +38,11 @@ class WorkoutTimerManager {
             const seconds = elapsed % 60;
             const timeStr = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
             
-            // Update floating timer in combo
+            // ✅ FIX: Only update the correct timer element (the span inside bottom action bar)
             const floatingTimer = document.getElementById('floatingTimer');
             if (floatingTimer) floatingTimer.textContent = timeStr;
             
-            // Keep old timers for backward compatibility
-            const sessionTimer = document.getElementById('sessionTimer');
-            const footerTimer = document.getElementById('footerSessionTimer');
-            const oldFloatingTimer = document.getElementById('floatingTimerDisplay');
-            
-            if (sessionTimer) sessionTimer.textContent = timeStr;
-            if (footerTimer) footerTimer.textContent = timeStr;
-            if (oldFloatingTimer) oldFloatingTimer.textContent = timeStr;
+            // Note: Legacy floatingTimerWidget removed from HTML, no longer needed
         }, 1000);
     }
     

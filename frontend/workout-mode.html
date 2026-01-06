@@ -104,9 +104,9 @@
                 </p>
               </div>
               
-              <!-- Bonus Exercise Button (Hidden, for JS reference) -->
-              <button class="btn btn-sm btn-outline-success" id="addBonusExerciseBtn" style="display: none;" title="Add bonus exercises before starting">
-                <i class="bx bx-plus-circle me-1"></i>Bonus
+              <!-- Add Exercise Button (Hidden, for JS reference) -->
+              <button class="btn btn-sm btn-outline-success" id="addBonusExerciseBtn" style="display: none;" title="Add exercises">
+                <i class="bx bx-plus-circle me-1"></i>Add
               </button>
 
               <!-- Loading State -->
@@ -164,14 +164,7 @@
       <!-- Overlay -->
       <div class="layout-overlay layout-menu-toggle"></div>
       
-      <!-- Floating Timer Widget (shown during active workout) -->
-      <div id="floatingTimerWidget" class="floating-timer-widget" style="display: none;">
-        <div class="timer-label">
-          <i class="bx bx-time-five"></i>
-          <span>Workout Time</span>
-        </div>
-        <div class="timer-display" id="floatingTimerDisplay">00:00</div>
-      </div>
+      <!-- Legacy floatingTimerWidget removed - now handled by bottom-action-bar-service.js -->
     </div>
     <!-- / Layout wrapper -->
 

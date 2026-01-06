@@ -1,8 +1,8 @@
 /**
  * Ghost Gym - Global Rest Timer Component
  * Extends RestTimer functionality for global floating button
- * @version 1.0.0
- * @date 2025-12-06
+ * @version 1.1.0
+ * @date 2026-01-06
  */
 
 /**
@@ -21,6 +21,45 @@ class GlobalRestTimer extends RestTimer {
             paused: '{time}',
             done: 'Done!'
         };
+        // Load enabled state from localStorage (default: true)
+        this.enabled = localStorage.getItem('workoutRestTimerEnabled') !== 'false';
+    }
+
+    /**
+     * Set enabled state
+     * @param {boolean} enabled - Whether rest timer is enabled
+     */
+    setEnabled(enabled) {
+        this.enabled = enabled;
+        localStorage.setItem('workoutRestTimerEnabled', enabled);
+        
+        console.log(`🕐 Rest timer ${enabled ? 'enabled' : 'disabled'}`);
+        
+        // If disabled while running, reset
+        if (!enabled && (this.state === 'counting' || this.state === 'paused')) {
+            this.reset();
+        }
+        
+        // Update visibility
+        this.updateVisibility();
+    }
+
+    /**
+     * Check if timer is enabled
+     * @returns {boolean} Whether timer is enabled
+     */
+    isEnabled() {
+        return this.enabled;
+    }
+
+    /**
+     * Update visibility based on enabled state
+     */
+    updateVisibility() {
+        const timerContainer = document.getElementById('globalRestTimerButton');
+        if (timerContainer) {
+            timerContainer.style.display = this.enabled ? 'flex' : 'none';
+        }
     }
 
     /**
@@ -37,7 +76,21 @@ class GlobalRestTimer extends RestTimer {
             this.reset();
         }
         
-        this.render();
+        // Only render if enabled
+        if (this.enabled) {
+            this.render();
+        }
+    }
+
+    /**
+     * Override start method to check enabled state
+     */
+    start() {
+        if (!this.enabled) {
+            console.log('🕐 Rest timer is disabled, not starting');
+            return;
+        }
+        super.start();
     }
 
     /**
@@ -212,7 +265,10 @@ class GlobalRestTimer extends RestTimer {
         const container = document.getElementById('globalRestTimerButton');
         if (container) {
             console.log('✅ Global rest timer button found in DOM');
-            this.render();
+            this.updateVisibility();
+            if (this.enabled) {
+                this.render();
+            }
         } else {
             console.warn('⚠️ Global rest timer button not found - will be created by bottom action bar service');
         }

@@ -608,7 +608,7 @@ function renumberBonusExercises() {
     bonuses.forEach((bonus, index) => {
         const title = bonus.querySelector('.bonus-title');
         if (title) {
-            title.textContent = `Bonus Exercise ${index + 1}`;
+            title.textContent = `Additional Exercise ${index + 1}`;
         }
     });
 }
@@ -642,7 +642,7 @@ function updateBonusExercisePreview(bonusElement) {
     } else {
         // Reset to default title when empty
         const bonusNumber = Array.from(bonusElement.parentElement.children).indexOf(bonusElement) + 1;
-        title.textContent = `Bonus Exercise ${bonusNumber}`;
+        title.textContent = `Additional Exercise ${bonusNumber}`;
         preview.textContent = '';
         preview.style.display = 'none';
     }

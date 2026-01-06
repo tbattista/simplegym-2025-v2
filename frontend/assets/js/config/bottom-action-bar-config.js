@@ -1012,7 +1012,7 @@
                 {
                     icon: 'bx-plus-circle',
                     label: 'Add',
-                    title: 'Add bonus exercise',
+                    title: 'Add exercise',
                     action: function() {
                         if (window.workoutModeController?.handleBonusExercises) {
                             window.workoutModeController.handleBonusExercises();
@@ -1046,7 +1046,52 @@
                     label: 'More',
                     title: 'More options',
                     action: function() {
-                        alert('More options - Coming soon!');
+                        if (window.UnifiedOffcanvasFactory) {
+                            // Get current states from localStorage
+                            const restTimerEnabled = localStorage.getItem('workoutRestTimerEnabled') !== 'false';
+                            const soundEnabled = localStorage.getItem('workoutSoundEnabled') !== 'false';
+                            
+                            window.UnifiedOffcanvasFactory.createMenuOffcanvas({
+                                id: 'workoutModeSettingsOffcanvas',
+                                title: 'Workout Settings',
+                                icon: 'bx-cog',
+                                menuItems: [
+                                    {
+                                        type: 'toggle',
+                                        icon: 'bx-time-five',
+                                        title: 'Rest Timer',
+                                        description: 'Show rest timer between sets',
+                                        checked: restTimerEnabled,
+                                        storageKey: 'workoutRestTimerEnabled',
+                                        onChange: (enabled) => {
+                                            console.log('🕐 Rest timer toggled:', enabled);
+                                            // Update global rest timer
+                                            if (window.globalRestTimer) {
+                                                window.globalRestTimer.setEnabled(enabled);
+                                            }
+                                        }
+                                    },
+                                    {
+                                        type: 'toggle',
+                                        icon: soundEnabled ? 'bx-volume-full' : 'bx-volume-mute',
+                                        title: 'Sound',
+                                        description: 'Play sounds for timer alerts',
+                                        checked: soundEnabled,
+                                        storageKey: 'workoutSoundEnabled',
+                                        onChange: (enabled) => {
+                                            console.log('🔊 Sound toggled:', enabled);
+                                            // Update controller sound state
+                                            if (window.workoutModeController) {
+                                                window.workoutModeController.soundEnabled = enabled;
+                                            }
+                                        }
+                                    }
+                                ]
+                            });
+                        } else {
+                            console.error('❌ UnifiedOffcanvasFactory not loaded');
+                            alert('Settings loading. Please try again.');
+                        }
                     }
                 }
             ],
@@ -1075,7 +1120,7 @@
                 {
                     icon: 'bx-plus-circle',
                     label: 'Add',
-                    title: 'Add bonus exercise',
+                    title: 'Add exercise',
                     action: function() {
                         if (window.workoutModeController?.handleBonusExercises) {
                             window.workoutModeController.handleBonusExercises();
@@ -1107,7 +1152,52 @@
                     label: 'More',
                     title: 'More options',
                     action: function() {
-                        alert('More options - Coming soon!');
+                        if (window.UnifiedOffcanvasFactory) {
+                            // Get current states from localStorage
+                            const restTimerEnabled = localStorage.getItem('workoutRestTimerEnabled') !== 'false';
+                            const soundEnabled = localStorage.getItem('workoutSoundEnabled') !== 'false';
+                            
+                            window.UnifiedOffcanvasFactory.createMenuOffcanvas({
+                                id: 'workoutModeSettingsOffcanvas',
+                                title: 'Workout Settings',
+                                icon: 'bx-cog',
+                                menuItems: [
+                                    {
+                                        type: 'toggle',
+                                        icon: 'bx-time-five',
+                                        title: 'Rest Timer',
+                                        description: 'Show rest timer between sets',
+                                        checked: restTimerEnabled,
+                                        storageKey: 'workoutRestTimerEnabled',
+                                        onChange: (enabled) => {
+                                            console.log('🕐 Rest timer toggled:', enabled);
+                                            // Update global rest timer
+                                            if (window.globalRestTimer) {
+                                                window.globalRestTimer.setEnabled(enabled);
+                                            }
+                                        }
+                                    },
+                                    {
+                                        type: 'toggle',
+                                        icon: soundEnabled ? 'bx-volume-full' : 'bx-volume-mute',
+                                        title: 'Sound',
+                                        description: 'Play sounds for timer alerts',
+                                        checked: soundEnabled,
+                                        storageKey: 'workoutSoundEnabled',
+                                        onChange: (enabled) => {
+                                            console.log('🔊 Sound toggled:', enabled);
+                                            // Update controller sound state
+                                            if (window.workoutModeController) {
+                                                window.workoutModeController.soundEnabled = enabled;
+                                            }
+                                        }
+                                    }
+                                ]
+                            });
+                        } else {
+                            console.error('❌ UnifiedOffcanvasFactory not loaded');
+                            alert('Settings loading. Please try again.');
+                        }
                     }
                 }
             ],
@@ -1259,9 +1349,9 @@
                 {
                     icon: 'bx-plus-circle',
                     label: 'Add Exercise',
-                    title: 'Add bonus exercise',
+                    title: 'Add exercise',
                     action: function() {
-                        alert('🏋️ Add Exercise\n\nIn the real app, this would open an offcanvas to add a bonus exercise to your workout.');
+                        alert('🏋️ Add Exercise\n\nIn the real app, this would open an offcanvas to add an exercise to your workout.');
                     }
                 },
                 {
