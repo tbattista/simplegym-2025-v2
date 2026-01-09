@@ -18,10 +18,29 @@ class WorkoutTimerManager {
         console.log('⏱️ Workout Timer Manager initialized');
     }
     
+    /**
+     * Update timer display
+     */
+    updateTimerDisplay() {
+        const session = this.sessionService.getCurrentSession();
+        if (!session) return;
+        
+        const elapsed = Math.floor((Date.now() - session.startedAt.getTime()) / 1000);
+        const minutes = Math.floor(elapsed / 60);
+        const seconds = elapsed % 60;
+        const timeStr = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        
+        const floatingTimer = document.getElementById('floatingTimer');
+        if (floatingTimer) {
+            floatingTimer.textContent = timeStr;
+        }
+    }
+    
     // ==================== Session Timer ====================
     
     /**
      * Start session timer to track workout duration
+     * ✅ BEST PRACTICE: Uses centralized updateTimerDisplay with pause guards
      */
     startSessionTimer() {
         const session = this.sessionService.getCurrentSession();
@@ -31,19 +50,13 @@ class WorkoutTimerManager {
             clearInterval(this.sessionTimerInterval);
         }
         
-        // Timer combo is always visible, just update the timer and button state
+        // Timer updates every second, but respects pause state
         this.sessionTimerInterval = setInterval(() => {
-            const elapsed = Math.floor((Date.now() - session.startedAt.getTime()) / 1000);
-            const minutes = Math.floor(elapsed / 60);
-            const seconds = elapsed % 60;
-            const timeStr = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-            
-            // ✅ FIX: Only update the correct timer element (the span inside bottom action bar)
-            const floatingTimer = document.getElementById('floatingTimer');
-            if (floatingTimer) floatingTimer.textContent = timeStr;
-            
-            // Note: Legacy floatingTimerWidget removed from HTML, no longer needed
+            this.updateTimerDisplay();
         }, 1000);
+        
+        // Initial display update
+        this.updateTimerDisplay();
     }
     
     /**

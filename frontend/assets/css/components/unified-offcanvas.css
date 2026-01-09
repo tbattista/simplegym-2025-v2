@@ -297,14 +297,19 @@
     margin-bottom: 0.75rem;
 }
 
-/* Toggle menu item - not clickable as whole item */
+/* Toggle menu item - more compact, no card styling */
 .offcanvas-bottom-base .more-menu-item.toggle-item {
     cursor: default;
+    border: none;
+    background: transparent;
+    padding: 12px 0;
+    min-height: auto;
+    margin-bottom: 0.5rem;
 }
 
 .offcanvas-bottom-base .more-menu-item.toggle-item:hover {
-    background: var(--bs-body-bg);
-    border-color: var(--bs-border-color);
+    background: transparent;
+    border: none;
     transform: none;
     box-shadow: none;
 }
@@ -537,8 +542,8 @@
 }
 
 [data-bs-theme="dark"] .offcanvas-bottom-base .more-menu-item.toggle-item:hover {
-    background: var(--bs-gray-900);
-    border-color: var(--bs-gray-700);
+    background: transparent;
+    border: none;
 }
 
 [data-bs-theme="dark"] .offcanvas-bottom-base .more-menu-item.danger:hover {
@@ -782,5 +787,115 @@
     .weight-input-container .weight-input,
     .weight-input-container .btn-group {
         transition: none;
+    }
+}
+
+/* ============================================
+   REORDER EXERCISES OFFCANVAS
+   Drag-and-drop visual feedback styles for SortableJS
+   ============================================ */
+
+/* Reorder list container */
+#reorderList {
+    user-select: none;
+}
+
+/* Individual reorder items */
+.reorder-item {
+    transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+/* Drag handle cursor */
+.reorder-handle {
+    cursor: move;
+    cursor: grab;
+    touch-action: none;
+}
+
+.reorder-handle:active {
+    cursor: grabbing;
+}
+
+/* Ghost element (shows where item will be dropped) */
+.sortable-ghost {
+    opacity: 0.4;
+    background: rgba(var(--bs-primary-rgb), 0.1) !important;
+    border: 2px dashed var(--bs-primary) !important;
+}
+
+/* Chosen element (item being dragged - before fallback) */
+.sortable-chosen {
+    cursor: grabbing !important;
+}
+
+/* Drag element (the actual dragging element with fallback) */
+.sortable-drag {
+    opacity: 1 !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2) !important;
+    transform: rotate(2deg);
+    cursor: grabbing !important;
+}
+
+/* Fallback element (mobile/touch fallback) */
+.sortable-fallback {
+    opacity: 1 !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2) !important;
+    transform: rotate(2deg) scale(1.05);
+    cursor: grabbing !important;
+    background: var(--bs-white) !important;
+    z-index: 9999 !important;
+}
+
+/* List container state during drag */
+#reorderList.is-dragging {
+    cursor: grabbing;
+}
+
+/* Prevent text selection during drag */
+#reorderList.is-dragging * {
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+/* Reorder item content - prevent pointer events during drag */
+.sortable-drag .reorder-item > div,
+.sortable-fallback .reorder-item > div {
+    pointer-events: none;
+}
+
+/* Badge number styling in reorder list */
+.reorder-item .badge {
+    min-width: 32px;
+    min-height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.875rem;
+    font-weight: 600;
+    border-radius: 8px;
+}
+
+/* Dark theme support */
+[data-bs-theme="dark"] .sortable-fallback {
+    background: var(--bs-gray-800) !important;
+}
+
+[data-bs-theme="dark"] .sortable-ghost {
+    background: rgba(var(--bs-primary-rgb), 0.15) !important;
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    .reorder-item,
+    .sortable-ghost,
+    .sortable-drag,
+    .sortable-fallback {
+        transition: none;
+        transform: none !important;
+    }
+    
+    .sortable-drag,
+    .sortable-fallback {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
     }
 }

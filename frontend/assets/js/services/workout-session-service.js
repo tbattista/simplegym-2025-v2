@@ -18,6 +18,7 @@ class WorkoutSessionService {
         // PHASE 1: Pre-session editing storage
         this.preSessionEdits = {}; // Store exercise edits before session starts
         this.preSessionOrder = []; // Store custom exercise order before session starts
+        this.preSessionSkips = {}; // Store skipped exercises before session starts
         
         console.log('📦 Workout Session Service initialized');
     }
@@ -83,7 +84,13 @@ class WorkoutSessionService {
                 this._applyPreSessionEdits();
             }
             
-            // 🔧 FIX: Transfer pre-workout bonuses IMMEDIATELY after session creation
+            // Apply pre-session skips to new session
+            if (Object.keys(this.preSessionSkips).length > 0) {
+                console.log('🔄 Applying pre-session skips to new session...');
+                this._applyPreSessionSkips();
+            }
+            
+            //  FIX: Transfer pre-workout bonuses IMMEDIATELY after session creation
             if (this.preWorkoutBonusExercises.length > 0) {
                 console.log('🔄 Transferring pre-workout bonuses to new session...');
                 this._transferPreWorkoutBonusesImmediate();
@@ -521,6 +528,91 @@ class WorkoutSessionService {
     }
     
     /**
+     * Mark exercise as skipped BEFORE session starts (pre-session skip)
+     * @param {string} exerciseName - Exercise name
+     * @param {string} reason - Optional reason for skipping
+     */
+    skipPreSessionExercise(exerciseName, reason = '') {
+        console.log('⏭️ Marking exercise as pre-session skipped:', exerciseName);
+        this.preSessionSkips[exerciseName] = {
+            is_skipped: true,
+            skip_reason: reason || 'Skipped before workout',
+            skipped_at: new Date().toISOString()
+        };
+        console.log('✅ Pre-session skip stored. Total skips:', Object.keys(this.preSessionSkips).length);
+        this.notifyListeners('preSessionExerciseSkipped', { exerciseName, reason });
+    }
+    
+    /**
+     * Remove pre-session skip for an exercise
+     * @param {string} exerciseName - Exercise name
+     */
+    unskipPreSessionExercise(exerciseName) {
+        console.log('↩️ Removing pre-session skip for:', exerciseName);
+        delete this.preSessionSkips[exerciseName];
+        this.notifyListeners('preSessionExerciseUnskipped', { exerciseName });
+    }
+    
+    /**
+     * Check if exercise is pre-session skipped
+     * @param {string} exerciseName - Exercise name
+     * @returns {boolean} True if exercise is marked for skip
+     */
+    isPreSessionSkipped(exerciseName) {
+        return !!this.preSessionSkips[exerciseName]?.is_skipped;
+    }
+    
+    /**
+     * Get all pre-session skips
+     * @returns {Object} Pre-session skip data
+     */
+    getPreSessionSkips() {
+        return { ...this.preSessionSkips };
+    }
+    
+    /**
+     * Apply all pre-session skips to the active session
+     * Called internally by startSession()
+     * @private
+     */
+    _applyPreSessionSkips() {
+        if (!this.currentSession?.exercises) {
+            console.warn('⚠️ No session exercises to apply skips to');
+            return;
+        }
+        
+        let appliedCount = 0;
+        
+        Object.keys(this.preSessionSkips).forEach(exerciseName => {
+            const skipData = this.preSessionSkips[exerciseName];
+            
+            // Only apply if exercise exists in session
+            if (this.currentSession.exercises[exerciseName]) {
+                this.currentSession.exercises[exerciseName].is_skipped = true;
+                this.currentSession.exercises[exerciseName].skip_reason = skipData.skip_reason;
+                this.currentSession.exercises[exerciseName].skipped_at = skipData.skipped_at;
+                appliedCount++;
+                console.log(`  ✅ Applied pre-session skip to: ${exerciseName}`);
+            } else {
+                console.warn(`  ⚠️ Exercise not found in session: ${exerciseName}`);
+            }
+        });
+        
+        console.log(`✅ Applied ${appliedCount} pre-session skips to session`);
+        
+        // Clear pre-session skips after applying
+        this.preSessionSkips = {};
+    }
+    
+    /**
+     * Clear all pre-session skips
+     */
+    clearPreSessionSkips() {
+        this.preSessionSkips = {};
+        console.log('🧹 Pre-session skips cleared');
+    }
+    
+    /**
      * PHASE 2: Set custom exercise order for reordering
      * Stores the exercise order for drag-and-drop reordering before session starts
      * @param {string[]} exerciseNames - Ordered array of exercise names
@@ -870,14 +962,17 @@ class WorkoutSessionService {
     /**
      * Add bonus exercise to current session OR pre-workout list
      * @param {Object} exerciseData - Exercise data object with name, sets, reps, etc.
+     * @param {number|null} insertAtIndex - Optional index to insert at (for replace functionality)
      */
-    addBonusExercise(exerciseData) {
+    addBonusExercise(exerciseData, insertAtIndex = null) {
         const { name, sets, reps, rest, weight = '', weight_unit = 'lbs', notes = '' } = exerciseData;
         
         // If no active session, add to pre-workout list
         if (!this.currentSession) {
             console.log('📝 Adding bonus exercise to pre-workout list:', name);
-            this.preWorkoutBonusExercises.push({
+            
+            // Handle insertion at specific index for pre-workout list
+            const exerciseToAdd = {
                 name,
                 sets: sets || '3',
                 reps: reps || '12',
@@ -885,7 +980,16 @@ class WorkoutSessionService {
                 weight: weight || '',
                 weight_unit: weight_unit,
                 notes: notes || ''
-            });
+            };
+            
+            if (insertAtIndex !== null && insertAtIndex >= 0 && insertAtIndex < this.preWorkoutBonusExercises.length) {
+                this.preWorkoutBonusExercises.splice(insertAtIndex, 0, exerciseToAdd);
+                console.log(`✅ Pre-workout bonus inserted at index ${insertAtIndex}`);
+            } else {
+                this.preWorkoutBonusExercises.push(exerciseToAdd);
+                console.log(`✅ Pre-workout bonus added at end`);
+            }
+            
             this.notifyListeners('preWorkoutBonusExerciseAdded', { name });
             console.log(`✅ Pre-workout bonus added. Total pre-workout bonuses: ${this.preWorkoutBonusExercises.length}`);
             return;
@@ -896,10 +1000,10 @@ class WorkoutSessionService {
             this.currentSession.exercises = {};
         }
         
-        // 🔧 FIX: Calculate order_index based on existing exercises
+        // 🔧 FIX: Calculate order_index based on existing exercises or use insertAtIndex
         // This ensures bonus exercises maintain proper order in history
         const existingExerciseCount = Object.keys(this.currentSession.exercises).length;
-        const order_index = existingExerciseCount;
+        const order_index = insertAtIndex !== null ? insertAtIndex : existingExerciseCount;
         
         const bonusExercise = {
             weight: weight || '',
@@ -918,6 +1022,34 @@ class WorkoutSessionService {
         
         this.currentSession.exercises[name] = bonusExercise;
         console.log('✅ Bonus exercise added to session:', name, 'at order_index:', order_index);
+        
+        // 🔧 NEW: If inserting at a specific index, update the exercise order
+        if (insertAtIndex !== null) {
+            // Get current exercise order or build from template
+            let currentOrder = this.getExerciseOrder();
+            
+            // If no custom order exists, build default order from exercises
+            if (currentOrder.length === 0) {
+                currentOrder = Object.entries(this.currentSession.exercises)
+                    .sort(([, a], [, b]) => (a.order_index || 0) - (b.order_index || 0))
+                    .map(([exerciseName]) => exerciseName);
+            }
+            
+            // Remove the new exercise if it's already in the order (shouldn't happen, but safety)
+            const existingIndex = currentOrder.indexOf(name);
+            if (existingIndex !== -1) {
+                currentOrder.splice(existingIndex, 1);
+            }
+            
+            // Insert at the specified position
+            const validIndex = Math.min(Math.max(0, insertAtIndex), currentOrder.length);
+            currentOrder.splice(validIndex, 0, name);
+            
+            // Update the exercise order
+            this.setExerciseOrder(currentOrder);
+            console.log('✅ Exercise order updated with inserted exercise at position', validIndex);
+        }
+        
         console.log('📊 Session now has', Object.keys(this.currentSession.exercises).length, 'total exercises');
         this.notifyListeners('bonusExerciseAdded', { exerciseName: name, ...bonusExercise });
         this.persistSession();
@@ -1186,6 +1318,7 @@ class WorkoutSessionService {
             return;
         }
         
+        const now = new Date().toISOString();
         const sessionData = {
             sessionId: this.currentSession.id,
             workoutId: this.currentSession.workoutId,
@@ -1193,14 +1326,15 @@ class WorkoutSessionService {
             startedAt: this.currentSession.startedAt.toISOString(),
             status: this.currentSession.status,
             exercises: this.currentSession.exercises || {},
-            lastUpdated: new Date().toISOString(),
-            version: '2.0',  // PHASE 1: Bump version for new schema
+            lastUpdated: now,  // When session data was last changed
+            lastPageActive: now,  // When page was last visible (will be updated by page events)
+            version: '2.1',  // Bump version for lastPageActive
             schemaVersion: 2  // PHASE 1: Explicit schema version
         };
         
         try {
             localStorage.setItem('ghost_gym_active_workout_session', JSON.stringify(sessionData));
-            console.log('💾 Session persisted (v2.0):', sessionData.sessionId);
+            console.log('💾 Session persisted (v2.1):', sessionData.sessionId);
         } catch (error) {
             console.error('❌ Failed to persist session:', error);
             // Non-fatal - continue without persistence
@@ -1223,10 +1357,15 @@ class WorkoutSessionService {
             
             let sessionData = JSON.parse(stored);
             
-            // PHASE 1: Handle version migration
+            // Handle version migrations
             if (!sessionData.version || sessionData.version === '1.0') {
                 console.log('🔄 Migrating session from v1.0 to v2.0...');
                 sessionData = this._migrateSessionV1toV2(sessionData);
+            }
+            
+            if (sessionData.version === '2.0') {
+                console.log('🔄 Migrating session from v2.0 to v2.1...');
+                sessionData = this._migrateSessionV2toV2_1(sessionData);
             }
             
             // Validate required fields
@@ -1236,15 +1375,9 @@ class WorkoutSessionService {
                 return null;
             }
             
-            // Check expiration (24 hours)
-            const lastUpdated = new Date(sessionData.lastUpdated);
-            const hoursSinceUpdate = (Date.now() - lastUpdated.getTime()) / (1000 * 60 * 60);
-            
-            if (hoursSinceUpdate > 24) {
-                console.log('⏰ Session expired (>24 hours), clearing...');
-                this.clearPersistedSession();
-                return null;
-            }
+            // ✅ REMOVED: 24-hour expiration check
+            // Users should be able to resume workouts even days later
+            // The resume offcanvas will show for extended absences (>2 min) but won't auto-clear
             
             console.log('✅ Session restored (v' + sessionData.version + '):', sessionData.sessionId);
             return sessionData;
@@ -1281,6 +1414,22 @@ class WorkoutSessionService {
         });
         
         console.log('✅ Session migrated to v2.0');
+        return sessionData;
+    }
+    
+    /**
+     * Migrate session from v2.0 to v2.1
+     * Adds lastPageActive field for accurate auto-resume threshold
+     * @param {Object} sessionData - Old session data
+     * @returns {Object} Migrated session data
+     * @private
+     */
+    _migrateSessionV2toV2_1(sessionData) {
+        sessionData.version = '2.1';
+        // Initialize lastPageActive with lastUpdated as fallback
+        // This means old sessions will use lastUpdated for threshold (same as before)
+        sessionData.lastPageActive = sessionData.lastPageActive || sessionData.lastUpdated;
+        console.log('✅ Session migrated to v2.1 (lastPageActive added)');
         return sessionData;
     }
     

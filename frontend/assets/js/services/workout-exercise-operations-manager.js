@@ -18,22 +18,32 @@ class WorkoutExerciseOperationsManager {
         this.onAutoSave = options.onAutoSave || (() => {});
         this.onGoToNext = options.onGoToNext || (() => {});
         this.onGetCurrentExerciseData = options.onGetCurrentExerciseData || (() => ({}));
+        this.onGetAllExerciseNames = options.onGetAllExerciseNames || (() => []);
         
         console.log('🏋️ Workout Exercise Operations Manager initialized');
     }
     
     /**
      * Handle skipping an exercise
+     * Works BEFORE and DURING workout session
      * @param {string} exerciseName - Exercise name
      * @param {number} index - Exercise index
      */
     handleSkipExercise(exerciseName, index) {
-        if (!this.sessionService.isSessionActive()) {
-            console.warn('⚠️ Cannot skip exercise - no active session');
+        const isSessionActive = this.sessionService.isSessionActive();
+        
+        if (!isSessionActive) {
+            // PRE-SESSION: Skip without reason prompt (simpler UX)
+            this.sessionService.skipPreSessionExercise(exerciseName, 'Skipped before workout');
+            this.onRenderWorkout();
+            
+            if (window.showAlert) {
+                window.showAlert(`${exerciseName} will be skipped when you start the workout`, 'warning');
+            }
             return;
         }
         
-        // Show skip reason offcanvas
+        // ACTIVE SESSION: Show skip reason offcanvas
         window.UnifiedOffcanvasFactory.createSkipExercise(
             { exerciseName },
             async (reason) => {
@@ -68,15 +78,25 @@ class WorkoutExerciseOperationsManager {
     
     /**
      * Handle unskipping an exercise
+     * Works BEFORE and DURING workout session
      * @param {string} exerciseName - Exercise name
      * @param {number} index - Exercise index
      */
     handleUnskipExercise(exerciseName, index) {
-        if (!this.sessionService.isSessionActive()) {
-            console.warn('⚠️ Cannot unskip exercise - no active session');
+        const isSessionActive = this.sessionService.isSessionActive();
+        
+        if (!isSessionActive) {
+            // PRE-SESSION: Unskip without confirmation
+            this.sessionService.unskipPreSessionExercise(exerciseName);
+            this.onRenderWorkout();
+            
+            if (window.showAlert) {
+                window.showAlert(`${exerciseName} restored`, 'success');
+            }
             return;
         }
         
+        // ACTIVE SESSION: Show confirmation modal
         const modalManager = this.getModalManager();
         modalManager.confirm(
             'Unskip Exercise',
@@ -138,21 +158,33 @@ class WorkoutExerciseOperationsManager {
     
     /**
      * Handle replacing an exercise (skip + add new)
+     * Works BEFORE and DURING workout session
      * This chains skip and add exercise functionality for a seamless replacement flow
      * @param {string} exerciseName - Exercise name to replace
      * @param {number} index - Exercise index
      */
     async handleReplaceExercise(exerciseName, index) {
-        if (!this.sessionService.isSessionActive()) {
-            console.warn('⚠️ Cannot replace exercise - no active session');
-            if (window.showAlert) {
-                window.showAlert('Please start your workout session first', 'warning');
-            }
-            return;
-        }
+        const isSessionActive = this.sessionService.isSessionActive();
         
         console.log(`🔄 Replace button clicked for: ${exerciseName} (index: ${index})`);
         
+        if (!isSessionActive) {
+            // PRE-SESSION: Skip the exercise + open Add Exercise form at this position
+            this.sessionService.skipPreSessionExercise(exerciseName, 'Replaced with alternative exercise');
+            this.onRenderWorkout();
+            
+            if (window.showAlert) {
+                window.showAlert(`${exerciseName} will be replaced`, 'info');
+            }
+            
+            // Open Add Exercise form for replacement at the replaced exercise's position
+            setTimeout(() => {
+                this.showAddExerciseForm(index);
+            }, 300);
+            return;
+        }
+        
+        // ACTIVE SESSION: Skip + add new exercise
         // Step 1: Skip the current exercise with "Replaced" reason
         this.sessionService.skipExercise(exerciseName, 'Replaced with alternative exercise');
         
@@ -171,9 +203,9 @@ class WorkoutExerciseOperationsManager {
             console.error('❌ Failed to auto-save after skip:', error);
         }
         
-        // Step 5: Open Add Exercise form for replacement (with slight delay for UX)
+        // Step 5: Open Add Exercise form for replacement at the replaced exercise's position
         setTimeout(() => {
-            this.showAddExerciseForm();
+            this.showAddExerciseForm(index);
         }, 300);
         
         // Step 6: Auto-advance to next exercise after adding (handled by showAddExerciseForm callback)
@@ -317,13 +349,14 @@ class WorkoutExerciseOperationsManager {
     /**
      * Show add exercise form (two-offcanvas approach)
      * Opens the Add Exercise form with search button integration
+     * @param {number|null} insertAtIndex - Optional index to insert exercise at (for replace functionality)
      */
-    async showAddExerciseForm() {
+    async showAddExerciseForm(insertAtIndex = null) {
         try {
             window.UnifiedOffcanvasFactory.createExerciseGroupEditor(
                 {
                     mode: 'single',
-                    title: 'Add Exercise',
+                    title: insertAtIndex !== null ? 'Replace Exercise' : 'Add Exercise',
                     exercises: { a: '', b: '', c: '' },
                     sets: '3',
                     reps: '12',
@@ -334,20 +367,30 @@ class WorkoutExerciseOperationsManager {
                 },
                 // onSave callback
                 async (groupData) => {
-                    // Handle adding exercise with weight data
+                    const newExerciseName = groupData.exercises.a;
+                    const isSessionActive = this.sessionService.isSessionActive();
+                    
+                    // Handle adding exercise with weight data at specified position
                     this.sessionService.addBonusExercise({
-                        name: groupData.exercises.a,
+                        name: newExerciseName,
                         sets: groupData.sets || '3',
                         reps: groupData.reps || '12',
                         rest: groupData.rest || '60s',
                         weight: groupData.default_weight || '',
                         weight_unit: groupData.default_weight_unit || 'lbs'
-                    });
+                    }, insertAtIndex);
+                    
+                    // 🔧 FIX: For pre-workout mode with insertAtIndex, update the exercise order
+                    // This ensures the new exercise appears at the correct position in the list
+                    if (!isSessionActive && insertAtIndex !== null) {
+                        this._updatePreSessionOrderForReplace(newExerciseName, insertAtIndex);
+                    }
+                    
                     this.onRenderWorkout();
                     
-                    const message = !this.sessionService.isSessionActive()
-                        ? `${groupData.exercises.a} added! It will be included when you start the workout. 💪`
-                        : `${groupData.exercises.a} added to your workout! 💪`;
+                    const message = !isSessionActive
+                        ? `${newExerciseName} added! It will be included when you start the workout. 💪`
+                        : `${newExerciseName} added to your workout! 💪`;
                     if (window.showAlert) window.showAlert(message, 'success');
                 },
                 // onDelete callback (not used in single mode)
@@ -365,6 +408,43 @@ class WorkoutExerciseOperationsManager {
             const modalManager = this.getModalManager();
             modalManager.alert('Error', 'Failed to load add exercise form. Please try again.', 'danger');
         }
+    }
+    
+    /**
+     * Update pre-session exercise order for replacement
+     * Builds the complete exercise list and inserts the new exercise at the correct position
+     * @param {string} newExerciseName - Name of the new exercise to insert
+     * @param {number} insertAtIndex - Index where to insert the exercise
+     * @private
+     */
+    _updatePreSessionOrderForReplace(newExerciseName, insertAtIndex) {
+        console.log(`📋 Updating pre-session order: inserting ${newExerciseName} at index ${insertAtIndex}`);
+        
+        // Get all current exercise names from the controller
+        const allExerciseNames = this.onGetAllExerciseNames();
+        
+        if (allExerciseNames.length === 0) {
+            console.warn('⚠️ Could not get exercise names for order update');
+            return;
+        }
+        
+        // Build new order with the replacement at the correct position
+        const newOrder = [...allExerciseNames];
+        
+        // Remove the new exercise if it's already in the list (it was just added to bonuses)
+        const existingIndex = newOrder.indexOf(newExerciseName);
+        if (existingIndex !== -1) {
+            newOrder.splice(existingIndex, 1);
+        }
+        
+        // Insert at the correct position
+        const validIndex = Math.min(Math.max(0, insertAtIndex), newOrder.length);
+        newOrder.splice(validIndex, 0, newExerciseName);
+        
+        console.log(`✅ New exercise order:`, newOrder);
+        
+        // Update the pre-session order
+        this.sessionService.setExerciseOrder(newOrder);
     }
     
     /**

@@ -386,7 +386,7 @@ class WorkoutWeightManager {
     /**
      * Update weight direction button states in the DOM without re-rendering
      * @param {string} exerciseName - Exercise name
-     * @param {string|null} direction - New direction ('up', 'down', or null)
+     * @param {string|null} direction - New direction ('up', 'down', 'same', or null)
      * @private
      */
     _updateWeightDirectionButtonsUI(exerciseName, direction) {
@@ -394,23 +394,29 @@ class WorkoutWeightManager {
         const card = document.querySelector(`.exercise-card[data-exercise-name="${exerciseName}"]`);
         if (!card) return;
         
-        // Find both buttons
+        // Find all three direction buttons
         const decreaseBtn = card.querySelector('.weight-direction-btn.decrease');
+        const sameBtn = card.querySelector('.weight-direction-btn.same');
         const increaseBtn = card.querySelector('.weight-direction-btn.increase');
         
-        if (!decreaseBtn || !increaseBtn) return;
-        
-        // Update button states
+        // Update button states for all three buttons
         if (direction === 'down') {
-            decreaseBtn.classList.add('active');
-            increaseBtn.classList.remove('active');
+            if (decreaseBtn) decreaseBtn.classList.add('active');
+            if (sameBtn) sameBtn.classList.remove('active');
+            if (increaseBtn) increaseBtn.classList.remove('active');
         } else if (direction === 'up') {
-            increaseBtn.classList.add('active');
-            decreaseBtn.classList.remove('active');
+            if (decreaseBtn) decreaseBtn.classList.remove('active');
+            if (sameBtn) sameBtn.classList.remove('active');
+            if (increaseBtn) increaseBtn.classList.add('active');
+        } else if (direction === 'same') {
+            if (decreaseBtn) decreaseBtn.classList.remove('active');
+            if (sameBtn) sameBtn.classList.add('active');
+            if (increaseBtn) increaseBtn.classList.remove('active');
         } else {
-            // No direction selected
-            decreaseBtn.classList.remove('active');
-            increaseBtn.classList.remove('active');
+            // No direction selected (null) - "No Change" should be active by default
+            if (decreaseBtn) decreaseBtn.classList.remove('active');
+            if (sameBtn) sameBtn.classList.add('active');
+            if (increaseBtn) increaseBtn.classList.remove('active');
         }
         
         // Update weight badge if it exists (shows direction indicator)
@@ -426,46 +432,6 @@ class WorkoutWeightManager {
             } else if (direction === 'down') {
                 weightBadge.classList.add('direction-down');
             }
-        }
-    }
-    
-    /**
-     * Toggle weight history expansion
-     * Shows/hides the list of previous workout sessions
-     * @param {string} historyId - Unique ID for the history section
-     */
-    toggleWeightHistory(historyId) {
-        const listElement = document.getElementById(`list-${historyId}`);
-        const arrowElement = document.getElementById(`arrow-${historyId}`);
-        
-        if (!listElement || !arrowElement) {
-            console.warn('⚠️ Weight history elements not found:', historyId);
-            return;
-        }
-        
-        const isExpanded = listElement.style.display !== 'none';
-        
-        if (isExpanded) {
-            // Collapse
-            listElement.classList.add('collapsing');
-            listElement.classList.remove('expanding');
-            
-            setTimeout(() => {
-                listElement.style.display = 'none';
-                listElement.classList.remove('collapsing');
-                arrowElement.classList.remove('expanded');
-            }, 150);
-        } else {
-            // Expand
-            listElement.style.display = 'block';
-            listElement.classList.add('expanding');
-            listElement.classList.remove('collapsing');
-            arrowElement.classList.add('expanded');
-            
-            // Remove animation class after animation completes
-            setTimeout(() => {
-                listElement.classList.remove('expanding');
-            }, 200);
         }
     }
     

@@ -209,25 +209,42 @@ class RestTimer {
  * TIMER CONTROL FUNCTIONS
  * ============================================
  * Global functions for timer controls
+ * FIXED: Now correctly references timerManager.timers instead of controller.timers
  */
 window.startTimer = function(timerId) {
-    const timer = window.workoutModeController?.timers[timerId];
-    if (timer) timer.start();
+    const timer = window.workoutModeController?.timerManager?.timers[timerId];
+    if (timer) {
+        timer.start();
+    } else {
+        console.warn('⚠️ Timer not found:', timerId);
+    }
 };
 
 window.pauseTimer = function(timerId) {
-    const timer = window.workoutModeController?.timers[timerId];
-    if (timer) timer.pause();
+    const timer = window.workoutModeController?.timerManager?.timers[timerId];
+    if (timer) {
+        timer.pause();
+    } else {
+        console.warn('⚠️ Timer not found:', timerId);
+    }
 };
 
 window.resumeTimer = function(timerId) {
-    const timer = window.workoutModeController?.timers[timerId];
-    if (timer) timer.resume();
+    const timer = window.workoutModeController?.timerManager?.timers[timerId];
+    if (timer) {
+        timer.resume();
+    } else {
+        console.warn('⚠️ Timer not found:', timerId);
+    }
 };
 
 window.resetTimer = function(timerId) {
-    const timer = window.workoutModeController?.timers[timerId];
-    if (timer) timer.reset();
+    const timer = window.workoutModeController?.timerManager?.timers[timerId];
+    if (timer) {
+        timer.reset();
+    } else {
+        console.warn('⚠️ Timer not found:', timerId);
+    }
 };
 
 /**

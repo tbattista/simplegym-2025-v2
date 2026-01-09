@@ -120,6 +120,9 @@ class WorkoutLifecycleManager {
             // Update UI
             this.uiStateManager.updateSessionState(true, this.sessionService.getCurrentSession());
             
+            // ✅ FIX: Start session timer (updates #floatingTimer every second)
+            this.timerManager.startSessionTimer();
+            
             // Re-render to show weight inputs and transferred bonus exercises
             this.onRenderWorkout();
             
@@ -287,7 +290,25 @@ class WorkoutLifecycleManager {
         const persistedSession = this.sessionService.restoreSession();
         
         if (persistedSession) {
-            console.log('🔄 Found persisted session, showing resume prompt...');
+            // Calculate time since page was last active
+            // Use lastPageActive (when page was visible) NOT lastUpdated (when data changed)
+            // This prevents auto-resume when user has been changing weights for 50+ minutes
+            const lastPageActive = new Date(persistedSession.lastPageActive || persistedSession.lastUpdated);
+            const minutesSincePageActive = (Date.now() - lastPageActive.getTime()) / (1000 * 60);
+            
+            // Auto-resume threshold: 2 minutes
+            // If user was away briefly (< 2 min), auto-resume silently without showing offcanvas
+            const AUTO_RESUME_THRESHOLD_MINUTES = 2;
+            
+            if (minutesSincePageActive < AUTO_RESUME_THRESHOLD_MINUTES) {
+                // User was away briefly - auto-resume silently
+                console.log(`🔄 Auto-resuming session (page inactive for ${minutesSincePageActive.toFixed(1)} minutes, threshold: ${AUTO_RESUME_THRESHOLD_MINUTES} min)`);
+                await this.resumeSession(persistedSession);
+                return true;
+            }
+            
+            // User was away longer - show resume prompt with options
+            console.log(`🔄 Found persisted session (page inactive for ${minutesSincePageActive.toFixed(1)} minutes), showing resume prompt...`);
             await this.showResumeSessionPrompt(persistedSession);
             return true;
         }
@@ -323,12 +344,30 @@ class WorkoutLifecycleManager {
             exercisesWithWeights,
             totalExercises
         },
-        async () => await this.resumeSession(sessionData),
-        (onDiscardComplete) => {
+        async () => await this.resumeSession(sessionData),  // onResume
+        (onDiscardComplete) => {                             // onStartFresh
             this.sessionService.clearPersistedSession();
             if (onDiscardComplete) {
                 onDiscardComplete();
             }
+        },
+        () => {                                              // onCancel (NEW)
+            // Show confirmation before canceling workout
+            const modalManager = this.getModalManager();
+            modalManager.confirm(
+                'Cancel Workout?',
+                'Are you sure you want to cancel this workout session?<br><br>All progress from this session will be discarded and you will return to the workout database.',
+                () => {
+                    // User confirmed - clear session and redirect
+                    this.sessionService.clearPersistedSession();
+                    window.location.href = 'workout-database.html';
+                },
+                {
+                    confirmText: 'Yes, Cancel Workout',
+                    confirmClass: 'btn-danger',
+                    cancelText: 'Go Back'
+                }
+            );
         });
     }
     
@@ -361,6 +400,11 @@ class WorkoutLifecycleManager {
             
             // Start timer (will calculate from original start time)
             this.timerManager.startSessionTimer(this.sessionService.getCurrentSession());
+            
+            // ✅ FIX: Persist session to update lastUpdated timestamp
+            // This prevents offcanvas from showing on immediate subsequent refresh
+            this.sessionService.persistSession();
+            console.log('💾 Session timestamp updated after resume');
             
             // Calculate elapsed time for display
             const elapsedMinutes = Math.floor(

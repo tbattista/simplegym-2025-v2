@@ -130,19 +130,12 @@
 
               <!-- Exercise Cards Section (Header + Container) -->
               <div id="exerciseCardsSection" style="display: none;">
-                <!-- Exercise Cards Header (with Reorder Toggle) -->
-                <div id="exerciseCardsHeader" class="d-flex justify-content-between align-items-center mb-3">
+                <!-- Exercise Cards Header -->
+                <div id="exerciseCardsHeader" class="mb-3">
                   <h6 class="mb-0">
                     <i class="bx bx-list-ul me-1"></i>
                     Exercises
                   </h6>
-                  <div class="form-check form-switch mb-0">
-                    <input class="form-check-input" type="checkbox" role="switch"
-                           id="reorderModeToggle" style="cursor: pointer;">
-                    <label class="form-check-label" for="reorderModeToggle" style="cursor: pointer;">
-                      <span class="edit-mode-label">Reorder</span>
-                    </label>
-                  </div>
                 </div>
 
                 <!-- Exercise Cards Container -->
@@ -206,9 +199,6 @@
     <!-- Exercise Search Dependencies (load in order) -->
     <script src="/static/assets/js/data/exercise-seed-data.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
-    
-    <!-- SortableJS for drag-and-drop exercise reordering (Phase 2) -->
-    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     
     <!-- Core Services -->
     <script src="/static/assets/js/services/exercise-cache-service.js?v=20251020-05"></script>

@@ -308,9 +308,10 @@ export function createCompletionSummary(data) {
  * @param {Object} data - Persisted session data
  * @param {Function} onResume - Callback when user chooses to resume
  * @param {Function} onStartFresh - Callback when user chooses to start fresh
+ * @param {Function} onCancel - Callback when user chooses to cancel workout (NEW)
  * @returns {Object} Offcanvas instance
  */
-export function createResumeSession(data, onResume, onStartFresh) {
+export function createResumeSession(data, onResume, onStartFresh, onCancel) {
     const { workoutName, elapsedDisplay, exercisesWithWeights, totalExercises } = data;
     
     const offcanvasHtml = `
@@ -364,6 +365,9 @@ export function createResumeSession(data, onResume, onStartFresh) {
                     <button type="button" class="btn btn-outline-secondary" id="startFreshBtn">
                         <i class="bx bx-refresh me-1"></i>Start Fresh
                     </button>
+                    <button type="button" class="btn btn-outline-danger" id="cancelWorkoutBtn">
+                        <i class="bx bx-x me-1"></i>Cancel Workout
+                    </button>
                 </div>
             </div>
         </div>
@@ -372,6 +376,7 @@ export function createResumeSession(data, onResume, onStartFresh) {
     return createOffcanvas('resumeSessionOffcanvas', offcanvasHtml, (offcanvas) => {
         const resumeBtn = document.getElementById('resumeSessionBtn');
         const startFreshBtn = document.getElementById('startFreshBtn');
+        const cancelBtn = document.getElementById('cancelWorkoutBtn');
         
         resumeBtn.addEventListener('click', async () => {
             resumeBtn.disabled = true;
@@ -391,6 +396,16 @@ export function createResumeSession(data, onResume, onStartFresh) {
             onStartFresh();
             offcanvas.hide();
         });
+        
+        // NEW: Cancel workout button handler
+        if (cancelBtn && onCancel) {
+            cancelBtn.addEventListener('click', () => {
+                // Hide offcanvas first (will trigger cleanup via hidden.bs.offcanvas event)
+                offcanvas.hide();
+                // Call onCancel callback which will show confirmation modal
+                onCancel();
+            });
+        }
     });
 }
 
@@ -624,6 +639,248 @@ function setupPlateSettingsListeners(offcanvas, onSave) {
         if (window.workoutModeController) {
             window.workoutModeController.renderWorkout();
         }
+    });
+}
+
+/* ============================================
+   REORDER EXERCISES
+   ============================================ */
+
+/**
+ * Create reorder exercises offcanvas with drag-and-drop functionality
+ * Lazy-loads SortableJS library only when offcanvas opens
+ * @param {Array} exercises - Array of exercise objects with at least { name, ... } properties
+ * @param {Function} onSave - Callback function(reorderedExercises) when user saves new order
+ * @returns {Object} Offcanvas instance
+ */
+export function createReorderOffcanvas(exercises, onSave) {
+    // Validate inputs
+    if (!Array.isArray(exercises) || exercises.length === 0) {
+        console.error('❌ createReorderOffcanvas requires non-empty exercises array');
+        return null;
+    }
+    
+    if (typeof onSave !== 'function') {
+        console.error('❌ createReorderOffcanvas requires onSave callback function');
+        return null;
+    }
+    
+    // Build exercise list HTML
+    const exerciseListHtml = exercises.map((exercise, index) => `
+        <div class="reorder-item" data-index="${index}">
+            <div class="d-flex align-items-center gap-3 p-3 bg-white border rounded mb-2" style="cursor: move;">
+                <div class="reorder-handle text-muted">
+                    <i class="bx bx-menu" style="font-size: 1.5rem;"></i>
+                </div>
+                <div class="flex-grow-1">
+                    <div class="fw-medium">${escapeHtml(exercise.name)}</div>
+                    ${exercise.sets || exercise.reps ? `
+                        <small class="text-muted">
+                            ${exercise.sets ? `${exercise.sets} sets` : ''}
+                            ${exercise.sets && exercise.reps ? ' × ' : ''}
+                            ${exercise.reps ? `${exercise.reps} reps` : ''}
+                        </small>
+                    ` : ''}
+                </div>
+                <div class="badge bg-label-secondary">${index + 1}</div>
+            </div>
+        </div>
+    `).join('');
+    
+    const offcanvasHtml = `
+        <div class="offcanvas offcanvas-bottom offcanvas-bottom-base" tabindex="-1" id="reorderExercisesOffcanvas"
+             aria-labelledby="reorderExercisesOffcanvasLabel" data-bs-scroll="false">
+            <div class="offcanvas-header border-bottom">
+                <h5 class="offcanvas-title" id="reorderExercisesOffcanvasLabel">
+                    <i class="bx bx-sort me-2"></i>Reorder Exercises
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+            </div>
+            <div class="offcanvas-body">
+                <div class="alert alert-info d-flex align-items-start mb-3">
+                    <i class="bx bx-info-circle me-2 mt-1"></i>
+                    <div>
+                        <strong>Drag to reorder</strong>
+                        <p class="mb-0 small">Hold and drag exercises to change their order. Changes are saved when you tap "Save Order".</p>
+                    </div>
+                </div>
+                
+                <div id="reorderList" class="mb-4">
+                    ${exerciseListHtml}
+                </div>
+                
+                <div id="reorderLoadingIndicator" class="text-center mb-3" style="display: none;">
+                    <div class="spinner-border spinner-border-sm text-primary me-2" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <small class="text-muted">Loading drag-and-drop...</small>
+                </div>
+                
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-outline-secondary flex-fill" data-bs-dismiss="offcanvas">
+                        <i class="bx bx-x me-1"></i>Cancel
+                    </button>
+                    <button type="button" class="btn btn-primary flex-fill" id="saveReorderBtn" disabled>
+                        <i class="bx bx-check me-1"></i>Save Order
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Track loading state
+    let sortableLoaded = false;
+    let sortableInstance = null;
+    
+    return createOffcanvas('reorderExercisesOffcanvas', offcanvasHtml, (offcanvas, offcanvasElement) => {
+        // Get elements
+        const listElement = document.getElementById('reorderList');
+        const saveBtn = document.getElementById('saveReorderBtn');
+        const loadingIndicator = document.getElementById('reorderLoadingIndicator');
+        
+        if (!listElement || !saveBtn) {
+            console.error('❌ Failed to find reorder list or save button');
+            return;
+        }
+        
+        // Show loading indicator
+        if (loadingIndicator) {
+            loadingIndicator.style.display = 'block';
+        }
+        
+        // Lazy-load SortableJS asynchronously (non-blocking)
+        loadSortableJS().then(() => {
+            sortableLoaded = true;
+            
+            // Hide loading indicator
+            if (loadingIndicator) {
+                loadingIndicator.style.display = 'none';
+            }
+            
+            // Enable save button
+            saveBtn.disabled = false;
+            
+            // Create Sortable instance
+            sortableInstance = window.Sortable.create(listElement, {
+                animation: 150,
+                // No handle restriction - drag from anywhere
+                ghostClass: 'sortable-ghost',
+                chosenClass: 'sortable-chosen',
+                dragClass: 'sortable-drag',
+                forceFallback: true, // Better mobile support
+                fallbackClass: 'sortable-fallback',
+                fallbackOnBody: true,
+                swapThreshold: 0.65,
+                onStart: function() {
+                    // Add visual feedback when dragging starts
+                    listElement.classList.add('is-dragging');
+                },
+                onEnd: function() {
+                    // Remove visual feedback when dragging ends
+                    listElement.classList.remove('is-dragging');
+                    updateBadgeNumbers();
+                }
+            });
+            
+            console.log('✅ SortableJS initialized for reorder offcanvas');
+            
+        }).catch(error => {
+            console.error('❌ Failed to load SortableJS:', error);
+            
+            // Hide loading indicator
+            if (loadingIndicator) {
+                loadingIndicator.style.display = 'none';
+            }
+            
+            // Show error message
+            if (listElement) {
+                listElement.innerHTML = `
+                    <div class="alert alert-warning">
+                        <i class="bx bx-error-circle me-2"></i>
+                        Failed to load drag-and-drop library. You can still reorder by closing and trying again.
+                    </div>
+                `;
+            }
+            
+            // Keep save button disabled
+            saveBtn.disabled = true;
+        });
+        
+        // Update badge numbers after reordering
+        function updateBadgeNumbers() {
+            const items = listElement.querySelectorAll('.reorder-item');
+            items.forEach((item, index) => {
+                const badge = item.querySelector('.badge');
+                if (badge) {
+                    badge.textContent = index + 1;
+                }
+            });
+        }
+        
+        // Save button handler
+        saveBtn.addEventListener('click', () => {
+            // Check if sortable is loaded
+            if (!sortableLoaded) {
+                window.showAlert?.('Please wait, loading drag-and-drop...', 'info');
+                return;
+            }
+            
+            // Get current order from DOM
+            const items = listElement.querySelectorAll('.reorder-item');
+            const reorderedExercises = Array.from(items).map(item => {
+                const originalIndex = parseInt(item.getAttribute('data-index'));
+                return exercises[originalIndex];
+            });
+            
+            // Disable button during save
+            saveBtn.disabled = true;
+            saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Saving...';
+            
+            // Call onSave callback
+            try {
+                onSave(reorderedExercises);
+                offcanvas.hide();
+            } catch (error) {
+                console.error('❌ Error saving exercise order:', error);
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = '<i class="bx bx-check me-1"></i>Save Order';
+                alert('Failed to save exercise order. Please try again.');
+            }
+        });
+        
+        // Cleanup Sortable instance when offcanvas closes
+        offcanvasElement.addEventListener('hidden.bs.offcanvas', () => {
+            if (sortableInstance) {
+                sortableInstance.destroy();
+                sortableInstance = null;
+            }
+        }, { once: true });
+    });
+}
+
+/**
+ * Lazy-load SortableJS library from CDN
+ * Only loads once, subsequent calls return immediately
+ * @returns {Promise<void>}
+ */
+async function loadSortableJS() {
+    // Check if already loaded
+    if (window.Sortable) {
+        return;
+    }
+    
+    return new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/sortablejs@1.15.1/Sortable.min.js';
+        script.onload = () => {
+            console.log('✅ SortableJS library loaded');
+            resolve();
+        };
+        script.onerror = () => {
+            console.error('❌ Failed to load SortableJS library');
+            reject(new Error('Failed to load SortableJS'));
+        };
+        document.head.appendChild(script);
     });
 }
 

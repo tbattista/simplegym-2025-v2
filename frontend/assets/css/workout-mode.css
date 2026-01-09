@@ -164,216 +164,6 @@
 }
 
 /* ============================================
-   WEIGHT DIRECTION INDICATOR & BUTTONS (DEPRECATED)
-   
-   ⚠️ DEPRECATED: These styles are being replaced by Quick Notes Popover.
-   The inline Decrease/Increase buttons have been replaced with a single
-   note trigger button that opens a popover with the same actions.
-   
-   Old: [Decrease] • [Increase] inline buttons
-   New: [📝] trigger button → popover with [Decrease] [Increase]
-   
-   Keep for backwards compatibility until fully migrated.
-   Phase 1 migration completed: 2026-01-05
-   
-   Related files:
-   - CSS: /static/assets/css/components/quick-notes-popover.css
-   - JS: /static/assets/js/components/quick-notes/quick-notes-popover.js
-   - Config: /static/assets/js/components/quick-notes/quick-notes-config.js
-   ============================================ */
-
-/* Weight direction indicator badge in collapsed header */
-.weight-direction-indicator {
-    font-size: 0.8rem;
-    font-weight: 600;
-    padding: 0.25rem 0.5rem;
-    border-radius: 4px;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.25rem;
-    transition: all 0.2s ease;
-}
-
-.weight-direction-indicator.direction-up {
-    background-color: rgba(var(--bs-success-rgb), 0.15);
-    color: var(--bs-success);
-    border: 1px solid rgba(var(--bs-success-rgb), 0.3);
-}
-
-.weight-direction-indicator.direction-down {
-    background-color: rgba(var(--bs-danger-rgb), 0.15);
-    color: var(--bs-danger);
-    border: 1px solid rgba(var(--bs-danger-rgb), 0.3);
-}
-
-.weight-direction-indicator i {
-    font-size: 1rem;
-}
-
-/* Hide direction indicator when card is expanded */
-.exercise-card.expanded .weight-direction-indicator {
-    opacity: 0;
-    transform: scale(0.85);
-}
-
-/* Weight Direction Container - Two-button with dot layout */
-.weight-direction-container {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-/* Dot separator between buttons - same height as buttons */
-.weight-direction-dot {
-    font-size: 1.5rem;
-    color: var(--bs-secondary);
-    line-height: 1;
-    height: 28px;
-    display: flex;
-    align-items: center;
-    transition: opacity 0.2s ease;
-    user-select: none;
-}
-
-.weight-direction-dot.hidden {
-    opacity: 0;
-}
-
-/* Compact text buttons */
-.weight-direction-btn {
-    font-size: 0.75rem;
-    font-weight: 500;
-    padding: 0.25rem 0.5rem;
-    border-radius: 4px;
-    min-height: 28px;
-    height: 28px;
-    border: 1px solid var(--bs-border-color);
-    background: transparent;
-    color: var(--bs-body-color);
-    transition: all 0.2s ease;
-    white-space: nowrap;
-}
-
-.weight-direction-btn:hover:not(.active) {
-    background: rgba(var(--bs-primary-rgb), 0.08);
-    border-color: var(--bs-primary);
-    color: var(--bs-primary);
-}
-
-/* Active state for DOWN direction */
-.weight-direction-btn.active.btn-direction-down {
-    background: var(--bs-warning);
-    border-color: var(--bs-warning);
-    color: #fff;
-    font-weight: 600;
-}
-
-/* Active state for UP direction */
-.weight-direction-btn.active.btn-direction-up {
-    background: var(--bs-success);
-    border-color: var(--bs-success);
-    color: #fff;
-    font-weight: 600;
-}
-
-/* Dark theme adjustments for direction buttons */
-[data-bs-theme="dark"] .weight-direction-indicator.direction-up {
-    background-color: rgba(var(--bs-success-rgb), 0.2);
-    border-color: rgba(var(--bs-success-rgb), 0.4);
-}
-
-[data-bs-theme="dark"] .weight-direction-indicator.direction-down {
-    background-color: rgba(var(--bs-danger-rgb), 0.2);
-    border-color: rgba(var(--bs-danger-rgb), 0.4);
-}
-
-[data-bs-theme="dark"] .weight-direction-dot {
-    color: var(--bs-gray-400);
-}
-
-[data-bs-theme="dark"] .weight-direction-btn {
-    border-color: var(--bs-gray-600);
-}
-
-[data-bs-theme="dark"] .weight-direction-btn:hover:not(.active) {
-    background: rgba(var(--bs-primary-rgb), 0.12);
-}
-
-[data-bs-theme="dark"] .weight-direction-btn.active.btn-direction-down {
-    background: var(--bs-warning);
-    border-color: var(--bs-warning);
-}
-
-[data-bs-theme="dark"] .weight-direction-btn.active.btn-direction-up {
-    background: var(--bs-success);
-    border-color: var(--bs-success);
-}
-
-/* Mobile responsive for direction buttons */
-@media (max-width: 768px) {
-    .weight-direction-indicator {
-        font-size: 0.75rem;
-        padding: 0.2rem 0.4rem;
-    }
-    
-    .weight-direction-indicator i {
-        font-size: 0.9rem;
-    }
-    
-    .weight-direction-container {
-        gap: 0.4rem;
-    }
-    
-    .weight-direction-dot {
-        font-size: 1.4rem;
-        height: 26px;
-    }
-    
-    .weight-direction-btn {
-        font-size: 0.7rem;
-        padding: 0.2rem 0.4rem;
-        min-height: 26px;
-        height: 26px;
-    }
-}
-
-@media (max-width: 576px) {
-    .weight-direction-indicator {
-        font-size: 0.7rem;
-        padding: 0.15rem 0.35rem;
-    }
-    
-    .weight-direction-indicator i {
-        font-size: 0.85rem;
-    }
-    
-    .weight-direction-container {
-        gap: 0.35rem;
-    }
-    
-    .weight-direction-dot {
-        font-size: 1.3rem;
-        height: 24px;
-    }
-    
-    .weight-direction-btn {
-        font-size: 0.65rem;
-        padding: 0.2rem 0.35rem;
-        min-height: 24px;
-        height: 24px;
-    }
-}
-
-/* Reduced motion - no transform animations */
-@media (prefers-reduced-motion: reduce) {
-    .weight-direction-btn i,
-    .weight-direction-indicator {
-        transition: none !important;
-        transform: none !important;
-    }
-}
-
-/* ============================================
    WEIGHT DIRECTION TOGGLE - NEW UX (2026-01-05)
    Two-button inline toggle system replacing popover
    ============================================ */
@@ -683,12 +473,27 @@
     padding: 0.4rem 0.75rem;
 }
 
-/* Session action buttons */
 #startWorkoutBtn {
-    min-width: 180px;
+    min-width: 150px;
     font-size: 1.1rem;
-    padding: 0.75rem 1.5rem;
+    padding: 0.65rem 1.3rem;
     font-weight: 600;
+    background-color: #2e3d8f;
+    border: 1px solid #1f2a7f;
+    color: #fff;
+    box-shadow: 0 4px 10px rgba(46, 61, 143, 0.25);
+    transition: background-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+#startWorkoutBtn:hover {
+    background-color: #1f2a7f;
+    box-shadow: 0 6px 12px rgba(31, 42, 127, 0.35);
+}
+
+#startWorkoutBtn:active {
+    background-color: #162056;
+    transform: translateY(1px);
+    box-shadow: 0 2px 6px rgba(22, 32, 86, 0.35);
 }
 
 #startWorkoutBtn i {
@@ -801,6 +606,7 @@
     transition: all 0.3s ease;
     cursor: pointer;
     box-shadow: 0 2px 6px 0 rgba(67, 89, 113, 0.12);
+    overflow: hidden;  /* Clip children within rounded corners */
 }
 
 .exercise-card:hover {
@@ -817,7 +623,7 @@
 }
 
 .exercise-card-header {
-    padding: 0.625rem 0.875rem;
+    padding: 0.625rem 0.375rem;
     background: var(--bs-card-bg);
     border-bottom: none;
     display: flex;
@@ -836,7 +642,8 @@
 .exercise-card.expanded .exercise-card-header {
     background: rgba(var(--bs-primary-rgb), 0.05);
     cursor: default;
-    padding: 0.625rem 0.875rem; /* Reduced padding for compact layout */
+    padding: 0.625rem 0.375rem; /* Reduced padding for compact layout */
+    border-radius: 8px;  /* Rounded all corners when expanded for floating effect */
 }
 
 /* ============================================
@@ -918,8 +725,128 @@
     padding: 0;
 }
 
-/* Right-aligned weight container - horizontal layout */
-.exercise-card-weight-container {
+/* Weight row - below sets/reps in collapsed state */
+.exercise-card-weight-row {
+    margin-top: 0.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Weight badge styling - now only contains weight value */
+.exercise-card-weight-row .weight-badge {
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 0.35rem 0.6rem;
+    white-space: nowrap;
+    background-color: var(--bs-secondary);
+    color: white;
+}
+
+/* Weight status indicator - appears to the right of badge */
+.weight-status-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.weight-status-icon {
+    font-size: 0.875rem;
+    line-height: 1;
+}
+
+.weight-status-label {
+    line-height: 1;
+}
+
+/* Status indicator colors based on progression type */
+.weight-status-indicator.status-new {
+    color: var(--color-weight-new);
+}
+
+.weight-status-indicator.status-increased {
+    color: var(--color-weight-increased);
+}
+
+.weight-status-indicator.status-decreased {
+    color: var(--color-weight-decreased);
+}
+
+.weight-status-indicator.status-same {
+    color: var(--color-weight-same);
+}
+
+.weight-status-indicator.status-direction-up {
+    color: var(--color-weight-increased);
+    font-weight: 600;
+}
+
+.weight-status-indicator.status-direction-down {
+    color: var(--color-weight-decreased);
+    font-weight: 600;
+}
+
+.weight-status-indicator.status-direction-same {
+    color: var(--bs-primary);
+    font-weight: 600;
+}
+
+.weight-status-indicator.status-direction-reminder {
+    font-weight: 600;
+    animation: subtlePulse 2s ease-in-out infinite;
+}
+
+.weight-status-indicator.status-direction-reminder.status-direction-up {
+    color: var(--color-weight-increased);
+}
+
+.weight-status-indicator.status-direction-reminder.status-direction-down {
+    color: var(--color-weight-decreased);
+}
+
+/* Dark theme adjustments for status indicators */
+[data-bs-theme="dark"] .weight-status-indicator.status-new {
+    color: #58a6ff;
+}
+
+[data-bs-theme="dark"] .weight-status-indicator.status-increased {
+    color: #5DD91E;
+}
+
+[data-bs-theme="dark"] .weight-status-indicator.status-decreased {
+    color: #f85149;
+}
+
+[data-bs-theme="dark"] .weight-status-indicator.status-same {
+    color: #8b949e;
+}
+
+[data-bs-theme="dark"] .weight-status-indicator.status-direction-up {
+    color: #5DD91E;
+}
+
+[data-bs-theme="dark"] .weight-status-indicator.status-direction-down {
+    color: #f85149;
+}
+
+[data-bs-theme="dark"] .weight-status-indicator.status-direction-same {
+    color: #58a6ff;
+}
+
+/* Morph animation: weight row fades and slides up when expanded */
+.exercise-card.expanded .morph-weight {
+    opacity: 0;
+    transform: translateY(-8px);
+    pointer-events: none;
+    max-height: 0;
+    overflow: hidden;
+}
+
+/* Right-aligned expand container - only holds chevron icon */
+.exercise-card-expand-container {
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -927,28 +854,14 @@
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* When expanded, keep container visible but position differently */
-.exercise-card.expanded .exercise-card-weight-container {
+/* When expanded, keep container visible */
+.exercise-card.expanded .exercise-card-expand-container {
     flex-shrink: 0;
 }
 
-/* Weight badge styling - compact horizontal */
-.exercise-card-weight-container .weight-badge {
-    font-size: 0.85rem;
-    font-weight: 600;
-    padding: 0.35rem 0.6rem;
-    white-space: nowrap;
-}
-
-/* Chevron icon in weight container */
-.exercise-card-weight-container .expand-icon {
+/* Chevron icon in expand container */
+.exercise-card-expand-container .expand-icon {
     margin-top: 0;
-}
-
-/* Hide weight badge when expanded */
-.exercise-card.expanded .exercise-card-weight-container .weight-badge {
-    opacity: 0;
-    transform: scale(0.85);
 }
 
 /* 2x2 Grid Layout for workout buttons (default) */
@@ -976,11 +889,6 @@
     grid-template-rows: auto auto;
     gap: 0.5rem;
     margin-top: 1rem;
-}
-
-/* 2x3 Grid Layout for workout buttons (with skip button) - DEPRECATED */
-.workout-button-grid-2x3 {
-    grid-template-columns: 1fr 1fr 1fr;
 }
 
 /* Placeholder for empty grid cells */
@@ -1075,12 +983,13 @@
     
     padding: var(--card-padding);
     background: var(--bs-card-bg);
-    border-radius: 0 0 8px 8px;
+    border-radius: 0 0 8px 8px !important;
     transform-origin: top;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
     flex-direction: column;
     gap: var(--card-section-gap);
+    overflow: hidden;  /* Ensures content clips within rounded corners */
 }
 
 /* Body scales in smoothly when expanded */
@@ -1823,7 +1732,7 @@
     }
     
     .exercise-card-header {
-        padding: 0.875rem;
+        padding: 0.625rem 0.375rem;
     }
     
     .exercise-card-summary h6 {
@@ -2150,107 +2059,6 @@
 }
 
 /* ============================================
-   FLOATING TIMER WIDGET
-   ============================================ */
-
-/* Floating timer widget in bottom right corner - Compact version */
-.floating-timer-widget {
-    position: fixed !important;
-    bottom: 90px !important; /* Above bottom nav bar */
-    right: 20px !important;
-    top: auto !important; /* Override any conflicting styles */
-    left: auto !important;
-    z-index: 1040 !important; /* Below modals (1050) but above content */
-    background: var(--bs-card-bg);
-    border: 1px solid var(--bs-border-color);
-    border-radius: 8px;
-    padding: 0.5rem 0.75rem;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    min-width: auto;
-    text-align: center;
-    transition: opacity 0.3s ease;
-    animation: slideInUp 0.4s ease;
-}
-
-.floating-timer-widget:hover {
-    opacity: 0.9;
-}
-
-/* Timer label - hidden */
-.floating-timer-widget .timer-label {
-    display: none;
-}
-
-/* Timer display - compact */
-.floating-timer-widget .timer-display {
-    font-size: 1rem;
-    font-weight: 600;
-    color: var(--bs-body-color);
-    font-variant-numeric: tabular-nums;
-    letter-spacing: 0.05em;
-    line-height: 1;
-}
-
-@keyframes slideInUp {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* Dark theme support */
-[data-bs-theme="dark"] .floating-timer-widget {
-    background: var(--bs-gray-900);
-    border-color: var(--bs-primary);
-    box-shadow: 0 8px 24px rgba(105, 108, 255, 0.4);
-}
-
-[data-bs-theme="dark"] .floating-timer-widget:hover {
-    box-shadow: 0 12px 32px rgba(105, 108, 255, 0.5);
-}
-
-/* Mobile responsive */
-@media (max-width: 768px) {
-    .floating-timer-widget {
-        bottom: 75px; /* Adjust for mobile bottom nav */
-        right: 15px;
-        padding: 0.45rem 0.65rem;
-    }
-    
-    .floating-timer-widget .timer-display {
-        font-size: 0.95rem;
-    }
-}
-
-@media (max-width: 576px) {
-    .floating-timer-widget {
-        bottom: 70px;
-        right: 12px;
-        padding: 0.4rem 0.6rem;
-    }
-    
-    .floating-timer-widget .timer-display {
-        font-size: 0.9rem;
-    }
-}
-
-@media (max-width: 360px) {
-    .floating-timer-widget {
-        bottom: 65px;
-        right: 10px;
-        padding: 0.35rem 0.55rem;
-    }
-    
-    .floating-timer-widget .timer-display {
-        font-size: 0.85rem;
-    }
-}
-
-/* ============================================
    BONUS EXERCISE CARD STYLING
    ============================================ */
 
@@ -2493,199 +2301,4 @@
 .card-action-buttons .btn-success:focus,
 .card-action-buttons .btn-outline-success:focus {
     box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.5);
-}
-
-/* ============================================
-   PHASE 2: DRAG-AND-DROP EXERCISE REORDERING
-   ============================================ */
-
-/* ============================================
-   REORDER MODE TOGGLE STATES
-   ============================================ */
-
-/* Default: Hide drag handles when reorder mode is disabled */
-#exerciseCardsContainer:not(.reorder-mode-active) .exercise-drag-handle {
-    display: none;
-}
-
-/* Show drag handles when reorder mode is active */
-#exerciseCardsContainer.reorder-mode-active .exercise-drag-handle {
-    display: flex;
-    opacity: 0.6;
-}
-
-#exerciseCardsContainer.reorder-mode-active .exercise-drag-handle:hover {
-    opacity: 1;
-}
-
-/* Visual indicator that cards are draggable in reorder mode */
-/* MOBILE FIX: Allow vertical scrolling on cards, only drag handle captures touch */
-#exerciseCardsContainer.reorder-mode-active .exercise-card {
-    /* cursor: move removed - only drag handle should show drag cursor */
-    touch-action: pan-y; /* Allow vertical scrolling */
-}
-
-#exerciseCardsContainer.reorder-mode-active .exercise-card-header {
-    /* cursor: grab removed - only drag handle should show drag cursor */
-    touch-action: pan-y; /* Allow vertical scrolling */
-}
-
-/* Reorder mode active indicator */
-#exerciseCardsContainer.reorder-mode-active {
-    border: 2px dashed rgba(var(--bs-primary-rgb), 0.3);
-    border-radius: 8px;
-    padding: 0.5rem;
-    margin: -0.5rem;
-    margin-bottom: 0.25rem;
-}
-
-/* Toggle label styling */
-.reorder-mode-label {
-    font-size: 0.875rem;
-    color: var(--bs-body-color);
-}
-
-/* Active toggle label */
-#reorderModeToggle:checked + label .reorder-mode-label {
-    color: var(--bs-primary);
-    font-weight: 500;
-}
-
-/* Dark theme adjustments for reorder mode */
-[data-bs-theme="dark"] #exerciseCardsContainer.reorder-mode-active {
-    border-color: rgba(var(--bs-primary-rgb), 0.4);
-}
-
-/* Drag handle styling */
-.exercise-drag-handle {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 32px;
-    height: 32px;
-    margin-right: 0.5rem;
-    cursor: grab;
-    color: var(--bs-secondary);
-    opacity: 0.4;
-    transition: all 0.2s ease;
-    border-radius: 4px;
-    flex-shrink: 0;
-}
-
-/* MOBILE FIX: Only drag handle captures touch events for dragging */
-#exerciseCardsContainer.reorder-mode-active .exercise-drag-handle {
-    cursor: grab;
-    touch-action: none; /* Drag handle captures all touch events */
-}
-
-#exerciseCardsContainer.reorder-mode-active .exercise-drag-handle:hover {
-    opacity: 1;
-    background-color: rgba(var(--bs-primary-rgb), 0.1);
-    color: var(--bs-primary);
-}
-
-#exerciseCardsContainer.reorder-mode-active .exercise-drag-handle:active {
-    cursor: grabbing;
-}
-
-.exercise-drag-handle:hover {
-    opacity: 1;
-    background-color: rgba(var(--bs-primary-rgb), 0.1);
-    color: var(--bs-primary);
-}
-
-.exercise-drag-handle:active {
-    cursor: grabbing;
-}
-
-.exercise-drag-handle i {
-    font-size: 1.25rem;
-}
-
-/* SortableJS ghost (dragging element) */
-.sortable-ghost {
-    opacity: 0.4;
-    background-color: rgba(var(--bs-primary-rgb), 0.1);
-    border-color: var(--bs-primary) !important;
-}
-
-/* SortableJS drag (dragged element while dragging) */
-.sortable-drag {
-    opacity: 1;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-    transform: rotate(2deg);
-    cursor: grabbing !important;
-}
-
-/* SortableJS chosen (element being dragged) */
-.sortable-chosen {
-    background-color: rgba(var(--bs-primary-rgb), 0.05);
-    border-color: var(--bs-primary);
-}
-
-/* Container while dragging */
-.sortable-container-dragging {
-    padding-bottom: 100px; /* Extra space at bottom for dropping */
-}
-
-/* Placeholder/drop zone styling */
-.sortable-fallback {
-    opacity: 0.5;
-}
-
-/* Dark theme adjustments */
-[data-bs-theme="dark"] .exercise-drag-handle {
-    color: var(--bs-gray-400);
-}
-
-[data-bs-theme="dark"] .exercise-drag-handle:hover {
-    background-color: rgba(var(--bs-primary-rgb), 0.15);
-    color: var(--bs-primary);
-}
-
-[data-bs-theme="dark"] .sortable-ghost {
-    background-color: rgba(var(--bs-primary-rgb), 0.15);
-}
-
-[data-bs-theme="dark"] .sortable-drag {
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-}
-
-/* Mobile responsive */
-@media (max-width: 768px) {
-    .exercise-drag-handle {
-        width: 28px;
-        height: 28px;
-        margin-right: 0.375rem;
-    }
-    
-    .exercise-drag-handle i {
-        font-size: 1.1rem;
-    }
-}
-
-@media (max-width: 576px) {
-    .exercise-drag-handle {
-        width: 24px;
-        height: 24px;
-        margin-right: 0.25rem;
-    }
-    
-    .exercise-drag-handle i {
-        font-size: 1rem;
-    }
-}
-
-/* Accessibility - disable drag handle for keyboard users */
-.exercise-drag-handle:focus-visible {
-    outline: 2px solid var(--bs-primary);
-    outline-offset: 2px;
-    opacity: 1;
-}
-
-/* Reduced motion - no transform on drag */
-@media (prefers-reduced-motion: reduce) {
-    .sortable-drag {
-        transform: none !important;
-    }
 }

@@ -175,7 +175,7 @@ function renderCompactHeader() {
           <i class="bx bx-search mb-1"></i>
           <span>Find</span>
         </a>
-        <a href="workout-sessions-demo.html" class="btn btn-outline-primary quick-action-btn">
+        <a href="_archive/demo-pages/workout-sessions-demo.html" class="btn btn-outline-primary quick-action-btn">
           <i class="bx bx-bar-chart-alt-2 mb-1"></i>
           <span>History</span>
         </a>

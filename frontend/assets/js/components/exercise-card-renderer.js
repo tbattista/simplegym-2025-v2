@@ -66,9 +66,10 @@ class ExerciseCardRenderer {
         const templateWeight = group.default_weight || '';
         const templateUnit = group.default_weight_unit || 'lbs';
         
-        // PHASE 2: Check if exercise is skipped
-        const isSkipped = weightData?.is_skipped || false;
-        const skipReason = weightData?.skip_reason || '';
+        // PHASE 2: Check if exercise is skipped (active session OR pre-session)
+        const preSessionSkipped = !isSessionActive && this.sessionService.isPreSessionSkipped(mainExercise);
+        const isSkipped = weightData?.is_skipped || preSessionSkipped;
+        const skipReason = weightData?.skip_reason || (preSessionSkipped ? 'Skipped before workout' : '');
         
         // PHASE 3: Check if exercise is completed
         const isCompleted = weightData?.is_completed || false;
@@ -89,15 +90,6 @@ class ExerciseCardRenderer {
         return `
             <div class="card exercise-card ${bonusClass} ${isSkipped ? 'skipped' : ''} ${isCompleted ? 'completed' : ''}" data-exercise-index="${index}" data-exercise-name="${this._escapeHtml(mainExercise)}">
                 <div class="card-header exercise-card-header" onclick="window.workoutModeController.toggleExerciseCard(${index})">
-                    <!-- PHASE 2: Drag Handle -->
-                    <div class="exercise-drag-handle"
-                         title="Drag to reorder"
-                         role="button"
-                         tabindex="0"
-                         aria-label="Drag handle to reorder ${this._escapeHtml(mainExercise)}">
-                        <i class="bx bx-menu" aria-hidden="true"></i>
-                    </div>
-                    
                     <div class="exercise-card-summary">
                         <!-- MORPH: Exercise Name with inline badge -->
                         <h6 class="mb-0 morph-title" data-morph-id="title-${index}">
@@ -111,11 +103,15 @@ class ExerciseCardRenderer {
                         <div class="exercise-card-meta morph-meta" data-morph-id="meta-${index}">
                             <span class="morph-sets-reps">${sets} sets × ${reps} reps • ${rest}</span>
                         </div>
+                        
+                        <!-- MORPH: Weight badge (visible when collapsed, hidden when expanded) -->
+                        <div class="exercise-card-weight-row morph-weight" data-morph-id="weight-${index}">
+                            ${this._renderWeightBadge(currentWeight, currentUnit, weightSource, lastWeight, lastWeightUnit, lastDirection, currentDirection, isSessionActive)}
+                        </div>
                     </div>
                     
-                    <!-- Right-aligned weight badge -->
-                    <div class="exercise-card-weight-container">
-                        ${this._renderWeightBadge(currentWeight, currentUnit, weightSource, lastWeight, lastWeightUnit, lastDirection, currentDirection, isSessionActive)}
+                    <!-- Right-aligned expand icon only -->
+                    <div class="exercise-card-expand-container">
                         <i class="bx bx-chevron-down expand-icon"></i>
                     </div>
                 </div>
@@ -154,6 +150,7 @@ class ExerciseCardRenderer {
                                 <div class="exercise-weight-display">
                                     <span class="exercise-weight-value">${currentWeight || '—'}</span>
                                     ${currentWeight && currentUnit !== 'other' ? `<span class="exercise-weight-unit">${currentUnit}</span>` : ''}
+                                    ${currentWeight && currentUnit === 'other' ? `<span class="exercise-weight-unit text-muted">(custom)</span>` : ''}
                                 </div>
                                 ${this._renderWeightHistory(mainExercise, lastWeight, lastWeightUnit, lastSessionDate, recentSessions)}
                             </div>
@@ -232,8 +229,8 @@ class ExerciseCardRenderer {
     }
 
     /**
-     * Render weight badge with visual progression feedback (Phase 3)
-     * Enhanced to show weight direction notes from last session AND current session
+     * Render weight badge with visual progression feedback (Phase 4)
+     * Redesigned: Badge shows only weight value, status indicator appears separately to the right
      * @private
      */
     _renderWeightBadge(currentWeight, currentUnit, weightSource, lastWeight, lastWeightUnit, lastDirection, currentDirection, isSessionActive) {
@@ -246,9 +243,10 @@ class ExerciseCardRenderer {
             return `<span class="badge bg-label-secondary" title="No weight set - click Edit Weight to add">No weight</span>`;
         }
         
-        // PHASE 3: Determine progression state
+        // PHASE 4: Determine progression state for separate status indicator
         let progressionClass = '';
-        let progressionIcon = '';
+        let statusIcon = '';
+        let statusLabel = '';
         let tooltipText = '';
         const unitDisplay = currentUnit !== 'other' ? ` ${currentUnit}` : '';
         
@@ -256,78 +254,91 @@ class ExerciseCardRenderer {
         // Priority: Active session current direction > Last session reminder
         const displayDirection = isSessionActive ? currentDirection : lastDirection;
         
-        // QUICK NOTES: Show direction indicator
-        // During active session: Show current direction set by user (✓)
-        // Before session: Show reminder from last session (📝)
+        // Status indicator logic - icon and label appear outside badge
         if (displayDirection) {
             if (isSessionActive) {
                 // Current session direction (user just set this)
                 if (displayDirection === 'up') {
                     progressionClass = 'direction-up';
-                    progressionIcon = '✓↑';
-                    tooltipText = `${currentWeight}${unitDisplay} - Next: Increase weight`;
+                    statusIcon = '✓↑';
+                    statusLabel = 'Next: Increase';
+                    tooltipText = `Next session: Increase weight`;
                 } else if (displayDirection === 'down') {
                     progressionClass = 'direction-down';
-                    progressionIcon = '✓↓';
-                    tooltipText = `${currentWeight}${unitDisplay} - Next: Decrease weight`;
+                    statusIcon = '✓↓';
+                    statusLabel = 'Next: Decrease';
+                    tooltipText = `Next session: Decrease weight`;
                 } else if (displayDirection === 'same') {
                     progressionClass = 'direction-same';
-                    progressionIcon = '✓→';
-                    tooltipText = `${currentWeight}${unitDisplay} - Next: Keep same weight`;
+                    statusIcon = '✓→';
+                    statusLabel = 'Next: No change';
+                    tooltipText = `Next session: Keep same weight`;
                 }
             } else {
                 // Last session reminder (what they noted last time)
                 if (displayDirection === 'up') {
                     progressionClass = 'direction-reminder direction-up';
-                    progressionIcon = '📝↑';
-                    tooltipText = `${currentWeight}${unitDisplay} - Last session reminder: Increase weight`;
+                    statusIcon = '📝↑';
+                    statusLabel = 'Reminder: Increase';
+                    tooltipText = `Last session reminder: Increase weight`;
                 } else if (displayDirection === 'down') {
                     progressionClass = 'direction-reminder direction-down';
-                    progressionIcon = '📝↓';
-                    tooltipText = `${currentWeight}${unitDisplay} - Last session reminder: Decrease weight`;
+                    statusIcon = '📝↓';
+                    statusLabel = 'Reminder: Decrease';
+                    tooltipText = `Last session reminder: Decrease weight`;
                 } else if (displayDirection === 'same') {
                     progressionClass = 'direction-reminder direction-same';
-                    progressionIcon = '📝→';
-                    tooltipText = `${currentWeight}${unitDisplay} - Last session reminder: Keep same weight`;
+                    statusIcon = '📝→';
+                    statusLabel = 'Reminder: No change';
+                    tooltipText = `Last session reminder: Keep same weight`;
                 }
             }
         } else if (!lastWeight) {
             // First time doing this exercise
             progressionClass = 'new';
-            progressionIcon = '★';
-            tooltipText = `${currentWeight}${unitDisplay} - First time doing this exercise!`;
+            statusIcon = '★';
+            statusLabel = 'New';
+            tooltipText = `First time doing this exercise!`;
         } else {
             const weightDiff = currentWeight - lastWeight;
             if (weightDiff > 0) {
                 // Weight increased
                 progressionClass = 'increased';
-                progressionIcon = '↑';
-                tooltipText = `${currentWeight}${unitDisplay} (+${weightDiff.toFixed(1)}${unitDisplay} from last time)`;
+                statusIcon = '↑';
+                statusLabel = 'Increased';
+                tooltipText = `Increased ${weightDiff.toFixed(1)}${unitDisplay} from last time`;
             } else if (weightDiff < 0) {
                 // Weight decreased
                 progressionClass = 'decreased';
-                progressionIcon = '↓';
-                tooltipText = `${currentWeight}${unitDisplay} (${weightDiff.toFixed(1)}${unitDisplay} from last time)`;
+                statusIcon = '↓';
+                statusLabel = 'Decreased';
+                tooltipText = `Decreased ${Math.abs(weightDiff).toFixed(1)}${unitDisplay} from last time`;
             } else {
                 // Same weight
                 progressionClass = 'same';
-                progressionIcon = '→';
-                tooltipText = `${currentWeight}${unitDisplay} (same as last time)`;
+                statusIcon = '→';
+                statusLabel = 'No change';
+                tooltipText = `Same as last time`;
             }
         }
         
         // Add modified indicator if user changed from template
         const modifiedClass = weightSource === 'session' ? 'modified' : '';
-        if (modifiedClass) {
-            tooltipText += ' - Modified from template';
-        }
         
+        // Build the HTML: Badge (weight only) + Status indicator (icon + label)
         return `<span class="badge weight-badge ${progressionClass} ${modifiedClass}"
                       data-direction="${displayDirection || 'none'}"
                       data-bs-toggle="tooltip"
                       data-bs-placement="top"
-                      title="${tooltipText}">
-            ${progressionIcon} ${currentWeight}${unitDisplay}
+                      title="${currentWeight}${unitDisplay}${modifiedClass ? ' - Modified from template' : ''}">
+            ${currentWeight}${unitDisplay}
+        </span>
+        <span class="weight-status-indicator status-${progressionClass}"
+              data-bs-toggle="tooltip"
+              data-bs-placement="top"
+              title="${tooltipText}">
+            <span class="weight-status-icon">${statusIcon}</span>
+            <span class="weight-status-label">${statusLabel}</span>
         </span>`;
     }
 
@@ -401,25 +412,51 @@ class ExerciseCardRenderer {
     }
 
     /**
-     * Render card action buttons (Complete/Skip/Modify)
+     * Render card action buttons (Complete/Skip/Modify/Replace)
      * PHASE 1: Modify button now shows BEFORE session starts for pre-session editing
-     * Layout: 2 lines - Completed on top, Modify and Skip on bottom
+     * PRE-SESSION UPDATE: Now also shows Skip and Replace buttons
      * @private
      */
     _renderCardActionButtons(exerciseName, index, isSkipped, isCompleted, isSessionActive) {
-        // PHASE 1: Always show Modify button, even before session starts
-        // Before session: Show only Modify button
-        // During session: Show Complete, Skip, and Modify buttons
-        
         if (!isSessionActive) {
-            // PRE-SESSION: Only show Modify button
+            // PRE-SESSION: Show Skip/Replace/Modify buttons (or Unskip if skipped)
+            if (isSkipped) {
+                return `
+                    <div class="card-action-buttons mt-3 pt-3 border-top">
+                        <button class="btn btn-sm btn-warning w-100 mb-2"
+                                onclick="window.workoutModeController.handleUnskipExercise('${this._escapeHtml(exerciseName)}', ${index}); event.stopPropagation();"
+                                title="Resume this exercise">
+                            <i class="bx bx-undo me-1"></i>Unskip
+                        </button>
+                        <button class="btn btn-sm btn-outline-primary w-100"
+                                onclick="window.workoutModeController.handleEditExercise('${this._escapeHtml(exerciseName)}', ${index}); event.stopPropagation();"
+                                title="Modify exercise details">
+                            <i class="bx bx-edit me-1"></i>Modify
+                        </button>
+                    </div>
+                `;
+            }
+            
+            // Normal pre-session: Modify, Replace, Skip
             return `
-                <div class="card-action-buttons mt-3 pt-3 border-top d-flex gap-2">
-                    <button class="btn btn-sm btn-outline-primary flex-fill"
-                            onclick="window.workoutModeController.handleEditExercise('${this._escapeHtml(exerciseName)}', ${index}); event.stopPropagation();"
-                            title="Modify exercise details before starting workout">
-                        <i class="bx bx-edit me-1"></i>Modify
-                    </button>
+                <div class="card-action-buttons mt-3 pt-3 border-top">
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-sm btn-outline-primary flex-fill"
+                                onclick="window.workoutModeController.handleEditExercise('${this._escapeHtml(exerciseName)}', ${index}); event.stopPropagation();"
+                                title="Modify exercise details">
+                            <i class="bx bx-edit me-1"></i>Modify
+                        </button>
+                        <button class="btn btn-sm btn-outline-info flex-fill"
+                                onclick="window.workoutModeController.handleReplaceExercise('${this._escapeHtml(exerciseName)}', ${index}); event.stopPropagation();"
+                                title="Replace with alternative exercise">
+                            <i class="bx bx-refresh me-1"></i>Replace
+                        </button>
+                        <button class="btn btn-sm btn-outline-warning flex-fill"
+                                onclick="window.workoutModeController.handleSkipExercise('${this._escapeHtml(exerciseName)}', ${index}); event.stopPropagation();"
+                                title="Skip this exercise">
+                            <i class="bx bx-skip-next me-1"></i>Skip
+                        </button>
+                    </div>
                 </div>
             `;
         }
@@ -482,19 +519,13 @@ class ExerciseCardRenderer {
     }
 
     /**
-     * Render weight history with expandable list
-     * Shows 3 most recent sessions by default, rest in expandable dropdown
+     * Render weight history showing the 4 most recent weights
      * @private
      */
     _renderWeightHistory(exerciseName, lastWeight, lastWeightUnit, lastSessionDate, recentSessions) {
         if (!lastWeight || !lastSessionDate) {
             return '';
         }
-        
-        const hasMultipleSessions = recentSessions && recentSessions.length > 1;
-        const hasThreeSessions = recentSessions && recentSessions.length > 2;
-        const hasMoreThanThree = recentSessions && recentSessions.length > 3;
-        const historyId = `history-${this._escapeHtml(exerciseName).replace(/\s+/g, '-')}`;
         
         // Helper to format date consistently
         const formatDate = (dateStr) => {
@@ -503,61 +534,33 @@ class ExerciseCardRenderer {
             return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
         };
         
+        // Show up to 4 most recent sessions
+        const sessionsToShow = recentSessions ? recentSessions.slice(0, 4) : [];
+        
         return `
             <div class="exercise-weight-history-container">
                 <!-- Most recent session (always visible) -->
                 <div class="exercise-weight-history-item">
                     <small class="exercise-weight-history">
-                        Last: ${lastWeight}${lastWeightUnit !== 'other' ? ` ${lastWeightUnit}` : ''} on ${formatDate(lastSessionDate)}
+                        Last: <strong>${lastWeight}${lastWeightUnit !== 'other' ? ` ${lastWeightUnit}` : ''}</strong> on ${formatDate(lastSessionDate)}
                     </small>
                 </div>
                 
-                ${hasMultipleSessions ? `
-                    <!-- Second most recent session (always visible) -->
-                    <div class="weight-history-item visible-item">
-                        <span class="weight-history-connector">├─</span>
-                        <span class="weight-history-content">
-                            <span class="weight-history-weight">${recentSessions[1].weight || '—'}${recentSessions[1].weight_unit !== 'other' ? ` ${recentSessions[1].weight_unit || 'lbs'}` : ''}</span>
-                            <span class="weight-history-date">on ${formatDate(recentSessions[1].date)}</span>
-                        </span>
-                    </div>
-                ` : ''}
-                
-                ${hasThreeSessions ? `
-                    <!-- Third most recent session with inline expand arrow -->
-                    <div class="weight-history-item visible-item ${hasMoreThanThree ? 'clickable' : ''}"
-                         ${hasMoreThanThree ? `data-history-id="${historyId}" onclick="window.workoutModeController.toggleWeightHistory('${historyId}'); event.stopPropagation();"` : ''}>
-                        <span class="weight-history-connector">├─</span>
-                        <span class="weight-history-content">
-                            <span class="weight-history-weight">${recentSessions[2].weight || '—'}${recentSessions[2].weight_unit !== 'other' ? ` ${recentSessions[2].weight_unit || 'lbs'}` : ''}</span>
-                            <span class="weight-history-date">on ${formatDate(recentSessions[2].date)}</span>
-                        </span>
-                        ${hasMoreThanThree ? `
-                            <i class="bx bx-chevron-down weight-history-arrow" id="arrow-${historyId}"></i>
-                        ` : ''}
-                    </div>
-                ` : ''}
-                
-                ${hasMoreThanThree ? `
-                    <!-- Hidden sessions list (4th session onwards) -->
-                    <div class="weight-history-list" id="list-${historyId}" style="display: none;">
-                        ${recentSessions.slice(3).map((session, index) => {
-                            const isLast = index === recentSessions.length - 4;
-                            const connector = isLast ? '└─' : '├─';
-                            const weight = session.weight || '—';
-                            const unit = session.weight_unit || 'lbs';
-                            return `
-                                <div class="weight-history-item ${isLast ? 'last' : ''}">
-                                    <span class="weight-history-connector">${connector}</span>
-                                    <span class="weight-history-content">
-                                        <span class="weight-history-weight">${weight}${unit !== 'other' ? ` ${unit}` : ''}</span>
-                                        <span class="weight-history-date">on ${formatDate(session.date)}</span>
-                                    </span>
-                                </div>
-                            `;
-                        }).join('')}
-                    </div>
-                ` : ''}
+                ${sessionsToShow.slice(1).map((session, index) => {
+                    const isLast = index === sessionsToShow.length - 2;
+                    const connector = isLast ? '└─' : '├─';
+                    const weight = session.weight || '—';
+                    const unit = session.weight_unit || 'lbs';
+                    return `
+                        <div class="weight-history-item visible-item">
+                            <span class="weight-history-connector">${connector}</span>
+                            <span class="weight-history-content">
+                                <span class="weight-history-weight"><strong>${weight}${unit !== 'other' ? ` ${unit}` : ''}</strong></span>
+                                <span class="weight-history-date">on ${formatDate(session.date)}</span>
+                            </span>
+                        </div>
+                    `;
+                }).join('')}
             </div>
         `;
     }

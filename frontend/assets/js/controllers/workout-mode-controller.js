@@ -55,8 +55,10 @@ class WorkoutModeController {
         // Phase 6: Initialize Weight Manager
         this.weightManager = new WorkoutWeightManager({
             sessionService: this.sessionService,
-            onWeightUpdated: (exerciseName, weight) => this.renderWorkout(),
-            onRenderWorkout: () => this.renderWorkout(),
+            onWeightUpdated: (exerciseName, weight) => {
+                this.renderWorkout();
+            },
+            onRenderWorkout: () => this.renderWorkout(true), // Force render when explicitly requested
             onAutoSave: () => this.autoSave(null)
         });
         
@@ -65,10 +67,11 @@ class WorkoutModeController {
             sessionService: this.sessionService,
             dataManager: this.dataManager,
             authService: this.authService,
-            onRenderWorkout: () => this.renderWorkout(),
+            onRenderWorkout: () => this.renderWorkout(true), // Force render for exercise changes
             onAutoSave: () => this.autoSave(null),
             onGoToNext: (index) => this.goToNextExercise(index),
-            onGetCurrentExerciseData: (name, index) => this._getCurrentExerciseData(name, index)
+            onGetCurrentExerciseData: (name, index) => this._getCurrentExerciseData(name, index),
+            onGetAllExerciseNames: () => this._getAllExerciseNames()
         });
         
         // State
@@ -80,9 +83,6 @@ class WorkoutModeController {
         this.workoutListComponent = null;
         
         // Phase 5: isStartingSession moved to lifecycleManager
-        
-        // Reorder mode state
-        this.reorderModeEnabled = false;
         
         console.log('🎮 Workout Mode Controller initialized');
         console.log('🔍 DEBUG: Modal manager available?', !!window.ghostGymModalManager);
@@ -142,7 +142,45 @@ class WorkoutModeController {
                 this.handleAuthStateChange(user);
             });
             
+            // ✅ FIX: Track when user leaves page for accurate "time away" measurement
+            // Use lastPageActive (separate from lastUpdated) to track page visibility
+            // This ensures threshold check works even if user changes weights/completes exercises
+            const updatePageActiveTimestamp = () => {
+                const stored = localStorage.getItem('ghost_gym_active_workout_session');
+                if (stored) {
+                    try {
+                        const sessionData = JSON.parse(stored);
+                        sessionData.lastPageActive = new Date().toISOString();
+                        localStorage.setItem('ghost_gym_active_workout_session', JSON.stringify(sessionData));
+                        console.log('📝 Page active timestamp updated');
+                    } catch (e) {
+                        console.warn('⚠️ Failed to update page active timestamp:', e);
+                    }
+                }
+            };
+            
+            // beforeunload: Fires on page refresh, close, navigate away
+            window.addEventListener('beforeunload', updatePageActiveTimestamp);
+            
+            // visibilitychange: Fires on tab switch/minimize (backup for mobile)
+            document.addEventListener('visibilitychange', () => {
+                if (document.hidden) {
+                    updatePageActiveTimestamp();
+                }
+            });
+            
+            // ✅ CRITICAL FIX: Wait for auth state BEFORE checking persisted session
+            // This ensures the correct storage mode is set before attempting auto-resume
+            console.log('⏳ Waiting for initial auth state...');
+            this.uiStateManager.updateLoadingMessage('Determining authentication status...');
+            
+            const authState = await this.dataManager.waitForAuthReady();
+            console.log('✅ Auth state ready:', authState);
+            console.log('   Storage mode:', authState.storageMode);
+            console.log('   Authenticated:', authState.isAuthenticated);
+            
             // ✨ Phase 5: Check for persisted session using lifecycleManager
+            // NOW auth is ready, so storage mode is correct for workout lookup
             const hasSession = await this.lifecycleManager.checkPersistedSession();
             if (hasSession) {
                 return; // Stop normal initialization - user will choose to resume or start fresh
@@ -156,16 +194,6 @@ class WorkoutModeController {
                 window.location.href = 'workout-database.html';
                 return;
             }
-            
-            // ✅ FIX: Wait for auth state to be ready using promise-based approach
-            // This replaces the fixed timeout with a reliable promise that resolves when auth is determined
-            console.log('⏳ Waiting for initial auth state...');
-            this.uiStateManager.updateLoadingMessage('Determining authentication status...');
-            
-            const authState = await this.dataManager.waitForAuthReady();
-            console.log('✅ Auth state ready:', authState);
-            console.log('   Storage mode:', authState.storageMode);
-            console.log('   Authenticated:', authState.isAuthenticated);
             
             // Update loading message based on auth state
             if (authState.isAuthenticated) {
@@ -182,7 +210,6 @@ class WorkoutModeController {
             this.initializeSoundToggle();
             this.initializeRestTimerSetting();
             this.initializeShareButton();
-            this.initializeReorderMode();
             
             console.log('✅ Workout Mode Controller ready');
             
@@ -376,9 +403,15 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
      * Render workout cards (now uses ExerciseCardRenderer)
      * PHASE 2: Now respects custom exercise order
      */
-    renderWorkout() {
+    renderWorkout(forceRender = false) {
         const container = document.getElementById('exerciseCardsContainer');
         if (!container) return;
+        
+        // Safety check: Don't try to render if workout hasn't loaded
+        if (!this.currentWorkout) {
+            console.warn('⚠️ Cannot render workout: currentWorkout is undefined');
+            return;
+        }
         
         let html = '';
         let exerciseIndex = 0;
@@ -472,16 +505,6 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
         // Phase 2: Delegate to timer manager
         this.timerManager.initializeGlobalTimer();
         this.timerManager.initializeCardTimers();
-        
-        // PHASE 2: Initialize drag-and-drop reordering
-        this.initializeSortable();
-        
-        // ✅ FIX: Restore reorder mode visual state if it was active before re-render
-        if (this.reorderModeEnabled) {
-            console.log('🔄 Re-applying reorder mode after re-render');
-            container.classList.add('reorder-mode-active');
-            // Sortable was already created with disabled: false due to reorderModeEnabled being true
-        }
     }
     
     /**
@@ -506,188 +529,6 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
      */
     syncGlobalTimerWithExpandedCard() {
         this.timerManager.syncWithExpandedCard(this.currentWorkout);
-    }
-    
-    /**
-     * PHASE 2: Initialize drag-and-drop sorting with SortableJS
-     * UPDATED: Starts disabled, enabled via reorder mode toggle
-     * MOBILE FIX: Enhanced configuration for better touch support
-     * FIX: Properly destroy existing sortable before creating new one
-     */
-    initializeSortable() {
-        // ✅ FIX: Destroy existing sortable before creating new one to prevent stale references
-        if (this.sortable) {
-            console.log('🧹 Destroying existing sortable before reinitializing');
-            this.sortable.destroy();
-            this.sortable = null;
-        }
-        
-        const container = document.getElementById('exerciseCardsContainer');
-        if (!container || typeof Sortable === 'undefined') {
-            console.warn('⚠️ Sortable not initialized - container or library missing');
-            return;
-        }
-        
-        this.sortable = Sortable.create(container, {
-            animation: 150,
-            handle: '.exercise-drag-handle',
-            ghostClass: 'sortable-ghost',
-            chosenClass: 'sortable-chosen',
-            dragClass: 'sortable-drag',
-            fallbackClass: 'sortable-fallback',
-            
-            // MOBILE FIX: Enable fallback for better touch support
-            forceFallback: true,
-            fallbackOnBody: true,
-            fallbackTolerance: 5,  // Slight tolerance to differentiate tap from drag
-            
-            scroll: true,
-            scrollSensitivity: 60,
-            scrollSpeed: 10,
-            bubbleScroll: true,
-            
-            // Delay before drag starts (helps distinguish scroll from drag on mobile)
-            delay: 150,
-            delayOnTouchOnly: true,  // Only apply delay on touch devices
-            
-            // ✅ FIX: Prevent Sortable from interfering with action buttons and interactive elements
-            // This ensures button clicks work properly even when reorder mode is active
-            filter: '.btn, .weight-badge, button, a, input, select, textarea',
-            preventOnFilter: false,  // Don't prevent default behavior on filtered elements
-            
-            // Start disabled, enabled via toggle
-            disabled: !this.reorderModeEnabled,
-            
-            onStart: (evt) => {
-                console.log('🎯 Drag started:', evt.oldIndex);
-                container.classList.add('sortable-container-dragging');
-            },
-            
-            onEnd: (evt) => {
-                console.log('🎯 Drag ended:', evt.oldIndex, '→', evt.newIndex);
-                container.classList.remove('sortable-container-dragging');
-                
-                // If order changed, update the session service
-                if (evt.oldIndex !== evt.newIndex) {
-                    this.handleExerciseReorder(evt.oldIndex, evt.newIndex);
-                }
-            }
-        });
-        
-        console.log('✅ SortableJS initialized for exercise reordering (mobile-optimized)');
-    }
-    
-    /**
-     * Initialize reorder mode toggle
-     */
-    initializeReorderMode() {
-        const toggle = document.getElementById('reorderModeToggle');
-        if (!toggle) return;
-        
-        toggle.addEventListener('change', () => {
-            if (toggle.checked) {
-                this.enterReorderMode();
-            } else {
-                this.exitReorderMode();
-            }
-        });
-        
-        console.log('✅ Reorder mode toggle initialized');
-    }
-    
-    /**
-     * Enter reorder mode
-     * FIX: Improved timer handling and sortable state management
-     */
-    enterReorderMode() {
-        const container = document.getElementById('exerciseCardsContainer');
-        if (!container) return;
-        
-        // ✅ FIX: Get fresh reference to timer SPAN element (not the container div)
-        const timerSpan = document.getElementById('floatingTimer');
-        const preservedTime = timerSpan ? timerSpan.textContent : null;
-        
-        // ✅ FIX: Check if session is active (don't mess with timer if no session)
-        const isSessionActive = this.sessionService.isSessionActive();
-        
-        this.reorderModeEnabled = true;
-        
-        // Add active class to container
-        container.classList.add('reorder-mode-active');
-        
-        // Collapse any expanded cards for cleaner drag experience
-        document.querySelectorAll('.exercise-card.expanded').forEach(card => {
-            this.collapseCard(card);
-        });
-        
-        // Ensure sortable is initialized and enabled
-        if (!this.sortable) {
-            this.initializeSortable();
-        }
-        if (this.sortable) {
-            this.sortable.option('disabled', false);
-        }
-        
-        // ✅ FIX: Only restore timer if session is active and it was accidentally reset
-        if (isSessionActive && preservedTime && preservedTime !== '00:00') {
-            const currentTimerSpan = document.getElementById('floatingTimer');
-            if (currentTimerSpan && currentTimerSpan.textContent === '00:00') {
-                currentTimerSpan.textContent = preservedTime;
-                console.warn('⚠️ Timer was reset during reorder mode - restored:', preservedTime);
-            }
-        }
-        
-        // Show feedback
-        if (window.showAlert) {
-            window.showAlert('Reorder mode active - Drag exercises to reorder', 'info');
-        }
-        
-        console.log('✅ Reorder mode entered');
-    }
-    
-    /**
-     * Exit reorder mode
-     */
-    exitReorderMode() {
-        const container = document.getElementById('exerciseCardsContainer');
-        if (!container) return;
-        
-        this.reorderModeEnabled = false;
-        
-        // Remove active class from container
-        container.classList.remove('reorder-mode-active');
-        
-        // Disable sortable to prevent accidental dragging
-        if (this.sortable) {
-            this.sortable.option('disabled', true);
-        }
-        
-        console.log('✅ Reorder mode exited');
-    }
-    
-    /**
-     * PHASE 2: Handle exercise reorder event
-     * @param {number} oldIndex - Original index
-     * @param {number} newIndex - New index
-     */
-    handleExerciseReorder(oldIndex, newIndex) {
-        console.log(`📋 Reordering exercise from ${oldIndex} to ${newIndex}`);
-        
-        // Get current exercise order from the DOM
-        const cards = document.querySelectorAll('.exercise-card');
-        const exerciseNames = Array.from(cards).map(card =>
-            card.getAttribute('data-exercise-name')
-        );
-        
-        // Save the new order
-        this.sessionService.setExerciseOrder(exerciseNames);
-        
-        // Show feedback
-        if (window.showAlert) {
-            window.showAlert('Exercise order updated - changes will apply when you start the workout', 'success');
-        }
-        
-        console.log('✅ New exercise order saved:', exerciseNames);
     }
     
     /**
@@ -761,14 +602,6 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
      */
     _updateWeightDirectionButtonsUI(exerciseName, direction) {
         return this.weightManager._updateWeightDirectionButtonsUI(exerciseName, direction);
-    }
-    
-    /**
-     * Toggle weight history expansion
-     * Phase 6: Delegates to WorkoutWeightManager
-     */
-    toggleWeightHistory(historyId) {
-        return this.weightManager.toggleWeightHistory(historyId);
     }
     
     /**
@@ -1061,7 +894,177 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
         return await this.exerciseOpsManager.showBonusExerciseModal();
     }
     
+    /**
+     * EXERCISE REORDER METHODS
+     * Phase 7: Handle exercise reordering via offcanvas
+     */
     
+    /**
+     * Show reorder exercise offcanvas
+     * Allows user to reorder exercises (regular + bonus) via drag-and-drop
+     */
+    showReorderOffcanvas() {
+        try {
+            console.log('📋 Building exercise list for reorder...');
+            
+            // Build exercise list with current order
+            const exerciseList = this.buildExerciseList();
+            
+            if (exerciseList.length === 0) {
+                window.showAlert('No exercises to reorder', 'warning');
+                return;
+            }
+            
+            console.log('📋 Exercise list built:', exerciseList);
+            
+            // Create reorder offcanvas using UnifiedOffcanvasFactory
+            if (!window.UnifiedOffcanvasFactory) {
+                console.error('❌ UnifiedOffcanvasFactory not available');
+                window.showAlert('Reorder feature not available', 'error');
+                return;
+            }
+            
+            // Create offcanvas with correct argument format
+            // Note: createReorderOffcanvas() already calls show() internally with proper timing
+            const result = window.UnifiedOffcanvasFactory.createReorderOffcanvas(
+                exerciseList,
+                (reorderedExercises) => {
+                    console.log('💾 Saving new exercise order:', reorderedExercises);
+                    // Extract exercise names from reordered exercise objects
+                    const newOrder = reorderedExercises.map(ex => ex.name);
+                    this.applyExerciseOrder(newOrder);
+                }
+            );
+            
+            // Verify offcanvas was created successfully
+            // Don't call show() here - createOffcanvas already handles that with proper timing
+            if (!result) {
+                console.error('❌ Failed to create reorder offcanvas');
+                window.showAlert('Failed to open reorder panel', 'error');
+            }
+            
+        } catch (error) {
+            console.error('❌ Error showing reorder offcanvas:', error);
+            window.showAlert('Failed to open reorder panel', 'error');
+        }
+    }
+    
+    /**
+     * Build exercise list for reorder offcanvas
+     * Combines regular exercises and bonus exercises with current custom order applied
+     * @returns {Array} Array of exercise objects with name and isBonus properties
+     */
+    buildExerciseList() {
+        const exerciseList = [];
+        
+        // Gather regular exercises from workout template
+        if (this.currentWorkout?.exercise_groups && this.currentWorkout.exercise_groups.length > 0) {
+            this.currentWorkout.exercise_groups.forEach((group) => {
+                const exerciseName = group.exercises?.a;
+                if (exerciseName) {
+                    exerciseList.push({
+                        name: exerciseName,
+                        isBonus: false
+                    });
+                }
+            });
+        }
+        
+        // Gather bonus exercises from session
+        const bonusExercises = this.sessionService.getBonusExercises();
+        if (bonusExercises && bonusExercises.length > 0) {
+            bonusExercises.forEach((bonus) => {
+                exerciseList.push({
+                    name: bonus.name,
+                    isBonus: true
+                });
+            });
+        }
+        
+        // Apply current custom order if exists
+        const customOrder = this.sessionService.getExerciseOrder();
+        if (customOrder.length > 0) {
+            console.log('📋 Applying current custom order:', customOrder);
+            
+            // Reorder based on current custom order
+            const orderedList = [];
+            customOrder.forEach(name => {
+                const exercise = exerciseList.find(ex => ex.name === name);
+                if (exercise) {
+                    orderedList.push(exercise);
+                }
+            });
+            
+            // Add any exercises not in custom order (safety check)
+            exerciseList.forEach(ex => {
+                if (!customOrder.includes(ex.name)) {
+                    orderedList.push(ex);
+                }
+            });
+            
+            return orderedList;
+        }
+        
+        return exerciseList;
+    }
+    
+    /**
+     * Apply new exercise order
+     * Saves order to session and re-renders workout
+     * @param {Array} newOrder - Array of exercise names in new order
+     */
+    applyExerciseOrder(newOrder) {
+        try {
+            // Validate input
+            if (!Array.isArray(newOrder) || newOrder.length === 0) {
+                console.error('❌ Invalid order array:', newOrder);
+                window.showAlert('Invalid exercise order', 'error');
+                return;
+            }
+            
+            console.log('✅ Applying new exercise order:', newOrder);
+            
+            // TIMER FIX: Preserve timer state before re-render
+            // The timer display can be reset during DOM manipulation in renderWorkout()
+            const timerDisplay = document.getElementById('floatingTimer');
+            const preservedTime = timerDisplay ? timerDisplay.textContent : null;
+            const isSessionActive = this.sessionService.isSessionActive();
+            
+            if (isSessionActive && preservedTime) {
+                console.log('🕐 Preserving timer state before reorder:', preservedTime);
+            }
+            
+            // Save to session service
+            this.sessionService.setExerciseOrder(newOrder);
+            
+            // Re-render workout with new order
+            this.renderWorkout(true); // Force render
+            
+            // TIMER FIX: Restore timer state if it was inadvertently cleared
+            if (isSessionActive && preservedTime && timerDisplay) {
+                const currentTime = timerDisplay.textContent;
+                if (currentTime === '00:00' && preservedTime !== '00:00') {
+                    timerDisplay.textContent = preservedTime;
+                    console.log('🔄 Timer restored after reorder:', preservedTime);
+                }
+            }
+            
+            // Show success feedback
+            window.showAlert('Exercise order updated successfully', 'success');
+            
+            // Auto-save if session is active
+            if (this.sessionService.isSessionActive()) {
+                console.log('💾 Auto-saving session with new order...');
+                this.autoSave(null);
+            }
+            
+            console.log('✅ Exercise order applied successfully');
+            
+        } catch (error) {
+            console.error('❌ Error applying exercise order:', error);
+            window.showAlert('Failed to update exercise order', 'error');
+        }
+    }
     
     /**
      * Update session UI
@@ -1404,6 +1407,69 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
      */
     escapeHtml(text) {
         return WorkoutUtils.escapeHtml(text);
+    }
+    
+    /**
+     * Get all exercise names in their current render order
+     * Used for updating pre-session exercise order during replacements
+     * @returns {string[]} Array of exercise names in current order
+     * @private
+     */
+    _getAllExerciseNames() {
+        const exerciseNames = [];
+        
+        // Build combined exercise list (same logic as renderWorkout)
+        const allExercises = [];
+        
+        // Add regular exercises
+        if (this.currentWorkout?.exercise_groups && this.currentWorkout.exercise_groups.length > 0) {
+            this.currentWorkout.exercise_groups.forEach((group) => {
+                const exerciseName = group.exercises?.a;
+                if (exerciseName) {
+                    allExercises.push({
+                        type: 'regular',
+                        name: exerciseName
+                    });
+                }
+            });
+        }
+        
+        // Add bonus exercises
+        const bonusExercises = this.sessionService.getBonusExercises();
+        if (bonusExercises && bonusExercises.length > 0) {
+            bonusExercises.forEach((bonus) => {
+                allExercises.push({
+                    type: 'bonus',
+                    name: bonus.name
+                });
+            });
+        }
+        
+        // Apply custom order if exists (same logic as renderWorkout)
+        const customOrder = this.sessionService.getExerciseOrder();
+        if (customOrder.length > 0) {
+            // Reorder exercises based on custom order
+            const orderedExercises = [];
+            customOrder.forEach(name => {
+                const exercise = allExercises.find(ex => ex.name === name);
+                if (exercise) {
+                    orderedExercises.push(exercise);
+                }
+            });
+            
+            // Add any exercises not in custom order (safety)
+            allExercises.forEach(ex => {
+                if (!customOrder.includes(ex.name)) {
+                    orderedExercises.push(ex);
+                }
+            });
+            
+            // Extract names from ordered list
+            return orderedExercises.map(ex => ex.name);
+        }
+        
+        // No custom order - return in default order
+        return allExercises.map(ex => ex.name);
     }
     
     /**

@@ -1,8 +1,8 @@
 /**
  * Bottom Action Bar Component
  * Mobile-first navigation bar with Material Design 3 specifications
- * Supports both 2-FAB-2 layout (legacy) and 4-button + right FAB layout (alternative)
- * Based on approved designs from bottom-nav-demo.html and bottom-nav-demo-alt.html
+ * Uses 4-button + right FAB layout for all pages
+ * Based on approved designs from bottom-nav-demo-alt.html
  */
 
 /* ============================================
@@ -25,12 +25,6 @@
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Bottom nav hidden state (slides down when search is active) */
-/* DISABLED: Keep action bar always visible */
-.bottom-action-bar.search-active {
-    transform: translateY(0);
-}
-
 /* Gradient fade at top of nav bar (alternative layout) */
 .bottom-action-bar::before {
     content: '';
@@ -46,12 +40,6 @@
 
 [data-theme="dark"] .bottom-action-bar::before {
     background: linear-gradient(to bottom, transparent, var(--bs-body-bg));
-}
-
-/* Hidden state */
-/* DISABLED: Keep action bar always visible */
-.bottom-action-bar.hidden {
-    transform: translateY(0);
 }
 
 /* Dark mode adjustments */
@@ -72,25 +60,6 @@
     position: relative;
     height: 48px;
     padding: 0 4px;
-}
-
-/* ============================================
-   ACTION GROUPS (LEFT & RIGHT)
-   ============================================ */
-
-.action-group {
-    display: flex;
-    gap: 12px;
-    flex: 1;
-    z-index: 1;
-}
-
-.action-group-left {
-    justify-content: flex-start;
-}
-
-.action-group-right {
-    justify-content: flex-end;
 }
 
 /* ============================================
@@ -134,18 +103,7 @@
     gap: 2px;
 }
 
-/* Legacy layout: fixed width for action-group buttons ONLY */
-.action-group .action-btn {
-    flex: 0 0 auto !important;
-    width: 56px !important;
-    height: 56px !important;
-    min-width: 56px !important;
-    max-width: 56px !important;
-    border-radius: 16px !important;
-    padding: 6px 0 0 0 !important;
-}
-
-/* New layout: ensure buttons in action-buttons-row fill available space */
+/* Ensure buttons in action-buttons-row fill available space */
 .action-buttons-row .action-btn {
     flex: 1 1 0 !important;
     max-width: none !important;

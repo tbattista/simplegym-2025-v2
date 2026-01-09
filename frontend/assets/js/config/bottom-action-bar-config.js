@@ -1,7 +1,7 @@
 /**
  * Bottom Action Bar Configuration
  * Defines button layouts and actions for each page
- * Supports both 2-FAB-2 layout (legacy) and 4-button + right FAB layout (alternative)
+ * Uses 4-button + right FAB layout for all pages
  */
 
 (function() {
@@ -1030,12 +1030,12 @@
                     }
                 },
                 {
-                    icon: 'bx-skip-next',
-                    label: 'Skip',
-                    title: 'Skip current exercise',
+                    icon: 'bx-sort',
+                    label: 'Reorder',
+                    title: 'Reorder exercises',
                     action: function() {
-                        if (window.workoutModeController?.skipExercise) {
-                            window.workoutModeController.skipExercise();
+                        if (window.workoutModeController?.showReorderOffcanvas) {
+                            window.workoutModeController.showReorderOffcanvas();
                         } else {
                             console.warn('⚠️ Workout mode controller not ready');
                         }
@@ -1138,12 +1138,14 @@
                     }
                 },
                 {
-                    icon: 'bx-skip-next',
-                    label: 'Skip',
-                    title: 'Skip current exercise',
+                    icon: 'bx-sort',
+                    label: 'Reorder',
+                    title: 'Reorder exercises',
                     action: function() {
-                        if (window.workoutModeController?.skipExercise) {
-                            window.workoutModeController.skipExercise();
+                        if (window.workoutModeController?.showReorderOffcanvas) {
+                            window.workoutModeController.showReorderOffcanvas();
+                        } else {
+                            console.warn('⚠️ Workout mode controller not ready');
                         }
                     }
                 },

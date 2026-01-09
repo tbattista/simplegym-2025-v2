@@ -1,7 +1,7 @@
 /**
  * Bottom Action Bar Service
  * Automatically injects and manages the bottom action bar on pages
- * Supports both 2-FAB-2 layout (legacy) and 4-button + right FAB layout (alternative)
+ * Uses 4-button + right FAB layout for all pages
  * Follows the same pattern as navbar-injection-service.js and menu-injection-service.js
  */
 
@@ -75,39 +75,18 @@
             container.id = 'bottomActionBar';
             container.className = 'bottom-action-bar';
 
-            // Build HTML structure based on layout type
-            if (this.isNewLayout) {
-                // New 4-button layout (no FAB inside)
-                container.innerHTML = `
-                    <div class="action-bar-container">
-                        <!-- 4 Buttons Row -->
-                        <div class="action-buttons-row">
-                            ${this.renderButtons(this.config.buttons)}
-                        </div>
-                        
-                        <!-- Optional Secondary FAB -->
-                        ${this.renderSecondaryFAB(this.config.secondaryFab)}
+            // Build HTML structure - 4-button layout
+            container.innerHTML = `
+                <div class="action-bar-container">
+                    <!-- 4 Buttons Row -->
+                    <div class="action-buttons-row">
+                        ${this.renderButtons(this.config.buttons)}
                     </div>
-                `;
-            } else {
-                // Legacy 2-FAB-2 layout
-                container.innerHTML = `
-                    <div class="action-bar-container">
-                        <!-- Left Actions -->
-                        <div class="action-group action-group-left">
-                            ${this.renderActionButtons(this.config.leftActions, 'left')}
-                        </div>
-                        
-                        <!-- Center FAB -->
-                        ${this.renderFAB(this.config.fab)}
-                        
-                        <!-- Right Actions -->
-                        <div class="action-group action-group-right">
-                            ${this.renderActionButtons(this.config.rightActions, 'right')}
-                        </div>
-                    </div>
-                `;
-            }
+                    
+                    <!-- Optional Secondary FAB -->
+                    ${this.renderSecondaryFAB(this.config.secondaryFab)}
+                </div>
+            `;
 
             // Append to body
             document.body.appendChild(container);
@@ -312,27 +291,6 @@
         }
 
         /**
-         * Render action buttons
-         * @param {Array} actions - Array of action button configurations
-         * @param {string} side - 'left' or 'right'
-         * @returns {string} HTML string
-         */
-        renderActionButtons(actions, side) {
-            if (!actions || actions.length === 0) {
-                return '';
-            }
-
-            return actions.map((action, index) => `
-                <button class="action-btn" 
-                        data-action="${side}-${index}"
-                        title="${action.title || action.label}">
-                    <i class="bx ${action.icon}"></i>
-                    <span class="action-btn-label">${action.label}</span>
-                </button>
-            `).join('');
-        }
-
-        /**
          * Render buttons for new 4-button layout
          * @param {Array} buttons - Array of button configurations
          * @returns {string} HTML string
@@ -350,28 +308,6 @@
                     <span class="action-btn-label">${button.label}</span>
                 </button>
             `).join('');
-        }
-
-        /**
-         * Render the FAB (Floating Action Button)
-         * @param {Object} fab - FAB configuration
-         * @returns {string} HTML string
-         */
-        renderFAB(fab) {
-            if (!fab) {
-                return '';
-            }
-
-            // For new layout, search FAB is rendered separately as floating
-            // For legacy layout, render FAB normally
-            const variant = fab.variant || 'primary';
-            return `
-                <button class="action-fab ${variant}"
-                        data-action="fab"
-                        title="${fab.title}">
-                    <i class="bx ${fab.icon}"></i>
-                </button>
-            `;
         }
 
         /**
@@ -440,20 +376,10 @@
                 action = this.config.endWorkoutAction;
                 actionConfig = { label: 'End Workout' };
             } else if (actionKey.startsWith('btn-')) {
-                // New layout: btn-0, btn-1, btn-2, btn-3
+                // Button click: btn-0, btn-1, btn-2, btn-3
                 const index = parseInt(actionKey.split('-')[1]);
                 action = this.config.buttons[index]?.action;
                 actionConfig = this.config.buttons[index];
-            } else if (actionKey.startsWith('left-')) {
-                // Legacy layout: left-0, left-1
-                const index = parseInt(actionKey.split('-')[1]);
-                action = this.config.leftActions[index]?.action;
-                actionConfig = this.config.leftActions[index];
-            } else if (actionKey.startsWith('right-')) {
-                // Legacy layout: right-0, right-1
-                const index = parseInt(actionKey.split('-')[1]);
-                action = this.config.rightActions[index]?.action;
-                actionConfig = this.config.rightActions[index];
             }
 
             console.log('📋 Action config:', actionConfig);
