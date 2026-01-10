@@ -653,7 +653,7 @@ export function renderAlternateSlot(slotKey, exerciseName) {
  * @returns {Object} Offcanvas instance
  */
 export function createExerciseDetailsEditor(data, onSave) {
-    const { exerciseName, sets, reps, rest, weight, weightUnit } = data;
+    const { exerciseName, sets, reps, rest, weight, weightUnit, updateTemplateDefault = false } = data;
     
     const offcanvasHtml = `
         <div class="offcanvas offcanvas-bottom offcanvas-bottom-base" tabindex="-1"
@@ -700,9 +700,25 @@ export function createExerciseDetailsEditor(data, onSave) {
                     </div>
                 </div>
                 
-                <div class="alert alert-info mb-4">
+                <!-- Update Template Toggle -->
+                <div class="more-menu-item toggle-item" id="updateTemplateItem">
+                    <i class="bx bx-sync"></i>
+                    <div class="more-menu-item-content">
+                        <div class="more-menu-item-title">Update Workout Template</div>
+                        <small class="more-menu-item-description">Save as new defaults for future workouts</small>
+                    </div>
+                    <div class="form-check form-switch mb-0">
+                        <input class="form-check-input" type="checkbox" id="updateTemplateToggle"
+                               ${updateTemplateDefault ? 'checked' : ''}
+                               style="cursor: pointer;">
+                    </div>
+                </div>
+                
+                <div class="alert alert-info mb-4" id="updateInfoAlert">
                     <i class="bx bx-info-circle me-2"></i>
-                    <small>Changes will be saved to your workout session history.</small>
+                    <small id="updateInfoText">${updateTemplateDefault
+                        ? 'Changes will update your workout template AND session history.'
+                        : 'Changes will be saved to your workout session history.'}</small>
                 </div>
                 
                 <div class="d-flex gap-2">
@@ -724,19 +740,75 @@ export function createExerciseDetailsEditor(data, onSave) {
         const restInput = document.getElementById('editRestInput');
         const weightInput = document.getElementById('editWeightInput');
         const unitSelect = document.getElementById('editWeightUnitSelect');
+        const updateTemplateToggle = document.getElementById('updateTemplateToggle');
+        const updateInfoText = document.getElementById('updateInfoText');
+        const updateInfoAlert = document.getElementById('updateInfoAlert');
+        
+        // Dynamic info text based on toggle state
+        const updateInfoMessage = () => {
+            if (updateInfoText && updateInfoAlert) {
+                if (updateTemplateToggle?.checked) {
+                    updateInfoText.textContent = 'Changes will update your workout template AND session history.';
+                    updateInfoAlert.classList.remove('alert-info');
+                    updateInfoAlert.classList.add('alert-success');
+                } else {
+                    updateInfoText.textContent = 'Changes will be saved to your workout session history.';
+                    updateInfoAlert.classList.remove('alert-success');
+                    updateInfoAlert.classList.add('alert-info');
+                }
+            }
+        };
+        
+        // Listen for toggle changes
+        if (updateTemplateToggle) {
+            updateTemplateToggle.addEventListener('change', updateInfoMessage);
+        }
         
         if (saveBtn) {
             saveBtn.addEventListener('click', async () => {
+                // Validate rest time input
+                const restValue = restInput.value.trim();
+                if (restValue) {
+                    const restValidation = window.WorkoutUtils?.validateRestTime(restValue);
+                    if (restValidation && !restValidation.valid) {
+                        // Show validation error
+                        restInput.classList.add('is-invalid');
+                        
+                        // Add error message if not already present
+                        let errorDiv = restInput.parentElement.querySelector('.invalid-feedback');
+                        if (!errorDiv) {
+                            errorDiv = document.createElement('div');
+                            errorDiv.className = 'invalid-feedback';
+                            restInput.parentElement.appendChild(errorDiv);
+                        }
+                        errorDiv.textContent = restValidation.error;
+                        
+                        // Show alert with the error
+                        if (window.showAlert) {
+                            window.showAlert(restValidation.error, 'warning');
+                        }
+                        return;
+                    }
+                    
+                    // Remove invalid state if validation passes
+                    restInput.classList.remove('is-invalid');
+                }
+                
                 saveBtn.disabled = true;
                 saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Saving...';
                 
                 try {
+                    // Use validated rest time if available, otherwise use input or default
+                    const restValidation = window.WorkoutUtils?.validateRestTime(restInput.value.trim());
+                    const validatedRest = restValidation?.valid ? restValidation.value : (restInput.value.trim() || '60s');
+                    
                     const updatedData = {
                         sets: setsInput.value.trim() || '3',
                         reps: repsInput.value.trim() || '8-12',
-                        rest: restInput.value.trim() || '60s',
+                        rest: validatedRest,
                         weight: weightInput.value.trim(),
-                        weightUnit: unitSelect.value
+                        weightUnit: unitSelect.value,
+                        updateTemplate: updateTemplateToggle?.checked || false
                     };
                     
                     await onSave(updatedData);
@@ -746,6 +818,35 @@ export function createExerciseDetailsEditor(data, onSave) {
                     saveBtn.disabled = false;
                     saveBtn.innerHTML = '<i class="bx bx-save me-1"></i>Save Changes';
                     alert('Failed to save changes. Please try again.');
+                }
+            });
+        }
+        
+        // Add real-time validation feedback for rest input
+        if (restInput) {
+            restInput.addEventListener('blur', () => {
+                const value = restInput.value.trim();
+                if (value) {
+                    const validation = window.WorkoutUtils?.validateRestTime(value);
+                    if (validation && !validation.valid) {
+                        restInput.classList.add('is-invalid');
+                        
+                        let errorDiv = restInput.parentElement.querySelector('.invalid-feedback');
+                        if (!errorDiv) {
+                            errorDiv = document.createElement('div');
+                            errorDiv.className = 'invalid-feedback';
+                            restInput.parentElement.appendChild(errorDiv);
+                        }
+                        errorDiv.textContent = validation.error;
+                    } else {
+                        restInput.classList.remove('is-invalid');
+                        // Optionally update the input to show the normalized value
+                        if (validation?.valid && validation.value !== value) {
+                            restInput.value = validation.value;
+                        }
+                    }
+                } else {
+                    restInput.classList.remove('is-invalid');
                 }
             });
         }

@@ -71,7 +71,9 @@ class WorkoutModeController {
             onAutoSave: () => this.autoSave(null),
             onGoToNext: (index) => this.goToNextExercise(index),
             onGetCurrentExerciseData: (name, index) => this._getCurrentExerciseData(name, index),
-            onGetAllExerciseNames: () => this._getAllExerciseNames()
+            onGetAllExerciseNames: () => this._getAllExerciseNames(),
+            onGetCurrentWorkout: () => this.currentWorkout,
+            onUpdateExerciseInTemplate: (exerciseName, exerciseData) => this._updateExerciseInTemplate(exerciseName, exerciseData)
         });
         
         // State
@@ -505,6 +507,45 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
         // Phase 2: Delegate to timer manager
         this.timerManager.initializeGlobalTimer();
         this.timerManager.initializeCardTimers();
+        
+        // Initialize inline rest timers for each exercise card
+        this.initializeInlineTimers();
+    }
+    
+    /**
+     * Initialize inline rest timers for exercise cards
+     * Creates InlineRestTimer instances for each card with data-inline-timer attribute
+     */
+    initializeInlineTimers() {
+        // Clear existing inline timers
+        this.timerManager.clearAllInlineTimers();
+        
+        // Find all inline timer containers
+        const timerContainers = document.querySelectorAll('[data-inline-timer]');
+        
+        timerContainers.forEach(container => {
+            const exerciseIndex = parseInt(container.getAttribute('data-inline-timer'));
+            const restSeconds = parseInt(container.getAttribute('data-rest-seconds')) || 60;
+            const restDisplay = container.getAttribute('data-rest-display') || `${restSeconds}s`;
+            
+            // Create inline timer instance
+            if (window.InlineRestTimer) {
+                const timer = new window.InlineRestTimer(exerciseIndex, restSeconds);
+                
+                // Set the original rest display text (e.g., "60s", "2min")
+                timer.setRestDisplayText(restDisplay);
+                
+                // Register with timer manager for single-timer enforcement
+                this.timerManager.registerInlineTimer(exerciseIndex, timer);
+                
+                // Render initial state
+                timer.render();
+                
+                console.log(`⏱️ Inline timer initialized for exercise ${exerciseIndex}: ${restDisplay}`);
+            }
+        });
+        
+        console.log(`✅ Initialized ${timerContainers.length} inline timers`);
     }
     
     /**
@@ -1331,6 +1372,27 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
      */
     _getCurrentExerciseData(exerciseName, index) {
         return this.workoutDataManager.getCurrentExerciseData(exerciseName, this.currentWorkout, index);
+    }
+    
+    /**
+     * Update a single exercise in the workout template
+     * Called when user enables "Update Template" toggle in exercise edit offcanvas
+     * @param {string} exerciseName - Exercise name to update
+     * @param {Object} exerciseData - Updated exercise data (sets, reps, rest, weight, weightUnit)
+     * @returns {Promise<boolean>} Success status
+     * @private
+     */
+    async _updateExerciseInTemplate(exerciseName, exerciseData) {
+        if (!this.currentWorkout) {
+            console.warn('⚠️ Cannot update template - no current workout');
+            return false;
+        }
+        
+        return await this.workoutDataManager.updateExerciseInTemplate(
+            this.currentWorkout,
+            exerciseName,
+            exerciseData
+        );
     }
     
     /**

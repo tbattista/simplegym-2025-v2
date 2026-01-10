@@ -6,6 +6,25 @@
  */
 
 /* ============================================
+   FLOATING FAB DESIGN TOKENS - MOBILE FIRST
+   Standardized sizing for consistent FAB buttons
+   ============================================ */
+
+:root {
+    --floating-fab-height: 44px;
+    --floating-fab-min-width: 44px;
+    --floating-fab-padding-x: 12px;
+    --floating-fab-spacing-right: 16px;
+    --floating-fab-spacing-bottom: 12px;
+    --floating-fab-border-radius: 12px;
+    --floating-fab-gap: 8px;
+    --floating-fab-font-size: 14px;
+    --floating-fab-icon-size: 18px;
+    --floating-timer-width: 100px; /* Fixed width for timer to prevent reshaping */
+    --floating-timer-paused-width: 140px; /* Wider width for paused state with controls */
+}
+
+/* ============================================
    BOTTOM ACTION BAR - CONTAINER
    ============================================ */
 
@@ -288,42 +307,64 @@
 
 .floating-action-fab {
     position: absolute;
-    right: 16px;
-    bottom: calc(100% + 24px); /* Increased spacing from action bar */
-    height: 48px;
-    width: 48px; /* Square dimensions */
-    min-width: 48px;
-    padding: 0; /* Remove padding for true square */
-    border-radius: 8px; /* Less rounded for square appearance */
+    right: var(--floating-fab-spacing-right);
+    bottom: calc(100% + var(--floating-fab-spacing-bottom));
+    height: var(--floating-fab-height);
+    width: var(--floating-fab-min-width);
+    min-width: var(--floating-fab-min-width);
+    padding: 0;
+    border-radius: var(--floating-fab-border-radius);
     background: var(--bs-success);
     color: #fff;
     border: none;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
+    gap: var(--floating-fab-gap);
     cursor: pointer;
     z-index: 1002;
-    transition: all 0.3s ease; /* Smooth transition for movement */
+    transition: all 0.3s ease;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
     font-weight: 600;
-    font-size: 24px; /* Larger icon for square FAB */
+    font-size: var(--floating-fab-icon-size);
     white-space: nowrap;
     pointer-events: auto !important;
+    /* Override action-fab defaults when both classes are used */
+    transform: none;
+}
+
+/* When action-fab is combined with floating-action-fab, use floating-action-fab standards */
+.action-fab.floating-action-fab {
+    right: var(--floating-fab-spacing-right);
+    bottom: calc(100% + var(--floating-fab-spacing-bottom));
+    height: var(--floating-fab-height);
+    width: var(--floating-fab-min-width);
+    min-width: var(--floating-fab-min-width);
+    border-radius: var(--floating-fab-border-radius);
+    font-size: var(--floating-fab-icon-size);
+    transform: none;
+}
+
+.action-fab.floating-action-fab:hover {
+    transform: translateY(-2px);
+}
+
+.action-fab.floating-action-fab:active {
+    transform: translateY(0);
 }
 
 /* When floating-action-fab is ALSO a start/end button, use button dimensions */
 .floating-action-fab.floating-start-button,
 .floating-action-fab.floating-end-button {
-    height: 48px !important;        /* Standard button height */
-    width: auto !important;
-    min-width: 120px !important;     /* Moderate width */
-    padding: 0 16px !important;      /* Bootstrap standard .btn-lg is 0.5rem 1rem */
-    border-radius: 12px !important;
-    gap: 8px !important;
-    font-size: 15px !important;
-    font-weight: 600 !important;     /* Bootstrap standard */
-    line-height: 1.5 !important;
+    height: var(--floating-fab-height);
+    width: auto;
+    min-width: var(--floating-fab-min-width);
+    padding: 0 var(--floating-fab-padding-x);
+    border-radius: var(--floating-fab-border-radius);
+    gap: var(--floating-fab-gap);
+    font-size: var(--floating-fab-font-size);
+    font-weight: 600;
+    line-height: 1.5;
 }
 
 /* No need to move FAB up since search is now at top */
@@ -335,10 +376,10 @@
 
 .floating-timer-end-combo {
     position: absolute;
-    right: 16px;
-    bottom: calc(100% + 24px); /* Increased spacing from action bar */
+    right: var(--floating-fab-spacing-right);
+    bottom: calc(100% + var(--floating-fab-spacing-bottom));
     display: flex;
-    gap: 8px;
+    gap: var(--floating-fab-gap);
     align-items: center;
     z-index: 1002;
     pointer-events: auto;
@@ -346,49 +387,49 @@
 
 /* Timer Display */
 .floating-timer-display {
-    height: 48px;
-    min-width: 90px;
-    padding: 0 16px;
+    height: var(--floating-fab-height);
+    width: var(--floating-timer-width);
+    min-width: var(--floating-timer-width);
+    max-width: var(--floating-timer-width);
+    padding: 0 var(--floating-fab-padding-x);
     background: var(--bs-body-bg);
     border: 2px solid var(--bs-primary);
-    border-radius: 12px;
+    border-radius: var(--floating-fab-border-radius);
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
-    font-size: 15px;
+    gap: var(--floating-fab-gap);
+    font-size: var(--floating-fab-font-size);
     font-weight: 600;
     color: var(--bs-body-color);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
     transition: all 0.2s ease;
-    /* Ensure proper alignment within flex container */
     align-self: center;
 }
 
 .floating-timer-display i {
-    font-size: 20px;
+    font-size: var(--floating-fab-icon-size);
     color: var(--bs-primary);
 }
 
 /* Start/End Button (changes based on session state) */
 .floating-end-button,
 .floating-start-button {
-    height: 56px;           /* Bootstrap large button height */
-    min-width: 140px;
-    padding: 0 20px;        /* Bootstrap-like padding */
+    height: var(--floating-fab-height);
+    min-width: var(--floating-fab-min-width);
+    padding: 0 var(--floating-fab-padding-x);
     border: none;
-    border-radius: 12px;
+    border-radius: var(--floating-fab-border-radius);
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 10px;
-    font-size: 16px;
-    font-weight: 600;       /* Bootstrap standard weight */
+    gap: var(--floating-fab-gap);
+    font-size: var(--floating-fab-font-size);
+    font-weight: 600;
     line-height: 1.5;
     cursor: pointer;
     transition: all 0.2s ease;
     white-space: nowrap;
-    /* Ensure proper alignment within flex container */
     align-self: center;
     color: white;
 }
@@ -409,16 +450,16 @@
     transform: translateY(0);
 }
 
-/* Start Button (Kelly Green, for inactive session) */
+/* Start Button (Forest Green, for inactive session) */
 .floating-start-button {
-    background: var(--bs-success);
-    box-shadow: 0 4px 12px rgba(76, 187, 23, 0.4);  /* Kelly Green shadow */
+    background: #228B22;  /* Forest Green - more muted than Kelly Green */
+    box-shadow: 0 2px 8px rgba(34, 139, 34, 0.3);  /* Forest Green shadow */
 }
 
 .floating-start-button:hover {
-    background: #3D9912;  /* Dark Kelly Green */
+    background: #1B6B1B;  /* Darker Forest Green */
     transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(76, 187, 23, 0.5);  /* Enhanced Kelly Green shadow */
+    box-shadow: 0 4px 12px rgba(34, 139, 34, 0.4);  /* Enhanced Forest Green shadow */
 }
 
 .floating-start-button:active {
@@ -427,7 +468,7 @@
 
 .floating-end-button i,
 .floating-start-button i {
-    font-size: 20px;
+    font-size: var(--floating-fab-icon-size);
 }
 
 /* Dark mode adjustments */
@@ -447,64 +488,8 @@
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
 }
 
-/* Mobile responsive */
-@media (max-width: 768px) {
-    .floating-timer-end-combo {
-        right: 12px;
-        bottom: calc(100% + 16px); /* Increased spacing on mobile */
-        gap: 6px;
-    }
-    
-    .floating-action-fab {
-        right: 12px;
-        bottom: calc(100% + 16px); /* Increased spacing on mobile */
-        /* Keep square dimensions - no width/padding overrides */
-    }
-    
-    .floating-timer-display,
-    .floating-end-button,
-    .floating-start-button {
-        height: 48px;
-        min-width: 110px;
-        padding: 0 16px;    /* Proportional to desktop */
-        font-size: 15px;
-    }
-    
-    .floating-timer-display i,
-    .floating-end-button i,
-    .floating-start-button i {
-        font-size: 18px;
-    }
-}
-
-@media (max-width: 576px) {
-    .floating-timer-end-combo {
-        right: 10px;
-        bottom: calc(100% + 12px); /* Increased spacing on small mobile */
-        gap: 4px;
-    }
-    
-    .floating-action-fab {
-        right: 10px;
-        bottom: calc(100% + 12px); /* Increased spacing on small mobile */
-        /* Keep square dimensions - no width/padding overrides */
-    }
-    
-    .floating-timer-display,
-    .floating-end-button,
-    .floating-start-button {
-        height: 40px;
-        min-width: 70px;
-        padding: 0 12px;
-        font-size: 13px;
-    }
-    
-    .floating-timer-display i,
-    .floating-end-button i,
-    .floating-start-button i {
-        font-size: 16px;
-    }
-}
+/* Mobile responsive - REMOVED sizing overrides for mobile-first consistency */
+/* All floating FABs now use consistent 44px height across all breakpoints */
 
 /* ============================================
    GLOBAL REST TIMER BUTTON (WORKOUT MODE)
@@ -514,30 +499,31 @@
 .global-rest-timer-button {
     /* Position as flex item within the floating combo */
     flex-shrink: 0;
-    margin-right: 8px; /* Space between timer and timer display */
+    margin-right: var(--floating-fab-gap);
     z-index: 1002;
     pointer-events: auto;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    min-width: 90px;
-    height: 48px;
-    /* Remove absolute positioning - will be flex item */
-    /* Ensure proper alignment within flex container */
+    width: var(--floating-timer-width);
+    min-width: var(--floating-timer-width);
+    max-width: var(--floating-timer-width);
+    height: var(--floating-fab-height);
     align-self: center;
 }
 
 /* Base timer button styling */
 .global-timer-btn {
-    width: 100%;
-    height: 48px;
-    min-width: 90px;
-    padding: 0 20px;
-    border-radius: 12px;
+    width: var(--floating-timer-width);
+    height: var(--floating-fab-height);
+    min-width: var(--floating-timer-width);
+    max-width: var(--floating-timer-width);
+    padding: 0 var(--floating-fab-padding-x);
+    border-radius: var(--floating-fab-border-radius);
     border: none;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
-    font-size: 15px;
+    gap: var(--floating-fab-gap);
+    font-size: var(--floating-fab-font-size);
     font-weight: 600;
     cursor: pointer;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
@@ -559,17 +545,19 @@
 
 /* Counting state - display with pause option */
 .global-timer-countdown {
-    height: 48px;
-    min-width: 120px;
-    padding: 0 16px;
+    height: var(--floating-fab-height);
+    width: var(--floating-timer-width);
+    min-width: var(--floating-timer-width);
+    max-width: var(--floating-timer-width);
+    padding: 0 var(--floating-fab-padding-x);
     background: var(--bs-body-bg);
     border: 2px solid var(--bs-primary);
-    border-radius: 12px;
+    border-radius: var(--floating-fab-border-radius);
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
-    font-size: 15px;
+    gap: var(--floating-fab-gap);
+    font-size: var(--floating-fab-font-size);
     font-weight: 600;
     color: var(--bs-body-color);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
@@ -577,7 +565,7 @@
 }
 
 .global-timer-time {
-    font-size: 16px;
+    font-size: var(--floating-fab-font-size);
     font-weight: 700;
     font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
 }
@@ -606,17 +594,19 @@
 
 /* Paused state - display with reset/resume controls */
 .global-timer-paused {
-    height: 48px;
-    min-width: 160px;
-    padding: 0 16px;
+    height: var(--floating-fab-height);
+    width: var(--floating-timer-paused-width);
+    min-width: var(--floating-timer-paused-width);
+    max-width: var(--floating-timer-paused-width);
+    padding: 0 var(--floating-fab-padding-x);
     background: var(--bs-warning);
     border: 2px solid var(--bs-warning);
-    border-radius: 12px;
+    border-radius: var(--floating-fab-border-radius);
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 12px;
-    font-size: 15px;
+    gap: var(--floating-fab-gap);
+    font-size: var(--floating-fab-font-size);
     font-weight: 600;
     color: white;
     box-shadow: 0 2px 8px rgba(255, 193, 7, 0.3);
@@ -674,17 +664,19 @@
 
 /* Mobile countdown layout */
 .global-timer-countdown-mobile {
-    height: 48px;
-    min-width: 100px;
-    padding: 0 12px;
+    height: var(--floating-fab-height);
+    width: var(--floating-timer-width);
+    min-width: var(--floating-timer-width);
+    max-width: var(--floating-timer-width);
+    padding: 0 var(--floating-fab-padding-x);
     background: var(--bs-body-bg);
     border: 2px solid var(--bs-primary);
-    border-radius: 12px;
+    border-radius: var(--floating-fab-border-radius);
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 8px;
-    font-size: 14px;
+    gap: var(--floating-fab-gap);
+    font-size: var(--floating-fab-font-size);
     font-weight: 600;
     color: var(--bs-body-color);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
@@ -693,17 +685,19 @@
 
 /* Mobile paused layout */
 .global-timer-paused-mobile {
-    height: 48px;
-    min-width: 120px;
-    padding: 0 12px;
+    height: var(--floating-fab-height);
+    width: var(--floating-timer-paused-width);
+    min-width: var(--floating-timer-paused-width);
+    max-width: var(--floating-timer-paused-width);
+    padding: 0 var(--floating-fab-padding-x);
     background: var(--bs-warning);
     border: 2px solid var(--bs-warning);
-    border-radius: 12px;
+    border-radius: var(--floating-fab-border-radius);
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 8px;
-    font-size: 14px;
+    gap: var(--floating-fab-gap);
+    font-size: var(--floating-fab-font-size);
     font-weight: 600;
     color: white;
     box-shadow: 0 2px 8px rgba(255, 193, 7, 0.3);
@@ -756,78 +750,8 @@
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
 }
 
-/* Mobile responsive adjustments */
-@media (max-width: 768px) {
-    .global-rest-timer-button {
-        /* Mobile adjustment - reduce size and spacing */
-        min-width: 80px;
-        height: 44px;
-        margin-right: 6px;
-    }
-    
-    .global-timer-btn {
-        height: 44px;
-        min-width: 80px;
-        padding: 0 14px;
-        font-size: 14px;
-    }
-    
-    .global-timer-countdown,
-    .global-timer-countdown-mobile {
-        height: 44px;
-        min-width: 100px;
-        padding: 0 12px;
-        font-size: 14px;
-    }
-    
-    .global-timer-paused,
-    .global-timer-paused-mobile {
-        height: 44px;
-        min-width: 120px;
-        padding: 0 12px;
-        font-size: 14px;
-    }
-    
-    .global-timer-time {
-        font-size: 14px;
-    }
-}
-
-@media (max-width: 576px) {
-    .global-rest-timer-button {
-        /* Tablet adjustment - further reduce size and spacing */
-        min-width: 70px;
-        height: 40px;
-        margin-right: 4px;
-    }
-    
-    .global-timer-btn {
-        height: 40px;
-        min-width: 70px;
-        padding: 0 12px;
-        font-size: 13px;
-    }
-    
-    .global-timer-countdown,
-    .global-timer-countdown-mobile {
-        height: 40px;
-        min-width: 90px;
-        padding: 0 10px;
-        font-size: 13px;
-    }
-    
-    .global-timer-paused,
-    .global-timer-paused-mobile {
-        height: 40px;
-        min-width: 100px;
-        padding: 0 10px;
-        font-size: 13px;
-    }
-    
-    .global-timer-time {
-        font-size: 13px;
-    }
-}
+/* Mobile responsive adjustments - REMOVED for mobile-first consistency */
+/* All global timer components now use consistent 44px height via CSS variables */
 
 /* Accessibility */
 .global-rest-timer-button:focus-within {
@@ -851,21 +775,27 @@
     }
 }
 
-.floating-action-fab:hover {
+.floating-action-fab:hover:not(.floating-start-button):not(.floating-end-button) {
     background: #218838;
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(var(--ghost-success-rgb), 0.4);
 }
 
-.floating-action-fab:active {
+.floating-action-fab:active:not(.floating-start-button):not(.floating-end-button) {
     /* Remove scale transform to prevent button from moving down */
     transform: none;
     background: #1d7a3a; /* Darker shade for active feedback */
 }
 
-.floating-action-fab i {
-    font-size: 24px; /* Larger icon for square FAB */
+.floating-action-fab i:not(.floating-start-button i):not(.floating-end-button i) {
+    font-size: var(--floating-fab-icon-size);
     flex-shrink: 0;
+}
+
+/* Start/End button icon size override - must appear after .floating-action-fab i */
+.floating-action-fab.floating-start-button i,
+.floating-action-fab.floating-end-button i {
+    font-size: var(--floating-fab-icon-size);
 }
 
 .floating-action-fab .fab-label {
@@ -1043,11 +973,11 @@
 /* Note: Using div instead of button to allow nested button (Clear) */
 .floating-search-fab {
     position: absolute;
-    right: 16px;
-    bottom: calc(100% + 12px);
-    width: 48px;
-    height: 48px;
-    border-radius: 12px;
+    right: var(--floating-fab-spacing-right);
+    bottom: calc(100% + var(--floating-fab-spacing-bottom));
+    width: var(--floating-fab-min-width);
+    height: var(--floating-fab-height);
+    border-radius: var(--floating-fab-border-radius);
     background: var(--bs-primary);
     color: #fff;
     border: none;
@@ -1075,7 +1005,7 @@
 
 /* FAB icon (visible when collapsed) */
 .search-fab-icon {
-    font-size: 24px;
+    font-size: var(--floating-fab-icon-size);
     color: #fff;
 }
 
@@ -1274,21 +1204,21 @@
 
 .floating-end-delete-button {
     position: absolute;
-    right: 16px; /* Same position as search FAB */
-    bottom: calc(100% + 12px);
-    width: 48px; /* Same width as search FAB */
-    height: 48px;
-    min-width: 48px;
+    right: var(--floating-fab-spacing-right);
+    bottom: calc(100% + var(--floating-fab-spacing-bottom));
+    width: var(--floating-fab-min-width);
+    height: var(--floating-fab-height);
+    min-width: var(--floating-fab-min-width);
     padding: 0;
     background: var(--bs-secondary);
     color: white;
     border: none;
-    border-radius: 12px;
+    border-radius: var(--floating-fab-border-radius);
     display: none; /* Hidden by default */
     align-items: center;
     justify-content: center;
-    gap: 6px;
-    font-size: 15px;
+    gap: var(--floating-fab-gap);
+    font-size: var(--floating-fab-font-size);
     font-weight: 600;
     cursor: pointer;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
@@ -1327,7 +1257,7 @@
 }
 
 .floating-end-delete-button i {
-    font-size: 20px;
+    font-size: var(--floating-fab-icon-size);
 }
 
 /* Dark mode adjustments */
@@ -1341,45 +1271,5 @@
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
 }
 
-/* Mobile responsive */
-@media (max-width: 768px) {
-    .floating-end-delete-button {
-        right: 12px; /* Same as search FAB on mobile */
-        bottom: calc(100% + 8px);
-        width: 44px;
-        height: 44px;
-        min-width: 44px;
-        font-size: 14px;
-    }
-    
-    .floating-end-delete-button:hover,
-    .floating-end-delete-button:active {
-        min-width: 70px;
-        padding: 0 12px;
-    }
-    
-    .floating-end-delete-button i {
-        font-size: 18px;
-    }
-}
-
-@media (max-width: 576px) {
-    .floating-end-delete-button {
-        right: 10px; /* Same as search FAB on small mobile */
-        bottom: calc(100% + 6px);
-        width: 40px;
-        height: 40px;
-        min-width: 40px;
-        font-size: 13px;
-    }
-    
-    .floating-end-delete-button:hover,
-    .floating-end-delete-button:active {
-        min-width: 60px;
-        padding: 0 10px;
-    }
-    
-    .floating-end-delete-button i {
-        font-size: 16px;
-    }
-}
+/* Mobile responsive - REMOVED for mobile-first consistency */
+/* All delete buttons now use consistent 44px height via CSS variables */

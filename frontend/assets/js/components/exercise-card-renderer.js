@@ -197,7 +197,19 @@ class ExerciseCardRenderer {
                         </li>
                         <li class="list-group-item d-flex justify-content-between align-items-center px-0">
                             <span class="text-muted">Rest</span>
-                            <strong><i class="bx bx-time-five me-1"></i>${rest}</strong>
+                            <div class="d-flex align-items-center gap-2">
+                                <span data-inline-timer-display="${index}" class="inline-timer-display">
+                                    <strong><i class="bx bx-time-five me-1"></i>${rest}</strong>
+                                </span>
+                                <span class="text-muted">|</span>
+                                <span data-inline-timer="${index}" data-rest-seconds="${restSeconds}" data-rest-display="${rest}" class="inline-timer-container">
+                                    <a href="#" class="inline-timer-link"
+                                       onclick="window.inlineTimerStart(${index}); return false;"
+                                       title="Start ${rest} rest timer">
+                                        <i class="bx bx-play-circle"></i> Start Rest
+                                    </a>
+                                </span>
+                            </div>
                         </li>
                         ${plateBreakdown ? `
                             <li class="list-group-item d-flex justify-content-between align-items-center px-0">

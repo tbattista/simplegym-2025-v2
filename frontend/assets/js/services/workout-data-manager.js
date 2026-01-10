@@ -319,6 +319,99 @@ class WorkoutDataManager {
             return false;
         }
     }
+    
+    /**
+     * Update a single exercise in the workout template
+     * Updates sets, reps, rest, weight for a specific exercise
+     * @param {Object} workout - Current workout object
+     * @param {string} exerciseName - Exercise name to update
+     * @param {Object} exerciseData - Updated exercise data
+     * @param {string} exerciseData.sets - New sets value
+     * @param {string} exerciseData.reps - New reps value
+     * @param {string} exerciseData.rest - New rest value
+     * @param {string} exerciseData.weight - New weight value
+     * @param {string} exerciseData.weightUnit - New weight unit
+     * @returns {Promise<boolean>} Success status
+     */
+    async updateExerciseInTemplate(workout, exerciseName, exerciseData) {
+        try {
+            if (!workout || !exerciseName || !exerciseData) {
+                console.log('⏭️ Skipping template exercise update - missing data');
+                return false;
+            }
+            
+            console.log('🔄 Updating exercise in workout template:', exerciseName, exerciseData);
+            
+            let updated = false;
+            
+            // Find and update the exercise in exercise_groups
+            if (workout.exercise_groups) {
+                workout.exercise_groups.forEach(group => {
+                    const mainExercise = group.exercises?.a;
+                    if (mainExercise === exerciseName) {
+                        // Update all provided fields
+                        if (exerciseData.sets !== undefined) {
+                            group.sets = exerciseData.sets;
+                            console.log(`  ✅ Updated sets: ${exerciseData.sets}`);
+                        }
+                        if (exerciseData.reps !== undefined) {
+                            group.reps = exerciseData.reps;
+                            console.log(`  ✅ Updated reps: ${exerciseData.reps}`);
+                        }
+                        if (exerciseData.rest !== undefined) {
+                            group.rest = exerciseData.rest;
+                            console.log(`  ✅ Updated rest: ${exerciseData.rest}`);
+                        }
+                        if (exerciseData.weight !== undefined && exerciseData.weight !== '') {
+                            group.default_weight = exerciseData.weight;
+                            console.log(`  ✅ Updated weight: ${exerciseData.weight}`);
+                        }
+                        if (exerciseData.weightUnit !== undefined) {
+                            group.default_weight_unit = exerciseData.weightUnit;
+                            console.log(`  ✅ Updated weight unit: ${exerciseData.weightUnit}`);
+                        }
+                        updated = true;
+                    }
+                });
+            }
+            
+            // Also check bonus_exercises if they exist in template
+            if (workout.bonus_exercises) {
+                workout.bonus_exercises.forEach(bonus => {
+                    if (bonus.name === exerciseName) {
+                        if (exerciseData.sets !== undefined) bonus.sets = exerciseData.sets;
+                        if (exerciseData.reps !== undefined) bonus.reps = exerciseData.reps;
+                        if (exerciseData.rest !== undefined) bonus.rest = exerciseData.rest;
+                        if (exerciseData.weight !== undefined && exerciseData.weight !== '') {
+                            bonus.default_weight = exerciseData.weight;
+                        }
+                        if (exerciseData.weightUnit !== undefined) {
+                            bonus.default_weight_unit = exerciseData.weightUnit;
+                        }
+                        updated = true;
+                    }
+                });
+            }
+            
+            // Save updated workout template to database
+            if (updated) {
+                // Update modified date
+                workout.modified_date = new Date().toISOString();
+                
+                await this.dataManager.updateWorkout(workout.id, workout);
+                console.log('✅ Workout template exercise updated successfully:', exerciseName);
+                return true;
+            } else {
+                console.log('ℹ️ Exercise not found in template:', exerciseName);
+                return false;
+            }
+            
+        } catch (error) {
+            console.error('❌ Error updating exercise in workout template:', error);
+            // Don't throw - this is a non-critical enhancement
+            return false;
+        }
+    }
 }
 
 // Export for module use

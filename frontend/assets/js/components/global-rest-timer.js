@@ -83,13 +83,19 @@ class GlobalRestTimer extends RestTimer {
     }
 
     /**
-     * Override start method to check enabled state
+     * Override start method to check enabled state and notify timer manager
      */
     start() {
         if (!this.enabled) {
             console.log('🕐 Rest timer is disabled, not starting');
             return;
         }
+        
+        // Notify timer manager to stop all other timers (single-timer enforcement)
+        if (window.workoutModeController?.timerManager) {
+            window.workoutModeController.timerManager.notifyGlobalTimerStart();
+        }
+        
         super.start();
     }
 

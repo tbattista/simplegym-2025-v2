@@ -19,6 +19,8 @@ class WorkoutExerciseOperationsManager {
         this.onGoToNext = options.onGoToNext || (() => {});
         this.onGetCurrentExerciseData = options.onGetCurrentExerciseData || (() => ({}));
         this.onGetAllExerciseNames = options.onGetAllExerciseNames || (() => []);
+        this.onGetCurrentWorkout = options.onGetCurrentWorkout || (() => null);
+        this.onUpdateExerciseInTemplate = options.onUpdateExerciseInTemplate || (async () => false);
         
         console.log('🏋️ Workout Exercise Operations Manager initialized');
     }
@@ -233,6 +235,7 @@ class WorkoutExerciseOperationsManager {
             currentData,
             async (updatedData) => {
                 console.log('💾 Saving updated exercise details:', updatedData);
+                console.log('🔄 Update template flag:', updatedData.updateTemplate);
                 
                 if (isSessionActive) {
                     // ACTIVE SESSION: Save to session (existing behavior)
@@ -241,8 +244,25 @@ class WorkoutExerciseOperationsManager {
                     // Auto-save to server
                     try {
                         await this.onAutoSave();
-                        if (window.showAlert) {
-                            window.showAlert(`${exerciseName} updated`, 'success');
+                        
+                        // If updateTemplate flag is set, also update the workout template
+                        if (updatedData.updateTemplate) {
+                            console.log('📝 Updating workout template for exercise:', exerciseName);
+                            const templateUpdated = await this.onUpdateExerciseInTemplate(exerciseName, updatedData);
+                            
+                            if (templateUpdated) {
+                                if (window.showAlert) {
+                                    window.showAlert(`${exerciseName} updated & template saved`, 'success');
+                                }
+                            } else {
+                                if (window.showAlert) {
+                                    window.showAlert(`${exerciseName} updated (template update failed)`, 'warning');
+                                }
+                            }
+                        } else {
+                            if (window.showAlert) {
+                                window.showAlert(`${exerciseName} updated`, 'success');
+                            }
                         }
                     } catch (error) {
                         console.error('❌ Failed to save exercise updates:', error);
@@ -251,11 +271,34 @@ class WorkoutExerciseOperationsManager {
                         }
                     }
                 } else {
-                    // PRE-SESSION: Save to pre-session edits (new behavior)
+                    // PRE-SESSION: Save to pre-session edits
                     this.sessionService.updatePreSessionExercise(exerciseName, updatedData);
                     
-                    if (window.showAlert) {
-                        window.showAlert(`${exerciseName} updated - changes will apply when you start the workout`, 'success');
+                    // If updateTemplate flag is set, also update the workout template
+                    if (updatedData.updateTemplate) {
+                        console.log('📝 Updating workout template for exercise (pre-session):', exerciseName);
+                        try {
+                            const templateUpdated = await this.onUpdateExerciseInTemplate(exerciseName, updatedData);
+                            
+                            if (templateUpdated) {
+                                if (window.showAlert) {
+                                    window.showAlert(`${exerciseName} updated & template saved for future workouts`, 'success');
+                                }
+                            } else {
+                                if (window.showAlert) {
+                                    window.showAlert(`${exerciseName} updated - changes will apply when you start the workout`, 'success');
+                                }
+                            }
+                        } catch (error) {
+                            console.error('❌ Failed to update template:', error);
+                            if (window.showAlert) {
+                                window.showAlert(`${exerciseName} updated - changes will apply when you start the workout`, 'success');
+                            }
+                        }
+                    } else {
+                        if (window.showAlert) {
+                            window.showAlert(`${exerciseName} updated - changes will apply when you start the workout`, 'success');
+                        }
                     }
                 }
                 

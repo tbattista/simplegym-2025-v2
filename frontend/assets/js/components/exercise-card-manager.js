@@ -147,31 +147,75 @@ class ExerciseCardManager {
     
     /**
      * Get exercise group data by index
+     * Merges session data with template data for updated values (sets, reps, rest, weight)
      * @param {number} index - Exercise index
      * @returns {Object|null} Exercise group data or null
      */
     getExerciseGroup(index) {
+        let exerciseGroup = null;
+        let exerciseName = null;
+        
         // Check regular exercise groups first
         if (this.workout.exercise_groups && index < this.workout.exercise_groups.length) {
-            return this.workout.exercise_groups[index];
+            exerciseGroup = { ...this.workout.exercise_groups[index] };
+            exerciseName = exerciseGroup.exercises?.a;
+        } else {
+            // Check bonus exercises
+            const bonusExercises = this.sessionService.getBonusExercises();
+            const bonusIndex = index - (this.workout.exercise_groups?.length || 0);
+            if (bonusExercises && bonusIndex >= 0 && bonusIndex < bonusExercises.length) {
+                const bonus = bonusExercises[bonusIndex];
+                exerciseGroup = {
+                    exercises: { a: bonus.name },
+                    sets: bonus.sets,
+                    reps: bonus.reps,
+                    rest: bonus.rest || '60s',
+                    default_weight: bonus.weight,
+                    default_weight_unit: bonus.weight_unit || 'lbs'
+                };
+                exerciseName = bonus.name;
+            }
         }
         
-        // Check bonus exercises
-        const bonusExercises = this.sessionService.getBonusExercises();
-        const bonusIndex = index - (this.workout.exercise_groups?.length || 0);
-        if (bonusExercises && bonusIndex >= 0 && bonusIndex < bonusExercises.length) {
-            const bonus = bonusExercises[bonusIndex];
-            return {
-                exercises: { a: bonus.name },
-                sets: bonus.sets,
-                reps: bonus.reps,
-                rest: bonus.rest || '60s',
-                default_weight: bonus.weight,
-                default_weight_unit: bonus.weight_unit || 'lbs'
-            };
+        if (!exerciseGroup) {
+            return null;
         }
         
-        return null;
+        // 🔧 FIX: Merge session data to get updated rest time, sets, reps, weight
+        // This ensures timer sync and card display use user-edited values
+        if (exerciseName && this.sessionService) {
+            // Check for active session data first
+            if (this.sessionService.isSessionActive()) {
+                const sessionData = this.sessionService.getExerciseWeight(exerciseName);
+                if (sessionData) {
+                    console.log(`🔄 Merging session data for ${exerciseName}:`, sessionData);
+                    exerciseGroup = {
+                        ...exerciseGroup,
+                        rest: sessionData.rest || exerciseGroup.rest,
+                        sets: sessionData.target_sets || exerciseGroup.sets,
+                        reps: sessionData.target_reps || exerciseGroup.reps,
+                        default_weight: sessionData.weight || exerciseGroup.default_weight,
+                        default_weight_unit: sessionData.weight_unit || exerciseGroup.default_weight_unit
+                    };
+                }
+            } else {
+                // Check for pre-session edits (before workout started)
+                const preSessionEdit = this.sessionService.getPreSessionEdits(exerciseName);
+                if (preSessionEdit) {
+                    console.log(`🔄 Merging pre-session edit for ${exerciseName}:`, preSessionEdit);
+                    exerciseGroup = {
+                        ...exerciseGroup,
+                        rest: preSessionEdit.rest || exerciseGroup.rest,
+                        sets: preSessionEdit.target_sets || exerciseGroup.sets,
+                        reps: preSessionEdit.target_reps || exerciseGroup.reps,
+                        default_weight: preSessionEdit.weight || exerciseGroup.default_weight,
+                        default_weight_unit: preSessionEdit.weight_unit || exerciseGroup.default_weight_unit
+                    };
+                }
+            }
+        }
+        
+        return exerciseGroup;
     }
     
     /**

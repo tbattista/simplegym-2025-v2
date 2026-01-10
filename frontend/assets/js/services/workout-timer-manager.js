@@ -12,8 +12,11 @@ class WorkoutTimerManager {
     constructor(sessionService) {
         this.sessionService = sessionService;
         this.timers = {}; // Individual exercise rest timers
+        this.inlineTimers = {}; // Inline rest timers in exercise cards
         this.globalRestTimer = null; // Global rest timer from bottom action bar
         this.sessionTimerInterval = null; // Session elapsed time interval
+        this.activeTimerType = null; // 'global', 'inline-{index}', or null
+        this.activeTimerId = null; // ID of currently running timer
         
         console.log('⏱️ Workout Timer Manager initialized');
     }
@@ -178,6 +181,99 @@ class WorkoutTimerManager {
         });
         
         this.timers = {};
+    }
+    
+    // ==================== Inline Timer Management ====================
+    
+    /**
+     * Register an inline timer instance
+     * @param {number} exerciseIndex - Exercise index the timer belongs to
+     * @param {Object} timer - InlineRestTimer instance
+     */
+    registerInlineTimer(exerciseIndex, timer) {
+        const timerId = `inline-${exerciseIndex}`;
+        this.inlineTimers[timerId] = timer;
+        
+        // Set up callback for single-timer enforcement
+        timer.onTimerStart = () => {
+            this.handleTimerStart('inline', exerciseIndex);
+        };
+        
+        console.log(`📝 Registered inline timer for exercise ${exerciseIndex}`);
+    }
+    
+    /**
+     * Unregister an inline timer instance
+     * @param {number} exerciseIndex - Exercise index
+     */
+    unregisterInlineTimer(exerciseIndex) {
+        const timerId = `inline-${exerciseIndex}`;
+        if (this.inlineTimers[timerId]) {
+            delete this.inlineTimers[timerId];
+            console.log(`🗑️ Unregistered inline timer for exercise ${exerciseIndex}`);
+        }
+    }
+    
+    /**
+     * Get inline timer by exercise index
+     * @param {number} exerciseIndex - Exercise index
+     * @returns {Object|null} InlineRestTimer instance or null
+     */
+    getInlineTimer(exerciseIndex) {
+        return this.inlineTimers[`inline-${exerciseIndex}`] || null;
+    }
+    
+    /**
+     * Handle timer start - enforce single-timer rule
+     * @param {string} timerType - 'global' or 'inline'
+     * @param {number|null} exerciseIndex - Exercise index for inline timers
+     */
+    handleTimerStart(timerType, exerciseIndex = null) {
+        const newTimerId = timerType === 'global' ? 'global' : `inline-${exerciseIndex}`;
+        
+        console.log(`🎯 Timer started: ${newTimerId}, stopping all others...`);
+        
+        // Stop global timer if it's not the one starting
+        if (newTimerId !== 'global' && this.globalRestTimer) {
+            if (this.globalRestTimer.state === 'counting' || this.globalRestTimer.state === 'paused') {
+                this.globalRestTimer.reset();
+                console.log('⏹️ Stopped global rest timer');
+            }
+        }
+        
+        // Stop all other inline timers
+        Object.entries(this.inlineTimers).forEach(([id, timer]) => {
+            if (id !== newTimerId && timer) {
+                if (timer.state === 'counting' || timer.state === 'paused') {
+                    timer.reset();
+                    console.log(`⏹️ Stopped inline timer: ${id}`);
+                }
+            }
+        });
+        
+        // Update active timer tracking
+        this.activeTimerType = timerType;
+        this.activeTimerId = newTimerId;
+    }
+    
+    /**
+     * Notify manager when global timer starts (called from GlobalRestTimer)
+     */
+    notifyGlobalTimerStart() {
+        this.handleTimerStart('global');
+    }
+    
+    /**
+     * Clear all inline timers
+     */
+    clearAllInlineTimers() {
+        Object.values(this.inlineTimers).forEach(timer => {
+            if (timer && timer.reset) {
+                timer.reset();
+            }
+        });
+        this.inlineTimers = {};
+        console.log('🧹 Cleared all inline timers');
     }
     
     // ==================== Event Callbacks ====================
