@@ -57,16 +57,17 @@ const WorkoutUtils = {
             return (minutes * 60) + seconds;
         }
         
-        // Handle combined format (e.g., "1m30s", "2min30sec")
-        const combinedMatch = input.match(/(\d+)\s*m(?:in)?(?:utes?)?\s*(\d+)\s*s(?:ec)?(?:onds?)?/);
+        // Handle combined format (e.g., "1m30s", "2min30sec", "2mins30secs")
+        const combinedMatch = input.match(/(\d+)\s*m(?:in)?(?:ute)?s?\s*(\d+)\s*s(?:ec)?(?:ond)?s?/);
         if (combinedMatch) {
             const minutes = parseInt(combinedMatch[1]);
             const seconds = parseInt(combinedMatch[2]);
             return (minutes * 60) + seconds;
         }
         
-        // Handle minutes format (e.g., "2min", "2m", "2 minutes")
-        const minMatch = input.match(/(\d+)\s*m(?:in)?(?:utes?)?$/);
+        // Handle minutes format (e.g., "2min", "2m", "2 minutes", "2mins")
+        // Pattern: number + optional space + "m" + optional ("in"/"ins"/"inute"/"inutes"/"inu"...)
+        const minMatch = input.match(/(\d+)\s*m(?:in(?:ute)?s?)?$/);
         if (minMatch) {
             return parseInt(minMatch[1]) * 60;
         }
