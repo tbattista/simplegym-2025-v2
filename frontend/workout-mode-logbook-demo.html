@@ -1,0 +1,2907 @@
+<!doctype html>
+<html lang="en" class="layout-menu-fixed layout-compact" data-assets-path="/static/assets/" data-bs-theme="light">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+    <title>Workout Logbook Mode - Complete UI Redesign Demo</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/static/assets/vendor/fonts/iconify-icons.css" />
+
+    <!-- Core CSS -->
+    <link rel="stylesheet" href="/static/assets/vendor/css/core.css" />
+    <link rel="stylesheet" href="/static/assets/css/demo.css" />
+    <link rel="stylesheet" href="/static/assets/css/ghost-gym-custom.css" />
+
+    <style>
+        /* ============================================
+           LOGBOOK DESIGN SYSTEM v2.0
+           Three-Layer Action Hierarchy:
+           1. Logging actions → inline on card
+           2. Management actions → ⋯ menu
+           3. Workout actions → footer
+           ============================================ */
+        
+        :root {
+            /* Logbook color palette - Light Theme */
+            --logbook-bg: #ffffff;
+            --logbook-card-bg: #ffffff;
+            --logbook-border: #e2e8f0;
+            --logbook-text: #1e293b;
+            --logbook-muted: #64748b;
+            --logbook-accent: #6366f1;
+            --logbook-success: #4CBB17;
+            --logbook-warning: #f59e0b;
+            --logbook-danger: #dc3545;
+            
+            /* Status colors - subtle for light theme */
+            --status-logged: rgba(76, 187, 23, 0.1);
+            --status-active: rgba(99, 102, 241, 0.06);
+            --status-skipped: rgba(245, 158, 11, 0.1);
+            --status-pending: transparent;
+        }
+
+        /* ============================================
+           LAYOUT STRUCTURE
+           ============================================ */
+
+        /* Light theme body background */
+        body {
+            background-color: #f8fafc;
+        }
+
+        /* ============================================
+           NAVBAR STYLES
+           ============================================ */
+        
+        .layout-navbar {
+            background-color: #fff;
+            border-bottom: 1px solid var(--logbook-border);
+        }
+
+        .navbar-nav-right {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .navbar-nav-right .nav-link {
+            padding: 0.5rem;
+            color: var(--logbook-muted);
+            border-radius: 0.375rem;
+            transition: all 0.15s ease;
+        }
+
+        .navbar-nav-right .nav-link:hover {
+            color: var(--logbook-accent);
+            background: var(--status-active);
+        }
+
+        .avatar-initials {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--logbook-accent);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        /* ============================================
+           WORKOUT HEADER - Simple, Informative
+           ============================================ */
+        
+        .logbook-header {
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--logbook-border);
+        }
+        
+        .logbook-header h5 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+            color: var(--logbook-text);
+        }
+        
+        .logbook-header .meta {
+            font-size: 0.875rem;
+            color: var(--logbook-muted);
+        }
+
+        /* ============================================
+           EXERCISE CARD - Logbook Entry Style
+           ============================================ */
+        
+        .logbook-card {
+            background: var(--logbook-card-bg);
+            border: 1px solid var(--logbook-border);
+            border-radius: 0.5rem;
+            margin-bottom: 0.5rem;
+            transition: all 0.2s ease;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+        
+        .logbook-card:hover:not(.expanded) {
+            border-color: var(--logbook-accent);
+            box-shadow: 0 2px 8px rgba(99, 102, 241, 0.1);
+        }
+        
+        .logbook-card.expanded {
+            border-color: var(--logbook-accent);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
+        }
+        
+        /* Logged state - subtle left border */
+        .logbook-card.logged {
+            border-left: 3px solid var(--logbook-success);
+            background: var(--status-logged);
+        }
+        
+        /* Skipped state - distinct but not alarming */
+        .logbook-card.skipped {
+            border-left: 3px solid var(--logbook-warning);
+            background: var(--status-skipped);
+            opacity: 0.8;
+        }
+        
+        .logbook-card.skipped .logbook-exercise-name {
+            text-decoration: line-through;
+            color: var(--logbook-muted);
+        }
+
+        /* Card Header - Collapsed View */
+        .logbook-card-header {
+            padding: 0.875rem 1rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .logbook-card-header:hover {
+            background: var(--status-active);
+        }
+        
+        .logbook-card.expanded .logbook-card-header {
+            background: var(--status-active);
+            cursor: default;
+        }
+
+        /* Exercise Info - Left Side */
+        .logbook-exercise-info {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .logbook-exercise-name {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--logbook-text);
+            margin-bottom: 0.125rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .logbook-exercise-name .status-badge {
+            font-size: 0.75rem;
+            padding: 0.125rem 0.375rem;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+        
+        .logbook-exercise-name .status-badge.logged {
+            background: var(--logbook-success);
+            color: white;
+        }
+        
+        .logbook-exercise-name .status-badge.skipped {
+            background: var(--logbook-warning);
+            color: #000;
+        }
+        
+        .logbook-exercise-meta {
+            font-size: 0.8125rem;
+            color: var(--logbook-muted);
+        }
+        
+        /* State indicators instead of action buttons */
+        .logbook-state-row {
+            font-size: 0.75rem;
+            color: var(--logbook-muted);
+            margin-top: 0.25rem;
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+        
+        .logbook-state-item {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+        
+        .logbook-state-item.highlight {
+            color: var(--logbook-accent);
+            font-weight: 500;
+        }
+        
+        .logbook-state-item.next-up {
+            color: var(--logbook-success);
+        }
+        
+        .logbook-state-item.next-down {
+            color: var(--logbook-warning);
+        }
+
+        /* Header Actions - More Menu */
+        .logbook-header-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            position: relative;
+        }
+        
+        .logbook-more-btn {
+            padding: 0.375rem;
+            border: 1px solid transparent;
+            border-radius: 6px;
+            background: transparent;
+            color: var(--logbook-muted);
+            cursor: pointer;
+            font-size: 1.25rem;
+            line-height: 1;
+            transition: all 0.15s ease;
+        }
+        
+        .logbook-more-btn:hover {
+            border-color: var(--logbook-border);
+            background: var(--status-active);
+            color: var(--logbook-accent);
+        }
+
+        /* Chevron */
+        .logbook-chevron {
+            color: var(--logbook-muted);
+            font-size: 1.25rem;
+            transition: transform 0.2s ease;
+        }
+        
+        .logbook-card.expanded .logbook-chevron {
+            transform: rotate(180deg);
+            color: var(--logbook-accent);
+        }
+
+        /* ============================================
+           CARD BODY - Expanded Form View
+           ============================================ */
+        
+        .logbook-card-body {
+            padding: 1rem;
+            border-top: 1px solid var(--logbook-border);
+            display: none;
+        }
+        
+        .logbook-card.expanded .logbook-card-body {
+            display: block;
+        }
+
+        /* Section styling */
+        .logbook-section {
+            margin-bottom: 1rem;
+        }
+        
+        .logbook-section:last-child {
+            margin-bottom: 0;
+        }
+        
+        .logbook-section-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--logbook-muted);
+            margin-bottom: 0.5rem;
+        }
+
+        /* ============================================
+           WEIGHT FIELD MORPH PATTERN
+           ============================================ */
+
+        .logbook-weight-field {
+            display: flex;
+            align-items: center;
+            min-height: 48px;
+        }
+
+        /* ------------------------------------------
+           Display Mode
+           ------------------------------------------ */
+
+        .weight-display {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            transition: opacity 0.2s ease, transform 0.2s ease;
+        }
+
+        .weight-display .weight-value-group {
+            display: flex;
+            align-items: baseline;
+            gap: 0.5rem;
+        }
+
+        .weight-display .weight-value {
+            font-size: 2.25rem;
+            font-weight: 700;
+            color: var(--logbook-accent);
+            line-height: 1;
+        }
+
+        .weight-display .weight-unit {
+            font-size: 1rem;
+            color: var(--logbook-muted);
+        }
+
+        .weight-edit-btn {
+            padding: 0.25rem;
+            border: 1px solid transparent;
+            border-radius: 6px;
+            background: transparent;
+            color: var(--logbook-muted);
+            cursor: pointer;
+            font-size: 2rem;
+            line-height: 1;
+            margin-left: auto;
+            transition: all 0.15s ease;
+        }
+
+        .weight-edit-btn:hover {
+            border-color: var(--logbook-border);
+            background: var(--status-active);
+            color: var(--logbook-accent);
+        }
+
+        /* ------------------------------------------
+           Edit Mode
+           ------------------------------------------ */
+
+        .weight-editor {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            width: 100%;
+            animation: weightEditorFadeIn 0.2s ease;
+        }
+
+        .weight-editor-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            margin-left: auto;
+        }
+
+        @keyframes weightEditorFadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .weight-input {
+            width: 100px;
+            padding: 0.5rem 0.75rem;
+            font-size: 1.5rem;
+            font-weight: 700;
+            text-align: center;
+            color: var(--logbook-accent);
+            border: 2px solid var(--logbook-accent);
+            border-radius: 0.375rem;
+            background: var(--logbook-card-bg);
+            outline: none;
+            transition: border-color 0.15s ease, box-shadow 0.15s ease;
+            
+            /* Remove number input spinners */
+            -moz-appearance: textfield;
+        }
+
+        .weight-input::-webkit-outer-spin-button,
+        .weight-input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .weight-input:focus {
+            border-color: var(--logbook-accent);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+        }
+
+        /* Stepper Buttons */
+        .weight-stepper-btn {
+            padding: 0.5rem 0.75rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            border: 1px solid var(--logbook-border);
+            border-radius: 0.375rem;
+            background: var(--logbook-card-bg);
+            color: var(--logbook-text);
+            cursor: pointer;
+            transition: all 0.15s ease;
+            min-width: 48px;
+        }
+
+        .weight-stepper-btn:hover {
+            border-color: var(--logbook-accent);
+            background: var(--status-active);
+            color: var(--logbook-accent);
+        }
+
+        .weight-stepper-btn:active {
+            transform: scale(0.95);
+        }
+
+        .weight-stepper-btn.minus:hover {
+            border-color: var(--logbook-warning);
+            color: var(--logbook-warning);
+            background: rgba(245, 158, 11, 0.1);
+        }
+
+        .weight-stepper-btn.plus:hover {
+            border-color: var(--logbook-success);
+            color: var(--logbook-success);
+            background: rgba(76, 187, 23, 0.1);
+        }
+
+        /* Save Button */
+        .weight-save-btn {
+            padding: 0.375rem;
+            border: 1px solid transparent;
+            border-radius: 6px;
+            background: transparent;
+            color: var(--logbook-success);
+            cursor: pointer;
+            font-size: 1.25rem;
+            line-height: 1;
+            transition: all 0.15s ease;
+        }
+
+        .weight-save-btn:hover {
+            border-color: var(--logbook-success);
+            background: rgba(76, 187, 23, 0.1);
+            color: var(--logbook-success);
+        }
+
+        /* Cancel Button */
+        .weight-cancel-btn {
+            padding: 0.375rem;
+            border: 1px solid transparent;
+            border-radius: 6px;
+            background: transparent;
+            color: var(--logbook-muted);
+            cursor: pointer;
+            font-size: 1.25rem;
+            line-height: 1;
+            transition: all 0.15s ease;
+        }
+
+        .weight-cancel-btn:hover {
+            border-color: var(--logbook-danger);
+            background: rgba(220, 53, 69, 0.1);
+            color: var(--logbook-danger);
+        }
+
+        /* ------------------------------------------
+           Save Animation (Green Flash)
+           ------------------------------------------ */
+
+        .weight-display.saved .weight-value {
+            animation: weightSaveFlash 0.6s ease;
+        }
+
+        @keyframes weightSaveFlash {
+            0% {
+                color: var(--logbook-accent);
+            }
+            30% {
+                color: var(--logbook-success);
+                text-shadow: 0 0 8px rgba(76, 187, 23, 0.4);
+            }
+            100% {
+                color: var(--logbook-accent);
+                text-shadow: none;
+            }
+        }
+
+        /* ------------------------------------------
+           Dark Mode Adjustments
+           ------------------------------------------ */
+
+        [data-bs-theme="dark"] .weight-input {
+            background: var(--bs-gray-800);
+            color: var(--logbook-accent);
+        }
+
+        [data-bs-theme="dark"] .weight-stepper-btn {
+            background: var(--bs-gray-800);
+            border-color: var(--bs-gray-600);
+        }
+
+        /* ------------------------------------------
+           Mobile Responsive
+           ------------------------------------------ */
+
+        @media (max-width: 576px) {
+            .weight-input {
+                width: 80px;
+                font-size: 1.25rem;
+                padding: 0.375rem 0.5rem;
+            }
+            
+            .weight-stepper-btn {
+                padding: 0.375rem 0.5rem;
+                font-size: 0.8125rem;
+                min-width: 40px;
+            }
+            
+            .weight-display .weight-value {
+                font-size: 1.75rem;
+            }
+            
+            .weight-edit-btn {
+                font-size: 1.5rem;
+            }
+        }
+
+        /* Note toggle button - next to pencil */
+        .note-toggle-btn {
+            padding: 0.25rem;
+            border: 1px solid transparent;
+            border-radius: 6px;
+            background: transparent;
+            color: var(--logbook-muted);
+            cursor: pointer;
+            font-size: 2rem;
+            line-height: 1;
+            transition: all 0.15s ease;
+        }
+
+        .note-toggle-btn:hover {
+            border-color: var(--logbook-border);
+            background: var(--status-active);
+            color: var(--logbook-accent);
+        }
+
+        /* Filled state when note exists */
+        .note-toggle-btn.has-note {
+            color: var(--logbook-accent);
+        }
+
+        /* Notes - collapsible, hidden by default */
+        .logbook-notes-row {
+            display: none;
+            margin-top: 0.75rem;
+        }
+        
+        .logbook-notes-row.visible {
+            display: block;
+        }
+        
+        .logbook-notes-input {
+            width: 100%;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid var(--logbook-border);
+            border-radius: 6px;
+            background: transparent;
+            color: var(--logbook-text);
+            font-size: 0.875rem;
+            resize: none;
+        }
+        
+        .logbook-notes-input:focus {
+            outline: none;
+            border-color: var(--logbook-accent);
+        }
+        
+        .logbook-notes-input::placeholder {
+            color: var(--logbook-muted);
+        }
+
+        /* ============================================
+           REPS/SETS FIELD MORPH PATTERN
+           ============================================ */
+
+        .logbook-repssets-field {
+            display: flex;
+            align-items: center;
+            min-height: 48px;
+        }
+
+        /* Display Mode */
+        .repssets-display {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            transition: opacity 0.2s ease, transform 0.2s ease;
+        }
+
+        .repssets-display .repssets-value-group {
+            display: flex;
+            align-items: baseline;
+            gap: 0.5rem;
+        }
+
+        .repssets-display .repssets-value {
+            font-size: 2.25rem;
+            font-weight: 700;
+            color: var(--logbook-accent);
+            line-height: 1;
+        }
+
+        .repssets-display .repssets-separator {
+            font-size: 1.5rem;
+            font-weight: 400;
+            color: var(--logbook-muted);
+        }
+
+        .repssets-edit-btn {
+            padding: 0.25rem;
+            border: 1px solid transparent;
+            border-radius: 6px;
+            background: transparent;
+            color: var(--logbook-muted);
+            cursor: pointer;
+            font-size: 2rem;
+            line-height: 1;
+            margin-left: auto;
+            transition: all 0.15s ease;
+        }
+
+        .repssets-edit-btn:hover {
+            border-color: var(--logbook-border);
+            background: var(--status-active);
+            color: var(--logbook-accent);
+        }
+
+        /* Edit Mode */
+        .repssets-editor {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            width: 100%;
+            animation: weightEditorFadeIn 0.2s ease;
+        }
+
+        .repssets-editor-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            margin-left: auto;
+        }
+
+        .repssets-input {
+            width: 60px;
+            padding: 0.5rem 0.5rem;
+            font-size: 1.5rem;
+            font-weight: 700;
+            text-align: center;
+            color: var(--logbook-accent);
+            border: 2px solid var(--logbook-accent);
+            border-radius: 0.375rem;
+            background: var(--logbook-card-bg);
+            outline: none;
+            transition: border-color 0.15s ease, box-shadow 0.15s ease;
+            -moz-appearance: textfield;
+        }
+
+        .repssets-input::-webkit-outer-spin-button,
+        .repssets-input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .repssets-input:focus {
+            border-color: var(--logbook-accent);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+        }
+
+        .repssets-separator-edit {
+            font-size: 1.25rem;
+            font-weight: 500;
+            color: var(--logbook-muted);
+        }
+
+        .repssets-save-btn {
+            padding: 0.375rem;
+            border: 1px solid transparent;
+            border-radius: 6px;
+            background: transparent;
+            color: var(--logbook-success);
+            cursor: pointer;
+            font-size: 1.25rem;
+            line-height: 1;
+            transition: all 0.15s ease;
+        }
+
+        .repssets-save-btn:hover {
+            border-color: var(--logbook-success);
+            background: rgba(76, 187, 23, 0.1);
+            color: var(--logbook-success);
+        }
+
+        .repssets-cancel-btn {
+            padding: 0.375rem;
+            border: 1px solid transparent;
+            border-radius: 6px;
+            background: transparent;
+            color: var(--logbook-muted);
+            cursor: pointer;
+            font-size: 1.25rem;
+            line-height: 1;
+            transition: all 0.15s ease;
+        }
+
+        .repssets-cancel-btn:hover {
+            border-color: var(--logbook-danger);
+            background: rgba(220, 53, 69, 0.1);
+            color: var(--logbook-danger);
+        }
+
+        /* Save Animation */
+        .repssets-display.saved .repssets-value {
+            animation: weightSaveFlash 0.6s ease;
+        }
+
+        /* Dark Mode Adjustments */
+        [data-bs-theme="dark"] .repssets-input {
+            background: var(--bs-gray-800);
+            color: var(--logbook-accent);
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 576px) {
+            .repssets-input {
+                width: 50px;
+                font-size: 1.25rem;
+                padding: 0.375rem 0.25rem;
+            }
+            
+            .repssets-display .repssets-value {
+                font-size: 1.75rem;
+            }
+            
+            .repssets-edit-btn {
+                font-size: 1.5rem;
+            }
+        }
+
+        /* Last Time Section - Reference, Subordinate */
+        .logbook-reference {
+            background: #f8fafc;
+            border-radius: 0.375rem;
+            padding: 0.75rem;
+            font-size: 0.8125rem;
+            border: 1px solid var(--logbook-border);
+        }
+        
+        .logbook-reference-weight {
+            font-weight: 600;
+            color: var(--logbook-text);
+        }
+        
+        .logbook-reference-date {
+            color: var(--logbook-muted);
+        }
+        
+        .logbook-reference-note {
+            color: var(--logbook-muted);
+            font-style: italic;
+            margin-top: 0.25rem;
+        }
+
+        /* Weight History - Tree Style */
+        .logbook-history {
+            font-size: 0.8125rem;
+        }
+
+        .logbook-history-primary {
+            display: flex;
+            align-items: baseline;
+            gap: 0.375rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .logbook-history-primary .history-label {
+            color: var(--logbook-muted);
+        }
+
+        .logbook-history-primary .history-weight {
+            font-weight: 600;
+            color: var(--logbook-text);
+        }
+
+        .logbook-history-primary .history-date {
+            color: var(--logbook-muted);
+        }
+
+        .logbook-history-note {
+            color: var(--logbook-muted);
+            font-style: italic;
+            font-size: 0.75rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .logbook-history-tree {
+            padding-left: 0.25rem;
+            font-size: 0.75rem;
+            color: var(--logbook-muted);
+        }
+
+        .logbook-history-tree-item {
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+            line-height: 1.5;
+        }
+
+        .logbook-history-tree-item .tree-branch {
+            color: var(--logbook-border);
+            font-family: monospace;
+            user-select: none;
+        }
+
+        .logbook-history-tree-item .history-weight {
+            font-weight: 500;
+            color: var(--logbook-text);
+        }
+
+        .logbook-history-tree-item:last-child .tree-branch {
+            /* Last item uses └ */
+        }
+
+        /* Next Time Section - Subtle Chips */
+        .logbook-next-chips {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .logbook-chip {
+            padding: 0.5rem 0.75rem;
+            border: 1px solid var(--logbook-border);
+            border-radius: 0.375rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: var(--logbook-muted);
+            background: transparent;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            min-width: 48px;
+            text-align: center;
+        }
+        
+        .logbook-chip:hover {
+            border-color: var(--logbook-accent);
+            color: var(--logbook-accent);
+        }
+        
+        .logbook-chip.active {
+            background: var(--logbook-accent);
+            border-color: var(--logbook-accent);
+            color: white;
+        }
+        
+        .logbook-chip i {
+            font-size: 0.875rem;
+            margin-right: 0.25rem;
+            vertical-align: middle;
+        }
+
+        /* ============================================
+           INLINE REST TIMER
+           ============================================ */
+
+        .inline-rest-timer {
+            background: #f8fafc;
+            border: 1px solid var(--logbook-border);
+            border-radius: 0.5rem;
+            padding: 0.75rem 1rem;
+        }
+
+        .rest-timer-ready {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .rest-timer-duration {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--logbook-text);
+        }
+
+        .rest-timer-start-link {
+            color: var(--logbook-accent);
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            cursor: pointer;
+        }
+
+        .rest-timer-start-link:hover {
+            text-decoration: underline;
+        }
+
+        /* Counting state - now horizontal like ready state */
+        .rest-timer-counting {
+            display: none;
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .rest-timer-counting.active {
+            display: flex;
+        }
+
+        .rest-timer-ready.hidden {
+            display: none;
+        }
+
+        .rest-timer-countdown {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--logbook-accent);
+        }
+
+        .rest-timer-countdown.warning {
+            color: var(--logbook-warning);
+        }
+
+        .rest-timer-countdown.done {
+            color: var(--logbook-success);
+        }
+
+        .rest-timer-inline-controls {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        /* Rectangular buttons with icon + text */
+        .rest-timer-inline-btn {
+            padding: 0.375rem 0.75rem;
+            border-radius: 0.375rem;
+            border: 1px solid var(--logbook-border);
+            background: white;
+            color: var(--logbook-muted);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+            font-size: 0.8125rem;
+            font-weight: 500;
+            transition: all 0.15s ease;
+        }
+
+        .rest-timer-inline-btn i {
+            font-size: 1rem;
+        }
+
+        .rest-timer-inline-btn:hover {
+            border-color: var(--logbook-accent);
+            color: var(--logbook-accent);
+            background: var(--status-active);
+        }
+
+        .rest-timer-inline-btn.pause {
+            background: var(--logbook-accent);
+            border-color: var(--logbook-accent);
+            color: white;
+        }
+
+        .rest-timer-inline-btn.pause:hover {
+            background: #5457e5;
+        }
+
+        /* ============================================
+           PRIMARY ACTION - Save/Log Button
+           ONE primary per card, neutral brand color
+           ============================================ */
+        
+        .logbook-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 1rem;
+            border-top: 1px solid var(--logbook-border);
+            margin-top: 1rem;
+        }
+        
+        .logbook-primary-action {
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            border-radius: 0.375rem;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.15s ease;
+        }
+        
+        /* Save/Log button - Brand color, not green */
+        .logbook-primary-action.save {
+            background: var(--logbook-accent);
+            color: white;
+        }
+        
+        .logbook-primary-action.save:hover {
+            filter: brightness(1.1);
+        }
+        
+        /* Saved state - Muted indicator, not celebratory */
+        .logbook-primary-action.saved {
+            background: rgba(40, 167, 69, 0.15);
+            color: var(--logbook-success);
+            cursor: default;
+        }
+        
+        .logbook-secondary-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        /* ============================================
+           MORE MENU - Management Actions
+           Modify, Replace, Skip, Remove
+           ============================================ */
+        
+        .logbook-menu {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: #ffffff;
+            border: 1px solid var(--logbook-border);
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+            min-width: 180px;
+            z-index: 100;
+            display: none;
+        }
+        
+        .logbook-menu.show {
+            display: block;
+        }
+        
+        .logbook-menu-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            font-size: 0.875rem;
+            color: var(--logbook-text);
+            cursor: pointer;
+            transition: background 0.15s ease;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+        }
+        
+        .logbook-menu-item:hover {
+            background: var(--status-active);
+        }
+        
+        .logbook-menu-item:first-child {
+            border-radius: 8px 8px 0 0;
+        }
+        
+        .logbook-menu-item:last-child {
+            border-radius: 0 0 8px 8px;
+        }
+        
+        .logbook-menu-item i {
+            font-size: 1.125rem;
+            color: var(--logbook-muted);
+        }
+        
+        .logbook-menu-item.danger {
+            color: var(--logbook-danger);
+        }
+        
+        .logbook-menu-item.danger i {
+            color: var(--logbook-danger);
+        }
+        
+        .logbook-menu-divider {
+            height: 1px;
+            background: var(--logbook-border);
+            margin: 0.25rem 0;
+        }
+
+        /* ============================================
+           ADD EXERCISE - List Item Style
+           Not a CTA, feels like a list continuation
+           ============================================ */
+        
+        .logbook-add-exercise {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem;
+            color: var(--logbook-muted);
+            cursor: pointer;
+            border: 1px dashed var(--logbook-border);
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            margin-bottom: 0.75rem;
+        }
+        
+        .logbook-add-exercise:hover {
+            border-color: var(--logbook-accent);
+            color: var(--logbook-accent);
+            background: var(--status-active);
+        }
+        
+        .logbook-add-exercise i {
+            font-size: 1.25rem;
+        }
+
+        /* ============================================
+           BOTTOM ACTION BAR
+           ============================================ */
+        
+        .bottom-action-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #ffffff;
+            border-top: 1px solid var(--logbook-border);
+            padding: 0.5rem 1rem;
+            z-index: 1000;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        .bottom-action-bar-container {
+            max-width: 600px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: center;
+        }
+        
+        .bottom-bar-buttons {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+            flex: 1;
+        }
+        
+        .bottom-bar-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--logbook-border);
+            border-radius: 0.5rem;
+            background: transparent;
+            color: var(--logbook-muted);
+            cursor: pointer;
+            transition: all 0.15s ease;
+            min-width: 60px;
+        }
+        
+        .bottom-bar-btn:hover {
+            border-color: var(--logbook-accent);
+            color: var(--logbook-accent);
+            background: var(--status-active);
+        }
+        
+        .bottom-bar-btn i {
+            font-size: 1.25rem;
+        }
+        
+        .bottom-bar-btn-label {
+            font-size: 0.6875rem;
+            font-weight: 500;
+        }
+
+        /* ============================================
+           FLOATING TIMER + START/END COMBO
+           ============================================ */
+
+        .floating-fab-container {
+            position: fixed;
+            bottom: 80px;
+            right: 1rem;
+            z-index: 1001;
+        }
+
+        .floating-fab {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            transition: all 0.15s ease;
+        }
+
+        .floating-fab-start {
+            background: var(--logbook-success);
+            color: white;
+        }
+
+        .floating-fab-start:hover {
+            background: #45a814;
+            transform: scale(1.05);
+        }
+
+        .floating-timer-end-combo {
+            position: fixed;
+            bottom: 80px;
+            right: 1rem;
+            z-index: 1001;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: white;
+            border: 1px solid var(--logbook-border);
+            border-radius: 2rem;
+            padding: 0.375rem;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+        }
+
+        .floating-timer-display {
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+            padding: 0.375rem 0.75rem;
+            background: var(--status-active);
+            border-radius: 1.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--logbook-text);
+        }
+
+        .floating-timer-display i {
+            color: var(--logbook-accent);
+        }
+
+        .floating-end-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+            padding: 0.5rem 1rem;
+            border-radius: 1.5rem;
+            border: none;
+            background: rgba(220, 53, 69, 0.15);
+            color: var(--logbook-danger);
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .floating-end-btn:hover {
+            background: rgba(220, 53, 69, 0.25);
+        }
+
+        /* Content padding for footer */
+        .logbook-content {
+            padding-bottom: 100px;
+        }
+
+        /* ============================================
+           DESIGN ANNOTATIONS
+           ============================================ */
+        
+        .design-note {
+            background: rgba(105, 108, 255, 0.1);
+            border: 1px dashed var(--logbook-accent);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            font-size: 0.8125rem;
+        }
+        
+        .design-note-title {
+            font-weight: 600;
+            color: var(--logbook-accent);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .design-note ul {
+            margin: 0;
+            padding-left: 1.25rem;
+            color: var(--logbook-muted);
+        }
+        
+        .design-note li {
+            margin-bottom: 0.25rem;
+        }
+        
+        .design-note code {
+            background: #f1f5f9;
+            padding: 0.125rem 0.375rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            color: var(--logbook-text);
+        }
+        
+        .layer-label {
+            display: inline-block;
+            padding: 0.125rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.6875rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-left: 0.5rem;
+        }
+        
+        .layer-label.layer-1 {
+            background: rgba(40, 167, 69, 0.2);
+            color: var(--logbook-success);
+        }
+        
+        .layer-label.layer-2 {
+            background: rgba(255, 193, 7, 0.2);
+            color: var(--logbook-warning);
+        }
+        
+        .layer-label.layer-3 {
+            background: rgba(220, 53, 69, 0.2);
+            color: var(--logbook-danger);
+        }
+
+        /* Menu mobile toggle */
+        @media (max-width: 1199.98px) {
+            .layout-menu {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+            .layout-menu.menu-open {
+                transform: translateX(0);
+            }
+            .layout-overlay.active {
+                display: block;
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Layout wrapper -->
+    <div class="layout-wrapper layout-content-navbar">
+        <div class="layout-container">
+            <!-- Sidebar Menu -->
+            <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
+                <div class="app-brand demo">
+                    <a href="index.html" class="app-brand-link">
+                        <span class="app-brand-logo demo">
+                            <span class="text-primary">👻</span>
+                        </span>
+                        <span class="app-brand-text demo menu-text fw-bold ms-2">Ghost Gym</span>
+                    </a>
+                </div>
+
+                <div class="menu-divider mt-0"></div>
+                <div class="menu-inner-shadow"></div>
+
+                <ul class="menu-inner py-1">
+                    <!-- Home -->
+                    <li class="menu-item">
+                        <a href="index.html" class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-home"></i>
+                            <div class="text-truncate">Home</div>
+                        </a>
+                    </li>
+                    
+                    <!-- Workouts -->
+                    <li class="menu-item">
+                        <a href="workout-database.html" class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-library"></i>
+                            <div class="text-truncate">Workouts</div>
+                        </a>
+                    </li>
+                    
+                    <!-- Workout Mode (active) -->
+                    <li class="menu-item active">
+                        <a href="workout-mode.html" class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-play-circle"></i>
+                            <div class="text-truncate">Workout Mode</div>
+                        </a>
+                    </li>
+                    
+                    <!-- Workout Management -->
+                    <li class="menu-header small text-uppercase">
+                        <span class="menu-header-text">Workout Management</span>
+                    </li>
+                    <li class="menu-item">
+                        <a href="workout-builder.html" class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-dumbbell"></i>
+                            <div class="text-truncate">Workout Builder</div>
+                        </a>
+                    </li>
+                    <li class="menu-item">
+                        <a href="programs.html" class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-folder"></i>
+                            <div class="text-truncate">My Programs</div>
+                        </a>
+                    </li>
+                    <li class="menu-item">
+                        <a href="public-workouts.html" class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-globe"></i>
+                            <div class="text-truncate">Discover Workouts</div>
+                        </a>
+                    </li>
+                    
+                    <!-- Data Management -->
+                    <li class="menu-header small text-uppercase">
+                        <span class="menu-header-text">Data Management</span>
+                    </li>
+                    <li class="menu-item">
+                        <a href="exercise-database.html" class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-book-content"></i>
+                            <div class="text-truncate">Exercise Database</div>
+                        </a>
+                    </li>
+                </ul>
+            </aside>
+            <!-- / Sidebar Menu -->
+
+            <div class="layout-page">
+                <!-- Top Navbar -->
+                <nav class="layout-navbar container-xxl navbar navbar-expand-xl navbar-detached align-items-center bg-navbar-theme" id="layout-navbar">
+                    <div class="navbar-nav align-items-xl-center me-3 me-xl-0 d-xl-none">
+                        <a class="nav-item nav-link px-0 me-xl-4" href="javascript:void(0)" onclick="toggleMenu()">
+                            <i class="bx bx-menu bx-sm"></i>
+                        </a>
+                    </div>
+
+                    <div class="navbar-nav-right d-flex align-items-center" id="navbar-collapse">
+                        <div class="navbar-nav align-items-center flex-grow-1">
+                            <h5 class="mb-0">Logbook Mode v2</h5>
+                        </div>
+
+                        <ul class="navbar-nav flex-row align-items-center ms-auto">
+                            <!-- Theme Toggle -->
+                            <li class="nav-item me-2">
+                                <a class="nav-link" href="javascript:void(0)" onclick="toggleTheme()" title="Toggle theme">
+                                    <i class="bx bx-sun bx-sm" id="themeIcon"></i>
+                                </a>
+                            </li>
+                            
+                            <!-- User Avatar -->
+                            <li class="nav-item">
+                                <a class="nav-link" href="javascript:void(0)">
+                                    <div class="avatar-initials">JD</div>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </nav>
+                <!-- / Top Navbar -->
+
+                <!-- Content wrapper -->
+                <div class="content-wrapper">
+                    <div class="container-xxl flex-grow-1 container-p-y logbook-content" style="max-width: 600px; margin: 0 auto;">
+                        
+                        <!-- Page Title -->
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <a href="workout-mode.html" class="btn btn-sm btn-outline-secondary">
+                                <i class="bx bx-arrow-back me-1"></i>Current UI
+                            </a>
+                        </div>
+
+                        <!-- Three-Layer Architecture Note -->
+                        <div class="design-note">
+                            <div class="design-note-title">
+                                <i class="bx bx-layer"></i>
+                                Three-Layer Action Hierarchy
+                            </div>
+                            <ul>
+                                <li><span class="layer-label layer-1">Layer 1</span> <strong>Logging actions</strong> → inline on card (Save, weight, notes)</li>
+                                <li><span class="layer-label layer-2">Layer 2</span> <strong>Management actions</strong> → ⋯ menu (Modify, Replace, Skip, Remove)</li>
+                                <li><span class="layer-label layer-3">Layer 3</span> <strong>Workout actions</strong> → footer (Add, Reorder, Note, Timer, End)</li>
+                            </ul>
+                            <p style="margin-top: 0.75rem; margin-bottom: 0; color: var(--logbook-muted);">
+                                <strong>Rule:</strong> <code>done every exercise?</code> → inline | <code>done occasionally?</code> → menu | <code>once per workout?</code> → footer
+                            </p>
+                        </div>
+
+                        <!-- Workout Header -->
+                        <div class="logbook-header">
+                            <h5>Push Day A</h5>
+                            <div class="meta">
+                                <i class="bx bx-calendar me-1"></i>
+                                Last completed: Jan 7, 2026 • 45 min
+                            </div>
+                        </div>
+
+                        <!-- Exercise Cards -->
+                        
+                        <!-- Card 1: Logged State - Shows state indicators, not buttons -->
+                        <div class="logbook-card logged" onclick="if(!event.target.closest('.logbook-more-btn, .logbook-menu, .inline-rest-timer')) this.classList.toggle('expanded')">
+                            <div class="logbook-card-header">
+                                <div class="logbook-exercise-info">
+                                    <div class="logbook-exercise-name">
+                                        Bench Press
+                                        <span class="status-badge logged">✓ Logged</span>
+                                    </div>
+                                    <div class="logbook-exercise-meta">3 × 8-12 • 90s rest</div>
+                                    <div class="logbook-state-row">
+                                        <span class="logbook-state-item highlight">Today: 185 lbs</span>
+                                        <span class="logbook-state-item">Last: 180 lbs</span>
+                                        <span class="logbook-state-item next-up">Next: +5</span>
+                                    </div>
+                                </div>
+                                <div class="logbook-header-actions">
+                                    <button class="logbook-more-btn" onclick="toggleMenu(this); event.stopPropagation();" title="More options">
+                                        <i class="bx bx-dots-vertical"></i>
+                                    </button>
+                                    <i class="bx bx-chevron-down logbook-chevron"></i>
+                                    <!-- Management Menu (Layer 2) -->
+                                    <div class="logbook-menu" onclick="event.stopPropagation()">
+                                        <button class="logbook-menu-item">
+                                            <i class="bx bx-edit-alt"></i>
+                                            Modify exercise
+                                        </button>
+                                        <button class="logbook-menu-item">
+                                            <i class="bx bx-transfer-alt"></i>
+                                            Replace exercise
+                                        </button>
+                                        <div class="logbook-menu-divider"></div>
+                                        <button class="logbook-menu-item">
+                                            <i class="bx bx-skip-next"></i>
+                                            Skip for today
+                                        </button>
+                                        <button class="logbook-menu-item">
+                                            <i class="bx bx-move-vertical"></i>
+                                            Move up/down
+                                        </button>
+                                        <div class="logbook-menu-divider"></div>
+                                        <button class="logbook-menu-item danger">
+                                            <i class="bx bx-trash"></i>
+                                            Remove from workout
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="logbook-card-body" onclick="event.stopPropagation()">
+                                <!-- Today Section - Primary Focus -->
+                                <div class="logbook-section">
+                                    <div class="logbook-section-label">Today <span class="layer-label layer-1">Layer 1 - Logging</span></div>
+                                    <div class="logbook-weight-field" data-weight="185" data-unit="lbs">
+                                        <!-- Display Mode -->
+                                        <div class="weight-display">
+                                            <div class="weight-value-group">
+                                                <span class="weight-value">185</span>
+                                                <span class="weight-unit">lbs</span>
+                                            </div>
+                                            <button class="weight-edit-btn" aria-label="Edit weight" title="Edit weight">
+                                                <i class="bx bx-pencil"></i>
+                                            </button>
+                                            <button class="note-toggle-btn has-note" aria-label="Toggle note" title="Toggle note" onclick="toggleNotes(this)">
+                                                <i class="bx bxs-note"></i>
+                                            </button>
+                                        </div>
+                                        
+                                        <!-- Edit Mode (hidden initially) -->
+                                        <div class="weight-editor" style="display: none;">
+                                            <button class="weight-stepper-btn minus" aria-label="Decrease by 5">−5</button>
+                                            <input type="number" class="weight-input" value="185" step="5" min="0" max="9999" inputmode="decimal" />
+                                            <button class="weight-stepper-btn plus" aria-label="Increase by 5">+5</button>
+                                            <div class="weight-editor-actions">
+                                                <button class="weight-save-btn" aria-label="Save weight" title="Save">
+                                                    <i class="bx bx-check"></i>
+                                                </button>
+                                                <button class="weight-cancel-btn" aria-label="Cancel edit" title="Cancel">
+                                                    <i class="bx bx-x"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="logbook-notes-row visible">
+                                        <textarea class="logbook-notes-input" placeholder="Add a note..." rows="2" oninput="updateNoteIcon(this)">Felt strong, good form</textarea>
+                                    </div>
+                                </div>
+
+                                <!-- Sets × Reps Section -->
+                                <div class="logbook-section">
+                                    <div class="logbook-section-label">Sets × Reps</div>
+                                    <div class="logbook-repssets-field" data-sets="3" data-reps="10">
+                                        <!-- Display Mode -->
+                                        <div class="repssets-display">
+                                            <div class="repssets-value-group">
+                                                <span class="repssets-value sets-value">3</span>
+                                                <span class="repssets-separator">×</span>
+                                                <span class="repssets-value reps-value">10</span>
+                                            </div>
+                                            <button class="repssets-edit-btn" aria-label="Edit sets and reps" title="Edit sets and reps">
+                                                <i class="bx bx-pencil"></i>
+                                            </button>
+                                            <button class="note-toggle-btn" aria-label="Toggle note" title="Add note" onclick="toggleRepsSetsNotes(this)">
+                                                <i class="bx bx-note"></i>
+                                            </button>
+                                        </div>
+                                        
+                                        <!-- Edit Mode (hidden initially) -->
+                                        <div class="repssets-editor" style="display: none;">
+                                            <input type="number" class="repssets-input sets-input" value="3" min="1" max="20" inputmode="numeric" />
+                                            <span class="repssets-separator-edit">×</span>
+                                            <input type="number" class="repssets-input reps-input" value="10" min="1" max="999" inputmode="numeric" />
+                                            <div class="repssets-editor-actions">
+                                                <button class="repssets-save-btn" aria-label="Save" title="Save">
+                                                    <i class="bx bx-check"></i>
+                                                </button>
+                                                <button class="repssets-cancel-btn" aria-label="Cancel" title="Cancel">
+                                                    <i class="bx bx-x"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="logbook-notes-row">
+                                        <textarea class="logbook-notes-input" placeholder="Add a note about sets/reps..." rows="2" oninput="updateRepsSetsNoteIcon(this)"></textarea>
+                                    </div>
+                                </div>
+
+                                <!-- Inline Rest Timer -->
+                                <div class="logbook-section">
+                                    <div class="logbook-section-label">Rest Timer</div>
+                                    <div class="inline-rest-timer" data-rest-duration="90">
+                                        <div class="rest-timer-ready">
+                                            <span class="rest-timer-duration">90s</span>
+                                            <a href="javascript:void(0)" class="rest-timer-start-link" onclick="startRestTimer(this)">
+                                                <i class="bx bx-play-circle"></i> Start Rest
+                                            </a>
+                                        </div>
+                                        <div class="rest-timer-counting">
+                                            <span class="rest-timer-countdown">90</span>
+                                            <div class="rest-timer-inline-controls">
+                                                <button class="rest-timer-inline-btn pause" onclick="pauseRestTimer(this)">
+                                                    <i class="bx bx-pause"></i>
+                                                    <span class="btn-label">Pause</span>
+                                                </button>
+                                                <button class="rest-timer-inline-btn" onclick="resetRestTimer(this)">
+                                                    <i class="bx bx-refresh"></i>
+                                                    <span class="btn-label">Reset</span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Weight History Section (tree style) -->
+                                <div class="logbook-section">
+                                    <div class="logbook-section-label">Weight History</div>
+                                    <div class="logbook-history">
+                                        <div class="logbook-history-primary">
+                                            <span class="history-label">Last:</span>
+                                            <span class="history-weight">180 lbs</span>
+                                            <span class="history-date">on Jan 7</span>
+                                        </div>
+                                        <div class="logbook-history-note">"Struggled on last set"</div>
+                                        <div class="logbook-history-tree">
+                                            <div class="logbook-history-tree-item">
+                                                <span class="tree-branch">├─</span>
+                                                <span class="history-weight">180 lbs</span>
+                                                <span>on Jan 7</span>
+                                            </div>
+                                            <div class="logbook-history-tree-item">
+                                                <span class="tree-branch">├─</span>
+                                                <span class="history-weight">175 lbs</span>
+                                                <span>on Jan 3</span>
+                                            </div>
+                                            <div class="logbook-history-tree-item">
+                                                <span class="tree-branch">└─</span>
+                                                <span class="history-weight">175 lbs</span>
+                                                <span>on Dec 28</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Next Time Section -->
+                                <div class="logbook-section">
+                                    <div class="logbook-section-label">Next Session Weight (optional)</div>
+                                    <div class="logbook-next-chips">
+                                        <button class="logbook-chip">
+                                            <i class="bx bx-minus"></i>Decrease
+                                        </button>
+                                        <button class="logbook-chip">
+                                            <i class="bx bx-check"></i>No Change
+                                        </button>
+                                        <button class="logbook-chip active">
+                                            <i class="bx bx-plus"></i>Increase
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <!-- Actions -->
+                                <div class="logbook-actions">
+                                    <button class="logbook-primary-action saved">
+                                        <i class="bx bx-check"></i>
+                                        Saved ✓
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Card 2: Expanded, Active State -->
+                        <div class="logbook-card expanded" onclick="if(!event.target.closest('.logbook-more-btn, .logbook-menu, .inline-rest-timer')) this.classList.toggle('expanded')">
+                            <div class="logbook-card-header">
+                                <div class="logbook-exercise-info">
+                                    <div class="logbook-exercise-name">
+                                        Incline Dumbbell Press
+                                    </div>
+                                    <div class="logbook-exercise-meta">3 × 10-12 • 60s rest</div>
+                                    <div class="logbook-state-row">
+                                        <span class="logbook-state-item">Last: 55 lbs on Jan 7</span>
+                                    </div>
+                                </div>
+                                <div class="logbook-header-actions">
+                                    <button class="logbook-more-btn" onclick="toggleMenu(this); event.stopPropagation();" title="More options">
+                                        <i class="bx bx-dots-vertical"></i>
+                                    </button>
+                                    <i class="bx bx-chevron-down logbook-chevron"></i>
+                                    <div class="logbook-menu" onclick="event.stopPropagation()">
+                                        <button class="logbook-menu-item">
+                                            <i class="bx bx-edit-alt"></i>
+                                            Modify exercise
+                                        </button>
+                                        <button class="logbook-menu-item">
+                                            <i class="bx bx-transfer-alt"></i>
+                                            Replace exercise
+                                        </button>
+                                        <div class="logbook-menu-divider"></div>
+                                        <button class="logbook-menu-item">
+                                            <i class="bx bx-skip-next"></i>
+                                            Skip for today
+                                        </button>
+                                        <button class="logbook-menu-item">
+                                            <i class="bx bx-move-vertical"></i>
+                                            Move up/down
+                                        </button>
+                                        <div class="logbook-menu-divider"></div>
+                                        <button class="logbook-menu-item danger">
+                                            <i class="bx bx-trash"></i>
+                                            Remove from workout
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="logbook-card-body" onclick="event.stopPropagation()">
+                                <!-- Today Section -->
+                                <div class="logbook-section">
+                                    <div class="logbook-section-label">Today</div>
+                                    <div class="logbook-weight-field" data-weight="55" data-unit="lbs">
+                                        <!-- Display Mode -->
+                                        <div class="weight-display">
+                                            <div class="weight-value-group">
+                                                <span class="weight-value">55</span>
+                                                <span class="weight-unit">lbs</span>
+                                            </div>
+                                            <button class="weight-edit-btn" aria-label="Edit weight" title="Edit weight">
+                                                <i class="bx bx-pencil"></i>
+                                            </button>
+                                            <button class="note-toggle-btn" aria-label="Toggle note" title="Add note" onclick="toggleNotes(this)">
+                                                <i class="bx bx-note"></i>
+                                            </button>
+                                        </div>
+                                        
+                                        <!-- Edit Mode (hidden initially) -->
+                                        <div class="weight-editor" style="display: none;">
+                                            <button class="weight-stepper-btn minus" aria-label="Decrease by 5">−5</button>
+                                            <input type="number" class="weight-input" value="55" step="5" min="0" max="9999" inputmode="decimal" />
+                                            <button class="weight-stepper-btn plus" aria-label="Increase by 5">+5</button>
+                                            <div class="weight-editor-actions">
+                                                <button class="weight-save-btn" aria-label="Save weight" title="Save">
+                                                    <i class="bx bx-check"></i>
+                                                </button>
+                                                <button class="weight-cancel-btn" aria-label="Cancel edit" title="Cancel">
+                                                    <i class="bx bx-x"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="logbook-notes-row">
+                                        <textarea class="logbook-notes-input" placeholder="Add a note..." rows="2" oninput="updateNoteIcon(this)"></textarea>
+                                    </div>
+                                </div>
+
+                                <!-- Sets × Reps Section -->
+                                <div class="logbook-section">
+                                    <div class="logbook-section-label">Sets × Reps</div>
+                                    <div class="logbook-repssets-field" data-sets="3" data-reps="12">
+                                        <!-- Display Mode -->
+                                        <div class="repssets-display">
+                                            <div class="repssets-value-group">
+                                                <span class="repssets-value sets-value">3</span>
+                                                <span class="repssets-separator">×</span>
+                                                <span class="repssets-value reps-value">12</span>
+                                            </div>
+                                            <button class="repssets-edit-btn" aria-label="Edit sets and reps" title="Edit sets and reps">
+                                                <i class="bx bx-pencil"></i>
+                                            </button>
+                                            <button class="note-toggle-btn" aria-label="Toggle note" title="Add note" onclick="toggleRepsSetsNotes(this)">
+                                                <i class="bx bx-note"></i>
+                                            </button>
+                                        </div>
+                                        
+                                        <!-- Edit Mode (hidden initially) -->
+                                        <div class="repssets-editor" style="display: none;">
+                                            <input type="number" class="repssets-input sets-input" value="3" min="1" max="20" inputmode="numeric" />
+                                            <span class="repssets-separator-edit">×</span>
+                                            <input type="number" class="repssets-input reps-input" value="12" min="1" max="999" inputmode="numeric" />
+                                            <div class="repssets-editor-actions">
+                                                <button class="repssets-save-btn" aria-label="Save" title="Save">
+                                                    <i class="bx bx-check"></i>
+                                                </button>
+                                                <button class="repssets-cancel-btn" aria-label="Cancel" title="Cancel">
+                                                    <i class="bx bx-x"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="logbook-notes-row">
+                                        <textarea class="logbook-notes-input" placeholder="Add a note about sets/reps..." rows="2" oninput="updateRepsSetsNoteIcon(this)"></textarea>
+                                    </div>
+                                </div>
+
+                                <!-- Inline Rest Timer -->
+                                <div class="logbook-section">
+                                    <div class="logbook-section-label">Rest Timer</div>
+                                    <div class="inline-rest-timer" data-rest-duration="60">
+                                        <div class="rest-timer-ready">
+                                            <span class="rest-timer-duration">60s</span>
+                                            <a href="javascript:void(0)" class="rest-timer-start-link" onclick="startRestTimer(this)">
+                                                <i class="bx bx-play-circle"></i> Start Rest
+                                            </a>
+                                        </div>
+                                        <div class="rest-timer-counting">
+                                            <span class="rest-timer-countdown">60</span>
+                                            <div class="rest-timer-inline-controls">
+                                                <button class="rest-timer-inline-btn pause" onclick="pauseRestTimer(this)">
+                                                    <i class="bx bx-pause"></i>
+                                                    <span class="btn-label">Pause</span>
+                                                </button>
+                                                <button class="rest-timer-inline-btn" onclick="resetRestTimer(this)">
+                                                    <i class="bx bx-refresh"></i>
+                                                    <span class="btn-label">Reset</span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Weight History Section (tree style) -->
+                                <div class="logbook-section">
+                                    <div class="logbook-section-label">Weight History</div>
+                                    <div class="logbook-history">
+                                        <div class="logbook-history-primary">
+                                            <span class="history-label">Last:</span>
+                                            <span class="history-weight">55 lbs</span>
+                                            <span class="history-date">on Jan 7</span>
+                                        </div>
+                                        <div class="logbook-history-tree">
+                                            <div class="logbook-history-tree-item">
+                                                <span class="tree-branch">├─</span>
+                                                <span class="history-weight">55 lbs</span>
+                                                <span>on Jan 7</span>
+                                            </div>
+                                            <div class="logbook-history-tree-item">
+                                                <span class="tree-branch">├─</span>
+                                                <span class="history-weight">50 lbs</span>
+                                                <span>on Jan 3</span>
+                                            </div>
+                                            <div class="logbook-history-tree-item">
+                                                <span class="tree-branch">└─</span>
+                                                <span class="history-weight">50 lbs</span>
+                                                <span>on Dec 28</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Next Time Section -->
+                                <div class="logbook-section">
+                                    <div class="logbook-section-label">Next Session Weight (optional)</div>
+                                    <div class="logbook-next-chips">
+                                        <button class="logbook-chip">
+                                            <i class="bx bx-minus"></i>Decrease
+                                        </button>
+                                        <button class="logbook-chip">
+                                            <i class="bx bx-check"></i>No Change
+                                        </button>
+                                        <button class="logbook-chip">
+                                            <i class="bx bx-plus"></i>Increase
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <!-- Actions -->
+                                <div class="logbook-actions">
+                                    <button class="logbook-primary-action save" onclick="saveExercise(this)">
+                                        Log Entry
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Card 3: Skipped State -->
+                        <div class="logbook-card skipped" onclick="if(!event.target.closest('.logbook-more-btn, .logbook-menu')) this.classList.toggle('expanded')">
+                            <div class="logbook-card-header">
+                                <div class="logbook-exercise-info">
+                                    <div class="logbook-exercise-name">
+                                        Cable Flyes
+                                        <span class="status-badge skipped">Skipped</span>
+                                    </div>
+                                    <div class="logbook-exercise-meta">3 × 12-15 • 45s rest</div>
+                                    <div class="logbook-state-row">
+                                        <span class="logbook-state-item">Machine was taken</span>
+                                    </div>
+                                </div>
+                                <div class="logbook-header-actions">
+                                    <button class="logbook-more-btn" onclick="toggleMenu(this); event.stopPropagation();" title="More options">
+                                        <i class="bx bx-dots-vertical"></i>
+                                    </button>
+                                    <i class="bx bx-chevron-down logbook-chevron"></i>
+                                    <div class="logbook-menu" onclick="event.stopPropagation()">
+                                        <button class="logbook-menu-item" style="color: var(--logbook-success);">
+                                            <i class="bx bx-undo" style="color: var(--logbook-success);"></i>
+                                            Unskip exercise
+                                        </button>
+                                        <button class="logbook-menu-item">
+                                            <i class="bx bx-transfer-alt"></i>
+                                            Replace exercise
+                                        </button>
+                                        <div class="logbook-menu-divider"></div>
+                                        <button class="logbook-menu-item danger">
+                                            <i class="bx bx-trash"></i>
+                                            Remove from workout
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="logbook-card-body" onclick="event.stopPropagation()">
+                                <div class="logbook-reference" style="background: rgba(245, 158, 11, 0.1); text-align: center; border-color: rgba(245, 158, 11, 0.2);">
+                                    <p style="margin: 0; color: var(--logbook-warning);">
+                                        <i class="bx bx-skip-next" style="vertical-align: middle;"></i>
+                                        This exercise was skipped for today
+                                    </p>
+                                    <p style="margin: 0.5rem 0 0; font-size: 0.75rem; color: var(--logbook-muted);">Machine was taken</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Card 4: Pending with Direction Reminder -->
+                        <div class="logbook-card" onclick="if(!event.target.closest('.logbook-more-btn, .logbook-menu, .inline-rest-timer')) this.classList.toggle('expanded')">
+                            <div class="logbook-card-header">
+                                <div class="logbook-exercise-info">
+                                    <div class="logbook-exercise-name">
+                                        Overhead Press
+                                    </div>
+                                    <div class="logbook-exercise-meta">3 × 8-10 • 90s rest</div>
+                                    <div class="logbook-state-row">
+                                        <span class="logbook-state-item">Last: 95 lbs on Jan 7</span>
+                                        <span class="logbook-state-item next-up">
+                                            <i class="bx bx-up-arrow-alt"></i>Planned: Increase
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="logbook-header-actions">
+                                    <button class="logbook-more-btn" onclick="toggleMenu(this); event.stopPropagation();" title="More options">
+                                        <i class="bx bx-dots-vertical"></i>
+                                    </button>
+                                    <i class="bx bx-chevron-down logbook-chevron"></i>
+                                    <div class="logbook-menu" onclick="event.stopPropagation()">
+                                        <button class="logbook-menu-item">
+                                            <i class="bx bx-edit-alt"></i>
+                                            Modify exercise
+                                        </button>
+                                        <button class="logbook-menu-item">
+                                            <i class="bx bx-transfer-alt"></i>
+                                            Replace exercise
+                                        </button>
+                                        <div class="logbook-menu-divider"></div>
+                                        <button class="logbook-menu-item">
+                                            <i class="bx bx-skip-next"></i>
+                                            Skip for today
+                                        </button>
+                                        <button class="logbook-menu-item">
+                                            <i class="bx bx-move-vertical"></i>
+                                            Move up/down
+                                        </button>
+                                        <div class="logbook-menu-divider"></div>
+                                        <button class="logbook-menu-item danger">
+                                            <i class="bx bx-trash"></i>
+                                            Remove from workout
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="logbook-card-body" onclick="event.stopPropagation()">
+                                <!-- Direction Reminder -->
+                                <div style="background: rgba(76, 187, 23, 0.1); border-radius: 0.375rem; padding: 0.75rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; border: 1px solid rgba(76, 187, 23, 0.2);">
+                                    <i class="bx bx-up-arrow-alt" style="font-size: 1.5rem; color: var(--logbook-success);"></i>
+                                    <div>
+                                        <strong style="color: var(--logbook-success);">From last session:</strong>
+                                        <span style="color: var(--logbook-muted);"> Increase weight</span>
+                                    </div>
+                                </div>
+                                
+                                <!-- Today Section -->
+                                <div class="logbook-section">
+                                    <div class="logbook-section-label">Today</div>
+                                    <div class="logbook-weight-field" data-weight="0" data-unit="lbs">
+                                        <!-- Display Mode -->
+                                        <div class="weight-display">
+                                            <div class="weight-value-group">
+                                                <span class="weight-value">—</span>
+                                                <span class="weight-unit">lbs</span>
+                                            </div>
+                                            <button class="weight-edit-btn" aria-label="Edit weight" title="Edit weight">
+                                                <i class="bx bx-pencil"></i>
+                                            </button>
+                                            <button class="note-toggle-btn" aria-label="Toggle note" title="Add note" onclick="toggleNotes(this)">
+                                                <i class="bx bx-note"></i>
+                                            </button>
+                                        </div>
+                                        
+                                        <!-- Edit Mode (hidden initially) -->
+                                        <div class="weight-editor" style="display: none;">
+                                            <button class="weight-stepper-btn minus" aria-label="Decrease by 5">−5</button>
+                                            <input type="number" class="weight-input" value="" step="5" min="0" max="9999" inputmode="decimal" placeholder="0" />
+                                            <button class="weight-stepper-btn plus" aria-label="Increase by 5">+5</button>
+                                            <div class="weight-editor-actions">
+                                                <button class="weight-save-btn" aria-label="Save weight" title="Save">
+                                                    <i class="bx bx-check"></i>
+                                                </button>
+                                                <button class="weight-cancel-btn" aria-label="Cancel edit" title="Cancel">
+                                                    <i class="bx bx-x"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="logbook-notes-row">
+                                        <textarea class="logbook-notes-input" placeholder="Add a note..." rows="2" oninput="updateNoteIcon(this)"></textarea>
+                                    </div>
+                                </div>
+
+                                <!-- Sets × Reps Section -->
+                                <div class="logbook-section">
+                                    <div class="logbook-section-label">Sets × Reps</div>
+                                    <div class="logbook-repssets-field" data-sets="3" data-reps="8">
+                                        <!-- Display Mode -->
+                                        <div class="repssets-display">
+                                            <div class="repssets-value-group">
+                                                <span class="repssets-value sets-value">3</span>
+                                                <span class="repssets-separator">×</span>
+                                                <span class="repssets-value reps-value">8</span>
+                                            </div>
+                                            <button class="repssets-edit-btn" aria-label="Edit sets and reps" title="Edit sets and reps">
+                                                <i class="bx bx-pencil"></i>
+                                            </button>
+                                            <button class="note-toggle-btn" aria-label="Toggle note" title="Add note" onclick="toggleRepsSetsNotes(this)">
+                                                <i class="bx bx-note"></i>
+                                            </button>
+                                        </div>
+                                        
+                                        <!-- Edit Mode (hidden initially) -->
+                                        <div class="repssets-editor" style="display: none;">
+                                            <input type="number" class="repssets-input sets-input" value="3" min="1" max="20" inputmode="numeric" />
+                                            <span class="repssets-separator-edit">×</span>
+                                            <input type="number" class="repssets-input reps-input" value="8" min="1" max="999" inputmode="numeric" />
+                                            <div class="repssets-editor-actions">
+                                                <button class="repssets-save-btn" aria-label="Save" title="Save">
+                                                    <i class="bx bx-check"></i>
+                                                </button>
+                                                <button class="repssets-cancel-btn" aria-label="Cancel" title="Cancel">
+                                                    <i class="bx bx-x"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="logbook-notes-row">
+                                        <textarea class="logbook-notes-input" placeholder="Add a note about sets/reps..." rows="2" oninput="updateRepsSetsNoteIcon(this)"></textarea>
+                                    </div>
+                                </div>
+
+                                <!-- Inline Rest Timer -->
+                                <div class="logbook-section">
+                                    <div class="logbook-section-label">Rest Timer</div>
+                                    <div class="inline-rest-timer" data-rest-duration="90">
+                                        <div class="rest-timer-ready">
+                                            <span class="rest-timer-duration">90s</span>
+                                            <a href="javascript:void(0)" class="rest-timer-start-link" onclick="startRestTimer(this)">
+                                                <i class="bx bx-play-circle"></i> Start Rest
+                                            </a>
+                                        </div>
+                                        <div class="rest-timer-counting">
+                                            <span class="rest-timer-countdown">90</span>
+                                            <div class="rest-timer-inline-controls">
+                                                <button class="rest-timer-inline-btn pause" onclick="pauseRestTimer(this)">
+                                                    <i class="bx bx-pause"></i>
+                                                    <span class="btn-label">Pause</span>
+                                                </button>
+                                                <button class="rest-timer-inline-btn" onclick="resetRestTimer(this)">
+                                                    <i class="bx bx-refresh"></i>
+                                                    <span class="btn-label">Reset</span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Weight History Section (tree style) -->
+                                <div class="logbook-section">
+                                    <div class="logbook-section-label">Weight History</div>
+                                    <div class="logbook-history">
+                                        <div class="logbook-history-primary">
+                                            <span class="history-label">Last:</span>
+                                            <span class="history-weight">95 lbs</span>
+                                            <span class="history-date">on Jan 7</span>
+                                        </div>
+                                        <div class="logbook-history-note">"Good, ready to go up"</div>
+                                        <div class="logbook-history-tree">
+                                            <div class="logbook-history-tree-item">
+                                                <span class="tree-branch">├─</span>
+                                                <span class="history-weight">95 lbs</span>
+                                                <span>on Jan 7</span>
+                                            </div>
+                                            <div class="logbook-history-tree-item">
+                                                <span class="tree-branch">├─</span>
+                                                <span class="history-weight">95 lbs</span>
+                                                <span>on Jan 3</span>
+                                            </div>
+                                            <div class="logbook-history-tree-item">
+                                                <span class="tree-branch">└─</span>
+                                                <span class="history-weight">90 lbs</span>
+                                                <span>on Dec 28</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Next Time Section -->
+                                <div class="logbook-section">
+                                    <div class="logbook-section-label">Next Session Weight (optional)</div>
+                                    <div class="logbook-next-chips">
+                                        <button class="logbook-chip">
+                                            <i class="bx bx-minus"></i>Decrease
+                                        </button>
+                                        <button class="logbook-chip">
+                                            <i class="bx bx-check"></i>No Change
+                                        </button>
+                                        <button class="logbook-chip">
+                                            <i class="bx bx-plus"></i>Increase
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <!-- Actions -->
+                                <div class="logbook-actions">
+                                    <button class="logbook-primary-action save" onclick="saveExercise(this)">
+                                        Log Entry
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Add Exercise - List Item Style -->
+                        <div class="logbook-add-exercise" onclick="alert('Opens bottom sheet with exercise search')">
+                            <i class="bx bx-plus-circle"></i>
+                            <span>Add exercise</span>
+                        </div>
+
+                        <!-- Design Summary -->
+                        <div class="design-note" style="margin-top: 2rem;">
+                            <div class="design-note-title">
+                                <i class="bx bx-check-circle"></i>
+                                Key Improvements in v2
+                            </div>
+                            <ul>
+                                <li><strong>State over buttons:</strong> "✓ Logged", "Last: 180", "Next: +5" replace action buttons</li>
+                                <li><strong>⋯ menu for management:</strong> Modify/Replace/Skip/Remove are hidden until needed</li>
+                                <li><strong>Skip ≠ Delete:</strong> Skipped cards stay visible with distinct styling</li>
+                                <li><strong>Add as list item:</strong> Dashed outline, feels like continuation not CTA</li>
+                                <li><strong>Floating timer + End:</strong> Timer/Start/End combo floats above action bar</li>
+                                <li><strong>Inline rest timer:</strong> Rest timer in each card for quick access</li>
+                            </ul>
+                        </div>
+
+                    </div>
+                    <!-- / Content -->
+                </div>
+                <!-- / Content wrapper -->
+            </div>
+            <!-- / Layout page -->
+        </div>
+
+        <!-- Overlay for mobile menu -->
+        <div class="layout-overlay layout-menu-toggle" onclick="closeMenu()"></div>
+    </div>
+    <!-- / Layout wrapper -->
+
+    <!-- Floating Timer + End Combo (shown when workout is active) -->
+    <div class="floating-timer-end-combo" id="floatingTimerEndCombo">
+        <div class="floating-timer-display">
+            <i class="bx bx-time-five"></i>
+            <span id="workoutTimerDisplay">12:34</span>
+        </div>
+        <button class="floating-end-btn" id="floatingEndBtn" onclick="endWorkout()">
+            <i class="bx bx-stop-circle"></i>
+            End
+        </button>
+    </div>
+
+    <!-- Start Button (shown when workout not started) - hidden by default in this demo -->
+    <div class="floating-fab-container" id="floatingStartContainer" style="display: none;">
+        <button class="floating-fab floating-fab-start" id="floatingStartBtn" onclick="startWorkout()">
+            <i class="bx bx-play"></i>
+        </button>
+    </div>
+
+    <!-- Bottom Action Bar -->
+    <div class="bottom-action-bar">
+        <div class="bottom-action-bar-container">
+            <div class="bottom-bar-buttons">
+                <button class="bottom-bar-btn" onclick="alert('Opens add exercise sheet')">
+                    <i class="bx bx-plus"></i>
+                    <span class="bottom-bar-btn-label">Add</span>
+                </button>
+                <button class="bottom-bar-btn">
+                    <i class="bx bx-note"></i>
+                    <span class="bottom-bar-btn-label">Notes</span>
+                </button>
+                <button class="bottom-bar-btn">
+                    <i class="bx bx-sort-alt-2"></i>
+                    <span class="bottom-bar-btn-label">Reorder</span>
+                </button>
+                <button class="bottom-bar-btn">
+                    <i class="bx bx-history"></i>
+                    <span class="bottom-bar-btn-label">History</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Core JS -->
+    <script src="/static/assets/vendor/libs/jquery/jquery.js"></script>
+    <script src="/static/assets/vendor/libs/popper/popper.js"></script>
+    <script src="/static/assets/vendor/js/bootstrap.js"></script>
+    
+    <script>
+        // ============================================
+        // MENU FUNCTIONS
+        // ============================================
+        
+        // Toggle sidebar menu (mobile)
+        function toggleMenu(btn) {
+            if (btn && btn.classList.contains('logbook-more-btn')) {
+                // This is the more menu toggle
+                const menu = btn.parentElement.querySelector('.logbook-menu');
+                const isOpen = menu.classList.contains('show');
+                
+                // Close all menus first
+                document.querySelectorAll('.logbook-menu.show').forEach(m => m.classList.remove('show'));
+                
+                if (!isOpen) {
+                    menu.classList.add('show');
+                }
+            } else {
+                // This is the sidebar menu toggle
+                const layoutMenu = document.getElementById('layout-menu');
+                const layoutOverlay = document.querySelector('.layout-overlay');
+                
+                if (layoutMenu && layoutOverlay) {
+                    layoutMenu.classList.toggle('menu-open');
+                    layoutOverlay.classList.toggle('active');
+                }
+            }
+        }
+        
+        function closeMenu() {
+            const layoutMenu = document.getElementById('layout-menu');
+            const layoutOverlay = document.querySelector('.layout-overlay');
+            
+            if (layoutMenu && layoutOverlay) {
+                layoutMenu.classList.remove('menu-open');
+                layoutOverlay.classList.remove('active');
+            }
+        }
+        
+        // Close menus on outside click
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.logbook-more-btn, .logbook-menu')) {
+                document.querySelectorAll('.logbook-menu.show').forEach(m => m.classList.remove('show'));
+            }
+        });
+
+        // ============================================
+        // THEME FUNCTIONS
+        // ============================================
+        
+        function toggleTheme() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-bs-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-bs-theme', newTheme);
+            
+            const icon = document.getElementById('themeIcon');
+            icon.className = newTheme === 'dark' ? 'bx bx-moon bx-sm' : 'bx bx-sun bx-sm';
+        }
+
+        // ============================================
+        // WORKOUT TIMER FUNCTIONS
+        // ============================================
+        
+        let workoutStarted = true; // Demo starts with workout active
+        let workoutSeconds = 754; // 12:34
+        let workoutTimerInterval = null;
+        
+        function startWorkout() {
+            workoutStarted = true;
+            workoutSeconds = 0;
+            
+            // Hide start button, show timer + end combo
+            document.getElementById('floatingStartContainer').style.display = 'none';
+            document.getElementById('floatingTimerEndCombo').style.display = 'flex';
+            
+            // Start the timer
+            workoutTimerInterval = setInterval(updateWorkoutTimer, 1000);
+        }
+        
+        function endWorkout() {
+            if (confirm('End this workout session?')) {
+                workoutStarted = false;
+                clearInterval(workoutTimerInterval);
+                
+                // Show start button, hide timer + end combo
+                document.getElementById('floatingStartContainer').style.display = 'block';
+                document.getElementById('floatingTimerEndCombo').style.display = 'none';
+                
+                alert('Workout ended! Duration: ' + document.getElementById('workoutTimerDisplay').textContent);
+            }
+        }
+        
+        function updateWorkoutTimer() {
+            workoutSeconds++;
+            const mins = Math.floor(workoutSeconds / 60);
+            const secs = workoutSeconds % 60;
+            document.getElementById('workoutTimerDisplay').textContent = 
+                `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+        
+        // Start workout timer for demo
+        workoutTimerInterval = setInterval(updateWorkoutTimer, 1000);
+
+        // ============================================
+        // INLINE REST TIMER FUNCTIONS
+        // ============================================
+        
+        const restTimers = new Map();
+        
+        function startRestTimer(element) {
+            const timerContainer = element.closest('.inline-rest-timer');
+            const duration = parseInt(timerContainer.dataset.restDuration) || 60;
+            const readyDiv = timerContainer.querySelector('.rest-timer-ready');
+            const countingDiv = timerContainer.querySelector('.rest-timer-counting');
+            const countdownSpan = timerContainer.querySelector('.rest-timer-countdown');
+            
+            // Switch to counting state
+            readyDiv.classList.add('hidden');
+            countingDiv.classList.add('active');
+            
+            // Store timer state
+            const timerId = Date.now();
+            timerContainer.dataset.timerId = timerId;
+            
+            let remaining = duration;
+            countdownSpan.textContent = remaining;
+            countdownSpan.classList.remove('warning', 'done');
+            
+            const interval = setInterval(() => {
+                remaining--;
+                countdownSpan.textContent = remaining;
+                
+                if (remaining <= 10 && remaining > 0) {
+                    countdownSpan.classList.add('warning');
+                }
+                
+                if (remaining <= 0) {
+                    clearInterval(interval);
+                    countdownSpan.textContent = 'Done!';
+                    countdownSpan.classList.remove('warning');
+                    countdownSpan.classList.add('done');
+                    restTimers.delete(timerId);
+                }
+            }, 1000);
+            
+            restTimers.set(timerId, { interval, timerContainer, remaining: duration });
+        }
+        
+        function pauseRestTimer(element) {
+            const timerContainer = element.closest('.inline-rest-timer');
+            const timerId = parseInt(timerContainer.dataset.timerId);
+            const timerData = restTimers.get(timerId);
+            
+            if (timerData) {
+                const pauseBtn = element.closest('.rest-timer-inline-btn');
+                const icon = pauseBtn.querySelector('i');
+                const label = pauseBtn.querySelector('.btn-label');
+                
+                if (pauseBtn.classList.contains('paused')) {
+                    // Resume
+                    pauseBtn.classList.remove('paused');
+                    icon.className = 'bx bx-pause';
+                    if (label) label.textContent = 'Pause';
+                    
+                    const countdownSpan = timerContainer.querySelector('.rest-timer-countdown');
+                    let remaining = parseInt(countdownSpan.textContent);
+                    
+                    const interval = setInterval(() => {
+                        remaining--;
+                        countdownSpan.textContent = remaining;
+                        
+                        if (remaining <= 10 && remaining > 0) {
+                            countdownSpan.classList.add('warning');
+                        }
+                        
+                        if (remaining <= 0) {
+                            clearInterval(interval);
+                            countdownSpan.textContent = 'Done!';
+                            countdownSpan.classList.remove('warning');
+                            countdownSpan.classList.add('done');
+                            restTimers.delete(timerId);
+                        }
+                    }, 1000);
+                    
+                    restTimers.set(timerId, { ...timerData, interval });
+                } else {
+                    // Pause
+                    clearInterval(timerData.interval);
+                    pauseBtn.classList.add('paused');
+                    icon.className = 'bx bx-play';
+                    if (label) label.textContent = 'Continue';
+                }
+            }
+        }
+        
+        function resetRestTimer(element) {
+            const timerContainer = element.closest('.inline-rest-timer');
+            const timerId = parseInt(timerContainer.dataset.timerId);
+            const timerData = restTimers.get(timerId);
+            
+            if (timerData) {
+                clearInterval(timerData.interval);
+                restTimers.delete(timerId);
+            }
+            
+            const readyDiv = timerContainer.querySelector('.rest-timer-ready');
+            const countingDiv = timerContainer.querySelector('.rest-timer-counting');
+            const countdownSpan = timerContainer.querySelector('.rest-timer-countdown');
+            
+            // Reset to ready state
+            readyDiv.classList.remove('hidden');
+            countingDiv.classList.remove('active');
+            countdownSpan.classList.remove('warning', 'done');
+            countdownSpan.textContent = timerContainer.dataset.restDuration || '60';
+        }
+
+        // ============================================
+        // EXERCISE CARD FUNCTIONS
+        // ============================================
+        
+        // Chip selection
+        document.querySelectorAll('.logbook-chip').forEach(chip => {
+            chip.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const parent = this.closest('.logbook-next-chips');
+                parent.querySelectorAll('.logbook-chip').forEach(c => c.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+        
+        // ============================================
+        // NOTES TOGGLE FUNCTIONS
+        // ============================================
+        
+        // Toggle notes visibility
+        function toggleNotes(btn) {
+            event.stopPropagation();
+            const section = btn.closest('.logbook-section');
+            const notesRow = section.querySelector('.logbook-notes-row');
+            
+            if (notesRow) {
+                notesRow.classList.toggle('visible');
+                notesRow.style.display = notesRow.classList.contains('visible') ? 'block' : 'none';
+                
+                // Focus the textarea when opened
+                if (notesRow.classList.contains('visible')) {
+                    const textarea = notesRow.querySelector('.logbook-notes-input');
+                    if (textarea) textarea.focus();
+                }
+            }
+        }
+        
+        // Update icon state based on note content
+        function updateNoteIcon(textarea) {
+            const section = textarea.closest('.logbook-section');
+            const noteBtn = section.querySelector('.note-toggle-btn');
+            
+            if (noteBtn) {
+                const icon = noteBtn.querySelector('i');
+                
+                if (textarea.value.trim()) {
+                    noteBtn.classList.add('has-note');
+                    icon.className = 'bx bxs-note'; // Filled icon
+                    noteBtn.title = 'View note';
+                } else {
+                    noteBtn.classList.remove('has-note');
+                    icon.className = 'bx bx-note'; // Outline icon
+                    noteBtn.title = 'Add note';
+                }
+            }
+        }
+        
+        // Save exercise
+        function saveExercise(btn) {
+            event.stopPropagation();
+            btn.classList.remove('save');
+            btn.classList.add('saved');
+            btn.innerHTML = '<i class="bx bx-check"></i> Saved ✓';
+            
+            // Mark card as logged
+            const card = btn.closest('.logbook-card');
+            card.classList.add('logged');
+            
+            // Update header with badge
+            const nameEl = card.querySelector('.logbook-exercise-name');
+            if (!nameEl.querySelector('.status-badge')) {
+                nameEl.insertAdjacentHTML('beforeend', ' <span class="status-badge logged">✓ Logged</span>');
+            }
+        }
+        
+        // ============================================
+        // WEIGHT FIELD MORPH CONTROLLER
+        // ============================================
+        
+        class WeightFieldController {
+            constructor(container) {
+                this.container = container;
+                this.displayEl = container.querySelector('.weight-display');
+                this.editorEl = container.querySelector('.weight-editor');
+                this.valueDisplay = container.querySelector('.weight-display .weight-value');
+                this.input = container.querySelector('.weight-input');
+                this.editBtn = container.querySelector('.weight-edit-btn');
+                this.saveBtn = container.querySelector('.weight-save-btn');
+                this.cancelBtn = container.querySelector('.weight-cancel-btn');
+                this.minusBtn = container.querySelector('.weight-stepper-btn.minus');
+                this.plusBtn = container.querySelector('.weight-stepper-btn.plus');
+                
+                this.originalValue = parseFloat(this.input.value) || 0;
+                this.increment = 5;
+                
+                this.bindEvents();
+            }
+            
+            bindEvents() {
+                // Pencil icon → enter edit mode
+                this.editBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.enterEditMode();
+                });
+                
+                // Save button → save and exit
+                this.saveBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.exitEditMode(true);
+                });
+                
+                // Cancel button → exit without saving
+                this.cancelBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.exitEditMode(false);
+                });
+                
+                // Minus button → decrement and auto-save
+                this.minusBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.adjustWeight(-this.increment);
+                });
+                
+                // Plus button → increment and auto-save
+                this.plusBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.adjustWeight(this.increment);
+                });
+                
+                // Enter key → save and exit
+                this.input.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        this.exitEditMode(true);
+                    } else if (e.key === 'Escape') {
+                        e.preventDefault();
+                        this.exitEditMode(false);
+                    }
+                });
+                
+                // Blur → cancel without saving (with delay for button clicks)
+                this.input.addEventListener('blur', (e) => {
+                    setTimeout(() => {
+                        if (this.editorEl.style.display !== 'none' &&
+                            !this.editorEl.contains(document.activeElement)) {
+                            this.exitEditMode(false);
+                        }
+                    }, 150);
+                });
+            }
+            
+            enterEditMode() {
+                this.originalValue = parseFloat(this.input.value) || 0;
+                this.displayEl.style.display = 'none';
+                this.editorEl.style.display = 'flex';
+                this.input.focus();
+                this.input.select();
+            }
+            
+            exitEditMode(save = true) {
+                if (save) {
+                    const newValue = parseFloat(this.input.value) || 0;
+                    this.updateValue(newValue);
+                } else {
+                    // Restore original value
+                    this.input.value = this.originalValue;
+                }
+                
+                this.editorEl.style.display = 'none';
+                this.displayEl.style.display = 'flex';
+            }
+            
+            adjustWeight(delta) {
+                const currentValue = parseFloat(this.input.value) || 0;
+                const newValue = Math.max(0, currentValue + delta);
+                this.input.value = newValue;
+                this.exitEditMode(true);
+            }
+            
+            updateValue(newValue) {
+                const clampedValue = Math.max(0, Math.min(9999, newValue));
+                const displayValue = clampedValue === 0 ? '—' : clampedValue;
+                this.valueDisplay.textContent = displayValue;
+                this.input.value = clampedValue || '';
+                this.container.dataset.weight = clampedValue;
+                
+                // Trigger save animation
+                this.displayEl.classList.add('saved');
+                setTimeout(() => {
+                    this.displayEl.classList.remove('saved');
+                }, 600);
+                
+                // Dispatch custom event for integration
+                this.container.dispatchEvent(new CustomEvent('weightChanged', {
+                    bubbles: true,
+                    detail: { weight: clampedValue }
+                }));
+            }
+        }
+        
+        // Initialize all weight fields
+        function initWeightFields() {
+            document.querySelectorAll('.logbook-weight-field').forEach(container => {
+                if (!container.weightController) {
+                    container.weightController = new WeightFieldController(container);
+                }
+            });
+        }
+        
+        // Initialize on DOM ready
+        initWeightFields();
+        
+        // ============================================
+        // REPS/SETS FIELD MORPH CONTROLLER
+        // ============================================
+        
+        class RepsSetsFieldController {
+            constructor(container) {
+                this.container = container;
+                this.displayEl = container.querySelector('.repssets-display');
+                this.editorEl = container.querySelector('.repssets-editor');
+                this.setsValueDisplay = container.querySelector('.repssets-display .sets-value');
+                this.repsValueDisplay = container.querySelector('.repssets-display .reps-value');
+                this.setsInput = container.querySelector('.sets-input');
+                this.repsInput = container.querySelector('.reps-input');
+                this.editBtn = container.querySelector('.repssets-edit-btn');
+                this.saveBtn = container.querySelector('.repssets-save-btn');
+                this.cancelBtn = container.querySelector('.repssets-cancel-btn');
+                
+                this.originalSets = parseInt(this.setsInput.value) || 3;
+                this.originalReps = parseInt(this.repsInput.value) || 10;
+                
+                this.bindEvents();
+            }
+            
+            bindEvents() {
+                // Pencil icon → enter edit mode
+                this.editBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.enterEditMode();
+                });
+                
+                // Save button → save and exit
+                this.saveBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.exitEditMode(true);
+                });
+                
+                // Cancel button → exit without saving
+                this.cancelBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.exitEditMode(false);
+                });
+                
+                // Enter key → save and exit
+                this.setsInput.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        this.exitEditMode(true);
+                    } else if (e.key === 'Escape') {
+                        e.preventDefault();
+                        this.exitEditMode(false);
+                    }
+                });
+                
+                this.repsInput.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        this.exitEditMode(true);
+                    } else if (e.key === 'Escape') {
+                        e.preventDefault();
+                        this.exitEditMode(false);
+                    }
+                });
+                
+                // Blur → cancel without saving (with delay for button clicks)
+                const handleBlur = () => {
+                    setTimeout(() => {
+                        if (this.editorEl.style.display !== 'none' &&
+                            !this.editorEl.contains(document.activeElement)) {
+                            this.exitEditMode(false);
+                        }
+                    }, 150);
+                };
+                
+                this.setsInput.addEventListener('blur', handleBlur);
+                this.repsInput.addEventListener('blur', handleBlur);
+            }
+            
+            enterEditMode() {
+                this.originalSets = parseInt(this.setsInput.value) || 3;
+                this.originalReps = parseInt(this.repsInput.value) || 10;
+                this.displayEl.style.display = 'none';
+                this.editorEl.style.display = 'flex';
+                this.setsInput.focus();
+                this.setsInput.select();
+            }
+            
+            exitEditMode(save = true) {
+                if (save) {
+                    const newSets = parseInt(this.setsInput.value) || 1;
+                    const newReps = parseInt(this.repsInput.value) || 1;
+                    this.updateValues(newSets, newReps);
+                } else {
+                    // Restore original values
+                    this.setsInput.value = this.originalSets;
+                    this.repsInput.value = this.originalReps;
+                }
+                
+                this.editorEl.style.display = 'none';
+                this.displayEl.style.display = 'flex';
+            }
+            
+            updateValues(newSets, newReps) {
+                const clampedSets = Math.max(1, Math.min(20, newSets));
+                const clampedReps = Math.max(1, Math.min(999, newReps));
+                
+                this.setsValueDisplay.textContent = clampedSets;
+                this.repsValueDisplay.textContent = clampedReps;
+                this.setsInput.value = clampedSets;
+                this.repsInput.value = clampedReps;
+                this.container.dataset.sets = clampedSets;
+                this.container.dataset.reps = clampedReps;
+                
+                // Trigger save animation
+                this.displayEl.classList.add('saved');
+                setTimeout(() => {
+                    this.displayEl.classList.remove('saved');
+                }, 600);
+                
+                // Dispatch custom event for integration
+                this.container.dispatchEvent(new CustomEvent('repsSetsChanged', {
+                    bubbles: true,
+                    detail: { sets: clampedSets, reps: clampedReps }
+                }));
+            }
+        }
+        
+        // Toggle reps/sets notes visibility
+        function toggleRepsSetsNotes(btn) {
+            event.stopPropagation();
+            const section = btn.closest('.logbook-section');
+            const notesRow = section.querySelector('.logbook-notes-row');
+            
+            if (notesRow) {
+                notesRow.classList.toggle('visible');
+                notesRow.style.display = notesRow.classList.contains('visible') ? 'block' : 'none';
+                
+                // Focus the textarea when opened
+                if (notesRow.classList.contains('visible')) {
+                    const textarea = notesRow.querySelector('.logbook-notes-input');
+                    if (textarea) textarea.focus();
+                }
+            }
+        }
+        
+        // Update reps/sets note icon state based on content
+        function updateRepsSetsNoteIcon(textarea) {
+            const section = textarea.closest('.logbook-section');
+            const noteBtn = section.querySelector('.note-toggle-btn');
+            
+            if (noteBtn) {
+                const icon = noteBtn.querySelector('i');
+                
+                if (textarea.value.trim()) {
+                    noteBtn.classList.add('has-note');
+                    icon.className = 'bx bxs-note'; // Filled icon
+                    noteBtn.title = 'View note';
+                } else {
+                    noteBtn.classList.remove('has-note');
+                    icon.className = 'bx bx-note'; // Outline icon
+                    noteBtn.title = 'Add note';
+                }
+            }
+        }
+        
+        // Initialize all reps/sets fields
+        function initRepsSetsFields() {
+            document.querySelectorAll('.logbook-repssets-field').forEach(container => {
+                if (!container.repsSetsController) {
+                    container.repsSetsController = new RepsSetsFieldController(container);
+                }
+            });
+        }
+        
+        // Initialize on DOM ready
+        initRepsSetsFields();
+    </script>
+</body>
+</html>

@@ -243,6 +243,19 @@ async def serve_exercise_history_demo():
             status_code=404
         )
 
+@app.get("/workout-mode-logbook-demo", response_class=HTMLResponse)
+@app.get("/workout-mode-logbook-demo.html", response_class=HTMLResponse)
+async def serve_workout_mode_logbook_demo():
+    """Serve the Workout Mode Logbook Demo page - Redesigned UI mockup"""
+    try:
+        with open("frontend/workout-mode-logbook-demo.html", "r", encoding="utf-8") as f:
+            return HTMLResponse(content=f.read())
+    except FileNotFoundError:
+        return HTMLResponse(
+            content="<h1>Workout Mode Logbook Demo not found</h1><p>Please ensure frontend/workout-mode-logbook-demo.html exists</p>",
+            status_code=404
+        )
+
 
 if __name__ == "__main__":
     import uvicorn
