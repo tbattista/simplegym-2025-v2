@@ -123,6 +123,12 @@ class WorkoutLifecycleManager {
             // ✅ FIX: Start session timer (updates #floatingTimer every second)
             this.timerManager.startSessionTimer();
             
+            // Show floating timer + end combo, hide FAB
+            this.showFloatingControls(true);
+            
+            // Show bottom action bar
+            this.showBottomBar(true);
+            
             // Re-render to show weight inputs and transferred bonus exercises
             this.onRenderWorkout();
             
@@ -156,6 +162,9 @@ class WorkoutLifecycleManager {
      * Shows completion offcanvas
      */
     handleCompleteWorkout() {
+        // Hide floating timer + end combo, show FAB
+        this.showFloatingControls(false);
+        
         this.showCompleteWorkoutOffcanvas();
     }
     
@@ -401,6 +410,12 @@ class WorkoutLifecycleManager {
             // Start timer (will calculate from original start time)
             this.timerManager.startSessionTimer(this.sessionService.getCurrentSession());
             
+            // Show floating controls for resumed session
+            this.showFloatingControls(true);
+            
+            // Show bottom action bar
+            this.showBottomBar(true);
+            
             // ✅ FIX: Persist session to update lastUpdated timestamp
             // This prevents offcanvas from showing on immediate subsequent refresh
             this.sessionService.persistSession();
@@ -484,6 +499,37 @@ class WorkoutLifecycleManager {
      */
     stripHtml(html) {
         return WorkoutUtils.stripHtml(html);
+    }
+    
+    /**
+     * Show/hide floating controls (FAB and Timer+End combo)
+     * Phase 8: Coordinate visibility of floating UI elements
+     * @param {boolean} sessionActive - True to show timer+end, false to show FAB
+     */
+    showFloatingControls(sessionActive) {
+        // ✅ PHASE 8 FIX: Use bottom-action-bar-service element IDs
+        // Service creates: #floatingStartButton and #floatingTimerEndCombo
+        // This replaces static HTML element IDs: #startWorkoutFAB
+        
+        // Delegate to bottom-action-bar-service for state management
+        if (window.bottomActionBarService) {
+            window.bottomActionBarService.updateWorkoutModeState(sessionActive);
+            console.log(`✅ Floating controls updated via service: ${sessionActive ? 'Timer+End combo' : 'Start button'} shown`);
+        } else {
+            console.warn('⚠️ bottom-action-bar-service not available, controls may not update');
+        }
+    }
+    
+    /**
+     * Show/hide bottom action bar
+     * Phase 8: Control bottom bar visibility
+     * @param {boolean} show - True to show, false to hide
+     */
+    showBottomBar(show) {
+        // ✅ PHASE 8 FIX: Bottom bar is managed by bottom-action-bar-service
+        // Service automatically shows/hides based on page and session state
+        // This method is now a no-op, kept for backward compatibility
+        console.log(`✅ Bottom action bar visibility delegated to service (show: ${show})`);
     }
 }
 

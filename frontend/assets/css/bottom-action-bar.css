@@ -383,17 +383,21 @@
     align-items: center;
     z-index: 1002;
     pointer-events: auto;
+    /* ✅ PHASE 8 FIX: No background/border on container - let buttons style themselves */
+    background: transparent;
+    border: none;
+    padding: 0;
 }
 
 /* Timer Display */
 .floating-timer-display {
     height: var(--floating-fab-height);
-    width: var(--floating-timer-width);
-    min-width: var(--floating-timer-width);
-    max-width: var(--floating-timer-width);
+    width: 120px; /* ✅ PHASE 8 FIX: Fixed width for 0:00:00 format */
+    min-width: 120px;
+    max-width: 120px;
     padding: 0 var(--floating-fab-padding-x);
-    background: var(--bs-body-bg);
-    border: 2px solid var(--bs-primary);
+    background: var(--bs-body-bg); /* ✅ PHASE 8 FIX: Match button styling */
+    border: 2px solid var(--bs-primary); /* ✅ PHASE 8 FIX: Match button styling */
     border-radius: var(--floating-fab-border-radius);
     display: flex;
     align-items: center;
@@ -402,7 +406,7 @@
     font-size: var(--floating-fab-font-size);
     font-weight: 600;
     color: var(--bs-body-color);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15); /* ✅ PHASE 8 FIX: Match button shadow */
     transition: all 0.2s ease;
     align-self: center;
 }
@@ -410,6 +414,12 @@
 .floating-timer-display i {
     font-size: var(--floating-fab-icon-size);
     color: var(--bs-primary);
+    flex-shrink: 0;
+}
+
+.floating-timer-display span {
+    font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
+    font-variant-numeric: tabular-nums; /* Fixed-width numbers */
 }
 
 /* Start/End Button (changes based on session state) */
@@ -473,6 +483,13 @@
 
 /* Dark mode adjustments */
 [data-theme="dark"] .floating-timer-display {
+    background: var(--bs-gray-900);
+    border-color: var(--bs-primary);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+/* Bootstrap dark mode (data-bs-theme) support */
+[data-bs-theme="dark"] .floating-timer-display {
     background: var(--bs-gray-900);
     border-color: var(--bs-primary);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);

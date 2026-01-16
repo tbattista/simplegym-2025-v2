@@ -62,6 +62,9 @@ class WorkoutModeController {
             onAutoSave: () => this.autoSave(null)
         });
         
+        // Expose weight manager globally for menu access
+        window.workoutWeightManager = this.weightManager;
+        
         // Phase 7: Initialize Exercise Operations Manager
         this.exerciseOpsManager = new WorkoutExerciseOperationsManager({
             sessionService: this.sessionService,
@@ -324,6 +327,10 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
             // Initialize start button tooltip
             await this.uiStateManager.updateStartButtonTooltip(this.authService.isUserAuthenticated());
             
+            // Phase 8: Show FAB and bottom bar (session not active yet)
+            this.lifecycleManager.showFloatingControls(false); // Show FAB
+            this.lifecycleManager.showBottomBar(true); // Show bottom bar
+            
             // Hide loading, show content
             this.uiStateManager.hideLoading();
             
@@ -510,6 +517,9 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
         
         // Initialize inline rest timers for each exercise card
         this.initializeInlineTimers();
+        
+        // LOGBOOK V2 - Phase 5: Initialize morph pattern controllers after cards are rendered
+        this.initializeLogbookControllers();
     }
     
     /**
@@ -546,6 +556,85 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
         });
         
         console.log(`✅ Initialized ${timerContainers.length} inline timers`);
+    }
+    
+    /**
+     * Initialize Logbook V2 field controllers
+     * Phase 5: Morph pattern controllers for weight and reps/sets fields
+     * Called after cards are rendered to the DOM
+     */
+    initializeLogbookControllers() {
+        try {
+            // Initialize weight field controllers
+            if (window.initializeWeightFields) {
+                window.initializeWeightFields(this.sessionService);
+                console.log('✅ Logbook V2: Weight field controllers initialized');
+            } else {
+                console.warn('⚠️ Logbook V2: initializeWeightFields not available');
+            }
+            
+            // Initialize reps/sets field controllers
+            if (window.initializeRepsSetsFields) {
+                window.initializeRepsSetsFields(this.sessionService);
+                console.log('✅ Logbook V2: Reps/Sets field controllers initialized');
+            } else {
+                console.warn('⚠️ Logbook V2: initializeRepsSetsFields not available');
+            }
+            
+            // Initialize unified edit controllers (Phase 6: Shared save/cancel buttons)
+            if (window.UnifiedEditController) {
+                // Find all exercise cards and initialize unified edit controller for each
+                const exerciseCards = document.querySelectorAll('.logbook-card');
+                exerciseCards.forEach((card) => {
+                    const exerciseIndex = card.getAttribute('data-exercise-index');
+                    const exerciseName = card.getAttribute('data-exercise-name');
+                    
+                    if (exerciseIndex !== null && exerciseName) {
+                        // FIXED: Get controllers from the field containers, not the card element
+                        const weightFieldContainer = card.querySelector('.logbook-weight-field');
+                        const repsSetsFieldContainer = card.querySelector('.logbook-repssets-field');
+                        
+                        // FIXED: Use correct property names from initialization functions
+                        const weightController = weightFieldContainer?.weightController;
+                        const repsSetsController = repsSetsFieldContainer?.repsSetsController;
+                        
+                        if (weightController && repsSetsController) {
+                            // Create unified edit controller
+                            const unifiedController = new window.UnifiedEditController(
+                                card,
+                                weightController,
+                                repsSetsController
+                            );
+                            
+                            // Store reference on card for later access
+                            card.unifiedEditController = unifiedController;
+                            
+                            console.log(`✅ Unified edit controller initialized for ${exerciseName} (index ${exerciseIndex})`);
+                        } else {
+                            console.warn(`⚠️ Missing field controllers for ${exerciseName} (index ${exerciseIndex})`, {
+                                hasWeightContainer: !!weightFieldContainer,
+                                hasRepsSetsContainer: !!repsSetsFieldContainer,
+                                hasWeightController: !!weightController,
+                                hasRepsSetsController: !!repsSetsController
+                            });
+                        }
+                    }
+                });
+                
+                console.log('✅ Logbook V2: Unified edit controllers initialized');
+            } else {
+                console.warn('⚠️ Logbook V2: UnifiedEditController not available');
+            }
+            
+            // Dispatch event to trigger unified notes controller initialization
+            const event = new CustomEvent('exerciseCardsRendered');
+            document.dispatchEvent(event);
+            console.log('✅ exerciseCardsRendered event dispatched');
+            
+            console.log('✅ Logbook V2: All field controllers initialized');
+        } catch (error) {
+            console.error('❌ Error initializing Logbook V2 controllers:', error);
+        }
     }
     
     /**
@@ -1100,13 +1189,128 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
             }
             
             console.log('✅ Exercise order applied successfully');
-            
+
         } catch (error) {
             console.error('❌ Error applying exercise order:', error);
             window.showAlert('Failed to update exercise order', 'error');
         }
     }
-    
+
+    /**
+     * Move exercise up one position
+     * @param {number} index - Current exercise index
+     */
+    handleMoveUp(index) {
+        if (index <= 0) return;
+        this.moveExercise(index, index - 1);
+    }
+
+    /**
+     * Move exercise down one position
+     * @param {number} index - Current exercise index
+     */
+    handleMoveDown(index) {
+        const currentOrder = this.getCurrentExerciseOrder();
+        if (index >= currentOrder.length - 1) return;
+        this.moveExercise(index, index + 1);
+    }
+
+    /**
+     * Move exercise from one position to another
+     * Keeps menu open on the moved card for quick repeated moves
+     * @param {number} fromIndex - Original position
+     * @param {number} toIndex - Target position
+     */
+    moveExercise(fromIndex, toIndex) {
+        try {
+            // Get current exercise order
+            const currentOrder = this.getCurrentExerciseOrder();
+
+            // Swap positions
+            const [movedItem] = currentOrder.splice(fromIndex, 1);
+            currentOrder.splice(toIndex, 0, movedItem);
+
+            // Apply new order without showing toast (for quick repeated moves)
+            this.applyExerciseOrderSilent(currentOrder);
+
+            // Reopen menu at the new position
+            setTimeout(() => {
+                this.reopenMenuAtIndex(toIndex);
+            }, 50);
+
+        } catch (error) {
+            console.error('❌ Error moving exercise:', error);
+        }
+    }
+
+    /**
+     * Get current exercise order as array of names
+     * @returns {string[]} Exercise names in current order
+     */
+    getCurrentExerciseOrder() {
+        const exerciseList = this.buildExerciseList();
+        return exerciseList.map(ex => ex.name);
+    }
+
+    /**
+     * Apply exercise order without showing success toast
+     * Used for quick repeated moves where toast would be annoying
+     * @param {string[]} newOrder - Array of exercise names in new order
+     */
+    applyExerciseOrderSilent(newOrder) {
+        try {
+            if (!Array.isArray(newOrder) || newOrder.length === 0) {
+                console.error('❌ Invalid order array:', newOrder);
+                return;
+            }
+
+            // Preserve timer state before re-render
+            const timerDisplay = document.getElementById('floatingTimer');
+            const preservedTime = timerDisplay ? timerDisplay.textContent : null;
+            const isSessionActive = this.sessionService.isSessionActive();
+
+            // Save to session service
+            this.sessionService.setExerciseOrder(newOrder);
+
+            // Re-render workout with new order
+            this.renderWorkout(true);
+
+            // Restore timer state if needed
+            if (isSessionActive && preservedTime && timerDisplay) {
+                const currentTime = timerDisplay.textContent;
+                if (currentTime === '00:00' && preservedTime !== '00:00') {
+                    timerDisplay.textContent = preservedTime;
+                }
+            }
+
+            // Auto-save if session is active
+            if (this.sessionService.isSessionActive()) {
+                this.autoSave(null);
+            }
+
+        } catch (error) {
+            console.error('❌ Error applying exercise order silently:', error);
+        }
+    }
+
+    /**
+     * Reopen the exercise menu at a specific index
+     * Used after moving an exercise to keep the menu open for quick repeated moves
+     * @param {number} index - Exercise index to open menu for
+     */
+    reopenMenuAtIndex(index) {
+        const container = document.getElementById('exerciseCardsContainer');
+        const card = container?.querySelector(`[data-exercise-index="${index}"]`);
+        if (!card) return;
+
+        const moreBtn = card.querySelector('.logbook-more-btn');
+        if (moreBtn) {
+            // Get exercise name from card
+            const exerciseName = card.dataset.exerciseName || '';
+            this.toggleExerciseMenu(moreBtn, exerciseName, index);
+        }
+    }
+
     /**
      * Update session UI
      * Phase 5: Delegates to WorkoutLifecycleManager
@@ -1147,18 +1351,31 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
      */
     initializeSoundToggle() {
         const soundBtn = document.getElementById('soundToggleBtn');
+        const soundBtnBottom = document.getElementById('soundToggleBtnBottom');
         const soundIcon = document.getElementById('soundIcon');
         const soundStatus = document.getElementById('soundStatus');
         
-        if (!soundBtn) return;
+        if (!soundBtn && !soundBtnBottom) return;
         
         this.updateSoundUI();
         
-        soundBtn.addEventListener('click', () => {
-            this.soundEnabled = !this.soundEnabled;
-            localStorage.setItem('workoutSoundEnabled', this.soundEnabled);
-            this.updateSoundUI();
-        });
+        // Main sound toggle button
+        if (soundBtn) {
+            soundBtn.addEventListener('click', () => {
+                this.soundEnabled = !this.soundEnabled;
+                localStorage.setItem('workoutSoundEnabled', this.soundEnabled);
+                this.updateSoundUI();
+            });
+        }
+        
+        // Bottom bar sound toggle button
+        if (soundBtnBottom) {
+            soundBtnBottom.addEventListener('click', () => {
+                this.soundEnabled = !this.soundEnabled;
+                localStorage.setItem('workoutSoundEnabled', this.soundEnabled);
+                this.updateSoundUI();
+            });
+        }
     }
     
     /**
@@ -1179,10 +1396,19 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
         const soundIcon = document.getElementById('soundIcon');
         const soundStatus = document.getElementById('soundStatus');
         const soundBtn = document.getElementById('soundToggleBtn');
+        const soundBtnBottom = document.getElementById('soundToggleBtnBottom');
         
         if (soundStatus) soundStatus.textContent = this.soundEnabled ? 'On' : 'Off';
         if (soundIcon) soundIcon.className = this.soundEnabled ? 'bx bx-volume-full me-1' : 'bx bx-volume-mute me-1';
         if (soundBtn) soundBtn.className = this.soundEnabled ? 'btn btn-outline-secondary' : 'btn btn-outline-danger';
+        
+        // Update bottom bar button icon
+        if (soundBtnBottom) {
+            const icon = soundBtnBottom.querySelector('i');
+            if (icon) {
+                icon.className = this.soundEnabled ? 'bx bx-volume-full' : 'bx bx-volume-mute';
+            }
+        }
     }
     
     /**
@@ -1532,6 +1758,83 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
         
         // No custom order - return in default order
         return allExercises.map(ex => ex.name);
+    }
+    
+    /**
+     * Toggle exercise more menu (⋯ menu)
+     * Phase 8: Three-dot menu for exercise management actions
+     * @param {HTMLElement} button - The more button that was clicked
+     * @param {string} exerciseName - Exercise name
+     * @param {number} index - Exercise index
+     */
+    toggleExerciseMenu(button, exerciseName, index) {
+        if (!button || !button.classList.contains('logbook-more-btn')) {
+            console.warn('⚠️ Invalid button element for menu toggle');
+            return;
+        }
+        
+        // Find the menu element (sibling of the button)
+        const menu = button.parentElement.querySelector('.logbook-menu');
+        if (!menu) {
+            console.warn('⚠️ Menu element not found');
+            return;
+        }
+        
+        const isOpen = menu.classList.contains('show');
+        
+        // Close all other open menus first
+        document.querySelectorAll('.logbook-menu.show').forEach(m => {
+            if (m !== menu) {
+                m.classList.remove('show');
+            }
+        });
+        
+        // Toggle this menu
+        if (isOpen) {
+            menu.classList.remove('show');
+            this.removeClickOutsideListener();
+        } else {
+            menu.classList.add('show');
+            this.addClickOutsideListener();
+        }
+        
+        console.log(`📋 Menu toggled for ${exerciseName} (index ${index}): ${isOpen ? 'closed' : 'opened'}`);
+    }
+    
+    /**
+     * Add click-outside listener to close menus
+     * @private
+     */
+    addClickOutsideListener() {
+        // Remove existing listener first to prevent duplicates
+        this.removeClickOutsideListener();
+        
+        // Create new listener
+        this._clickOutsideHandler = (event) => {
+            // Check if click is outside all menus
+            if (!event.target.closest('.logbook-menu') && !event.target.closest('.logbook-more-btn')) {
+                document.querySelectorAll('.logbook-menu.show').forEach(menu => {
+                    menu.classList.remove('show');
+                });
+                this.removeClickOutsideListener();
+            }
+        };
+        
+        // Add listener with slight delay to prevent immediate triggering
+        setTimeout(() => {
+            document.addEventListener('click', this._clickOutsideHandler);
+        }, 10);
+    }
+    
+    /**
+     * Remove click-outside listener
+     * @private
+     */
+    removeClickOutsideListener() {
+        if (this._clickOutsideHandler) {
+            document.removeEventListener('click', this._clickOutsideHandler);
+            this._clickOutsideHandler = null;
+        }
     }
     
     /**

@@ -205,6 +205,21 @@
     color: var(--bs-primary);
 }
 
+/* DIY hint tooltip */
+.offcanvas-bottom-base .diy-hint {
+    font-size: 0.8rem;
+    padding: 0.5rem 0.75rem;
+    background-color: rgba(var(--bs-info-rgb), 0.1);
+    border-radius: 6px;
+    border-left: 3px solid var(--bs-info);
+    animation: diyHintFadeIn 0.2s ease-in-out;
+}
+
+@keyframes diyHintFadeIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
 /* ============================================
    STATS CARDS (for confirmations/summaries)
    ============================================ */
@@ -755,23 +770,33 @@
     transition: all 0.3s ease;
 }
 
-/* Default layout: input takes ~33%, buttons take ~67% */
-.weight-input-container .weight-input {
+/* NEW: Full-width layout for offcanvas - input always full width, buttons on next line */
+.offcanvas-bottom-base .weight-input-container .weight-input {
+    flex: 0 0 100%;
+    max-width: 100%;
+}
+
+.offcanvas-bottom-base .weight-input-container .btn-group {
+    flex: 0 0 100%;
+}
+
+/* Keep original layout for non-offcanvas contexts (in-card editor) */
+.logbook-card .weight-input-container .weight-input {
     flex: 0 0 calc(33.333% - 0.25rem);
     transition: flex 0.3s ease;
 }
 
-.weight-input-container .btn-group {
+.logbook-card .weight-input-container .btn-group {
     flex: 0 0 calc(66.667% - 0.25rem);
     transition: flex 0.3s ease;
 }
 
-/* DIY mode: input expands to full width, buttons move to new line */
-.weight-input-container.diy-mode .weight-input {
+/* DIY mode: input expands to full width, buttons move to new line (in-card only) */
+.logbook-card .weight-input-container.diy-mode .weight-input {
     flex: 0 0 100%;
 }
 
-.weight-input-container.diy-mode .btn-group {
+.logbook-card .weight-input-container.diy-mode .btn-group {
     flex: 0 0 100%;
 }
 

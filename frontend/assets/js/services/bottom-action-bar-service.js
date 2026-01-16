@@ -234,7 +234,7 @@
                     <!-- Timer Display -->
                     <div class="floating-timer-display" id="floatingTimerDisplay">
                         <i class="bx bx-time-five"></i>
-                        <span id="floatingTimer">00:00</span>
+                        <span id="floatingTimer">0:00:00</span>
                     </div>
                     
                     <!-- Start/End Button (changes based on session state) -->

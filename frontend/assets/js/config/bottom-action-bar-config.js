@@ -1085,6 +1085,43 @@
                                                 window.workoutModeController.soundEnabled = enabled;
                                             }
                                         }
+                                    },
+                                    { type: 'divider' },
+                                    {
+                                        icon: 'bx-share-alt',
+                                        title: 'Share Workout',
+                                        description: 'Share publicly or create private link',
+                                        onClick: () => {
+                                            if (window.workoutModeController?.initializeShareButton) {
+                                                window.workoutModeController.initializeShareButton();
+                                            } else {
+                                                console.warn('⚠️ Share feature not available');
+                                            }
+                                        }
+                                    },
+                                    {
+                                        icon: 'bx-edit',
+                                        title: 'Edit Workout',
+                                        description: 'Modify workout template',
+                                        onClick: () => {
+                                            if (window.workoutModeController?.handleEditWorkout) {
+                                                window.workoutModeController.handleEditWorkout();
+                                            } else {
+                                                console.warn('⚠️ Edit feature not available');
+                                            }
+                                        }
+                                    },
+                                    {
+                                        icon: 'bx-refresh',
+                                        title: 'Change Workout',
+                                        description: 'Switch to different workout',
+                                        onClick: () => {
+                                            if (window.workoutModeController?.handleChangeWorkout) {
+                                                window.workoutModeController.handleChangeWorkout();
+                                            } else {
+                                                console.warn('⚠️ Change workout feature not available');
+                                            }
+                                        }
                                     }
                                 ]
                             });
@@ -1191,6 +1228,43 @@
                                             // Update controller sound state
                                             if (window.workoutModeController) {
                                                 window.workoutModeController.soundEnabled = enabled;
+                                            }
+                                        }
+                                    },
+                                    { type: 'divider' },
+                                    {
+                                        icon: 'bx-share-alt',
+                                        title: 'Share Workout',
+                                        description: 'Share publicly or create private link',
+                                        onClick: () => {
+                                            if (window.workoutModeController?.initializeShareButton) {
+                                                window.workoutModeController.initializeShareButton();
+                                            } else {
+                                                console.warn('⚠️ Share feature not available');
+                                            }
+                                        }
+                                    },
+                                    {
+                                        icon: 'bx-edit',
+                                        title: 'Edit Workout',
+                                        description: 'Modify workout template',
+                                        onClick: () => {
+                                            if (window.workoutModeController?.handleEditWorkout) {
+                                                window.workoutModeController.handleEditWorkout();
+                                            } else {
+                                                console.warn('⚠️ Edit feature not available');
+                                            }
+                                        }
+                                    },
+                                    {
+                                        icon: 'bx-refresh',
+                                        title: 'Change Workout',
+                                        description: 'Switch to different workout',
+                                        onClick: () => {
+                                            if (window.workoutModeController?.handleChangeWorkout) {
+                                                window.workoutModeController.handleChangeWorkout();
+                                            } else {
+                                                console.warn('⚠️ Change workout feature not available');
                                             }
                                         }
                                     }

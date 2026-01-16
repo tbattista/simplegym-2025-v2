@@ -326,6 +326,10 @@ export function createExerciseGroupEditor(config, onSave, onDelete, onSearchClic
                             <button type="button" class="btn btn-outline-secondary weight-unit-btn ${weightUnit === 'other' ? 'active' : ''}"
                                     data-unit="other">DIY</button>
                         </div>
+                        <div class="diy-hint text-muted small mt-2" style="display: ${weightUnit === 'other' ? 'block' : 'none'};">
+                            <i class="bx bx-info-circle me-1"></i>
+                            e.g., "Body weight", "20lb Medball", "Cable #7"
+                        </div>
                     </div>
                     <div class="form-text">
                         <i class="bx bx-info-circle me-1"></i>
@@ -505,7 +509,7 @@ export function createExerciseGroupEditor(config, onSave, onDelete, onSearchClic
                 weightUnitBtns.forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
                 state.weightUnit = btn.dataset.unit;
-                
+
                 // Toggle DIY mode layout - query fresh each time to ensure element is found
                 const weightContainer = element.querySelector('.weight-input-container');
                 if (weightContainer) {
@@ -515,10 +519,16 @@ export function createExerciseGroupEditor(config, onSave, onDelete, onSearchClic
                         weightContainer.classList.remove('diy-mode');
                     }
                     console.log(`💡 Weight unit changed to ${state.weightUnit}, DIY mode: ${weightContainer.classList.contains('diy-mode')}`);
+
+                    // Show/hide DIY hint
+                    const diyHint = weightContainer.querySelector('.diy-hint');
+                    if (diyHint) {
+                        diyHint.style.display = state.weightUnit === 'other' ? 'block' : 'none';
+                    }
                 } else {
                     console.warn('⚠️ Weight container not found!');
                 }
-                
+
                 // Update placeholder based on selected unit
                 if (weightInput) {
                     if (state.weightUnit === 'other') {
@@ -655,6 +665,20 @@ export function renderAlternateSlot(slotKey, exerciseName) {
 export function createExerciseDetailsEditor(data, onSave) {
     const { exerciseName, sets, reps, rest, weight, weightUnit, updateTemplateDefault = false } = data;
     
+    // Combine sets and reps into protocol format
+    const protocol = sets && reps ? `${sets}×${reps}` : (sets || reps || '3×10');
+    
+    // Example placeholders for DIY mode
+    const diyPlaceholders = [
+        'body weight + 10lbs',
+        'six 45lbs plates',
+        'resistance band - heavy',
+        'BW + 25lbs dumbbell',
+        'cable stack position 7',
+        'kettlebell 35lbs'
+    ];
+    const randomDiyPlaceholder = diyPlaceholders[Math.floor(Math.random() * diyPlaceholders.length)];
+    
     const offcanvasHtml = `
         <div class="offcanvas offcanvas-bottom offcanvas-bottom-base" tabindex="-1"
              id="exerciseDetailsEditorOffcanvas" aria-labelledby="exerciseDetailsEditorLabel" data-bs-scroll="false">
@@ -667,37 +691,44 @@ export function createExerciseDetailsEditor(data, onSave) {
             <div class="offcanvas-body">
                 <h6 class="mb-4">${escapeHtml(exerciseName)}</h6>
                 
-                <!-- Sets, Reps, Rest Row -->
-                <div class="row g-2 mb-3">
-                    <div class="col-4">
-                        <label class="form-label">Sets</label>
-                        <input type="text" class="form-control text-center" id="editSetsInput"
-                               value="${escapeHtml(sets)}" placeholder="3">
-                    </div>
-                    <div class="col-4">
-                        <label class="form-label">Reps</label>
-                        <input type="text" class="form-control text-center" id="editRepsInput"
-                               value="${escapeHtml(reps)}" placeholder="8-12">
-                    </div>
-                    <div class="col-4">
-                        <label class="form-label">Rest</label>
-                        <input type="text" class="form-control text-center" id="editRestInput"
-                               value="${escapeHtml(rest)}" placeholder="60s">
-                    </div>
+                <!-- Protocol Section (Sets × Reps) -->
+                <div class="mb-3">
+                    <label class="form-label"><i class="bx bx-list-ol me-1"></i>Protocol</label>
+                    <input type="text" class="form-control" id="editProtocolInput"
+                           value="${escapeHtml(protocol)}"
+                           placeholder="e.g., 3×10, AMRAP, 3 sets to failure">
+                    <small class="text-muted">Enter sets and reps in any format</small>
                 </div>
                 
-                <!-- Weight -->
+                <!-- Weight Section -->
                 <div class="mb-3">
                     <label class="form-label"><i class="bx bx-dumbbell me-1"></i>Weight</label>
-                    <div class="d-flex gap-2">
-                        <input type="text" class="form-control" id="editWeightInput"
-                               value="${escapeHtml(weight)}" placeholder="135" style="flex: 1;">
-                        <select class="form-select" id="editWeightUnitSelect" style="width: 100px;">
-                            <option value="lbs" ${weightUnit === 'lbs' ? 'selected' : ''}>lbs</option>
-                            <option value="kg" ${weightUnit === 'kg' ? 'selected' : ''}>kg</option>
-                            <option value="other" ${weightUnit === 'other' ? 'selected' : ''}>DIY</option>
-                        </select>
+                    <div class="weight-input-container ${weightUnit === 'other' ? 'diy-mode' : ''}" style="display: flex; flex-direction: column; gap: 0.5rem;">
+                        <input type="text" class="form-control weight-input text-center"
+                               id="editWeightInput" value="${escapeHtml(weight)}"
+                               placeholder="${weightUnit === 'other' ? randomDiyPlaceholder : (weightUnit === 'kg' ? '60' : '135')}"
+                               style="width: 100%;">
+                        <div class="btn-group w-100" role="group">
+                            <button type="button" class="btn btn-outline-secondary weight-unit-btn ${weightUnit === 'lbs' ? 'active' : ''}"
+                                    data-unit="lbs">lbs</button>
+                            <button type="button" class="btn btn-outline-secondary weight-unit-btn ${weightUnit === 'kg' ? 'active' : ''}"
+                                    data-unit="kg">kg</button>
+                            <button type="button" class="btn btn-outline-secondary weight-unit-btn ${weightUnit === 'other' ? 'active' : ''}"
+                                    data-unit="other">DIY</button>
+                        </div>
+                        <div class="diy-hint text-muted small mt-2" style="display: ${weightUnit === 'other' ? 'block' : 'none'};">
+                            <i class="bx bx-info-circle me-1"></i>
+                            e.g., "Body weight", "20lb Medball", "Cable #7"
+                        </div>
                     </div>
+                </div>
+
+                <!-- Rest Time Section -->
+                <div class="mb-3">
+                    <label class="form-label"><i class="bx bx-timer me-1"></i>Rest Time</label>
+                    <input type="text" class="form-control" id="editRestInput"
+                           value="${escapeHtml(rest)}" placeholder="60s">
+                    <small class="text-muted">e.g., 60s, 2min, 90s</small>
                 </div>
                 
                 <!-- Update Template Toggle -->
@@ -733,16 +764,46 @@ export function createExerciseDetailsEditor(data, onSave) {
         </div>
     `;
     
-    return createOffcanvas('exerciseDetailsEditorOffcanvas', offcanvasHtml, (offcanvas) => {
-        const saveBtn = document.getElementById('saveExerciseDetailsBtn');
-        const setsInput = document.getElementById('editSetsInput');
-        const repsInput = document.getElementById('editRepsInput');
-        const restInput = document.getElementById('editRestInput');
-        const weightInput = document.getElementById('editWeightInput');
-        const unitSelect = document.getElementById('editWeightUnitSelect');
-        const updateTemplateToggle = document.getElementById('updateTemplateToggle');
-        const updateInfoText = document.getElementById('updateInfoText');
-        const updateInfoAlert = document.getElementById('updateInfoAlert');
+    return createOffcanvas('exerciseDetailsEditorOffcanvas', offcanvasHtml, (offcanvas, offcanvasElement) => {
+        const saveBtn = offcanvasElement.querySelector('#saveExerciseDetailsBtn');
+        const protocolInput = offcanvasElement.querySelector('#editProtocolInput');
+        const restInput = offcanvasElement.querySelector('#editRestInput');
+        const weightInput = offcanvasElement.querySelector('#editWeightInput');
+        const weightUnitBtns = offcanvasElement.querySelectorAll('.weight-unit-btn');
+        const updateTemplateToggle = offcanvasElement.querySelector('#updateTemplateToggle');
+        const updateInfoText = offcanvasElement.querySelector('#updateInfoText');
+        const updateInfoAlert = offcanvasElement.querySelector('#updateInfoAlert');
+        const weightContainer = offcanvasElement.querySelector('.weight-input-container');
+        
+        // Track current weight unit
+        let currentWeightUnit = weightUnit;
+        
+        // Weight unit button handlers
+        weightUnitBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Update button states
+                weightUnitBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentWeightUnit = btn.dataset.unit;
+
+                // Toggle DIY mode layout
+                if (weightContainer) {
+                    if (currentWeightUnit === 'other') {
+                        weightContainer.classList.add('diy-mode');
+                        weightInput.placeholder = randomDiyPlaceholder;
+                    } else {
+                        weightContainer.classList.remove('diy-mode');
+                        weightInput.placeholder = currentWeightUnit === 'kg' ? '60' : '135';
+                    }
+
+                    // Show/hide DIY hint
+                    const diyHint = weightContainer.querySelector('.diy-hint');
+                    if (diyHint) {
+                        diyHint.style.display = currentWeightUnit === 'other' ? 'block' : 'none';
+                    }
+                }
+            });
+        });
         
         // Dynamic info text based on toggle state
         const updateInfoMessage = () => {
@@ -763,6 +824,30 @@ export function createExerciseDetailsEditor(data, onSave) {
         if (updateTemplateToggle) {
             updateTemplateToggle.addEventListener('change', updateInfoMessage);
         }
+        
+        /**
+         * Parse protocol string into sets and reps
+         * @param {string} protocol - e.g., "3×10", "AMRAP", "3 sets to failure"
+         * @returns {{sets: string, reps: string}}
+         */
+        const parseProtocol = (protocol) => {
+            // Try to match common patterns
+            const xPattern = /(\d+)\s*[x×]\s*(.+)/i;
+            const setsPattern = /(\d+)\s*set/i;
+            
+            const xMatch = protocol.match(xPattern);
+            if (xMatch) {
+                return { sets: xMatch[1], reps: xMatch[2] };
+            }
+            
+            const setsMatch = protocol.match(setsPattern);
+            if (setsMatch) {
+                return { sets: setsMatch[1], reps: 'varies' };
+            }
+            
+            // Default fallback
+            return { sets: '1', reps: protocol };
+        };
         
         if (saveBtn) {
             saveBtn.addEventListener('click', async () => {
@@ -798,16 +883,21 @@ export function createExerciseDetailsEditor(data, onSave) {
                 saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Saving...';
                 
                 try {
+                    // Parse protocol input
+                    const protocolValue = protocolInput.value.trim() || '3×10';
+                    const { sets, reps } = parseProtocol(protocolValue);
+                    
                     // Use validated rest time if available, otherwise use input or default
                     const restValidation = window.WorkoutUtils?.validateRestTime(restInput.value.trim());
                     const validatedRest = restValidation?.valid ? restValidation.value : (restInput.value.trim() || '60s');
                     
                     const updatedData = {
-                        sets: setsInput.value.trim() || '3',
-                        reps: repsInput.value.trim() || '8-12',
+                        protocol: protocolValue,  // NEW: Store raw protocol string
+                        sets: sets,               // Extracted for backward compatibility
+                        reps: reps,               // Extracted for backward compatibility
                         rest: validatedRest,
                         weight: weightInput.value.trim(),
-                        weightUnit: unitSelect.value,
+                        weightUnit: currentWeightUnit,
                         updateTemplate: updateTemplateToggle?.checked || false
                     };
                     

@@ -1,8 +1,8 @@
 /**
  * Ghost Gym - Exercise Card Renderer
  * Handles rendering of exercise cards in workout mode
- * @version 1.0.0
- * @date 2025-11-18
+ * @version 1.1.0 - Unified Editor V2 with shared save/cancel buttons
+ * @date 2026-01-14
  */
 
 class ExerciseCardRenderer {
@@ -26,8 +26,7 @@ class ExerciseCardRenderer {
         const mainExercise = exercises.a || 'Unknown Exercise';
         const alternates = this._getAlternates(exercises);
         
-        // PHASE 1: Check data in priority order: Session > Pre-Session Edits > Template
-        // This ensures edited values are displayed correctly before and during workout
+        // Check data in priority order: Session > Pre-Session Edits > Template
         const isSessionActive = this.sessionService.isSessionActive();
         const exerciseData = this.sessionService.getExerciseWeight(mainExercise);
         const preSessionEdit = !isSessionActive ? this.sessionService.getPreSessionEdits(mainExercise) : null;
@@ -39,8 +38,6 @@ class ExerciseCardRenderer {
         const notes = exerciseData?.notes || group.notes || '';
         
         const restSeconds = this._parseRestTime(rest);
-        const timerId = `timer-${index}`;
-        const bonusClass = isBonus ? 'bonus-exercise' : '';
         
         // Get exercise history
         const history = this.sessionService.getExerciseHistory(mainExercise);
@@ -49,16 +46,8 @@ class ExerciseCardRenderer {
         const lastSessionDate = history?.last_session_date || null;
         const recentSessions = history?.recent_sessions || [];
         
-        // Get last weight direction from history (for display on new session)
+        // Get last weight direction from history
         const lastDirection = this.sessionService.getLastWeightDirection(mainExercise);
-        
-        // 🔍 DEBUG: Log direction retrieval for each exercise
-        console.log(`🔍 [Card ${index}] Exercise: "${mainExercise}"`);
-        console.log(`  📊 History object:`, history);
-        console.log(`  📝 Last direction from history:`, lastDirection);
-        console.log(`  ⚙️ Is session active:`, isSessionActive);
-        
-        // Get current direction for this session
         const currentDirection = this.sessionService.getWeightDirection(mainExercise);
         
         // Get weight data with proper fallback chain
@@ -66,12 +55,12 @@ class ExerciseCardRenderer {
         const templateWeight = group.default_weight || '';
         const templateUnit = group.default_weight_unit || 'lbs';
         
-        // PHASE 2: Check if exercise is skipped (active session OR pre-session)
+        // Check if exercise is skipped (active session OR pre-session)
         const preSessionSkipped = !isSessionActive && this.sessionService.isPreSessionSkipped(mainExercise);
         const isSkipped = weightData?.is_skipped || preSessionSkipped;
         const skipReason = weightData?.skip_reason || (preSessionSkipped ? 'Skipped before workout' : '');
         
-        // PHASE 3: Check if exercise is completed
+        // Check if exercise is completed
         const isCompleted = weightData?.is_completed || false;
         
         // Determine current weight with proper fallback
@@ -79,51 +68,50 @@ class ExerciseCardRenderer {
         const currentUnit = weightData?.weight_unit ||
                           (weightData?.weight ? templateUnit : (templateWeight ? templateUnit : lastWeightUnit));
         
-        // Determine weight source for better UX feedback
-        const weightSource = weightData?.weight ? 'session' :
-                           (templateWeight ? 'template' :
-                           (lastWeight ? 'history' : 'none'));
-        
-        // Calculate plate breakdown for barbell exercises
-        const plateBreakdown = this._calculatePlateBreakdown(currentWeight, currentUnit);
+        // State classes for card
+        const stateClasses = [];
+        if (isCompleted) stateClasses.push('logged');
+        if (isSkipped) stateClasses.push('skipped');
         
         return `
-            <div class="card exercise-card ${bonusClass} ${isSkipped ? 'skipped' : ''} ${isCompleted ? 'completed' : ''}" data-exercise-index="${index}" data-exercise-name="${this._escapeHtml(mainExercise)}">
-                <div class="card-header exercise-card-header" onclick="window.workoutModeController.toggleExerciseCard(${index})">
-                    <div class="exercise-card-summary">
-                        <!-- MORPH: Exercise Name with inline badge -->
-                        <h6 class="mb-0 morph-title" data-morph-id="title-${index}">
-                            ${isBonus ? '<span class="additional-exercise-badge" title="Additional exercise - added to this workout session, not part of the workout template">+</span>' : ''}
-                            ${isCompleted ? '<i class="bx bx-check-circle text-success me-1"></i>' : ''}
-                            ${isSkipped ? '<i class="bx bx-x-circle text-warning me-1"></i>' : ''}
+            <div class="logbook-card ${stateClasses.join(' ')}"
+                 data-exercise-index="${index}"
+                 data-exercise-name="${this._escapeHtml(mainExercise)}"
+                 onclick="if(!event.target.closest('.logbook-more-btn, .logbook-edit-btn, .logbook-menu, .inline-rest-timer')) this.classList.toggle('expanded')">
+                <!-- Collapsed Header -->
+                <div class="logbook-card-header">
+                    <!-- Row 1: Exercise Name (full width, no wrap) -->
+                    <div class="logbook-exercise-name-row">
+                        <div class="logbook-exercise-name">
                             ${this._escapeHtml(mainExercise)}
-                        </h6>
-                        
-                        <!-- MORPH: Meta info (visible when collapsed, hidden when expanded) -->
-                        <div class="exercise-card-meta morph-meta" data-morph-id="meta-${index}">
-                            <span class="morph-sets-reps">${sets} sets × ${reps} reps • ${rest}</span>
+                            ${isBonus ? '<span class="additional-exercise-badge" title="Additional exercise">+</span>' : ''}
                         </div>
-                        
-                        <!-- MORPH: Weight badge (visible when collapsed, hidden when expanded) -->
-                        <div class="exercise-card-weight-row morph-weight" data-morph-id="weight-${index}">
-                            ${this._renderWeightBadge(currentWeight, currentUnit, weightSource, lastWeight, lastWeightUnit, lastDirection, currentDirection, isSessionActive)}
+                        <div class="logbook-header-actions">
+                            <button class="logbook-edit-btn" data-unified-edit="true" aria-label="Edit weight and reps" title="Edit weight and reps">
+                                <i class="bx bx-pencil"></i>
+                            </button>
+                            <button class="logbook-more-btn" onclick="window.workoutModeController?.toggleExerciseMenu?.(this, '${this._escapeHtml(mainExercise)}', ${index}); event.stopPropagation();" title="More options">
+                                <i class="bx bx-dots-vertical"></i>
+                            </button>
+                            <i class="bx bx-chevron-down logbook-chevron"></i>
+                            ${this._renderMoreMenu(mainExercise, index, isSkipped, totalCards)}
                         </div>
                     </div>
-                    
-                    <!-- Right-aligned expand icon only -->
-                    <div class="exercise-card-expand-container">
-                        <i class="bx bx-chevron-down expand-icon"></i>
+                    <!-- Row 2: Meta info (sets/reps/rest, weight, direction) -->
+                    <div class="logbook-exercise-info">
+                        <div class="logbook-exercise-meta">${sets} × ${reps} • ${rest}</div>
+                        <div class="logbook-state-row">
+                            ${currentWeight ? `<div class="logbook-state-item highlight">Today: ${currentWeight} ${currentUnit}</div>` : ''}
+                            ${lastWeight ? `<div class="logbook-state-item"><span class="tree-branch">└─</span> Last: ${lastWeight} ${lastWeightUnit}</div>` : ''}
+                            ${currentDirection === 'up' ? '<span class="logbook-state-item next-up"><i class="bx bx-up-arrow-alt"></i> Increase</span>' : ''}
+                            ${currentDirection === 'down' ? '<span class="logbook-state-item next-down"><i class="bx bx-down-arrow-alt"></i> Decrease</span>' : ''}
+                            ${currentDirection === 'same' ? '<span class="logbook-state-item"><i class="bx bx-minus"></i> No Change</span>' : ''}
+                        </div>
                     </div>
                 </div>
                 
-                <div class="card-body exercise-card-body" style="display: none;">
-                    <!-- Alternate Exercises - Discreet Subtitle -->
-                    ${alternates.length > 0 ? `
-                        <div class="alternate-exercises-subtitle">
-                            ${alternates.map(alt => `<span>${alt.label}: ${this._escapeHtml(alt.name)}</span>`).join(' · ')}
-                        </div>
-                    ` : ''}
-                    
+                <!-- Expanded Body -->
+                <div class="logbook-card-body" onclick="event.stopPropagation()">
                     ${isSkipped ? `
                         <div class="alert alert-warning">
                             <i class="bx bx-info-circle me-2"></i>
@@ -132,9 +120,8 @@ class ExerciseCardRenderer {
                         </div>
                     ` : ''}
                     
-                    <!-- Weight Direction Reminder from Last Session (shows always if exists) -->
-                    ${lastDirection ? `
-                        <div class="alert alert-${lastDirection === 'up' ? 'success' : 'warning'} d-flex align-items-center mb-3" role="alert">
+                    ${lastDirection && !isSkipped ? `
+                        <div class="alert alert-${lastDirection === 'up' ? 'success' : 'warning'} d-flex align-items-center mb-3">
                             <i class="bx bx-chevron-${lastDirection} me-2" style="font-size: 1.5rem;"></i>
                             <div>
                                 <strong>From last session:</strong> ${lastDirection === 'up' ? 'Increase' : 'Decrease'} weight
@@ -142,99 +129,74 @@ class ExerciseCardRenderer {
                         </div>
                     ` : ''}
                     
-                    <!-- Weight Section (2-Column Layout) -->
-                    <div class="exercise-weight-section">
-                        <div class="weight-section-row">
-                            <!-- Left Column: Weight Display -->
-                            <div class="weight-section-left">
-                                <div class="exercise-weight-display">
-                                    <span class="exercise-weight-value">${currentWeight || '—'}</span>
-                                    ${currentWeight && currentUnit !== 'other' ? `<span class="exercise-weight-unit">${currentUnit}</span>` : ''}
-                                    ${currentWeight && currentUnit === 'other' ? `<span class="exercise-weight-unit text-muted">(custom)</span>` : ''}
+                    ${!isSkipped ? `
+                        <!-- Weight Section -->
+                        <div class="logbook-section">
+                            <div class="logbook-section-label"><i class="bx bx-dumbbell"></i>Weight</div>
+                            ${this._renderWeightField(currentWeight, currentUnit, mainExercise)}
+                            ${this._renderPlateBreakdown(currentWeight, currentUnit)}
+                        </div>
+
+                        <!-- Protocol Section (formerly Sets × Reps) -->
+                        <div class="logbook-section">
+                            <div class="logbook-section-label"><i class="bx bx-list-ul"></i>Protocol</div>
+                            ${this._renderRepsSetsField(sets, reps, mainExercise)}
+                        </div>
+                        
+                        <!-- Notes + Rest Timer Section (combined layout) -->
+                        <div class="logbook-section logbook-notes-timer-section logbook-unified-notes">
+                            <!-- Notes Content (Full Width - Above Buttons) -->
+                            <div class="logbook-notes-content" style="display: none;">
+                                <textarea class="logbook-notes-input"
+                                          placeholder="Add a note about this exercise..."
+                                          rows="3"
+                                          data-exercise-name="${this._escapeHtml(mainExercise)}"
+                                          onclick="event.stopPropagation();">${notes || ''}</textarea>
+                            </div>
+                            <!-- Buttons Row (1/3 Note + 2/3 Timer) -->
+                            <div class="logbook-notes-timer-row">
+                                <div class="logbook-notes-col">
+                                    ${this._renderNoteButton(mainExercise, notes)}
                                 </div>
+                                <div class="logbook-timer-col">
+                                    ${this._renderInlineRestTimer(restSeconds, index)}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Weight History -->
+                        ${lastWeight ? `
+                            <div class="logbook-section">
+                                <div class="logbook-section-label"><i class="bx bx-history"></i>Weight History</div>
                                 ${this._renderWeightHistory(mainExercise, lastWeight, lastWeightUnit, lastSessionDate, recentSessions)}
                             </div>
-                            
-                            <!-- Right Column: Weight Direction Buttons (During Active Session Only) -->
-                            ${isSessionActive ? `
-                                <div class="weight-section-right">
-                                    <div class="weight-direction-section">
-                                        <span class="weight-direction-label">Next session (optional):</span>
-                                        <div class="weight-direction-toggle">
-                                            <button class="btn btn-sm weight-direction-btn increase ${currentDirection === 'up' ? 'active' : ''}"
-                                                    data-exercise-name="${this._escapeHtml(mainExercise)}"
-                                                    data-direction="up"
-                                                    onclick="window.workoutModeController.toggleWeightDirection(this, '${this._escapeHtml(mainExercise)}', 'up'); event.stopPropagation();"
-                                                    title="Increase weight next session">
-                                                <i class="bx bx-chevron-up"></i> Increase
-                                            </button>
-                                            <button class="btn btn-sm weight-direction-btn same ${!currentDirection || currentDirection === 'same' ? 'active' : ''}"
-                                                    data-exercise-name="${this._escapeHtml(mainExercise)}"
-                                                    data-direction="same"
-                                                    onclick="window.workoutModeController.toggleWeightDirection(this, '${this._escapeHtml(mainExercise)}', 'same'); event.stopPropagation();"
-                                                    title="Keep same weight next session">
-                                                <i class="bx bx-minus"></i> No Change
-                                            </button>
-                                            <button class="btn btn-sm weight-direction-btn decrease ${currentDirection === 'down' ? 'active' : ''}"
-                                                    data-exercise-name="${this._escapeHtml(mainExercise)}"
-                                                    data-direction="down"
-                                                    onclick="window.workoutModeController.toggleWeightDirection(this, '${this._escapeHtml(mainExercise)}', 'down'); event.stopPropagation();"
-                                                    title="Decrease weight next session">
-                                                <i class="bx bx-chevron-down"></i> Decrease
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            ` : ''}
-                        </div>
-                    </div>
-                    
-                    <!-- Exercise Details - List Group Style -->
-                    <ul class="list-group list-group-flush exercise-details-list">
-                        <li class="list-group-item d-flex justify-content-between align-items-center px-0">
-                            <span class="text-muted">Sets × Reps</span>
-                            <strong>${sets} × ${reps}</strong>
-                        </li>
-                        <li class="list-group-item d-flex justify-content-between align-items-center px-0">
-                            <span class="text-muted">Rest</span>
-                            <div class="d-flex align-items-center gap-2">
-                                <span data-inline-timer-display="${index}" class="inline-timer-display">
-                                    <strong><i class="bx bx-time-five me-1"></i>${rest}</strong>
-                                </span>
-                                <span class="text-muted">|</span>
-                                <span data-inline-timer="${index}" data-rest-seconds="${restSeconds}" data-rest-display="${rest}" class="inline-timer-container">
-                                    <a href="#" class="inline-timer-link"
-                                       onclick="window.inlineTimerStart(${index}); return false;"
-                                       title="Start ${rest} rest timer">
-                                        <i class="bx bx-play-circle"></i> Start Rest
-                                    </a>
-                                </span>
-                            </div>
-                        </li>
-                        ${plateBreakdown ? `
-                            <li class="list-group-item d-flex justify-content-between align-items-center px-0">
-                                <span class="text-muted"><i class="bx bx-dumbbell me-1"></i>Plates</span>
-                                <div class="d-flex align-items-center gap-2">
-                                    <span class="text-muted small text-end">${plateBreakdown}</span>
-                                    <button class="btn btn-sm btn-outline-secondary plate-settings-btn"
-                                            onclick="window.workoutModeController.showPlateSettings(); event.stopPropagation();"
-                                            title="Configure available plates">
-                                        <i class="bx bx-cog"></i>
-                                    </button>
-                                </div>
-                            </li>
                         ` : ''}
-                    </ul>
-                    
-                    ${notes ? `
-                        <div class="exercise-notes">
-                            <i class="bx bx-info-circle me-1"></i>
-                            <span>${this._escapeHtml(notes)}</span>
-                        </div>
+
+                        <!-- Direction Chips (During Active Session) -->
+                        ${isSessionActive ? `
+                            <div class="logbook-section logbook-next-section">
+                                <div class="logbook-section-label logbook-next-label">NEXT SESSION (OPTIONAL)</div>
+                                ${this._renderDirectionChips(mainExercise, currentDirection)}
+                            </div>
+                        ` : ''}
+                        
+                        <!-- Primary Action (only during active session) -->
+                        ${isSessionActive ? `
+                            <div class="logbook-actions">
+                                ${isCompleted ? `
+                                    <button class="logbook-primary-action completed"
+                                            onclick="window.workoutModeController?.handleUncompleteExercise?.('${this._escapeHtml(mainExercise)}', ${index}); event.stopPropagation();">
+                                        <i class="bx bx-check"></i> Completed
+                                    </button>
+                                ` : `
+                                    <button class="logbook-primary-action save"
+                                            onclick="window.workoutModeController?.handleCompleteExercise?.('${this._escapeHtml(mainExercise)}', ${index}); event.stopPropagation();">
+                                        Mark Done
+                                    </button>
+                                `}
+                            </div>
+                        ` : ''}
                     ` : ''}
-                    
-                    <!-- Card Action Buttons (Complete/Skip/Edit) -->
-                    ${this._renderCardActionButtons(mainExercise, index, isSkipped, isCompleted, isSessionActive)}
                 </div>
             </div>
         `;
@@ -424,6 +386,208 @@ class ExerciseCardRenderer {
     }
 
     /**
+     * Render weight field with morph pattern HTML (v2.0 - Unit Switching)
+     * @private
+     */
+    _renderWeightField(weight, unit, exerciseName) {
+        const displayWeight = weight || '—';
+        const displayUnit = unit !== 'other' ? unit : '';
+        
+        // Determine current mode (default to 'lbs' if not set)
+        const currentUnit = unit || 'lbs';
+        const isDIYMode = currentUnit === 'diy';
+        
+        return `
+            <div class="logbook-weight-field" data-weight="${weight || 0}" data-unit="${currentUnit}" data-weight-mode="${isDIYMode ? 'text' : 'numeric'}" data-exercise-name="${this._escapeHtml(exerciseName)}">
+                <!-- Display Mode -->
+                <div class="weight-display">
+                    <div class="weight-value-group">
+                        <span class="weight-value">${displayWeight}</span>
+                        ${(displayUnit && currentUnit !== 'diy') ? `<span class="weight-unit">${displayUnit}</span>` : ''}
+                    </div>
+                </div>
+                
+                <!-- Edit Mode (hidden initially) -->
+                <div class="weight-editor ${isDIYMode ? 'diy-active' : ''}" style="display: none;">
+                    <!-- Numeric Mode Row: [input] [−5] [+5] -->
+                    <div class="weight-input-row numeric-mode">
+                        <input type="number" class="weight-input" value="${isDIYMode ? '' : (weight || '')}" step="5" min="0" max="9999" inputmode="decimal" placeholder="0" onclick="event.stopPropagation();" />
+                        <button class="weight-stepper-btn minus" aria-label="Decrease" onclick="event.stopPropagation();">−5</button>
+                        <button class="weight-stepper-btn plus" aria-label="Increase" onclick="event.stopPropagation();">+5</button>
+                    </div>
+                    
+                    <!-- DIY Mode Row: [text input] -->
+                    <div class="weight-input-row diy-mode">
+                        <input type="text" class="weight-text-input" value="${isDIYMode ? weight : ''}" placeholder="e.g., body weight + 10lbs" onclick="event.stopPropagation();" />
+                    </div>
+                    
+                    <!-- Shared Controls: Unit Selector + Save/Cancel -->
+                    <div class="weight-unit-selector">
+                        <button class="unit-btn ${currentUnit === 'lbs' ? 'active' : ''}" data-unit="lbs" type="button" onclick="event.stopPropagation();">lbs</button>
+                        <button class="unit-btn ${currentUnit === 'kg' ? 'active' : ''}" data-unit="kg" type="button" onclick="event.stopPropagation();">kg</button>
+                        <button class="unit-btn ${currentUnit === 'diy' ? 'active' : ''}" data-unit="diy" type="button" onclick="event.stopPropagation();">DIY</button>
+                    </div>
+                    <button class="weight-save-btn" aria-label="Save weight" title="Save" onclick="event.stopPropagation();">
+                        <i class="bx bx-check"></i>
+                    </button>
+                    <button class="weight-cancel-btn" aria-label="Cancel edit" title="Cancel" onclick="event.stopPropagation();">
+                        <i class="bx bx-x"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+    }
+    
+    /**
+     * Render reps/sets field with single text input (v3.0.0)
+     * Full-width layout, labeled "Protocol"
+     * @private
+     */
+    _renderRepsSetsField(sets, reps, exerciseName) {
+        // Check if we have new format (single field) or need to construct from old format
+        let displayValue;
+        
+        if (sets && reps) {
+            // Old format: Combine with separator for display
+            displayValue = `${sets}×${reps}`;
+        } else {
+            // Already combined or default
+            displayValue = sets || reps || '3×10';
+        }
+        
+        return `
+            <div class="logbook-repssets-field" data-sets-reps="${displayValue}" data-exercise-name="${this._escapeHtml(exerciseName)}">
+                <!-- Display Mode (Full Width) -->
+                <div class="repssets-display">
+                    <span class="repssets-value-text">${displayValue}</span>
+                </div>
+                
+                <!-- Edit Mode (Full Width) -->
+                <div class="repssets-editor" style="display: none;">
+                    <input type="text"
+                           class="repssets-input repssets-text-input"
+                           value="${displayValue}"
+                           placeholder="e.g., 3x10, 4 sets to failure, AMRAP"
+                           style="width: 100%;"
+                           onclick="event.stopPropagation();" />
+                    
+                    <!-- Unified Save/Cancel Buttons (v2.2 - icon-only, right-justified) -->
+                    <div class="logbook-unified-actions" style="display: none; justify-content: flex-end;">
+                        <button class="btn btn-sm btn-success unified-save-btn" type="button" onclick="event.stopPropagation();" aria-label="Save changes" title="Save">
+                            <i class="bx bx-check"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary unified-cancel-btn" type="button" onclick="event.stopPropagation();" aria-label="Cancel changes" title="Cancel">
+                            <i class="bx bx-x"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+    
+    /**
+     * Render direction chips (horizontal layout) - Low-priority pill buttons
+     * Only one button can be active at a time, no default selection
+     * @private
+     */
+    _renderDirectionChips(exerciseName, currentDirection) {
+        return `
+            <div class="logbook-next-chips">
+                <button class="logbook-chip ${currentDirection === 'down' ? 'active' : ''}"
+                        data-direction="decrease"
+                        onclick="window.workoutModeController?.toggleWeightDirection?.(this, '${this._escapeHtml(exerciseName)}', 'down'); event.stopPropagation();">
+                    Decrease
+                </button>
+                <button class="logbook-chip ${!currentDirection || currentDirection === 'same' ? 'active' : ''}"
+                        data-direction="same"
+                        onclick="window.workoutModeController?.toggleWeightDirection?.(this, '${this._escapeHtml(exerciseName)}', 'same'); event.stopPropagation();">
+                    Same
+                </button>
+                <button class="logbook-chip ${currentDirection === 'up' ? 'active' : ''}"
+                        data-direction="increase"
+                        onclick="window.workoutModeController?.toggleWeightDirection?.(this, '${this._escapeHtml(exerciseName)}', 'up'); event.stopPropagation();">
+                    Increase
+                </button>
+            </div>
+        `;
+    }
+    
+    /**
+     * Render inline rest timer section
+     * @private
+     */
+    _renderInlineRestTimer(restSeconds, index) {
+        const restDisplay = restSeconds >= 60 ? `${Math.floor(restSeconds / 60)}min` : `${restSeconds}s`;
+        
+        return `
+            <div class="inline-rest-timer" data-rest-seconds="${restSeconds}" data-rest-display="${restDisplay}">
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                    <div data-inline-timer-display="${index}">
+                        <strong><i class="bx bx-time-five me-1"></i>${restDisplay}</strong>
+                    </div>
+                    <div data-inline-timer="${index}">
+                        <!-- Timer controls will be rendered here by InlineRestTimer component -->
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+    
+    /**
+     * Render more menu (⋯ menu)
+     * @param {string} exerciseName - Name of the exercise
+     * @param {number} index - Card index
+     * @param {boolean} isSkipped - Whether exercise is skipped
+     * @param {number} totalCards - Total number of cards (for move up/down boundaries)
+     * @private
+     */
+    _renderMoreMenu(exerciseName, index, isSkipped, totalCards) {
+        return `
+            <div class="logbook-menu" onclick="event.stopPropagation()">
+                ${isSkipped ? `
+                    <button class="logbook-menu-item" onclick="window.workoutModeController?.handleUnskipExercise?.('${this._escapeHtml(exerciseName)}', ${index}); event.stopPropagation();" style="color: var(--logbook-success);">
+                        <i class="bx bx-undo" style="color: var(--logbook-success);"></i>
+                        Unskip exercise
+                    </button>
+                ` : ''}
+                <button class="logbook-menu-item" onclick="window.workoutModeController?.handleEditExercise?.('${this._escapeHtml(exerciseName)}', ${index}); event.stopPropagation();">
+                    <i class="bx bx-edit-alt"></i>
+                    Modify exercise
+                </button>
+                <button class="logbook-menu-item" onclick="window.workoutModeController?.handleReplaceExercise?.('${this._escapeHtml(exerciseName)}', ${index}); event.stopPropagation();">
+                    <i class="bx bx-transfer-alt"></i>
+                    Replace exercise
+                </button>
+                <div class="logbook-menu-divider"></div>
+                <button class="logbook-menu-item" onclick="window.workoutWeightManager?.showPlateCalculator?.(); event.stopPropagation();">
+                    <i class="bx bx-cog"></i>
+                    Plate calculator
+                </button>
+                <div class="logbook-menu-divider"></div>
+                ${!isSkipped ? `
+                    <button class="logbook-menu-item" onclick="window.workoutModeController?.handleSkipExercise?.('${this._escapeHtml(exerciseName)}', ${index}); event.stopPropagation();">
+                        <i class="bx bx-skip-next"></i>
+                        Skip for today
+                    </button>
+                ` : ''}
+                <button class="logbook-menu-item${index === 0 ? ' disabled' : ''}" onclick="window.workoutModeController?.handleMoveUp?.(${index}); event.stopPropagation();"${index === 0 ? ' disabled' : ''}>
+                    <i class="bx bx-chevron-up"></i>
+                    Move up
+                </button>
+                <button class="logbook-menu-item${index >= totalCards - 1 ? ' disabled' : ''}" onclick="window.workoutModeController?.handleMoveDown?.(${index}); event.stopPropagation();"${index >= totalCards - 1 ? ' disabled' : ''}>
+                    <i class="bx bx-chevron-down"></i>
+                    Move down
+                </button>
+                <div class="logbook-menu-divider"></div>
+                <button class="logbook-menu-item danger" onclick="window.workoutModeController?.handleRemoveExercise?.('${this._escapeHtml(exerciseName)}', ${index}); event.stopPropagation();">
+                    <i class="bx bx-trash"></i>
+                    Remove from workout
+                </button>
+            </div>
+        `;
+    }
+
+    /**
      * Render card action buttons (Complete/Skip/Modify/Replace)
      * PHASE 1: Modify button now shows BEFORE session starts for pre-session editing
      * PRE-SESSION UPDATE: Now also shows Skip and Replace buttons
@@ -531,7 +695,7 @@ class ExerciseCardRenderer {
     }
 
     /**
-     * Render weight history showing the 4 most recent weights
+     * Render weight history showing the 4 most recent weights (tree style)
      * @private
      */
     _renderWeightHistory(exerciseName, lastWeight, lastWeightUnit, lastSessionDate, recentSessions) {
@@ -546,33 +710,33 @@ class ExerciseCardRenderer {
             return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
         };
         
-        // Show up to 4 most recent sessions
-        const sessionsToShow = recentSessions ? recentSessions.slice(0, 4) : [];
+        // Show up to 3 additional sessions (4 total including primary)
+        const sessionsToShow = recentSessions ? recentSessions.slice(1, 4) : [];
         
         return `
-            <div class="exercise-weight-history-container">
-                <!-- Most recent session (always visible) -->
-                <div class="exercise-weight-history-item">
-                    <small class="exercise-weight-history">
-                        Last: <strong>${lastWeight}${lastWeightUnit !== 'other' ? ` ${lastWeightUnit}` : ''}</strong> on ${formatDate(lastSessionDate)}
-                    </small>
+            <div class="logbook-history">
+                <div class="logbook-history-primary">
+                    <span class="history-label">Last:</span>
+                    <span class="history-weight">${lastWeight}${lastWeightUnit !== 'other' ? ` ${lastWeightUnit}` : ''}</span>
+                    <span class="history-date">on ${formatDate(lastSessionDate)}</span>
                 </div>
-                
-                ${sessionsToShow.slice(1).map((session, index) => {
-                    const isLast = index === sessionsToShow.length - 2;
-                    const connector = isLast ? '└─' : '├─';
-                    const weight = session.weight || '—';
-                    const unit = session.weight_unit || 'lbs';
-                    return `
-                        <div class="weight-history-item visible-item">
-                            <span class="weight-history-connector">${connector}</span>
-                            <span class="weight-history-content">
-                                <span class="weight-history-weight"><strong>${weight}${unit !== 'other' ? ` ${unit}` : ''}</strong></span>
-                                <span class="weight-history-date">on ${formatDate(session.date)}</span>
-                            </span>
-                        </div>
-                    `;
-                }).join('')}
+                ${sessionsToShow.length > 0 ? `
+                    <div class="logbook-history-tree">
+                        ${sessionsToShow.map((session, index) => {
+                            const isLast = index === sessionsToShow.length - 1;
+                            const connector = isLast ? '└─' : '├─';
+                            const weight = session.weight || '—';
+                            const unit = session.weight_unit || 'lbs';
+                            return `
+                                <div class="logbook-history-tree-item">
+                                    <span class="tree-branch">${connector}</span>
+                                    <span class="history-weight">${weight}${unit !== 'other' ? ` ${unit}` : ''}</span>
+                                    <span>on ${formatDate(session.date)}</span>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                ` : ''}
             </div>
         `;
     }
@@ -590,6 +754,49 @@ class ExerciseCardRenderer {
         return labels[direction] || '';
     }
 
+    /**
+     * Render plate breakdown display (small footer style)
+     * @private
+     */
+    _renderPlateBreakdown(weight, unit) {
+        // Only show for numeric weights in lbs/kg (not DIY mode)
+        if (!weight || unit === 'diy') {
+            return '';
+        }
+        
+        const breakdown = this._calculatePlateBreakdown(weight, unit);
+        
+        if (!breakdown) {
+            return '';
+        }
+        
+        return `
+            <div class="plate-breakdown">
+                <i class="bx bx-dumbbell"></i>
+                <span class="plate-breakdown-text">${breakdown}</span>
+            </div>
+        `;
+    }
+    
+    /**
+     * Render note toggle button only (v2.2.0)
+     * Button only - textarea is rendered separately above the buttons row
+     * @private
+     */
+    _renderNoteButton(exerciseName, notes) {
+        const hasNote = notes && notes.trim().length > 0;
+        const buttonText = hasNote ? 'Edit Note' : 'Add Note';
+
+        return `
+            <button class="logbook-note-toggle-btn ${hasNote ? 'has-note' : ''}"
+                    data-exercise-name="${this._escapeHtml(exerciseName)}"
+                    onclick="event.stopPropagation();">
+                <i class="bx bx-note"></i>
+                <span>${buttonText}</span>
+            </button>
+        `;
+    }
+    
     /**
      * Escape HTML to prevent XSS
      * @private

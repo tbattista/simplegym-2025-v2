@@ -55,6 +55,9 @@
     <!-- Workout Mode CSS -->
     <link rel="stylesheet" href="/static/assets/css/workout-mode.css?v=20251207-05" />
     
+    <!-- Logbook V2 Theme CSS (NEW - Phase 1) -->
+    <link rel="stylesheet" href="/static/assets/css/logbook-theme.css?v=1.0.0" />
+    
     <!-- Workout Database CSS (for workout list component) -->
     <link rel="stylesheet" href="/static/assets/css/workout-database.css" />
     
@@ -157,7 +160,7 @@
       <!-- Overlay -->
       <div class="layout-overlay layout-menu-toggle"></div>
       
-      <!-- Legacy floatingTimerWidget removed - now handled by bottom-action-bar-service.js -->
+      
     </div>
     <!-- / Layout wrapper -->
 
@@ -271,6 +274,16 @@
     <script src="/static/assets/js/components/exercise-card-manager.js?v=1.0.0"></script>
     
     <script src="/static/assets/js/controllers/workout-mode-controller.js?v=20251109-06"></script>
+    
+    <!-- Logbook V2 Controllers (NEW - Phase 2 & 3) -->
+    <script src="/static/assets/js/controllers/weight-field-controller.js?v=2.4.0"></script>
+    <script src="/static/assets/js/controllers/repssets-field-controller.js?v=3.0.0"></script>
+    
+    <!-- Unified Notes Controller (NEW - v2.1.0) -->
+    <script src="/static/assets/js/controllers/unified-notes-controller.js?v=2.1.0"></script>
+    
+    <!-- Unified Edit Controller (Phase 6 - Shared save/cancel buttons) -->
+    <script src="/static/assets/js/controllers/unified-edit-controller.js?v=1.0.0"></script>
 
     <!-- Initialize Workout Mode -->
     <script>
@@ -295,6 +308,16 @@
             // The workout loads once after initial auth state is determined
             if (window.workoutModeController?.initializeStartButtonTooltip) {
                 await window.workoutModeController.initializeStartButtonTooltip();
+            }
+        });
+        
+        // Initialize Unified Notes Controller after cards are rendered
+        document.addEventListener('exerciseCardsRendered', () => {
+            console.log('📝 Initializing Unified Notes Controller...');
+            if (window.workoutSessionService && window.UnifiedNotesController) {
+                const unifiedNotesController = new window.UnifiedNotesController(window.workoutSessionService);
+                unifiedNotesController.initialize();
+                window.ghostGym.unifiedNotesController = unifiedNotesController;
             }
         });
         

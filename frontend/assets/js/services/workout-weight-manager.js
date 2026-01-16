@@ -338,6 +338,14 @@ class WorkoutWeightManager {
     }
     
     /**
+     * Show plate calculator settings (alias for backward compatibility)
+     * Opens offcanvas for configuring gym plate availability
+     */
+    showPlateCalculator() {
+        return this.showPlateSettings();
+    }
+    
+    /**
      * Toggle weight direction with inline buttons (NEW UX 2026-01-05)
      * Direct one-tap toggle system replacing popover
      * @param {HTMLElement} button - The clicked button element

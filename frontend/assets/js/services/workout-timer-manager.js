@@ -23,15 +23,24 @@ class WorkoutTimerManager {
     
     /**
      * Update timer display
+     * Formats as H:MM:SS when over 1 hour, otherwise MM:SS
      */
     updateTimerDisplay() {
         const session = this.sessionService.getCurrentSession();
         if (!session) return;
         
         const elapsed = Math.floor((Date.now() - session.startedAt.getTime()) / 1000);
-        const minutes = Math.floor(elapsed / 60);
+        const hours = Math.floor(elapsed / 3600);
+        const minutes = Math.floor((elapsed % 3600) / 60);
         const seconds = elapsed % 60;
-        const timeStr = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        
+        // Format as H:MM:SS when >= 1 hour, otherwise MM:SS
+        let timeStr;
+        if (hours > 0) {
+            timeStr = `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        } else {
+            timeStr = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
         
         const floatingTimer = document.getElementById('floatingTimer');
         if (floatingTimer) {
@@ -71,11 +80,11 @@ class WorkoutTimerManager {
             this.sessionTimerInterval = null;
         }
         
-        // Reset timer display to 00:00
+        // Reset timer display to 0:00:00 (fixed width format)
         const floatingTimer = document.getElementById('floatingTimer');
-        if (floatingTimer) floatingTimer.textContent = '00:00';
+        if (floatingTimer) floatingTimer.textContent = '0:00:00';
         
-        // Timer combo stays visible, just shows 00:00 and "Start" button
+        // Timer combo stays visible, just shows 0:00:00 and "Start" button
     }
     
     /**
