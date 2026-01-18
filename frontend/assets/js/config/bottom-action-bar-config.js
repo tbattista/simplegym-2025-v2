@@ -394,7 +394,62 @@
      * - rightActions: Array of right-side buttons
      */
     window.BOTTOM_BAR_CONFIGS = {
-        
+
+        // ============================================
+        // DASHBOARD PAGE
+        // ============================================
+        'dashboard': {
+            buttons: [
+                {
+                    icon: 'bx-plus-circle',
+                    label: 'Create',
+                    title: 'Create new workout',
+                    action: function() {
+                        window.location.href = 'workout-builder.html';
+                    }
+                },
+                {
+                    icon: 'bx-search',
+                    label: 'Find',
+                    title: 'Find workouts',
+                    action: function() {
+                        window.location.href = 'workout-database.html';
+                    }
+                },
+                {
+                    icon: 'bx-history',
+                    label: 'History',
+                    title: 'View workout history',
+                    action: function() {
+                        window.location.href = 'workout-history.html';
+                    }
+                },
+                {
+                    icon: 'bx-cog',
+                    label: 'Settings',
+                    title: 'Settings',
+                    action: function() {
+                        // Open settings if available, or navigate to settings page
+                        console.log('Settings clicked');
+                    }
+                }
+            ],
+            fab: {
+                icon: 'bx-play',
+                title: 'Start Workout',
+                variant: 'success',
+                action: function() {
+                    // Navigate to workout mode with most recent workout
+                    const workouts = window.dashboardDemo?.data?.workouts || [];
+                    if (workouts.length > 0) {
+                        window.location.href = `workout-mode.html?id=${workouts[0].id}`;
+                    } else {
+                        window.location.href = 'workout-database.html';
+                    }
+                }
+            }
+        },
+
         // ============================================
         // WORKOUT DATABASE PAGE
         // ============================================
@@ -576,25 +631,16 @@
         'workout-builder': {
             buttons: [
                 {
-                    icon: 'bx-share-alt',
-                    label: 'Share',
-                    title: 'Share workout',
+                    icon: 'bx-comment',
+                    label: 'Note',
+                    title: 'Add note to workout',
                     action: function() {
-                        console.log('🔗 Share button clicked from bottom action bar');
-                        
-                        // Get current workout ID
-                        const workoutId = window.ghostGym?.workoutBuilder?.selectedWorkoutId ||
-                                        window.ghostGym?.workoutBuilder?.currentWorkout?.id;
-                        
-                        if (workoutId && window.shareModal) {
-                            // Open share offcanvas directly with tabs
-                            window.shareModal.open(workoutId);
-                        } else if (!workoutId) {
-                            console.warn('⚠️ No workout ID available for sharing');
-                            alert('Please save the workout first before sharing');
+                        console.log('📝 Add template note clicked');
+                        if (window.handleAddTemplateNote) {
+                            window.handleAddTemplateNote();
                         } else {
-                            console.error('❌ Share modal not available');
-                            alert('Share feature is loading. Please try again.');
+                            console.warn('⚠️ Template note handler not ready');
+                            alert('Note feature is loading. Please try again.');
                         }
                     }
                 },
@@ -682,10 +728,16 @@
                                         title: 'Share Workout',
                                         description: 'Share publicly or create private link',
                                         onClick: () => {
-                                            // Trigger share button - now using buttons array
-                                            const shareAction = window.BOTTOM_BAR_CONFIGS['workout-builder'].buttons.find(a => a.icon === 'bx-share-alt');
-                                            if (shareAction && shareAction.action) {
-                                                shareAction.action();
+                                            // Get current workout ID
+                                            const workoutId = window.ghostGym?.workoutBuilder?.selectedWorkoutId ||
+                                                            window.ghostGym?.workoutBuilder?.currentWorkout?.id;
+
+                                            if (workoutId && window.shareModal) {
+                                                window.shareModal.open(workoutId);
+                                            } else if (!workoutId) {
+                                                alert('Please save the workout first before sharing');
+                                            } else {
+                                                alert('Share feature is loading. Please try again.');
                                             }
                                         }
                                     },
@@ -1022,11 +1074,15 @@
                     }
                 },
                 {
-                    icon: 'bx-note',
+                    icon: 'bx-comment',
                     label: 'Note',
                     title: 'Add workout note',
                     action: function() {
-                        alert('Workout notes feature - Coming soon!');
+                        if (window.workoutModeController?.handleAddNote) {
+                            window.workoutModeController.handleAddNote();
+                        } else {
+                            console.warn('⚠️ Workout mode controller not ready for notes');
+                        }
                     }
                 },
                 {
@@ -1167,11 +1223,15 @@
                     }
                 },
                 {
-                    icon: 'bx-note',
+                    icon: 'bx-comment',
                     label: 'Note',
                     title: 'Add workout note',
                     action: function() {
-                        alert('Workout notes feature - Coming soon!');
+                        if (window.workoutModeController?.handleAddNote) {
+                            window.workoutModeController.handleAddNote();
+                        } else {
+                            console.warn('⚠️ Workout mode controller not ready for notes');
+                        }
                     }
                 },
                 {
@@ -1431,7 +1491,7 @@
                     }
                 },
                 {
-                    icon: 'bx-note',
+                    icon: 'bx-comment',
                     label: 'Note',
                     title: 'Add workout note',
                     action: function() {

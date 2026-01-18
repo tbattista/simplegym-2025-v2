@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+
+<html
+  lang="en"
+  class="layout-menu-fixed layout-compact"
+  data-assets-path="/static/assets/"
+  data-template="vertical-menu-template-free">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+
+    <title>Feedback - Ghost Gym</title>
+
+    <meta name="description" content="Report bugs or request features" />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/static/assets/img/favicon/favicon.ico" />
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap"
+      rel="stylesheet" />
+
+    <link rel="stylesheet" href="/static/assets/vendor/fonts/iconify-icons.css" />
+
+    <!-- Core CSS -->
+    <link rel="stylesheet" href="/static/assets/vendor/css/core.css" />
+    <link rel="stylesheet" href="/static/assets/css/demo.css" />
+
+    <!-- Vendors CSS -->
+    <link rel="stylesheet" href="/static/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css" />
+
+    <!-- Custom Ghost Gym CSS -->
+    <link rel="stylesheet" href="/static/assets/css/ghost-gym-custom.css" />
+
+    <!-- Shared Components CSS -->
+    <link rel="stylesheet" href="/static/assets/css/components.css" />
+
+    <!-- Navbar CSS -->
+    <link rel="stylesheet" href="/static/assets/css/navbar-custom.css" />
+
+    <!-- Voting Page CSS -->
+    <link rel="stylesheet" href="/static/assets/css/feedback-voting.css?v=20260116" />
+
+    <!-- Helpers -->
+    <script src="/static/assets/vendor/js/helpers.js"></script>
+    <script src="/static/assets/js/config.js"></script>
+
+    <!-- Theme Manager (must load early to prevent flash) -->
+    <script src="/static/assets/js/services/theme-manager.js"></script>
+
+    <!-- Ghost Gym Centralized Configuration -->
+    <script src="/static/assets/js/app-config.js"></script>
+
+    <!-- Firebase SDK Loader (Centralized) -->
+    <script type="module" src="/static/assets/js/firebase-loader.js"></script>
+  </head>
+
+  <body>
+
+    <!-- Layout wrapper -->
+    <div class="layout-wrapper layout-content-navbar">
+      <div class="layout-container">
+        <!-- Menu -->
+        <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
+          <!-- Menu will be injected by menu-injection-service.js -->
+        </aside>
+        <!-- / Menu -->
+
+        <!-- Layout container -->
+        <div class="layout-page">
+
+          <!-- Content wrapper -->
+          <div class="content-wrapper">
+            <!-- Content -->
+            <div class="container-xxl flex-grow-1 container-p-y">
+
+              <!-- Simplified Page Header -->
+              <div class="feedback-header mb-3">
+                <h4 class="page-title mb-1">Feedback</h4>
+                <p class="page-subtitle text-muted mb-0">Report bugs or request features</p>
+              </div>
+
+              <!-- Hero Submit Button -->
+              <button class="btn btn-primary submit-hero-btn mb-3" id="submitNewBtn">
+                <i class="bx bx-plus me-2"></i>
+                Submit feedback
+                <small class="hero-subtitle d-block">Help improve the app</small>
+              </button>
+
+              <!-- Search (demoted) -->
+              <div class="search-container mb-3">
+                <div class="input-group search-input-group">
+                  <span class="input-group-text">
+                    <i class="bx bx-search"></i>
+                  </span>
+                  <input type="text" class="form-control" id="searchInput"
+                         placeholder="Search feedback..."
+                         oninput="handleSearch()">
+                </div>
+              </div>
+
+              <!-- Login Prompt (shown when not logged in) -->
+              <div class="alert alert-info login-prompt d-none" id="loginPrompt">
+                <i class="bx bx-info-circle me-2"></i>
+                <span><strong>Sign in to vote!</strong> You need to be logged in to vote.</span>
+                <button class="btn btn-sm btn-primary ms-auto" onclick="document.querySelector('[data-bs-target=\'#loginModal\']')?.click()">
+                  Sign In
+                </button>
+              </div>
+
+              <!-- Tabs (simplified) -->
+              <div class="feedback-tabs-container mb-3">
+                <ul class="nav nav-tabs feedback-tabs" id="feedbackTabs" role="tablist">
+                  <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="features-tab" data-bs-toggle="tab"
+                            data-bs-target="#features-panel" type="button" role="tab"
+                            aria-controls="features-panel" aria-selected="true">
+                      Features
+                      <span class="badge" id="featureCount">0</span>
+                    </button>
+                  </li>
+                  <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="bugs-tab" data-bs-toggle="tab"
+                            data-bs-target="#bugs-panel" type="button" role="tab"
+                            aria-controls="bugs-panel" aria-selected="false">
+                      Bugs
+                      <span class="badge" id="bugCount">0</span>
+                    </button>
+                  </li>
+                  <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="general-tab" data-bs-toggle="tab"
+                            data-bs-target="#general-panel" type="button" role="tab"
+                            aria-controls="general-panel" aria-selected="false">
+                      General
+                      <span class="badge" id="generalCount">0</span>
+                    </button>
+                  </li>
+                </ul>
+              </div>
+
+              <!-- Tab Content -->
+              <div class="tab-content" id="feedbackTabContent">
+                <!-- Features Panel -->
+                <div class="tab-pane fade show active" id="features-panel" role="tabpanel" aria-labelledby="features-tab">
+                  <!-- Loading State -->
+                  <div id="featuresLoading" class="loading-state text-center py-4">
+                    <div class="spinner-border spinner-border-sm text-primary" role="status">
+                      <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <span class="ms-2 text-muted">Loading...</span>
+                  </div>
+
+                  <!-- Empty State -->
+                  <div id="featuresEmpty" class="empty-state text-center py-5 d-none">
+                    <i class="bx bx-bulb empty-icon"></i>
+                    <h5>No feature requests yet</h5>
+                    <p class="text-muted">Be the first to suggest a feature!</p>
+                    <button class="btn btn-primary" onclick="openSubmitForm('feature')">
+                      Submit Feature Request
+                    </button>
+                  </div>
+
+                  <!-- Features List -->
+                  <div id="featuresList" class="feedback-list d-none">
+                    <!-- Items will be inserted here -->
+                  </div>
+                </div>
+
+                <!-- Bugs Panel -->
+                <div class="tab-pane fade" id="bugs-panel" role="tabpanel" aria-labelledby="bugs-tab">
+                  <!-- Loading State -->
+                  <div id="bugsLoading" class="loading-state text-center py-4">
+                    <div class="spinner-border spinner-border-sm text-primary" role="status">
+                      <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <span class="ms-2 text-muted">Loading...</span>
+                  </div>
+
+                  <!-- Empty State -->
+                  <div id="bugsEmpty" class="empty-state text-center py-5 d-none">
+                    <i class="bx bx-check-circle empty-icon text-success"></i>
+                    <h5>No bugs reported</h5>
+                    <p class="text-muted">Everything seems to be working great!</p>
+                    <button class="btn btn-outline-secondary" onclick="openSubmitForm('bug')">
+                      Report a Bug
+                    </button>
+                  </div>
+
+                  <!-- Bugs List -->
+                  <div id="bugsList" class="feedback-list d-none">
+                    <!-- Items will be inserted here -->
+                  </div>
+                </div>
+
+                <!-- General Panel -->
+                <div class="tab-pane fade" id="general-panel" role="tabpanel" aria-labelledby="general-tab">
+                  <!-- Loading State -->
+                  <div id="generalLoading" class="loading-state text-center py-4">
+                    <div class="spinner-border spinner-border-sm text-primary" role="status">
+                      <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <span class="ms-2 text-muted">Loading...</span>
+                  </div>
+
+                  <!-- Empty State -->
+                  <div id="generalEmpty" class="empty-state text-center py-5 d-none">
+                    <i class="bx bx-message-square-dots empty-icon"></i>
+                    <h5>No general feedback yet</h5>
+                    <p class="text-muted">Share your thoughts!</p>
+                    <button class="btn btn-outline-secondary" onclick="openSubmitForm('general')">
+                      Submit Feedback
+                    </button>
+                  </div>
+
+                  <!-- General List -->
+                  <div id="generalList" class="feedback-list d-none">
+                    <!-- Items will be inserted here -->
+                  </div>
+                </div>
+              </div>
+
+            </div>
+            <!-- / Content -->
+
+            <div class="content-backdrop fade"></div>
+          </div>
+          <!-- Content wrapper -->
+        </div>
+        <!-- / Layout page -->
+      </div>
+
+      <!-- Overlay -->
+      <div class="layout-overlay layout-menu-toggle"></div>
+    </div>
+    <!-- / Layout wrapper -->
+
+    <!-- Toast Container -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" id="toastContainer">
+      <div id="feedbackToast" class="toast align-items-center text-bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+          <div class="toast-body" id="toastMessage">
+            Feedback submitted!
+          </div>
+          <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Core JS -->
+    <script src="/static/assets/vendor/libs/jquery/jquery.js"></script>
+    <script src="/static/assets/vendor/libs/popper/popper.js"></script>
+    <script src="/static/assets/vendor/js/bootstrap.js"></script>
+    <script src="/static/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js"></script>
+    <script src="/static/assets/vendor/js/menu.js"></script>
+
+    <!-- Load templates FIRST -->
+    <script src="/static/assets/js/components/menu-template.js"></script>
+    <script src="/static/assets/js/components/navbar-template.js"></script>
+    <script src="/static/assets/js/components/auth-modals-template.js"></script>
+
+    <!-- Inject components SECOND -->
+    <script src="/static/assets/js/services/menu-injection-service.js"></script>
+    <script src="/static/assets/js/services/navbar-injection-service.js"></script>
+
+    <!-- Feedback System (Global) -->
+    <script src="/static/assets/js/services/feedback-injection-service.js"></script>
+
+    <!-- Main JS -->
+    <script src="/static/assets/js/main.js"></script>
+
+    <!-- Firebase Services -->
+    <script src="/static/assets/js/firebase/firebase-init.js?v=20251020-03"></script>
+    <script src="/static/assets/js/firebase/auth-service.js?v=20251020-03"></script>
+    <script src="/static/assets/js/firebase/auth-ui.js?v=20251020-03"></script>
+    <script src="/static/assets/js/firebase/data-manager.js?v=20251020-05"></script>
+
+    <!-- Voting Service -->
+    <script src="/static/assets/js/services/feedback-voting-service.js?v=20260116"></script>
+
+    <!-- Page Script -->
+    <script>
+        let currentTab = 'feature';
+        let isLoggedIn = false;
+        let lastSubmittedId = null;
+
+        // Initialize page
+        async function initVotingPage() {
+            console.log('Initializing voting page...');
+
+            // Wait for Firebase to be ready
+            if (!window.firebaseReady) {
+                await new Promise(resolve => {
+                    window.addEventListener('firebaseReady', resolve, { once: true });
+                });
+            }
+
+            // Check login status
+            updateLoginStatus();
+
+            // Setup auth listener for changes
+            window.addEventListener('authStateChanged', () => {
+                updateLoginStatus();
+                loadCurrentTab();
+            });
+
+            // Setup tab change listener
+            document.querySelectorAll('[data-bs-toggle="tab"]').forEach(tab => {
+                tab.addEventListener('shown.bs.tab', (e) => {
+                    if (e.target.id === 'features-tab') {
+                        currentTab = 'feature';
+                    } else if (e.target.id === 'bugs-tab') {
+                        currentTab = 'bug';
+                    } else if (e.target.id === 'general-tab') {
+                        currentTab = 'general';
+                    }
+                    loadCurrentTab();
+                });
+            });
+
+            // Setup submit button
+            document.getElementById('submitNewBtn').addEventListener('click', () => {
+                openSubmitForm(currentTab);
+            });
+
+            // Listen for feedback submissions
+            window.addEventListener('feedbackSubmitted', (e) => {
+                handleFeedbackSubmitted(e.detail);
+            });
+
+            // Load initial data
+            await loadAllFeedback();
+
+            console.log('Voting page initialized');
+        }
+
+        // Update login status UI
+        function updateLoginStatus() {
+            const user = window.firebaseAuth?.currentUser;
+            isLoggedIn = !!user;
+
+            const loginPrompt = document.getElementById('loginPrompt');
+            if (loginPrompt) {
+                loginPrompt.classList.toggle('d-none', isLoggedIn);
+            }
+        }
+
+        // Load all feedback
+        async function loadAllFeedback() {
+            await Promise.all([
+                loadFeedback('feature'),
+                loadFeedback('bug'),
+                loadFeedback('general')
+            ]);
+        }
+
+        // Get element ID prefix for a feedback type
+        function getElementPrefix(type) {
+            if (type === 'feature') return 'features';
+            if (type === 'bug') return 'bugs';
+            return 'general';
+        }
+
+        // Load feedback for a specific type
+        async function loadFeedback(type) {
+            const prefix = getElementPrefix(type);
+            const loadingEl = document.getElementById(`${prefix}Loading`);
+            const emptyEl = document.getElementById(`${prefix}Empty`);
+            const listEl = document.getElementById(`${prefix}List`);
+            const countEl = document.getElementById(`${type === 'feature' ? 'feature' : type === 'bug' ? 'bug' : 'general'}Count`);
+
+            try {
+                loadingEl.classList.remove('d-none');
+                emptyEl.classList.add('d-none');
+                listEl.classList.add('d-none');
+
+                const items = await window.feedbackVotingService.loadPublicFeedback(type);
+
+                loadingEl.classList.add('d-none');
+                countEl.textContent = items.length;
+
+                if (items.length === 0) {
+                    emptyEl.classList.remove('d-none');
+                } else {
+                    listEl.classList.remove('d-none');
+                    renderFeedbackList(items, listEl, type);
+                }
+
+            } catch (error) {
+                console.error(`Error loading ${type} feedback:`, error);
+                loadingEl.classList.add('d-none');
+                emptyEl.classList.remove('d-none');
+            }
+        }
+
+        // Load current tab
+        function loadCurrentTab() {
+            loadFeedback(currentTab);
+        }
+
+        // Render feedback list (new list-style rows)
+        function renderFeedbackList(items, container, type) {
+            container.innerHTML = '';
+
+            items.forEach(item => {
+                const row = createFeedbackRow(item, type);
+                container.appendChild(row);
+            });
+
+        }
+
+        // Show centered detail modal
+        function showDetailModal(item) {
+            // Remove existing modal if any
+            const existingModal = document.getElementById('feedbackDetailModal');
+            if (existingModal) {
+                existingModal.remove();
+            }
+
+            const isSupporting = window.feedbackVotingService.hasUserSupported(item.supporters);
+            const supportCount = item.votes?.support || 0;
+            const activeClass = isSupporting ? 'active' : '';
+            const iconClass = isSupporting ? 'bx-bxs-like' : 'bx-like';
+
+            // Create modal HTML
+            const modalHtml = `
+                <div class="modal fade" id="feedbackDetailModal" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered modal-sm">
+                        <div class="modal-content feedback-detail-modal">
+                            <button type="button" class="detail-modal-close" data-bs-dismiss="modal" aria-label="Close">
+                                <i class="bx bx-x"></i>
+                            </button>
+                            <div class="detail-modal-body">
+                                <h5 class="detail-modal-title">${escapeHtml(item.title)}</h5>
+                                <p class="detail-modal-description">${escapeHtml(item.description || 'No description provided.')}</p>
+                                <div class="detail-modal-actions">
+                                    <button class="support-btn ${activeClass}" id="modalSupportBtn"
+                                            ${!isLoggedIn ? 'title="Sign in to support"' : ''}>
+                                        <i class="bx ${iconClass}"></i>
+                                        <span class="support-count">${supportCount}</span>
+                                        <span class="support-label">Support</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Add to DOM
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+            // Wire up support button
+            const modalSupportBtn = document.getElementById('modalSupportBtn');
+            modalSupportBtn.addEventListener('click', async () => {
+                await handleModalSupport(item.id, modalSupportBtn);
+            });
+
+            // Show modal
+            const modal = new bootstrap.Modal(document.getElementById('feedbackDetailModal'));
+            modal.show();
+
+            // Clean up on close
+            document.getElementById('feedbackDetailModal').addEventListener('hidden.bs.modal', function() {
+                this.remove();
+            });
+        }
+
+        // Handle support click from modal
+        async function handleModalSupport(feedbackId, btnElement) {
+            if (!isLoggedIn) {
+                document.querySelector('[data-bs-target=\'#loginModal\']')?.click();
+                return;
+            }
+
+            const supportCount = btnElement.querySelector('.support-count');
+            const icon = btnElement.querySelector('i');
+
+            try {
+                const result = await window.feedbackVotingService.toggleSupport(feedbackId);
+
+                // Update modal button UI
+                if (result.isSupporting) {
+                    btnElement.classList.add('active');
+                    icon.classList.remove('bx-like');
+                    icon.classList.add('bx-bxs-like');
+                } else {
+                    btnElement.classList.remove('active');
+                    icon.classList.remove('bx-bxs-like');
+                    icon.classList.add('bx-like');
+                }
+
+                if (supportCount) {
+                    supportCount.classList.add('animate');
+                    supportCount.textContent = result.votes.support;
+                    setTimeout(() => supportCount.classList.remove('animate'), 150);
+                }
+
+                // Also update the row in the list
+                updateRowSupport(feedbackId, result);
+
+            } catch (error) {
+                console.error('Support error:', error);
+                showToast('Failed to record support', 'danger');
+            }
+        }
+
+        // Truncate text to max length
+        function truncate(text, maxLength) {
+            if (!text) return '';
+            return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
+        }
+
+        // Get type label for display
+        function getTypeLabel(type) {
+            if (type === 'feature') return 'Feature';
+            if (type === 'bug') return 'Bug';
+            return 'General';
+        }
+
+        // Create a feedback row element (compact table-style with support button)
+        function createFeedbackRow(item, type) {
+            const row = document.createElement('div');
+            row.className = 'feedback-row';
+            row.dataset.id = item.id;
+
+            // Check if this is a newly submitted item
+            if (lastSubmittedId && item.id === lastSubmittedId) {
+                row.classList.add('highlight');
+                lastSubmittedId = null;
+            }
+
+            const isSupporting = window.feedbackVotingService.hasUserSupported(item.supporters);
+            const supportCount = item.votes?.support || 0;
+
+            const activeClass = isSupporting ? 'active' : '';
+            const iconClass = isSupporting ? 'bx-bxs-like' : 'bx-like';
+
+            const typeLabel = getTypeLabel(type);
+            const timeAgo = window.feedbackVotingService.formatRelativeTime(item.createdAt);
+            const descriptionPreview = truncate(item.description || '', 80);
+
+            row.innerHTML = `
+                <button class="support-btn ${activeClass}"
+                        ${!isLoggedIn ? 'title="Sign in to support"' : ''}>
+                    <i class="bx ${iconClass}"></i>
+                    <span class="support-count">${supportCount}</span>
+                </button>
+                <div class="feedback-content">
+                    <div class="feedback-title">${escapeHtml(item.title)}</div>
+                    ${descriptionPreview ? `<div class="feedback-description">${escapeHtml(descriptionPreview)}</div>` : ''}
+                    <div class="feedback-meta">${typeLabel} &bull; ${timeAgo}</div>
+                </div>
+                <button class="info-btn" type="button">
+                    <i class="bx bx-info-circle"></i>
+                </button>
+            `;
+
+            // Wire up support button click
+            const supportBtn = row.querySelector('.support-btn');
+            supportBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                handleSupport(item.id);
+            });
+
+            // Wire up info button click
+            const infoBtn = row.querySelector('.info-btn');
+            infoBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                showDetailModal(item);
+            });
+
+            // Make entire row clickable
+            row.style.cursor = 'pointer';
+            row.addEventListener('click', () => {
+                showDetailModal(item);
+            });
+
+            return row;
+        }
+
+        // Handle support click
+        async function handleSupport(feedbackId) {
+            if (!isLoggedIn) {
+                document.querySelector('[data-bs-target=\'#loginModal\']')?.click();
+                return;
+            }
+
+            // Find the row and add animation
+            const row = document.querySelector(`.feedback-row[data-id="${feedbackId}"]`);
+            const supportCount = row?.querySelector('.support-count');
+
+            try {
+                const result = await window.feedbackVotingService.toggleSupport(feedbackId);
+
+                // Update UI with animation
+                if (supportCount) {
+                    supportCount.classList.add('animate');
+                    setTimeout(() => supportCount.classList.remove('animate'), 150);
+                }
+
+                updateRowSupport(feedbackId, result);
+
+            } catch (error) {
+                console.error('Support error:', error);
+                showToast('Failed to record support', 'danger');
+            }
+        }
+
+        // Update row support display
+        function updateRowSupport(feedbackId, result) {
+            const row = document.querySelector(`.feedback-row[data-id="${feedbackId}"]`);
+            if (!row) return;
+
+            const countEl = row.querySelector('.support-count');
+            const btn = row.querySelector('.support-btn');
+            const icon = btn?.querySelector('i');
+
+            const count = result.votes?.support || 0;
+            countEl.textContent = count;
+
+            btn.classList.toggle('active', result.isSupporting);
+            if (icon) {
+                icon.className = `bx ${result.isSupporting ? 'bx-bxs-like' : 'bx-like'}`;
+            }
+        }
+
+        // Handle search
+        function handleSearch() {
+            const query = document.getElementById('searchInput').value;
+            const items = window.feedbackVotingService.searchFeedback(query, currentTab);
+
+            const listEl = document.getElementById(`${currentTab === 'feature' ? 'features' : 'bugs'}List`);
+            const emptyEl = document.getElementById(`${currentTab === 'feature' ? 'features' : 'bugs'}Empty`);
+
+            if (items.length === 0) {
+                listEl.classList.add('d-none');
+                emptyEl.classList.remove('d-none');
+            } else {
+                listEl.classList.remove('d-none');
+                emptyEl.classList.add('d-none');
+                renderFeedbackList(items, listEl, currentTab);
+            }
+        }
+
+        // Open submit form
+        function openSubmitForm(type) {
+            const typeSelect = document.getElementById('feedbackType');
+            if (typeSelect) {
+                typeSelect.value = type;
+                typeSelect.dispatchEvent(new Event('change'));
+            }
+
+            const feedbackBtn = document.getElementById('navbarFeedbackBtn');
+            if (feedbackBtn) {
+                const dropdown = bootstrap.Dropdown.getInstance(feedbackBtn) || new bootstrap.Dropdown(feedbackBtn);
+                dropdown.show();
+            }
+        }
+
+        // Handle feedback submitted (Phase 4: toast + highlight)
+        function handleFeedbackSubmitted(detail) {
+            showToast('Feedback submitted!');
+
+            if (detail?.id) {
+                lastSubmittedId = detail.id;
+            }
+
+            // Reload the current tab to show new item
+            loadCurrentTab();
+        }
+
+        // Show toast notification
+        function showToast(message, type = 'success') {
+            const toastEl = document.getElementById('feedbackToast');
+            const toastMessage = document.getElementById('toastMessage');
+
+            if (toastEl && toastMessage) {
+                toastMessage.textContent = message;
+                toastEl.className = `toast align-items-center text-bg-${type} border-0`;
+
+                const toast = bootstrap.Toast.getOrCreateInstance(toastEl);
+                toast.show();
+            }
+        }
+
+        // Utility: Escape HTML
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Initialize when DOM is ready
+        document.addEventListener('DOMContentLoaded', initVotingPage);
+    </script>
+  </body>
+</html>

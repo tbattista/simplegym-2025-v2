@@ -165,6 +165,19 @@ async def serve_feedback_admin():
             status_code=404
         )
 
+@app.get("/feedback-voting", response_class=HTMLResponse)
+@app.get("/feedback-voting.html", response_class=HTMLResponse)
+async def serve_feedback_voting():
+    """Serve the Feedback Voting page - Public feature requests and bug voting"""
+    try:
+        with open("frontend/feedback-voting.html", "r", encoding="utf-8") as f:
+            return HTMLResponse(content=f.read())
+    except FileNotFoundError:
+        return HTMLResponse(
+            content="<h1>Feedback Voting not found</h1><p>Please ensure frontend/feedback-voting.html exists</p>",
+            status_code=404
+        )
+
 @app.get("/profile", response_class=HTMLResponse)
 @app.get("/profile.html", response_class=HTMLResponse)
 async def serve_profile():
@@ -204,16 +217,29 @@ async def serve_public_workouts():
             status_code=404
         )
 
-@app.get("/dashboard-demo", response_class=HTMLResponse)
-@app.get("/dashboard-demo.html", response_class=HTMLResponse)
-async def serve_dashboard_demo():
-    """Serve the Dashboard Demo page - Mobile-first user dashboard"""
+@app.get("/dashboard", response_class=HTMLResponse)
+@app.get("/dashboard.html", response_class=HTMLResponse)
+async def serve_dashboard():
+    """Serve the Dashboard page - Mobile-first user dashboard"""
     try:
-        with open("frontend/dashboard-demo.html", "r", encoding="utf-8") as f:
+        with open("frontend/dashboard.html", "r", encoding="utf-8") as f:
             return HTMLResponse(content=f.read())
     except FileNotFoundError:
         return HTMLResponse(
-            content="<h1>Dashboard Demo not found</h1><p>Please ensure frontend/dashboard-demo.html exists</p>",
+            content="<h1>Dashboard not found</h1><p>Please ensure frontend/dashboard.html exists</p>",
+            status_code=404
+        )
+
+@app.get("/program-manager", response_class=HTMLResponse)
+@app.get("/program-manager.html", response_class=HTMLResponse)
+async def serve_program_manager():
+    """Serve the Program Manager page - Create/manage programs and workouts"""
+    try:
+        with open("frontend/program-manager.html", "r", encoding="utf-8") as f:
+            return HTMLResponse(content=f.read())
+    except FileNotFoundError:
+        return HTMLResponse(
+            content="<h1>Program Manager not found</h1><p>Please ensure frontend/program-manager.html exists</p>",
             status_code=404
         )
 

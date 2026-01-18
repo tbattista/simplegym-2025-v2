@@ -1,0 +1,390 @@
+/**
+ * Ghost Gym - Note Card Styles
+ * Styles for session notes that appear inline with exercise cards
+ * Extends the logbook-card pattern for consistent UI
+ * @version 1.0.0
+ * @date 2026-01-16
+ */
+
+/* ============================================
+   NOTE CARD BASE STYLES
+   Extends .logbook-card pattern
+   ============================================ */
+
+/* Note card base - inherits from logbook-card */
+.logbook-card.note-card {
+    background: var(--logbook-card-bg);
+    border-left: 3px solid var(--logbook-muted);
+    transition: border-color 0.2s ease;
+}
+
+.logbook-card.note-card:hover:not(.expanded) {
+    border-left-color: var(--logbook-accent);
+}
+
+.logbook-card.note-card.expanded {
+    border-left-color: var(--logbook-accent);
+}
+
+/* ============================================
+   NOTE CARD HEADER
+   ============================================ */
+
+.note-card-header {
+    padding: 0.75rem 1rem;
+}
+
+.note-card-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: 1;
+    min-width: 0; /* Allow text truncation */
+}
+
+/* Note icon styling */
+.note-icon {
+    color: var(--logbook-muted);
+    font-size: 1.125rem;
+    flex-shrink: 0;
+    transition: color 0.2s ease;
+}
+
+.note-card.expanded .note-icon,
+.note-card:hover .note-icon {
+    color: var(--logbook-accent);
+}
+
+/* Note preview in collapsed state - shows up to 3 lines */
+.note-preview {
+    color: var(--logbook-muted);
+    font-weight: 400;
+    font-style: italic;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    line-clamp: 3;
+    flex: 1;
+    min-width: 0;
+}
+
+.note-card.expanded .note-preview {
+    color: var(--logbook-text);
+}
+
+/* ============================================
+   NOTE CARD BODY
+   ============================================ */
+
+.note-card-body {
+    padding: 0 1rem 1rem 1rem;
+}
+
+/* Note full content in expanded state */
+.note-full-content {
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    color: var(--logbook-text);
+    white-space: pre-wrap;
+    word-break: break-word;
+    padding: 0.5rem 0;
+}
+
+.note-full-content em.text-muted {
+    color: var(--logbook-muted);
+    font-style: italic;
+}
+
+/* ============================================
+   NOTE EDITOR (Edit Mode)
+   ============================================ */
+
+.note-editor {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding-top: 0.5rem;
+}
+
+.note-textarea {
+    resize: vertical;
+    min-height: 100px;
+    max-height: 300px;
+    font-size: 0.9375rem;
+    line-height: 1.5;
+    border: 1px solid var(--logbook-border);
+    border-radius: 0.375rem;
+    padding: 0.75rem;
+    background: var(--logbook-card-bg);
+    color: var(--logbook-text);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.note-textarea:focus {
+    border-color: var(--logbook-accent);
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.1);
+    outline: none;
+}
+
+.note-textarea::placeholder {
+    color: var(--logbook-muted);
+    font-style: italic;
+}
+
+/* Character counter */
+.note-char-count {
+    font-size: 0.75rem;
+    color: var(--logbook-muted);
+    text-align: right;
+    margin-top: -0.25rem;
+}
+
+.note-char-current {
+    color: var(--logbook-text);
+    font-weight: 500;
+}
+
+/* Warning when approaching limit */
+.note-char-count.warning .note-char-current {
+    color: var(--logbook-warning);
+}
+
+/* Error when at limit */
+.note-char-count.error .note-char-current {
+    color: var(--bs-danger);
+}
+
+/* Editor action buttons */
+.note-editor-actions {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: flex-end;
+    padding-top: 0.25rem;
+}
+
+.note-editor-actions .btn {
+    min-width: 36px;
+    height: 36px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.note-editor-actions .btn i {
+    font-size: 1.125rem;
+}
+
+/* Save button */
+.note-save-btn {
+    background-color: var(--logbook-success);
+    border-color: var(--logbook-success);
+}
+
+.note-save-btn:hover {
+    background-color: var(--logbook-success);
+    filter: brightness(1.1);
+}
+
+/* Cancel button */
+.note-cancel-btn {
+    border-color: var(--logbook-border);
+    color: var(--logbook-muted);
+}
+
+.note-cancel-btn:hover {
+    background-color: var(--logbook-border);
+    color: var(--logbook-text);
+}
+
+/* ============================================
+   NOTE CARD MENU
+   ============================================ */
+
+.note-menu {
+    min-width: 160px;
+}
+
+.note-menu .logbook-menu-item {
+    color: var(--logbook-text);
+}
+
+.note-menu .logbook-menu-item:first-child {
+    color: var(--bs-danger);
+}
+
+.note-menu .logbook-menu-item:first-child i {
+    color: var(--bs-danger);
+}
+
+/* ============================================
+   POSITION PICKER STYLES
+   For the "Add Note" position selection UI
+   ============================================ */
+
+.position-picker-list {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.position-picker-item {
+    text-align: left;
+    justify-content: flex-start;
+    padding: 0.75rem 1rem;
+    font-size: 0.9375rem;
+    border-width: 1px;
+    transition: all 0.2s ease;
+}
+
+.position-picker-item:hover {
+    background: var(--logbook-accent);
+    border-color: var(--logbook-accent);
+    color: white;
+}
+
+.position-picker-item i {
+    color: var(--logbook-accent);
+    transition: color 0.2s ease;
+}
+
+.position-picker-item:hover i {
+    color: white;
+}
+
+/* Quick add option (at the end) */
+.position-picker-item.quick-add {
+    background: rgba(var(--bs-success-rgb), 0.1);
+    border-color: var(--logbook-success);
+    color: var(--logbook-success);
+}
+
+.position-picker-item.quick-add:hover {
+    background: var(--logbook-success);
+    color: white;
+}
+
+/* ============================================
+   REORDER LIST - NOTE ITEMS
+   Styles for notes in the reorder offcanvas
+   ============================================ */
+
+.reorder-item[data-item-type="note"] .reorder-item-inner {
+    border-left: 3px solid var(--logbook-muted);
+}
+
+.reorder-item[data-item-type="note"] .note-indicator {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    color: var(--logbook-muted);
+    font-size: 0.75rem;
+}
+
+.reorder-item[data-item-type="note"] .note-indicator i {
+    font-size: 0.875rem;
+}
+
+/* ============================================
+   DARK MODE ADJUSTMENTS
+   ============================================ */
+
+[data-theme="dark"] .note-card,
+.dark-mode .note-card {
+    background: var(--logbook-card-bg);
+}
+
+[data-theme="dark"] .note-textarea,
+.dark-mode .note-textarea {
+    background: rgba(0, 0, 0, 0.2);
+    border-color: var(--logbook-border);
+}
+
+[data-theme="dark"] .note-textarea:focus,
+.dark-mode .note-textarea:focus {
+    background: rgba(0, 0, 0, 0.3);
+}
+
+/* ============================================
+   RESPONSIVE ADJUSTMENTS
+   ============================================ */
+
+@media (max-width: 768px) {
+    .note-card-header {
+        padding: 0.625rem 0.875rem;
+    }
+
+    .note-card-body {
+        padding: 0 0.875rem 0.875rem 0.875rem;
+    }
+
+    .note-textarea {
+        min-height: 80px;
+        font-size: 0.875rem;
+    }
+
+    .note-editor-actions .btn {
+        min-width: 40px;
+        height: 40px;
+    }
+
+    .position-picker-item {
+        padding: 0.875rem 1rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .note-preview {
+        max-width: 150px;
+    }
+
+    .note-full-content {
+        font-size: 0.875rem;
+    }
+}
+
+/* ============================================
+   ANIMATIONS
+   ============================================ */
+
+/* Fade in animation for new notes */
+@keyframes noteCardFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.note-card.just-added {
+    animation: noteCardFadeIn 0.3s ease-out;
+}
+
+/* Edit mode transition */
+.note-display,
+.note-editor {
+    transition: opacity 0.2s ease;
+}
+
+.note-card.editing .note-display {
+    display: none;
+}
+
+.note-card.editing .note-editor {
+    display: flex;
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    .note-card,
+    .note-card.just-added,
+    .note-textarea,
+    .note-icon,
+    .position-picker-item {
+        animation: none !important;
+        transition: none !important;
+    }
+}

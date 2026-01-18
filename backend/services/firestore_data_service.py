@@ -928,6 +928,14 @@ class FirestoreDataService:
             if complete_request.notes:
                 completion_data['notes'] = complete_request.notes
             
+            # Save session notes if provided
+            if hasattr(complete_request, 'session_notes') and complete_request.session_notes:
+                completion_data['session_notes'] = [
+                    note.model_dump() if hasattr(note, 'model_dump') else note
+                    for note in complete_request.session_notes
+                ]
+                logger.info(f"Saving {len(complete_request.session_notes)} session notes")
+
             # Save custom exercise order if provided (Phase 3 - Exercise Reordering)
             if hasattr(complete_request, 'exercise_order') and complete_request.exercise_order:
                 completion_data['exercise_order'] = complete_request.exercise_order

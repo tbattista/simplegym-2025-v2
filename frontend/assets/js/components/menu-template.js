@@ -33,7 +33,15 @@ function getMenuHTML(activePage = 'home') {
                     <div class="text-truncate">Home</div>
                 </a>
             </li>
-            
+
+            <!-- Dashboard -->
+            <li class="menu-item ${activePage === 'dashboard' ? 'active' : ''}">
+                <a href="dashboard.html" class="menu-link">
+                    <i class="menu-icon tf-icons bx bx-grid-alt"></i>
+                    <div class="text-truncate">Dashboard</div>
+                </a>
+            </li>
+
             <!-- Workouts (formerly Workout Database) -->
             <li class="menu-item ${activePage === 'workout-database' ? 'active' : ''}">
                 <a href="workout-database.html" class="menu-link">

@@ -1924,3 +1924,400 @@ button {
         font-size: 0.7rem;
     }
 }
+
+/* ============================================
+   TEMPLATE NOTE CARDS
+   Note cards now use exercise-group-card class and inherit all styling.
+   Only minimal overrides needed for visual distinction.
+   ============================================ */
+
+/* Large comment icon - vertically centered before text */
+.template-note-card .template-note-icon {
+    font-size: 1.5rem;
+    color: var(--bs-secondary);
+    flex-shrink: 0;
+    align-self: center;
+}
+
+/* Template note text - allow wrapping for full content display */
+.template-note-card .exercise-meta-text {
+    white-space: normal;
+    word-wrap: break-word;
+    line-height: 1.4;
+}
+
+.template-note-card .template-note-text {
+    white-space: normal;
+    word-wrap: break-word;
+}
+
+/* Dark mode icon color */
+[data-bs-theme="dark"] .template-note-card .template-note-icon {
+    color: #94a3b8;
+}
+
+/* Template note card - minimal style matching 3-dot menu */
+.template-note-card .card-actions {
+    display: flex !important;
+    visibility: visible !important;
+}
+
+.template-note-card .btn-edit-compact {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    width: auto !important;
+    height: auto !important;
+    padding: 0.25rem !important;
+    border: none !important;
+    border-radius: 4px;
+    color: #64748b !important; /* Darker gray for visibility */
+    background: transparent;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+}
+
+.template-note-card .btn-edit-compact:hover {
+    opacity: 1 !important;
+    color: var(--bs-body-color) !important;
+    background: rgba(var(--bs-primary-rgb), 0.08) !important;
+}
+
+.template-note-card .btn-edit-compact i {
+    font-size: 1.25rem !important;
+}
+
+/* Adjust content padding for single button (no 3-dot menu) */
+.template-note-card .exercise-content {
+    padding-right: 48px; /* Less padding since only edit button, no menu */
+}
+
+/* ============================================
+   CARD ACTIONS CONTAINER (Edit + Menu)
+   Phase 1: New 3-dot menu system for exercise cards
+   Matches workout-mode logbook button styling (minimal, no borders)
+   ============================================ */
+
+/* Container for edit button + 3-dot menu button */
+.card-actions {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    z-index: 10;
+}
+
+/* Edit button - minimal style matching 3-dot menu (no border, just icon) */
+.card-actions .btn-edit-compact {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: relative !important;
+    right: auto !important;
+    top: auto !important;
+    transform: none !important;
+    width: auto !important;
+    height: auto !important;
+    padding: 0.25rem !important;
+    border: none !important;
+    border-radius: 4px;
+    background: transparent;
+    color: #64748b !important; /* Darker gray for visibility */
+    transition: all 0.15s ease;
+    align-items: center;
+    justify-content: center;
+}
+
+.card-actions .btn-edit-compact:hover {
+    opacity: 1 !important;
+    color: var(--bs-body-color) !important;
+    background: rgba(var(--bs-primary-rgb), 0.08) !important;
+}
+
+.card-actions .btn-edit-compact i {
+    font-size: 1.25rem !important;
+    display: block !important;
+    line-height: 1;
+}
+
+/* Update exercise content padding to accommodate two buttons */
+.exercise-group-card.compact .exercise-content {
+    padding-right: 56px; /* Space for edit + menu buttons (smaller now) */
+}
+
+/* Exercise group card edit button - minimal style matching 3-dot menu */
+.exercise-group-card.compact .btn-edit-compact {
+    position: relative;
+    right: auto;
+    top: auto;
+    transform: none;
+    width: auto;
+    height: auto;
+    padding: 0.25rem !important;
+    border: none !important;
+    border-radius: 4px;
+    background: transparent;
+    color: #64748b !important; /* Darker gray for visibility */
+    opacity: 1;
+    transition: all 0.15s ease;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+}
+
+.exercise-group-card.compact .btn-edit-compact:hover {
+    opacity: 1;
+    color: var(--bs-body-color) !important;
+    background: rgba(var(--bs-primary-rgb), 0.08);
+    transform: none;
+    box-shadow: none;
+}
+
+.exercise-group-card.compact .btn-edit-compact i {
+    font-size: 1.25rem !important;
+    width: auto !important;
+    height: auto !important;
+    display: block;
+    line-height: 1;
+    margin: 0;
+    padding: 0;
+}
+
+/* Bonus exercise card edit button - minimal style matching 3-dot menu */
+.bonus-exercise-card.compact .btn-edit-compact {
+    position: relative;
+    right: auto;
+    top: auto;
+    transform: none;
+    width: auto;
+    height: auto;
+    padding: 0.25rem !important;
+    border: none !important;
+    border-radius: 4px;
+    background: transparent;
+    color: #64748b !important; /* Darker gray for visibility */
+    opacity: 1;
+    transition: all 0.15s ease;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+}
+
+.bonus-exercise-card.compact .btn-edit-compact:hover {
+    opacity: 1;
+    color: var(--bs-body-color) !important;
+    background: rgba(var(--bs-primary-rgb), 0.08);
+    transform: none;
+    box-shadow: none;
+}
+
+.bonus-exercise-card.compact .btn-edit-compact i {
+    font-size: 1.25rem !important;
+    width: auto !important;
+    height: auto !important;
+    display: block;
+    line-height: 1;
+    margin: 0;
+    padding: 0;
+}
+
+/* Update exercise content padding for bonus cards to accommodate card-actions */
+.bonus-exercise-card.compact .exercise-content {
+    padding-right: 48px; /* Space for edit button */
+}
+
+/* 3-dot menu button - minimal style like workout-mode */
+.btn-menu-compact {
+    position: relative;
+    padding: 0.25rem !important;
+    margin: 0 !important;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    background: transparent;
+    border: none;
+    color: var(--bs-secondary) !important;
+    opacity: 0.7;
+    transition: all 0.15s ease;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.btn-menu-compact:hover {
+    opacity: 1;
+    color: var(--bs-body-color) !important;
+    background: rgba(var(--bs-primary-rgb), 0.08);
+}
+
+.btn-menu-compact:active {
+    transform: scale(0.95);
+}
+
+.btn-menu-compact i {
+    font-size: 1.25rem !important;
+    line-height: 1 !important;
+    display: block !important;
+    margin: 0;
+    padding: 0;
+}
+
+/* Menu button active state when menu is open */
+.btn-menu-compact.active {
+    opacity: 1;
+    color: var(--bs-body-color) !important;
+    background: rgba(var(--bs-primary-rgb), 0.12);
+}
+
+/* ============================================
+   BUILDER CARD MENU (Dropdown)
+   ============================================ */
+
+/* Menu container - positioned relative to button */
+.builder-card-menu {
+    position: absolute;
+    top: calc(100% + 4px);
+    right: 0;
+    background: var(--bs-body-bg);
+    border: 1.5px solid var(--bs-border-color);
+    border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+    min-width: 160px;
+    padding: 8px 0;
+    z-index: 1050;
+    display: none;
+}
+
+.builder-card-menu.show {
+    display: block;
+}
+
+/* Menu items */
+.builder-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+    cursor: pointer;
+    background: none;
+    border: none;
+    width: 100%;
+    text-align: left;
+    font-size: 0.875rem;
+    color: var(--bs-body-color);
+    transition: all 0.15s ease;
+}
+
+.builder-menu-item:hover {
+    background-color: rgba(var(--bs-primary-rgb), 0.08);
+    color: var(--bs-primary);
+}
+
+.builder-menu-item i {
+    font-size: 1.1rem;
+    width: 20px;
+    text-align: center;
+}
+
+/* Disabled state for boundary items */
+.builder-menu-item.disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* Danger variant for delete */
+.builder-menu-item.danger {
+    color: var(--bs-danger);
+}
+
+.builder-menu-item.danger:hover {
+    background-color: rgba(var(--bs-danger-rgb), 0.08);
+    color: var(--bs-danger);
+}
+
+/* Menu divider */
+.builder-menu-divider {
+    height: 1px;
+    background: var(--bs-border-color);
+    margin: 6px 0;
+}
+
+/* Dark mode adjustments */
+[data-bs-theme="dark"] .builder-card-menu {
+    background: var(--bs-body-bg);
+    border-color: var(--bs-border-color);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+/* Dark mode: menu button stays muted */
+[data-bs-theme="dark"] .btn-menu-compact {
+    color: var(--bs-secondary) !important;
+}
+
+[data-bs-theme="dark"] .btn-menu-compact:hover,
+[data-bs-theme="dark"] .btn-menu-compact.active {
+    color: var(--bs-body-color) !important;
+    background: rgba(255, 255, 255, 0.08);
+}
+
+/* Dark mode: edit button stays muted like menu button */
+[data-bs-theme="dark"] .exercise-group-card.compact .btn-edit-compact,
+[data-bs-theme="dark"] .bonus-exercise-card.compact .btn-edit-compact,
+[data-bs-theme="dark"] .template-note-card .btn-edit-compact {
+    color: var(--bs-secondary) !important;
+    background: transparent;
+}
+
+[data-bs-theme="dark"] .exercise-group-card.compact .btn-edit-compact:hover,
+[data-bs-theme="dark"] .bonus-exercise-card.compact .btn-edit-compact:hover,
+[data-bs-theme="dark"] .template-note-card .btn-edit-compact:hover {
+    color: var(--bs-body-color) !important;
+    background: rgba(255, 255, 255, 0.08);
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+    .card-actions {
+        gap: 0.25rem;
+    }
+
+    /* Edit and menu buttons - minimal style on mobile */
+    .exercise-group-card.compact .btn-edit-compact,
+    .bonus-exercise-card.compact .btn-edit-compact,
+    .template-note-card .btn-edit-compact,
+    .card-actions .btn-edit-compact,
+    .btn-menu-compact {
+        padding: 0.25rem !important;
+    }
+
+    .exercise-group-card.compact .btn-edit-compact i,
+    .bonus-exercise-card.compact .btn-edit-compact i,
+    .template-note-card .btn-edit-compact i,
+    .card-actions .btn-edit-compact i,
+    .btn-menu-compact i {
+        font-size: 1.25rem !important;
+    }
+
+    .exercise-group-card.compact .exercise-content,
+    .bonus-exercise-card.compact .exercise-content {
+        padding-right: 64px; /* Space for edit + menu buttons on mobile */
+    }
+
+    .template-note-card .exercise-content {
+        padding-right: 40px; /* Space for edit button only */
+    }
+
+    .builder-card-menu {
+        min-width: 140px;
+    }
+
+    .builder-menu-item {
+        padding: 8px 12px;
+        font-size: 0.8125rem;
+    }
+}

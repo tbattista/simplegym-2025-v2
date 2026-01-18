@@ -83,6 +83,7 @@ class ExerciseCardRenderer {
                     <!-- Row 1: Exercise Name (full width, no wrap) -->
                     <div class="logbook-exercise-name-row">
                         <div class="logbook-exercise-name">
+                            ${notes ? '<i class="bx bx-note exercise-note-indicator" title="Has notes"></i>' : ''}
                             ${this._escapeHtml(mainExercise)}
                             ${isBonus ? '<span class="additional-exercise-badge" title="Additional exercise">+</span>' : ''}
                         </div>
@@ -107,6 +108,7 @@ class ExerciseCardRenderer {
                             ${currentDirection === 'down' ? '<span class="logbook-state-item next-down"><i class="bx bx-down-arrow-alt"></i> Decrease</span>' : ''}
                             ${currentDirection === 'same' ? '<span class="logbook-state-item"><i class="bx bx-minus"></i> No Change</span>' : ''}
                         </div>
+                        ${notes ? `<div class="logbook-note-preview">${this._escapeHtml(notes)}</div>` : ''}
                     </div>
                 </div>
                 
@@ -544,6 +546,12 @@ class ExerciseCardRenderer {
     _renderMoreMenu(exerciseName, index, isSkipped, totalCards) {
         return `
             <div class="logbook-menu" onclick="event.stopPropagation()">
+                ${!isSkipped ? `
+                    <button class="logbook-menu-item" onclick="window.workoutModeController?.handleSkipExercise?.('${this._escapeHtml(exerciseName)}', ${index}); event.stopPropagation();">
+                        <i class="bx bx-skip-next"></i>
+                        Skip for today
+                    </button>
+                ` : ''}
                 ${isSkipped ? `
                     <button class="logbook-menu-item" onclick="window.workoutModeController?.handleUnskipExercise?.('${this._escapeHtml(exerciseName)}', ${index}); event.stopPropagation();" style="color: var(--logbook-success);">
                         <i class="bx bx-undo" style="color: var(--logbook-success);"></i>
@@ -564,12 +572,6 @@ class ExerciseCardRenderer {
                     Plate calculator
                 </button>
                 <div class="logbook-menu-divider"></div>
-                ${!isSkipped ? `
-                    <button class="logbook-menu-item" onclick="window.workoutModeController?.handleSkipExercise?.('${this._escapeHtml(exerciseName)}', ${index}); event.stopPropagation();">
-                        <i class="bx bx-skip-next"></i>
-                        Skip for today
-                    </button>
-                ` : ''}
                 <button class="logbook-menu-item${index === 0 ? ' disabled' : ''}" onclick="window.workoutModeController?.handleMoveUp?.(${index}); event.stopPropagation();"${index === 0 ? ' disabled' : ''}>
                     <i class="bx bx-chevron-up"></i>
                     Move up
@@ -577,11 +579,6 @@ class ExerciseCardRenderer {
                 <button class="logbook-menu-item${index >= totalCards - 1 ? ' disabled' : ''}" onclick="window.workoutModeController?.handleMoveDown?.(${index}); event.stopPropagation();"${index >= totalCards - 1 ? ' disabled' : ''}>
                     <i class="bx bx-chevron-down"></i>
                     Move down
-                </button>
-                <div class="logbook-menu-divider"></div>
-                <button class="logbook-menu-item danger" onclick="window.workoutModeController?.handleRemoveExercise?.('${this._escapeHtml(exerciseName)}', ${index}); event.stopPropagation();">
-                    <i class="bx bx-trash"></i>
-                    Remove from workout
                 </button>
             </div>
         `;

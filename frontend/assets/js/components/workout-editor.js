@@ -50,12 +50,13 @@ function loadWorkoutIntoEditor(workoutId) {
     window.exerciseGroupsData = {};
     
     if (workout.exercise_groups && workout.exercise_groups.length > 0) {
+        const totalCards = workout.exercise_groups.length;
         workout.exercise_groups.forEach((group, index) => {
             const groupId = `group-${Date.now()}-${index}-${Math.random().toString(36).substr(2, 9)}`;
             const groupNumber = index + 1;
-            
-            // Create card with data
-            const cardHtml = window.createExerciseGroupCard(groupId, group, groupNumber);
+
+            // Create card with data (pass index and totalCards for menu boundary detection)
+            const cardHtml = window.createExerciseGroupCard(groupId, group, groupNumber, index, totalCards);
             exerciseGroupsContainer.insertAdjacentHTML('beforeend', cardHtml);
             
             // CRITICAL FIX: Explicitly ensure data is stored in memory
@@ -75,7 +76,22 @@ function loadWorkoutIntoEditor(workoutId) {
     } else {
         addExerciseGroup();
     }
-    
+
+    // Render template notes
+    if (workout.template_notes && workout.template_notes.length > 0) {
+        // Initialize template_notes in current workout
+        window.ghostGym.workoutBuilder.currentWorkout.template_notes = [...workout.template_notes];
+
+        // Render notes after exercise groups are rendered
+        setTimeout(() => {
+            if (window.renderTemplateNotes) {
+                window.renderTemplateNotes(workout.template_notes);
+            }
+        }, 50);
+    } else {
+        window.ghostGym.workoutBuilder.currentWorkout.template_notes = [];
+    }
+
     // Bonus exercises section removed - no longer needed
     
     // Show editor, hide empty state
@@ -108,16 +124,16 @@ function loadWorkoutIntoEditor(workoutId) {
         setTimeout(() => window.initializeExerciseAutocompletes(), 100);
     }
     
-    // Initialize Sortable for drag-and-drop
+    // Initialize Sortable for drag-and-drop (legacy, may be removed)
     if (window.initializeExerciseGroupSorting) {
         setTimeout(() => window.initializeExerciseGroupSorting(), 150);
     }
-    
-    // Initialize edit mode toggle
-    if (window.initializeEditMode) {
-        setTimeout(() => window.initializeEditMode(), 200);
+
+    // Update card menu boundaries after cards are loaded
+    if (window.builderCardMenu?.updateAllMenuBoundaries) {
+        setTimeout(() => window.builderCardMenu.updateAllMenuBoundaries(), 200);
     }
-    
+
     // Update exercise previews and add listeners
     setTimeout(() => {
         const groups = document.querySelectorAll('#exerciseGroups .exercise-group');
@@ -174,7 +190,8 @@ async function createNewWorkoutInEditor() {
                 default_weight: null,
                 default_weight_unit: 'lbs'
             }],
-            bonus_exercises: []
+            bonus_exercises: [],
+            template_notes: []
         };
         
         // Save to database
@@ -218,11 +235,12 @@ async function createNewWorkoutInEditor() {
         const exerciseGroupsContainer = document.getElementById('exerciseGroups');
         exerciseGroupsContainer.innerHTML = '';
         window.exerciseGroupsData = {};
-        
+
+        const totalCards = savedWorkout.exercise_groups.length;
         savedWorkout.exercise_groups.forEach((group, index) => {
             const groupId = `group-${Date.now()}-${index}-${Math.random().toString(36).substr(2, 9)}`;
             const groupNumber = index + 1;
-            const cardHtml = window.createExerciseGroupCard(groupId, group, groupNumber);
+            const cardHtml = window.createExerciseGroupCard(groupId, group, groupNumber, index, totalCards);
             exerciseGroupsContainer.insertAdjacentHTML('beforeend', cardHtml);
         });
         
@@ -254,16 +272,16 @@ async function createNewWorkoutInEditor() {
             setTimeout(() => window.initializeExerciseAutocompletes(), 100);
         }
         
-        // Initialize Sortable for drag-and-drop
+        // Initialize Sortable for drag-and-drop (legacy, may be removed)
         if (window.initializeExerciseGroupSorting) {
             setTimeout(() => window.initializeExerciseGroupSorting(), 150);
         }
-        
-        // Initialize edit mode toggle
-        if (window.initializeEditMode) {
-            setTimeout(() => window.initializeEditMode(), 200);
+
+        // Update card menu boundaries after cards are loaded
+        if (window.builderCardMenu?.updateAllMenuBoundaries) {
+            setTimeout(() => window.builderCardMenu.updateAllMenuBoundaries(), 200);
         }
-        
+
         // Focus on name input and select the text so user can easily rename
         const nameInput = document.getElementById('workoutName');
         nameInput.focus();
@@ -373,13 +391,17 @@ async function saveWorkoutFromEditor(silent = false) {
     console.log('💾 ========== SAVE WORKOUT START ==========');
     console.log('💾 Saving workout from editor...', silent ? '(autosave)' : '(manual)');
     
+    // Collect template notes from state and update order indices based on DOM order
+    const templateNotes = collectTemplateNotes();
+
     const workoutData = {
         name: document.getElementById('workoutName').value.trim(),
         description: document.getElementById('workoutDescription').value.trim(),
         tags: document.getElementById('workoutTags').value
             .split(',').map(t => t.trim()).filter(t => t),
         exercise_groups: collectExerciseGroups(),
-        bonus_exercises: collectBonusExercises()
+        bonus_exercises: collectBonusExercises(),
+        template_notes: templateNotes
     };
     
     console.log('📊 SAVE DEBUG: Collected workout data:', {
@@ -398,9 +420,11 @@ async function saveWorkoutFromEditor(silent = false) {
         return;
     }
     
-    if (workoutData.exercise_groups.length === 0) {
+    // Allow workouts with only notes (no exercise groups required)
+    // But if there are no exercise groups AND no notes, show a warning
+    if (workoutData.exercise_groups.length === 0 && workoutData.template_notes.length === 0) {
         if (!silent) {
-            showAlert('At least one exercise group is required', 'danger');
+            showAlert('Add at least one exercise group or note to save', 'warning');
         }
         return;
     }
@@ -673,6 +697,88 @@ async function deleteWorkoutFromEditor() {
         deleteBtn.innerHTML = '<i class="bx bx-trash me-1"></i>Delete';
         deleteBtn.disabled = false;
     }
+}
+
+/**
+ * Open the reorder offcanvas with current exercise groups
+ * Uses UnifiedOffcanvasFactory.createReorderOffcanvas from workout-mode
+ */
+function openReorderOffcanvas() {
+    const container = document.getElementById('exerciseGroups');
+    if (!container) {
+        console.error('❌ Exercise groups container not found');
+        return;
+    }
+
+    const cards = container.querySelectorAll('.exercise-group-card');
+
+    // Build exercises array for reorder offcanvas (even if empty or single item)
+    // The offcanvas will display appropriate messaging for 0/1 exercises
+    const exercises = Array.from(cards).map((card, index) => {
+        const groupId = card.getAttribute('data-group-id');
+        const groupData = window.exerciseGroupsData?.[groupId] || {};
+
+        return {
+            groupId: groupId,
+            name: groupData.exercises?.a || `Exercise ${index + 1}`,
+            sets: groupData.sets || '3',
+            reps: groupData.reps || '8-12',
+            index: index
+        };
+    });
+
+    console.log('📋 Opening reorder offcanvas with exercises:', exercises);
+
+    // Use UnifiedOffcanvasFactory to create reorder offcanvas
+    if (window.UnifiedOffcanvasFactory?.createReorderOffcanvas) {
+        window.UnifiedOffcanvasFactory.createReorderOffcanvas(exercises, (reorderedExercises) => {
+            // Apply the new order
+            applyReorderedExercises(reorderedExercises);
+        });
+    } else {
+        console.error('❌ UnifiedOffcanvasFactory.createReorderOffcanvas not available');
+        alert('Reorder feature is not available. Please refresh the page.');
+    }
+}
+
+/**
+ * Apply reordered exercises to the DOM
+ * @param {Array} reorderedExercises - Array of exercises in new order
+ */
+function applyReorderedExercises(reorderedExercises) {
+    const container = document.getElementById('exerciseGroups');
+    if (!container) return;
+
+    console.log('📋 Applying new exercise order:', reorderedExercises.map(e => e.name));
+
+    // Reorder DOM elements based on new order
+    reorderedExercises.forEach((exercise, newIndex) => {
+        const card = container.querySelector(`[data-group-id="${exercise.groupId}"]`);
+        if (card) {
+            container.appendChild(card);
+        }
+    });
+
+    // Update all menu boundaries after reorder
+    if (window.builderCardMenu?.updateAllMenuBoundaries) {
+        window.builderCardMenu.updateAllMenuBoundaries();
+    }
+
+    // Mark editor as dirty (triggers autosave)
+    markEditorDirty();
+
+    // Show success toast
+    if (window.showToast) {
+        window.showToast({
+            message: 'Exercise order updated',
+            type: 'success',
+            title: 'Reordered',
+            icon: 'bx-check',
+            delay: 2000
+        });
+    }
+
+    console.log('✅ Exercise order applied successfully');
 }
 
 /**
@@ -1047,6 +1153,16 @@ function setupWorkoutEditorListeners() {
         console.warn('⚠️ Delete workout menu item not found in DOM');
     }
     
+    // Reorder Exercises Button - Opens reorder offcanvas
+    const reorderBtn = document.getElementById('reorderExercisesBtn');
+    if (reorderBtn) {
+        reorderBtn.addEventListener('click', () => {
+            console.log('📋 Reorder button clicked');
+            openReorderOffcanvas();
+        });
+        console.log('✅ Reorder button listener attached');
+    }
+
     // Warn on navigation if dirty, and clean up localStorage on intentional navigation
     window.addEventListener('beforeunload', (e) => {
         if (window.ghostGym.workoutBuilder.isDirty) {
@@ -1097,6 +1213,8 @@ window.markEditorDirty = markEditorDirty;
 window.updateSaveStatus = updateSaveStatus;
 window.highlightSelectedWorkout = highlightSelectedWorkout;
 window.collapseWorkoutLibrary = collapseWorkoutLibrary;
+window.openReorderOffcanvas = openReorderOffcanvas;
+window.applyReorderedExercises = applyReorderedExercises;
 window.expandWorkoutLibrary = expandWorkoutLibrary;
 window.autoCreateExercisesInGroups = autoCreateExercisesInGroups;
 
@@ -1188,5 +1306,336 @@ function initializeExerciseAutocompletesWithAutoCreate() {
 
 // Make the function globally available
 window.initializeExerciseAutocompletesWithAutoCreate = initializeExerciseAutocompletesWithAutoCreate;
+
+// ============================================
+// TEMPLATE NOTE MANAGEMENT
+// ============================================
+
+/**
+ * Handle adding a new template note
+ * Opens position picker and creates note at selected position
+ */
+window.handleAddTemplateNote = async function() {
+    console.log('📝 Add template note clicked');
+
+    // Ensure workout is being edited
+    if (!window.ghostGym?.workoutBuilder?.isEditing) {
+        console.warn('⚠️ No workout being edited');
+        return;
+    }
+
+    // Initialize template_notes array if not exists
+    if (!window.ghostGym.workoutBuilder.currentWorkout.template_notes) {
+        window.ghostGym.workoutBuilder.currentWorkout.template_notes = [];
+    }
+
+    try {
+        // Build items list for position picker
+        const items = getTemplateItemsForPositionPicker();
+
+        // Use UnifiedOffcanvasFactory to create position picker if available
+        if (window.UnifiedOffcanvasFactory?.createNotePositionPicker) {
+            window.UnifiedOffcanvasFactory.createNotePositionPicker({
+                items: items,
+                onSelect: (position) => {
+                    createTemplateNoteAtPosition(position);
+                },
+                title: 'Add Note',
+                subtitle: 'Select where to insert the note'
+            });
+        } else {
+            // Fallback: Create note at the end
+            console.log('📝 Position picker not available, adding note at end');
+            createTemplateNoteAtPosition(items.length);
+        }
+    } catch (error) {
+        console.error('❌ Error adding template note:', error);
+    }
+};
+
+/**
+ * Get all template items (exercises + notes) for position picker
+ * @returns {Array} Array of items with type, name, and index
+ */
+function getTemplateItemsForPositionPicker() {
+    const items = [];
+    const container = document.getElementById('exerciseGroups');
+    if (!container) return items;
+
+    // Get all cards (exercise groups and notes) in DOM order
+    const cards = container.querySelectorAll('.exercise-group-card, .template-note-card');
+
+    cards.forEach((card, index) => {
+        if (card.classList.contains('exercise-group-card')) {
+            const groupId = card.getAttribute('data-group-id');
+            const groupData = window.exerciseGroupsData?.[groupId];
+            const exerciseName = groupData?.exercises?.a || 'Exercise';
+            items.push({
+                type: 'exercise',
+                id: groupId,
+                name: exerciseName,
+                index: index
+            });
+        } else if (card.classList.contains('template-note-card')) {
+            const noteId = card.getAttribute('data-note-id');
+            const notes = window.ghostGym.workoutBuilder.currentWorkout.template_notes || [];
+            const note = notes.find(n => n.id === noteId);
+            const preview = note?.content ?
+                (note.content.length > 30 ? note.content.substring(0, 30) + '...' : note.content) :
+                'Empty note';
+            items.push({
+                type: 'note',
+                id: noteId,
+                name: preview,
+                index: index
+            });
+        }
+    });
+
+    return items;
+}
+
+/**
+ * Create a template note at the specified position
+ * @param {number} position - Position index to insert note at
+ */
+function createTemplateNoteAtPosition(position) {
+    console.log('📝 Creating template note at position:', position);
+
+    // Generate unique note ID
+    const noteId = `template-note-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`;
+
+    // Create note data
+    const note = {
+        id: noteId,
+        content: '',
+        order_index: position,
+        created_at: new Date().toISOString(),
+        modified_at: null
+    };
+
+    // Add to state
+    if (!window.ghostGym.workoutBuilder.currentWorkout.template_notes) {
+        window.ghostGym.workoutBuilder.currentWorkout.template_notes = [];
+    }
+    window.ghostGym.workoutBuilder.currentWorkout.template_notes.push(note);
+
+    // Render note card
+    if (window.templateNoteCardRenderer) {
+        const container = document.getElementById('exerciseGroups');
+        const totalCards = container.querySelectorAll('.exercise-group-card, .template-note-card').length;
+        const cardHtml = window.templateNoteCardRenderer.createNoteCard(note, position, totalCards + 1);
+
+        // Insert at correct position
+        const existingCards = container.querySelectorAll('.exercise-group-card, .template-note-card');
+        if (position >= existingCards.length) {
+            // Insert at end
+            container.insertAdjacentHTML('beforeend', cardHtml);
+        } else {
+            // Insert before the card at this position
+            existingCards[position].insertAdjacentHTML('beforebegin', cardHtml);
+        }
+
+        // Mark as dirty
+        markEditorDirty();
+
+        // Auto-open edit mode for the new note
+        setTimeout(() => {
+            window.handleEditTemplateNote(noteId);
+        }, 100);
+    }
+
+    console.log('✅ Template note created:', noteId);
+}
+
+/**
+ * Handle editing a template note
+ * @param {string} noteId - ID of note to edit
+ */
+window.handleEditTemplateNote = function(noteId) {
+    console.log('📝 Edit template note:', noteId);
+
+    const notes = window.ghostGym.workoutBuilder.currentWorkout.template_notes || [];
+    const note = notes.find(n => n.id === noteId);
+
+    if (!note) {
+        console.error('❌ Note not found:', noteId);
+        return;
+    }
+
+    // Use UnifiedOffcanvasFactory to create edit offcanvas
+    if (window.UnifiedOffcanvasFactory?.createTemplateNoteEditor) {
+        window.UnifiedOffcanvasFactory.createTemplateNoteEditor({
+            note: note,
+            onSave: (content) => {
+                saveTemplateNoteContent(noteId, content);
+            },
+            onDelete: () => {
+                window.handleDeleteTemplateNote(noteId);
+            }
+        });
+    } else {
+        // Fallback: Use prompt
+        const newContent = prompt('Edit note:', note.content || '');
+        if (newContent !== null) {
+            saveTemplateNoteContent(noteId, newContent);
+        }
+    }
+};
+
+/**
+ * Save template note content
+ * @param {string} noteId - Note ID
+ * @param {string} content - New content
+ */
+function saveTemplateNoteContent(noteId, content) {
+    console.log('💾 Saving template note:', noteId);
+
+    const notes = window.ghostGym.workoutBuilder.currentWorkout.template_notes || [];
+    const noteIndex = notes.findIndex(n => n.id === noteId);
+
+    if (noteIndex === -1) {
+        console.error('❌ Note not found:', noteId);
+        return;
+    }
+
+    // Update note content
+    notes[noteIndex].content = content;
+    notes[noteIndex].modified_at = new Date().toISOString();
+
+    // Update card preview
+    if (window.templateNoteCardRenderer) {
+        window.templateNoteCardRenderer.updateNoteCardPreview(noteId, content);
+    }
+
+    // Mark as dirty
+    markEditorDirty();
+
+    console.log('✅ Template note saved');
+}
+
+/**
+ * Handle deleting a template note
+ * @param {string} noteId - ID of note to delete
+ */
+window.handleDeleteTemplateNote = function(noteId) {
+    console.log('🗑️ Delete template note:', noteId);
+
+    if (!confirm('Are you sure you want to delete this note?')) {
+        return;
+    }
+
+    // Remove from state
+    const notes = window.ghostGym.workoutBuilder.currentWorkout.template_notes || [];
+    const noteIndex = notes.findIndex(n => n.id === noteId);
+
+    if (noteIndex !== -1) {
+        notes.splice(noteIndex, 1);
+    }
+
+    // Remove card from DOM
+    if (window.templateNoteCardRenderer) {
+        window.templateNoteCardRenderer.removeNoteCard(noteId);
+    }
+
+    // Mark as dirty
+    markEditorDirty();
+
+    console.log('✅ Template note deleted');
+};
+
+/**
+ * Render all template notes for a workout
+ * @param {Array} templateNotes - Array of template notes
+ */
+function renderTemplateNotes(templateNotes) {
+    if (!templateNotes || templateNotes.length === 0) {
+        console.log('ℹ️ No template notes to render');
+        return;
+    }
+
+    if (!window.templateNoteCardRenderer) {
+        console.warn('⚠️ TemplateNoteCardRenderer not available');
+        return;
+    }
+
+    const container = document.getElementById('exerciseGroups');
+    if (!container) return;
+
+    console.log(`📝 Rendering ${templateNotes.length} template note(s)`);
+
+    // Sort notes by order_index
+    const sortedNotes = [...templateNotes].sort((a, b) => a.order_index - b.order_index);
+
+    // Get all existing cards to determine positions
+    const existingCards = container.querySelectorAll('.exercise-group-card, .template-note-card');
+    const totalCards = existingCards.length + sortedNotes.length;
+
+    sortedNotes.forEach((note, idx) => {
+        const cardHtml = window.templateNoteCardRenderer.createNoteCard(note, note.order_index, totalCards);
+
+        // Insert at the correct position based on order_index
+        const targetPosition = note.order_index;
+        const currentCards = container.querySelectorAll('.exercise-group-card, .template-note-card');
+
+        if (targetPosition >= currentCards.length) {
+            container.insertAdjacentHTML('beforeend', cardHtml);
+        } else {
+            currentCards[targetPosition].insertAdjacentHTML('beforebegin', cardHtml);
+        }
+    });
+
+    console.log('✅ Template notes rendered');
+}
+
+/**
+ * Collect template notes from state with updated order indices based on DOM order
+ * @returns {Array} Array of template note objects
+ */
+function collectTemplateNotes() {
+    const notes = window.ghostGym.workoutBuilder.currentWorkout?.template_notes || [];
+    if (notes.length === 0) {
+        return [];
+    }
+
+    const container = document.getElementById('exerciseGroups');
+    if (!container) {
+        return notes;
+    }
+
+    // Get all cards in DOM order to determine actual positions
+    const allCards = container.querySelectorAll('.exercise-group-card, .template-note-card');
+    const noteCardsInDom = Array.from(allCards)
+        .map((card, index) => ({
+            card: card,
+            index: index,
+            isNote: card.classList.contains('template-note-card'),
+            noteId: card.getAttribute('data-note-id')
+        }))
+        .filter(item => item.isNote);
+
+    // Update order indices based on DOM position
+    const updatedNotes = notes.map(note => {
+        const domItem = noteCardsInDom.find(item => item.noteId === note.id);
+        const orderIndex = domItem ? domItem.index : note.order_index;
+
+        return {
+            id: note.id,
+            content: note.content || '',
+            order_index: orderIndex,
+            created_at: note.created_at,
+            modified_at: note.modified_at
+        };
+    });
+
+    console.log('📝 Collected template notes:', updatedNotes.length);
+    return updatedNotes;
+}
+
+// Export functions
+window.renderTemplateNotes = renderTemplateNotes;
+window.createTemplateNoteAtPosition = createTemplateNoteAtPosition;
+window.saveTemplateNoteContent = saveTemplateNoteContent;
+window.collectTemplateNotes = collectTemplateNotes;
 
 console.log('📦 Workout Editor component loaded');

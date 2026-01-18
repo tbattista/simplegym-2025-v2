@@ -458,9 +458,10 @@ function addExerciseGroup() {
     const container = document.getElementById('exerciseGroups');
     if (!container) return;
     
-    const groupCount = container.children.length + 1;
+    const currentCardCount = container.querySelectorAll('.exercise-group-card').length;
+    const groupCount = currentCardCount + 1;
     const groupId = `group-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    
+
     // Create default data with placeholder exercise name
     const defaultData = {
         exercises: { a: 'Exercise Name', b: '', c: '' },
@@ -470,11 +471,16 @@ function addExerciseGroup() {
         default_weight: '',
         default_weight_unit: 'lbs'
     };
-    
-    // Create card HTML with default data
-    const groupHtml = createExerciseGroupCard(groupId, defaultData, groupCount);
-    
+
+    // Create card HTML with default data (pass index and new totalCards)
+    const newIndex = currentCardCount;
+    const newTotalCards = currentCardCount + 1;
+    const groupHtml = createExerciseGroupCard(groupId, defaultData, groupCount, newIndex, newTotalCards);
+
     container.insertAdjacentHTML('beforeend', groupHtml);
+
+    // Update all card menu boundaries after adding new card
+    window.builderCardMenu?.updateAllMenuBoundaries();
     
     // Initialize Sortable if not already done
     initializeExerciseGroupSorting();
@@ -1245,24 +1251,17 @@ window.addAutosaveListenersToGroup = addAutosaveListenersToGroup;
 
 /**
  * Initialize edit mode toggle
+ * @deprecated Legacy toggle-based edit mode replaced with 3-dot menu + reorder offcanvas (Phase 6 cleanup)
  */
 function initializeEditMode() {
-    const toggle = document.getElementById('editModeToggle');
-    if (!toggle) return;
-    
-    toggle.addEventListener('change', function() {
-        if (this.checked) {
-            enterEditMode();
-        } else {
-            exitEditMode();
-        }
-    });
-    
-    console.log('✅ Edit mode initialized');
+    // DEPRECATED: Toggle removed in favor of 3-dot menu + Reorder button
+    // This function is kept for backwards compatibility but does nothing
+    console.log('⚠️ initializeEditMode is deprecated - using 3-dot menu + Reorder button instead');
 }
 
 /**
  * Enter edit mode
+ * @deprecated Legacy toggle-based edit mode replaced with 3-dot menu + reorder offcanvas
  */
 function enterEditMode() {
     console.log('🔄 Entering edit mode...');

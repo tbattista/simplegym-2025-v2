@@ -230,6 +230,34 @@ class BonusExercise(BaseModel):
         example="30s"
     )
 
+
+class TemplateNote(BaseModel):
+    """Inline note within a workout template (permanent, saved with template)"""
+
+    id: str = Field(
+        default_factory=lambda: f"template-note-{int(datetime.now().timestamp() * 1000)}-{uuid4().hex[:6]}",
+        description="Unique note identifier"
+    )
+    content: str = Field(
+        default="",
+        max_length=500,
+        description="Note text content (max 500 chars)"
+    )
+    order_index: int = Field(
+        default=0,
+        ge=0,
+        description="Position in workout item list"
+    )
+    created_at: datetime = Field(
+        default_factory=datetime.now,
+        description="When the note was created"
+    )
+    modified_at: Optional[datetime] = Field(
+        None,
+        description="When the note was last modified"
+    )
+
+
 class WorkoutTemplate(BaseModel):
     """Enhanced workout model for the program system"""
     
@@ -259,7 +287,12 @@ class WorkoutTemplate(BaseModel):
         default_factory=list,
         description="List of bonus exercises"
     )
-    
+
+    template_notes: List[TemplateNote] = Field(
+        default_factory=list,
+        description="Inline notes within the workout template (permanent)"
+    )
+
     is_template: bool = Field(
         default=True,
         description="Whether this workout is a reusable template"
@@ -853,6 +886,34 @@ class ExercisePerformance(BaseModel):
     order_index: int = Field(..., ge=0, description="Position in workout (0-based)")
     is_bonus: bool = Field(default=False, description="Whether this is a bonus exercise")
 
+
+class SessionNote(BaseModel):
+    """Inline note within a workout session (session-only, not saved to templates)"""
+
+    id: str = Field(
+        default_factory=lambda: f"note-{int(datetime.now().timestamp() * 1000)}-{uuid4().hex[:6]}",
+        description="Unique note identifier"
+    )
+    content: str = Field(
+        default="",
+        max_length=500,
+        description="Note text content (max 500 chars)"
+    )
+    order_index: int = Field(
+        default=0,
+        ge=0,
+        description="Position in session item list"
+    )
+    created_at: datetime = Field(
+        default_factory=datetime.now,
+        description="When the note was created"
+    )
+    modified_at: Optional[datetime] = Field(
+        None,
+        description="When the note was last modified"
+    )
+
+
 class WorkoutSession(BaseModel):
     """Completed or in-progress workout session"""
     
@@ -875,11 +936,17 @@ class WorkoutSession(BaseModel):
         description="List of exercises performed in this session"
     )
     notes: Optional[str] = Field(None, max_length=500, description="Session notes")
-    
+
+    # Session Notes (inline notes interspersed with exercises)
+    session_notes: List[SessionNote] = Field(
+        default_factory=list,
+        description="Inline notes within the session (session-only, not saved to templates)"
+    )
+
     # Custom Exercise Order (Phase 3 - Exercise Reordering)
     exercise_order: Optional[List[str]] = Field(
         None,
-        description="Custom order of exercises (list of exercise names). If present, overrides template order."
+        description="Custom order of exercises and notes (list of names/IDs). If present, overrides template order."
     )
     
     @field_validator('exercise_order', mode='before')
@@ -983,6 +1050,10 @@ class CompleteSessionRequest(BaseModel):
         description="Final list of all exercises performed"
     )
     notes: Optional[str] = Field(None, max_length=500, description="Final session notes")
+    session_notes: List[SessionNote] = Field(
+        default_factory=list,
+        description="Inline notes within the session"
+    )
     exercise_order: Optional[List[str]] = Field(
         None,
         description="Custom order of exercises (list of exercise names). Saves user's preferred exercise sequence."

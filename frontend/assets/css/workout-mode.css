@@ -961,6 +961,11 @@
     opacity: 0.7 !important;
 }
 
+[data-bs-theme="dark"] .weight-popover-input:disabled {
+    background-color: #1e293b !important;
+    color: #94a3b8 !important;
+}
+
 .expand-icon {
     font-size: 1.4rem;
     color: var(--bs-secondary);
@@ -1346,6 +1351,17 @@
     color: #5855eb;
 }
 
+[data-bs-theme="dark"] .workout-grid-btn.btn-outline-primary {
+    border-color: #475569;
+    color: var(--bs-primary);
+}
+
+[data-bs-theme="dark"] .workout-grid-btn.btn-outline-primary:hover {
+    background: rgba(105, 108, 255, 0.15);
+    border-color: var(--bs-primary);
+    color: var(--bs-primary);
+}
+
 /* Primary button (Start Rest) in button slot */
 .rest-timer-button-slot .btn-primary {
     font-size: 0.8125rem !important;
@@ -1369,10 +1385,22 @@
     height: 44px;
 }
 
+[data-bs-theme="dark"] .rest-timer-button-slot .btn-outline-secondary {
+    border-color: #475569 !important;
+    color: #94a3b8 !important;
+    background: transparent !important;
+}
+
 .rest-timer-button-slot .btn-outline-secondary:hover {
     background: #f1f5f9 !important;
     border-color: #94a3b8 !important;
     color: #475569 !important;
+}
+
+[data-bs-theme="dark"] .rest-timer-button-slot .btn-outline-secondary:hover {
+    background: #334155 !important;
+    border-color: #64748b !important;
+    color: #e2e8f0 !important;
 }
 
 /* Timer Label */
@@ -1594,35 +1622,35 @@
 }
 
 [data-bs-theme="dark"] .exercise-card {
-    background: var(--bs-gray-900);
-    border-color: var(--bs-gray-700);
+    background: #0f172a;
+    border-color: #334155;
 }
 
 [data-bs-theme="dark"] .exercise-card:hover {
     border-color: var(--bs-primary);
-    background: var(--bs-gray-800);
+    background: #1e293b;
 }
 
 [data-bs-theme="dark"] .exercise-card-header {
-    background: var(--bs-gray-900);
-    border-color: var(--bs-gray-700);
+    background: #0f172a;
+    border-color: #334155;
 }
 
 [data-bs-theme="dark"] .exercise-card:not(.expanded) .exercise-card-header:hover {
-    background: var(--bs-gray-800);
+    background: #1e293b;
 }
 
 [data-bs-theme="dark"] .exercise-card-body {
-    background: var(--bs-gray-900);
+    background: #0f172a;
 }
 
 /* Dark mode - new spacing system components */
 [data-bs-theme="dark"] .exercise-weight-section {
-    border-bottom-color: var(--bs-gray-700);
+    border-bottom-color: #334155;
 }
 
 [data-bs-theme="dark"] .exercise-details-list .list-group-item {
-    border-color: var(--bs-gray-700);
+    border-color: #334155;
 }
 
 [data-bs-theme="dark"] .exercise-notes {
@@ -1630,16 +1658,16 @@
 }
 
 [data-bs-theme="dark"] .alternate-exercises-subtitle {
-    color: var(--bs-gray-400);
+    color: #94a3b8;
 }
 
 [data-bs-theme="dark"] .rest-timer-container {
-    background: var(--bs-gray-800);
+    background: #1e293b;
 }
 
 [data-bs-theme="dark"] .workout-mode-footer {
-    background: var(--bs-gray-900);
-    border-color: var(--bs-gray-700);
+    background: #0f172a;
+    border-color: #334155;
 }
 
 /* ============================================
@@ -2434,5 +2462,60 @@
     .inline-timer-countdown.text-danger,
     .inline-timer-complete-pulse {
         animation: none !important;
+    }
+}
+
+/* ============================================
+   TEMPLATE NOTE (READ-ONLY) CARDS
+   ============================================ */
+
+/* Read-only template notes in workout mode */
+.template-note-card-readonly {
+    margin-bottom: 0.75rem;
+}
+
+.template-note-card-readonly .card {
+    background: rgba(var(--bs-info-rgb), 0.03);
+    border-width: 1px;
+    border-style: dashed;
+}
+
+.template-note-card-readonly .template-note-icon {
+    font-size: 1.25rem;
+    line-height: 1;
+    padding-top: 2px;
+}
+
+.template-note-card-readonly .template-note-label {
+    font-size: 0.65rem;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.template-note-card-readonly .template-note-text {
+    font-size: 0.875rem;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+/* Dark mode support */
+[data-bs-theme="dark"] .template-note-card-readonly .card {
+    background: rgba(var(--bs-info-rgb), 0.08);
+    border-color: rgba(var(--bs-info-rgb), 0.3);
+}
+
+[data-bs-theme="dark"] .template-note-card-readonly .template-note-text {
+    color: #f8fafc;
+}
+
+/* Mobile responsive */
+@media (max-width: 576px) {
+    .template-note-card-readonly .template-note-text {
+        font-size: 0.8125rem;
+    }
+
+    .template-note-card-readonly .template-note-icon {
+        font-size: 1rem;
     }
 }

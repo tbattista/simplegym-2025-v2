@@ -79,21 +79,15 @@ function getNavbarHTML(pageTitle = 'Ghost Gym', pageIcon = 'bx-home', options = 
                 <!-- Right Section: Utility Icons -->
                 <ul class="navbar-nav flex-row align-items-center ms-auto">
                 
-                <!-- Feedback Dropdown -->
-                <li class="nav-item navbar-dropdown dropdown-feedback dropdown me-2 me-xl-3">
-                    <a class="nav-link dropdown-toggle hide-arrow"
+                <!-- Feedback Button -->
+                <li class="nav-item me-2 me-xl-3">
+                    <a class="nav-link hide-arrow"
                        href="javascript:void(0);"
                        id="navbarFeedbackBtn"
-                       data-bs-toggle="dropdown"
-                       data-bs-auto-close="outside"
-                       aria-expanded="false"
                        title="Send Feedback">
                         <i class="bx bx-message-dots bx-sm"></i>
                         <span class="ms-1">Feedback</span>
                     </a>
-                    <div class="dropdown-menu dropdown-menu-end feedback-dropdown-menu" id="feedbackDropdown">
-                        <!-- Feedback form will be injected here by feedback-dropdown.js -->
-                    </div>
                 </li>
                 
                 <!-- Dark Mode Toggle -->
@@ -553,49 +547,70 @@ function initializeNavbarSearch() {
 
 /**
  * Initialize Navbar Feedback Button
- * Connects to the feedback modal
+ * Connects to the feedback offcanvas
  */
 function initializeNavbarFeedback() {
-    console.log('💬 Initializing navbar feedback dropdown...');
-    
+    console.log('💬 Initializing navbar feedback button...');
+
     const feedbackBtn = document.getElementById('navbarFeedbackBtn');
     if (!feedbackBtn) {
         console.warn('⚠️ Navbar feedback button not found');
         return;
     }
 
-    // Dropdown is initialized by Bootstrap automatically via data-bs-toggle="dropdown"
-    // Just add keyboard shortcut
+    // Click handler to open feedback offcanvas
+    feedbackBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        openFeedbackPanel();
+    });
+
+    // Keyboard shortcut (Ctrl/Cmd + Shift + F)
+    // Note: Also registered by feedback-injection-service.js as backup
     document.addEventListener('keydown', (e) => {
         if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'F') {
             e.preventDefault();
-            if (window.feedbackDropdown) {
-                window.feedbackDropdown.open();
-            } else {
-                // Fallback: trigger Bootstrap dropdown directly
-                const dropdown = bootstrap.Dropdown.getInstance(feedbackBtn) || new bootstrap.Dropdown(feedbackBtn);
-                dropdown.show();
-            }
+            openFeedbackPanel();
         }
     });
 
-    console.log('✅ Navbar feedback dropdown initialized');
+    console.log('✅ Navbar feedback button initialized');
     console.log('💡 Tip: Press Ctrl/Cmd + Shift + F to open feedback');
 }
 
 /**
- * Open feedback dropdown (kept for backward compatibility)
+ * Open the feedback panel (offcanvas)
+ * @param {Object} options - Options to pass to the offcanvas
  */
-function openFeedbackModalWithRetry() {
+function openFeedbackPanel(options = {}) {
+    // Try the global function first (set by feedback-injection-service)
+    if (window.openFeedbackOffcanvas) {
+        window.openFeedbackOffcanvas(options);
+        return;
+    }
+
+    // Fallback: try UnifiedOffcanvasFactory directly
+    if (window.UnifiedOffcanvasFactory?.createFeedbackOffcanvas) {
+        window.UnifiedOffcanvasFactory.createFeedbackOffcanvas({
+            defaultTab: options.tab || 'vote',
+            presetType: options.type || 'feature'
+        });
+        return;
+    }
+
+    // Legacy fallback: try old dropdown
     if (window.feedbackDropdown) {
         window.feedbackDropdown.open();
-    } else {
-        const feedbackBtn = document.getElementById('navbarFeedbackBtn');
-        if (feedbackBtn) {
-            const dropdown = bootstrap.Dropdown.getInstance(feedbackBtn) || new bootstrap.Dropdown(feedbackBtn);
-            dropdown.show();
-        }
+        return;
     }
+
+    console.warn('⚠️ Feedback system not available');
+}
+
+/**
+ * Open feedback (backward compatibility alias)
+ */
+function openFeedbackModalWithRetry() {
+    openFeedbackPanel();
 }
 
 // Make functions globally available
@@ -606,6 +621,7 @@ window.updateNavbarAuthUI = updateNavbarAuthUI;
 window.updateAdminButtonVisibility = updateAdminButtonVisibility;
 window.initializeNavbarSearch = initializeNavbarSearch;
 window.initializeNavbarFeedback = initializeNavbarFeedback;
+window.openFeedbackPanel = openFeedbackPanel;
 window.openFeedbackModalWithRetry = openFeedbackModalWithRetry;
 
 console.log('📦 Navbar template component loaded');

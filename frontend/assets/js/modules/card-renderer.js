@@ -22,9 +22,11 @@ class CardRenderer {
      * @param {string} groupId - Unique group ID
      * @param {object} groupData - Group data (optional)
      * @param {number} groupNumber - Group number for display
+     * @param {number} index - Current card index (0-based) for menu boundary detection
+     * @param {number} totalCards - Total number of cards for menu boundary detection
      * @returns {string} HTML string
      */
-    createExerciseGroupCard(groupId, groupData = null, groupNumber = 1) {
+    createExerciseGroupCard(groupId, groupData = null, groupNumber = 1, index = 0, totalCards = 1) {
         const data = groupData || {
             exercises: { a: '', b: '', c: '' },
             sets: '3',
@@ -33,18 +35,18 @@ class CardRenderer {
             default_weight: '',
             default_weight_unit: 'lbs'
         };
-        
+
         // Store data
         this.exerciseGroupsData[groupId] = data;
-        
+
         // Build exercise list (main, alt, alt2)
         const exercises = [];
         if (data.exercises.a) exercises.push(data.exercises.a);
         if (data.exercises.b) exercises.push(data.exercises.b);
         if (data.exercises.c) exercises.push(data.exercises.c);
-        
+
         const hasData = data.exercises.a;
-        
+
         // Build exercises HTML - each on new line
         let exercisesHtml = '';
         if (exercises.length > 0) {
@@ -55,7 +57,7 @@ class CardRenderer {
         } else {
             exercisesHtml = '<div class="exercise-line text-muted">Click edit to add exercises</div>';
         }
-        
+
         // Build meta text (plain text, not badges)
         let metaText = '';
         if (hasData) {
@@ -66,24 +68,54 @@ class CardRenderer {
             }
             metaText = parts.join(' • ');
         }
-        
+
+        // Determine menu item states based on position
+        const isFirst = index === 0;
+        const isLast = index >= totalCards - 1;
+        const moveUpDisabled = isFirst ? 'disabled' : '';
+        const moveDownDisabled = isLast ? 'disabled' : '';
+
         return `
-            <div class="exercise-group-card compact" data-group-id="${groupId}">
+            <div class="exercise-group-card compact" data-group-id="${groupId}" data-index="${index}">
                 <div class="card">
                     <div class="card-body">
-                        <button type="button" class="btn btn-sm btn-icon btn-edit-compact"
-                                onclick="event.preventDefault(); event.stopPropagation(); openExerciseGroupEditor('${groupId}');"
-                                title="Edit exercise group">
-                            <i class="bx bx-edit"></i>
-                        </button>
                         <div class="exercise-content">
                             <div class="exercise-list">
                                 ${exercisesHtml}
                             </div>
                             ${metaText ? `<div class="exercise-meta-text text-muted small">${metaText}</div>` : ''}
                         </div>
-                        <div class="drag-handle" style="display: none;">
-                            <i class="bx bx-menu"></i>
+                        <div class="card-actions">
+                            <button type="button" class="btn btn-sm btn-icon btn-edit-compact"
+                                    onclick="event.preventDefault(); event.stopPropagation(); openExerciseGroupEditor('${groupId}');"
+                                    title="Edit exercise group">
+                                <i class="bx bx-edit"></i>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-icon btn-menu-compact"
+                                    onclick="event.preventDefault(); event.stopPropagation(); window.builderCardMenu?.toggleMenu(this, '${groupId}', ${index});"
+                                    title="More options">
+                                <i class="bx bx-dots-vertical"></i>
+                            </button>
+                            <div class="builder-card-menu" onclick="event.stopPropagation();">
+                                <button class="builder-menu-item ${moveUpDisabled}"
+                                        onclick="window.builderCardMenu?.handleMoveUp('${groupId}', ${index});"
+                                        ${moveUpDisabled}>
+                                    <i class="bx bx-chevron-up"></i>
+                                    Move up
+                                </button>
+                                <button class="builder-menu-item ${moveDownDisabled}"
+                                        onclick="window.builderCardMenu?.handleMoveDown('${groupId}', ${index});"
+                                        ${moveDownDisabled}>
+                                    <i class="bx bx-chevron-down"></i>
+                                    Move down
+                                </button>
+                                <div class="builder-menu-divider"></div>
+                                <button class="builder-menu-item danger"
+                                        onclick="window.builderCardMenu?.handleDelete('${groupId}');">
+                                    <i class="bx bx-trash"></i>
+                                    Delete
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -172,22 +204,27 @@ class CardRenderer {
     deleteExerciseGroupCard(groupId) {
         const card = document.querySelector(`[data-group-id="${groupId}"]`);
         if (!card) return;
-        
+
         const groupData = this.exerciseGroupsData[groupId];
         const exerciseName = groupData?.exercises?.a || 'this exercise group';
-        
+
         if (confirm(`Are you sure you want to delete "${exerciseName}"?\n\nThis action cannot be undone.`)) {
             // Remove from DOM
             card.remove();
-            
+
             // Remove from data storage
             delete this.exerciseGroupsData[groupId];
-            
+
+            // Update menu boundaries for remaining cards
+            if (window.builderCardMenu?.updateAllMenuBoundaries) {
+                window.builderCardMenu.updateAllMenuBoundaries();
+            }
+
             // Mark as dirty
             if (window.markEditorDirty) {
                 window.markEditorDirty();
             }
-            
+
             console.log('✅ Exercise group deleted:', groupId);
         }
     }
@@ -225,14 +262,16 @@ class CardRenderer {
             <div class="bonus-exercise-card compact" data-bonus-id="${bonusId}">
                 <div class="card">
                     <div class="card-body">
-                        <button type="button" class="btn btn-sm btn-icon btn-edit-compact"
-                                onclick="event.preventDefault(); event.stopPropagation(); openBonusExerciseEditor('${bonusId}');"
-                                title="Edit additional exercise">
-                            <i class="bx bx-edit"></i>
-                        </button>
                         <div class="exercise-content">
                             <div class="exercise-line">${this.escapeHtml(exerciseName)}</div>
                             <div class="exercise-meta-text text-muted small">${metaText}</div>
+                        </div>
+                        <div class="card-actions">
+                            <button type="button" class="btn btn-sm btn-icon btn-edit-compact"
+                                    onclick="event.preventDefault(); event.stopPropagation(); openBonusExerciseEditor('${bonusId}');"
+                                    title="Edit additional exercise">
+                                <i class="bx bx-edit"></i>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -322,8 +361,8 @@ class CardRenderer {
 window.cardRenderer = new CardRenderer();
 
 // Export wrapper functions for backward compatibility
-window.createExerciseGroupCard = (groupId, groupData, groupNumber) => 
-    window.cardRenderer.createExerciseGroupCard(groupId, groupData, groupNumber);
+window.createExerciseGroupCard = (groupId, groupData, groupNumber, index, totalCards) =>
+    window.cardRenderer.createExerciseGroupCard(groupId, groupData, groupNumber, index, totalCards);
 
 window.updateExerciseGroupCardPreview = (groupId, groupData) => 
     window.cardRenderer.updateExerciseGroupCardPreview(groupId, groupData);

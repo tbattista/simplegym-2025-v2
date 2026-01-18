@@ -165,6 +165,50 @@
     width: 100%;
 }
 
+/* ============================================
+   NOTE INDICATOR & PREVIEW (Compact View)
+   Shows note icon and 3-line preview in collapsed state
+   ============================================ */
+
+/* Note indicator icon in exercise name */
+.exercise-note-indicator {
+    color: var(--logbook-accent);
+    font-size: 1.125rem;
+    flex-shrink: 0;
+    margin-right: 0.25rem;
+}
+
+/* Note preview in collapsed state - shows up to 3 lines */
+.logbook-note-preview {
+    margin-top: 0.5rem;
+    padding: 0.5rem 0.625rem;
+    background: rgba(99, 102, 241, 0.06);
+    border-left: 2px solid var(--logbook-accent);
+    border-radius: 0 0.25rem 0.25rem 0;
+    font-size: 0.8125rem;
+    color: var(--logbook-muted);
+    font-style: italic;
+    line-height: 1.5;
+    /* Limit to 3 lines with ellipsis */
+    display: -webkit-box !important;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    white-space: normal !important;
+    word-break: break-word;
+    max-height: calc(1.5em * 3 + 1rem); /* 3 lines * line-height + padding */
+}
+
+/* Hide note preview when card is expanded (full note shown in body) */
+.logbook-card.expanded .logbook-note-preview {
+    display: none;
+}
+
+/* Dark mode adjustments */
+[data-bs-theme="dark"] .logbook-note-preview {
+    background: rgba(129, 140, 248, 0.1);
+}
+
 .logbook-exercise-meta {
     font-size: 0.8125rem;
     color: var(--logbook-muted);
@@ -659,13 +703,13 @@
    ------------------------------------------ */
 
 [data-bs-theme="dark"] .weight-input {
-    background: var(--bs-gray-800, #343a40);
+    background: #1e293b;
     color: var(--logbook-accent);
 }
 
 [data-bs-theme="dark"] .weight-stepper-btn {
-    background: var(--bs-gray-800, #343a40);
-    border-color: var(--bs-gray-600, #6c757d);
+    background: #1e293b;
+    border-color: #475569;
 }
 
 /* ------------------------------------------
@@ -1102,7 +1146,7 @@
 
 /* Dark Mode Adjustments */
 [data-bs-theme="dark"] .repssets-text-input {
-    background: var(--bs-gray-800, #343a40);
+    background: #1e293b;
     color: var(--logbook-accent);
 }
 
@@ -1131,7 +1175,7 @@
 }
 
 [data-bs-theme="dark"] .logbook-reference {
-    background: var(--bs-gray-800, #343a40);
+    background: #1e293b;
 }
 
 .logbook-reference-weight {
@@ -1295,7 +1339,8 @@
 }
 
 [data-bs-theme="dark"] .inline-rest-timer {
-    background: var(--bs-gray-800, #343a40);
+    background: #1e293b;
+    border-color: #334155;
 }
 
 .rest-timer-ready {
@@ -1394,6 +1439,10 @@
 
 .rest-timer-inline-btn.pause:hover {
     background: #5457e5;
+}
+
+[data-bs-theme="dark"] .rest-timer-inline-btn.pause:hover {
+    background: #7577f0;
 }
 
 /* ============================================

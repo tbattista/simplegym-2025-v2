@@ -155,13 +155,9 @@
                             <i class="bx bx-list-ul me-1"></i>
                             Exercise Groups
                           </h6>
-                          <div class="form-check form-switch mb-0">
-                            <input class="form-check-input" type="checkbox" role="switch"
-                                   id="editModeToggle" style="cursor: pointer;">
-                            <label class="form-check-label" for="editModeToggle" style="cursor: pointer;">
-                              <span class="edit-mode-label">Reorder</span>
-                            </label>
-                          </div>
+                          <button type="button" class="btn btn-sm btn-outline-secondary" id="reorderExercisesBtn">
+                            <i class="bx bx-sort me-1"></i>Reorder
+                          </button>
                         </div>
                         <div id="exerciseGroups" class="accordion accordion-workout-groups mb-2">
                           <!-- Exercise groups will be added here as accordion items -->
@@ -438,8 +434,14 @@
     <script src="/static/assets/js/core/page-initializer.js"></script>
     <script src="/static/assets/js/components/workout-components.js"></script>
     
+    <!-- Template Note Card Renderer (for inline notes in workout templates) -->
+    <script src="/static/assets/js/components/template-note-card-renderer.js?v=1.0.0"></script>
+
     <!-- Workout Editor Component -->
-    <script src="/static/assets/js/components/workout-editor.js?v=20251116-01"></script>
+    <script src="/static/assets/js/components/workout-editor.js?v=20260116-01"></script>
+
+    <!-- Workout Builder Card Menu Controller (3-dot menu for exercise cards) -->
+    <script src="/static/assets/js/controllers/workout-builder-card-menu.js?v=1.0.0"></script>
 
     <!-- Share Modal Component -->
     <script src="/static/assets/js/components/share-modal.js"></script>
@@ -464,7 +466,8 @@
                     description: '',
                     tags: [],
                     exercise_groups: [],
-                    bonus_exercises: []
+                    bonus_exercises: [],
+                    template_notes: []
                 }
             },
             // Add exercises structure for exercises.js compatibility

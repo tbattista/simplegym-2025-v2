@@ -431,16 +431,438 @@
 }
 
 [data-bs-theme="dark"] .offcanvas-header {
+    background-color: #1e293b;
     border-bottom-color: #475569;
+}
+
+[data-bs-theme="dark"] .offcanvas-title i {
+    color: #f8fafc;
 }
 
 [data-bs-theme="dark"] .offcanvas-title {
     color: #f8fafc;
 }
 
+[data-bs-theme="dark"] .offcanvas .btn-close {
+    filter: invert(1) grayscale(100%) brightness(200%);
+}
+
+[data-bs-theme="dark"] .offcanvas-body {
+    background: #1e293b;
+    color: #f8fafc;
+}
+
 [data-bs-theme="dark"] .offcanvas-footer {
     background: #1e293b;
     border-color: #475569;
+}
+
+/* Offcanvas form controls */
+[data-bs-theme="dark"] .offcanvas .form-control,
+[data-bs-theme="dark"] .offcanvas .form-select,
+[data-bs-theme="dark"] .offcanvas input[type="text"],
+[data-bs-theme="dark"] .offcanvas input[type="number"],
+[data-bs-theme="dark"] .offcanvas textarea,
+[data-bs-theme="dark"] .offcanvas select {
+    background-color: #1e293b !important;
+    border-color: #475569 !important;
+    color: #f8fafc !important;
+}
+
+[data-bs-theme="dark"] .offcanvas .form-control:focus,
+[data-bs-theme="dark"] .offcanvas .form-select:focus,
+[data-bs-theme="dark"] .offcanvas input[type="text"]:focus,
+[data-bs-theme="dark"] .offcanvas input[type="number"]:focus,
+[data-bs-theme="dark"] .offcanvas textarea:focus,
+[data-bs-theme="dark"] .offcanvas select:focus {
+    background-color: #1e293b !important;
+    border-color: var(--bs-primary) !important;
+    color: #f8fafc !important;
+}
+
+[data-bs-theme="dark"] .offcanvas .form-control::placeholder,
+[data-bs-theme="dark"] .offcanvas input::placeholder,
+[data-bs-theme="dark"] .offcanvas textarea::placeholder {
+    color: #94a3b8 !important;
+}
+
+[data-bs-theme="dark"] .offcanvas .form-label,
+[data-bs-theme="dark"] .offcanvas label {
+    color: #cbd5e1;
+}
+
+[data-bs-theme="dark"] .offcanvas .form-text,
+[data-bs-theme="dark"] .offcanvas .text-muted,
+[data-bs-theme="dark"] .offcanvas small {
+    color: #94a3b8 !important;
+}
+
+/* Offcanvas input groups */
+[data-bs-theme="dark"] .offcanvas .input-group-text {
+    background-color: #334155;
+    border-color: #475569;
+    color: #f8fafc;
+}
+
+/* Offcanvas btn-group buttons */
+[data-bs-theme="dark"] .offcanvas .btn-group .btn-outline-secondary {
+    background-color: transparent;
+    border-color: #475569;
+    color: #cbd5e1;
+}
+
+[data-bs-theme="dark"] .offcanvas .btn-group .btn-outline-secondary:hover {
+    background-color: #334155;
+    border-color: #64748b;
+    color: #f8fafc;
+}
+
+[data-bs-theme="dark"] .offcanvas .btn-group .btn-outline-secondary.active,
+[data-bs-theme="dark"] .offcanvas .btn-group .btn.active {
+    background-color: var(--bs-primary);
+    border-color: var(--bs-primary);
+    color: #fff;
+}
+
+/* Weight unit buttons in offcanvas */
+[data-bs-theme="dark"] .offcanvas .weight-unit-btn {
+    background-color: transparent;
+    border-color: #475569;
+    color: #cbd5e1;
+}
+
+[data-bs-theme="dark"] .offcanvas .weight-unit-btn:hover {
+    background-color: #334155;
+    border-color: var(--bs-primary);
+    color: #f8fafc;
+}
+
+[data-bs-theme="dark"] .offcanvas .weight-unit-btn.active {
+    background-color: var(--bs-primary);
+    border-color: var(--bs-primary);
+    color: #fff;
+}
+
+/* Offcanvas headings */
+[data-bs-theme="dark"] .offcanvas h5,
+[data-bs-theme="dark"] .offcanvas h6,
+[data-bs-theme="dark"] .offcanvas .h5,
+[data-bs-theme="dark"] .offcanvas .h6 {
+    color: #f8fafc;
+}
+
+/* Offcanvas buttons */
+[data-bs-theme="dark"] .offcanvas .btn-outline-secondary {
+    border-color: #475569;
+    color: #cbd5e1;
+}
+
+[data-bs-theme="dark"] .offcanvas .btn-outline-secondary:hover {
+    background-color: #334155;
+    border-color: #64748b;
+    color: #f8fafc;
+}
+
+/* Primary buttons in offcanvas */
+[data-bs-theme="dark"] .offcanvas .btn-primary {
+    background: linear-gradient(135deg, var(--ghost-primary, #6366f1), var(--ghost-secondary, #8b5cf6));
+    border-color: transparent;
+    color: #fff;
+}
+
+[data-bs-theme="dark"] .offcanvas .btn-primary:hover {
+    background: linear-gradient(135deg, #5855eb, #7c3aed);
+    border-color: transparent;
+    color: #fff;
+}
+
+/* Outline primary buttons in offcanvas */
+[data-bs-theme="dark"] .offcanvas .btn-outline-primary {
+    border-color: var(--bs-primary);
+    color: var(--bs-primary);
+}
+
+[data-bs-theme="dark"] .offcanvas .btn-outline-primary:hover {
+    background-color: rgba(var(--bs-primary-rgb), 0.15);
+    border-color: var(--bs-primary);
+    color: #f8fafc;
+}
+
+/* Success buttons in offcanvas */
+[data-bs-theme="dark"] .offcanvas .btn-success {
+    background-color: var(--bs-success);
+    border-color: var(--bs-success);
+    color: #fff;
+}
+
+[data-bs-theme="dark"] .offcanvas .btn-success:hover {
+    background-color: var(--bs-success);
+    border-color: var(--bs-success);
+    filter: brightness(1.1);
+    color: #fff;
+}
+
+/* Outline danger buttons in offcanvas */
+[data-bs-theme="dark"] .offcanvas .btn-outline-danger {
+    border-color: var(--bs-danger);
+    color: var(--bs-danger);
+}
+
+[data-bs-theme="dark"] .offcanvas .btn-outline-danger:hover {
+    background-color: rgba(var(--bs-danger-rgb), 0.15);
+    border-color: var(--bs-danger);
+    color: #fca5a5;
+}
+
+/* Offcanvas alerts */
+[data-bs-theme="dark"] .offcanvas .alert-info {
+    background: rgba(6, 182, 212, 0.15);
+    border-color: rgba(6, 182, 212, 0.3);
+    color: #67e8f9;
+}
+
+[data-bs-theme="dark"] .offcanvas .alert-success {
+    background: rgba(var(--ghost-success-rgb), 0.15);
+    border-color: rgba(var(--ghost-success-rgb), 0.3);
+    color: #6ee7b7;
+}
+
+[data-bs-theme="dark"] .offcanvas .alert-warning {
+    background: rgba(245, 158, 11, 0.15);
+    border-color: rgba(245, 158, 11, 0.3);
+    color: #fcd34d;
+}
+
+[data-bs-theme="dark"] .offcanvas .alert-danger {
+    background: rgba(239, 68, 68, 0.15);
+    border-color: rgba(239, 68, 68, 0.3);
+    color: #fca5a5;
+}
+
+/* Offcanvas Cards - base styling */
+[data-bs-theme="dark"] .offcanvas .card {
+    background-color: #334155;
+    border-color: #475569;
+    color: #f8fafc;
+}
+
+[data-bs-theme="dark"] .offcanvas .card-body {
+    background-color: transparent;
+    color: #f8fafc;
+}
+
+[data-bs-theme="dark"] .offcanvas .card-header {
+    background-color: #1e293b;
+    border-color: #475569;
+    color: #f8fafc;
+}
+
+/* Offcanvas Stats Cards (Complete Workout, Resume Session, etc.) */
+[data-bs-theme="dark"] .offcanvas .card.bg-label-primary {
+    background-color: rgba(99, 102, 241, 0.15) !important;
+}
+
+[data-bs-theme="dark"] .offcanvas .card.bg-label-success {
+    background-color: rgba(var(--ghost-success-rgb), 0.15) !important;
+}
+
+[data-bs-theme="dark"] .offcanvas .card.bg-label-info {
+    background-color: rgba(6, 182, 212, 0.15) !important;
+}
+
+[data-bs-theme="dark"] .offcanvas .card.bg-label-warning {
+    background-color: rgba(245, 158, 11, 0.15) !important;
+}
+
+[data-bs-theme="dark"] .offcanvas .card .h4,
+[data-bs-theme="dark"] .offcanvas .card .h3,
+[data-bs-theme="dark"] .offcanvas .card .h5 {
+    color: #f8fafc !important;
+}
+
+/* Text-muted inside offcanvas cards */
+[data-bs-theme="dark"] .offcanvas .card small.text-muted,
+[data-bs-theme="dark"] .offcanvas .card .text-muted {
+    color: #94a3b8 !important;
+}
+
+/* Paragraph text inside offcanvas */
+[data-bs-theme="dark"] .offcanvas p,
+[data-bs-theme="dark"] .offcanvas .text-muted {
+    color: #94a3b8;
+}
+
+/* Main headings in offcanvas body */
+[data-bs-theme="dark"] .offcanvas h4,
+[data-bs-theme="dark"] .offcanvas h5,
+[data-bs-theme="dark"] .offcanvas h6 {
+    color: #f8fafc;
+}
+
+/* Center text in offcanvas */
+[data-bs-theme="dark"] .offcanvas .text-center p.text-muted {
+    color: #94a3b8 !important;
+}
+
+/* Workout Selection Prompt buttons */
+[data-bs-theme="dark"] #workoutSelectionOffcanvas .btn-lg.btn-outline-primary {
+    border-color: var(--bs-gray-600);
+    color: var(--bs-body-color);
+}
+
+[data-bs-theme="dark"] #workoutSelectionOffcanvas .btn-lg.btn-outline-primary:hover {
+    background: rgba(var(--bs-primary-rgb), 0.15);
+    border-color: var(--bs-primary);
+    color: #f8fafc;
+}
+
+[data-bs-theme="dark"] #workoutSelectionOffcanvas .btn-lg.btn-outline-secondary {
+    border-color: var(--bs-gray-600);
+    color: var(--bs-body-color);
+}
+
+[data-bs-theme="dark"] #workoutSelectionOffcanvas .btn-lg.btn-outline-secondary:hover {
+    background: rgba(var(--bs-secondary-rgb), 0.15);
+    border-color: var(--bs-secondary);
+}
+
+[data-bs-theme="dark"] #workoutSelectionOffcanvas .btn-lg .opacity-75 {
+    color: var(--bs-gray-400) !important;
+}
+
+/* Plate Calculator Settings Offcanvas */
+[data-bs-theme="dark"] #plateSettingsOffcanvas input[type="number"],
+[data-bs-theme="dark"] #plateSettingsOffcanvas .form-control,
+[data-bs-theme="dark"] #plateSettingsOffcanvas .form-select {
+    background-color: #1e293b;
+    border-color: #475569;
+    color: #f8fafc;
+}
+
+[data-bs-theme="dark"] #plateSettingsOffcanvas input[type="number"]:focus,
+[data-bs-theme="dark"] #plateSettingsOffcanvas .form-control:focus,
+[data-bs-theme="dark"] #plateSettingsOffcanvas .form-select:focus {
+    background-color: #1e293b;
+    border-color: var(--bs-primary);
+}
+
+[data-bs-theme="dark"] #plateSettingsOffcanvas h6 {
+    color: #f8fafc;
+}
+
+[data-bs-theme="dark"] .custom-plate-row .form-control {
+    background-color: #1e293b;
+    border-color: #475569;
+    color: #f8fafc;
+}
+
+/* More Menu Items (global dark mode) */
+[data-bs-theme="dark"] .offcanvas .more-menu-item {
+    background-color: #334155;
+    border-color: #475569;
+    color: #f8fafc;
+}
+
+[data-bs-theme="dark"] .offcanvas .more-menu-item .more-menu-item-title {
+    color: #f8fafc;
+}
+
+[data-bs-theme="dark"] .offcanvas .more-menu-item .more-menu-item-description {
+    color: #94a3b8;
+}
+
+[data-bs-theme="dark"] .offcanvas .more-menu-item > i {
+    color: #f8fafc;
+}
+
+[data-bs-theme="dark"] .offcanvas .more-menu-item:hover {
+    background-color: #475569;
+    border-color: var(--bs-primary);
+}
+
+[data-bs-theme="dark"] .offcanvas .more-menu-item.toggle-item {
+    background: transparent;
+    border-color: #475569;
+}
+
+[data-bs-theme="dark"] .offcanvas .more-menu-item.toggle-item:hover {
+    background: transparent;
+}
+
+[data-bs-theme="dark"] .offcanvas .more-menu-item.danger {
+    color: #fca5a5;
+    border-color: rgba(239, 68, 68, 0.3);
+}
+
+[data-bs-theme="dark"] .offcanvas .more-menu-item.danger .more-menu-item-title {
+    color: #fca5a5;
+}
+
+[data-bs-theme="dark"] .offcanvas .more-menu-item.danger:hover {
+    background-color: rgba(239, 68, 68, 0.15);
+    border-color: var(--bs-danger);
+}
+
+/* Exercise Details Editor Toggle Item */
+[data-bs-theme="dark"] #exerciseDetailsEditorOffcanvas .more-menu-item.toggle-item {
+    background: transparent;
+    border-color: #475569;
+}
+
+[data-bs-theme="dark"] #exerciseDetailsEditorOffcanvas .more-menu-item-title {
+    color: #f8fafc;
+}
+
+[data-bs-theme="dark"] #exerciseDetailsEditorOffcanvas .more-menu-item-description {
+    color: #94a3b8;
+}
+
+/* Exercise Group Editor Offcanvas */
+[data-bs-theme="dark"] #exerciseGroupEditorOffcanvas .form-label {
+    color: #cbd5e1;
+}
+
+[data-bs-theme="dark"] #exerciseGroupEditorOffcanvas .exercise-slot-input {
+    background-color: #1e293b;
+    border-color: #475569;
+    color: #f8fafc;
+}
+
+[data-bs-theme="dark"] #exerciseGroupEditorOffcanvas .exercise-slot-input:focus {
+    background-color: #1e293b;
+    border-color: var(--bs-primary);
+}
+
+[data-bs-theme="dark"] #exerciseGroupEditorOffcanvas .exercise-slot.filled .exercise-slot-input {
+    border-color: var(--bs-primary);
+}
+
+/* Skip Exercise Offcanvas */
+[data-bs-theme="dark"] #skipExerciseOffcanvas textarea.form-control {
+    background-color: #1e293b;
+    border-color: #475569;
+    color: #f8fafc;
+}
+
+[data-bs-theme="dark"] #skipExerciseOffcanvas textarea.form-control:focus {
+    background-color: #1e293b;
+    border-color: var(--bs-primary);
+}
+
+/* Filter Offcanvas */
+[data-bs-theme="dark"] #filterBarContainer {
+    background-color: transparent;
+}
+
+[data-bs-theme="dark"] .filter-category .bg-light {
+    background-color: #334155 !important;
+    color: #f8fafc;
+}
+
+/* Reorder Exercises Offcanvas */
+[data-bs-theme="dark"] #reorderExercisesOffcanvas .badge.bg-label-secondary {
+    background-color: rgba(148, 163, 184, 0.15) !important;
+    color: #94a3b8;
 }
 
 /* ============================================

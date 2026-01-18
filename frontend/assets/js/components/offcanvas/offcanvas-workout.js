@@ -654,39 +654,118 @@ function setupPlateSettingsListeners(offcanvas, onSave) {
  * @returns {Object} Offcanvas instance
  */
 export function createReorderOffcanvas(exercises, onSave) {
-    // Validate inputs
-    if (!Array.isArray(exercises) || exercises.length === 0) {
-        console.error('❌ createReorderOffcanvas requires non-empty exercises array');
+    // Validate inputs - allow empty arrays, we'll show informative message
+    if (!Array.isArray(exercises)) {
+        console.error('❌ createReorderOffcanvas requires exercises array');
         return null;
     }
-    
+
     if (typeof onSave !== 'function') {
         console.error('❌ createReorderOffcanvas requires onSave callback function');
         return null;
     }
-    
-    // Build exercise list HTML
-    const exerciseListHtml = exercises.map((exercise, index) => `
-        <div class="reorder-item" data-index="${index}">
-            <div class="d-flex align-items-center gap-3 p-3 bg-white border rounded mb-2" style="cursor: move;">
-                <div class="reorder-handle text-muted">
-                    <i class="bx bx-menu" style="font-size: 1.5rem;"></i>
-                </div>
-                <div class="flex-grow-1">
-                    <div class="fw-medium">${escapeHtml(exercise.name)}</div>
-                    ${exercise.sets || exercise.reps ? `
-                        <small class="text-muted">
-                            ${exercise.sets ? `${exercise.sets} sets` : ''}
-                            ${exercise.sets && exercise.reps ? ' × ' : ''}
-                            ${exercise.reps ? `${exercise.reps} reps` : ''}
-                        </small>
+
+    // Determine if reordering is possible (need at least 2 items)
+    const canReorder = exercises.length >= 2;
+
+    // Build exercise list HTML (supports exercises and notes)
+    const buildExerciseListHtml = (items) => items.map((item, index) => {
+        const isNote = item.isNote === true;
+        const displayName = item.displayName || item.name;
+        const itemTypeAttr = isNote ? 'data-item-type="note"' : 'data-item-type="exercise"';
+        const borderStyle = isNote ? 'border-left: 3px solid var(--logbook-muted, #6c757d);' : '';
+        const icon = isNote ? '<i class="bx bx-note-text me-1 text-muted"></i>' : '';
+        const badgeClass = isNote ? 'bg-label-info' : (item.isBonus ? 'bg-label-primary' : 'bg-label-secondary');
+        const badgeText = isNote ? 'Note' : (index + 1);
+
+        return `
+            <div class="reorder-item" data-index="${index}" ${itemTypeAttr}>
+                <div class="d-flex align-items-center gap-3 p-3 border rounded mb-2 reorder-item-inner" style="cursor: ${canReorder ? 'move' : 'default'}; ${borderStyle}">
+                    ${canReorder ? `
+                    <div class="reorder-handle text-muted">
+                        <i class="bx bx-menu" style="font-size: 1.5rem;"></i>
+                    </div>
                     ` : ''}
+                    <div class="flex-grow-1">
+                        <div class="fw-medium">${icon}${escapeHtml(displayName)}</div>
+                        ${!isNote && (item.sets || item.reps) ? `
+                            <small class="text-muted">
+                                ${item.sets ? `${item.sets} sets` : ''}
+                                ${item.sets && item.reps ? ' × ' : ''}
+                                ${item.reps ? `${item.reps} reps` : ''}
+                            </small>
+                        ` : ''}
+                        ${isNote ? '<small class="text-muted">Session note</small>' : ''}
+                    </div>
+                    <div class="badge ${badgeClass}">${badgeText}</div>
                 </div>
-                <div class="badge bg-label-secondary">${index + 1}</div>
             </div>
+        `;
+    }).join('');
+
+    // Build body content based on exercise count
+    let bodyContent;
+    if (exercises.length === 0) {
+        // No exercises - show empty state
+        bodyContent = `
+            <div class="text-center py-4">
+                <i class="bx bx-list-ul" style="font-size: 4rem; color: var(--bs-secondary);"></i>
+                <h6 class="mt-3">No exercises yet</h6>
+                <p class="text-muted mb-0">Add some exercises to your workout, then come back to reorder them.</p>
+            </div>
+        `;
+    } else if (exercises.length === 1) {
+        // Single exercise - show it with informative message
+        bodyContent = `
+            <div class="alert alert-info d-flex align-items-start mb-3">
+                <i class="bx bx-info-circle me-2 mt-1"></i>
+                <div>
+                    <strong>Add more exercises</strong>
+                    <p class="mb-0 small">You need at least 2 exercises to reorder them. Add another exercise and try again.</p>
+                </div>
+            </div>
+            <div id="reorderList" class="mb-4">
+                ${buildExerciseListHtml(exercises)}
+            </div>
+        `;
+    } else {
+        // Normal case: 2+ exercises - full reorder functionality
+        bodyContent = `
+            <div class="alert alert-info d-flex align-items-start mb-3">
+                <i class="bx bx-info-circle me-2 mt-1"></i>
+                <div>
+                    <strong>Drag to reorder</strong>
+                    <p class="mb-0 small">Hold and drag exercises to change their order. Changes are saved when you tap "Save Order".</p>
+                </div>
+            </div>
+            <div id="reorderList" class="mb-4">
+                ${buildExerciseListHtml(exercises)}
+            </div>
+            <div id="reorderLoadingIndicator" class="text-center mb-3" style="display: none;">
+                <div class="spinner-border spinner-border-sm text-primary me-2" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <small class="text-muted">Loading drag-and-drop...</small>
+            </div>
+        `;
+    }
+
+    // Footer buttons - show Save only when reordering is possible
+    const footerContent = canReorder ? `
+        <div class="d-flex gap-2">
+            <button type="button" class="btn btn-outline-secondary flex-fill" data-bs-dismiss="offcanvas">
+                <i class="bx bx-x me-1"></i>Cancel
+            </button>
+            <button type="button" class="btn btn-primary flex-fill" id="saveReorderBtn" disabled>
+                <i class="bx bx-check me-1"></i>Save Order
+            </button>
         </div>
-    `).join('');
-    
+    ` : `
+        <button type="button" class="btn btn-secondary w-100" data-bs-dismiss="offcanvas">
+            <i class="bx bx-x me-1"></i>Close
+        </button>
+    `;
+
     const offcanvasHtml = `
         <div class="offcanvas offcanvas-bottom offcanvas-bottom-base" tabindex="-1" id="reorderExercisesOffcanvas"
              aria-labelledby="reorderExercisesOffcanvasLabel" data-bs-scroll="false">
@@ -697,33 +776,8 @@ export function createReorderOffcanvas(exercises, onSave) {
                 <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
             </div>
             <div class="offcanvas-body">
-                <div class="alert alert-info d-flex align-items-start mb-3">
-                    <i class="bx bx-info-circle me-2 mt-1"></i>
-                    <div>
-                        <strong>Drag to reorder</strong>
-                        <p class="mb-0 small">Hold and drag exercises to change their order. Changes are saved when you tap "Save Order".</p>
-                    </div>
-                </div>
-                
-                <div id="reorderList" class="mb-4">
-                    ${exerciseListHtml}
-                </div>
-                
-                <div id="reorderLoadingIndicator" class="text-center mb-3" style="display: none;">
-                    <div class="spinner-border spinner-border-sm text-primary me-2" role="status">
-                        <span class="visually-hidden">Loading...</span>
-                    </div>
-                    <small class="text-muted">Loading drag-and-drop...</small>
-                </div>
-                
-                <div class="d-flex gap-2">
-                    <button type="button" class="btn btn-outline-secondary flex-fill" data-bs-dismiss="offcanvas">
-                        <i class="bx bx-x me-1"></i>Cancel
-                    </button>
-                    <button type="button" class="btn btn-primary flex-fill" id="saveReorderBtn" disabled>
-                        <i class="bx bx-check me-1"></i>Save Order
-                    </button>
-                </div>
+                ${bodyContent}
+                ${footerContent}
             </div>
         </div>
     `;
@@ -733,21 +787,27 @@ export function createReorderOffcanvas(exercises, onSave) {
     let sortableInstance = null;
     
     return createOffcanvas('reorderExercisesOffcanvas', offcanvasHtml, (offcanvas, offcanvasElement) => {
-        // Get elements
+        // Skip SortableJS initialization if we can't reorder (0 or 1 exercises)
+        if (!canReorder) {
+            console.log('ℹ️ Reorder offcanvas opened with < 2 exercises, skipping SortableJS');
+            return;
+        }
+
+        // Get elements (only exist when canReorder is true)
         const listElement = document.getElementById('reorderList');
         const saveBtn = document.getElementById('saveReorderBtn');
         const loadingIndicator = document.getElementById('reorderLoadingIndicator');
-        
+
         if (!listElement || !saveBtn) {
             console.error('❌ Failed to find reorder list or save button');
             return;
         }
-        
+
         // Show loading indicator
         if (loadingIndicator) {
             loadingIndicator.style.display = 'block';
         }
-        
+
         // Lazy-load SortableJS asynchronously (non-blocking)
         loadSortableJS().then(() => {
             sortableLoaded = true;
@@ -881,6 +941,94 @@ async function loadSortableJS() {
             reject(new Error('Failed to load SortableJS'));
         };
         document.head.appendChild(script);
+    });
+}
+
+/* ============================================
+   NOTE POSITION PICKER
+   Allows user to select where to insert a note
+   ============================================ */
+
+/**
+ * Create note position picker offcanvas
+ * Shows a list of current items (exercises + notes) with "Insert here" buttons
+ * @param {Array} items - Array of { name, displayName, type: 'exercise'|'note' }
+ * @param {Function} onPositionSelected - Callback(position) when user picks a position
+ * @returns {Object} Offcanvas instance
+ */
+export function createNotePositionPicker(items, onPositionSelected) {
+    // Build insert point list
+    // Position 0 = before first item, Position n = after last item
+    const insertPointsHtml = [];
+
+    // Add "At the beginning" option
+    insertPointsHtml.push(`
+        <button class="position-picker-item btn btn-outline-primary w-100 mb-2"
+                data-position="0">
+            <i class="bx bx-plus-circle me-2"></i>
+            At the beginning
+        </button>
+    `);
+
+    // Add "After [item]" options for each item
+    items.forEach((item, index) => {
+        const displayName = item.displayName || item.name;
+        const truncatedName = displayName.length > 30
+            ? displayName.substring(0, 30) + '...'
+            : displayName;
+        const icon = item.type === 'note' ? 'bx-note-text' : 'bx-dumbbell';
+
+        insertPointsHtml.push(`
+            <button class="position-picker-item btn btn-outline-primary w-100 mb-2"
+                    data-position="${index + 1}">
+                <i class="bx bx-plus-circle me-2"></i>
+                After <i class="bx ${icon} mx-1"></i> ${escapeHtml(truncatedName)}
+            </button>
+        `);
+    });
+
+    // Add "Quick add at end" as highlighted option
+    if (items.length > 0) {
+        // Replace last item with "At the end" styling
+        insertPointsHtml[insertPointsHtml.length - 1] = `
+            <button class="position-picker-item quick-add btn btn-outline-success w-100 mb-2"
+                    data-position="${items.length}">
+                <i class="bx bx-plus-circle me-2"></i>
+                At the end (after all exercises)
+            </button>
+        `;
+    }
+
+    const offcanvasHtml = `
+        <div class="offcanvas offcanvas-bottom offcanvas-bottom-base" tabindex="-1" id="notePositionOffcanvas"
+             aria-labelledby="notePositionOffcanvasLabel" data-bs-scroll="false">
+            <div class="offcanvas-header border-bottom">
+                <h5 class="offcanvas-title" id="notePositionOffcanvasLabel">
+                    <i class="bx bx-note me-2"></i>Add Note
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+            </div>
+            <div class="offcanvas-body">
+                <p class="text-muted mb-3">Choose where to insert your note:</p>
+                <div class="position-picker-list">
+                    ${insertPointsHtml.join('')}
+                </div>
+            </div>
+        </div>
+    `;
+
+    return createOffcanvas('notePositionOffcanvas', offcanvasHtml, (offcanvas, element) => {
+        // Add click handlers to position buttons
+        element.querySelectorAll('.position-picker-item').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const position = parseInt(btn.dataset.position, 10);
+                offcanvas.hide();
+                // Call callback after offcanvas is hidden
+                setTimeout(() => {
+                    onPositionSelected(position);
+                }, 150);
+            });
+        });
     });
 }
 

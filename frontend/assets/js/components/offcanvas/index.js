@@ -48,6 +48,17 @@ import {
     createExerciseDetailsEditor
 } from './offcanvas-forms.js';
 
+// Import note components
+import {
+    createTemplateNoteEditor,
+    createNotePositionPicker
+} from './offcanvas-notes.js';
+
+// Import feedback components
+import {
+    createFeedbackOffcanvas
+} from './offcanvas-feedback.js';
+
 /**
  * UnifiedOffcanvasFactory - Facade class maintaining backward compatibility
  * All methods are static to match the original API
@@ -153,7 +164,27 @@ class UnifiedOffcanvasFactory {
     static createExerciseDetailsEditor(data, onSave) {
         return createExerciseDetailsEditor(data, onSave);
     }
-    
+
+    /* ============================================
+       NOTE OFFCANVAS
+       ============================================ */
+
+    static createTemplateNoteEditor(config) {
+        return createTemplateNoteEditor(config);
+    }
+
+    static createNotePositionPicker(config) {
+        return createNotePositionPicker(config);
+    }
+
+    /* ============================================
+       FEEDBACK OFFCANVAS
+       ============================================ */
+
+    static createFeedbackOffcanvas(config) {
+        return createFeedbackOffcanvas(config);
+    }
+
     /* ============================================
        DEPRECATED METHODS (Backward Compatibility)
        ============================================ */
@@ -269,7 +300,10 @@ export {
     createSkipExercise,
     createExerciseGroupEditor,
     renderAlternateSlot,
-    createExerciseDetailsEditor
+    createExerciseDetailsEditor,
+
+    // Feedback
+    createFeedbackOffcanvas
 };
 
 console.log('📦 UnifiedOffcanvasFactory v3.0.0 (modular) loaded');

@@ -507,53 +507,105 @@
 
 /* ============================================
    DARK THEME SUPPORT
+   NOTE: Using hardcoded colors because Bootstrap's gray scale
+   is inverted in dark mode (gray-900 = light, gray-100 = dark)
    ============================================ */
 
 [data-bs-theme="dark"] .offcanvas-bottom-base {
-    background-color: var(--bs-gray-900);
-    color: var(--bs-body-color);
+    background-color: #1e293b;
+    color: #f8fafc;
     box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.4);
 }
 
 [data-bs-theme="dark"] .offcanvas-bottom-base .offcanvas-header {
-    border-bottom-color: var(--bs-gray-700);
+    background-color: #1e293b;
+    border-bottom-color: #475569;
+}
+
+/* Title and icon colors */
+[data-bs-theme="dark"] .offcanvas-bottom-base .offcanvas-title,
+[data-bs-theme="dark"] .offcanvas-bottom-base .offcanvas-title i {
+    color: #f8fafc;
 }
 
 [data-bs-theme="dark"] .offcanvas-bottom-base .offcanvas-footer {
-    border-top-color: var(--bs-gray-700);
+    border-top-color: #475569;
 }
 
 [data-bs-theme="dark"] .offcanvas-bottom-base .form-label {
-    color: var(--bs-gray-200);
+    color: #cbd5e1;
 }
 
 [data-bs-theme="dark"] .offcanvas-bottom-base .form-control,
 [data-bs-theme="dark"] .offcanvas-bottom-base .form-select {
-    background-color: var(--bs-gray-800);
-    border-color: var(--bs-gray-700);
-    color: var(--bs-body-color);
+    background-color: #334155;
+    border-color: #475569;
+    color: #f8fafc;
 }
 
 [data-bs-theme="dark"] .offcanvas-bottom-base .form-control:focus,
 [data-bs-theme="dark"] .offcanvas-bottom-base .form-select:focus {
-    background-color: var(--bs-gray-800);
+    background-color: #334155;
     border-color: var(--bs-primary);
-    color: var(--bs-body-color);
+    color: #f8fafc;
 }
 
 [data-bs-theme="dark"] .offcanvas-bottom-base .card {
-    background-color: var(--bs-gray-800);
-    border-color: var(--bs-gray-700);
+    background-color: #334155;
+    border-color: #475569;
+}
+
+/* Stats card text in dark mode */
+[data-bs-theme="dark"] .offcanvas-bottom-base .card .h4,
+[data-bs-theme="dark"] .offcanvas-bottom-base .card .h3,
+[data-bs-theme="dark"] .offcanvas-bottom-base .card .h5 {
+    color: #f8fafc !important;
+}
+
+[data-bs-theme="dark"] .offcanvas-bottom-base .card small.text-muted,
+[data-bs-theme="dark"] .offcanvas-bottom-base .card .text-muted {
+    color: #94a3b8 !important;
+}
+
+/* Paragraph and text-muted in offcanvas body */
+[data-bs-theme="dark"] .offcanvas-bottom-base p.text-muted,
+[data-bs-theme="dark"] .offcanvas-bottom-base .text-muted {
+    color: #94a3b8;
+}
+
+/* Main headings in offcanvas */
+[data-bs-theme="dark"] .offcanvas-bottom-base h4,
+[data-bs-theme="dark"] .offcanvas-bottom-base h5,
+[data-bs-theme="dark"] .offcanvas-bottom-base h6 {
+    color: #f8fafc;
 }
 
 [data-bs-theme="dark"] .offcanvas-bottom-base .more-menu-item {
-    border-color: var(--bs-gray-700);
-    background: var(--bs-gray-900);
+    border-color: #475569;
+    background: #334155;
+    color: #f8fafc;
+}
+
+[data-bs-theme="dark"] .offcanvas-bottom-base .more-menu-item .more-menu-item-title {
+    color: #f8fafc;
+}
+
+[data-bs-theme="dark"] .offcanvas-bottom-base .more-menu-item .more-menu-item-description {
+    color: #94a3b8;
+}
+
+[data-bs-theme="dark"] .offcanvas-bottom-base .more-menu-item > i {
+    color: #f8fafc;
 }
 
 [data-bs-theme="dark"] .offcanvas-bottom-base .more-menu-item:hover {
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(255, 255, 255, 0.08);
     border-color: var(--bs-primary);
+}
+
+[data-bs-theme="dark"] .offcanvas-bottom-base .more-menu-item.toggle-item {
+    background: transparent;
+    border-color: #475569;
 }
 
 [data-bs-theme="dark"] .offcanvas-bottom-base .more-menu-item.toggle-item:hover {
@@ -561,15 +613,48 @@
     border: none;
 }
 
+[data-bs-theme="dark"] .offcanvas-bottom-base .more-menu-item.danger {
+    color: #fca5a5;
+}
+
+[data-bs-theme="dark"] .offcanvas-bottom-base .more-menu-item.danger .more-menu-item-title {
+    color: #fca5a5;
+}
+
 [data-bs-theme="dark"] .offcanvas-bottom-base .more-menu-item.danger:hover {
-    background: rgba(var(--bs-danger-rgb), 0.15);
-    border-color: var(--bs-danger);
+    background: rgba(239, 68, 68, 0.15);
+    border-color: #ef4444;
 }
 
 [data-bs-theme="dark"] .offcanvas-bottom-base .list-group-item {
+    background-color: #334155;
+    border-color: #475569;
+    color: #f8fafc;
+}
+
+/* btn-close visibility in dark mode */
+[data-bs-theme="dark"] .offcanvas-bottom-base .btn-close {
+    filter: invert(1) grayscale(100%) brightness(200%);
+}
+
+/* Weight modal content dark mode */
+[data-bs-theme="dark"] .weight-modal-content .form-control,
+[data-bs-theme="dark"] .weight-modal-content .form-select {
     background-color: var(--bs-gray-800);
     border-color: var(--bs-gray-700);
     color: var(--bs-body-color);
+}
+
+[data-bs-theme="dark"] .weight-modal-content .form-control:focus,
+[data-bs-theme="dark"] .weight-modal-content .form-select:focus {
+    background-color: var(--bs-gray-800);
+    border-color: var(--bs-primary);
+}
+
+/* DIY hint dark mode */
+[data-bs-theme="dark"] .diy-hint {
+    background-color: rgba(var(--bs-info-rgb), 0.15);
+    color: var(--bs-gray-400);
 }
 
 /* ============================================
@@ -900,13 +985,34 @@
     border-radius: 8px;
 }
 
+/* Reorder item inner - light mode default */
+.reorder-item-inner {
+    background-color: var(--bs-white, #fff);
+    border-color: var(--bs-border-color);
+    color: var(--bs-body-color);
+}
+
 /* Dark theme support */
+[data-bs-theme="dark"] .reorder-item-inner {
+    background-color: var(--bs-gray-800);
+    border-color: var(--bs-gray-700) !important;
+    color: var(--bs-body-color);
+}
+
+[data-bs-theme="dark"] .reorder-item .fw-medium {
+    color: var(--bs-body-color);
+}
+
 [data-bs-theme="dark"] .sortable-fallback {
     background: var(--bs-gray-800) !important;
 }
 
 [data-bs-theme="dark"] .sortable-ghost {
     background: rgba(var(--bs-primary-rgb), 0.15) !important;
+}
+
+[data-bs-theme="dark"] .sortable-drag .reorder-item-inner {
+    background-color: var(--bs-gray-700) !important;
 }
 
 /* Reduced motion support */

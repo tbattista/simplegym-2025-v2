@@ -171,11 +171,11 @@ function renderCompactHeader() {
           <i class="bx bx-plus-circle mb-1"></i>
           <span>Create</span>
         </a>
-        <a href="my-workouts.html" class="btn btn-outline-primary quick-action-btn">
+        <a href="workout-database.html" class="btn btn-outline-primary quick-action-btn">
           <i class="bx bx-search mb-1"></i>
           <span>Find</span>
         </a>
-        <a href="_archive/demo-pages/workout-sessions-demo.html" class="btn btn-outline-primary quick-action-btn">
+        <a href="workout-history.html" class="btn btn-outline-primary quick-action-btn">
           <i class="bx bx-bar-chart-alt-2 mb-1"></i>
           <span>History</span>
         </a>

@@ -91,19 +91,28 @@
             return `
                 <!-- Header -->
                 <div class="feedback-dropdown-header">
-                    <h5>
-                        <i class="bx bx-message-dots me-2"></i>
-                        Send Feedback
-                    </h5>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="mb-0">
+                                <i class="bx bx-message-dots me-2"></i>
+                                Send feedback
+                            </h5>
+                            <small class="text-muted">Help improve the app</small>
+                        </div>
+                        <a href="/feedback-voting.html" class="btn btn-sm btn-outline-primary">
+                            <i class="bx bx-poll me-1"></i>
+                            View & Vote
+                        </a>
+                    </div>
                 </div>
-                
+
                 <!-- Body -->
                 <div class="feedback-dropdown-body">
                     <form id="feedbackForm">
                         <!-- Feedback Type -->
                         <div class="mb-3">
                             <label for="feedbackType" class="form-label">
-                                Feedback Type <span class="text-danger">*</span>
+                                What kind of feedback?
                             </label>
                             <select class="form-select form-select-sm" id="feedbackType" name="feedbackType" required>
                                 <option value="general" selected>💡 General</option>
@@ -129,10 +138,10 @@
                             <label for="feedbackTitle" class="form-label">
                                 Title <span class="text-danger">*</span>
                             </label>
-                            <input type="text" 
-                                   class="form-control form-control-sm" 
-                                   id="feedbackTitle" 
-                                   placeholder="Brief description of your feedback"
+                            <input type="text"
+                                   class="form-control form-control-sm"
+                                   id="feedbackTitle"
+                                   placeholder="Short summary (optional)"
                                    maxlength="100"
                                    required>
                             <div class="d-flex justify-content-between mt-1">
@@ -146,8 +155,8 @@
                             <label for="feedbackDescription" class="form-label">
                                 Description <span class="text-danger">*</span>
                             </label>
-                            <textarea class="form-control form-control-sm" 
-                                      id="feedbackDescription" 
+                            <textarea class="form-control form-control-sm"
+                                      id="feedbackDescription"
                                       rows="4"
                                       placeholder="Please provide details..."
                                       maxlength="1000"
@@ -161,10 +170,10 @@
                         <!-- Contact Me -->
                         <div class="mb-3">
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" 
+                                <input class="form-check-input" type="checkbox"
                                        id="feedbackContact">
                                 <label class="form-check-label" for="feedbackContact">
-                                    I'd like to be contacted about this feedback
+                                    Let me know about updates to this feedback
                                 </label>
                             </div>
                             <small class="text-muted d-block mt-1" id="contactInfo"></small>
@@ -183,17 +192,17 @@
                         <div class="alert alert-success d-none" id="feedbackSuccess" role="alert"></div>
                     </form>
                 </div>
-                
+
                 <!-- Footer -->
                 <div class="feedback-dropdown-footer">
-                    <button type="button" class="btn btn-sm btn-secondary" 
+                    <button type="button" class="btn btn-sm btn-outline-secondary"
                             id="cancelFeedbackBtn">
-                        Cancel
+                        Close
                     </button>
-                    <button type="button" class="btn btn-sm btn-primary" 
+                    <button type="button" class="btn btn-sm btn-primary"
                             id="submitFeedbackBtn">
                         <i class="bx bx-send me-1"></i>
-                        Submit Feedback
+                        Submit
                     </button>
                 </div>
             `;
@@ -415,7 +424,12 @@
                 if (result.success) {
                     this.showSuccess(result.message);
                     this.resetForm();
-                    
+
+                    // Dispatch custom event for other components (e.g., voting page)
+                    window.dispatchEvent(new CustomEvent('feedbackSubmitted', {
+                        detail: { id: result.id, type: formData.type }
+                    }));
+
                     // Close dropdown after 2 seconds
                     setTimeout(() => {
                         this.close();

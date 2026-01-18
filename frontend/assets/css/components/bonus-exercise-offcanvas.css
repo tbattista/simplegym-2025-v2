@@ -368,6 +368,14 @@
     border-color: var(--bs-primary);
 }
 
+[data-bs-theme="dark"] .chip-name {
+    color: var(--bs-body-color);
+}
+
+[data-bs-theme="dark"] .chip-details {
+    color: var(--bs-gray-400);
+}
+
 [data-bs-theme="dark"] .manual-entry-section .card {
     background-color: var(--bs-gray-900);
     border-color: var(--bs-gray-700);
@@ -388,6 +396,18 @@
 
 [data-bs-theme="dark"] #bonusExerciseOffcanvas .bonus-exercise-actions {
     border-top-color: var(--bs-gray-700);
+}
+
+[data-bs-theme="dark"] .section-toggle {
+    color: var(--bs-body-color);
+}
+
+[data-bs-theme="dark"] .section-toggle:hover {
+    color: var(--bs-primary);
+}
+
+[data-bs-theme="dark"] .manual-entry-section .form-label {
+    color: var(--bs-gray-300);
 }
 
 /* ============================================

@@ -14,12 +14,15 @@ class WorkoutSessionService {
         this.preWorkoutBonusExercises = []; // Store bonus exercises before session starts
         this.exerciseStartTimes = {}; // Track when each exercise was expanded
         this.autoCompleteTimers = {}; // Store auto-complete timers
-        
+
         // PHASE 1: Pre-session editing storage
         this.preSessionEdits = {}; // Store exercise edits before session starts
         this.preSessionOrder = []; // Store custom exercise order before session starts
         this.preSessionSkips = {}; // Store skipped exercises before session starts
-        
+
+        // Session notes (inline notes interspersed with exercises)
+        this.sessionNotes = []; // Array of note objects
+
         console.log('📦 Workout Session Service initialized');
     }
     
@@ -193,9 +196,20 @@ class WorkoutSessionService {
             const requestBody = {
                 completed_at: new Date().toISOString(),
                 exercises_performed: exercisesPerformed,
-                notes: ''
+                notes: '',
+                session_notes: (this.sessionNotes || []).map(note => ({
+                    id: note.id,
+                    content: note.content,
+                    order_index: note.order_index,
+                    created_at: note.created_at,
+                    modified_at: note.modified_at || null
+                }))
             };
-            
+
+            if (requestBody.session_notes.length > 0) {
+                console.log('📝 Including', requestBody.session_notes.length, 'session notes in completion');
+            }
+
             // PHASE 3: Include custom exercise order if present
             if (this.preSessionOrder && this.preSessionOrder.length > 0) {
                 requestBody.exercise_order = this.preSessionOrder;
@@ -899,18 +913,21 @@ class WorkoutSessionService {
     clearSession() {
         // Clear all auto-complete timers first
         this.clearAllAutoCompleteTimers();
-        
+
         this.currentSession = null;
         this.exerciseHistory = {};
-        
+
+        // Clear session notes
+        this.clearSessionNotes();
+
         if (this.autoSaveTimer) {
             clearTimeout(this.autoSaveTimer);
             this.autoSaveTimer = null;
         }
-        
+
         console.log('🧹 Session cleared');
         this.notifyListeners('sessionCleared', {});
-        
+
         // Clear persisted session
         this.clearPersistedSession();
     }
@@ -1326,9 +1343,10 @@ class WorkoutSessionService {
             startedAt: this.currentSession.startedAt.toISOString(),
             status: this.currentSession.status,
             exercises: this.currentSession.exercises || {},
+            sessionNotes: this.sessionNotes || [],  // Session notes for inline notes
             lastUpdated: now,  // When session data was last changed
             lastPageActive: now,  // When page was last visible (will be updated by page events)
-            version: '2.1',  // Bump version for lastPageActive
+            version: '2.2',  // Bump version for sessionNotes
             schemaVersion: 2  // PHASE 1: Explicit schema version
         };
         
@@ -1367,6 +1385,14 @@ class WorkoutSessionService {
                 console.log('🔄 Migrating session from v2.0 to v2.1...');
                 sessionData = this._migrateSessionV2toV2_1(sessionData);
             }
+
+            if (sessionData.version === '2.1') {
+                console.log('🔄 Migrating session from v2.1 to v2.2...');
+                sessionData = this._migrateSessionV2_1toV2_2(sessionData);
+            }
+
+            // Restore session notes from persisted data
+            this.sessionNotes = sessionData.sessionNotes || [];
             
             // Validate required fields
             if (!sessionData.sessionId || !sessionData.workoutId || !sessionData.startedAt) {
@@ -1432,6 +1458,21 @@ class WorkoutSessionService {
         console.log('✅ Session migrated to v2.1 (lastPageActive added)');
         return sessionData;
     }
+
+    /**
+     * Migrate session from v2.1 to v2.2
+     * Adds sessionNotes array for inline notes
+     * @param {Object} sessionData - Old session data
+     * @returns {Object} Migrated session data
+     * @private
+     */
+    _migrateSessionV2_1toV2_2(sessionData) {
+        sessionData.version = '2.2';
+        // Initialize sessionNotes as empty array
+        sessionData.sessionNotes = sessionData.sessionNotes || [];
+        console.log('✅ Session migrated to v2.2 (sessionNotes added)');
+        return sessionData;
+    }
     
     /**
      * Clear persisted session from localStorage
@@ -1454,6 +1495,129 @@ class WorkoutSessionService {
         return !!localStorage.getItem('ghost_gym_active_workout_session');
     }
     
+    /**
+     * SESSION NOTES METHODS
+     * Methods for managing inline notes within workout sessions
+     * Notes are session-only and not saved to workout templates
+     */
+
+    /**
+     * Add a new session note
+     * @param {number} position - Index to insert at (in the combined card list)
+     * @param {string} content - Note text content (optional, can be empty initially)
+     * @returns {Object} Created note object
+     */
+    addSessionNote(position, content = '') {
+        const note = {
+            id: `note-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`,
+            type: 'note',
+            content: content.substring(0, 500), // Enforce max length
+            created_at: new Date().toISOString(),
+            order_index: position
+        };
+
+        this.sessionNotes.push(note);
+
+        console.log('📝 Session note added:', note.id, 'at position', position);
+        this.notifyListeners('sessionNoteAdded', { note });
+        this.persistSession();
+
+        return note;
+    }
+
+    /**
+     * Update session note content
+     * @param {string} noteId - Note ID
+     * @param {string} content - New content
+     * @returns {boolean} True if note was found and updated
+     */
+    updateSessionNote(noteId, content) {
+        const note = this.sessionNotes.find(n => n.id === noteId);
+        if (!note) {
+            console.warn('⚠️ Note not found:', noteId);
+            return false;
+        }
+
+        note.content = content.substring(0, 500); // Enforce max length
+        note.modified_at = new Date().toISOString();
+
+        console.log('📝 Session note updated:', noteId);
+        this.notifyListeners('sessionNoteUpdated', { note });
+        this.persistSession();
+
+        return true;
+    }
+
+    /**
+     * Delete a session note
+     * @param {string} noteId - Note ID
+     * @returns {boolean} True if note was found and deleted
+     */
+    deleteSessionNote(noteId) {
+        const index = this.sessionNotes.findIndex(n => n.id === noteId);
+        if (index === -1) {
+            console.warn('⚠️ Note not found:', noteId);
+            return false;
+        }
+
+        const note = this.sessionNotes.splice(index, 1)[0];
+
+        console.log('🗑️ Session note deleted:', noteId);
+        this.notifyListeners('sessionNoteDeleted', { noteId, note });
+        this.persistSession();
+
+        return true;
+    }
+
+    /**
+     * Get all session notes
+     * @returns {Array} Array of note objects
+     */
+    getSessionNotes() {
+        return [...this.sessionNotes];
+    }
+
+    /**
+     * Get a specific session note by ID
+     * @param {string} noteId - Note ID
+     * @returns {Object|null} Note object or null if not found
+     */
+    getSessionNote(noteId) {
+        return this.sessionNotes.find(n => n.id === noteId) || null;
+    }
+
+    /**
+     * Clear all session notes
+     * Called when session ends or is cleared
+     */
+    clearSessionNotes() {
+        const count = this.sessionNotes.length;
+        this.sessionNotes = [];
+        console.log('🧹 Session notes cleared:', count, 'notes removed');
+        this.notifyListeners('sessionNotesCleared', { count });
+    }
+
+    /**
+     * Update note order index (for reordering)
+     * @param {string} noteId - Note ID
+     * @param {number} newOrderIndex - New order index
+     * @returns {boolean} True if note was found and updated
+     */
+    updateSessionNoteOrder(noteId, newOrderIndex) {
+        const note = this.sessionNotes.find(n => n.id === noteId);
+        if (!note) {
+            console.warn('⚠️ Note not found for reorder:', noteId);
+            return false;
+        }
+
+        note.order_index = newOrderIndex;
+        console.log('📋 Session note reordered:', noteId, 'to position', newOrderIndex);
+        this.notifyListeners('sessionNoteReordered', { noteId, newOrderIndex });
+        this.persistSession();
+
+        return true;
+    }
+
     /**
      * 🔧 DEBUG HELPER: Get comprehensive bonus exercise state
      * Call from console: window.workoutSessionService.debugBonusExercises()
