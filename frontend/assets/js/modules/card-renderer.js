@@ -86,12 +86,12 @@ class CardRenderer {
                             ${metaText ? `<div class="exercise-meta-text text-muted small">${metaText}</div>` : ''}
                         </div>
                         <div class="card-actions">
-                            <button type="button" class="btn btn-sm btn-icon btn-edit-compact"
+                            <button type="button" class="btn btn-sm btn-edit-compact"
                                     onclick="event.preventDefault(); event.stopPropagation(); openExerciseGroupEditor('${groupId}');"
                                     title="Edit exercise group">
-                                <i class="bx bx-edit"></i>
+                                <i class="bx bx-pencil"></i>
                             </button>
-                            <button type="button" class="btn btn-sm btn-icon btn-menu-compact"
+                            <button type="button" class="btn btn-sm btn-menu-compact"
                                     onclick="event.preventDefault(); event.stopPropagation(); window.builderCardMenu?.toggleMenu(this, '${groupId}', ${index});"
                                     title="More options">
                                 <i class="bx bx-dots-vertical"></i>
@@ -267,10 +267,10 @@ class CardRenderer {
                             <div class="exercise-meta-text text-muted small">${metaText}</div>
                         </div>
                         <div class="card-actions">
-                            <button type="button" class="btn btn-sm btn-icon btn-edit-compact"
+                            <button type="button" class="btn btn-sm btn-edit-compact"
                                     onclick="event.preventDefault(); event.stopPropagation(); openBonusExerciseEditor('${bonusId}');"
                                     title="Edit additional exercise">
-                                <i class="bx bx-edit"></i>
+                                <i class="bx bx-pencil"></i>
                             </button>
                         </div>
                     </div>

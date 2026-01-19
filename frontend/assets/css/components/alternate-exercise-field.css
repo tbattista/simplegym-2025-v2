@@ -1,0 +1,146 @@
+/**
+ * Ghost Gym - Alternate Exercise Field Component
+ * Dynamic input fields for alternate exercises in workout builder
+ * Extracted from workout-builder.css v2.2.0
+ *
+ * @version 1.0.0
+ * @date 2026-01-18
+ */
+
+/* ============================================
+   ALTERNATE EXERCISE DYNAMIC FIELDS
+   ============================================ */
+
+/* Alternate Exercise Container */
+#alternateExercisesContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+/* Individual Alternate Exercise Field */
+.alternate-exercise-field {
+    position: relative;
+    animation: slideIn 0.2s ease-out;
+}
+
+.alternate-exercise-field .form-label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    color: var(--bs-gray-700);
+}
+
+.alternate-exercise-field .input-group {
+    position: relative;
+}
+
+.alternate-exercise-field .form-control {
+    padding-right: 2.5rem; /* Space for remove button */
+}
+
+/* Remove Button (X) */
+.btn-remove-alternate {
+    position: absolute;
+    right: 0.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    background: transparent;
+    border: none;
+    color: var(--bs-danger);
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.btn-remove-alternate:hover {
+    background: var(--bs-danger);
+    color: white;
+    transform: translateY(-50%) scale(1.1);
+}
+
+.btn-remove-alternate i {
+    font-size: 16px;
+    line-height: 1;
+}
+
+/* Add Alt Button */
+#addAlternateBtn {
+    transition: all 0.2s ease;
+}
+
+#addAlternateBtn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+#addAlternateBtn.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Animation */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideOut {
+    from {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+}
+
+/* ============================================
+   DARK MODE SUPPORT
+   ============================================ */
+
+[data-bs-theme="dark"] .alternate-exercise-field .form-label {
+    color: #f8fafc;
+}
+
+[data-bs-theme="dark"] .btn-remove-alternate {
+    color: var(--bs-danger);
+}
+
+[data-bs-theme="dark"] .btn-remove-alternate:hover {
+    background: var(--bs-danger);
+    color: white;
+}
+
+/* ============================================
+   MOBILE RESPONSIVE
+   ============================================ */
+
+@media (max-width: 768px) {
+    .alternate-exercise-field .form-label {
+        font-size: 0.8125rem;
+    }
+
+    .btn-remove-alternate {
+        width: 24px;
+        height: 24px;
+    }
+
+    .btn-remove-alternate i {
+        font-size: 14px;
+    }
+}

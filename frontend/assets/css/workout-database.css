@@ -577,6 +577,17 @@
     transition: box-shadow 0.3s ease;
 }
 
+/* Ensure grid columns elevate when dropdown is open (additional specificity) */
+#workoutCardsGrid > [class*="col"]:has(.dropdown-menu.show) {
+    z-index: 1060 !important;
+}
+
+/* Ensure dropdown menu has proper z-index within workout cards grid */
+#workoutCardsGrid .card .dropdown-menu {
+    position: absolute !important;
+    z-index: 1050 !important;
+}
+
 /* ============================================
    UTILITY CLASSES
    ============================================ */

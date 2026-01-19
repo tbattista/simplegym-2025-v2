@@ -1,0 +1,159 @@
+/**
+ * Ghost Gym - Offcanvas Editor Component
+ * Styling for exercise and bonus exercise edit offcanvas modals
+ * Extracted from workout-builder.css v2.2.0
+ *
+ * @version 1.0.0
+ * @date 2026-01-18
+ */
+
+/* ============================================
+   OFFCANVAS EDITOR STYLES
+   ============================================ */
+
+/* Match workout-database offcanvas sizing */
+#exerciseGroupEditOffcanvas,
+#bonusExerciseEditOffcanvas {
+    height: auto !important;
+    max-height: 85vh;
+    min-height: 40vh;
+}
+
+#exerciseGroupEditOffcanvas .offcanvas-body,
+#bonusExerciseEditOffcanvas .offcanvas-body {
+    overflow-y: auto;
+    max-height: calc(85vh - 140px);
+    padding: 1.5rem;
+}
+
+#exerciseGroupEditOffcanvas .offcanvas-header,
+#bonusExerciseEditOffcanvas .offcanvas-header {
+    flex-shrink: 0;
+    padding: 1rem 1.5rem;
+}
+
+#exerciseGroupEditOffcanvas .offcanvas-footer,
+#bonusExerciseEditOffcanvas .offcanvas-footer {
+    flex-shrink: 0;
+    background: var(--bs-body-bg);
+}
+
+/* Smooth transition for offcanvas */
+#exerciseGroupEditOffcanvas.offcanvas-bottom,
+#bonusExerciseEditOffcanvas.offcanvas-bottom {
+    transition: transform 0.3s ease-in-out;
+}
+
+/* Form styling in offcanvas */
+.offcanvas-body .form-label {
+    font-weight: 500;
+    font-size: 0.875rem;
+    margin-bottom: 0.5rem;
+    color: var(--bs-gray-700);
+}
+
+.offcanvas-body .form-control {
+    font-size: 0.875rem;
+    padding: 0.625rem 0.75rem;
+}
+
+.offcanvas-body .form-control:focus {
+    border-color: var(--bs-primary);
+    box-shadow: 0 0 0 0.2rem rgba(var(--bs-primary-rgb), 0.15);
+}
+
+.offcanvas-body .form-text {
+    font-size: 0.75rem;
+    margin-top: 0.5rem;
+}
+
+/* Weight unit buttons in offcanvas */
+.offcanvas-body .weight-unit-btn {
+    font-size: 0.875rem;
+    padding: 0.5rem;
+    transition: all 0.2s ease;
+}
+
+.offcanvas-body .weight-unit-btn.active {
+    background-color: var(--bs-primary);
+    border-color: var(--bs-primary);
+    color: white;
+}
+
+.offcanvas-body .weight-unit-btn:not(.active):hover {
+    background-color: rgba(var(--bs-primary-rgb), 0.1);
+    border-color: var(--bs-primary);
+    color: var(--bs-primary);
+}
+
+/* Offcanvas footer buttons */
+.offcanvas-footer .btn {
+    font-weight: 500;
+    padding: 0.625rem 1rem;
+    font-size: 0.875rem;
+}
+
+.offcanvas-footer .btn-label-secondary {
+    background-color: rgba(var(--bs-secondary-rgb), 0.1);
+    border: 1px solid transparent;
+    color: var(--bs-secondary);
+}
+
+.offcanvas-footer .btn-label-secondary:hover {
+    background-color: rgba(var(--bs-secondary-rgb), 0.2);
+    color: var(--bs-secondary);
+}
+
+/* ============================================
+   DARK MODE SUPPORT
+   ============================================ */
+
+[data-bs-theme="dark"] .offcanvas-body .form-label {
+    color: #f8fafc;
+}
+
+[data-bs-theme="dark"] .offcanvas-body .form-control {
+    background: #334155;
+    border-color: #475569;
+    color: #f8fafc;
+}
+
+[data-bs-theme="dark"] .offcanvas-body .form-control:focus {
+    background: #334155;
+    border-color: var(--bs-primary);
+    color: #f8fafc;
+}
+
+[data-bs-theme="dark"] .offcanvas-footer {
+    background: #1e293b;
+    border-color: #475569;
+}
+
+/* ============================================
+   MOBILE RESPONSIVE
+   ============================================ */
+
+@media (max-width: 768px) {
+    /* Offcanvas adjustments */
+    #exerciseGroupEditOffcanvas,
+    #bonusExerciseEditOffcanvas {
+        max-height: 90vh;
+    }
+
+    .offcanvas-body {
+        padding: 1rem;
+    }
+
+    .offcanvas-header {
+        padding: 0.875rem 1rem;
+    }
+
+    .offcanvas-footer {
+        padding: 0.75rem 1rem;
+    }
+
+    .offcanvas-footer .btn {
+        padding: 0.5rem 0.875rem;
+        font-size: 0.8125rem;
+    }
+}

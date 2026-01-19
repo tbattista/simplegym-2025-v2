@@ -103,21 +103,18 @@
     color: #f8fafc;
 }
 
-/* Legacy Card Style */
-[data-bs-theme="dark"] .exercise-group.card,
+/* Bonus Exercise Card Base Style */
 [data-bs-theme="dark"] .bonus-exercise {
     background: #1e293b;
     border-color: #475569;
 }
 
-[data-bs-theme="dark"] .exercise-group.card .card-header,
 [data-bs-theme="dark"] .bonus-exercise .card-header {
     background: #334155;
     border-color: #475569;
     color: #f8fafc;
 }
 
-[data-bs-theme="dark"] .exercise-group.card .card-body,
 [data-bs-theme="dark"] .bonus-exercise .card-body {
     background: #1e293b;
     color: #f8fafc;
@@ -1136,17 +1133,19 @@
 
 /* ============================================
    DARK MODE EDIT BUTTON COMPACT
+   NOTE: Main styling is in card-actions.css
+   This only handles dark mode color adjustments
    ============================================ */
 
+/* Dark mode edit button - minimal style matching card-actions.css */
 [data-bs-theme="dark"] .btn-edit-compact {
-    background: var(--ghost-primary);
-    border-color: var(--ghost-primary);
-    color: white;
+    background: transparent;
+    border: none;
+    color: var(--bs-secondary) !important;
 }
 
 [data-bs-theme="dark"] .btn-edit-compact:hover {
-    background: var(--ghost-primary);
-    border-color: var(--ghost-primary);
-    color: white;
-    box-shadow: 0 2px 8px rgba(var(--bs-primary-rgb), 0.4);
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--bs-body-color) !important;
+    box-shadow: none;
 }

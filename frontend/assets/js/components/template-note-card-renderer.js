@@ -46,10 +46,10 @@ class TemplateNoteCardRenderer {
                             </div>
                         </div>
                         <div class="card-actions">
-                            <button type="button" class="btn btn-sm btn-icon btn-edit-compact"
+                            <button type="button" class="btn btn-sm btn-edit-compact"
                                     onclick="event.preventDefault(); event.stopPropagation(); window.handleEditTemplateNote?.('${this._escapeHtml(noteId)}');"
                                     title="Edit note">
-                                <i class="bx bx-edit"></i>
+                                <i class="bx bx-pencil"></i>
                             </button>
                         </div>
                         <div class="drag-handle" style="display: none;">

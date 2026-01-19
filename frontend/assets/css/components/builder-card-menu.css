@@ -1,0 +1,107 @@
+/**
+ * Ghost Gym - Builder Card Menu Component
+ * Dropdown menu for card actions (move up/down, delete)
+ * Extracted from workout-builder.css v2.2.0
+ *
+ * @version 1.0.0
+ * @date 2026-01-18
+ */
+
+/* ============================================
+   BUILDER CARD MENU (Dropdown)
+   ============================================ */
+
+/* Menu container - positioned relative to button */
+.builder-card-menu {
+    position: absolute;
+    top: calc(100% + 4px);
+    right: 0;
+    background: var(--bs-body-bg);
+    border: 1.5px solid var(--bs-border-color);
+    border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+    min-width: 160px;
+    padding: 8px 0;
+    z-index: 1050;
+    display: none;
+}
+
+.builder-card-menu.show {
+    display: block;
+}
+
+/* Menu items */
+.builder-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+    cursor: pointer;
+    background: none;
+    border: none;
+    width: 100%;
+    text-align: left;
+    font-size: 0.875rem;
+    color: var(--bs-body-color);
+    transition: all 0.15s ease;
+}
+
+.builder-menu-item:hover {
+    background-color: rgba(var(--bs-primary-rgb), 0.08);
+    color: var(--bs-primary);
+}
+
+.builder-menu-item i {
+    font-size: 1.1rem;
+    width: 20px;
+    text-align: center;
+}
+
+/* Disabled state for boundary items */
+.builder-menu-item.disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* Danger variant for delete */
+.builder-menu-item.danger {
+    color: var(--bs-danger);
+}
+
+.builder-menu-item.danger:hover {
+    background-color: rgba(var(--bs-danger-rgb), 0.08);
+    color: var(--bs-danger);
+}
+
+/* Menu divider */
+.builder-menu-divider {
+    height: 1px;
+    background: var(--bs-border-color);
+    margin: 6px 0;
+}
+
+/* ============================================
+   DARK MODE
+   ============================================ */
+
+[data-bs-theme="dark"] .builder-card-menu {
+    background: var(--bs-body-bg);
+    border-color: var(--bs-border-color);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+/* ============================================
+   MOBILE RESPONSIVE
+   ============================================ */
+
+@media (max-width: 768px) {
+    .builder-card-menu {
+        min-width: 140px;
+    }
+
+    .builder-menu-item {
+        padding: 8px 12px;
+        font-size: 0.8125rem;
+    }
+}

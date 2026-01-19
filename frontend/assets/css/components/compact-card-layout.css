@@ -1,0 +1,218 @@
+/**
+ * Ghost Gym - Compact Card Layout Component
+ * Compact variant styling for exercise and bonus exercise cards
+ * Extracted from workout-builder.css v2.2.0
+ *
+ * @version 1.0.0
+ * @date 2026-01-18
+ */
+
+/* ============================================
+   COMPACT CARD LAYOUT
+   ============================================ */
+
+/* Compact card modifier */
+.exercise-group-card.compact .card,
+.bonus-exercise-card.compact .card {
+    padding: 0;
+}
+
+.exercise-group-card.compact .card-body,
+.bonus-exercise-card.compact .card-body {
+    padding: 1rem 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: auto;
+    position: relative;
+}
+
+/* Exercise content - takes remaining space */
+.exercise-content {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding-right: 48px; /* Space for the edit button with increased padding */
+}
+
+/* NOTE: .btn-edit-compact styles are now consolidated in card-actions.css */
+
+/* Exercise list - each exercise on new line */
+.exercise-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.exercise-line {
+    font-size: 0.875rem;
+    line-height: 1.4;
+    color: var(--bs-heading-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.exercise-line:first-child {
+    font-weight: 600;
+    font-size: 0.9375rem;
+}
+
+/* Meta text - plain text, not badges */
+.exercise-meta-text {
+    font-size: 0.75rem;
+    color: var(--bs-secondary);
+    line-height: 1.3;
+}
+
+/* Drag handle for compact cards - positioned same as edit button, outline style */
+.exercise-group-card.compact .drag-handle,
+.bonus-exercise-card.compact .drag-handle {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    display: none !important;
+    align-items: center;
+    justify-content: center;
+    cursor: move;
+    color: var(--bs-warning);
+    z-index: 10;
+    transition: all 0.2s ease;
+    background: transparent;
+    border: 1.5px solid var(--bs-warning);
+    border-radius: 4px;
+}
+
+.exercise-group-card.compact .drag-handle i,
+.bonus-exercise-card.compact .drag-handle i {
+    font-size: 20px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.exercise-group-card.compact .drag-handle:hover,
+.bonus-exercise-card.compact .drag-handle:hover {
+    color: white;
+    background: var(--bs-warning);
+    border-color: var(--bs-warning);
+    transform: translateY(-50%) scale(1.05);
+    box-shadow: 0 2px 8px rgba(var(--bs-warning-rgb), 0.3);
+}
+
+/* Remove old button group styles for compact cards */
+.exercise-group-card.compact .btn-group,
+.bonus-exercise-card.compact .btn-group {
+    display: none;
+}
+
+/* Edit Mode Active - Change edit button styling for move mode */
+.exercise-groups-container.edit-mode-active .exercise-group-card.compact .btn-edit-compact,
+.exercise-groups-container.edit-mode-active .bonus-exercise-card.compact .btn-edit-compact {
+    border-color: var(--bs-warning);
+    color: var(--bs-warning) !important;
+    cursor: move;
+    pointer-events: none; /* Disable clicking in edit mode */
+}
+
+.exercise-groups-container.edit-mode-active .exercise-group-card.compact .btn-edit-compact:hover,
+.exercise-groups-container.edit-mode-active .bonus-exercise-card.compact .btn-edit-compact:hover {
+    background: transparent !important;
+    border-color: var(--bs-warning) !important;
+    color: var(--bs-warning) !important;
+    transform: translateY(-50%); /* Remove hover transform */
+}
+
+/* Icon changes are handled by JavaScript (changing class from bx-edit to bx-menu) */
+
+/* Hide the old drag handle - we're using the edit button now */
+.exercise-groups-container.edit-mode-active .exercise-group-card.compact .drag-handle,
+.exercise-groups-container.edit-mode-active .bonus-exercise-card.compact .drag-handle {
+    display: none !important;
+}
+
+/* Edit mode styling for compact cards */
+.exercise-groups-container.edit-mode-active .exercise-group-card.compact .card,
+.exercise-groups-container.edit-mode-active .bonus-exercise-card.compact .card {
+    background: rgba(var(--bs-warning-rgb), 0.05);
+    border-color: var(--bs-warning);
+    cursor: move;
+}
+
+.exercise-groups-container.edit-mode-active .exercise-group-card.compact .card:hover,
+.exercise-groups-container.edit-mode-active .bonus-exercise-card.compact .card:hover {
+    background: rgba(var(--bs-warning-rgb), 0.1);
+    border-color: var(--bs-warning);
+    box-shadow: 0 4px 12px rgba(var(--bs-warning-rgb), 0.2);
+}
+
+/* Sortable states for compact cards */
+.exercise-group-card.compact.sortable-ghost,
+.bonus-exercise-card.compact.sortable-ghost {
+    opacity: 0.4;
+}
+
+.exercise-group-card.compact.sortable-drag,
+.bonus-exercise-card.compact.sortable-drag {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    transform: rotate(2deg) scale(1.02);
+}
+
+.exercise-group-card.compact.sortable-chosen,
+.bonus-exercise-card.compact.sortable-chosen {
+    cursor: grabbing;
+}
+
+/* In edit mode, make the entire card draggable but keep drag handle visible */
+.exercise-groups-container.edit-mode-active .exercise-group-card.compact .card-body,
+.exercise-groups-container.edit-mode-active .bonus-exercise-card.compact .card-body {
+    cursor: move;
+}
+
+/* ============================================
+   DARK MODE SUPPORT
+   ============================================ */
+
+[data-bs-theme="dark"] .exercise-line {
+    color: #f8fafc;
+}
+
+[data-bs-theme="dark"] .exercise-meta-text {
+    color: #94a3b8;
+}
+
+/* NOTE: Dark mode .btn-edit-compact styles are in card-actions.css and dark-mode.css */
+
+/* ============================================
+   MOBILE RESPONSIVE
+   ============================================ */
+
+@media (max-width: 768px) {
+    .exercise-group-card.compact .card-body,
+    .bonus-exercise-card.compact .card-body {
+        padding: 0.75rem 1rem;
+        gap: 10px;
+    }
+
+    /* NOTE: .btn-edit-compact mobile styles are in card-actions.css */
+
+    .exercise-line {
+        font-size: 0.8125rem;
+    }
+
+    .exercise-line:first-child {
+        font-size: 0.875rem;
+    }
+
+    .exercise-meta-text {
+        font-size: 0.7rem;
+    }
+}

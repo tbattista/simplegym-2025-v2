@@ -28,6 +28,16 @@
 @import url('components/forms.css');
 @import url('components/dark-mode.css');
 
+/* Workout builder component extractions (Phase 2 refactoring) */
+@import url('components/exercise-group-card.css');
+@import url('components/compact-card-layout.css');
+@import url('components/card-actions.css');
+@import url('components/builder-card-menu.css');
+@import url('components/offcanvas-editor.css');
+@import url('components/alternate-exercise-field.css');
+@import url('components/template-note-card.css');
+@import url('components/edit-mode.css');
+
 /* ============================================================================
    COMPONENT UTILITIES
    ============================================================================ */

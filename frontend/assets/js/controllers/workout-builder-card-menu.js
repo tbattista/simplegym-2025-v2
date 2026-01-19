@@ -7,6 +7,7 @@
 class WorkoutBuilderCardMenu {
     constructor() {
         this.activeMenu = null;
+        this.activeCard = null;
         this.clickOutsideHandler = null;
         this.init();
         console.log('✅ WorkoutBuilderCardMenu initialized');
@@ -46,6 +47,14 @@ class WorkoutBuilderCardMenu {
             menu.classList.add('show');
             button.classList.add('active');
             this.activeMenu = menu;
+            
+            // Elevate the entire card's z-index to appear above other cards
+            const card = button.closest('.exercise-group-card');
+            if (card) {
+                card.style.zIndex = '1060';
+                card.style.position = 'relative';
+                this.activeCard = card;
+            }
         }
     }
 
@@ -59,6 +68,14 @@ class WorkoutBuilderCardMenu {
         document.querySelectorAll('.btn-menu-compact.active').forEach(btn => {
             btn.classList.remove('active');
         });
+        
+        // Reset card z-index
+        if (this.activeCard) {
+            this.activeCard.style.zIndex = '';
+            this.activeCard.style.position = '';
+            this.activeCard = null;
+        }
+        
         this.activeMenu = null;
     }
 

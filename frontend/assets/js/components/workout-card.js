@@ -14,23 +14,27 @@ class WorkoutCard {
             showTags: true,
             showDescription: false,
             showExercisePreview: false,
-            
-            // Action buttons
+
+            // Action buttons (only primary CTA shown as button)
             actions: [],
-            
+
+            // Dropdown menu actions (Edit, Delete, View Details go here)
+            dropdownActions: ['edit', 'delete'], // Default dropdown actions
+
             // Delete mode
             deleteMode: false,
             onDelete: null,
-            
+
             // Custom metadata
             customMetadata: null,
-            
+
             // Callbacks
             onCardClick: null,
-            
+            onViewDetails: null, // Optional view details callback for dropdown
+
             ...config
         };
-        
+
         this.element = null;
     }
     
@@ -67,27 +71,64 @@ class WorkoutCard {
     }
     
     /**
-     * Render dropdown menu (3 dots)
+     * Render dropdown menu (3 dots) with configurable actions
      */
     _renderDropdownMenu() {
         if (this.config.deleteMode) return '';
-        
-        return `
-            <div class="dropdown position-absolute" style="top: 8px; right: 8px; z-index: 10;">
-                <button class="btn btn-icon" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="padding: 0.5rem; line-height: 1;">
-                    <i class="bx bx-dots-vertical-rounded" style="font-size: 1.5rem; color: var(--bs-body-color);"></i>
-                </button>
-                <ul class="dropdown-menu dropdown-menu-end">
+
+        const dropdownActions = this.config.dropdownActions || ['edit', 'delete'];
+        let menuItems = '';
+
+        // Build menu items based on configuration
+        if (dropdownActions.includes('view') && this.config.onViewDetails) {
+            menuItems += `
+                    <li>
+                        <a class="dropdown-item" href="javascript:void(0);" data-action="view-details">
+                            <i class="bx bx-show me-2"></i>View Details
+                        </a>
+                    </li>`;
+        }
+
+        if (dropdownActions.includes('history')) {
+            const historyAction = this.config.actions.find(a => a.id === 'history');
+            if (historyAction) {
+                menuItems += `
+                    <li>
+                        <a class="dropdown-item" href="javascript:void(0);" data-action="history">
+                            <i class="bx bx-history me-2"></i>History
+                        </a>
+                    </li>`;
+            }
+        }
+
+        if (dropdownActions.includes('edit')) {
+            menuItems += `
                     <li>
                         <a class="dropdown-item" href="javascript:void(0);" data-action="edit">
                             <i class="bx bx-edit me-2"></i>Edit
                         </a>
-                    </li>
+                    </li>`;
+        }
+
+        if (dropdownActions.includes('delete')) {
+            // Add divider before delete if there are other items
+            if (menuItems) {
+                menuItems += `<li><hr class="dropdown-divider"></li>`;
+            }
+            menuItems += `
                     <li>
                         <a class="dropdown-item text-danger" href="javascript:void(0);" data-action="delete">
                             <i class="bx bx-trash me-2"></i>Delete
                         </a>
-                    </li>
+                    </li>`;
+        }
+
+        return `
+            <div class="dropdown position-absolute" style="top: 8px; right: 8px; z-index: 1050;">
+                <button class="btn btn-icon btn-card-menu" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bx bx-dots-vertical-rounded"></i>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">${menuItems}
                 </ul>
             </div>
         `;
@@ -263,39 +304,43 @@ class WorkoutCard {
     }
     
     /**
-     * Render action buttons
+     * Render action buttons - simplified to show only primary CTA
+     * Secondary actions (edit, view, history) moved to dropdown menu
      */
     _renderActions() {
         if (this.config.deleteMode && this.config.onDelete) {
             return `
-                <button class="btn btn-danger w-100" data-action="delete">
+                <button class="btn btn-danger btn-card-action w-100" data-action="delete">
                     <i class="bx bx-trash me-1"></i>Delete Workout
                 </button>
             `;
         }
-        
+
         if (this.config.actions.length === 0) return '';
-        
-        // Filter out edit action since it's now in dropdown menu
-        const filteredActions = this.config.actions.filter(action => action.id !== 'edit');
-        
-        if (filteredActions.length === 0) return '';
-        
-        // Single action - full width button
-        if (filteredActions.length === 1) {
-            const action = filteredActions[0];
+
+        // Filter to get only primary actions (not edit, view, history which go to dropdown)
+        const dropdownActionIds = this.config.dropdownActions || ['edit', 'delete'];
+        const primaryActions = this.config.actions.filter(action =>
+            !dropdownActionIds.includes(action.id) && action.id !== 'edit'
+        );
+
+        if (primaryActions.length === 0) return '';
+
+        // Single primary CTA - full width button with touch-friendly sizing
+        if (primaryActions.length === 1) {
+            const action = primaryActions[0];
             return `
-                <button class="btn btn-${action.variant} w-100" data-action="${action.id}">
+                <button class="btn btn-${action.variant} btn-card-action w-100" data-action="${action.id}">
                     ${action.icon ? `<i class="bx ${action.icon} me-1"></i>` : ''}${action.label}
                 </button>
             `;
         }
-        
-        // Multiple actions - button group (Sneat style)
+
+        // Multiple primary actions - show as button group (rare case)
         return `
             <div class="btn-group w-100" role="group">
-                ${filteredActions.map(action => `
-                    <button class="btn btn-${action.variant}" data-action="${action.id}">
+                ${primaryActions.map(action => `
+                    <button class="btn btn-${action.variant} btn-card-action" data-action="${action.id}">
                         ${action.icon ? `<i class="bx ${action.icon} me-1"></i>` : ''}${action.label}
                     </button>
                 `).join('')}

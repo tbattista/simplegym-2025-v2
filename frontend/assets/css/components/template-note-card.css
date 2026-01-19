@@ -1,0 +1,81 @@
+/**
+ * Ghost Gym - Template Note Card Component
+ * Note cards for workout builder templates
+ * Inherits from exercise-group-card, adds note-specific overrides
+ * Extracted from workout-builder.css v2.2.0
+ *
+ * @version 1.0.0
+ * @date 2026-01-18
+ */
+
+/* ============================================
+   TEMPLATE NOTE CARDS
+   Note cards now use exercise-group-card class and inherit all styling.
+   Only minimal overrides needed for visual distinction.
+   ============================================ */
+
+/* Large comment icon - vertically centered before text */
+.template-note-card .template-note-icon {
+    font-size: 1.5rem;
+    color: var(--bs-secondary);
+    flex-shrink: 0;
+    align-self: center;
+}
+
+/* Template note text - allow wrapping for full content display */
+.template-note-card .exercise-meta-text {
+    white-space: normal;
+    word-wrap: break-word;
+    line-height: 1.4;
+}
+
+.template-note-card .template-note-text {
+    white-space: normal;
+    word-wrap: break-word;
+}
+
+/* Dark mode icon color */
+[data-bs-theme="dark"] .template-note-card .template-note-icon {
+    color: #94a3b8;
+}
+
+/* Template note card - minimal style matching 3-dot menu */
+.template-note-card .card-actions {
+    display: flex !important;
+    visibility: visible !important;
+}
+
+.template-note-card .btn-edit-compact {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    width: auto !important;
+    height: auto !important;
+    padding: 0.25rem !important;
+    border: none !important;
+    border-radius: 4px;
+    color: #64748b !important; /* Darker gray for visibility */
+    background: transparent;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+}
+
+.template-note-card .btn-edit-compact:hover {
+    opacity: 1 !important;
+    color: var(--bs-body-color) !important;
+    background: rgba(var(--bs-primary-rgb), 0.08) !important;
+}
+
+.template-note-card .btn-edit-compact i {
+    font-size: 20px !important;
+    display: block !important;
+    line-height: 1 !important;
+    margin: 0;
+    padding: 0;
+}
+
+/* Adjust content padding for single button (no 3-dot menu) */
+.template-note-card .exercise-content {
+    padding-right: 48px; /* Less padding since only edit button, no menu */
+}
