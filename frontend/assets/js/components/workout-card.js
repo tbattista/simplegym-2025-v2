@@ -56,9 +56,9 @@ class WorkoutCard {
                 ${this._renderMetadata()}
                 ${this._renderDescription()}
                 ${this._renderExercisePreview()}
-                ${this._renderTags()}
                 ${this._renderStats()}
-                <div class="card-actions mt-auto">
+                ${this._renderTags()}
+                <div class="card-footer-content mt-auto">
                     ${this._renderActions()}
                 </div>
             </div>
@@ -110,6 +110,15 @@ class WorkoutCard {
                     </li>`;
         }
 
+        if (dropdownActions.includes('duplicate')) {
+            menuItems += `
+                    <li>
+                        <a class="dropdown-item" href="javascript:void(0);" data-action="duplicate">
+                            <i class="bx bx-copy me-2"></i>Duplicate
+                        </a>
+                    </li>`;
+        }
+
         if (dropdownActions.includes('delete')) {
             // Add divider before delete if there are other items
             if (menuItems) {
@@ -147,20 +156,19 @@ class WorkoutCard {
     }
     
     /**
-     * Render metadata (groups, exercises, creator)
+     * Render metadata - clean single line with exercise count and estimated duration
      */
     _renderMetadata() {
         const workoutData = this.workout.workout_data || this.workout;
-        const groupCount = (workoutData.exercise_groups || []).length;
         const totalExercises = this._getTotalExerciseCount(workoutData);
-        
+        const estimatedMinutes = this._getEstimatedDuration(workoutData);
+
         let html = `
-            <div class="mb-2">
-                <span class="badge bg-label-primary me-1">${groupCount} ${groupCount === 1 ? 'group' : 'groups'}</span>
-                <span class="badge bg-label-info">${totalExercises} ${totalExercises === 1 ? 'exercise' : 'exercises'}</span>
+            <div class="workout-meta mb-2">
+                ${totalExercises} ${totalExercises === 1 ? 'exercise' : 'exercises'} • ~${estimatedMinutes} min
             </div>
         `;
-        
+
         // Show creator for public workouts
         if (this.config.showCreator && this.workout.creator_name) {
             html += `
@@ -170,13 +178,22 @@ class WorkoutCard {
                 </p>
             `;
         }
-        
+
         // Allow custom metadata injection
         if (this.config.customMetadata) {
             html += this.config.customMetadata(this.workout);
         }
-        
+
         return html;
+    }
+
+    /**
+     * Get estimated workout duration in minutes
+     * @returns {number} Estimated duration (~5 min per exercise)
+     */
+    _getEstimatedDuration(workoutData) {
+        const totalExercises = this._getTotalExerciseCount(workoutData);
+        return totalExercises * 5; // ~5 min per exercise baseline
     }
     
     /**
@@ -223,14 +240,14 @@ class WorkoutCard {
     }
     
     /**
-     * Render exercise preview (first few exercises in 2 columns)
+     * Render exercise preview - compact hint showing top 2 exercises (no bullets)
      */
     _renderExercisePreview() {
         if (!this.config.showExercisePreview) return '';
-        
+
         const workoutData = this.workout.workout_data || this.workout;
         const exercises = [];
-        
+
         // Collect exercises from groups
         if (workoutData.exercise_groups) {
             workoutData.exercise_groups.forEach(group => {
@@ -241,40 +258,29 @@ class WorkoutCard {
                 }
             });
         }
-        
+
         // Add bonus exercises
         if (workoutData.bonus_exercises) {
             workoutData.bonus_exercises.forEach(bonus => {
                 if (bonus.name) exercises.push(bonus.name);
             });
         }
-        
+
         if (exercises.length === 0) return '';
-        
-        // Show first 6 exercises (3 per column)
-        const displayExercises = exercises.slice(0, 6);
+
+        // Show first 2 exercises only (hint, not full list)
+        const maxPreview = 2;
+        const displayExercises = exercises.slice(0, maxPreview);
         const remaining = exercises.length - displayExercises.length;
-        const col1 = displayExercises.slice(0, 3);
-        const col2 = displayExercises.slice(3, 6);
-        
+
         return `
             <div class="exercise-preview mb-2">
-                <small class="text-muted d-block mb-1">Exercises:</small>
-                <div class="row g-2">
-                    <div class="col-6">
-                        ${col1.map(ex =>
-                            `<small class="d-block text-truncate">• ${this._escapeHtml(ex)}</small>`
-                        ).join('')}
-                    </div>
-                    ${col2.length > 0 ? `
-                    <div class="col-6">
-                        ${col2.map(ex =>
-                            `<small class="d-block text-truncate">• ${this._escapeHtml(ex)}</small>`
-                        ).join('')}
-                    </div>
-                    ` : ''}
+                <div class="exercise-preview-list">
+                    ${displayExercises.map(ex =>
+                        `<div class="exercise-preview-item text-truncate">${this._escapeHtml(ex)}</div>`
+                    ).join('')}
                 </div>
-                ${remaining > 0 ? `<small class="text-muted">+${remaining} more</small>` : ''}
+                ${remaining > 0 ? `<small class="exercise-preview-more text-muted">+${remaining} more</small>` : ''}
             </div>
         `;
     }
@@ -306,6 +312,7 @@ class WorkoutCard {
     /**
      * Render action buttons - simplified to show only primary CTA
      * Secondary actions (edit, view, history) moved to dropdown menu
+     * Supports smart button states: never_started, in_progress, completed
      */
     _renderActions() {
         if (this.config.deleteMode && this.config.onDelete) {
@@ -326,12 +333,20 @@ class WorkoutCard {
 
         if (primaryActions.length === 0) return '';
 
-        // Single primary CTA - full width button with touch-friendly sizing
+        // Get session state if callback provided
+        let sessionState = 'never_started';
+        if (this.config.getSessionState) {
+            sessionState = this.config.getSessionState(this.workout.id) || 'never_started';
+        }
+
+        // Single primary CTA - with smart state labels
         if (primaryActions.length === 1) {
             const action = primaryActions[0];
+            const buttonConfig = this._getButtonConfigForState(action, sessionState);
+
             return `
-                <button class="btn btn-${action.variant} btn-card-action w-100" data-action="${action.id}">
-                    ${action.icon ? `<i class="bx ${action.icon} me-1"></i>` : ''}${action.label}
+                <button class="btn btn-${buttonConfig.variant} btn-card-action w-100" data-action="${action.id}">
+                    <i class="bx ${buttonConfig.icon} me-1"></i>${buttonConfig.label}
                 </button>
             `;
         }
@@ -347,41 +362,96 @@ class WorkoutCard {
             </div>
         `;
     }
+
+    /**
+     * Get button configuration based on session state
+     * @param {Object} action - The base action config
+     * @param {string} sessionState - 'never_started', 'in_progress', or 'completed'
+     * @returns {Object} Button config with label, icon, variant
+     */
+    _getButtonConfigForState(action, sessionState) {
+        // Only apply state logic to 'start' action
+        if (action.id !== 'start') {
+            return {
+                label: action.label,
+                icon: action.icon || 'bx-play',
+                variant: action.variant || 'primary'
+            };
+        }
+
+        switch (sessionState) {
+            case 'in_progress':
+                return {
+                    label: 'Resume Workout',
+                    icon: 'bx-play-circle',
+                    variant: 'warning'
+                };
+            case 'completed':
+                return {
+                    label: 'Completed',
+                    icon: 'bx-check-circle',
+                    variant: 'success'
+                };
+            case 'never_started':
+            default:
+                return {
+                    label: 'Start Workout',
+                    icon: 'bx-play',
+                    variant: 'primary'
+                };
+        }
+    }
     
     /**
      * Attach event listeners
      */
     _attachEventListeners() {
         if (!this.element) return;
-        
-        // Card click handler
+
+        // Card click handler (tap card to view details)
         if (this.config.onCardClick) {
             this.element.addEventListener('click', (e) => {
-                // Don't trigger if clicking a button
-                if (!e.target.closest('button')) {
+                // Don't trigger if clicking a button, dropdown, or link
+                if (!e.target.closest('button') && !e.target.closest('.dropdown') && !e.target.closest('a')) {
                     this.config.onCardClick(this.workout, e);
                 }
             });
         }
-        
+
         // Action button and dropdown handlers
         const actionElements = this.element.querySelectorAll('[data-action]');
         actionElements.forEach(element => {
             element.addEventListener('click', (e) => {
                 e.stopPropagation();
                 const actionId = element.dataset.action;
-                
+
                 if (actionId === 'delete' && this.config.onDelete) {
                     const workoutData = this.workout.workout_data || this.workout;
                     const name = workoutData.name || this.workout.name || 'Untitled Workout';
                     this.config.onDelete(this.workout.id, name);
+                } else if (actionId === 'view-details' && this.config.onViewDetails) {
+                    // View Details from dropdown menu
+                    this.config.onViewDetails(this.workout);
                 } else if (actionId === 'edit') {
-                    // Edit action from dropdown - look in full actions array (not filtered)
+                    // Edit action from dropdown - look in full actions array
                     const editAction = this.config.actions.find(a => a.id === 'edit');
                     if (editAction && editAction.onClick) {
                         editAction.onClick(this.workout);
                     }
+                } else if (actionId === 'history') {
+                    // History action from dropdown
+                    const historyAction = this.config.actions.find(a => a.id === 'history');
+                    if (historyAction && historyAction.onClick) {
+                        historyAction.onClick(this.workout);
+                    }
+                } else if (actionId === 'duplicate') {
+                    // Duplicate action from dropdown
+                    const duplicateAction = this.config.actions.find(a => a.id === 'duplicate');
+                    if (duplicateAction && duplicateAction.onClick) {
+                        duplicateAction.onClick(this.workout);
+                    }
                 } else {
+                    // Other actions (like 'start')
                     const action = this.config.actions.find(a => a.id === actionId);
                     if (action && action.onClick) {
                         action.onClick(this.workout);
@@ -400,7 +470,7 @@ class WorkoutCard {
         
         if (this.element) {
             const cardBody = this.element.querySelector('.card-body');
-            const actionsWrapper = cardBody?.querySelector('.card-actions');
+            const footerContent = cardBody?.querySelector('.card-footer-content');
             
             if (enabled) {
                 this.element.classList.add('delete-mode');
@@ -408,9 +478,9 @@ class WorkoutCard {
                 this.element.classList.remove('delete-mode');
             }
             
-            // Replace actions content only
-            if (actionsWrapper) {
-                actionsWrapper.innerHTML = this._renderActions();
+            // Replace footer content with updated actions
+            if (footerContent) {
+                footerContent.innerHTML = this._renderActions();
                 this._attachEventListeners();
             }
         }

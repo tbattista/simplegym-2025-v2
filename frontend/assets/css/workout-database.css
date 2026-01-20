@@ -1,8 +1,33 @@
 /**
  * Workout Database Styles
  * Custom styles for the workout library page
- * @version 1.0.0
+ * Mobile-first responsive design with Bootstrap 5 best practices
+ * @version 2.0.0
  */
+
+/* ============================================
+   CSS CUSTOM PROPERTIES (Variables)
+   ============================================ */
+:root {
+    /* Card styling - compact design */
+    --wdb-card-padding: 0.875rem;
+    --wdb-card-padding-mobile: 0.75rem;
+    --wdb-card-border-radius: 0.5rem;
+    --wdb-card-shadow: 0 2px 6px rgba(67, 89, 113, 0.12);
+    --wdb-card-shadow-hover: 0 4px 12px rgba(67, 89, 113, 0.16);
+
+    /* Typography */
+    --wdb-card-title-size: 1rem;
+    --wdb-card-meta-size: 0.8125rem;
+    --wdb-card-preview-size: 0.8125rem;
+    --wdb-card-preview-size-mobile: 0.75rem;
+
+    /* Touch targets - WCAG minimum */
+    --wdb-touch-target-min: 44px;
+
+    /* Transitions */
+    --wdb-card-transition: all 0.2s ease;
+}
 
 /* ============================================
    CONTENT CONTAINER PADDING
@@ -10,7 +35,7 @@
 
 /* Add bottom padding to ensure last card is visible above nav bar */
 .container-xxl.flex-grow-1.container-p-y {
-    padding-bottom: 100px !important; /* Extra padding for bottom nav bar */
+    padding-bottom: 100px; /* Extra padding for bottom nav bar */
 }
 
 /* ============================================
@@ -129,12 +154,181 @@
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-/* Compact card styling for workout cards */
-.card .card-body {
-    padding: 1rem !important; /* Compact padding */
+/* ============================================
+   WORKOUT CARD STYLES - Mobile First
+   ============================================ */
+
+/* Ensure grid row stretches columns to equal height for bottom-anchored buttons */
+#workoutCardsGrid.row {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    align-items: stretch !important;
 }
 
-/* Workout card button styling */
+#workoutCardsGrid > .col {
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+#workoutCardsGrid > .col > .workout-list-card {
+    flex: 1 1 auto !important;
+    width: 100% !important;
+}
+
+/* Base card styling using CSS variables */
+/* Using !important to override conflicting styles in ghost-gym-custom.css */
+.workout-list-card {
+    border-radius: var(--wdb-card-border-radius);
+    box-shadow: var(--wdb-card-shadow);
+    transition: var(--wdb-card-transition);
+    cursor: pointer;
+    height: 100% !important; /* Fill grid column for consistent heights */
+    display: flex !important;
+    flex-direction: column !important;
+    position: relative; /* Establish positioning context for z-index */
+}
+
+/* Elevate card when dropdown menu is open */
+.workout-list-card:has(.dropdown-menu.show) {
+    z-index: 1060 !important;
+}
+
+.workout-list-card:hover {
+    box-shadow: var(--wdb-card-shadow-hover);
+    transform: translateY(-2px);
+}
+
+/* Card body with consistent padding and flex layout for bottom-justified button */
+/* Using !important to override ghost-gym-custom.css padding */
+.workout-list-card .card-body {
+    padding: var(--wdb-card-padding) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    flex: 1 !important;
+    min-height: 160px; /* Compact card height */
+}
+
+/* Card title styling */
+.workout-list-card .card-title {
+    font-size: var(--wdb-card-title-size);
+    font-weight: 600;
+    margin-bottom: 0.375rem; /* Tighter spacing */
+    padding-right: 2.5rem; /* Space for dropdown menu */
+    line-height: 1.3;
+}
+
+/* Meta line styling - replaces badge row */
+.workout-list-card .workout-meta {
+    font-size: var(--wdb-card-meta-size);
+    color: var(--bs-secondary);
+    margin-bottom: 0.5rem;
+}
+
+/* Metadata badges */
+.workout-list-card .badge {
+    font-size: var(--wdb-card-badge-size);
+    font-weight: 500;
+    padding: 0.35em 0.65em;
+}
+
+/* 3-dot menu button styling */
+.workout-list-card .btn-card-menu {
+    padding: 0.5rem;
+    line-height: 1;
+    background: transparent;
+    border: none;
+    color: var(--bs-body-color);
+    opacity: 0.6;
+    transition: var(--wdb-card-transition);
+    min-width: var(--wdb-touch-target-min);
+    min-height: var(--wdb-touch-target-min);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.workout-list-card .btn-card-menu:hover,
+.workout-list-card .btn-card-menu:focus {
+    opacity: 1;
+    background: rgba(var(--bs-primary-rgb), 0.1);
+    color: var(--bs-primary);
+}
+
+.workout-list-card .btn-card-menu i {
+    font-size: 1.5rem;
+}
+
+/* Primary CTA button - touch-friendly sizing */
+.workout-list-card .btn-card-action {
+    min-height: var(--wdb-touch-target-min);
+    padding: 0.625rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: var(--wdb-card-transition);
+}
+
+.workout-list-card .btn-card-action:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(var(--bs-primary-rgb), 0.3);
+}
+
+/* Session state button variants */
+.workout-list-card .btn-card-action.btn-warning {
+    background: var(--bs-warning);
+    border-color: var(--bs-warning);
+    color: var(--bs-dark);
+}
+
+.workout-list-card .btn-card-action.btn-warning:hover {
+    background: var(--bs-warning);
+    filter: brightness(0.95);
+    box-shadow: 0 2px 6px rgba(var(--bs-warning-rgb), 0.4);
+}
+
+.workout-list-card .btn-card-action.btn-success {
+    background: var(--bs-success);
+    border-color: var(--bs-success);
+    color: white;
+}
+
+.workout-list-card .btn-card-action.btn-success:hover {
+    background: var(--bs-success);
+    filter: brightness(0.95);
+    box-shadow: 0 2px 6px rgba(var(--bs-success-rgb), 0.4);
+}
+
+/* Card footer content wrapper - contains tags + button, pushed to bottom */
+.workout-list-card .card-footer-content {
+    margin-top: auto !important;
+    flex-shrink: 0;
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+/* Card actions container */
+.workout-list-card .card-actions {
+    padding-top: 0.5rem;
+}
+
+/* Dropdown menu styling */
+.workout-list-card .dropdown-menu {
+    font-size: 0.875rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.workout-list-card .dropdown-item {
+    padding: 0.625rem 1rem;
+    min-height: var(--wdb-touch-target-min);
+    display: flex;
+    align-items: center;
+}
+
+.workout-list-card .dropdown-item i {
+    font-size: 1.125rem;
+}
+
+/* Workout card button styling (legacy support) */
 .card .btn-sm {
     padding: 0.375rem 0.75rem;
     font-size: 0.875rem;
@@ -485,19 +679,49 @@
 
 /* Mobile */
 @media (max-width: 767.98px) {
+    /* Update CSS variables for mobile */
+    :root {
+        --wdb-card-padding: var(--wdb-card-padding-mobile);
+        --wdb-card-preview-size: var(--wdb-card-preview-size-mobile);
+    }
+
+    /* Workout card mobile optimizations */
+    .workout-list-card .card-body {
+        padding: var(--wdb-card-padding-mobile);
+    }
+
+    .workout-list-card .card-title {
+        font-size: 0.9375rem;
+        margin-bottom: 0.375rem;
+    }
+
+    .workout-list-card .exercise-preview-item {
+        font-size: var(--wdb-card-preview-size-mobile);
+    }
+
+    /* Ensure touch targets remain accessible on mobile */
+    .workout-list-card .btn-card-action {
+        min-height: var(--wdb-touch-target-min);
+        font-size: 0.8125rem;
+    }
+
+    .workout-list-card .dropdown-item {
+        min-height: var(--wdb-touch-target-min);
+    }
+
     .datatable-table {
         font-size: 0.8125rem;
     }
-    
+
     .datatable-table thead th {
         padding: 0.5rem 0.25rem;
         font-size: 0.7rem;
     }
-    
+
     .datatable-table tbody td {
         padding: 0.5rem 0.25rem;
     }
-    
+
     /* Hide more columns on mobile */
     .datatable-table tbody td:nth-child(2),
     .datatable-table thead th:nth-child(2),
@@ -507,38 +731,35 @@
     .datatable-table thead th:nth-child(5) {
         display: none;
     }
-    
-    /* Note: Workout card buttons should remain horizontal on all screen sizes */
-    /* The .btn-group in workout cards is intentionally kept horizontal for better UX */
-    
+
     /* Adjust modal for mobile */
     .modal-xl {
         max-width: 100%;
         margin: 0.5rem;
     }
-    
+
     .modal-body {
         padding: 1rem;
     }
-    
+
     /* Adjust compact filter bar for mobile */
     .card-body.py-3 .d-flex {
         flex-direction: column !important;
         align-items: stretch !important;
     }
-    
+
     .card-body.py-3 .flex-grow-1 {
         max-width: 100% !important;
         margin-bottom: 0.5rem;
     }
-    
+
     #sortByBtn,
     #tagsBtn {
         width: 100%;
         min-width: auto;
         margin-bottom: 0.5rem;
     }
-    
+
     .ms-auto {
         margin-left: 0 !important;
         margin-top: 0.5rem;
@@ -577,15 +798,39 @@
     transition: box-shadow 0.3s ease;
 }
 
-/* Ensure grid columns elevate when dropdown is open (additional specificity) */
-#workoutCardsGrid > [class*="col"]:has(.dropdown-menu.show) {
+/* ============================================
+   Z-INDEX FIX: Dropdown Menu Elevation
+   Ensures dropdown menus appear above cards below them
+   ============================================ */
+
+/* Establish positioning context for all grid columns */
+#workoutCardsGrid > [class*="col"],
+.row > [class*="col"]:has(.workout-list-card) {
+    position: relative !important;
+}
+
+/* Elevate grid column when dropdown is open (CSS :has() selector) */
+#workoutCardsGrid > [class*="col"]:has(.dropdown-menu.show),
+.row > [class*="col"]:has(.workout-list-card .dropdown-menu.show) {
     z-index: 1060 !important;
 }
 
-/* Ensure dropdown menu has proper z-index within workout cards grid */
-#workoutCardsGrid .card .dropdown-menu {
+/* Also elevate the card itself for double protection */
+#workoutCardsGrid .workout-list-card:has(.dropdown-menu.show),
+.workout-list-card:has(.dropdown-menu.show) {
+    z-index: 1060 !important;
+}
+
+/* Ensure dropdown menu has proper z-index */
+#workoutCardsGrid .dropdown-menu,
+.workout-list-card .dropdown-menu {
     position: absolute !important;
-    z-index: 1050 !important;
+    z-index: 1055 !important;
+}
+
+/* Ensure dropdown container has proper positioning */
+.workout-list-card .dropdown {
+    z-index: 1055 !important;
 }
 
 /* ============================================
@@ -624,17 +869,40 @@
     background-color: var(--bs-gray-800);
 }
 
+/* Workout card dark mode */
+[data-bs-theme="dark"] .workout-list-card {
+    background-color: var(--bs-card-bg);
+    border-color: var(--bs-border-color);
+}
+
+[data-bs-theme="dark"] .workout-list-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+[data-bs-theme="dark"] .workout-list-card .btn-card-menu {
+    color: var(--bs-body-color);
+}
+
+[data-bs-theme="dark"] .workout-list-card .exercise-preview-item {
+    color: var(--bs-body-color);
+}
+
+[data-bs-theme="dark"] .workout-list-card .dropdown-menu {
+    background-color: var(--bs-dropdown-bg);
+    border-color: var(--bs-border-color);
+}
+
 /* Fallback for prefers-color-scheme (system preference) */
 @media (prefers-color-scheme: dark) {
     .datatable-table thead th {
         background-color: var(--bs-gray-800);
         color: var(--bs-gray-200);
     }
-    
+
     .datatable-table tbody tr:hover {
         background-color: var(--bs-gray-800);
     }
-    
+
     .exercise-list .d-flex {
         background-color: var(--bs-gray-800);
     }
@@ -667,9 +935,36 @@
    EXERCISE PREVIEW IN CARDS
    ============================================ */
 
-/* Exercise preview in cards */
+/* Exercise preview container */
+.workout-list-card .exercise-preview {
+    margin-bottom: 0.5rem;
+}
+
+/* Exercise preview list - single column for mobile-first */
+.workout-list-card .exercise-preview-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+/* Individual exercise item - no bullets, subtle text */
+.workout-list-card .exercise-preview-item {
+    font-size: var(--wdb-card-preview-size);
+    color: var(--bs-body-color);
+    line-height: 1.4;
+    opacity: 0.85;
+}
+
+/* "+X more exercises" indicator */
+.workout-list-card .exercise-preview-more {
+    display: block;
+    margin-top: 0.375rem;
+    font-size: 0.75rem;
+}
+
+/* Legacy exercise preview support */
 .card .exercise-preview {
-    font-size: 0.875rem;
+    font-size: var(--wdb-card-preview-size);
     line-height: 1.5;
 }
 
@@ -681,7 +976,7 @@
     max-width: 100%;
 }
 
-/* Card actions container */
+/* Card actions container (generic fallback) */
 .card-actions {
     margin-top: auto;
     padding-top: 0.5rem;

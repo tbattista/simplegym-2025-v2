@@ -211,17 +211,23 @@ class WorkoutGrid {
         this.cards.forEach(card => card.destroy());
         this.cards = [];
         this.elements.grid.innerHTML = '';
-        
+
         // Calculate pagination
         const startIndex = (this.currentPage - 1) * this.config.pageSize;
         const endIndex = startIndex + this.config.pageSize;
         const pageWorkouts = this.workouts.slice(startIndex, endIndex);
-        
-        // Create and render cards
+
+        // Create and render cards (wrapped in column divs for proper grid stretching)
         pageWorkouts.forEach(workout => {
             const card = new WorkoutCard(workout, this.config.cardConfig);
             const cardElement = card.render();
-            this.elements.grid.appendChild(cardElement);
+
+            // Wrap card in column div for Bootstrap grid to work with equal heights
+            const colWrapper = document.createElement('div');
+            colWrapper.className = 'col';
+            colWrapper.appendChild(cardElement);
+
+            this.elements.grid.appendChild(colWrapper);
             this.cards.push(card);
         });
     }

@@ -2249,12 +2249,27 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
         // Toggle this menu
         if (isOpen) {
             menu.classList.remove('show');
+            menu.classList.remove('dropup');
             this.removeClickOutsideListener();
         } else {
+            // Reset dropup class before showing
+            menu.classList.remove('dropup');
             menu.classList.add('show');
+
+            // Check if menu overflows viewport and flip to dropup if needed
+            const menuRect = menu.getBoundingClientRect();
+            const viewportHeight = window.innerHeight;
+            const bottomBarHeight = 100; // Account for bottom action bar
+            const safeBottom = viewportHeight - bottomBarHeight;
+
+            if (menuRect.bottom > safeBottom) {
+                // Not enough space below, flip to dropup
+                menu.classList.add('dropup');
+            }
+
             this.addClickOutsideListener();
         }
-        
+
         console.log(`📋 Menu toggled for ${exerciseName} (index ${index}): ${isOpen ? 'closed' : 'opened'}`);
     }
     

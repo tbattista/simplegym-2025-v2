@@ -1517,6 +1517,13 @@
     display: block;
 }
 
+/* Dropup variant - opens above the button when near bottom of screen */
+.logbook-menu.dropup {
+    top: auto;
+    bottom: 100%;
+    margin-bottom: 4px;
+}
+
 .logbook-menu-item {
     display: flex;
     align-items: center;

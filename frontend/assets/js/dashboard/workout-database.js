@@ -18,6 +18,59 @@ let workoutDetailOffcanvas = null;
 let isLoadingWorkouts = false;
 let componentsInitialized = false;
 
+// Session state cache for smart button labels
+let activeSessionWorkoutId = null;
+let completedWorkoutIds = new Set();
+
+/**
+ * ============================================
+ * SESSION STATE MANAGEMENT
+ * ============================================
+ */
+
+/**
+ * Get session state for a workout (for smart button labels)
+ * @param {string} workoutId - The workout ID to check
+ * @returns {string} 'in_progress', 'completed', or 'never_started'
+ */
+function getWorkoutSessionState(workoutId) {
+    // Check if this workout has an active session
+    if (activeSessionWorkoutId === workoutId) {
+        return 'in_progress';
+    }
+
+    // Check if this workout was recently completed
+    if (completedWorkoutIds.has(workoutId)) {
+        return 'completed';
+    }
+
+    return 'never_started';
+}
+
+/**
+ * Load session state from localStorage and recent sessions
+ */
+async function loadSessionStates() {
+    try {
+        // Check for active session in localStorage
+        const persistedSession = localStorage.getItem('ghost_gym_active_workout_session');
+        if (persistedSession) {
+            const session = JSON.parse(persistedSession);
+            if (session.workoutId && session.status === 'in_progress') {
+                activeSessionWorkoutId = session.workoutId;
+                console.log('📍 Found active session for workout:', activeSessionWorkoutId);
+            }
+        }
+
+        // Note: For completed workouts, we could query the API, but for now
+        // we'll keep it simple and only show in_progress state.
+        // The completed state can be added later with an API call to /api/v3/workout-sessions
+
+    } catch (error) {
+        console.warn('⚠️ Could not load session states:', error);
+    }
+}
+
 /**
  * ============================================
  * DATA LOADING
@@ -38,22 +91,25 @@ async function loadWorkouts() {
     
     try {
         console.log('📡 Loading workouts from data manager...');
-        
+
         // Initialize components first if not already done
         if (!componentsInitialized) {
             initializeComponents();
         }
-        
+
         // Show loading state via grid component
         if (workoutGrid) {
             workoutGrid.showLoading();
         }
-        
+
+        // Load session states for smart button labels
+        await loadSessionStates();
+
         // Always load fresh data from data manager to ensure we have the latest
         if (!window.dataManager || !window.dataManager.getWorkouts) {
             throw new Error('Data manager not available');
         }
-        
+
         // Load workouts directly from data manager
         const workouts = await window.dataManager.getWorkouts();
         console.log(`✅ Loaded ${workouts.length} workouts from data manager`);
@@ -499,7 +555,9 @@ function initializeComponents() {
         ]
     });
     
-    // Initialize WorkoutGrid
+    // Initialize WorkoutGrid with simplified card configuration
+    // Primary CTA: Start Workout button
+    // Secondary actions: View Details, History, Edit, Delete (in dropdown menu)
     workoutGrid = new WorkoutGrid('workoutTableContainer', {
         emptyMessage: 'No workouts found',
         emptySubtext: 'Try adjusting your filters or create a new workout',
@@ -512,23 +570,20 @@ function initializeComponents() {
             showCreator: false,
             showStats: false,
             showDates: false,
-            showTags: true,
+            showTags: false, // Tags moved to detail view for cleaner card
             showExercisePreview: true,
+            // Session state callback for smart button labels
+            getSessionState: getWorkoutSessionState,
+            // Primary action - shown as button
             actions: [
                 {
                     id: 'start',
-                    label: 'Start',
+                    label: 'Start Workout',
                     icon: 'bx-play',
                     variant: 'primary',
                     onClick: (workout) => doWorkout(workout.id)
                 },
-                {
-                    id: 'view',
-                    label: 'View',
-                    icon: 'bx-show',
-                    variant: 'outline-secondary',
-                    onClick: (workout) => viewWorkoutDetails(workout.id)
-                },
+                // These go to dropdown menu
                 {
                     id: 'history',
                     label: 'History',
@@ -542,8 +597,22 @@ function initializeComponents() {
                     icon: 'bx-edit',
                     variant: 'outline-secondary',
                     onClick: (workout) => editWorkout(workout.id)
+                },
+                {
+                    id: 'duplicate',
+                    label: 'Duplicate',
+                    icon: 'bx-copy',
+                    variant: 'outline-secondary',
+                    onClick: (workout) => duplicateWorkout(workout.id)
                 }
             ],
+            // Configure which actions appear in dropdown menu (History, Edit, Duplicate, Delete)
+            // Only 'start' remains as the primary button
+            dropdownActions: ['history', 'edit', 'duplicate', 'delete'],
+            // View details callback for dropdown
+            onViewDetails: (workout) => viewWorkoutDetails(workout.id),
+            // Card tap also opens detail view
+            onCardClick: (workout) => viewWorkoutDetails(workout.id),
             onDelete: (workoutId, workoutName) => deleteWorkoutFromDatabase(workoutId, workoutName)
         },
         onPageChange: (page) => {
@@ -675,9 +744,52 @@ async function viewWorkoutDetails(workoutId) {
  */
 function createNewWorkout() {
     console.log('➕ Creating new workout');
-    
+
     // Navigate to workout-builder.html with new=true parameter
     window.location.href = 'workout-builder.html?new=true';
+}
+
+/**
+ * Duplicate workout - Create a copy with "(Copy)" suffix
+ */
+async function duplicateWorkout(workoutId) {
+    console.log('📋 Duplicating workout:', workoutId);
+
+    try {
+        // Find the original workout
+        const originalWorkout = window.ghostGym.workoutDatabase.all.find(w => w.id === workoutId);
+        if (!originalWorkout) {
+            throw new Error('Workout not found');
+        }
+
+        // Create a copy with "(Copy)" suffix
+        const duplicatedWorkout = {
+            ...originalWorkout,
+            id: undefined, // Will be generated by backend
+            name: `${originalWorkout.name} (Copy)`,
+            created_date: new Date().toISOString(),
+            modified_date: new Date().toISOString()
+        };
+
+        // Save the duplicate
+        const savedWorkout = await window.dataManager.saveWorkout(duplicatedWorkout);
+
+        console.log('✅ Workout duplicated successfully:', savedWorkout.id);
+
+        // Show success message
+        if (window.showAlert) {
+            window.showAlert(`Workout "${duplicatedWorkout.name}" created`, 'success');
+        }
+
+        // Reload workouts to show the new copy
+        await loadWorkouts();
+
+    } catch (error) {
+        console.error('❌ Failed to duplicate workout:', error);
+        if (window.showAlert) {
+            window.showAlert('Failed to duplicate workout: ' + error.message, 'danger');
+        }
+    }
 }
 
 /**
@@ -927,6 +1039,7 @@ window.doWorkout = doWorkout;
 window.viewWorkoutDetails = viewWorkoutDetails;
 window.viewWorkoutHistory = viewWorkoutHistory;
 window.createNewWorkout = createNewWorkout;
+window.duplicateWorkout = duplicateWorkout;
 window.initSearchOverlay = initSearchOverlay;
 window.showSearchOverlay = showSearchOverlay;
 window.hideSearchOverlay = hideSearchOverlay;
