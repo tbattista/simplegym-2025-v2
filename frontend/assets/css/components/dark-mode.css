@@ -49,7 +49,7 @@
 
 /* Workout Editor Card */
 [data-bs-theme="dark"] .workout-editor-card {
-    background: #1e293b !important;
+    background: #1e293b;
     border-color: #475569;
 }
 
@@ -196,7 +196,7 @@
 }
 
 [data-bs-theme="dark"] .alert-danger {
-    background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(239, 68, 68, 0.1));
+    background: linear-gradient(135deg, rgba(var(--gs-danger-rgb), 0.2), rgba(var(--gs-danger-rgb), 0.1));
     color: #fca5a5;
 }
 
@@ -258,7 +258,7 @@
 }
 
 [data-bs-theme="dark"] .badge.bg-label-info {
-    background: rgba(6, 182, 212, 0.2) !important;
+    background: rgba(6, 182, 212, 0.2);
     color: #67e8f9;
 }
 
@@ -279,7 +279,7 @@
 }
 
 [data-bs-theme="dark"] .autosave-indicator.error {
-    background: rgba(239, 68, 68, 0.2);
+    background: rgba(var(--gs-danger-rgb), 0.2);
 }
 
 /* ============================================
@@ -311,7 +311,7 @@
 }
 
 [data-bs-theme="dark"] .menu-divider {
-    border-color: #475569 !important;
+    border-color: #475569;
 }
 
 [data-bs-theme="dark"] .menu-inner-shadow {
@@ -461,9 +461,9 @@
 [data-bs-theme="dark"] .offcanvas input[type="number"],
 [data-bs-theme="dark"] .offcanvas textarea,
 [data-bs-theme="dark"] .offcanvas select {
-    background-color: #1e293b !important;
-    border-color: #475569 !important;
-    color: #f8fafc !important;
+    background-color: #1e293b;
+    border-color: #475569;
+    color: #f8fafc;
 }
 
 [data-bs-theme="dark"] .offcanvas .form-control:focus,
@@ -472,15 +472,15 @@
 [data-bs-theme="dark"] .offcanvas input[type="number"]:focus,
 [data-bs-theme="dark"] .offcanvas textarea:focus,
 [data-bs-theme="dark"] .offcanvas select:focus {
-    background-color: #1e293b !important;
-    border-color: var(--bs-primary) !important;
-    color: #f8fafc !important;
+    background-color: #1e293b;
+    border-color: var(--bs-primary);
+    color: #f8fafc;
 }
 
 [data-bs-theme="dark"] .offcanvas .form-control::placeholder,
 [data-bs-theme="dark"] .offcanvas input::placeholder,
 [data-bs-theme="dark"] .offcanvas textarea::placeholder {
-    color: #94a3b8 !important;
+    color: #94a3b8;
 }
 
 [data-bs-theme="dark"] .offcanvas .form-label,
@@ -491,7 +491,7 @@
 [data-bs-theme="dark"] .offcanvas .form-text,
 [data-bs-theme="dark"] .offcanvas .text-muted,
 [data-bs-theme="dark"] .offcanvas small {
-    color: #94a3b8 !important;
+    color: #94a3b8;
 }
 
 /* Offcanvas input groups */
@@ -631,8 +631,8 @@
 }
 
 [data-bs-theme="dark"] .offcanvas .alert-danger {
-    background: rgba(239, 68, 68, 0.15);
-    border-color: rgba(239, 68, 68, 0.3);
+    background: rgba(var(--gs-danger-rgb), 0.15);
+    border-color: rgba(var(--gs-danger-rgb), 0.3);
     color: #fca5a5;
 }
 
@@ -656,31 +656,31 @@
 
 /* Offcanvas Stats Cards (Complete Workout, Resume Session, etc.) */
 [data-bs-theme="dark"] .offcanvas .card.bg-label-primary {
-    background-color: rgba(99, 102, 241, 0.15) !important;
+    background-color: rgba(99, 102, 241, 0.15);
 }
 
 [data-bs-theme="dark"] .offcanvas .card.bg-label-success {
-    background-color: rgba(var(--ghost-success-rgb), 0.15) !important;
+    background-color: rgba(var(--ghost-success-rgb), 0.15);
 }
 
 [data-bs-theme="dark"] .offcanvas .card.bg-label-info {
-    background-color: rgba(6, 182, 212, 0.15) !important;
+    background-color: rgba(6, 182, 212, 0.15);
 }
 
 [data-bs-theme="dark"] .offcanvas .card.bg-label-warning {
-    background-color: rgba(245, 158, 11, 0.15) !important;
+    background-color: rgba(245, 158, 11, 0.15);
 }
 
 [data-bs-theme="dark"] .offcanvas .card .h4,
 [data-bs-theme="dark"] .offcanvas .card .h3,
 [data-bs-theme="dark"] .offcanvas .card .h5 {
-    color: #f8fafc !important;
+    color: #f8fafc;
 }
 
 /* Text-muted inside offcanvas cards */
 [data-bs-theme="dark"] .offcanvas .card small.text-muted,
 [data-bs-theme="dark"] .offcanvas .card .text-muted {
-    color: #94a3b8 !important;
+    color: #94a3b8;
 }
 
 /* Paragraph text inside offcanvas */
@@ -698,7 +698,7 @@
 
 /* Center text in offcanvas */
 [data-bs-theme="dark"] .offcanvas .text-center p.text-muted {
-    color: #94a3b8 !important;
+    color: #94a3b8;
 }
 
 /* Workout Selection Prompt buttons */
@@ -724,7 +724,7 @@
 }
 
 [data-bs-theme="dark"] #workoutSelectionOffcanvas .btn-lg .opacity-75 {
-    color: var(--bs-gray-400) !important;
+    color: var(--bs-gray-400);
 }
 
 /* Plate Calculator Settings Offcanvas */
@@ -788,7 +788,7 @@
 
 [data-bs-theme="dark"] .offcanvas .more-menu-item.danger {
     color: #fca5a5;
-    border-color: rgba(239, 68, 68, 0.3);
+    border-color: rgba(var(--gs-danger-rgb), 0.3);
 }
 
 [data-bs-theme="dark"] .offcanvas .more-menu-item.danger .more-menu-item-title {
@@ -796,7 +796,7 @@
 }
 
 [data-bs-theme="dark"] .offcanvas .more-menu-item.danger:hover {
-    background-color: rgba(239, 68, 68, 0.15);
+    background-color: rgba(var(--gs-danger-rgb), 0.15);
     border-color: var(--bs-danger);
 }
 
@@ -852,13 +852,13 @@
 }
 
 [data-bs-theme="dark"] .filter-category .bg-light {
-    background-color: #334155 !important;
+    background-color: #334155;
     color: #f8fafc;
 }
 
 /* Reorder Exercises Offcanvas */
 [data-bs-theme="dark"] #reorderExercisesOffcanvas .badge.bg-label-secondary {
-    background-color: rgba(148, 163, 184, 0.15) !important;
+    background-color: rgba(148, 163, 184, 0.15);
     color: #94a3b8;
 }
 
@@ -1019,11 +1019,11 @@
 [data-bs-theme="dark"] .floating-timer-widget {
     background: var(--bs-gray-900);
     border-color: var(--ghost-primary);
-    box-shadow: 0 8px 24px rgba(105, 108, 255, 0.4);
+    box-shadow: 0 8px 24px rgba(var(--bs-primary-rgb), 0.4);
 }
 
 [data-bs-theme="dark"] .floating-timer-widget:hover {
-    box-shadow: 0 12px 32px rgba(105, 108, 255, 0.5);
+    box-shadow: 0 12px 32px rgba(var(--bs-primary-rgb), 0.5);
 }
 
 /* ============================================
@@ -1108,28 +1108,8 @@
 
 /* ============================================
    DARK MODE WEIGHT PROGRESSION INDICATORS
+   NOTE: Colors now handled via CSS variables in workout-mode/_variables.css
    ============================================ */
-
-[data-bs-theme="dark"] .weight-badge.increased {
-    background-color: #34d058 !important;
-}
-
-[data-bs-theme="dark"] .weight-badge.decreased {
-    background-color: #f85149 !important;
-}
-
-[data-bs-theme="dark"] .weight-badge.same {
-    background-color: #8b949e !important;
-}
-
-[data-bs-theme="dark"] .weight-badge.new {
-    background-color: #58a6ff !important;
-}
-
-[data-bs-theme="dark"] .weight-badge.modified {
-    border-color: #ffd33d !important;
-    box-shadow: 0 0 0 1px #ffd33d !important;
-}
 
 /* ============================================
    DARK MODE EDIT BUTTON COMPACT
@@ -1141,11 +1121,11 @@
 [data-bs-theme="dark"] .btn-edit-compact {
     background: transparent;
     border: none;
-    color: var(--bs-secondary) !important;
+    color: var(--bs-secondary);
 }
 
 [data-bs-theme="dark"] .btn-edit-compact:hover {
     background: rgba(255, 255, 255, 0.08);
-    color: var(--bs-body-color) !important;
+    color: var(--bs-body-color);
     box-shadow: none;
 }

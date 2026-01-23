@@ -1,0 +1,425 @@
+/**
+ * Workout Mode - Weight Field
+ * Weight input/display morph pattern
+ *
+ * @version 4.0.0 - Phase 4 CSS Refactor
+ * @date 2026-01-20
+ */
+
+/* ============================================
+   WEIGHT FIELD CONTAINER
+   ============================================ */
+
+.workout-weight-field {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+/* ============================================
+   DISPLAY MODE
+   ============================================ */
+
+.weight-display {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.weight-display .weight-value-group {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+}
+
+.weight-display .weight-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--workout-accent);
+    line-height: 1;
+}
+
+.weight-display .weight-unit {
+    font-size: 1rem;
+    color: var(--workout-muted);
+}
+
+/* ============================================
+   EDIT MODE
+   ============================================ */
+
+.weight-editor {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    width: 100%;
+    animation: weightEditorFadeIn 0.2s ease;
+}
+
+@keyframes weightEditorFadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Input Rows */
+.weight-input-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Numeric Mode - Full width input */
+.weight-input-row.numeric-mode {
+    display: flex;
+    width: 100%;
+    gap: 0.5rem;
+}
+
+/* DIY Mode - hidden by default, full width */
+.weight-input-row.diy-mode {
+    display: none;
+    width: 100%;
+}
+
+/* When DIY is active */
+.weight-editor.diy-active .weight-input-row.numeric-mode {
+    display: none;
+}
+
+.weight-editor.diy-active .weight-input-row.diy-mode {
+    display: flex;
+}
+
+/* ============================================
+   UNIT SELECTOR
+   ============================================ */
+
+.weight-unit-selector {
+    display: flex;
+    gap: 0;
+    background: var(--workout-border);
+    border-radius: 0.375rem;
+    padding: 2px;
+    align-self: flex-start;
+}
+
+.weight-unit-selector .unit-btn {
+    padding: 0.375rem 0.5rem;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    border: none;
+    background: transparent;
+    color: var(--workout-muted);
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+    border-radius: 0.25rem;
+    min-width: 36px;
+}
+
+.weight-unit-selector .unit-btn:first-child {
+    border-radius: 0.25rem 0 0 0.25rem;
+}
+
+.weight-unit-selector .unit-btn:last-child {
+    border-radius: 0 0.25rem 0.25rem 0;
+}
+
+.weight-unit-selector .unit-btn.active {
+    background: var(--workout-card-bg);
+    color: var(--workout-accent);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.weight-unit-selector .unit-btn:hover:not(.active) {
+    color: var(--workout-text);
+}
+
+/* ============================================
+   WEIGHT INPUT
+   ============================================ */
+
+.weight-input {
+    flex: 1;
+    width: 100% !important;
+    min-width: 0;
+    height: 48px;
+    padding: 0.5rem 0.75rem;
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1.5;
+    text-align: left;
+    color: var(--workout-accent);
+    border: 2px solid var(--workout-accent);
+    border-radius: 0.375rem;
+    background: var(--workout-card-bg);
+    outline: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    -moz-appearance: textfield;
+    box-sizing: border-box;
+}
+
+.weight-input::-webkit-outer-spin-button,
+.weight-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.weight-input:focus {
+    border-color: var(--workout-accent);
+    box-shadow: var(--workout-focus-ring);
+}
+
+/* DIY Mode Text Input */
+.weight-text-input {
+    flex: 1;
+    width: 100% !important;
+    min-width: 0;
+    height: 48px;
+    padding: 0.5rem 0.75rem;
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1.5;
+    color: var(--workout-accent);
+    border: 2px solid var(--workout-accent);
+    border-radius: 0.375rem;
+    background: var(--workout-card-bg);
+    outline: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    box-sizing: border-box;
+}
+
+.weight-text-input:focus {
+    border-color: var(--workout-accent);
+    box-shadow: var(--workout-focus-ring);
+}
+
+.weight-text-input::placeholder {
+    color: var(--workout-muted);
+    font-style: italic;
+}
+
+/* ============================================
+   STEPPER BUTTONS (Hidden - future feature)
+   ============================================ */
+
+.weight-stepper-btn {
+    display: none;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    border: 1px solid var(--workout-border);
+    border-radius: 0.375rem;
+    background: var(--workout-card-bg);
+    color: var(--workout-text);
+    cursor: pointer;
+    transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+    min-width: 48px;
+}
+
+.weight-stepper-btn:hover {
+    border-color: var(--workout-accent);
+    background: var(--workout-status-active);
+    color: var(--workout-accent);
+}
+
+.weight-stepper-btn:active {
+    transform: scale(0.95);
+}
+
+.weight-stepper-btn.minus:hover {
+    border-color: var(--workout-warning);
+    color: var(--workout-warning);
+    background: var(--workout-warning-10);
+}
+
+.weight-stepper-btn.plus:hover {
+    border-color: var(--workout-success);
+    color: var(--workout-success);
+    background: var(--workout-success-10);
+}
+
+/* ============================================
+   EDITOR ACTIONS
+   ============================================ */
+
+.weight-editor-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.25rem;
+    width: 100%;
+}
+
+/* Save Button */
+.weight-save-btn {
+    padding: 0.375rem;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--workout-success);
+    cursor: pointer;
+    font-size: 1.25rem;
+    line-height: 1;
+    transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+    order: 2;
+}
+
+.weight-save-btn:hover {
+    border-color: var(--workout-success);
+    background: var(--workout-success-10);
+    color: var(--workout-success);
+}
+
+/* Cancel Button */
+.weight-cancel-btn {
+    padding: 0.375rem;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--workout-muted);
+    cursor: pointer;
+    font-size: 1.25rem;
+    line-height: 1;
+    transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+    order: 2;
+}
+
+.weight-cancel-btn:hover {
+    border-color: var(--workout-danger);
+    background: var(--workout-danger-10);
+    color: var(--workout-danger);
+}
+
+/* ============================================
+   SAVE ANIMATION
+   ============================================ */
+
+.weight-display.saved .weight-value {
+    animation: weightSaveFlash 0.6s ease;
+}
+
+@keyframes weightSaveFlash {
+    0% {
+        color: var(--workout-accent);
+    }
+    30% {
+        color: var(--workout-success);
+        text-shadow: 0 0 8px var(--workout-success-40);
+    }
+    100% {
+        color: var(--workout-accent);
+        text-shadow: none;
+    }
+}
+
+/* ============================================
+   DARK MODE
+   ============================================ */
+
+[data-bs-theme="dark"] .weight-input {
+    background: var(--workout-dark-bg);
+    color: var(--workout-accent);
+}
+
+[data-bs-theme="dark"] .weight-stepper-btn {
+    background: var(--workout-dark-bg);
+    border-color: var(--workout-dark-border);
+}
+
+/* ============================================
+   PLATE BREAKDOWN DISPLAY
+   ============================================ */
+
+.plate-breakdown {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0;
+    margin-top: 0.125rem;
+    font-size: 0.625rem;
+    color: var(--workout-muted);
+    opacity: 0.6;
+    background: transparent;
+    border: none;
+}
+
+.plate-breakdown i {
+    font-size: 0.6875rem;
+    opacity: 0.5;
+}
+
+.plate-breakdown-text {
+    line-height: 1.2;
+}
+
+/* ============================================
+   CLICK-TO-EDIT BEHAVIOR
+   ============================================ */
+
+.click-to-edit {
+    cursor: pointer;
+    transition: opacity 0.15s ease;
+}
+
+.click-to-edit:hover {
+    opacity: 0.8;
+}
+
+/* ============================================
+   UNIFIED EDIT MODE
+   ============================================ */
+
+/* Hide unified actions by default (shown via JS) */
+.workout-unified-actions {
+    display: none;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+    width: 100%;
+}
+
+/* Hide individual save/cancel buttons when in unified edit mode */
+.workout-card.unified-edit-active .weight-save-btn,
+.workout-card.unified-edit-active .weight-cancel-btn {
+    display: none !important;
+}
+
+/* Style unified buttons */
+.workout-unified-actions .unified-save-btn,
+.workout-unified-actions .unified-cancel-btn {
+    padding: 0.375rem 0.75rem;
+    font-size: 1.125rem;
+    line-height: 1;
+    border-radius: 6px;
+}
+
+.workout-unified-actions .unified-save-btn {
+    background: var(--workout-success);
+    border-color: var(--workout-success);
+    color: white;
+}
+
+.workout-unified-actions .unified-save-btn:hover {
+    background: var(--workout-success);
+    filter: brightness(1.1);
+}
+
+.workout-unified-actions .unified-cancel-btn {
+    background: transparent;
+    border: 1px solid var(--workout-border);
+    color: var(--workout-muted);
+}
+
+.workout-unified-actions .unified-cancel-btn:hover {
+    border-color: var(--workout-danger);
+    color: var(--workout-danger);
+    background: var(--workout-danger-10);
+}

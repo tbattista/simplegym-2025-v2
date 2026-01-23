@@ -5,7 +5,21 @@
       "Bash(dir \"C:\\\\Users\\\\user\\\\iCloudDrive\\\\PARA\\\\1 - Projects\\\\_Websites\\\\simple gym log\\\\simplegym_v2\")",
       "Bash(find:*)",
       "Bash(xargs ls:*)",
-      "Bash(tree:*)"
+      "Bash(tree:*)",
+      "Bash(timeout:*)",
+      "Bash(curl:*)",
+      "Bash(copy:*)",
+      "Bash(git -C \"c:\\\\Users\\\\user\\\\iCloudDrive\\\\PARA\\\\1 - Projects\\\\_Websites\\\\simple gym log\\\\simplegym_v2\" diff --name-status 680327b..649e0e5 -- \"frontend/assets/css/logbook-theme.css\")",
+      "Bash(git -C \"c:\\\\Users\\\\user\\\\iCloudDrive\\\\PARA\\\\1 - Projects\\\\_Websites\\\\simple gym log\\\\simplegym_v2\" diff --name-status 649e0e5..627d784 -- \"frontend/assets/css/logbook-theme.css\")",
+      "Bash(git -C \"c:\\\\Users\\\\user\\\\iCloudDrive\\\\PARA\\\\1 - Projects\\\\_Websites\\\\simple gym log\\\\simplegym_v2\" status -- \"frontend/assets/css/logbook-theme.css\")",
+      "Bash(git -C \"c:\\\\Users\\\\user\\\\iCloudDrive\\\\PARA\\\\1 - Projects\\\\_Websites\\\\simple gym log\\\\simplegym_v2\" show:*)",
+      "Bash(git -C \"c:\\\\Users\\\\user\\\\iCloudDrive\\\\PARA\\\\1 - Projects\\\\_Websites\\\\simple gym log\\\\simplegym_v2\" show 627d784:frontend/assets/css/logbook-theme.css)",
+      "Bash(findstr:*)",
+      "Bash(for f in frontend/assets/css/*.css frontend/assets/css/**/*.css)",
+      "Bash(do if [ -f \"$f\" ])",
+      "Bash(fi:*)",
+      "Bash(done)",
+      "Bash(git -C \"c:\\\\Users\\\\user\\\\iCloudDrive\\\\PARA\\\\1 - Projects\\\\_Websites\\\\simple gym log\\\\simplegym_v2\" show HEAD:frontend/assets/css/logbook-theme.css)"
     ]
   }
 }

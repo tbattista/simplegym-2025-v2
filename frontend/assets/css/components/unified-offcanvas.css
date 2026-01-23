@@ -72,7 +72,7 @@
     font-weight: 600;
     font-size: 1rem;
     border-radius: 8px !important;
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
     min-height: 44px;
 }
 
@@ -80,13 +80,13 @@
 .offcanvas-bottom-base .btn-primary {
     background: linear-gradient(135deg, var(--ghost-primary, #6366f1), var(--ghost-secondary, #8b5cf6));
     border: none;
-    box-shadow: 0 2px 4px rgba(105, 108, 255, 0.3);
+    box-shadow: 0 2px 4px rgba(var(--bs-primary-rgb), 0.3);
 }
 
 .offcanvas-bottom-base .btn-primary:hover {
     background: linear-gradient(135deg, #5855eb, #7c3aed);
     transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(105, 108, 255, 0.4);
+    box-shadow: 0 4px 8px rgba(var(--bs-primary-rgb), 0.4);
 }
 
 .offcanvas-bottom-base .btn-primary:active {
@@ -189,7 +189,7 @@
 .offcanvas-bottom-base .weight-unit-btn {
     font-size: 0.875rem;
     padding: 0.5rem;
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
     border-radius: 8px;
 }
 
@@ -304,7 +304,7 @@
     align-items: center;
     gap: 16px;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
     border: 1.5px solid var(--bs-border-color);
     min-height: 72px;
     border-radius: 8px;
@@ -406,6 +406,14 @@
 
 .offcanvas-bottom-base .more-menu-item.danger .more-menu-item-description {
     color: rgba(var(--bs-danger-rgb), 0.7);
+}
+
+/* Menu divider */
+.offcanvas-bottom-base .menu-divider {
+    border: none;
+    border-top: 1px solid var(--bs-border-color);
+    margin: 0.75rem 0;
+    opacity: 0.5;
 }
 
 /* ============================================
@@ -622,8 +630,8 @@
 }
 
 [data-bs-theme="dark"] .offcanvas-bottom-base .more-menu-item.danger:hover {
-    background: rgba(239, 68, 68, 0.15);
-    border-color: #ef4444;
+    background: rgba(var(--gs-danger-rgb), 0.15);
+    border-color: var(--gs-danger);
 }
 
 [data-bs-theme="dark"] .offcanvas-bottom-base .list-group-item {
@@ -691,7 +699,7 @@
    ============================================ */
 
 .exercise-slot {
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
     min-height: 52px;
 }
 
@@ -717,7 +725,7 @@
     width: 100%;
     padding: 0.875rem 1rem;
     border-radius: 0.375rem;
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -852,7 +860,7 @@
     display: flex;
     flex-wrap: wrap;
     gap: 0.5rem;
-    transition: all 0.3s ease;
+    transition: gap 0.3s ease;
 }
 
 /* NEW: Full-width layout for offcanvas - input always full width, buttons on next line */
@@ -866,22 +874,22 @@
 }
 
 /* Keep original layout for non-offcanvas contexts (in-card editor) */
-.logbook-card .weight-input-container .weight-input {
+.workout-card .weight-input-container .weight-input {
     flex: 0 0 calc(33.333% - 0.25rem);
     transition: flex 0.3s ease;
 }
 
-.logbook-card .weight-input-container .btn-group {
+.workout-card .weight-input-container .btn-group {
     flex: 0 0 calc(66.667% - 0.25rem);
     transition: flex 0.3s ease;
 }
 
 /* DIY mode: input expands to full width, buttons move to new line (in-card only) */
-.logbook-card .weight-input-container.diy-mode .weight-input {
+.workout-card .weight-input-container.diy-mode .weight-input {
     flex: 0 0 100%;
 }
 
-.logbook-card .weight-input-container.diy-mode .btn-group {
+.workout-card .weight-input-container.diy-mode .btn-group {
     flex: 0 0 100%;
 }
 

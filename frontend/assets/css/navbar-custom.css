@@ -7,7 +7,8 @@
    NAVBAR BASE STYLES
    ============================================ */
 
-.layout-navbar {
+/* Base navbar - using attribute selector for higher specificity over Sneat */
+.layout-navbar[class] {
     height: 60px;
     padding: 0.5rem 1.5rem;
     box-shadow: 0 2px 6px 0 rgba(67, 89, 113, 0.12);
@@ -15,28 +16,28 @@
     position: relative;
     background-color: var(--bs-body-bg);
     transition: background-color 0.2s ease;
-    width: 100% !important;
-    max-width: 100% !important;
-    margin: 0 !important;
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
     display: flex;
     align-items: center;
     justify-content: space-between;
 }
 
 /* Override navbar-detached class that adds margins */
-.layout-navbar.navbar-detached {
-    width: 100% !important;
-    max-width: 100% !important;
-    margin: 0 !important;
-    border-radius: 0 !important;
+.layout-navbar[class].navbar-detached {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    border-radius: 0;
 }
 
 /* Remove container constraints for full width */
-.layout-navbar .container-xxl {
-    max-width: none !important;
-    width: 100% !important;
-    padding: 0 !important;
-    margin: 0 !important;
+.layout-navbar[class] .container-xxl {
+    max-width: none;
+    width: 100%;
+    padding: 0;
+    margin: 0;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -63,7 +64,7 @@
     padding: 0;
     border-radius: 0.375rem;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, transform 0.2s ease;
     color: var(--bs-body-color);
 }
 
@@ -124,7 +125,7 @@
     height: 40px;
     padding: 0.5rem;
     border-radius: 0.375rem;
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
     color: var(--bs-body-color);
     text-decoration: none;
 }
@@ -210,7 +211,7 @@
     padding: 0.625rem 1.25rem;
     font-size: 0.9375rem;
     color: var(--bs-body-color);
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 .dropdown-item:hover {
@@ -272,26 +273,26 @@
 
 /* Mobile */
 @media (max-width: 767.98px) {
-    .layout-navbar {
-        padding: 0.5rem 1rem !important;
+    .layout-navbar[class] {
+        padding: 0.5rem 1rem;
         height: 56px;
-        width: 100% !important;
-        max-width: 100% !important;
-        margin: 0 !important;
-        border-radius: 0 !important;
+        width: 100%;
+        max-width: 100%;
+        margin: 0;
+        border-radius: 0;
     }
-    
-    .layout-navbar.navbar-detached {
-        width: 100% !important;
-        max-width: 100% !important;
-        margin: 0 !important;
-        border-radius: 0 !important;
+
+    .layout-navbar[class].navbar-detached {
+        width: 100%;
+        max-width: 100%;
+        margin: 0;
+        border-radius: 0;
     }
-    
-    .layout-navbar .container-xxl {
-        padding: 0 !important;
-        width: 100% !important;
-        max-width: 100% !important;
+
+    .layout-navbar[class] .container-xxl {
+        padding: 0;
+        width: 100%;
+        max-width: 100%;
     }
     
     .navbar-nav-left h5 {
@@ -339,9 +340,9 @@
 
 /* Small mobile */
 @media (max-width: 575.98px) {
-    .navbar-nav .me-2,
-    .navbar-nav .me-xl-3 {
-        margin-right: 0.25rem !important;
+    .layout-navbar .navbar-nav .me-2,
+    .layout-navbar .navbar-nav .me-xl-3 {
+        margin-right: 0.25rem;
     }
     
     .navbar-nav-left h5 {
@@ -408,7 +409,7 @@
 /* Smooth transitions when menu toggles */
 .layout-navbar,
 .layout-menu-toggle {
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* ============================================
@@ -490,7 +491,7 @@
     border: 1px solid var(--bs-border-color);
     border-radius: var(--bs-border-radius);
     padding: 0.375rem 0.75rem;
-    transition: all 0.2s ease;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .navbar-search-desktop .search-input-wrapper:focus-within {
@@ -563,7 +564,7 @@
     border-radius: 0.5rem;
     color: var(--bs-body-color);
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, transform 0.2s ease;
     -webkit-tap-highlight-color: transparent;
 }
 
@@ -616,7 +617,7 @@
     border-radius: 10px;
     padding: 12px 14px;
     flex: 1;
-    transition: all 0.2s ease;
+    transition: border-color 0.2s ease, background-color 0.2s ease;
     position: relative;
 }
 
@@ -640,7 +641,7 @@
     border-radius: 6px;
     color: var(--bs-secondary);
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: opacity 0.2s ease, background-color 0.2s ease;
     -webkit-tap-highlight-color: transparent;
     opacity: 0.6;
 }

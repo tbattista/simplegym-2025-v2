@@ -1,0 +1,392 @@
+/**
+ * Ghost Gym - Layout Styles
+ * Container adjustments, content wrapper padding, and layout structure
+ *
+ * @version 1.0.0
+ * @date 2026-01-20
+ *
+ * This file contains:
+ * - Content wrapper and container adjustments
+ * - Program/workout grid layouts
+ * - View system containers
+ * - Dashboard layout helpers
+ * - Responsive layout adjustments
+ *
+ * Extracted from ghost-gym-custom.css Phase 2 refactor
+ */
+
+/* ============================================
+   HORIZONTAL 3-ROW LAYOUT STYLES
+   ============================================ */
+
+/* Empty State Panel Styling */
+#emptyStatePanel {
+    background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+    border: 2px dashed #cbd5e1;
+    border-radius: 8px;
+    padding: 2rem;
+}
+
+#emptyStatePanel .card-body {
+    padding: 3rem 2rem;
+}
+
+/* Program Selector Row */
+#programSelector {
+    max-width: 400px;
+}
+
+/* ============================================
+   WORKOUT GRID LAYOUT
+   ============================================ */
+
+#workoutsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1rem;
+}
+
+/* Program Details Compact View */
+#programInfo {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+#programWorkouts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+/* ============================================
+   VIEW SYSTEM STYLES
+   ============================================ */
+
+.view-container {
+    width: 100%;
+    animation: viewFadeIn 0.3s ease-in;
+}
+
+/* Programs View Styling */
+.program-view-item {
+    padding: 1.5rem;
+    border-bottom: 1px solid #e2e8f0;
+    transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+    animation: viewSlideIn 0.4s ease-out;
+    animation-fill-mode: both;
+}
+
+.program-view-item:hover {
+    background-color: rgba(var(--bs-primary-rgb), 0.04);
+    transform: translateX(4px);
+    box-shadow: 0 2px 8px rgba(var(--bs-primary-rgb), 0.1);
+}
+
+.program-view-item:last-child {
+    border-bottom: none;
+}
+
+/* Staggered animations for program items */
+.program-view-item:nth-child(1) { animation-delay: 0.05s; }
+.program-view-item:nth-child(2) { animation-delay: 0.1s; }
+.program-view-item:nth-child(3) { animation-delay: 0.15s; }
+.program-view-item:nth-child(4) { animation-delay: 0.2s; }
+.program-view-item:nth-child(5) { animation-delay: 0.25s; }
+
+/* Enhanced button group styling */
+.program-view-item .btn-group-vertical {
+    min-width: 140px;
+}
+
+.program-view-item .btn-group-vertical .btn {
+    transition: transform 0.2s ease;
+}
+
+.program-view-item .btn-group-vertical .btn:hover {
+    transform: translateX(-2px);
+}
+
+/* ============================================
+   WORKOUTS VIEW GRID
+   ============================================ */
+
+#workoutsViewGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1.5rem;
+}
+
+#workoutsViewGrid .workout-card {
+    height: 100%;
+    animation: cardFadeIn 0.4s ease-out;
+    animation-fill-mode: both;
+}
+
+/* Staggered animation for workout cards */
+#workoutsViewGrid .workout-card:nth-child(1) { animation-delay: 0.05s; }
+#workoutsViewGrid .workout-card:nth-child(2) { animation-delay: 0.1s; }
+#workoutsViewGrid .workout-card:nth-child(3) { animation-delay: 0.15s; }
+#workoutsViewGrid .workout-card:nth-child(4) { animation-delay: 0.2s; }
+#workoutsViewGrid .workout-card:nth-child(5) { animation-delay: 0.25s; }
+#workoutsViewGrid .workout-card:nth-child(6) { animation-delay: 0.3s; }
+
+/* Enhanced workout card hover effects */
+#workoutsViewGrid .workout-card:hover {
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 0 8px 20px rgba(var(--bs-primary-rgb), 0.2);
+}
+
+/* Enhanced empty states */
+.list-group-item.text-center,
+#workoutsViewEmptyState {
+    animation: viewFadeIn 0.5s ease-in;
+}
+
+/* ============================================
+   WORKOUT LIST LAYOUT (MOBILE-FIRST)
+   ============================================ */
+
+/* Workouts list container */
+.workouts-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+/* Workout list card styling */
+.workout-list-card {
+    width: 100%;
+    margin-bottom: 0;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.workout-list-card:hover {
+    transform: translateX(4px);
+    box-shadow: 0 4px 12px rgba(67, 89, 113, 0.15);
+}
+
+/* Ensure cards take full width in list layout */
+.workout-list-card .card-body {
+    padding: 1.25rem;
+}
+
+/* ============================================
+   QUICK ACTIONS CARD LAYOUT
+   ============================================ */
+
+/* Note: .btn-xs styles are defined in components/buttons.css */
+
+/* Ensure consistent button spacing */
+.quick-actions-card .d-grid {
+    gap: 0.25rem !important;
+}
+
+/* Reduce Quick Actions card title spacing */
+.quick-actions-card .fw-semibold {
+    margin-bottom: 0.5rem !important;
+}
+
+/* Ensure all statistics cards have same height */
+#authenticatedDashboard .card.h-100 {
+    min-height: 180px;
+    display: flex;
+    flex-direction: column;
+}
+
+#authenticatedDashboard .card.h-100 .card-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Hover effects for compact buttons */
+.quick-actions-card .btn-outline-primary:hover,
+.quick-actions-card .btn-outline-success:hover,
+.quick-actions-card .btn-outline-info:hover {
+    transform: translateX(2px);
+    transition: transform 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+}
+
+/* ============================================
+   LOADING STATES FOR VIEWS
+   ============================================ */
+
+.view-container.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.view-container.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 40px;
+    height: 40px;
+    border: 3px solid var(--ghost-primary);
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+/* ============================================
+   RESPONSIVE LAYOUT ADJUSTMENTS
+   ============================================ */
+
+/* Extra large screens */
+@media (min-width: 1400px) {
+    #workoutsViewGrid {
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    }
+}
+
+/* Large screens - tablets landscape */
+@media (max-width: 992px) {
+    #workoutsGrid {
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    }
+
+    #workoutsViewGrid {
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    }
+
+    .program-view-item .btn-group-vertical {
+        min-width: 120px;
+    }
+}
+
+/* Medium screens - tablets portrait */
+@media (max-width: 768px) {
+    #workoutsGrid {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    }
+
+    #programSelector {
+        max-width: 100%;
+    }
+
+    #workoutsViewGrid {
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 1rem;
+    }
+
+    .program-view-item {
+        padding: 1rem;
+    }
+
+    .program-view-item .d-flex {
+        flex-direction: column;
+    }
+
+    .program-view-item .btn-group-vertical {
+        width: 100%;
+        margin-top: 1rem;
+        margin-left: 0 !important;
+    }
+
+    .program-view-item .btn-group-vertical .btn {
+        width: 100%;
+    }
+
+    /* Disable hover transforms on mobile */
+    .program-view-item:hover {
+        transform: none;
+    }
+
+    #workoutsViewGrid .workout-card:hover {
+        transform: translateY(-2px);
+    }
+
+    /* Only affect button groups within program view items, not workout cards */
+    .program-view-item .btn-group {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .program-view-item .btn-group .btn {
+        width: 100%;
+    }
+
+    /* Keep workout card buttons horizontal on all screens */
+    .card .btn-group,
+    #workoutTableContainer .btn-group {
+        flex-direction: row !important;
+    }
+
+    /* Mobile list card adjustments */
+    .workout-list-card .card-body {
+        padding: 1rem;
+    }
+
+    .workout-list-card .card-title {
+        font-size: 1.1rem;
+    }
+
+    .workout-list-card .badge {
+        font-size: 0.7rem;
+    }
+}
+
+/* Small screens - mobile */
+@media (max-width: 576px) {
+    #workoutsViewGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .workout-card-preview {
+        display: none;
+    }
+}
+
+/* ============================================
+   DARK MODE LAYOUT OVERRIDES
+   ============================================ */
+
+[data-bs-theme="dark"] #emptyStatePanel {
+    background: linear-gradient(135deg, #1e293b, #334155);
+    border-color: #475569;
+}
+
+[data-bs-theme="dark"] .workout-list-card {
+    background: #1e293b;
+    color: #f8fafc;
+    border-color: #475569;
+}
+
+[data-bs-theme="dark"] .workout-list-card:hover {
+    border-color: var(--ghost-primary);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+[data-bs-theme="dark"] .quick-actions-card .btn-outline-primary {
+    border-color: var(--ghost-primary);
+    color: var(--ghost-primary);
+}
+
+[data-bs-theme="dark"] .quick-actions-card .btn-outline-success {
+    border-color: var(--ghost-success);
+    color: var(--ghost-success);
+}
+
+[data-bs-theme="dark"] .quick-actions-card .btn-outline-info {
+    border-color: var(--ghost-accent);
+    color: var(--ghost-accent);
+}
+
+[data-bs-theme="dark"] .quick-actions-card .btn-outline-primary:hover {
+    background: var(--ghost-primary);
+    color: white;
+}
+
+[data-bs-theme="dark"] .quick-actions-card .btn-outline-success:hover {
+    background: var(--ghost-success);
+    color: white;
+}
+
+[data-bs-theme="dark"] .quick-actions-card .btn-outline-info:hover {
+    background: var(--ghost-accent);
+    color: white;
+}

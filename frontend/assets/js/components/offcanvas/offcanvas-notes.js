@@ -128,6 +128,8 @@ export function createTemplateNoteEditor(config) {
 
 /**
  * Create note position picker offcanvas
+ * Shows a list of current items (exercises + notes) with "Insert here" buttons
+ * Matches the workout-mode style with clean button layout
  * @param {Object} config - Configuration
  * @param {Array} config.items - Array of items to show positions between
  * @param {Function} config.onSelect - Callback when position selected (receives index)
@@ -140,81 +142,82 @@ export function createNotePositionPicker(config) {
         items = [],
         onSelect,
         title = 'Add Note',
-        subtitle = 'Select where to insert the note'
+        subtitle = 'Choose where to insert your note:'
     } = config;
 
     const id = `notePositionPickerOffcanvas-${Date.now()}`;
 
-    // Build position options HTML
-    let positionsHtml = '';
+    // Build insert point list matching workout-mode style
+    const insertPointsHtml = [];
 
-    // Position at the start
-    positionsHtml += `
-        <button type="button" class="list-group-item list-group-item-action position-option"
+    // Add "At the beginning" option
+    insertPointsHtml.push(`
+        <button class="position-picker-item btn btn-outline-primary w-100 mb-2"
                 data-position="0">
-            <div class="d-flex align-items-center">
-                <i class="bx bx-plus-circle text-primary me-2"></i>
-                <span class="text-primary fw-medium">At the beginning</span>
-            </div>
+            <i class="bx bx-plus-circle me-2"></i>
+            At the beginning
         </button>
-    `;
+    `);
 
-    // Positions after each item
+    // Add "After [item]" options for each item
     items.forEach((item, index) => {
-        const icon = item.type === 'note' ? 'bx-comment' : 'bx-dumbbell';
-        const typeLabel = item.type === 'note' ? 'Note' : 'Exercise';
+        const displayName = item.displayName || item.name;
+        const truncatedName = displayName.length > 30
+            ? displayName.substring(0, 30) + '...'
+            : displayName;
+        const icon = item.type === 'note' ? 'bx-note-text' : 'bx-dumbbell';
 
-        positionsHtml += `
-            <div class="list-group-item list-group-item-secondary py-2">
-                <div class="d-flex align-items-center">
-                    <i class="bx ${icon} me-2 text-muted"></i>
-                    <span class="text-muted small">${escapeHtml(item.name)}</span>
-                    <span class="badge bg-secondary ms-auto">${typeLabel}</span>
-                </div>
-            </div>
-            <button type="button" class="list-group-item list-group-item-action position-option"
+        insertPointsHtml.push(`
+            <button class="position-picker-item btn btn-outline-primary w-100 mb-2"
                     data-position="${index + 1}">
-                <div class="d-flex align-items-center">
-                    <i class="bx bx-plus-circle text-primary me-2"></i>
-                    <span class="text-primary fw-medium">After ${escapeHtml(item.name)}</span>
-                </div>
+                <i class="bx bx-plus-circle me-2"></i>
+                After <i class="bx ${icon} mx-1"></i> ${escapeHtml(truncatedName)}
+            </button>
+        `);
+    });
+
+    // Style last item as "At the end" with success color if there are items
+    if (items.length > 0) {
+        insertPointsHtml[insertPointsHtml.length - 1] = `
+            <button class="position-picker-item quick-add btn btn-outline-success w-100 mb-2"
+                    data-position="${items.length}">
+                <i class="bx bx-plus-circle me-2"></i>
+                At the end (after all exercises)
             </button>
         `;
-    });
+    }
 
     const offcanvasHtml = `
         <div class="offcanvas offcanvas-bottom offcanvas-bottom-base"
              tabindex="-1" id="${id}" aria-labelledby="${id}Label"
-             data-bs-scroll="false" style="height: auto; max-height: 70vh;">
+             data-bs-scroll="false">
             <div class="offcanvas-header border-bottom">
                 <h5 class="offcanvas-title" id="${id}Label">
-                    <i class="bx bx-comment me-2"></i>${escapeHtml(title)}
+                    <i class="bx bx-note me-2"></i>${escapeHtml(title)}
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
             </div>
-            <div class="offcanvas-body py-3" style="overflow-y: auto;">
+            <div class="offcanvas-body">
                 <p class="text-muted mb-3">${escapeHtml(subtitle)}</p>
-                <div class="list-group">
-                    ${positionsHtml}
+                <div class="position-picker-list">
+                    ${insertPointsHtml.join('')}
                 </div>
             </div>
         </div>
     `;
 
     return createOffcanvas(id, offcanvasHtml, (offcanvas, offcanvasElement) => {
-        // Position option click handlers
-        const positionBtns = offcanvasElement.querySelectorAll('.position-option');
-        positionBtns.forEach(btn => {
+        // Add click handlers to position buttons
+        offcanvasElement.querySelectorAll('.position-picker-item').forEach(btn => {
             btn.addEventListener('click', () => {
-                const position = parseInt(btn.getAttribute('data-position'));
+                const position = parseInt(btn.dataset.position, 10);
                 offcanvas.hide();
-
-                // Small delay to let offcanvas close
+                // Call callback after offcanvas is hidden
                 setTimeout(() => {
                     if (onSelect) {
                         onSelect(position);
                     }
-                }, 300);
+                }, 150);
             });
         });
     });

@@ -9,7 +9,7 @@
 
 class WeightFieldController {
     /**
-     * @param {HTMLElement} container - The .logbook-weight-field container element
+     * @param {HTMLElement} container - The .workout-weight-field container element
      * @param {Object} options - Configuration options
      * @param {Object} options.sessionService - Reference to WorkoutSessionService
      * @param {string} options.exerciseName - Name of the exercise this field controls
@@ -17,14 +17,14 @@ class WeightFieldController {
     constructor(container, options = {}) {
         this.container = container;
         this.sessionService = options.sessionService || window.workoutSessionService;
-        this.exerciseName = options.exerciseName || container.closest('.logbook-card')?.dataset?.exerciseName;
+        this.exerciseName = options.exerciseName || container.closest('.workout-card')?.dataset?.exerciseName;
         
         // DOM elements - Display Mode
         this.displayEl = container.querySelector('.weight-display');
         this.valueDisplay = container.querySelector('.weight-display .weight-value');
-        // Support both old (.weight-edit-btn) and new (.logbook-edit-btn) button classes
+        // Support both old (.weight-edit-btn) and new (.workout-edit-btn) button classes
         this.editBtn = container.querySelector('.weight-edit-btn') ||
-                       container.closest('.logbook-card')?.querySelector('.logbook-edit-btn');
+                       container.closest('.workout-card')?.querySelector('.workout-edit-btn');
         
         // DOM elements - Editor
         this.editorEl = container.querySelector('.weight-editor');
@@ -47,8 +47,8 @@ class WeightFieldController {
         
         // DOM elements - Notes
         this.noteToggleBtn = container.querySelector('.note-toggle-btn');
-        this.notesRow = container.querySelector('.logbook-notes-row');
-        this.notesInput = container.querySelector('.logbook-notes-input');
+        this.notesRow = container.querySelector('.workout-notes-row');
+        this.notesInput = container.querySelector('.workout-notes-input');
         
         // State
         this.currentUnit = this.container.dataset.unit || 'lbs';
@@ -88,7 +88,7 @@ class WeightFieldController {
                 const isUnifiedEdit = this.editBtn.dataset.unifiedEdit === 'true';
 
                 if (isUnifiedEdit) {
-                    const card = this.container.closest('.logbook-card');
+                    const card = this.container.closest('.workout-card');
                     if (card) {
                         // Check if already in unified edit mode - if so, cancel/close it
                         if (card.classList.contains('unified-edit-active')) {
@@ -268,15 +268,69 @@ class WeightFieldController {
     
     /**
      * Enter edit mode - show editor, hide display
+     * Syncs input values from current display/data attributes
      */
     enterEditMode() {
-        this.originalValue = parseFloat(this.input.value) || 0;
+        // Sync input values from container data attributes (source of truth)
+        const currentWeight = this.container.dataset.weight || '';
+        const currentUnit = this.container.dataset.unit || 'lbs';
+        const isDIY = currentUnit === 'diy';
+
+        // DEBUG: Log all data attributes and unit buttons
+        console.log('🔍 DEBUG enterEditMode:', {
+            exerciseName: this.exerciseName,
+            'dataset.weight': this.container.dataset.weight,
+            'dataset.unit': this.container.dataset.unit,
+            'dataset.weightMode': this.container.dataset.weightMode,
+            currentWeight,
+            currentUnit,
+            isDIY,
+            unitButtonsCount: this.unitButtons?.length,
+            unitButtons: Array.from(this.unitButtons || []).map(btn => ({
+                unit: btn.dataset.unit,
+                hasActive: btn.classList.contains('active')
+            }))
+        });
+
+        // Always sync the unit selector buttons to match current unit
+        this.currentUnit = currentUnit;
+        this.unitButtons.forEach(btn => {
+            const shouldBeActive = btn.dataset.unit === currentUnit;
+            btn.classList.toggle('active', shouldBeActive);
+            console.log(`🔘 Button ${btn.dataset.unit}: shouldBeActive=${shouldBeActive}, isActive=${btn.classList.contains('active')}`);
+        });
+
+        // Toggle DIY mode class on editor
+        this.editorEl.classList.toggle('diy-active', isDIY);
+
+        // Update increment based on unit
+        this.increment = currentUnit === 'kg' ? 2.5 : 5;
+
+        // Populate the appropriate input field with current value
+        if (isDIY) {
+            this.textInput.value = currentWeight;
+            this.originalTextValue = currentWeight;
+            this.originalValue = 0;
+        } else {
+            const numericValue = parseFloat(currentWeight) || 0;
+            this.input.value = numericValue || '';
+            this.originalValue = numericValue;
+            this.originalTextValue = '';
+        }
+
         this.displayEl.style.display = 'none';
         this.editorEl.style.display = 'flex';
-        this.input.focus();
-        this.input.select();
-        
-        console.log('📝 Edit mode entered for:', this.exerciseName, 'Original:', this.originalValue);
+
+        // Focus appropriate input
+        if (isDIY && this.textInput) {
+            this.textInput.focus();
+            this.textInput.select();
+        } else {
+            this.input.focus();
+            this.input.select();
+        }
+
+        console.log('📝 Edit mode entered for:', this.exerciseName, 'Value:', currentWeight, 'Unit:', currentUnit);
     }
     
     /**
@@ -516,9 +570,9 @@ class WeightFieldController {
 function initializeWeightFields(sessionService) {
     const controllers = [];
     
-    document.querySelectorAll('.logbook-weight-field').forEach(container => {
+    document.querySelectorAll('.workout-weight-field').forEach(container => {
         if (!container.weightController) {
-            const exerciseName = container.closest('.logbook-card')?.dataset?.exerciseName;
+            const exerciseName = container.closest('.workout-card')?.dataset?.exerciseName;
             container.weightController = new WeightFieldController(container, {
                 sessionService: sessionService,
                 exerciseName: exerciseName

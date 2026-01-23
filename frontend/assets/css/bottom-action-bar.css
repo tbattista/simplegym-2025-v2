@@ -116,7 +116,7 @@
     justify-content: center;
     font-size: 20px;
     cursor: pointer;
-    transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: background-color 0.15s cubic-bezier(0.4, 0, 0.2, 1), color 0.15s cubic-bezier(0.4, 0, 0.2, 1), transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     padding: 0;
     gap: 2px;
@@ -124,12 +124,12 @@
 
 /* Ensure buttons in action-buttons-row fill available space */
 .action-buttons-row .action-btn {
-    flex: 1 1 0 !important;
-    max-width: none !important;
-    height: 44px !important;
-    min-width: 48px !important;
-    border-radius: 12px !important;
-    padding: 0 !important;
+    flex: 1 1 0;
+    max-width: none;
+    height: 44px;
+    min-width: 48px;
+    border-radius: 12px;
+    padding: 0;
 }
 
 .action-btn:hover {
@@ -258,7 +258,7 @@
     justify-content: center;
     font-size: 24px;
     cursor: pointer;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1), transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1), filter 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     z-index: 2;
     pointer-events: auto;
 }
@@ -323,12 +323,12 @@
     gap: var(--floating-fab-gap);
     cursor: pointer;
     z-index: 1002;
-    transition: all 0.3s ease;
+    transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
     font-weight: 600;
     font-size: var(--floating-fab-icon-size);
     white-space: nowrap;
-    pointer-events: auto !important;
+    pointer-events: auto;
     /* Override action-fab defaults when both classes are used */
     transform: none;
 }
@@ -407,7 +407,7 @@
     font-weight: 600;
     color: var(--bs-body-color);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15); /* ✅ PHASE 8 FIX: Match button shadow */
-    transition: all 0.2s ease;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
     align-self: center;
 }
 
@@ -438,7 +438,7 @@
     font-weight: 600;
     line-height: 1.5;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
     white-space: nowrap;
     align-self: center;
     color: white;
@@ -447,13 +447,13 @@
 /* End Button (red, for active session) */
 .floating-end-button {
     background: var(--bs-danger);
-    box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
+    box-shadow: 0 2px 8px rgba(var(--bs-danger-rgb), 0.3);
 }
 
 .floating-end-button:hover {
     background: #c82333;
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4);
+    box-shadow: 0 4px 12px rgba(var(--bs-danger-rgb), 0.4);
 }
 
 .floating-end-button:active {
@@ -512,7 +512,7 @@
     margin-right: var(--floating-fab-gap);
     z-index: 1002;
     pointer-events: auto;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     width: var(--floating-timer-width);
     min-width: var(--floating-timer-width);
     max-width: var(--floating-timer-width);
@@ -537,7 +537,7 @@
     font-weight: 600;
     cursor: pointer;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
     white-space: nowrap;
 }
 
@@ -571,7 +571,7 @@
     font-weight: 600;
     color: var(--bs-body-color);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-    transition: all 0.2s ease;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .global-timer-time {
@@ -593,7 +593,7 @@
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, filter 0.2s ease, transform 0.2s ease;
 }
 
 .global-timer-pause-btn:hover {
@@ -619,8 +619,8 @@
     font-size: var(--floating-fab-font-size);
     font-weight: 600;
     color: white;
-    box-shadow: 0 2px 8px rgba(255, 193, 7, 0.3);
-    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(var(--bs-warning-rgb), 0.3);
+    transition: width 0.2s ease, box-shadow 0.2s ease;
 }
 
 .global-timer-paused .global-timer-time {
@@ -643,7 +643,7 @@
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease;
     font-size: 14px;
 }
 
@@ -690,7 +690,7 @@
     font-weight: 600;
     color: var(--bs-body-color);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-    transition: all 0.2s ease;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 /* Mobile paused layout */
@@ -710,8 +710,8 @@
     font-size: var(--floating-fab-font-size);
     font-weight: 600;
     color: white;
-    box-shadow: 0 2px 8px rgba(255, 193, 7, 0.3);
-    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(var(--bs-warning-rgb), 0.3);
+    transition: width 0.2s ease, box-shadow 0.2s ease;
 }
 
 .global-timer-paused-mobile .global-timer-controls {
@@ -861,7 +861,7 @@
     font-size: 13px;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1), transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1), filter 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     z-index: 2;
 }
 
@@ -996,7 +996,7 @@
     justify-content: center;
     cursor: pointer;
     z-index: 1002;
-    transition: all 0.25s ease;
+    transition: width 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease, background-color 0.25s ease, border-radius 0.25s ease;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
     pointer-events: auto;
     user-select: none;
@@ -1040,7 +1040,7 @@
     align-items: center !important;
     gap: 12px !important;
     z-index: 1060 !important; /* Higher than action bar (1000) and offcanvas (1045) */
-    transition: all 0.25s ease !important;
+    transition: width 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease, top 0.25s ease !important;
     pointer-events: auto !important;
 }
 
@@ -1121,7 +1121,7 @@
     flex-shrink: 0;
     font-size: 12px;
     font-weight: 600;
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, transform 0.2s ease;
     pointer-events: auto;
     margin-left: auto;
 }
@@ -1232,7 +1232,7 @@
     font-weight: 600;
     cursor: pointer;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-    transition: all 0.2s ease;
+    transition: width 0.2s ease, background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
     white-space: nowrap;
     z-index: 1002;
     pointer-events: auto;

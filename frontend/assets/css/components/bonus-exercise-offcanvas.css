@@ -32,7 +32,7 @@
     padding-right: 3rem;
     border: 2px solid var(--bs-border-color);
     border-radius: 8px;
-    transition: all 0.2s ease;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .search-input-wrapper .form-control-lg:focus {
@@ -88,7 +88,7 @@
     text-decoration: none;
     color: var(--bs-heading-color);
     padding: 0.5rem 0;
-    transition: all 0.2s ease;
+    transition: color 0.2s ease;
 }
 
 .section-toggle:hover {
@@ -124,7 +124,7 @@
     background: var(--bs-body-bg);
     border: 1.5px solid var(--bs-border-color);
     border-radius: 8px;
-    transition: all 0.2s ease;
+    transition: border-color 0.2s ease, background-color 0.2s ease, transform 0.2s ease;
     cursor: pointer;
 }
 
@@ -164,7 +164,7 @@
     justify-content: center;
     border-radius: 6px;
     margin-left: 0.75rem;
-    transition: all 0.2s ease;
+    transition: transform 0.2s ease;
 }
 
 .chip-add-btn:hover {
@@ -191,7 +191,7 @@
     border: 1.5px solid var(--bs-border-color);
     border-radius: 8px;
     box-shadow: none;
-    transition: all 0.2s ease;
+    transition: border-color 0.2s ease;
 }
 
 .manual-entry-section .card:hover {
@@ -233,7 +233,7 @@
     font-size: 1rem;
     font-weight: 600;
     border-radius: 8px;
-    transition: all 0.2s ease;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 #bonusExerciseOffcanvas .bonus-exercise-actions .btn-primary:disabled {

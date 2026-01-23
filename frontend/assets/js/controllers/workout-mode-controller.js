@@ -696,15 +696,15 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
             // Initialize unified edit controllers (Phase 6: Shared save/cancel buttons)
             if (window.UnifiedEditController) {
                 // Find all exercise cards and initialize unified edit controller for each
-                const exerciseCards = document.querySelectorAll('.logbook-card');
+                const exerciseCards = document.querySelectorAll('.workout-card');
                 exerciseCards.forEach((card) => {
                     const exerciseIndex = card.getAttribute('data-exercise-index');
                     const exerciseName = card.getAttribute('data-exercise-name');
                     
                     if (exerciseIndex !== null && exerciseName) {
                         // FIXED: Get controllers from the field containers, not the card element
-                        const weightFieldContainer = card.querySelector('.logbook-weight-field');
-                        const repsSetsFieldContainer = card.querySelector('.logbook-repssets-field');
+                        const weightFieldContainer = card.querySelector('.workout-weight-field');
+                        const repsSetsFieldContainer = card.querySelector('.workout-repssets-field');
                         
                         // FIXED: Use correct property names from initialization functions
                         const weightController = weightFieldContainer?.weightController;
@@ -1418,12 +1418,12 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
      */
     toggleNoteMenu(btn, noteId, index) {
         // Close any other open menus first
-        document.querySelectorAll('.logbook-menu.show').forEach(menu => {
+        document.querySelectorAll('.workout-menu.show').forEach(menu => {
             menu.classList.remove('show');
         });
 
         // Toggle this menu
-        const menu = btn.parentElement?.querySelector('.logbook-menu');
+        const menu = btn.parentElement?.querySelector('.workout-menu');
         if (menu) {
             menu.classList.toggle('show');
 
@@ -1760,7 +1760,7 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
         const card = container?.querySelector(`[data-exercise-index="${index}"]`);
         if (!card) return;
 
-        const moreBtn = card.querySelector('.logbook-more-btn');
+        const moreBtn = card.querySelector('.workout-more-btn');
         if (moreBtn) {
             // Get exercise name from card
             const exerciseName = card.dataset.exerciseName || '';
@@ -1952,7 +1952,28 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
         // Navigate to workout database page
         window.location.href = 'workout-database.html';
     }
-    
+
+    /**
+     * Handle cancel workout - discard session completely
+     */
+    handleCancelWorkout() {
+        const modalManager = this.getModalManager();
+        modalManager.confirm(
+            'Cancel Workout?',
+            'Are you sure you want to cancel this workout session?<br><br>All progress from this session will be discarded.',
+            () => {
+                // User confirmed - clear session and redirect
+                this.sessionService.clearPersistedSession();
+                window.location.href = 'workout-database.html';
+            },
+            {
+                confirmText: 'Yes, Cancel Workout',
+                confirmClass: 'btn-danger',
+                cancelText: 'Go Back'
+            }
+        );
+    }
+
     /**
      * Toggle exercise card (FACADE - delegates to cardManager)
      * @deprecated Use cardManager.toggle() directly
@@ -2225,13 +2246,13 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
      * @param {number} index - Exercise index
      */
     toggleExerciseMenu(button, exerciseName, index) {
-        if (!button || !button.classList.contains('logbook-more-btn')) {
+        if (!button || !button.classList.contains('workout-more-btn')) {
             console.warn('⚠️ Invalid button element for menu toggle');
             return;
         }
         
         // Find the menu element (sibling of the button)
-        const menu = button.parentElement.querySelector('.logbook-menu');
+        const menu = button.parentElement.querySelector('.workout-menu');
         if (!menu) {
             console.warn('⚠️ Menu element not found');
             return;
@@ -2240,7 +2261,7 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
         const isOpen = menu.classList.contains('show');
         
         // Close all other open menus first
-        document.querySelectorAll('.logbook-menu.show').forEach(m => {
+        document.querySelectorAll('.workout-menu.show').forEach(m => {
             if (m !== menu) {
                 m.classList.remove('show');
             }
@@ -2284,8 +2305,8 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
         // Create new listener
         this._clickOutsideHandler = (event) => {
             // Check if click is outside all menus
-            if (!event.target.closest('.logbook-menu') && !event.target.closest('.logbook-more-btn')) {
-                document.querySelectorAll('.logbook-menu.show').forEach(menu => {
+            if (!event.target.closest('.workout-menu') && !event.target.closest('.workout-more-btn')) {
+                document.querySelectorAll('.workout-menu.show').forEach(menu => {
                     menu.classList.remove('show');
                 });
                 this.removeClickOutsideListener();

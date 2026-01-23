@@ -170,7 +170,7 @@
 .pagination .page-link {
     color: var(--bs-body-color);
     border-color: var(--bs-border-color);
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
 .pagination .page-link:hover:not(.disabled) {
@@ -321,7 +321,7 @@
     border-radius: 0.5rem;
     padding: 1rem 1.25rem;
     margin: 0 0 0.5rem 0;
-    transition: all 0.2s ease;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
@@ -412,9 +412,9 @@
 }
 
 .badge-outline-danger {
-    color: #ef4444;
-    border: 1px solid rgba(239, 68, 68, 0.25);
-    background: rgba(239, 68, 68, 0.05);
+    color: var(--gs-danger);
+    border: 1px solid rgba(var(--gs-danger-rgb), 0.25);
+    background: rgba(var(--gs-danger-rgb), 0.05);
 }
 
 .badge-outline-secondary {

@@ -1,0 +1,242 @@
+/**
+ * Workout Mode - Session Controls
+ * Workout mode header, session timer, start button
+ *
+ * @version 4.0.0 - Phase 4 CSS Refactor
+ * @date 2026-01-20
+ */
+
+/* ============================================
+   WORKOUT MODE HEADER
+   ============================================ */
+
+.workout-mode-header {
+    margin-bottom: 2rem;
+}
+
+.workout-mode-header h4 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--bs-heading-color);
+    margin-bottom: 0.5rem;
+}
+
+.workout-mode-header h5 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--bs-heading-color);
+    margin-bottom: 0.25rem;
+}
+
+.workout-mode-header #workoutDetails {
+    font-size: 0.875rem;
+    line-height: 1.5;
+}
+
+.workout-mode-header #lastCompletedContainer {
+    font-size: 0.875rem;
+    display: flex;
+    align-items: center;
+}
+
+.workout-mode-header #lastCompletedContainer i {
+    color: var(--bs-primary);
+}
+
+/* ============================================
+   SESSION CONTROLS CONTAINER
+   ============================================ */
+
+.session-controls {
+    background: var(--bs-card-bg);
+    border: 2px solid var(--bs-border-color);
+    border-radius: var(--bs-border-radius);
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.session-controls-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+/* ============================================
+   SESSION TIMER
+   ============================================ */
+
+.session-timer {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--bs-heading-color);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.session-timer i {
+    color: var(--bs-primary);
+}
+
+.session-status {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.session-status .badge {
+    font-size: 0.85rem;
+    padding: 0.4rem 0.75rem;
+}
+
+/* ============================================
+   START WORKOUT BUTTON
+   ============================================ */
+
+#startWorkoutBtn {
+    min-width: 150px;
+    font-size: 1.1rem;
+    padding: 0.65rem 1.3rem;
+    font-weight: 600;
+    background-color: #2e3d8f;
+    border: 1px solid #1f2a7f;
+    color: #fff;
+    box-shadow: 0 4px 10px rgba(46, 61, 143, 0.25);
+    transition: background-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+#startWorkoutBtn:hover {
+    background-color: #1f2a7f;
+    box-shadow: 0 6px 12px rgba(31, 42, 127, 0.35);
+}
+
+#startWorkoutBtn:active {
+    background-color: #162056;
+    transform: translateY(1px);
+    box-shadow: 0 2px 6px rgba(22, 32, 86, 0.35);
+}
+
+#startWorkoutBtn i {
+    font-size: 1.3rem;
+    margin-right: 0.5rem;
+}
+
+/* ============================================
+   ACTIVE SESSION STATE
+   ============================================ */
+
+.session-controls.active {
+    border-color: var(--bs-success);
+    background: rgba(var(--bs-success-rgb), 0.05);
+}
+
+.session-controls.active .session-timer {
+    color: var(--bs-success);
+}
+
+/* ============================================
+   DARK THEME
+   ============================================ */
+
+[data-bs-theme="dark"] .session-controls {
+    background: var(--bs-gray-900);
+    border-color: var(--bs-gray-700);
+}
+
+[data-bs-theme="dark"] .session-controls.active {
+    background: rgba(var(--bs-success-rgb), 0.1);
+}
+
+/* ============================================
+   WEIGHT INPUT CONTAINER
+   ============================================ */
+
+.weight-input-container {
+    background: var(--bs-gray-50);
+    border: 2px solid var(--bs-border-color);
+    border-radius: var(--bs-border-radius);
+    padding: 1rem;
+}
+
+.weight-input-container .form-label {
+    margin-bottom: 0.5rem;
+    font-size: 0.95rem;
+}
+
+.weight-input-container .input-group {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* ============================================
+   REST TIMER COMPONENT
+   ============================================ */
+
+.rest-timer-container {
+    background: var(--bs-gray-50);
+    border-radius: var(--bs-border-radius);
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+}
+
+.rest-timer {
+    text-align: center;
+}
+
+/* ============================================
+   WORKOUT GRID BUTTONS
+   ============================================ */
+
+.workout-grid-btn.btn-outline-primary {
+    border-color: #cbd5e1;
+    color: #6366f1;
+    background: transparent;
+}
+
+.workout-grid-btn.btn-outline-primary:hover {
+    background: rgba(var(--bs-primary-rgb), 0.08);
+    border-color: #6366f1;
+    color: #6366f1;
+}
+
+/* ============================================
+   SAVE INDICATORS
+   ============================================ */
+
+.save-indicator,
+.save-success {
+    font-size: 1.2rem;
+}
+
+.save-indicator {
+    color: var(--bs-primary);
+}
+
+.save-success {
+    color: var(--bs-success);
+}
+
+/* ============================================
+   WEIGHT POPOVER
+   ============================================ */
+
+.weight-popover-content {
+    min-width: 200px;
+}
+
+.weight-popover-input:disabled {
+    background-color: #f8fafc !important;
+    color: #94a3b8 !important;
+    cursor: not-allowed !important;
+    opacity: 0.7 !important;
+}
+
+[data-bs-theme="dark"] .weight-popover-input:disabled {
+    background-color: #1e293b !important;
+    color: #94a3b8 !important;
+}

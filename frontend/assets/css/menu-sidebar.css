@@ -1,0 +1,223 @@
+/**
+ * Ghost Gym - Menu & Sidebar Styles
+ * Sidebar navigation, mobile menu overlay, and menu item styling
+ *
+ * @version 1.0.0
+ * @date 2026-01-20
+ *
+ * This file contains:
+ * - Mobile menu overlay
+ * - Sidebar/layout-menu styles
+ * - Menu item hover/active states
+ * - App brand styling
+ * - Menu authentication items
+ * - Responsive menu behavior
+ *
+ * Extracted from ghost-gym-custom.css Phase 2 refactor
+ */
+
+/* ============================================
+   MOBILE MENU OVERLAY
+   ============================================ */
+
+/* Body scroll lock when menu is open */
+body.menu-open {
+    overflow: hidden !important;
+}
+
+/* Mobile Menu Overlay */
+.layout-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1040;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.layout-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* ============================================
+   MOBILE MENU SLIDE ANIMATION
+   ============================================ */
+
+@media (max-width: 1199.98px) {
+    .layout-menu {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        width: 260px;
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+        z-index: 1050;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .layout-menu.menu-open {
+        transform: translateX(0);
+    }
+
+    /* Menu close button on mobile */
+    .layout-menu .layout-menu-toggle {
+        display: flex !important;
+        justify-content: flex-end;
+        padding: 1rem;
+    }
+
+    .layout-menu .layout-menu-toggle .bx-chevron-left {
+        display: block !important;
+    }
+}
+
+/* ============================================
+   APP BRAND STYLING
+   ============================================ */
+
+.app-brand-text {
+    background: linear-gradient(135deg, var(--ghost-primary), var(--ghost-secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: 700;
+}
+
+/* ============================================
+   MENU AUTHENTICATION ITEMS
+   ============================================ */
+
+/* Ensure proper visibility */
+#menuAuthSignIn {
+    display: block !important;
+}
+
+#menuAuthSignIn.d-none {
+    display: none !important;
+}
+
+.menu-item.auth-sign-out {
+    display: none;
+}
+
+.menu-item.auth-sign-out:not(.d-none) {
+    display: block !important;
+}
+
+/* Menu user display styling */
+#menuUserDisplayName {
+    font-size: 0.9rem;
+    line-height: 1.2;
+}
+
+#menuUserEmailDisplay {
+    font-size: 0.7rem;
+    opacity: 0.7;
+}
+
+/* Authentication UI button */
+.auth-sign-in {
+    background: rgba(var(--bs-primary-rgb), 0.1);
+    border-color: var(--ghost-primary);
+    color: var(--ghost-primary);
+}
+
+.auth-sign-in:hover {
+    background: var(--ghost-primary);
+    color: white;
+}
+
+/* ============================================
+   DARK MODE - MOBILE MENU
+   ============================================ */
+
+[data-bs-theme="dark"] .layout-overlay {
+    background: rgba(0, 0, 0, 0.7);
+}
+
+/* ============================================
+   DARK MODE - SIDEBAR MENU
+   ============================================ */
+
+[data-bs-theme="dark"] .layout-menu {
+    background: #1e293b;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+}
+
+[data-bs-theme="dark"] .app-brand {
+    border-bottom-color: #475569;
+}
+
+[data-bs-theme="dark"] .app-brand-text {
+    background: linear-gradient(135deg, var(--ghost-primary), var(--ghost-secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Menu divider dark mode - use attribute selector for specificity */
+[data-bs-theme="dark"] .layout-menu .menu-divider {
+    border-color: #475569;
+}
+
+[data-bs-theme="dark"] .menu-inner-shadow {
+    background: linear-gradient(#1e293b 5%, rgba(30, 41, 59, 0.8) 95%, rgba(30, 41, 59, 0.4));
+}
+
+[data-bs-theme="dark"] .menu-header {
+    color: #94a3b8;
+}
+
+[data-bs-theme="dark"] .menu-item .menu-link {
+    color: #cbd5e1;
+}
+
+[data-bs-theme="dark"] .menu-item .menu-link:hover {
+    background: #334155;
+    color: #f8fafc;
+}
+
+[data-bs-theme="dark"] .menu-item.active > .menu-link {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(139, 92, 246, 0.15));
+    color: #c4b5fd;
+}
+
+[data-bs-theme="dark"] .menu-item.active > .menu-link::before {
+    background: linear-gradient(135deg, var(--ghost-primary), var(--ghost-secondary));
+}
+
+[data-bs-theme="dark"] .menu-sub .menu-link {
+    color: #94a3b8;
+}
+
+[data-bs-theme="dark"] .menu-sub .menu-link:hover {
+    background: #334155;
+    color: #f8fafc;
+}
+
+[data-bs-theme="dark"] .menu-icon {
+    color: #94a3b8;
+}
+
+[data-bs-theme="dark"] .menu-item.active .menu-icon {
+    color: #c4b5fd;
+}
+
+/* NOTE: Badge dark mode styles are defined in components/badges.css
+   and components/dark-mode.css - DO NOT duplicate here */
+
+/* ============================================
+   DARK MODE - FOOTER
+   ============================================ */
+
+[data-bs-theme="dark"] .content-footer {
+    background: #1e293b;
+    border-top-color: #475569;
+    color: #94a3b8;
+}

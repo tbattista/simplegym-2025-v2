@@ -9,7 +9,7 @@
 
 class RepsSetsFieldController {
     /**
-     * @param {HTMLElement} container - The .logbook-repssets-field container element
+     * @param {HTMLElement} container - The .workout-repssets-field container element
      * @param {Object} options - Configuration options
      * @param {Object} options.sessionService - Reference to WorkoutSessionService
      * @param {string} options.exerciseName - Name of the exercise this field controls
@@ -17,7 +17,7 @@ class RepsSetsFieldController {
     constructor(container, options = {}) {
         this.container = container;
         this.sessionService = options.sessionService || window.workoutSessionService;
-        this.exerciseName = options.exerciseName || container.closest('.logbook-card')?.dataset?.exerciseName;
+        this.exerciseName = options.exerciseName || container.closest('.workout-card')?.dataset?.exerciseName;
         
         // DOM elements (v3.0.0 - Single text field)
         this.displayEl = container.querySelector('.repssets-display');
@@ -38,8 +38,8 @@ class RepsSetsFieldController {
         
         // DOM elements - Notes
         this.noteToggleBtn = container.querySelector('.note-toggle-btn');
-        this.notesRow = container.querySelector('.logbook-notes-row');
-        this.notesInput = container.querySelector('.logbook-notes-input');
+        this.notesRow = container.querySelector('.workout-notes-row');
+        this.notesInput = container.querySelector('.workout-notes-input');
         
         // State (v3.0.0 - Single text value)
         this.originalValue = this.textInput?.value || '3×10';
@@ -128,15 +128,24 @@ class RepsSetsFieldController {
     
     /**
      * Enter edit mode - show editor, hide display
+     * Syncs input value from current display/data attributes
      */
     enterEditMode() {
-        this.originalValue = this.textInput.value || '3×10';
+        // Sync input value from container data attribute or display element (source of truth)
+        const currentProtocol = this.container.dataset.protocol ||
+                                this.valueTextDisplay?.textContent ||
+                                '3×10';
+
+        // Populate the input field with current value
+        this.textInput.value = currentProtocol;
+        this.originalValue = currentProtocol;
+
         this.displayEl.style.display = 'none';
         this.editorEl.style.display = 'flex';
         this.textInput.focus();
         this.textInput.select();
-        
-        console.log('📝 Edit mode entered for:', this.exerciseName, 'Original:', this.originalValue);
+
+        console.log('📝 Edit mode entered for:', this.exerciseName, 'Value:', currentProtocol);
     }
     
     /**
@@ -369,9 +378,9 @@ class RepsSetsFieldController {
 function initializeRepsSetsFields(sessionService) {
     const controllers = [];
     
-    document.querySelectorAll('.logbook-repssets-field').forEach(container => {
+    document.querySelectorAll('.workout-repssets-field').forEach(container => {
         if (!container.repsSetsController) {
-            const exerciseName = container.closest('.logbook-card')?.dataset?.exerciseName;
+            const exerciseName = container.closest('.workout-card')?.dataset?.exerciseName;
             container.repsSetsController = new RepsSetsFieldController(container, {
                 sessionService: sessionService,
                 exerciseName: exerciseName

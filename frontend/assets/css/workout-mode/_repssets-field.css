@@ -1,0 +1,172 @@
+/**
+ * Workout Mode - Reps/Sets Field
+ * Reps/sets input/display morph pattern
+ *
+ * @version 4.0.0 - Phase 4 CSS Refactor
+ * @date 2026-01-20
+ */
+
+/* ============================================
+   REPS/SETS FIELD CONTAINER
+   ============================================ */
+
+.workout-repssets-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    width: 100%;
+}
+
+/* ============================================
+   DISPLAY MODE
+   ============================================ */
+
+.repssets-display {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.repssets-display .repssets-value-text {
+    display: block;
+    width: 100%;
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--workout-accent);
+    line-height: 1;
+}
+
+/* Deprecated: Old two-field display elements */
+.repssets-display .repssets-value-group {
+    display: none;
+}
+
+.repssets-display .repssets-value {
+    display: none;
+}
+
+.repssets-display .repssets-separator {
+    display: none;
+}
+
+/* Edit button removed in v2.1.0 */
+.repssets-edit-btn {
+    display: none;
+}
+
+/* ============================================
+   EDIT MODE
+   ============================================ */
+
+.repssets-editor {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    width: 100%;
+    animation: weightEditorFadeIn 0.2s ease;
+}
+
+.repssets-editor-actions {
+    display: none; /* Replaced by unified actions */
+}
+
+/* Deprecated: Old two-field inputs */
+.repssets-input.sets-input,
+.repssets-input.reps-input {
+    display: none;
+}
+
+.repssets-separator-edit {
+    display: none;
+}
+
+/* ============================================
+   TEXT INPUT
+   ============================================ */
+
+.repssets-text-input {
+    width: 100% !important;
+    min-width: 0;
+    height: 48px;
+    padding: 0.5rem 0.75rem;
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1.5;
+    text-align: left;
+    color: var(--workout-accent);
+    border: 2px solid var(--workout-accent);
+    border-radius: 0.375rem;
+    background: var(--workout-card-bg);
+    outline: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    box-sizing: border-box;
+}
+
+.repssets-text-input:focus {
+    border-color: var(--workout-accent);
+    box-shadow: var(--workout-focus-ring);
+}
+
+.repssets-text-input::placeholder {
+    color: var(--workout-muted);
+    font-style: italic;
+    font-size: 0.875rem;
+}
+
+/* ============================================
+   SAVE/CANCEL BUTTONS
+   ============================================ */
+
+.repssets-save-btn {
+    padding: 0.375rem;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--workout-success);
+    cursor: pointer;
+    font-size: 1.25rem;
+    line-height: 1;
+    transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+
+.repssets-save-btn:hover {
+    border-color: var(--workout-success);
+    background: var(--workout-success-10);
+    color: var(--workout-success);
+}
+
+.repssets-cancel-btn {
+    padding: 0.375rem;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--workout-muted);
+    cursor: pointer;
+    font-size: 1.25rem;
+    line-height: 1;
+    transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+
+.repssets-cancel-btn:hover {
+    border-color: var(--workout-danger);
+    background: var(--workout-danger-10);
+    color: var(--workout-danger);
+}
+
+/* ============================================
+   SAVE ANIMATION
+   ============================================ */
+
+.repssets-display.saved .repssets-value-text {
+    animation: weightSaveFlash 0.6s ease;
+}
+
+/* ============================================
+   DARK MODE
+   ============================================ */
+
+[data-bs-theme="dark"] .repssets-text-input {
+    background: var(--workout-dark-bg);
+    color: var(--workout-accent);
+}

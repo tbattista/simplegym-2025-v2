@@ -1,0 +1,115 @@
+/**
+ * Workout Mode - History
+ * Weight history tree and reference display
+ *
+ * @version 4.0.0 - Phase 4 CSS Refactor
+ * @date 2026-01-20
+ */
+
+/* ============================================
+   REFERENCE SECTION (Last Time)
+   ============================================ */
+
+.workout-reference {
+    background: var(--workout-bg);
+    border-radius: 0.375rem;
+    padding: 0.75rem;
+    font-size: 0.8125rem;
+    border: 1px solid var(--workout-border);
+}
+
+[data-bs-theme="dark"] .workout-reference {
+    background: var(--workout-dark-bg);
+}
+
+.workout-reference-weight {
+    font-weight: 600;
+    color: var(--workout-text);
+}
+
+.workout-reference-date {
+    color: var(--workout-muted);
+}
+
+.workout-reference-note {
+    color: var(--workout-muted);
+    font-style: italic;
+    margin-top: 0.25rem;
+}
+
+/* ============================================
+   HISTORY SECTION
+   ============================================ */
+
+/* History section container - reduced spacing */
+.workout-section:has(.workout-history) {
+    margin-top: 0.5rem;
+    padding-top: 0.25rem;
+}
+
+.workout-history {
+    font-size: 0.75rem;
+    opacity: 0.8;
+}
+
+/* ============================================
+   HISTORY PRIMARY ROW
+   ============================================ */
+
+.workout-history-primary {
+    display: flex;
+    align-items: baseline;
+    gap: 0.375rem;
+    margin-bottom: 0.25rem;
+}
+
+.workout-history-primary .history-label {
+    color: var(--workout-muted);
+}
+
+.workout-history-primary .history-weight {
+    font-weight: 500;
+    color: var(--workout-muted);
+}
+
+.workout-history-primary .history-date {
+    color: var(--workout-muted);
+    opacity: 0.8;
+}
+
+.workout-history-note {
+    color: var(--workout-muted);
+    font-style: italic;
+    font-size: 0.6875rem;
+    margin-bottom: 0.5rem;
+    opacity: 0.8;
+}
+
+/* ============================================
+   HISTORY TREE (Previous Entries)
+   ============================================ */
+
+.workout-history-tree {
+    padding-left: 0.25rem;
+    font-size: 0.6875rem;
+    color: var(--workout-muted);
+    opacity: 0.75;
+}
+
+.workout-history-tree-item {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    line-height: 1.5;
+}
+
+.workout-history-tree-item .tree-branch {
+    color: var(--workout-border);
+    font-family: monospace;
+    user-select: none;
+}
+
+.workout-history-tree-item .history-weight {
+    font-weight: 500;
+    color: var(--workout-muted);
+}

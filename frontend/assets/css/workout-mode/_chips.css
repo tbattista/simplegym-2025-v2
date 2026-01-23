@@ -1,0 +1,72 @@
+/**
+ * Workout Mode - Chips
+ * Next session pill chips for quick selection
+ *
+ * @version 4.0.0 - Phase 4 CSS Refactor
+ * @date 2026-01-20
+ */
+
+/* ============================================
+   NEXT SESSION SECTION
+   ============================================ */
+
+.workout-next-section {
+    margin-top: 1rem;
+    padding-top: 0;
+}
+
+.workout-next-label {
+    font-size: 0.625rem !important;
+    letter-spacing: 0.08em;
+    color: var(--workout-muted);
+    opacity: 0.8;
+}
+
+.workout-next-chips {
+    display: flex;
+    gap: 0.375rem;
+    flex-wrap: wrap;
+}
+
+/* ============================================
+   PILL CHIPS
+   ============================================ */
+
+.workout-chip {
+    padding: 0.25rem 0.625rem;
+    height: 28px;
+    border: 1px solid var(--workout-border);
+    border-radius: 1rem; /* Pill shape */
+    font-size: 0.6875rem;
+    font-weight: 500;
+    color: var(--workout-muted);
+    background: transparent;
+    cursor: pointer;
+    transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+    min-width: unset;
+    text-align: center;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+
+.workout-chip:hover {
+    border-color: var(--workout-accent);
+    color: var(--workout-accent);
+    background: var(--workout-accent-5);
+}
+
+/* Active state - soft highlight */
+.workout-chip.active {
+    background: var(--workout-accent-12);
+    border-color: var(--workout-accent);
+    color: var(--workout-accent);
+}
+
+/* Dark mode active state */
+[data-bs-theme="dark"] .workout-chip.active {
+    background: var(--workout-accent-15);
+    border-color: var(--workout-accent);
+    color: var(--workout-accent);
+}

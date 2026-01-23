@@ -29,38 +29,38 @@ class NoteCardRenderer {
         const isSessionActive = this.sessionService.isSessionActive();
 
         return `
-            <div class="logbook-card note-card"
+            <div class="workout-card note-card"
                  data-card-type="note"
                  data-note-id="${this._escapeHtml(noteId)}"
                  data-card-index="${displayIndex}"
-                 onclick="if(!event.target.closest('.logbook-more-btn, .note-edit-btn, .logbook-menu, .note-editor')) this.classList.toggle('expanded')">
+                 onclick="if(!event.target.closest('.workout-more-btn, .note-edit-btn, .workout-menu, .note-editor')) this.classList.toggle('expanded')">
                 <!-- Collapsed Header -->
-                <div class="logbook-card-header note-card-header">
-                    <div class="logbook-exercise-name-row">
-                        <div class="logbook-exercise-name note-card-title">
+                <div class="workout-card-header note-card-header">
+                    <div class="workout-exercise-name-row">
+                        <div class="workout-exercise-name note-card-title">
                             <i class="bx bx-comment note-icon"></i>
                             <span class="note-preview">${this._escapeHtml(displayText)}</span>
                         </div>
-                        <div class="logbook-header-actions">
-                            <button class="logbook-edit-btn note-edit-btn"
+                        <div class="workout-header-actions">
+                            <button class="workout-edit-btn note-edit-btn"
                                     aria-label="Edit note"
                                     title="Edit note"
                                     onclick="window.workoutModeController?.handleEditNote?.('${this._escapeHtml(noteId)}'); event.stopPropagation();">
                                 <i class="bx bx-pencil"></i>
                             </button>
-                            <button class="logbook-more-btn"
+                            <button class="workout-more-btn"
                                     onclick="window.workoutModeController?.toggleNoteMenu?.(this, '${this._escapeHtml(noteId)}', ${displayIndex}); event.stopPropagation();"
                                     title="More options">
                                 <i class="bx bx-dots-vertical"></i>
                             </button>
-                            <i class="bx bx-chevron-down logbook-chevron"></i>
+                            <i class="bx bx-chevron-down workout-chevron"></i>
                             ${this._renderMoreMenu(noteId, displayIndex, totalCards)}
                         </div>
                     </div>
                 </div>
 
                 <!-- Expanded Body -->
-                <div class="logbook-card-body note-card-body" onclick="event.stopPropagation()">
+                <div class="workout-card-body note-card-body" onclick="event.stopPropagation()">
                     <!-- Display Mode -->
                     <div class="note-display">
                         <div class="note-full-content">${content ? this._escapeHtml(content) : '<em class="text-muted">No content yet. Click the edit button to add a note.</em>'}</div>
@@ -108,20 +108,20 @@ class NoteCardRenderer {
      */
     _renderMoreMenu(noteId, displayIndex, totalCards) {
         return `
-            <div class="logbook-menu note-menu" onclick="event.stopPropagation()">
-                <button class="logbook-menu-item"
+            <div class="workout-menu note-menu" onclick="event.stopPropagation()">
+                <button class="workout-menu-item"
                         onclick="window.workoutModeController?.handleDeleteNote?.('${this._escapeHtml(noteId)}'); event.stopPropagation();">
                     <i class="bx bx-trash"></i>
                     Delete note
                 </button>
-                <div class="logbook-menu-divider"></div>
-                <button class="logbook-menu-item${displayIndex === 0 ? ' disabled' : ''}"
+                <div class="workout-menu-divider"></div>
+                <button class="workout-menu-item${displayIndex === 0 ? ' disabled' : ''}"
                         onclick="window.workoutModeController?.handleMoveUp?.(${displayIndex}); event.stopPropagation();"
                         ${displayIndex === 0 ? 'disabled' : ''}>
                     <i class="bx bx-chevron-up"></i>
                     Move up
                 </button>
-                <button class="logbook-menu-item${displayIndex >= totalCards - 1 ? ' disabled' : ''}"
+                <button class="workout-menu-item${displayIndex >= totalCards - 1 ? ' disabled' : ''}"
                         onclick="window.workoutModeController?.handleMoveDown?.(${displayIndex}); event.stopPropagation();"
                         ${displayIndex >= totalCards - 1 ? 'disabled' : ''}>
                     <i class="bx bx-chevron-down"></i>

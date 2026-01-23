@@ -1178,6 +1178,19 @@
                                                 console.warn('⚠️ Change workout feature not available');
                                             }
                                         }
+                                    },
+                                    {
+                                        icon: 'bx-x-circle',
+                                        title: 'Cancel Workout',
+                                        description: 'Discard session and exit',
+                                        variant: 'danger',
+                                        onClick: () => {
+                                            if (window.workoutModeController?.handleCancelWorkout) {
+                                                window.workoutModeController.handleCancelWorkout();
+                                            } else {
+                                                console.warn('⚠️ Cancel workout feature not available');
+                                            }
+                                        }
                                     }
                                 ]
                             });
@@ -1325,6 +1338,19 @@
                                                 window.workoutModeController.handleChangeWorkout();
                                             } else {
                                                 console.warn('⚠️ Change workout feature not available');
+                                            }
+                                        }
+                                    },
+                                    {
+                                        icon: 'bx-x-circle',
+                                        title: 'Cancel Workout',
+                                        description: 'Discard session and exit',
+                                        variant: 'danger',
+                                        onClick: () => {
+                                            if (window.workoutModeController?.handleCancelWorkout) {
+                                                window.workoutModeController.handleCancelWorkout();
+                                            } else {
+                                                console.warn('⚠️ Cancel workout feature not available');
                                             }
                                         }
                                     }

@@ -204,9 +204,10 @@
     background: var(--bs-card-bg);
 }
 
-/* Dark Mode - Workout Editor Card */
-[data-bs-theme="dark"] .workout-editor-card {
-    background: #1e293b !important;
+/* Dark Mode - Workout Editor Card
+   Using page class for specificity over generic card styles */
+[data-bs-theme="dark"] .workout-builder-page .workout-editor-card {
+    background: #1e293b;
     border-color: #475569;
 }
 
@@ -363,11 +364,11 @@
 .workout-card-compact,
 .exercise-group,
 .bonus-exercise {
-    transition: all 0.2s ease;
+    transition: box-shadow 0.2s ease, transform 0.2s ease, opacity 0.2s ease;
 }
 
 button {
-    transition: all 0.15s ease;
+    transition: background-color 0.15s ease, transform 0.15s ease;
 }
 
 /* ============================================

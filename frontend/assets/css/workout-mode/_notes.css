@@ -1,0 +1,191 @@
+/**
+ * Workout Mode - Notes
+ * Notes section, toggle, and unified notes
+ *
+ * @version 4.0.0 - Phase 4 CSS Refactor
+ * @date 2026-01-20
+ */
+
+/* ============================================
+   UNIFIED NOTES SECTION
+   ============================================ */
+
+.workout-unified-notes {
+    border-top: 1px dashed var(--workout-border);
+    border-bottom: 1px dashed var(--workout-border);
+    padding: 0.75rem 0 0.5rem 0;
+    margin-top: 0.75rem;
+    margin-bottom: 0.25rem;
+}
+
+.workout-note-toggle-btn {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border: 1px dashed var(--workout-border);
+    border-radius: 0.375rem;
+    background: transparent;
+    color: var(--workout-muted);
+    cursor: pointer;
+    transition: border-color 0.15s ease, border-style 0.15s ease, color 0.15s ease, background 0.15s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+}
+
+.workout-note-toggle-btn:hover {
+    border-color: var(--workout-accent);
+    border-style: solid;
+    color: var(--workout-accent);
+    background: var(--workout-status-active);
+}
+
+.workout-note-toggle-btn.has-note {
+    border-style: solid;
+    border-color: var(--workout-accent);
+    color: var(--workout-accent);
+}
+
+.workout-note-toggle-btn i {
+    font-size: 1.125rem;
+}
+
+/* ============================================
+   NOTES CONTENT
+   ============================================ */
+
+.workout-notes-content {
+    margin-top: 0.5rem;
+    animation: notesFadeIn 0.2s ease;
+}
+
+.workout-notes-content .workout-notes-input {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--workout-border);
+    border-radius: 0.375rem;
+    background: var(--workout-card-bg);
+    color: var(--workout-text);
+    font-size: 0.875rem;
+    resize: vertical;
+    min-height: 60px;
+}
+
+.workout-notes-content .workout-notes-input:focus {
+    outline: none;
+    border-color: var(--workout-accent);
+    box-shadow: var(--workout-focus-ring);
+}
+
+/* Hide individual note buttons (deprecated) */
+.weight-display .note-toggle-btn,
+.repssets-display .note-toggle-btn {
+    display: none;
+}
+
+/* Hide individual notes rows (deprecated) */
+.workout-weight-field .workout-notes-row,
+.workout-repssets-field .workout-notes-row {
+    display: none;
+}
+
+/* ============================================
+   NOTES + REST TIMER SECTION (Combined Layout)
+   ============================================ */
+
+.workout-notes-timer-section {
+    padding: 0.75rem 0;
+    margin-top: 0.75rem;
+}
+
+/* Notes content - Full width above buttons */
+.workout-notes-timer-section .workout-notes-content {
+    width: 100%;
+    margin-bottom: 0.75rem;
+    margin-top: 0;
+    animation: notesFadeIn 0.2s ease;
+}
+
+.workout-notes-timer-section .workout-notes-input {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--workout-border);
+    border-radius: 0.375rem;
+    background: var(--workout-card-bg);
+    color: var(--workout-text);
+    font-size: 0.875rem;
+    resize: vertical;
+    min-height: 60px;
+}
+
+.workout-notes-timer-section .workout-notes-input:focus {
+    outline: none;
+    border-color: var(--workout-accent);
+    box-shadow: var(--workout-focus-ring);
+}
+
+/* Buttons row - notes left, timer right */
+.workout-notes-timer-row {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.workout-notes-col {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+}
+
+.workout-timer-col {
+    flex: 0 0 auto;
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+}
+
+/* Note button in combined row */
+.workout-notes-timer-row .workout-note-toggle-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.375rem;
+    padding: 0;
+    border: none;
+    border-radius: 0.375rem;
+    background: transparent;
+    color: var(--workout-muted);
+    cursor: pointer;
+    transition: color 0.2s ease, background 0.2s ease;
+    font-size: 0.875rem;
+}
+
+.workout-notes-timer-row .workout-note-toggle-btn:hover {
+    color: var(--workout-accent);
+    background: var(--workout-status-active);
+}
+
+.workout-notes-timer-row .workout-note-toggle-btn.has-note {
+    color: var(--workout-accent);
+}
+
+.workout-notes-timer-row .workout-note-toggle-btn i {
+    font-size: 1rem;
+}
+
+/* ============================================
+   NOTES ANIMATION
+   ============================================ */
+
+@keyframes notesFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

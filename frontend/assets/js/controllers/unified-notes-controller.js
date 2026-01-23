@@ -6,8 +6,8 @@
  *
  * v2.2.0 Changes:
  * - Updated for new DOM structure where notes content is above buttons row
- * - Notes content is now direct child of .logbook-notes-timer-section
- * - Button is inside .logbook-notes-col within .logbook-notes-timer-row
+ * - Notes content is now direct child of .workout-notes-timer-section
+ * - Button is inside .workout-notes-col within .workout-notes-timer-row
  */
 
 class UnifiedNotesController {
@@ -26,8 +26,8 @@ class UnifiedNotesController {
     initialize() {
         console.log('🎵 Initializing Unified Notes Controller v2.2.0...');
 
-        // Find all unified notes sections (now using .logbook-notes-timer-section)
-        const noteSections = document.querySelectorAll('.logbook-unified-notes');
+        // Find all unified notes sections (now using .workout-notes-timer-section)
+        const noteSections = document.querySelectorAll('.workout-unified-notes');
 
         noteSections.forEach(section => {
             this.bindNoteEvents(section);
@@ -39,14 +39,14 @@ class UnifiedNotesController {
     /**
      * Bind events to a unified notes section
      * v2.2.0: Updated selectors for new DOM structure
-     * @param {HTMLElement} section - The notes section container (.logbook-notes-timer-section)
+     * @param {HTMLElement} section - The notes section container (.workout-notes-timer-section)
      */
     bindNoteEvents(section) {
-        // v2.2.0: Button is now inside .logbook-notes-col within .logbook-notes-timer-row
-        const toggleBtn = section.querySelector('.logbook-notes-timer-row .logbook-note-toggle-btn');
+        // v2.2.0: Button is now inside .workout-notes-col within .workout-notes-timer-row
+        const toggleBtn = section.querySelector('.workout-notes-timer-row .workout-note-toggle-btn');
         // v2.2.0: Notes content is direct child of section (above buttons row)
-        const notesContent = section.querySelector(':scope > .logbook-notes-content');
-        const textarea = notesContent?.querySelector('.logbook-notes-input');
+        const notesContent = section.querySelector(':scope > .workout-notes-content');
+        const textarea = notesContent?.querySelector('.workout-notes-input');
 
         if (!toggleBtn || !notesContent || !textarea) {
             console.warn('⚠️ Missing note elements in section:', section);
@@ -99,7 +99,7 @@ class UnifiedNotesController {
             this.activeNoteField = notesContent;
             
             // Focus the textarea
-            const textarea = notesContent.querySelector('.logbook-notes-input');
+            const textarea = notesContent.querySelector('.workout-notes-input');
             if (textarea) {
                 setTimeout(() => textarea.focus(), 100);
             }
@@ -201,7 +201,7 @@ class UnifiedNotesController {
      * @param {string} exerciseName - Exercise name
      */
     refreshExerciseNotes(exerciseName) {
-        const section = document.querySelector(`.logbook-unified-notes [data-exercise-name="${exerciseName}"]`)?.closest('.logbook-unified-notes');
+        const section = document.querySelector(`.workout-unified-notes [data-exercise-name="${exerciseName}"]`)?.closest('.workout-unified-notes');
         
         if (section) {
             this.bindNoteEvents(section);

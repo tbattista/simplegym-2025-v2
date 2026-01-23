@@ -145,6 +145,8 @@
 
 /* ============================================
    BADGES
+   Page-specific badge sizing only.
+   Colors defined in components/badges.css
    ============================================ */
 
 .badge {
@@ -153,24 +155,8 @@
   font-size: 0.75rem;
 }
 
-.badge.bg-success {
-  background-color: var(--bs-success) !important;
-}
-
-.badge.bg-label-info {
-  background-color: rgba(var(--bs-info-rgb), 0.1) !important;
-  color: var(--bs-info) !important;
-}
-
-.badge.bg-label-primary {
-  background-color: rgba(var(--bs-primary-rgb), 0.1) !important;
-  color: var(--bs-primary) !important;
-}
-
-.badge.bg-label-success {
-  background-color: rgba(var(--bs-success-rgb), 0.1) !important;
-  color: var(--bs-success) !important;
-}
+/* NOTE: Badge color variants (.bg-success, .bg-label-*) are now
+   defined in components/badges.css - DO NOT duplicate here */
 
 /* ============================================
    EMPTY STATES

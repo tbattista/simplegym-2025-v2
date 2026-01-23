@@ -673,7 +673,7 @@ export function createReorderOffcanvas(exercises, onSave) {
         const isNote = item.isNote === true;
         const displayName = item.displayName || item.name;
         const itemTypeAttr = isNote ? 'data-item-type="note"' : 'data-item-type="exercise"';
-        const borderStyle = isNote ? 'border-left: 3px solid var(--logbook-muted, #6c757d);' : '';
+        const borderStyle = isNote ? 'border-left: 3px solid var(--workout-muted, #6c757d);' : '';
         const icon = isNote ? '<i class="bx bx-note-text me-1 text-muted"></i>' : '';
         const badgeClass = isNote ? 'bg-label-info' : (item.isBonus ? 'bg-label-primary' : 'bg-label-secondary');
         const badgeText = isNote ? 'Note' : (index + 1);

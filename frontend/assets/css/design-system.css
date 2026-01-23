@@ -1,0 +1,426 @@
+/**
+ * Ghost Gym - Design System
+ * Unified CSS custom properties (design tokens)
+ *
+ * @version 1.0.0
+ * @date 2026-01-20
+ *
+ * This file consolidates all design tokens from:
+ * - ghost-gym-custom.css (--ghost-* variables)
+ * - logbook-theme.css (--logbook-* variables)
+ * - workout-database.css (--wdb-* variables)
+ * - bottom-action-bar.css (--floating-fab-* variables)
+ * - workout-mode.css (--color-weight-* variables)
+ *
+ * Prefix convention: --gs-* (Ghost System)
+ */
+
+/* ============================================
+   COLOR TOKENS
+   ============================================ */
+
+:root {
+    /* Brand Colors */
+    --gs-primary: #6366f1;
+    --gs-primary-rgb: 99, 102, 241;
+    --gs-primary-hover: #5855eb;
+    --gs-primary-active: #4f4ce6;
+
+    --gs-secondary: #8b5cf6;
+    --gs-secondary-rgb: 139, 92, 246;
+
+    --gs-accent: #06b6d4;
+    --gs-accent-rgb: 6, 182, 212;
+
+    /* Semantic Colors */
+    --gs-success: #4CBB17;           /* Kelly Green */
+    --gs-success-rgb: 76, 187, 23;
+    --gs-success-light: #5DD91E;
+    --gs-success-dark: #3D9912;
+
+    --gs-warning: #f59e0b;
+    --gs-warning-rgb: 245, 158, 11;
+
+    --gs-danger: #ef4444;
+    --gs-danger-rgb: 239, 68, 68;
+
+    --gs-info: #0ea5e9;
+    --gs-info-rgb: 14, 165, 233;
+
+    /* Neutral Colors */
+    --gs-dark: #1e293b;
+    --gs-light: #f8fafc;
+    --gs-gray-50: #f8fafc;
+    --gs-gray-100: #f1f5f9;
+    --gs-gray-200: #e2e8f0;
+    --gs-gray-300: #cbd5e1;
+    --gs-gray-400: #94a3b8;
+    --gs-gray-500: #64748b;
+    --gs-gray-600: #475569;
+    --gs-gray-700: #334155;
+    --gs-gray-800: #1e293b;
+    --gs-gray-900: #0f172a;
+
+    /* Weight Progression Colors (from workout-mode.css) */
+    --gs-weight-increased: #4CBB17;
+    --gs-weight-increased-rgb: 76, 187, 23;
+    --gs-weight-decreased: #dc3545;
+    --gs-weight-decreased-rgb: 220, 53, 69;
+    --gs-weight-same: #6c757d;
+    --gs-weight-new: #007bff;
+    --gs-weight-modified: #ffc107;
+
+    /* Override Bootstrap success to use Kelly Green */
+    --bs-success: var(--gs-success);
+    --bs-success-rgb: var(--gs-success-rgb);
+
+    /* ============================================
+       OPACITY SCALE
+       Standardized opacity values for consistent
+       hover states, backgrounds, and overlays
+       ============================================ */
+
+    --gs-opacity-5: 0.05;     /* Subtle backgrounds, hover states */
+    --gs-opacity-8: 0.08;     /* Light hover states */
+    --gs-opacity-10: 0.10;    /* Soft backgrounds */
+    --gs-opacity-12: 0.12;    /* Active/pressed states */
+    --gs-opacity-15: 0.15;    /* Medium emphasis backgrounds */
+    --gs-opacity-20: 0.20;    /* Stronger backgrounds */
+    --gs-opacity-25: 0.25;    /* Borders, outlines */
+    --gs-opacity-50: 0.50;    /* Medium overlays */
+    --gs-opacity-75: 0.75;    /* Strong overlays */
+
+    /* ============================================
+       PRE-COMPUTED COLOR OPACITY VARIANTS
+       Use these for consistent color applications
+       ============================================ */
+
+    /* Primary color variants */
+    --gs-primary-5: rgba(var(--gs-primary-rgb), 0.05);
+    --gs-primary-8: rgba(var(--gs-primary-rgb), 0.08);
+    --gs-primary-10: rgba(var(--gs-primary-rgb), 0.10);
+    --gs-primary-15: rgba(var(--gs-primary-rgb), 0.15);
+    --gs-primary-25: rgba(var(--gs-primary-rgb), 0.25);
+
+    /* Accent color variants (cyan) */
+    --gs-accent-5: rgba(var(--gs-accent-rgb), 0.05);
+    --gs-accent-8: rgba(var(--gs-accent-rgb), 0.08);
+    --gs-accent-10: rgba(var(--gs-accent-rgb), 0.10);
+    --gs-accent-15: rgba(var(--gs-accent-rgb), 0.15);
+    --gs-accent-25: rgba(var(--gs-accent-rgb), 0.25);
+
+    /* Success color variants */
+    --gs-success-5: rgba(var(--gs-success-rgb), 0.05);
+    --gs-success-8: rgba(var(--gs-success-rgb), 0.08);
+    --gs-success-10: rgba(var(--gs-success-rgb), 0.10);
+    --gs-success-15: rgba(var(--gs-success-rgb), 0.15);
+    --gs-success-25: rgba(var(--gs-success-rgb), 0.25);
+
+    /* Warning color variants */
+    --gs-warning-5: rgba(var(--gs-warning-rgb), 0.05);
+    --gs-warning-8: rgba(var(--gs-warning-rgb), 0.08);
+    --gs-warning-10: rgba(var(--gs-warning-rgb), 0.10);
+    --gs-warning-15: rgba(var(--gs-warning-rgb), 0.15);
+    --gs-warning-25: rgba(var(--gs-warning-rgb), 0.25);
+
+    /* Danger color variants */
+    --gs-danger-5: rgba(var(--gs-danger-rgb), 0.05);
+    --gs-danger-8: rgba(var(--gs-danger-rgb), 0.08);
+    --gs-danger-10: rgba(var(--gs-danger-rgb), 0.10);
+    --gs-danger-15: rgba(var(--gs-danger-rgb), 0.15);
+    --gs-danger-25: rgba(var(--gs-danger-rgb), 0.25);
+
+    /* Info color variants */
+    --gs-info-5: rgba(var(--gs-info-rgb), 0.05);
+    --gs-info-8: rgba(var(--gs-info-rgb), 0.08);
+    --gs-info-10: rgba(var(--gs-info-rgb), 0.10);
+    --gs-info-15: rgba(var(--gs-info-rgb), 0.15);
+    --gs-info-25: rgba(var(--gs-info-rgb), 0.25);
+}
+
+/* ============================================
+   SPACING SCALE
+   Based on 0.25rem (4px) increments
+   ============================================ */
+
+:root {
+    --gs-space-0: 0;
+    --gs-space-1: 0.25rem;    /* 4px */
+    --gs-space-2: 0.5rem;     /* 8px */
+    --gs-space-3: 0.75rem;    /* 12px */
+    --gs-space-4: 1rem;       /* 16px */
+    --gs-space-5: 1.25rem;    /* 20px */
+    --gs-space-6: 1.5rem;     /* 24px */
+    --gs-space-7: 2rem;       /* 32px */
+    --gs-space-8: 2.5rem;     /* 40px */
+    --gs-space-9: 3rem;       /* 48px */
+    --gs-space-10: 4rem;      /* 64px */
+}
+
+/* ============================================
+   TYPOGRAPHY SCALE
+   ============================================ */
+
+:root {
+    /* Font Families */
+    --gs-font-sans: 'Public Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    --gs-font-mono: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
+
+    /* Font Sizes */
+    --gs-text-xs: 0.625rem;    /* 10px */
+    --gs-text-sm: 0.75rem;     /* 12px */
+    --gs-text-base: 0.875rem;  /* 14px */
+    --gs-text-md: 1rem;        /* 16px */
+    --gs-text-lg: 1.125rem;    /* 18px */
+    --gs-text-xl: 1.25rem;     /* 20px */
+    --gs-text-2xl: 1.5rem;     /* 24px */
+    --gs-text-3xl: 2rem;       /* 32px */
+    --gs-text-4xl: 2.5rem;     /* 40px */
+
+    /* Font Weights */
+    --gs-font-normal: 400;
+    --gs-font-medium: 500;
+    --gs-font-semibold: 600;
+    --gs-font-bold: 700;
+
+    /* Line Heights */
+    --gs-leading-none: 1;
+    --gs-leading-tight: 1.2;
+    --gs-leading-snug: 1.375;
+    --gs-leading-normal: 1.5;
+    --gs-leading-relaxed: 1.625;
+}
+
+/* ============================================
+   SHADOW TOKENS
+   ============================================ */
+
+:root {
+    --gs-shadow-none: none;
+    --gs-shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
+    --gs-shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+    --gs-shadow-md: 0 2px 6px rgba(67, 89, 113, 0.12);
+    --gs-shadow-lg: 0 4px 12px rgba(67, 89, 113, 0.16);
+    --gs-shadow-xl: 0 8px 24px rgba(0, 0, 0, 0.15);
+    --gs-shadow-2xl: 0 10px 40px rgba(0, 0, 0, 0.2);
+
+    /* Colored Shadows */
+    --gs-shadow-primary: 0 2px 4px rgba(99, 102, 241, 0.3);
+    --gs-shadow-primary-lg: 0 4px 8px rgba(99, 102, 241, 0.4);
+    --gs-shadow-success: 0 2px 8px rgba(76, 187, 23, 0.3);
+    --gs-shadow-danger: 0 2px 8px rgba(220, 53, 69, 0.3);
+
+    /* FAB Shadow (Material Design 3) */
+    --gs-shadow-fab: 0 3px 5px -1px rgba(0, 0, 0, 0.2),
+                     0 6px 10px 0 rgba(0, 0, 0, 0.14),
+                     0 1px 18px 0 rgba(0, 0, 0, 0.12);
+    --gs-shadow-fab-hover: 0 5px 5px -3px rgba(0, 0, 0, 0.2),
+                           0 8px 10px 1px rgba(0, 0, 0, 0.14),
+                           0 3px 14px 2px rgba(0, 0, 0, 0.12);
+}
+
+/* ============================================
+   BORDER RADIUS TOKENS
+   ============================================ */
+
+:root {
+    --gs-radius-none: 0;
+    --gs-radius-sm: 0.25rem;    /* 4px */
+    --gs-radius-md: 0.375rem;   /* 6px - Bootstrap default */
+    --gs-radius-lg: 0.5rem;     /* 8px */
+    --gs-radius-xl: 0.75rem;    /* 12px */
+    --gs-radius-2xl: 1rem;      /* 16px */
+    --gs-radius-3xl: 1.5rem;    /* 24px */
+    --gs-radius-pill: 9999px;
+    --gs-radius-circle: 50%;
+}
+
+/* ============================================
+   TRANSITION TOKENS
+   ============================================ */
+
+:root {
+    /* Durations */
+    --gs-duration-instant: 0ms;
+    --gs-duration-fast: 150ms;
+    --gs-duration-base: 200ms;
+    --gs-duration-slow: 300ms;
+    --gs-duration-slower: 400ms;
+
+    /* Easing Functions */
+    --gs-ease-linear: linear;
+    --gs-ease-in: cubic-bezier(0.4, 0, 1, 1);
+    --gs-ease-out: cubic-bezier(0, 0, 0.2, 1);
+    --gs-ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+    --gs-ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+    /* Preset Transitions */
+    --gs-transition-fast: var(--gs-duration-fast) var(--gs-ease-in-out);
+    --gs-transition-base: var(--gs-duration-base) var(--gs-ease-in-out);
+    --gs-transition-slow: var(--gs-duration-slow) var(--gs-ease-in-out);
+}
+
+/* ============================================
+   Z-INDEX SCALE
+   ============================================ */
+
+:root {
+    --gs-z-dropdown: 1000;
+    --gs-z-sticky: 1020;
+    --gs-z-fixed: 1030;
+    --gs-z-overlay: 1040;
+    --gs-z-modal-backdrop: 1050;
+    --gs-z-modal: 1055;
+    --gs-z-popover: 1060;
+    --gs-z-tooltip: 1070;
+    --gs-z-toast: 1080;
+    --gs-z-search: 1090;
+}
+
+/* ============================================
+   BREAKPOINTS (for reference - use in media queries)
+   ============================================ */
+
+:root {
+    /* Min-width breakpoints (mobile-first) */
+    --gs-breakpoint-sm: 576px;
+    --gs-breakpoint-md: 768px;
+    --gs-breakpoint-lg: 992px;
+    --gs-breakpoint-xl: 1200px;
+    --gs-breakpoint-xxl: 1400px;
+
+    /* Max-width breakpoints (for @media max-width) */
+    /* Use these values: 575.98px, 767.98px, 991.98px, 1199.98px, 1399.98px */
+}
+
+/* ============================================
+   FLOATING FAB TOKENS (from bottom-action-bar.css)
+   Mobile-first button sizing
+   ============================================ */
+
+:root {
+    --gs-fab-height: 44px;
+    --gs-fab-min-width: 44px;
+    --gs-fab-padding-x: 12px;
+    --gs-fab-spacing-right: 16px;
+    --gs-fab-spacing-bottom: 12px;
+    --gs-fab-border-radius: 12px;
+    --gs-fab-gap: 8px;
+    --gs-fab-font-size: 14px;
+    --gs-fab-icon-size: 18px;
+    --gs-fab-timer-width: 100px;
+    --gs-fab-timer-paused-width: 140px;
+}
+
+/* ============================================
+   CARD TOKENS
+   ============================================ */
+
+:root {
+    --gs-card-padding: 1.25rem;
+    --gs-card-padding-sm: 1rem;
+    --gs-card-border-radius: var(--gs-radius-lg);
+    --gs-card-shadow: var(--gs-shadow-md);
+    --gs-card-shadow-hover: var(--gs-shadow-lg);
+}
+
+/* ============================================
+   WORKOUT DATABASE TOKENS (from workout-database.css)
+   ============================================ */
+
+:root {
+    --gs-wdb-card-padding: 1rem;
+    --gs-wdb-card-gap: 0.75rem;
+    --gs-wdb-title-size: 1rem;
+    --gs-wdb-meta-size: 0.8125rem;
+    --gs-wdb-badge-size: 0.75rem;
+}
+
+/* ============================================
+   DARK MODE OVERRIDES
+   ============================================ */
+
+[data-bs-theme="dark"] {
+    /* Dark mode color adjustments */
+    --gs-gray-50: #1e293b;
+    --gs-gray-100: #334155;
+    --gs-gray-200: #475569;
+    --gs-gray-300: #64748b;
+    --gs-gray-400: #94a3b8;
+    --gs-gray-500: #cbd5e1;
+    --gs-gray-600: #e2e8f0;
+    --gs-gray-700: #f1f5f9;
+    --gs-gray-800: #f8fafc;
+    --gs-gray-900: #ffffff;
+
+    /* Dark mode shadows */
+    --gs-shadow-md: 0 2px 6px rgba(0, 0, 0, 0.3);
+    --gs-shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.4);
+    --gs-shadow-xl: 0 8px 24px rgba(0, 0, 0, 0.5);
+
+    /* Weight progression - brighter for dark mode */
+    --gs-weight-increased: #5DD91E;
+    --gs-weight-increased-rgb: 93, 217, 30;
+    --gs-weight-decreased: #f85149;
+    --gs-weight-decreased-rgb: 248, 81, 73;
+    --gs-weight-same: #8b949e;
+    --gs-weight-new: #58a6ff;
+    --gs-weight-modified: #ffd33d;
+
+    /* Dark mode success color - brighter green */
+    --gs-success-light: #6ee7b7;
+}
+
+/* ============================================
+   REDUCED MOTION PREFERENCES
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+    :root {
+        --gs-duration-instant: 0ms;
+        --gs-duration-fast: 0ms;
+        --gs-duration-base: 0ms;
+        --gs-duration-slow: 0ms;
+        --gs-duration-slower: 0ms;
+    }
+}
+
+/* ============================================
+   LEGACY VARIABLE ALIASES
+   For backwards compatibility with existing code
+   ============================================ */
+
+:root {
+    /* Map old --ghost-* to new --gs-* */
+    --ghost-primary: var(--gs-primary);
+    --ghost-secondary: var(--gs-secondary);
+    --ghost-accent: var(--gs-accent);
+    --ghost-success: var(--gs-success);
+    --ghost-success-light: var(--gs-success-light);
+    --ghost-success-dark: var(--gs-success-dark);
+    --ghost-success-rgb: var(--gs-success-rgb);
+    --ghost-warning: var(--gs-warning);
+    --ghost-danger: var(--gs-danger);
+    --ghost-dark: var(--gs-dark);
+    --ghost-light: var(--gs-light);
+
+    /* Map old --color-weight-* to new --gs-weight-* */
+    --color-weight-increased: var(--gs-weight-increased);
+    --color-weight-decreased: var(--gs-weight-decreased);
+    --color-weight-same: var(--gs-weight-same);
+    --color-weight-new: var(--gs-weight-new);
+    --color-weight-modified: var(--gs-weight-modified);
+
+    /* Map old --floating-fab-* to new --gs-fab-* */
+    --floating-fab-height: var(--gs-fab-height);
+    --floating-fab-min-width: var(--gs-fab-min-width);
+    --floating-fab-padding-x: var(--gs-fab-padding-x);
+    --floating-fab-spacing-right: var(--gs-fab-spacing-right);
+    --floating-fab-spacing-bottom: var(--gs-fab-spacing-bottom);
+    --floating-fab-border-radius: var(--gs-fab-border-radius);
+    --floating-fab-gap: var(--gs-fab-gap);
+    --floating-fab-font-size: var(--gs-fab-font-size);
+    --floating-fab-icon-size: var(--gs-fab-icon-size);
+    --floating-timer-width: var(--gs-fab-timer-width);
+    --floating-timer-paused-width: var(--gs-fab-timer-paused-width);
+}

@@ -1,0 +1,197 @@
+/**
+ * Workout Mode - Timer
+ * Inline rest timer component
+ *
+ * @version 4.0.0 - Phase 4 CSS Refactor
+ * @date 2026-01-20
+ */
+
+/* ============================================
+   INLINE REST TIMER
+   ============================================ */
+
+.inline-rest-timer {
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+[data-bs-theme="dark"] .inline-rest-timer {
+    background: transparent;
+    border: none;
+}
+
+/* Inner timer container - horizontal layout */
+.inline-rest-timer-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    width: 100%;
+}
+
+/* Timer display - left side (time value) */
+.inline-timer-display {
+    display: flex;
+    align-items: center;
+    line-height: 1;
+}
+
+/* Timer controls - right side (Start Rest, Pause, etc.) */
+.inline-timer-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* ============================================
+   READY STATE
+   ============================================ */
+
+.rest-timer-ready {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.rest-timer-ready.hidden {
+    display: none;
+}
+
+.rest-timer-duration {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--workout-text);
+}
+
+.rest-timer-start-link {
+    color: var(--workout-accent);
+    text-decoration: none;
+    font-size: 0.875rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    cursor: pointer;
+}
+
+.rest-timer-start-link:hover {
+    text-decoration: underline;
+}
+
+/* ============================================
+   COUNTING STATE
+   ============================================ */
+
+.rest-timer-counting {
+    display: none;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.rest-timer-counting.active {
+    display: flex;
+}
+
+.rest-timer-countdown {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--workout-accent);
+}
+
+.rest-timer-countdown.warning {
+    color: var(--workout-warning);
+}
+
+.rest-timer-countdown.done {
+    color: var(--workout-success);
+}
+
+/* ============================================
+   TIMER CONTROLS
+   ============================================ */
+
+.rest-timer-inline-controls {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.rest-timer-inline-btn {
+    padding: 0.375rem 0.75rem;
+    border-radius: 0.375rem;
+    border: 1px solid var(--workout-border);
+    background: var(--workout-card-bg);
+    color: var(--workout-muted);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+
+.rest-timer-inline-btn i {
+    font-size: 1rem;
+}
+
+.rest-timer-inline-btn:hover {
+    border-color: var(--workout-accent);
+    color: var(--workout-accent);
+    background: var(--workout-status-active);
+}
+
+.rest-timer-inline-btn.pause {
+    background: var(--workout-accent);
+    border-color: var(--workout-accent);
+    color: white;
+}
+
+.rest-timer-inline-btn.pause:hover {
+    background: #5457e5;
+}
+
+[data-bs-theme="dark"] .rest-timer-inline-btn.pause:hover {
+    background: #7577f0;
+}
+
+/* ============================================
+   INLINE TIMER LINKS
+   ============================================ */
+
+.inline-timer-link {
+    color: var(--workout-accent);
+    text-decoration: none;
+    font-size: 0.875rem;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    cursor: pointer;
+    line-height: 1;
+}
+
+.inline-timer-link:hover {
+    text-decoration: underline;
+}
+
+.inline-timer-link i {
+    font-size: 1rem;  /* Matches note button icon size */
+}
+
+/* Secondary action link (reset) */
+.inline-timer-action {
+    color: var(--workout-muted);
+    text-decoration: none;
+    font-size: 0.8125rem;
+    cursor: pointer;
+}
+
+.inline-timer-action:hover {
+    color: var(--workout-accent);
+}

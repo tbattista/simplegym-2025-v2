@@ -4,8 +4,8 @@
  * Inherits from exercise-group-card, adds note-specific overrides
  * Extracted from workout-builder.css v2.2.0
  *
- * @version 1.0.0
- * @date 2026-01-18
+ * @version 1.1.0 - Phase 5 !important Reduction
+ * @date 2026-01-21
  */
 
 /* ============================================
@@ -39,43 +39,44 @@
     color: #94a3b8;
 }
 
-/* Template note card - minimal style matching 3-dot menu */
+/* Template note card - actions always visible
+   Uses higher specificity via .template-note-card prefix */
 .template-note-card .card-actions {
-    display: flex !important;
-    visibility: visible !important;
+    display: flex;
+    visibility: visible;
 }
 
 .template-note-card .btn-edit-compact {
-    display: flex !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-    width: auto !important;
-    height: auto !important;
-    padding: 0.25rem !important;
-    border: none !important;
+    display: flex;
+    visibility: visible;
+    opacity: 1;
+    width: auto;
+    height: auto;
+    padding: 0.25rem;
+    border: none;
     border-radius: 4px;
-    color: #64748b !important; /* Darker gray for visibility */
+    color: #64748b;
     background: transparent;
     align-items: center;
     justify-content: center;
-    transition: all 0.15s ease;
+    transition: color 0.15s ease, background-color 0.15s ease, opacity 0.15s ease;
 }
 
 .template-note-card .btn-edit-compact:hover {
-    opacity: 1 !important;
-    color: var(--bs-body-color) !important;
-    background: rgba(var(--bs-primary-rgb), 0.08) !important;
+    opacity: 1;
+    color: var(--bs-body-color);
+    background: rgba(var(--bs-primary-rgb), 0.08);
 }
 
 .template-note-card .btn-edit-compact i {
-    font-size: 20px !important;
-    display: block !important;
-    line-height: 1 !important;
+    font-size: 20px;
+    display: block;
+    line-height: 1;
     margin: 0;
     padding: 0;
 }
 
 /* Adjust content padding for single button (no 3-dot menu) */
 .template-note-card .exercise-content {
-    padding-right: 48px; /* Less padding since only edit button, no menu */
+    padding-right: 48px;
 }

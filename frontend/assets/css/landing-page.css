@@ -21,7 +21,7 @@
 }
 
 .landing-hero-card h1 i {
-  color: #696cff;
+  color: var(--bs-primary);
 }
 
 .landing-hero-card p {
@@ -33,7 +33,7 @@
   background: var(--bs-card-bg);
   border: 1px solid var(--bs-border-color);
   box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
-  transition: all 0.3s ease;
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
 }
 
 /* Clickable feature cards */
@@ -52,7 +52,7 @@
 }
 
 .landing-feature-link:hover .landing-feature-icon {
-  background: #696cff;
+  background: var(--bs-primary);
 }
 
 .landing-feature-link:hover .landing-feature-icon i {
@@ -99,18 +99,18 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  transition: all 0.3s ease;
+  transition: background-color 0.3s ease;
 }
 
 .landing-feature-icon i {
   font-size: 2.5rem;
-  color: #696cff;
-  transition: all 0.3s ease;
+  color: var(--bs-primary);
+  transition: color 0.3s ease;
 }
 
 /* Step-specific colors */
 .landing-feature-card:nth-child(1) .landing-feature-icon i {
-  color: #696cff;
+  color: var(--bs-primary);
 }
 
 .row .col-12:nth-child(2) .landing-feature-icon i {
@@ -189,19 +189,19 @@
 .landing-feature-card,
 .landing-hero-card .btn,
 .landing-cta-card .btn {
-  transition: all 0.3s ease;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 /* Button hover effects */
 .landing-hero-card .btn:hover,
 .landing-cta-card .btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 0.5rem 1rem rgba(105, 108, 255, 0.3);
+  box-shadow: 0 0.5rem 1rem rgba(var(--bs-primary-rgb), 0.3);
 }
 
 /* Accessibility */
 .landing-feature-card:focus-within {
-  outline: 2px solid #696cff;
+  outline: 2px solid var(--bs-primary);
   outline-offset: 2px;
 }
 

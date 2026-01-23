@@ -10,7 +10,7 @@
 
 #navbarFeedbackBtn {
     position: relative;
-    transition: all 0.2s ease;
+    transition: transform 0.2s ease;
 }
 
 #navbarFeedbackBtn:hover {
@@ -73,7 +73,7 @@
     padding: 0.5rem 0.75rem;
     border: 1px solid var(--bs-border-color);
     border-radius: 0.375rem;
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
     cursor: pointer;
 }
 
@@ -109,7 +109,7 @@
     border-radius: 0.375rem;
     padding: 0.625rem 0.875rem;
     font-size: 0.9375rem;
-    transition: all 0.2s ease;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 #feedbackModal .form-control:focus,
@@ -205,7 +205,7 @@
 #submitFeedbackBtn {
     min-width: 140px;
     font-weight: 600;
-    transition: all 0.2s ease;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 #submitFeedbackBtn:hover {
@@ -333,7 +333,7 @@
 #draftNotice,
 #feedbackError,
 #feedbackSuccess {
-    transition: all 0.3s ease;
+    transition: opacity 0.3s ease;
 }
 
 /* ============================================

@@ -56,7 +56,7 @@
     background: rgba(var(--bs-warning-rgb), 0.08);
     border: 2px solid var(--bs-warning);
     cursor: move;
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 }
 
 .accordion-workout-groups.edit-mode-active .accordion-item:hover {

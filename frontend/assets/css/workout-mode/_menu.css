@@ -1,0 +1,98 @@
+/**
+ * Workout Mode - Menu
+ * More menu dropdown for management actions
+ *
+ * @version 4.0.0 - Phase 4 CSS Refactor
+ * @date 2026-01-20
+ */
+
+/* ============================================
+   DROPDOWN MENU CONTAINER
+   ============================================ */
+
+.workout-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: var(--workout-card-bg);
+    border: 1px solid var(--workout-border);
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    min-width: 180px;
+    z-index: 1050;
+    display: none;
+}
+
+.workout-menu.show {
+    display: block;
+}
+
+/* Dropup variant - opens above when near bottom */
+.workout-menu.dropup {
+    top: auto;
+    bottom: 100%;
+    margin-bottom: 4px;
+}
+
+/* ============================================
+   MENU ITEMS
+   ============================================ */
+
+.workout-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+    color: var(--workout-text);
+    cursor: pointer;
+    transition: background 0.15s ease;
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: left;
+}
+
+.workout-menu-item:hover {
+    background: var(--workout-status-active);
+}
+
+.workout-menu-item:first-child {
+    border-radius: 8px 8px 0 0;
+}
+
+.workout-menu-item:last-child {
+    border-radius: 0 0 8px 8px;
+}
+
+.workout-menu-item i {
+    font-size: 1.125rem;
+    color: var(--workout-muted);
+}
+
+/* Danger variant */
+.workout-menu-item.danger {
+    color: var(--workout-danger);
+}
+
+.workout-menu-item.danger i {
+    color: var(--workout-danger);
+}
+
+/* Disabled state */
+.workout-menu-item:disabled,
+.workout-menu-item.disabled {
+    opacity: 0.4;
+    pointer-events: none;
+    cursor: not-allowed;
+}
+
+/* ============================================
+   MENU DIVIDER
+   ============================================ */
+
+.workout-menu-divider {
+    height: 1px;
+    background: var(--workout-border);
+    margin: 0.25rem 0;
+}

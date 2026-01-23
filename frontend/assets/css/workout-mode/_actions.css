@@ -1,0 +1,96 @@
+/**
+ * Workout Mode - Actions
+ * Primary actions, add exercise, save/log buttons
+ *
+ * @version 4.0.0 - Phase 4 CSS Refactor
+ * @date 2026-01-20
+ */
+
+/* ============================================
+   ADD EXERCISE BUTTON
+   ============================================ */
+
+.workout-add-exercise {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem;
+    color: var(--workout-muted);
+    cursor: pointer;
+    border: 1px dashed var(--workout-border);
+    border-radius: 8px;
+    transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
+    margin-bottom: 0.75rem;
+}
+
+.workout-add-exercise:hover {
+    border-color: var(--workout-accent);
+    color: var(--workout-accent);
+    background: var(--workout-status-active);
+}
+
+.workout-add-exercise i {
+    font-size: 1.25rem;
+}
+
+/* ============================================
+   ACTIONS SECTION
+   ============================================ */
+
+.workout-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+/* ============================================
+   PRIMARY ACTION BUTTON
+   ============================================ */
+
+.workout-primary-action {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 0.75rem 1rem;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    border-radius: 0.5rem;
+    border: none;
+    background: var(--workout-success);
+    color: white;
+    cursor: pointer;
+    transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.workout-primary-action:hover {
+    background: #45a814;
+    transform: translateY(-1px);
+}
+
+.workout-primary-action:active {
+    transform: translateY(0);
+}
+
+.workout-primary-action i {
+    font-size: 1.125rem;
+}
+
+/* ============================================
+   BONUS BADGE
+   ============================================ */
+
+.workout-card .additional-exercise-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.25rem;
+    height: 1.25rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--workout-accent);
+    background: var(--workout-status-active);
+    border: 1px solid var(--workout-accent);
+    border-radius: 50%;
+}

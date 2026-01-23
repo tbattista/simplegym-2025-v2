@@ -23,17 +23,18 @@ class UnifiedEditController {
         this.cardElement = cardElement;
         this.weightFieldController = weightFieldController;
         this.repsSetFieldController = repsSetFieldController;
-        
-        // Find unified action buttons
+
+        // Find unified action buttons (now in card body, not inside repssets-editor)
+        this.unifiedActionsContainer = cardElement.querySelector('.workout-unified-actions');
         this.unifiedSaveBtn = cardElement.querySelector('.unified-save-btn');
         this.unifiedCancelBtn = cardElement.querySelector('.unified-cancel-btn');
-        
+
         // Track unified edit state
         this.isUnifiedEditActive = false;
-        
+
         this.init();
-        
-        console.log('✅ UnifiedEditController initialized for card:', cardElement.dataset.exerciseId);
+
+        console.log('✅ UnifiedEditController initialized for card:', cardElement.dataset.exerciseName);
     }
     
     /**
@@ -86,31 +87,47 @@ class UnifiedEditController {
      * Enter unified edit mode - opens both editors and shows shared buttons
      */
     enterUnifiedEditMode() {
+        // Prevent re-entering if already active
+        if (this.isUnifiedEditActive) {
+            console.log('⚠️ Already in unified edit mode, ignoring');
+            return;
+        }
+
         console.log('🟢 Entering unified edit mode');
-        
+
+        // First, expand the card if it's collapsed
+        if (!this.cardElement.classList.contains('expanded')) {
+            this.cardElement.classList.add('expanded');
+        }
+
         // CRITICAL: Set unified mode flag on BOTH controllers FIRST (before opening editors)
         // This prevents blur handlers from auto-closing when focus moves between fields
-        if (this.weightFieldController.setUnifiedEditMode) {
+        if (this.weightFieldController?.setUnifiedEditMode) {
             this.weightFieldController.setUnifiedEditMode(true);
         }
-        
-        if (this.repsSetFieldController.setUnifiedEditMode) {
+
+        if (this.repsSetFieldController?.setUnifiedEditMode) {
             this.repsSetFieldController.setUnifiedEditMode(true);
         }
-        
+
         // Mark card as being in unified edit mode (shows unified buttons, hides individual)
         this.cardElement.classList.add('unified-edit-active');
         this.isUnifiedEditActive = true;
-        
+
+        // Show the unified actions container
+        if (this.unifiedActionsContainer) {
+            this.unifiedActionsContainer.style.display = 'flex';
+        }
+
         // NOW open both editors (blur handlers will ignore events because unified mode is active)
-        if (this.weightFieldController.enterEditMode) {
+        if (this.weightFieldController?.enterEditMode) {
             this.weightFieldController.enterEditMode();
         }
-        
-        if (this.repsSetFieldController.enterEditMode) {
+
+        if (this.repsSetFieldController?.enterEditMode) {
             this.repsSetFieldController.enterEditMode();
         }
-        
+
         console.log('✅ Unified edit mode active - both editors open with shared buttons');
     }
     
@@ -119,20 +136,25 @@ class UnifiedEditController {
      */
     exitUnifiedEditMode() {
         console.log('🔴 Exiting unified edit mode');
-        
+
         // Remove unified edit state
         this.cardElement.classList.remove('unified-edit-active');
         this.isUnifiedEditActive = false;
-        
+
+        // Hide the unified actions container
+        if (this.unifiedActionsContainer) {
+            this.unifiedActionsContainer.style.display = 'none';
+        }
+
         // Re-enable blur handlers
-        if (this.weightFieldController.setUnifiedEditMode) {
+        if (this.weightFieldController?.setUnifiedEditMode) {
             this.weightFieldController.setUnifiedEditMode(false);
         }
-        
-        if (this.repsSetFieldController.setUnifiedEditMode) {
+
+        if (this.repsSetFieldController?.setUnifiedEditMode) {
             this.repsSetFieldController.setUnifiedEditMode(false);
         }
-        
+
         console.log('✅ Unified edit mode exited');
     }
     

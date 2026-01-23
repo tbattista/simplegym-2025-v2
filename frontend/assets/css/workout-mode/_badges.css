@@ -1,0 +1,123 @@
+/**
+ * Workout Mode - Badges
+ * Weight progression badges and direction indicators
+ *
+ * @version 4.1.0 - Phase 5 !important Reduction
+ * @date 2026-01-21
+ *
+ * All colors now use CSS variables from _variables.css
+ * Dark mode handled via variable overrides in _variables.css, not duplicate selectors
+ */
+
+/* ============================================
+   WEIGHT BADGE BASE
+   Progression indicators for weight changes
+   ============================================ */
+
+.weight-badge.increased {
+    background-color: var(--workout-weight-increased);
+    color: white;
+}
+
+.weight-badge.decreased {
+    background-color: var(--workout-weight-decreased);
+    color: white;
+}
+
+.weight-badge.same {
+    background-color: var(--workout-weight-same);
+    color: white;
+}
+
+.weight-badge.new {
+    background-color: var(--workout-weight-new);
+    color: white;
+}
+
+.weight-badge.modified {
+    border: 2px solid var(--workout-weight-modified);
+    box-shadow: 0 0 0 1px var(--workout-weight-modified);
+}
+
+/* ============================================
+   DIRECTION REMINDER BADGES
+   Animated badges showing planned direction
+   ============================================ */
+
+.weight-badge.direction-reminder {
+    font-weight: 700;
+    border: 2px solid currentColor;
+    animation: subtlePulse 2s ease-in-out infinite;
+}
+
+.weight-badge.direction-reminder.direction-up {
+    background-color: var(--workout-weight-increased);
+    color: white;
+}
+
+.weight-badge.direction-reminder.direction-down {
+    background-color: var(--workout-weight-decreased);
+    color: white;
+}
+
+.weight-badge.direction-reminder.direction-same {
+    background-color: #6366f1;
+    color: white;
+}
+
+/* Dark mode override for direction-same (uses indigo, not a variable) */
+[data-bs-theme="dark"] .weight-badge.direction-reminder.direction-same {
+    background-color: #58a6ff;
+}
+
+@keyframes subtlePulse {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.05);
+        opacity: 0.9;
+    }
+}
+
+/* Accessibility: Respect reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+    .weight-badge.direction-reminder {
+        animation: none !important;
+    }
+}
+
+/* ============================================
+   CURRENT SESSION DIRECTION BADGES
+   Non-animated badges showing current direction
+   ============================================ */
+
+.weight-badge.direction-up:not(.direction-reminder) {
+    background-color: var(--workout-weight-increased);
+    color: white;
+    font-weight: 600;
+}
+
+.weight-badge.direction-down:not(.direction-reminder) {
+    background-color: var(--workout-weight-decreased);
+    color: white;
+    font-weight: 600;
+}
+
+/* ============================================
+   DATA ATTRIBUTE SELECTORS
+   Alternative selector pattern via data attributes
+   ============================================ */
+
+.weight-badge[data-direction="up"]:not(.direction-reminder) {
+    background-color: var(--workout-weight-increased);
+    color: white;
+    font-weight: 600;
+}
+
+.weight-badge[data-direction="down"]:not(.direction-reminder) {
+    background-color: var(--workout-weight-decreased);
+    color: white;
+    font-weight: 600;
+}

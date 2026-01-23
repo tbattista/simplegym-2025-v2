@@ -1,29 +1,29 @@
 /**
  * Ghost Gym - Note Card Styles
  * Styles for session notes that appear inline with exercise cards
- * Extends the logbook-card pattern for consistent UI
+ * Extends the workout-card pattern for consistent UI
  * @version 1.0.0
  * @date 2026-01-16
  */
 
 /* ============================================
    NOTE CARD BASE STYLES
-   Extends .logbook-card pattern
+   Extends .workout-card pattern
    ============================================ */
 
 /* Note card base - inherits from logbook-card */
-.logbook-card.note-card {
-    background: var(--logbook-card-bg);
-    border-left: 3px solid var(--logbook-muted);
+.workout-card.note-card {
+    background: var(--workout-card-bg);
+    border-left: 3px solid var(--workout-muted);
     transition: border-color 0.2s ease;
 }
 
-.logbook-card.note-card:hover:not(.expanded) {
-    border-left-color: var(--logbook-accent);
+.workout-card.note-card:hover:not(.expanded) {
+    border-left-color: var(--workout-accent);
 }
 
-.logbook-card.note-card.expanded {
-    border-left-color: var(--logbook-accent);
+.workout-card.note-card.expanded {
+    border-left-color: var(--workout-accent);
 }
 
 /* ============================================
@@ -44,7 +44,7 @@
 
 /* Note icon styling */
 .note-icon {
-    color: var(--logbook-muted);
+    color: var(--workout-muted);
     font-size: 1.125rem;
     flex-shrink: 0;
     transition: color 0.2s ease;
@@ -52,12 +52,12 @@
 
 .note-card.expanded .note-icon,
 .note-card:hover .note-icon {
-    color: var(--logbook-accent);
+    color: var(--workout-accent);
 }
 
 /* Note preview in collapsed state - shows up to 3 lines */
 .note-preview {
-    color: var(--logbook-muted);
+    color: var(--workout-muted);
     font-weight: 400;
     font-style: italic;
     overflow: hidden;
@@ -70,7 +70,7 @@
 }
 
 .note-card.expanded .note-preview {
-    color: var(--logbook-text);
+    color: var(--workout-text);
 }
 
 /* ============================================
@@ -85,14 +85,14 @@
 .note-full-content {
     font-size: 0.9375rem;
     line-height: 1.6;
-    color: var(--logbook-text);
+    color: var(--workout-text);
     white-space: pre-wrap;
     word-break: break-word;
     padding: 0.5rem 0;
 }
 
 .note-full-content em.text-muted {
-    color: var(--logbook-muted);
+    color: var(--workout-muted);
     font-style: italic;
 }
 
@@ -113,41 +113,41 @@
     max-height: 300px;
     font-size: 0.9375rem;
     line-height: 1.5;
-    border: 1px solid var(--logbook-border);
+    border: 1px solid var(--workout-border);
     border-radius: 0.375rem;
     padding: 0.75rem;
-    background: var(--logbook-card-bg);
-    color: var(--logbook-text);
+    background: var(--workout-card-bg);
+    color: var(--workout-text);
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .note-textarea:focus {
-    border-color: var(--logbook-accent);
+    border-color: var(--workout-accent);
     box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.1);
     outline: none;
 }
 
 .note-textarea::placeholder {
-    color: var(--logbook-muted);
+    color: var(--workout-muted);
     font-style: italic;
 }
 
 /* Character counter */
 .note-char-count {
     font-size: 0.75rem;
-    color: var(--logbook-muted);
+    color: var(--workout-muted);
     text-align: right;
     margin-top: -0.25rem;
 }
 
 .note-char-current {
-    color: var(--logbook-text);
+    color: var(--workout-text);
     font-weight: 500;
 }
 
 /* Warning when approaching limit */
 .note-char-count.warning .note-char-current {
-    color: var(--logbook-warning);
+    color: var(--workout-warning);
 }
 
 /* Error when at limit */
@@ -178,24 +178,24 @@
 
 /* Save button */
 .note-save-btn {
-    background-color: var(--logbook-success);
-    border-color: var(--logbook-success);
+    background-color: var(--workout-success);
+    border-color: var(--workout-success);
 }
 
 .note-save-btn:hover {
-    background-color: var(--logbook-success);
+    background-color: var(--workout-success);
     filter: brightness(1.1);
 }
 
 /* Cancel button */
 .note-cancel-btn {
-    border-color: var(--logbook-border);
-    color: var(--logbook-muted);
+    border-color: var(--workout-border);
+    color: var(--workout-muted);
 }
 
 .note-cancel-btn:hover {
-    background-color: var(--logbook-border);
-    color: var(--logbook-text);
+    background-color: var(--workout-border);
+    color: var(--workout-text);
 }
 
 /* ============================================
@@ -206,15 +206,15 @@
     min-width: 160px;
 }
 
-.note-menu .logbook-menu-item {
-    color: var(--logbook-text);
+.note-menu .workout-menu-item {
+    color: var(--workout-text);
 }
 
-.note-menu .logbook-menu-item:first-child {
+.note-menu .workout-menu-item:first-child {
     color: var(--bs-danger);
 }
 
-.note-menu .logbook-menu-item:first-child i {
+.note-menu .workout-menu-item:first-child i {
     color: var(--bs-danger);
 }
 
@@ -234,17 +234,17 @@
     padding: 0.75rem 1rem;
     font-size: 0.9375rem;
     border-width: 1px;
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
 
 .position-picker-item:hover {
-    background: var(--logbook-accent);
-    border-color: var(--logbook-accent);
+    background: var(--workout-accent);
+    border-color: var(--workout-accent);
     color: white;
 }
 
 .position-picker-item i {
-    color: var(--logbook-accent);
+    color: var(--workout-accent);
     transition: color 0.2s ease;
 }
 
@@ -255,12 +255,12 @@
 /* Quick add option (at the end) */
 .position-picker-item.quick-add {
     background: rgba(var(--bs-success-rgb), 0.1);
-    border-color: var(--logbook-success);
-    color: var(--logbook-success);
+    border-color: var(--workout-success);
+    color: var(--workout-success);
 }
 
 .position-picker-item.quick-add:hover {
-    background: var(--logbook-success);
+    background: var(--workout-success);
     color: white;
 }
 
@@ -270,14 +270,14 @@
    ============================================ */
 
 .reorder-item[data-item-type="note"] .reorder-item-inner {
-    border-left: 3px solid var(--logbook-muted);
+    border-left: 3px solid var(--workout-muted);
 }
 
 .reorder-item[data-item-type="note"] .note-indicator {
     display: flex;
     align-items: center;
     gap: 0.25rem;
-    color: var(--logbook-muted);
+    color: var(--workout-muted);
     font-size: 0.75rem;
 }
 
@@ -291,13 +291,13 @@
 
 [data-theme="dark"] .note-card,
 .dark-mode .note-card {
-    background: var(--logbook-card-bg);
+    background: var(--workout-card-bg);
 }
 
 [data-theme="dark"] .note-textarea,
 .dark-mode .note-textarea {
     background: rgba(0, 0, 0, 0.2);
-    border-color: var(--logbook-border);
+    border-color: var(--workout-border);
 }
 
 [data-theme="dark"] .note-textarea:focus,

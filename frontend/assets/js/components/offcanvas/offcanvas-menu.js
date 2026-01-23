@@ -22,7 +22,10 @@ export function createMenuOffcanvas(config) {
     const { id, title, icon, menuItems = [] } = config;
     
     const menuHtml = menuItems.map((item, index) => {
-        if (item.type === 'toggle') {
+        if (item.type === 'divider') {
+            // Visual divider/separator
+            return `<hr class="menu-divider my-2">`;
+        } else if (item.type === 'toggle') {
             // Toggle switch item
             return `
                 <div class="more-menu-item toggle-item" data-menu-action="${index}">

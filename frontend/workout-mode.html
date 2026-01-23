@@ -51,12 +51,12 @@
     
     <!-- Quick Notes Popover CSS -->
     <link rel="stylesheet" href="/static/assets/css/components/quick-notes-popover.css" />
-    
-    <!-- Workout Mode CSS -->
-    <link rel="stylesheet" href="/static/assets/css/workout-mode.css?v=20260116-01" />
 
-    <!-- Logbook V2 Theme CSS (NEW - Phase 1) -->
-    <link rel="stylesheet" href="/static/assets/css/logbook-theme.css?v=20260116-01" />
+    <!-- Design System (required for CSS variables used by workout-mode.css) -->
+    <link rel="stylesheet" href="/static/assets/css/design-system.css" />
+
+    <!-- Workout Mode CSS (Consolidated in Phase 4 - includes former logbook-theme.css) -->
+    <link rel="stylesheet" href="/static/assets/css/workout-mode.css?v=20260120-02" />
 
     <!-- Workout Database CSS (for workout list component) -->
     <link rel="stylesheet" href="/static/assets/css/workout-database.css?v=20260116-01" />
@@ -103,7 +103,7 @@
               <!-- Workout Info Header (Above Cards) -->
               <div class="mb-3" id="workoutInfoHeader" style="display: none;">
                 <h6 class="mb-2">
-                  Workout Name: <span id="workoutName">Loading workout...</span>
+                  <span id="workoutName">Loading workout...</span>
                 </h6>
                 <p class="text-muted small mb-3">
                   Last completed: <span id="lastCompletedDate">Never</span>

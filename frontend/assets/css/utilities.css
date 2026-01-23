@@ -1,0 +1,226 @@
+/**
+ * Ghost Gym - Utility Styles
+ * Animations, drag/drop feedback, custom scrollbar, and loading states
+ *
+ * @version 1.0.0
+ * @date 2026-01-20
+ *
+ * This file contains:
+ * - Animation classes (fade-in, slide-in, spin)
+ * - View transition animations
+ * - Drag and drop visual feedback
+ * - Custom scrollbar styling
+ * - Loading states and overlays
+ * - Smooth transitions for interactive elements
+ * - Focus states for accessibility
+ *
+ * Extracted from ghost-gym-custom.css Phase 2 refactor
+ */
+
+/* ============================================
+   BASIC ANIMATION CLASSES
+   ============================================ */
+
+.fade-in {
+    animation: fadeIn 0.3s ease-in;
+}
+
+.slide-in {
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ============================================
+   VIEW TRANSITION ANIMATIONS
+   ============================================ */
+
+@keyframes viewFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes viewSlideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes cardFadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95) translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+@keyframes spin {
+    to { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+/* ============================================
+   DRAG AND DROP VISUAL FEEDBACK
+   ============================================ */
+
+.sortable-ghost {
+    opacity: 0.4;
+    background: var(--ghost-primary) !important;
+    color: white !important;
+}
+
+.sortable-chosen {
+    opacity: 0.8;
+}
+
+.sortable-drag {
+    opacity: 0.6;
+    transform: rotate(5deg);
+}
+
+/* Workout item dragging state */
+.workout-item.dragging {
+    opacity: 0.5;
+    transform: rotate(2deg);
+}
+
+/* Workout card dragging state */
+.workout-card.dragging {
+    opacity: 0.5;
+    transform: rotate(2deg);
+}
+
+/* ============================================
+   CUSTOM SCROLLBAR
+   ============================================ */
+
+.list-group-flush::-webkit-scrollbar {
+    width: 6px;
+}
+
+.list-group-flush::-webkit-scrollbar-track {
+    background: #f1f5f9;
+}
+
+.list-group-flush::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 3px;
+}
+
+.list-group-flush::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* Dark mode scrollbar */
+[data-bs-theme="dark"] .list-group-flush::-webkit-scrollbar-track {
+    background: #1e293b;
+}
+
+[data-bs-theme="dark"] .list-group-flush::-webkit-scrollbar-thumb {
+    background: #475569;
+}
+
+[data-bs-theme="dark"] .list-group-flush::-webkit-scrollbar-thumb:hover {
+    background: #64748b;
+}
+
+/* ============================================
+   LOADING STATES
+   ============================================ */
+
+.loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.spinner-border-ghost {
+    border-color: var(--ghost-primary);
+    border-right-color: transparent;
+}
+
+/* Dark mode loading overlay */
+[data-bs-theme="dark"] .loading-overlay {
+    background: rgba(30, 41, 59, 0.9);
+}
+
+/* ============================================
+   SMOOTH TRANSITIONS FOR INTERACTIVE ELEMENTS
+   ============================================ */
+
+button, .btn, a {
+    transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+/* ============================================
+   FOCUS STATES FOR ACCESSIBILITY
+   ============================================ */
+
+button:focus-visible,
+.btn:focus-visible,
+a:focus-visible {
+    outline: 2px solid var(--ghost-primary);
+    outline-offset: 2px;
+}
+
+/* ============================================
+   BADGE ANIMATIONS
+   ============================================ */
+
+.badge {
+    transition: transform 0.2s ease;
+}
+
+.badge:hover {
+    transform: scale(1.05);
+}
+
+/* ============================================
+   WORKOUT CARD PREVIEW ON HOVER
+   ============================================ */
+
+.workout-card-preview {
+    opacity: 0;
+    max-height: 0;
+    overflow: hidden;
+    transition: opacity 0.3s ease, max-height 0.3s ease;
+}
+
+.workout-card:hover .workout-card-preview {
+    opacity: 1;
+    max-height: 50px;
+}
