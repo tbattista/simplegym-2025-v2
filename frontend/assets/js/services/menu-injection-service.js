@@ -168,19 +168,21 @@ class MenuInjectionService {
      */
     getActivePageFromURL() {
         const path = window.location.pathname;
-        
+
         // Extract filename from path
         const filename = path.split('/').pop() || 'index.html';
-        
+
         // Map filenames to page identifiers
+        // More specific patterns MUST come before general ones
+        if (filename.includes('dashboard')) return 'dashboard';
         if (filename.includes('programs')) return 'programs';
         if (filename.includes('workout-mode')) return 'workout-mode';
         if (filename.includes('workout-database')) return 'workout-database';
-        if (filename.includes('workouts')) return 'workouts';
-        if (filename.includes('exercise-database')) return 'exercises';
+        if (filename.includes('workout-builder')) return 'workouts';
         if (filename.includes('public-workouts')) return 'public-workouts';
+        if (filename.includes('exercise-database')) return 'exercises';
         if (filename.includes('index') || filename === '') return 'home';
-        
+
         // Default to home
         return 'home';
     }

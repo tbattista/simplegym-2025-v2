@@ -206,6 +206,88 @@
 }
 
 /* ============================================================================
+   HOME PAGE - THUMB ZONE OPTIMIZATION
+   ============================================================================ */
+
+/* Flex layout for home dashboard to push CTA to bottom */
+.home-dashboard-layout {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - 140px); /* Account for nav/padding */
+}
+
+/* Greeting section */
+.home-greeting {
+  padding-top: 0.5rem;
+}
+
+.home-greeting h4 {
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+/* Spacer pushes CTA to bottom on taller screens */
+.home-spacer {
+  min-height: 20px;
+}
+
+/* Primary CTA section */
+.home-primary-cta {
+  margin-top: auto;
+  padding-top: 1rem;
+}
+
+/* On mobile, make CTA sticky at bottom for thumb accessibility */
+@media (max-width: 768px) {
+  .home-dashboard-layout {
+    min-height: calc(100vh - 120px);
+    padding-bottom: 160px; /* Space for sticky CTA */
+  }
+
+  .home-primary-cta {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--bs-body-bg);
+    padding: 1rem;
+    border-top: 1px solid var(--bs-border-color);
+    z-index: 1000;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+  }
+
+  /* Account for safe area on newer iPhones */
+  @supports (padding-bottom: env(safe-area-inset-bottom)) {
+    .home-primary-cta {
+      padding-bottom: calc(1rem + env(safe-area-inset-bottom));
+    }
+  }
+}
+
+/* On larger screens, CTA is inline */
+@media (min-width: 769px) {
+  .home-dashboard-layout {
+    min-height: auto;
+    padding-bottom: 0;
+  }
+
+  .home-primary-cta {
+    position: static;
+    background: transparent;
+    padding: 0;
+    border-top: none;
+    box-shadow: none;
+    margin-top: 1rem;
+  }
+}
+
+/* Dark mode support for sticky CTA */
+[data-bs-theme="dark"] .home-primary-cta {
+  background: var(--bs-body-bg);
+  border-color: var(--bs-border-color);
+}
+
+/* ============================================================================
    DASHBOARD STATISTICS CARDS - DROPDOWN FIX
    ============================================================================ */
 

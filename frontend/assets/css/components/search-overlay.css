@@ -104,10 +104,6 @@
    DARK MODE SUPPORT
    ============================================ */
 
-[data-theme="dark"] .search-overlay {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-}
-
 [data-bs-theme="dark"] .search-overlay {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
 }

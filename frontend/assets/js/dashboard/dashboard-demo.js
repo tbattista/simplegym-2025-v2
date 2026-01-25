@@ -130,56 +130,31 @@ function loadMockData() {
  */
 function renderDashboard() {
   renderCompactHeader();
-  renderMyWorkouts();
+  renderQuickStats();
   renderWeeklyProgress();
   renderRecentActivity();
-  renderQuickStats();
 }
 
 /**
- * Render compact header with greeting and quick actions
+ * Render compact header with greeting only (no action buttons - this is a review page)
  */
 function renderCompactHeader() {
   const container = document.getElementById('compactHeader');
   if (!container) return;
-  
+
   const user = window.dataManager?.getCurrentUser();
-  const userName = user?.displayName || user?.email?.split('@')[0] || 'Friend';
+  const userName = user?.displayName || user?.email?.split('@')[0] || '';
   const greeting = getTimeBasedGreeting();
-  
+
   // Format current date
   const today = new Date();
   const dateOptions = { weekday: 'long', month: 'long', day: 'numeric' };
   const formattedDate = today.toLocaleDateString('en-US', dateOptions);
-  
+
   container.innerHTML = `
-    <div class="dashboard-header mb-3">
-      <!-- Date and notification row -->
-      <div class="d-flex justify-content-between align-items-center mb-2">
-        <span class="text-muted small">${formattedDate}</span>
-        <button class="btn btn-sm btn-icon" aria-label="Notifications">
-          <i class="bx bx-bell"></i>
-        </button>
-      </div>
-      
-      <!-- Greeting -->
-      <h4 class="mb-3 greeting-text">${greeting}, ${escapeHtml(userName)}!</h4>
-      
-      <!-- Quick Action Buttons (3 columns) -->
-      <div class="quick-action-grid">
-        <a href="workout-builder.html" class="btn btn-primary quick-action-btn">
-          <i class="bx bx-plus-circle mb-1"></i>
-          <span>Create</span>
-        </a>
-        <a href="workout-database.html" class="btn btn-outline-primary quick-action-btn">
-          <i class="bx bx-search mb-1"></i>
-          <span>Find</span>
-        </a>
-        <a href="workout-history.html" class="btn btn-outline-primary quick-action-btn">
-          <i class="bx bx-bar-chart-alt-2 mb-1"></i>
-          <span>History</span>
-        </a>
-      </div>
+    <div class="dashboard-header">
+      <span class="text-muted small">${formattedDate}</span>
+      <h4 class="mb-0 greeting-text">${greeting}${userName ? ', ' + escapeHtml(userName) : ''}!</h4>
     </div>
   `;
 }
@@ -198,44 +173,6 @@ function renderWeeklyProgress() {
   container.appendChild(progressWidget.render());
   
   window.dashboardDemo.components.weeklyProgress = progressWidget;
-}
-
-/**
- * Render my workouts carousel
- */
-function renderMyWorkouts() {
-  const container = document.getElementById('myWorkoutsCarousel');
-  if (!container) return;
-  
-  const workouts = window.dashboardDemo.data.workouts;
-  
-  if (workouts.length === 0) {
-    container.innerHTML = `
-      <div class="empty-state">
-        <i class="bx bx-dumbbell empty-state-icon"></i>
-        <h5 class="empty-state-title">No Workouts Yet</h5>
-        <p class="empty-state-text">Create your first workout to get started</p>
-        <a href="workout-builder.html" class="btn btn-primary">
-          <i class="bx bx-plus me-2"></i>Create Workout
-        </a>
-      </div>
-    `;
-    return;
-  }
-  
-  // Clear container
-  container.innerHTML = '';
-  
-  // Render workout cards
-  const carousel = document.createElement('div');
-  carousel.className = 'horizontal-scroll-container';
-  
-  workouts.forEach(workout => {
-    const card = new DashboardWorkoutCard(workout);
-    carousel.appendChild(card.render());
-  });
-  
-  container.appendChild(carousel);
 }
 
 /**
@@ -344,58 +281,51 @@ async function calculateStreak(sessions) {
 }
 
 /**
- * Calculate quick stats
+ * Calculate quick stats - simplified for insight/recall
+ * Answers: "What did I do this week/month?"
  */
 async function calculateQuickStats() {
   const sessions = window.dashboardDemo.data.recentSessions;
-  const workouts = window.dashboardDemo.data.workouts;
-  
-  // Total workouts completed
-  const totalWorkouts = sessions.length;
-  
+  const now = new Date();
+
+  // This week count
+  const weekStart = new Date(now);
+  weekStart.setDate(now.getDate() - now.getDay()); // Start of week (Sunday)
+  weekStart.setHours(0, 0, 0, 0);
+
+  const weekCount = sessions.filter(s => {
+    const d = new Date(s.completed_at);
+    return d >= weekStart;
+  }).length;
+
+  // This month count
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const monthCount = sessions.filter(s => {
+    const d = new Date(s.completed_at);
+    return d >= monthStart;
+  }).length;
+
   // Average duration
   const totalDuration = sessions.reduce((sum, s) => sum + (s.duration_minutes || 0), 0);
-  const avgDuration = totalWorkouts > 0 ? Math.round(totalDuration / totalWorkouts) : 0;
-  
-  // Total volume
-  const totalVolume = sessions.reduce((sum, session) => {
-    const exercises = session.exercises_performed || [];
-    const sessionVolume = exercises.reduce((exSum, ex) => {
-      if (ex.is_skipped) return exSum;
-      const weight = ex.weight || 0;
-      const sets = ex.sets_completed || ex.target_sets || 0;
-      const reps = ex.target_reps || 0;
-      return exSum + (weight * sets * reps);
-    }, 0);
-    return sum + sessionVolume;
-  }, 0);
-  
-  // Best streak
-  const bestStreak = await calculateStreak(sessions);
-  
+  const avgDuration = sessions.length > 0 ? Math.round(totalDuration / sessions.length) : 0;
+
   return [
     {
-      label: 'Total Workouts',
-      value: totalWorkouts,
-      icon: 'bx-dumbbell',
+      label: 'This Week',
+      value: weekCount,
+      icon: 'bx-calendar-week',
       iconColor: 'var(--bs-primary)'
+    },
+    {
+      label: 'This Month',
+      value: monthCount,
+      icon: 'bx-calendar',
+      iconColor: 'var(--bs-success)'
     },
     {
       label: 'Avg Duration',
       value: `${avgDuration}min`,
       icon: 'bx-time',
-      iconColor: 'var(--bs-success)'
-    },
-    {
-      label: 'Total Volume',
-      value: `${Math.round(totalVolume / 1000)}K lbs`,
-      icon: 'bx-trending-up',
-      iconColor: 'var(--bs-warning)'
-    },
-    {
-      label: 'Best Streak',
-      value: `${bestStreak} days`,
-      icon: 'bx-trophy',
       iconColor: 'var(--bs-info)'
     }
   ];
@@ -560,10 +490,9 @@ function getMockWeeklyProgress() {
 
 function getMockQuickStats() {
   return [
-    { label: 'Total Workouts', value: 48, icon: 'bx-dumbbell', iconColor: 'var(--bs-primary)' },
-    { label: 'Avg Duration', value: '45min', icon: 'bx-time', iconColor: 'var(--bs-success)' },
-    { label: 'Total Volume', value: '156K lbs', icon: 'bx-trending-up', iconColor: 'var(--bs-warning)' },
-    { label: 'Best Streak', value: '21 days', icon: 'bx-trophy', iconColor: 'var(--bs-info)' }
+    { label: 'This Week', value: 3, icon: 'bx-calendar-week', iconColor: 'var(--bs-primary)' },
+    { label: 'This Month', value: 12, icon: 'bx-calendar', iconColor: 'var(--bs-success)' },
+    { label: 'Avg Duration', value: '45min', icon: 'bx-time', iconColor: 'var(--bs-info)' }
   ];
 }
 

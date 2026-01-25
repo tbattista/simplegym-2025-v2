@@ -92,6 +92,9 @@
             document.body.appendChild(container);
             this.container = container;
 
+            // Mark body as having bottom action bar for CSS scoping
+            document.body.classList.add('has-bottom-action-bar');
+
             // Render floating FAB (new layout only)
             if (this.isNewLayout) {
                 // Render search FAB if configured (either as main FAB or searchFab)
@@ -675,6 +678,8 @@
                 this.container.remove();
                 this.container = null;
                 this.config = null;
+                // Remove body class when bar is destroyed
+                document.body.classList.remove('has-bottom-action-bar');
                 console.log('✅ Bottom Action Bar destroyed');
             }
         }

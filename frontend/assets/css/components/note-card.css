@@ -289,18 +289,18 @@
    DARK MODE ADJUSTMENTS
    ============================================ */
 
-[data-theme="dark"] .note-card,
+[data-bs-theme="dark"] .note-card,
 .dark-mode .note-card {
     background: var(--workout-card-bg);
 }
 
-[data-theme="dark"] .note-textarea,
+[data-bs-theme="dark"] .note-textarea,
 .dark-mode .note-textarea {
     background: rgba(0, 0, 0, 0.2);
     border-color: var(--workout-border);
 }
 
-[data-theme="dark"] .note-textarea:focus,
+[data-bs-theme="dark"] .note-textarea:focus,
 .dark-mode .note-textarea:focus {
     background: rgba(0, 0, 0, 0.3);
 }

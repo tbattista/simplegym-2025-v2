@@ -92,7 +92,7 @@
 
 .sortable-ghost {
     opacity: 0.4;
-    background: var(--ghost-primary) !important;
+    background: var(--gs-primary) !important;
     color: white !important;
 }
 
@@ -169,7 +169,7 @@
 }
 
 .spinner-border-ghost {
-    border-color: var(--ghost-primary);
+    border-color: var(--gs-primary);
     border-right-color: transparent;
 }
 
@@ -193,7 +193,7 @@ button, .btn, a {
 button:focus-visible,
 .btn:focus-visible,
 a:focus-visible {
-    outline: 2px solid var(--ghost-primary);
+    outline: 2px solid var(--gs-primary);
     outline-offset: 2px;
 }
 

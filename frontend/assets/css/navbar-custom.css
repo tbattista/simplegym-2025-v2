@@ -194,7 +194,7 @@
     height: 12px;
     border: 2px solid var(--bs-body-bg);
     border-radius: 50%;
-    background-color: #28c76f;
+    background-color: var(--gs-success);
 }
 
 /* User Dropdown Menu */
@@ -359,25 +359,25 @@
    DARK MODE ADJUSTMENTS
    ============================================ */
 
-[data-theme="dark"] .layout-navbar {
+[data-bs-theme="dark"] .layout-navbar {
     box-shadow: 0 2px 6px 0 rgba(0, 0, 0, 0.3);
 }
 
-[data-theme="dark"] .layout-menu-toggle:hover,
-[data-theme="dark"] .navbar-nav .nav-link:hover {
+[data-bs-theme="dark"] .layout-menu-toggle:hover,
+[data-bs-theme="dark"] .navbar-nav .nav-link:hover {
     background-color: rgba(255, 255, 255, 0.05);
 }
 
-[data-theme="dark"] .dropdown-menu {
+[data-bs-theme="dark"] .dropdown-menu {
     border-color: rgba(255, 255, 255, 0.12);
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
 }
 
-[data-theme="dark"] .dropdown-item:hover {
+[data-bs-theme="dark"] .dropdown-item:hover {
     background-color: rgba(255, 255, 255, 0.05);
 }
 
-[data-theme="dark"] .dropdown-divider {
+[data-bs-theme="dark"] .dropdown-divider {
     border-top-color: rgba(255, 255, 255, 0.12);
 }
 
@@ -717,20 +717,20 @@ body.mobile-search-active {
    DARK MODE FOR SEARCH
    ============================================ */
 
-[data-theme="dark"] .navbar-search-mobile {
+[data-bs-theme="dark"] .navbar-search-mobile {
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
     border-bottom-color: rgba(255, 255, 255, 0.1);
 }
 
-[data-theme="dark"] .navbar-search-toggle:hover {
+[data-bs-theme="dark"] .navbar-search-toggle:hover {
     background: rgba(255, 255, 255, 0.05);
 }
 
-[data-theme="dark"] .navbar-search-close:hover {
+[data-bs-theme="dark"] .navbar-search-close:hover {
     background: rgba(255, 255, 255, 0.06);
 }
 
-[data-theme="dark"] .navbar-search-backdrop {
+[data-bs-theme="dark"] .navbar-search-backdrop {
     background: rgba(0, 0, 0, 0.6);
 }
 

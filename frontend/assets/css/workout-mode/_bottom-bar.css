@@ -126,8 +126,5 @@
 
 /* ============================================
    CONTENT PADDING
+   Now handled globally by .has-bottom-action-bar in bottom-action-bar.css
    ============================================ */
-
-.workout-content {
-    padding-bottom: 100px;
-}

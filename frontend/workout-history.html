@@ -11,7 +11,7 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
     
-    <title>👻 Workout History - Ghost Gym V0.4.1</title>
+    <title>👻 Workout History - Ghost Gym V0.5.0</title>
 
     <meta name="description" content="View your workout history and performance metrics" />
 
@@ -94,12 +94,7 @@
                 </h4>
                 <p class="text-muted mb-0" id="workoutDescription"></p>
               </div>
-              
-              <!-- Statistics Cards -->
-              <div class="row g-3 mb-4" id="statisticsCards">
-                <!-- Cards will be rendered by JS -->
-              </div>
-              
+
               <!-- Loading State -->
               <div id="historyLoadingState" class="text-center py-5">
                 <div class="spinner-border text-primary" role="status">
@@ -130,29 +125,66 @@
               
               <!-- History Content -->
               <div id="historyContent" style="display: none;">
-                
-                <!-- Session History Section -->
-                <div class="mb-4">
-                  <h5 class="mb-3">
-                    <i class="bx bx-calendar-check me-2"></i>
-                    Session History
-                  </h5>
-                  <div id="sessionHistoryContainer">
-                    <!-- Session cards will be rendered here -->
+
+                <!-- Tab Navigation -->
+                <ul class="nav nav-tabs history-tabs mb-4" id="historyTabs" role="tablist">
+                  <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="history-tab" data-bs-toggle="tab"
+                            data-bs-target="#historyTabPane" type="button" role="tab"
+                            aria-controls="historyTabPane" aria-selected="true">
+                      <i class="bx bx-history me-1"></i>History
+                    </button>
+                  </li>
+                  <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="insights-tab" data-bs-toggle="tab"
+                            data-bs-target="#insightsTabPane" type="button" role="tab"
+                            aria-controls="insightsTabPane" aria-selected="false">
+                      <i class="bx bx-bar-chart-alt-2 me-1"></i>Insights
+                    </button>
+                  </li>
+                </ul>
+
+                <!-- Tab Content -->
+                <div class="tab-content" id="historyTabContent">
+
+                  <!-- History Tab -->
+                  <div class="tab-pane fade show active" id="historyTabPane" role="tabpanel"
+                       aria-labelledby="history-tab" tabindex="0">
+
+                    <!-- Last Session Reference Card -->
+                    <div id="lastSessionContainer" class="mb-4" style="display: none;">
+                      <!-- Rendered by JS -->
+                    </div>
+
+                    <!-- Session History (Time-Grouped) -->
+                    <div id="sessionHistoryContainer">
+                      <!-- Session entries will be rendered here -->
+                    </div>
                   </div>
-                </div>
-                
-                <!-- Exercise Performance Section -->
-                <div class="mb-4">
-                  <h5 class="mb-3">
-                    <i class="bx bx-trending-up me-2"></i>
-                    Exercise Performance
-                  </h5>
-                  <div id="exercisePerformanceContainer">
-                    <!-- Exercise performance cards will be rendered here -->
+
+                  <!-- Insights Tab -->
+                  <div class="tab-pane fade" id="insightsTabPane" role="tabpanel"
+                       aria-labelledby="insights-tab" tabindex="0">
+
+                    <!-- Statistics Cards -->
+                    <div class="row g-3 mb-4" id="statisticsCards">
+                      <!-- Cards will be rendered by JS -->
+                    </div>
+
+                    <!-- Exercise Performance Section -->
+                    <div class="mb-4">
+                      <h5 class="mb-3">
+                        <i class="bx bx-trending-up me-2"></i>
+                        Exercise Performance
+                      </h5>
+                      <div id="exercisePerformanceContainer">
+                        <!-- Exercise performance cards will be rendered here -->
+                      </div>
+                    </div>
                   </div>
+
                 </div>
-                
+
               </div>
               
             </div>
@@ -205,7 +237,7 @@
     <script src="/static/assets/js/dashboard/ui-helpers.js?v=20251020-04"></script>
 
     <!-- Workout History JS -->
-    <script src="/static/assets/js/dashboard/workout-history.js?v=1.0.0"></script>
+    <script src="/static/assets/js/dashboard/workout-history.js?v=2.0.0"></script>
 
     <!-- Initialize -->
     <script>

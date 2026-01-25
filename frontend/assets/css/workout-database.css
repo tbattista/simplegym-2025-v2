@@ -31,12 +31,8 @@
 
 /* ============================================
    CONTENT CONTAINER PADDING
+   Now handled globally by .has-bottom-action-bar in bottom-action-bar.css
    ============================================ */
-
-/* Add bottom padding to ensure last card is visible above nav bar */
-.container-xxl.flex-grow-1.container-p-y {
-    padding-bottom: 100px; /* Extra padding for bottom nav bar */
-}
 
 /* ============================================
    WORKOUT DETAIL OFFCANVAS
@@ -1044,11 +1040,11 @@ body.delete-mode-active {
 }
 
 /* Dark mode adjustments */
-[data-theme="dark"] .card.delete-mode {
+[data-bs-theme="dark"] .card.delete-mode {
     background: rgba(var(--bs-danger-rgb), 0.08);
 }
 
-[data-theme="dark"] .card.delete-mode:hover {
+[data-bs-theme="dark"] .card.delete-mode:hover {
     background: rgba(var(--bs-danger-rgb), 0.12);
 }
 
@@ -1064,4 +1060,80 @@ body.delete-mode-active {
 
 .card.delete-mode.pulse {
     animation: deleteModePulse 1.5s ease-in-out;
+}
+
+/* ============================================
+   TODAY & FAVORITES SECTIONS
+   ============================================ */
+
+/* Section Headers */
+.section-header {
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--bs-secondary);
+}
+
+/* Today Section */
+#todaySection {
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--bs-border-color);
+}
+
+.today-card {
+    border-left: 4px solid var(--bs-primary);
+}
+
+.today-card.resume {
+    border-left-color: var(--bs-warning);
+}
+
+.today-empty-state {
+    text-align: center;
+    padding: 1.5rem 1rem;
+}
+
+.starter-workout-card {
+    background: var(--bs-light);
+    border: 1px dashed var(--bs-border-color);
+}
+
+/* Favorites Section */
+#favoritesSection {
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--bs-border-color);
+}
+
+.workout-card-compact {
+    cursor: pointer;
+    transition: background-color 0.15s;
+}
+
+.workout-card-compact:hover {
+    background-color: var(--bs-light);
+}
+
+/* Favorite Toggle Button */
+.favorite-toggle:hover {
+    transform: scale(1.1);
+}
+
+.favorite-toggle.text-danger {
+    color: var(--bs-danger) !important;
+}
+
+/* My Workouts Section */
+#myWorkoutsSection .section-header {
+    margin-bottom: 0.5rem;
+}
+
+/* Dark mode support for sections */
+[data-bs-theme="dark"] .starter-workout-card {
+    background: var(--bs-dark);
+    border-color: var(--bs-border-color);
+}
+
+[data-bs-theme="dark"] .workout-card-compact:hover {
+    background-color: var(--bs-dark);
 }

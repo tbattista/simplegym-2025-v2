@@ -265,12 +265,60 @@ function renderStatistics() {
 }
 
 /**
- * Render session history cards
+ * Render Last Session reference card
+ */
+function renderLastSessionCard() {
+  const sessions = window.ghostGym.workoutHistory.sessions;
+  const container = document.getElementById('lastSessionContainer');
+
+  if (!container || sessions.length === 0) return;
+
+  const lastSession = sessions[0]; // Already sorted by date (most recent first)
+  const workoutName = window.ghostGym.workoutHistory.workoutInfo?.name || 'Workout';
+  const dateStr = formatDate(lastSession.completed_at, { short: true });
+  const duration = lastSession.duration_minutes || 0;
+
+  container.innerHTML = `
+    <div class="last-session-card">
+      <div class="last-session-badge">LAST SESSION</div>
+      <div class="last-session-content">
+        <h5 class="last-session-title">${escapeHtml(workoutName)}</h5>
+        <span class="last-session-meta">${dateStr} • ${duration} min</span>
+      </div>
+      <button class="btn btn-sm btn-outline-primary last-session-action"
+              onclick="scrollToSession('${lastSession.id}')">
+        View Details →
+      </button>
+    </div>
+  `;
+  container.style.display = 'block';
+}
+
+/**
+ * Scroll to and expand a specific session
+ */
+function scrollToSession(sessionId) {
+  const sessionEl = document.getElementById(`session-entry-${sessionId}`);
+  if (sessionEl) {
+    sessionEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    // Expand the session details
+    const collapseEl = document.getElementById(`session-${sessionId}`);
+    if (collapseEl && !collapseEl.classList.contains('show')) {
+      const bsCollapse = new bootstrap.Collapse(collapseEl, { toggle: true });
+    }
+    // Highlight briefly
+    sessionEl.classList.add('session-highlight');
+    setTimeout(() => sessionEl.classList.remove('session-highlight'), 1500);
+  }
+}
+
+/**
+ * Render session history with time-based grouping
  */
 function renderSessionHistory() {
   const sessions = window.ghostGym.workoutHistory.sessions;
   const container = document.getElementById('sessionHistoryContainer');
-  
+
   if (sessions.length === 0) {
     container.innerHTML = `
       <div class="text-center py-4">
@@ -280,51 +328,98 @@ function renderSessionHistory() {
     `;
     return;
   }
-  
-  container.innerHTML = sessions.map((session, index) => 
-    createSessionCard(session, index)
-  ).join('');
+
+  // Render Last Session card
+  renderLastSessionCard();
+
+  // Group sessions by time period
+  const groups = groupSessionsByTimePeriod(sessions);
+
+  let html = '<div class="session-list">';
+
+  // Render each time period
+  if (groups.thisWeek.length > 0) {
+    html += renderSessionGroup('This Week', groups.thisWeek);
+  }
+
+  if (groups.lastWeek.length > 0) {
+    html += renderSessionGroup('Last Week', groups.lastWeek);
+  }
+
+  if (groups.earlierThisMonth.length > 0) {
+    html += renderSessionGroup('Earlier This Month', groups.earlierThisMonth);
+  }
+
+  // Render monthly groups (sorted by date, most recent first)
+  const monthKeys = Object.keys(groups.byMonth).sort((a, b) => {
+    const dateA = new Date(groups.byMonth[a][0].completed_at);
+    const dateB = new Date(groups.byMonth[b][0].completed_at);
+    return dateB - dateA;
+  });
+
+  monthKeys.forEach(monthKey => {
+    html += renderSessionGroup(monthKey, groups.byMonth[monthKey]);
+  });
+
+  html += '</div>';
+  container.innerHTML = html;
 }
 
 /**
- * Create a single session card
+ * Render a group of sessions with a header
  */
-function createSessionCard(session, index) {
-  const sessions = window.ghostGym.workoutHistory.sessions;
+function renderSessionGroup(title, sessions) {
+  return `
+    <div class="session-group">
+      <div class="time-period-header">${escapeHtml(title)}</div>
+      ${sessions.map((session, index) => createSessionEntry(session)).join('')}
+    </div>
+  `;
+}
+
+/**
+ * Create a compact session entry (new design)
+ */
+function createSessionEntry(session) {
   const collapseId = `session-${session.id}`;
   const isExpanded = window.ghostGym.workoutHistory.expandedSessions.has(session.id);
-  
+  const workoutName = window.ghostGym.workoutHistory.workoutInfo?.name || 'Workout';
+  const dateStr = formatDate(session.completed_at, { short: true });
+  const duration = session.duration_minutes || 0;
+
+  // Determine status
+  let statusClass = 'completed';
+  const exercises = session.exercises_performed || [];
+  const skippedCount = exercises.filter(e => e.is_skipped).length;
+  if (session.status === 'abandoned') {
+    statusClass = 'abandoned';
+  } else if (skippedCount > exercises.length / 2) {
+    statusClass = 'partial';
+  }
+
+  // Check for notes
+  const hasNotes = session.notes || (session.session_notes && session.session_notes.length > 0);
+
   return `
-    <div class="card mb-3 history-card">
-      <div class="card-header history-header" 
-           data-bs-toggle="collapse" 
-           data-bs-target="#${collapseId}"
-           style="cursor: pointer;">
-        <div class="d-flex align-items-center justify-content-between">
-          <div class="d-flex align-items-center gap-3">
-            <div class="history-icon">
-              <span class="avatar-initial rounded bg-label-primary">
-                <i class="bx bx-dumbbell"></i>
-              </span>
-            </div>
-            <div>
-              <h6 class="mb-0">Session #${sessions.length - index}</h6>
-              <small class="text-muted">
-                ${formatDate(session.completed_at)} • ${session.duration_minutes || 0} min
-              </small>
-            </div>
-          </div>
-          <div class="d-flex align-items-center gap-2">
-            <span class="badge bg-success">Completed</span>
-            <i class="bx bx-chevron-down"></i>
-          </div>
-        </div>
+    <div class="session-entry" id="session-entry-${session.id}"
+         data-bs-toggle="collapse"
+         data-bs-target="#${collapseId}"
+         role="button"
+         aria-expanded="${isExpanded}"
+         aria-controls="${collapseId}">
+      <div class="session-status-dot ${statusClass}"></div>
+      <div class="session-info">
+        <span class="session-workout-name">${escapeHtml(workoutName)}</span>
+        <span class="session-meta">${dateStr} • ${duration} min</span>
       </div>
-      
-      <div id="${collapseId}" class="collapse ${isExpanded ? 'show' : ''}">
-        <div class="card-body">
-          ${renderSessionDetails(session)}
-        </div>
+      <div class="session-indicators">
+        ${hasNotes ? '<span class="session-notes-indicator" title="Has notes"><i class="bx bx-note"></i></span>' : ''}
+        <i class="bx bx-chevron-down session-chevron"></i>
+      </div>
+    </div>
+    <div id="${collapseId}" class="collapse session-details-collapse ${isExpanded ? 'show' : ''}">
+      <div class="session-details-wrapper">
+        ${renderSessionDetails(session)}
       </div>
     </div>
   `;
@@ -564,21 +659,82 @@ function renderExercisePerformanceDetails(history) {
 }
 
 /**
- * Format date for display
+ * Format date for display (conversational style)
  */
-function formatDate(dateString) {
+function formatDate(dateString, options = {}) {
   if (!dateString) return 'N/A';
-  
+
   try {
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      month: 'short', 
-      day: 'numeric', 
-      year: 'numeric' 
+    const now = new Date();
+    const isCurrentYear = date.getFullYear() === now.getFullYear();
+
+    // Short format: "Jan 25" or "Jan 25, 2024" for older dates
+    if (options.short) {
+      if (isCurrentYear) {
+        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      } else {
+        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      }
+    }
+
+    // Full format for details
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
     });
   } catch (e) {
     return 'Invalid date';
   }
+}
+
+/**
+ * Group sessions by time period
+ * Returns: { thisWeek: [], lastWeek: [], earlierThisMonth: [], byMonth: { 'December 2025': [], ... } }
+ */
+function groupSessionsByTimePeriod(sessions) {
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+  // Calculate week boundaries
+  const dayOfWeek = today.getDay(); // 0 = Sunday
+  const startOfThisWeek = new Date(today);
+  startOfThisWeek.setDate(today.getDate() - dayOfWeek);
+
+  const startOfLastWeek = new Date(startOfThisWeek);
+  startOfLastWeek.setDate(startOfLastWeek.getDate() - 7);
+
+  const startOfThisMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+
+  const groups = {
+    thisWeek: [],
+    lastWeek: [],
+    earlierThisMonth: [],
+    byMonth: {}
+  };
+
+  sessions.forEach(session => {
+    const sessionDate = new Date(session.completed_at || session.started_at);
+    const sessionDay = new Date(sessionDate.getFullYear(), sessionDate.getMonth(), sessionDate.getDate());
+
+    if (sessionDay >= startOfThisWeek) {
+      groups.thisWeek.push(session);
+    } else if (sessionDay >= startOfLastWeek) {
+      groups.lastWeek.push(session);
+    } else if (sessionDay >= startOfThisMonth) {
+      groups.earlierThisMonth.push(session);
+    } else {
+      // Group by month
+      const monthKey = sessionDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+      if (!groups.byMonth[monthKey]) {
+        groups.byMonth[monthKey] = [];
+      }
+      groups.byMonth[monthKey].push(session);
+    }
+  });
+
+  return groups;
 }
 
 /**
@@ -630,5 +786,6 @@ function showEmptyState() {
 // Export functions
 window.initWorkoutHistory = initWorkoutHistory;
 window.loadWorkoutHistory = loadWorkoutHistory;
+window.scrollToSession = scrollToSession;
 
-console.log('📦 Workout History module loaded (v1.0.0)');
+console.log('📦 Workout History module loaded (v2.0.0 - UX Improvements)');

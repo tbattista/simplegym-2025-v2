@@ -647,8 +647,10 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
         
         timerContainers.forEach(container => {
             const exerciseIndex = parseInt(container.getAttribute('data-inline-timer'));
-            const restSeconds = parseInt(container.getAttribute('data-rest-seconds')) || 60;
-            const restDisplay = container.getAttribute('data-rest-display') || `${restSeconds}s`;
+            // FIX: Get rest data from parent .inline-rest-timer element (not the controls container)
+            const timerWrapper = container.closest('.inline-rest-timer');
+            const restSeconds = parseInt(timerWrapper?.getAttribute('data-rest-seconds')) || 60;
+            const restDisplay = timerWrapper?.getAttribute('data-rest-display') || `${restSeconds}s`;
             
             // Create inline timer instance
             if (window.InlineRestTimer) {

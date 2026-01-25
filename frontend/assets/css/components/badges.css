@@ -38,8 +38,8 @@
 }
 
 .badge.bg-label-success {
-    background-color: rgba(var(--ghost-success-rgb), 0.12);
-    color: var(--ghost-success);
+    background-color: rgba(var(--gs-success-rgb), 0.12);
+    color: var(--gs-success);
 }
 
 .badge.bg-label-info {
@@ -62,12 +62,12 @@
    ============================================================================ */
 
 .badge.bg-warning {
-    background-color: #FFB800;
+    background-color: var(--gs-warning);
     color: #000;
 }
 
 .badge.bg-info {
-    background-color: #00CFE8;
+    background-color: var(--gs-accent);
     color: #000;
 }
 
@@ -77,8 +77,8 @@
 
 .badge.tier-foundation,
 .badge.tier-1 {
-    background-color: rgba(var(--ghost-success-rgb), 0.12);
-    color: var(--ghost-success);
+    background-color: rgba(var(--gs-success-rgb), 0.12);
+    color: var(--gs-success);
     font-weight: 600;
 }
 
@@ -108,11 +108,11 @@
 }
 
 .exercise-tier-1 {
-    background-color: var(--ghost-success);
+    background-color: var(--gs-success);
 }
 
 .exercise-tier-2 {
-    background-color: #007bff;
+    background-color: var(--gs-weight-new);
 }
 
 .exercise-tier-3 {
@@ -221,12 +221,12 @@
     top: 0;
     bottom: 0;
     width: 3px;
-    background-color: var(--ghost-success);
+    background-color: var(--gs-success);
 }
 
 .exercise-autocomplete-item.is-foundational {
-    background-color: rgba(var(--ghost-success-rgb), 0.05);
-    border-left: 3px solid var(--ghost-success);
+    background-color: rgba(var(--gs-success-rgb), 0.05);
+    border-left: 3px solid var(--gs-success);
 }
 
 /* ============================================================================

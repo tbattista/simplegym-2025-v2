@@ -19,7 +19,10 @@
       "Bash(do if [ -f \"$f\" ])",
       "Bash(fi:*)",
       "Bash(done)",
-      "Bash(git -C \"c:\\\\Users\\\\user\\\\iCloudDrive\\\\PARA\\\\1 - Projects\\\\_Websites\\\\simple gym log\\\\simplegym_v2\" show HEAD:frontend/assets/css/logbook-theme.css)"
+      "Bash(git -C \"c:\\\\Users\\\\user\\\\iCloudDrive\\\\PARA\\\\1 - Projects\\\\_Websites\\\\simple gym log\\\\simplegym_v2\" show HEAD:frontend/assets/css/logbook-theme.css)",
+      "Bash(dir:*)",
+      "Bash(start:*)",
+      "WebFetch(domain:localhost)"
     ]
   }
 }

@@ -1,5 +1,125 @@
 # CSS Color Consistency & Branding Audit Plan
 
+---
+
+## Phase 1 & 2 Verification Report
+
+### Phase 1: Design System Foundation ✅ COMPLETE
+
+**File:** `frontend/assets/css/design-system.css`
+
+**What was added (lines 77-138):**
+- Opacity scale: `--gs-opacity-5` through `--gs-opacity-75`
+- Pre-computed color variants for all semantic colors:
+  - `--gs-primary-5/8/10/15/25`
+  - `--gs-accent-5/8/10/15/25`
+  - `--gs-success-5/8/10/15/25`
+  - `--gs-warning-5/8/10/15/25`
+  - `--gs-danger-5/8/10/15/25`
+  - `--gs-info-5/8/10/15/25`
+
+**Dark mode additions (lines 363-371):**
+- `--gs-weight-increased-rgb: 93, 217, 30`
+- `--gs-weight-decreased-rgb: 248, 81, 73`
+- `--gs-success-light: #6ee7b7`
+
+**Status:** ✅ No issues found. All RGB variables are correctly defined.
+
+---
+
+### Phase 2: Badge Colors ✅ COMPLETE
+
+**File:** `frontend/assets/css/components/badges.css`
+
+**Changes verified:**
+| Line | Before | After | Status |
+|------|--------|-------|--------|
+| 41 | `--ghost-success-rgb` | `--gs-success-rgb` | ✅ |
+| 42 | `--ghost-success` | `--gs-success` | ✅ |
+| 65 | `#FFB800` | `var(--gs-warning)` | ✅ |
+| 70 | `#00CFE8` | `var(--gs-accent)` | ✅ |
+| 80 | `--ghost-success-rgb` | `--gs-success-rgb` | ✅ |
+| 81 | `--ghost-success` | `--gs-success` | ✅ |
+| 111 | `--ghost-success` | `--gs-success` | ✅ |
+| 115 | `#007bff` | `var(--gs-weight-new)` | ✅ |
+| 224 | `--ghost-success` | `--gs-success` | ✅ |
+| 228-229 | `--ghost-success-rgb/--ghost-success` | `--gs-success-rgb/--gs-success` | ✅ |
+
+**Status:** ✅ All hardcoded colors and legacy variables migrated.
+
+---
+
+## Phase 3: Navbar Fixes (REVISED)
+
+### Analysis of navbar-custom.css
+
+**Issue 1: Hardcoded success color (line 197)**
+```css
+.avatar-online::before {
+    background-color: #28c76f;  /* Should be var(--gs-success) */
+}
+```
+- **Risk:** LOW - This is a small indicator dot
+- **Impact:** Will now use Kelly Green (#4CBB17) instead of the previous green (#28c76f)
+- **Visual difference:** Slight - Kelly Green is a bit more vibrant
+
+**Issue 2: Wrong dark mode selector (lines 362-382)**
+```css
+[data-theme="dark"] .layout-navbar { ... }
+```
+- **Risk:** MEDIUM - Dark mode styles won't apply if Bootstrap uses `data-bs-theme`
+- **Verification needed:** Check how theme switching is implemented
+
+Let me verify the theme switching mechanism:
+
+---
+
+## Phase 4: Dark Mode Component Colors (REVISED)
+
+### Analysis of dark-mode.css
+
+**Issue 1: Hardcoded green #6ee7b7 (lines 130, 195, 624)**
+```css
+.bonus-exercise-title { color: #6ee7b7; }
+.alert-success { color: #6ee7b7; }
+.offcanvas .alert-success { color: #6ee7b7; }
+```
+- **Risk:** LOW - These are consistent with each other (same color used)
+- **Note:** We added `--gs-success-light: #6ee7b7` in Phase 1 dark mode section
+- **Action:** Replace hardcoded values with `var(--gs-success-light)`
+
+**Issue 2: Legacy --ghost-* variable usage**
+Found in dark-mode.css:
+- Line 66: `var(--ghost-primary)`
+- Line 88: `var(--ghost-primary), var(--ghost-secondary)`
+- Line 125-126: `var(--ghost-success-rgb)`
+- Line 144, 167: `var(--ghost-primary)`
+- Line 194: `var(--ghost-success-rgb)`
+- Line 242: `var(--ghost-primary)`
+- Line 274: `var(--ghost-success-rgb)`
+- Line 307: `var(--ghost-primary), var(--ghost-secondary)`
+- Line 340: `var(--ghost-primary), var(--ghost-secondary)`
+- Line 565: `var(--ghost-primary), var(--ghost-secondary)`
+- Line 622-623: `var(--ghost-success-rgb)`
+- Line 663: `var(--ghost-success-rgb)`
+- Line 1021, 1053: `var(--ghost-primary)`
+
+**Risk:** LOW - Legacy aliases exist in design-system.css, so these still work
+**Note:** Migration to --gs-* is optional cleanup, not a breaking issue
+
+**Issue 3: Hardcoded rgba values**
+Lines 204, 208-209, 261, 270, 616-617, 627-628, 667, 671:
+```css
+rgba(245, 158, 11, 0.2)  /* Warning */
+rgba(6, 182, 212, 0.2)   /* Accent/Cyan */
+```
+- **Risk:** LOW - These are correct values, just not using variables
+- **Action:** Could use new `--gs-warning-*` and `--gs-accent-*` variants
+
+---
+
+# CSS Color Consistency & Branding Audit Plan
+
 ## Executive Summary
 
 After a thorough review of all 51 CSS files in the Ghost Gym V2 codebase, I found:

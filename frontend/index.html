@@ -83,197 +83,83 @@
               <div id="alertContainer" class="mb-3"></div>
 
               <!-- Authenticated User Dashboard -->
-              <div id="authenticatedDashboard" style="display: none;">
-                <!-- Statistics Cards -->
-                <div class="row g-3 mb-4">
-                  <!-- Workouts Card -->
-                  <div class="col-6">
-                    <div class="card h-100">
-                      <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-start mb-3">
-                          <div class="avatar flex-shrink-0">
-                            <span class="avatar-initial rounded bg-label-primary">
-                              <i class="bx bx-dumbbell bx-md"></i>
-                            </span>
-                          </div>
-                          <div class="dropdown">
-                            <button class="btn p-0" type="button" data-bs-toggle="dropdown">
-                              <i class="bx bx-dots-vertical-rounded"></i>
-                            </button>
-                            <div class="dropdown-menu dropdown-menu-end">
-                              <a class="dropdown-item" href="workout-builder.html">
-                                <i class="bx bx-show me-2"></i>View All
-                              </a>
-                              <a class="dropdown-item" href="workout-builder.html">
-                                <i class="bx bx-plus me-2"></i>Create New
-                              </a>
-                            </div>
-                          </div>
-                        </div>
-                        <span class="fw-semibold d-block mb-1">Workouts</span>
-                        <h3 class="card-title mb-2" id="workoutsCount">0</h3>
-                        <small class="text-success fw-semibold">
-                          <a href="workout-builder.html" class="text-decoration-none">
-                            <i class="bx bx-right-arrow-alt"></i> Manage workouts
-                          </a>
-                        </small>
-                      </div>
-                    </div>
-                  </div>
+              <div id="authenticatedDashboard" class="home-dashboard-layout" style="display: none;">
 
-                  <!-- Programs Card -->
-                  <div class="col-6">
-                    <div class="card h-100">
-                      <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-start mb-3">
-                          <div class="avatar flex-shrink-0">
-                            <span class="avatar-initial rounded bg-label-success">
-                              <i class="bx bx-folder bx-md"></i>
-                            </span>
-                          </div>
-                          <div class="dropdown">
-                            <button class="btn p-0" type="button" data-bs-toggle="dropdown">
-                              <i class="bx bx-dots-vertical-rounded"></i>
-                            </button>
-                            <div class="dropdown-menu dropdown-menu-end">
-                              <a class="dropdown-item" href="programs.html">
-                                <i class="bx bx-show me-2"></i>View All
-                              </a>
-                              <a class="dropdown-item" href="programs.html">
-                                <i class="bx bx-plus me-2"></i>Create New
-                              </a>
-                            </div>
-                          </div>
-                        </div>
-                        <span class="fw-semibold d-block mb-1">Programs</span>
-                        <h3 class="card-title mb-2" id="programsCount">0</h3>
-                        <small class="text-success fw-semibold">
-                          <a href="programs.html" class="text-decoration-none">
-                            <i class="bx bx-right-arrow-alt"></i> Manage programs
-                          </a>
-                        </small>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Exercises Card -->
-                  <div class="col-6">
-                    <div class="card h-100">
-                      <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-start mb-3">
-                          <div class="avatar flex-shrink-0">
-                            <span class="avatar-initial rounded bg-label-info">
-                              <i class="bx bx-list-ul bx-md"></i>
-                            </span>
-                          </div>
-                          <div class="dropdown">
-                            <button class="btn p-0" type="button" data-bs-toggle="dropdown">
-                              <i class="bx bx-dots-vertical-rounded"></i>
-                            </button>
-                            <div class="dropdown-menu dropdown-menu-end">
-                              <a class="dropdown-item" href="exercise-database.html">
-                                <i class="bx bx-show me-2"></i>Browse Database
-                              </a>
-                            </div>
-                          </div>
-                        </div>
-                        <span class="fw-semibold d-block mb-1">Exercises</span>
-                        <h3 class="card-title mb-2" id="exercisesCount">0</h3>
-                        <small class="text-success fw-semibold">
-                          <a href="exercise-database.html" class="text-decoration-none">
-                            <i class="bx bx-right-arrow-alt"></i> Browse database
-                          </a>
-                        </small>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Quick Actions Card -->
-                  <div class="col-6">
-                    <div class="card h-100 quick-actions-card">
-                      <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-start mb-3">
-                          <div class="avatar flex-shrink-0">
-                            <span class="avatar-initial rounded bg-label-warning">
-                              <i class="bx bx-rocket bx-md"></i>
-                            </span>
-                          </div>
-                        </div>
-                        <span class="fw-semibold d-block mb-2">Quick Actions</span>
-                        <div class="d-grid gap-1">
-                          <a href="workout-builder.html" class="btn btn-xs btn-outline-primary">
-                            <i class="bx bx-plus-circle me-1"></i>Create Workout
-                          </a>
-                          <a href="programs.html" class="btn btn-xs btn-outline-success">
-                            <i class="bx bx-folder-plus me-1"></i>Create Program
-                          </a>
-                          <a href="exercise-database.html" class="btn btn-xs btn-outline-info">
-                            <i class="bx bx-search me-1"></i>Browse Exercises
-                          </a>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                <!-- Greeting (compact, at top) -->
+                <div class="home-greeting mb-3">
+                  <p class="text-muted mb-0 small" id="homeDate">Friday, January 24</p>
+                  <h4 class="mb-0" id="homeGreeting">Good Morning!</h4>
                 </div>
 
-
-                <!-- Recent Workouts Section -->
-                <div class="container-fluid px-0 mb-4" id="recentWorkoutsSection">
-                  <!-- Section Header -->
-                  <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h5 class="mb-0">
-                      <i class="bx bx-history me-2"></i>Recent Workouts
-                    </h5>
-                  </div>
-
-                  <!-- Loading State -->
-                  <div id="recentWorkoutsLoading">
-                    <div class="row g-3">
-                      <div class="col-12 col-sm-6 col-lg-4 col-xl-3">
-                        <div class="card">
-                          <div class="card-body">
-                            <div class="placeholder-glow">
-                              <span class="placeholder col-7"></span>
-                              <span class="placeholder col-4"></span>
-                              <span class="placeholder col-4"></span>
-                              <span class="placeholder col-6"></span>
-                              <span class="placeholder col-8"></span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      <div class="col-12 col-sm-6 col-lg-4 col-xl-3 d-none d-sm-block">
-                        <div class="card">
-                          <div class="card-body">
-                            <div class="placeholder-glow">
-                              <span class="placeholder col-7"></span>
-                              <span class="placeholder col-4"></span>
-                              <span class="placeholder col-4"></span>
-                              <span class="placeholder col-6"></span>
-                              <span class="placeholder col-8"></span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
+                <!-- Today Section (smart workout recommendation) -->
+                <div id="todaySection" class="mb-4">
+                  <div class="section-header d-flex justify-content-between align-items-center mb-2">
+                    <div>
+                      <h6 class="mb-0 fw-semibold">Today</h6>
+                      <small class="text-muted">Your next workout</small>
                     </div>
                   </div>
-
-                  <!-- Empty State -->
-                  <div id="recentWorkoutsEmpty" class="d-none">
+                  <div id="todayContent">
+                    <!-- Loading state -->
                     <div class="card">
-                      <div class="card-body text-center py-5">
-                        <i class="bx bx-dumbbell bx-lg text-muted mb-3" style="font-size: 3rem;"></i>
-                        <h5 class="text-muted mb-2">No Recent Workouts</h5>
-                        <p class="text-muted small mb-0">Complete a workout to see it here</p>
+                      <div class="card-body">
+                        <div class="placeholder-glow">
+                          <span class="placeholder col-7"></span>
+                          <span class="placeholder col-4"></span>
+                        </div>
                       </div>
                     </div>
                   </div>
+                </div>
 
-                  <!-- Workouts Grid -->
-                  <div id="recentWorkoutsGrid" class="workouts-list d-none">
-                    <!-- Workout cards will be inserted here -->
+                <!-- Favorites Section (horizontal scroll) -->
+                <div id="favoritesSection" class="mb-4" style="display: none;">
+                  <div class="section-header d-flex justify-content-between align-items-center mb-2">
+                    <h6 class="mb-0 fw-semibold">Favorites</h6>
+                    <a href="workout-database.html?filter=favorites" id="viewAllFavorites" class="small text-primary text-decoration-none">View all</a>
+                  </div>
+                  <div id="favoritesContent" class="favorites-scroll d-flex gap-3 overflow-auto pb-2">
+                    <!-- Rendered by renderFavoritesSection() -->
                   </div>
                 </div>
+
+                <!-- This Week Summary (2 stats: count + streak) -->
+                <div id="thisWeekSection" class="mb-4">
+                  <div class="card">
+                    <div class="card-body py-3">
+                      <div class="row text-center">
+                        <div class="col-6 border-end">
+                          <div class="text-muted small">This Week</div>
+                          <div class="fs-4 fw-bold" id="weekWorkoutCount">-</div>
+                        </div>
+                        <div class="col-6">
+                          <div class="text-muted small">Streak</div>
+                          <div class="fs-4 fw-bold" id="streakCount">-</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Spacer to push CTA into thumb zone on mobile -->
+                <div class="home-spacer flex-grow-1"></div>
+
+                <!-- Primary CTA (sticky on mobile for thumb zone) -->
+                <div class="home-primary-cta">
+                  <a href="workout-database.html" class="btn btn-primary btn-lg w-100 py-3 rounded-3">
+                    <i class="bx bx-play-circle me-2 fs-4"></i>
+                    <span class="fw-semibold">Start Workout</span>
+                  </a>
+                  <div class="d-flex gap-2 mt-2">
+                    <a href="workout-builder.html" class="btn btn-outline-secondary flex-grow-1">
+                      <i class="bx bx-plus me-1"></i>Create
+                    </a>
+                    <a href="dashboard.html" class="btn btn-outline-secondary flex-grow-1">
+                      <i class="bx bx-calendar me-1"></i>Calendar
+                    </a>
+                  </div>
+                </div>
+
               </div>
 
               <!-- Unauthenticated Landing Page -->
@@ -427,44 +313,42 @@
 
     <!-- Home Page Script -->
     <script>
+        // Home page state
+        let homeWorkouts = [];
+        let activeSessionWorkoutId = null;
+
         // Initialize home page
         async function initHomePage() {
             console.log('🏠 Initializing Home Page...');
-            
+
             const authenticatedDashboard = document.getElementById('authenticatedDashboard');
             const unauthenticatedWelcome = document.getElementById('unauthenticatedWelcome');
-            
+
             // Wait for Firebase to be ready
             if (!window.firebaseReady) {
                 await new Promise(resolve => {
                     window.addEventListener('firebaseReady', resolve, { once: true });
                 });
             }
-            
+
             // Wait for data manager
             if (!window.dataManager) {
                 console.error('❌ Data manager not available');
                 return;
             }
-            
+
             // Check auth state
             const checkAuthAndRender = async () => {
                 const user = window.firebaseAuth.currentUser;
-                
+
                 if (user) {
                     // User is authenticated - show dashboard
                     console.log('✅ User authenticated, showing dashboard');
                     authenticatedDashboard.style.display = 'block';
                     unauthenticatedWelcome.style.display = 'none';
-                    
-                    // Update user display name
-                    const displayNameEl = document.getElementById('userDisplayName');
-                    if (displayNameEl) {
-                        displayNameEl.textContent = user.displayName || user.email || 'User';
-                    }
-                    
-                    // Load and display statistics
-                    await loadStatistics();
+
+                    // Load and display all home sections
+                    await loadHomeSections();
                 } else {
                     // User is not authenticated - show welcome page
                     console.log('ℹ️ User not authenticated, showing welcome page');
@@ -472,52 +356,420 @@
                     unauthenticatedWelcome.style.display = 'block';
                 }
             };
-            
+
             // Initial check
             await checkAuthAndRender();
-            
+
             // Listen for auth state changes
             window.firebaseAuth.onAuthStateChanged(async (user) => {
                 console.log('🔄 Auth state changed:', user ? 'authenticated' : 'not authenticated');
                 await checkAuthAndRender();
             });
-            
+
             console.log('✅ Home page initialized');
         }
-        
-        // Load statistics
-        async function loadStatistics() {
+
+        // Load all home sections
+        async function loadHomeSections() {
             try {
-                console.log('📊 Loading statistics...');
-                
-                // Load data
-                const [workouts, programs] = await Promise.all([
-                    window.dataManager.getWorkouts(),
-                    window.dataManager.getPrograms()
+                console.log('🏠 Loading home sections...');
+
+                // Render greeting first (no data dependency)
+                renderGreeting();
+
+                // Load workouts data first
+                homeWorkouts = await window.dataManager.getWorkouts();
+                console.log(`✅ Loaded ${homeWorkouts.length} workouts`);
+
+                // Check for active session
+                loadActiveSessionState();
+
+                // Render all sections in parallel
+                await Promise.all([
+                    renderTodaySection(),
+                    renderFavoritesSection(),
+                    loadThisWeekStats()
                 ]);
-                
-                // Update counts
-                document.getElementById('workoutsCount').textContent = workouts.length;
-                document.getElementById('programsCount').textContent = programs.length;
-                
-                // Exercise count (from database - approximate)
-                document.getElementById('exercisesCount').textContent = '800+';
-                
-                console.log('✅ Statistics loaded:', {
-                    workouts: workouts.length,
-                    programs: programs.length
-                });
+
+                console.log('✅ All home sections loaded');
             } catch (error) {
-                console.error('❌ Error loading statistics:', error);
+                console.error('❌ Error loading home sections:', error);
             }
         }
-        
+
+        // Render greeting with date and time-based message
+        function renderGreeting() {
+            const dateEl = document.getElementById('homeDate');
+            const greetingEl = document.getElementById('homeGreeting');
+
+            if (dateEl) {
+                const today = new Date();
+                const options = { weekday: 'long', month: 'long', day: 'numeric' };
+                dateEl.textContent = today.toLocaleDateString('en-US', options);
+            }
+
+            if (greetingEl) {
+                const hour = new Date().getHours();
+                let greeting = 'Good Evening';
+                if (hour < 12) greeting = 'Good Morning';
+                else if (hour < 18) greeting = 'Good Afternoon';
+
+                const user = window.dataManager?.getCurrentUser();
+                const userName = user?.displayName || user?.email?.split('@')[0] || '';
+                greetingEl.textContent = userName ? `${greeting}, ${userName}!` : `${greeting}!`;
+            }
+        }
+
+        // Check for active workout session in localStorage
+        function loadActiveSessionState() {
+            try {
+                const persistedSession = localStorage.getItem('ghost_gym_active_workout_session');
+                if (persistedSession) {
+                    const session = JSON.parse(persistedSession);
+                    if (session.workoutId && session.status === 'in_progress') {
+                        activeSessionWorkoutId = session.workoutId;
+                        console.log('📍 Found active session for workout:', activeSessionWorkoutId);
+                    }
+                }
+            } catch (e) {
+                console.warn('Could not load session state:', e);
+            }
+        }
+
+        // ============================================
+        // TODAY SECTION
+        // ============================================
+
+        async function renderTodaySection() {
+            const container = document.getElementById('todayContent');
+            if (!container) return;
+
+            const recommendation = await getTodayRecommendation();
+            console.log('📅 Today recommendation:', recommendation.type);
+
+            switch (recommendation.type) {
+                case 'resume':
+                    container.innerHTML = renderTodayCard(recommendation.workout, {
+                        state: 'resume',
+                        message: recommendation.message
+                    });
+                    break;
+                case 'suggest':
+                    container.innerHTML = renderTodayCard(recommendation.workout, {
+                        state: 'suggest',
+                        message: recommendation.message
+                    });
+                    break;
+                case 'empty':
+                    container.innerHTML = renderTodayEmptyState();
+                    break;
+            }
+        }
+
+        async function getTodayRecommendation() {
+            // 1. Check for in-progress session
+            if (activeSessionWorkoutId) {
+                const workout = homeWorkouts.find(w => w.id === activeSessionWorkoutId);
+                if (workout) {
+                    return {
+                        type: 'resume',
+                        workout,
+                        message: 'Workout in progress'
+                    };
+                }
+            }
+
+            // 2. Smart suggestion: find workout not done in 2+ days
+            if (homeWorkouts.length > 0) {
+                try {
+                    const user = window.firebaseAuth?.currentUser;
+                    if (user) {
+                        const idToken = await user.getIdToken();
+                        const response = await fetch('/api/v3/workout-sessions?status=completed&page_size=50', {
+                            headers: {
+                                'Authorization': `Bearer ${idToken}`,
+                                'Content-Type': 'application/json'
+                            }
+                        });
+
+                        if (response.ok) {
+                            const data = await response.json();
+                            const sessions = data.sessions || [];
+
+                            // Build map of workout_id -> most recent completion date
+                            const lastDoneMap = new Map();
+                            for (const session of sessions) {
+                                if (session.workout_id && session.completed_at && !lastDoneMap.has(session.workout_id)) {
+                                    lastDoneMap.set(session.workout_id, session.completed_at);
+                                }
+                            }
+
+                            // Calculate days since last done for each workout
+                            const workoutsWithRest = homeWorkouts.map(workout => {
+                                const lastDone = lastDoneMap.get(workout.id);
+                                const daysAgo = lastDone ? getDaysAgo(lastDone) : Infinity;
+                                return { workout, lastDone, daysAgo };
+                            });
+
+                            // Sort by oldest first (most days since last done)
+                            workoutsWithRest.sort((a, b) => b.daysAgo - a.daysAgo);
+
+                            if (workoutsWithRest.length > 0) {
+                                const suggestion = workoutsWithRest[0];
+                                const message = suggestion.daysAgo === Infinity
+                                    ? 'Never done - give it a try!'
+                                    : suggestion.daysAgo === 0
+                                        ? 'Done today - rest up!'
+                                        : suggestion.daysAgo === 1
+                                            ? 'Done yesterday'
+                                            : `Last done ${suggestion.daysAgo} days ago`;
+
+                                return {
+                                    type: 'suggest',
+                                    workout: suggestion.workout,
+                                    message
+                                };
+                            }
+                        }
+                    }
+                } catch (e) {
+                    console.warn('Failed to fetch sessions for recommendation:', e);
+                }
+
+                // Fallback: just suggest the first workout
+                return {
+                    type: 'suggest',
+                    workout: homeWorkouts[0],
+                    message: 'Ready to train?'
+                };
+            }
+
+            // 3. No workouts - show empty state
+            return { type: 'empty' };
+        }
+
+        function getDaysAgo(dateString) {
+            const date = new Date(dateString);
+            const now = new Date();
+            date.setHours(0, 0, 0, 0);
+            now.setHours(0, 0, 0, 0);
+            return Math.floor((now - date) / (1000 * 60 * 60 * 24));
+        }
+
+        function renderTodayCard(workout, options) {
+            const isResume = options.state === 'resume';
+            const buttonText = isResume ? 'Resume Workout' : 'Start Workout';
+            const buttonClass = isResume ? 'btn-warning' : 'btn-primary';
+            const buttonIcon = isResume ? 'bx-play-circle' : 'bx-play';
+            const cardClass = isResume ? 'today-card border-warning' : 'today-card';
+            const exerciseCount = workout.exercise_groups?.length || 0;
+
+            return `
+                <div class="card ${cardClass}">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <h6 class="card-title mb-1">${escapeHtml(workout.name)}</h6>
+                                <p class="text-muted small mb-0">
+                                    ${exerciseCount} exercise${exerciseCount !== 1 ? 's' : ''} • ${options.message}
+                                </p>
+                            </div>
+                            ${isResume ? '<span class="badge bg-warning text-dark">In Progress</span>' : ''}
+                        </div>
+                        <div class="d-flex gap-2 mt-3">
+                            <a href="workout-mode.html?id=${workout.id}" class="btn ${buttonClass} flex-grow-1">
+                                <i class="bx ${buttonIcon} me-1"></i>${buttonText}
+                            </a>
+                            <button class="btn btn-outline-secondary" onclick="viewWorkoutDetails('${workout.id}')">
+                                <i class="bx bx-info-circle"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderTodayEmptyState() {
+            return `
+                <div class="card">
+                    <div class="card-body text-center py-4">
+                        <i class="bx bx-dumbbell bx-lg text-muted mb-2" style="font-size: 2.5rem;"></i>
+                        <p class="text-muted mb-3">Ready to start your fitness journey?</p>
+                        <a href="workout-builder.html" class="btn btn-primary">
+                            <i class="bx bx-plus me-1"></i>Create Your First Workout
+                        </a>
+                    </div>
+                </div>
+            `;
+        }
+
+        // ============================================
+        // FAVORITES SECTION
+        // ============================================
+
+        function renderFavoritesSection() {
+            const section = document.getElementById('favoritesSection');
+            const container = document.getElementById('favoritesContent');
+            if (!section || !container) return;
+
+            const favorites = homeWorkouts
+                .filter(w => w.is_favorite)
+                .sort((a, b) => new Date(b.favorited_at || 0) - new Date(a.favorited_at || 0));
+
+            if (favorites.length === 0) {
+                section.style.display = 'none';
+                return;
+            }
+
+            section.style.display = 'block';
+
+            // Show max 5 in horizontal scroll
+            const displayFavorites = favorites.slice(0, 5);
+
+            container.innerHTML = displayFavorites.map(workout => renderFavoriteCard(workout)).join('');
+
+            // Update "View all" count
+            const viewAllLink = document.getElementById('viewAllFavorites');
+            if (viewAllLink && favorites.length > 5) {
+                viewAllLink.textContent = `View all (${favorites.length})`;
+            }
+        }
+
+        function renderFavoriteCard(workout) {
+            const exerciseCount = workout.exercise_groups?.length || 0;
+            return `
+                <div class="card favorite-card flex-shrink-0" style="min-width: 200px;">
+                    <div class="card-body py-3 px-3">
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <i class="bx bxs-heart text-danger"></i>
+                            <span class="fw-medium text-truncate">${escapeHtml(workout.name)}</span>
+                        </div>
+                        <small class="text-muted d-block mb-3">${exerciseCount} exercises</small>
+                        <a href="workout-mode.html?id=${workout.id}" class="btn btn-sm btn-outline-primary w-100">
+                            <i class="bx bx-play me-1"></i>Start
+                        </a>
+                    </div>
+                </div>
+            `;
+        }
+
+        // ============================================
+        // THIS WEEK STATS
+        // ============================================
+
+        async function loadThisWeekStats() {
+            const weekCountEl = document.getElementById('weekWorkoutCount');
+            const streakEl = document.getElementById('streakCount');
+            if (!weekCountEl || !streakEl) return;
+
+            try {
+                const user = window.firebaseAuth?.currentUser;
+                if (!user) return;
+
+                const idToken = await user.getIdToken();
+
+                // Get start of week (Monday)
+                const now = new Date();
+                const dayOfWeek = now.getDay();
+                const monday = new Date(now);
+                monday.setDate(now.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
+                monday.setHours(0, 0, 0, 0);
+
+                const response = await fetch(`/api/v3/workout-sessions?status=completed&page_size=100`, {
+                    headers: { 'Authorization': `Bearer ${idToken}` }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    const sessions = data.sessions || [];
+
+                    // Count this week's workouts
+                    const thisWeekSessions = sessions.filter(s => {
+                        const sessionDate = new Date(s.completed_at);
+                        return sessionDate >= monday;
+                    });
+                    weekCountEl.textContent = thisWeekSessions.length;
+
+                    // Calculate streak (consecutive days with workouts)
+                    const streak = calculateStreak(sessions);
+                    streakEl.innerHTML = streak > 0 ? `🔥 ${streak}` : '0';
+                }
+            } catch (e) {
+                console.warn('Failed to load week stats:', e);
+                weekCountEl.textContent = '-';
+                streakEl.textContent = '-';
+            }
+        }
+
+        function calculateStreak(sessions) {
+            if (!sessions.length) return 0;
+
+            // Get unique dates (in local timezone)
+            const dates = [...new Set(sessions.map(s => {
+                const d = new Date(s.completed_at);
+                return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+            }))].sort().reverse();
+
+            if (dates.length === 0) return 0;
+
+            // Check if we worked out today or yesterday
+            const today = new Date();
+            const todayKey = `${today.getFullYear()}-${today.getMonth()}-${today.getDate()}`;
+            const yesterday = new Date(today);
+            yesterday.setDate(yesterday.getDate() - 1);
+            const yesterdayKey = `${yesterday.getFullYear()}-${yesterday.getMonth()}-${yesterday.getDate()}`;
+
+            if (dates[0] !== todayKey && dates[0] !== yesterdayKey) {
+                return 0; // Streak broken
+            }
+
+            // Count consecutive days
+            let streak = 1;
+            for (let i = 1; i < dates.length; i++) {
+                const [y1, m1, d1] = dates[i-1].split('-').map(Number);
+                const [y2, m2, d2] = dates[i].split('-').map(Number);
+
+                const date1 = new Date(y1, m1, d1);
+                const date2 = new Date(y2, m2, d2);
+                const diffDays = Math.floor((date1 - date2) / (1000 * 60 * 60 * 24));
+
+                if (diffDays === 1) {
+                    streak++;
+                } else {
+                    break;
+                }
+            }
+
+            return streak;
+        }
+
+        // ============================================
+        // UTILITY FUNCTIONS
+        // ============================================
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function viewWorkoutDetails(workoutId) {
+            // Open workout detail offcanvas if available, or navigate
+            if (window.workoutDetailOffcanvas) {
+                window.workoutDetailOffcanvas.show(workoutId);
+            } else {
+                window.location.href = `workout-database.html?view=${workoutId}`;
+            }
+        }
+
         // Initialize when DOM is ready
         document.addEventListener('DOMContentLoaded', initHomePage);
-        
+
         // Make functions globally available
         window.initHomePage = initHomePage;
-        window.loadStatistics = loadStatistics;
+        window.loadHomeSections = loadHomeSections;
+        window.viewWorkoutDetails = viewWorkoutDetails;
     </script>
   </body>
 </html>

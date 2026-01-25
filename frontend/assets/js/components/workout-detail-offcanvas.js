@@ -262,39 +262,73 @@ class WorkoutDetailOffcanvas {
     
     /**
      * Render footer actions
+     * Supports two-row layout: secondary actions on top, primary action full-width below
      */
     _renderFooterActions(workout) {
         const footer = document.getElementById('workoutDetailFooter');
         if (!footer) return;
-        
+
         if (this.config.actions.length === 0) {
             footer.style.display = 'none';
             return;
         }
-        
+
         footer.style.display = 'block';
-        
-        const actionsHTML = `
-            <div class="d-flex gap-2">
-                ${this.config.actions.map(action => `
-                    <button type="button" 
-                            class="btn btn-${action.variant} flex-fill" 
-                            data-action="${action.id}">
-                        ${action.icon ? `<i class="bx ${action.icon} me-1"></i>` : ''}
-                        ${action.label}
-                    </button>
-                `).join('')}
-            </div>
-        `;
-        
+
+        // Separate primary and secondary actions
+        const primaryActions = this.config.actions.filter(a => a.primary);
+        const secondaryActions = this.config.actions.filter(a => !a.primary);
+
+        let actionsHTML = '';
+
+        // If we have both primary and secondary, use two-row layout
+        if (primaryActions.length > 0 && secondaryActions.length > 0) {
+            actionsHTML = `
+                <div class="d-flex gap-2 mb-2 detail-offcanvas-buttons">
+                    ${secondaryActions.map(action => `
+                        <button type="button"
+                                class="btn btn-${action.variant} flex-fill"
+                                data-action="${action.id}">
+                            ${action.icon ? `<i class="bx ${action.icon} me-1"></i>` : ''}
+                            ${action.label}
+                        </button>
+                    `).join('')}
+                </div>
+                <div class="d-flex gap-2">
+                    ${primaryActions.map(action => `
+                        <button type="button"
+                                class="btn btn-${action.variant} flex-fill"
+                                data-action="${action.id}">
+                            ${action.icon ? `<i class="bx ${action.icon} me-1"></i>` : ''}
+                            ${action.label}
+                        </button>
+                    `).join('')}
+                </div>
+            `;
+        } else {
+            // Single row layout (backward compatible)
+            actionsHTML = `
+                <div class="d-flex gap-2">
+                    ${this.config.actions.map(action => `
+                        <button type="button"
+                                class="btn btn-${action.variant} flex-fill"
+                                data-action="${action.id}">
+                            ${action.icon ? `<i class="bx ${action.icon} me-1"></i>` : ''}
+                            ${action.label}
+                        </button>
+                    `).join('')}
+                </div>
+            `;
+        }
+
         footer.innerHTML = actionsHTML;
-        
+
         // Attach action listeners
         footer.querySelectorAll('[data-action]').forEach(button => {
             button.addEventListener('click', () => {
                 const actionId = button.dataset.action;
                 const action = this.config.actions.find(a => a.id === actionId);
-                
+
                 if (action && action.onClick) {
                     action.onClick(workout);
                 }

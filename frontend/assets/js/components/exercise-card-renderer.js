@@ -77,7 +77,7 @@ class ExerciseCardRenderer {
             <div class="workout-card ${stateClasses.join(' ')}"
                  data-exercise-index="${index}"
                  data-exercise-name="${this._escapeHtml(mainExercise)}"
-                 onclick="if(!event.target.closest('.workout-more-btn, .workout-edit-btn, .workout-menu, .inline-rest-timer')) this.classList.toggle('expanded')">
+                 onclick="if(!event.target.closest('.workout-more-btn, .workout-edit-btn, .workout-menu, .inline-rest-timer')) { this.classList.toggle('expanded'); if(this.classList.contains('expanded')) setTimeout(() => this.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100); }">
                 <!-- Collapsed Header -->
                 <div class="workout-card-header">
                     <!-- Row 1: Exercise Name (full width, no wrap) -->
@@ -88,8 +88,8 @@ class ExerciseCardRenderer {
                             ${isBonus ? '<span class="additional-exercise-badge" title="Additional exercise">+</span>' : ''}
                         </div>
                         <div class="workout-header-actions">
-                            <button class="workout-edit-btn" data-unified-edit="true" aria-label="Edit weight and reps" title="Edit weight and reps">
-                                <i class="bx bx-pencil"></i>
+                            <button class="workout-edit-btn" onclick="window.workoutModeController?.handleEditExercise?.('${this._escapeHtml(mainExercise)}', ${index}); event.stopPropagation();" aria-label="Modify exercise" title="Modify exercise">
+                                <i class="bx bx-edit-alt"></i>
                             </button>
                             <button class="workout-more-btn" onclick="window.workoutModeController?.toggleExerciseMenu?.(this, '${this._escapeHtml(mainExercise)}', ${index}); event.stopPropagation();" title="More options">
                                 <i class="bx bx-dots-vertical"></i>
@@ -341,11 +341,33 @@ class ExerciseCardRenderer {
 
     /**
      * Parse rest time string to seconds
+     * Handles formats: "60s", "2min", "2m", "1m30s", "90"
      * @private
      */
     _parseRestTime(restStr) {
-        const match = restStr.match(/(\d+)/);
-        return match ? parseInt(match[1]) : 60;
+        if (!restStr) return 60;
+
+        const str = String(restStr).toLowerCase().trim();
+
+        // Try compound format first: "1m30s" or "1min30s"
+        const compoundMatch = str.match(/(\d+)\s*m(?:in)?\s*(\d+)\s*s/);
+        if (compoundMatch) {
+            return parseInt(compoundMatch[1]) * 60 + parseInt(compoundMatch[2]);
+        }
+
+        // Minutes only: "2min", "2m"
+        const minMatch = str.match(/(\d+)\s*m(?:in)?$/);
+        if (minMatch) {
+            return parseInt(minMatch[1]) * 60;
+        }
+
+        // Seconds only: "60s" or just "60"
+        const secMatch = str.match(/(\d+)\s*s?$/);
+        if (secMatch) {
+            return parseInt(secMatch[1]);
+        }
+
+        return 60;
     }
 
     /**
@@ -506,11 +528,27 @@ class ExerciseCardRenderer {
     }
     
     /**
+     * Format seconds into display string (e.g., 90 → "1m30s", 60 → "1min", 45 → "45s")
+     * @private
+     */
+    _formatRestDisplay(seconds) {
+        if (seconds < 60) {
+            return `${seconds}s`;
+        }
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        if (secs === 0) {
+            return `${mins}min`;
+        }
+        return `${mins}m${secs}s`;
+    }
+
+    /**
      * Render inline rest timer section
      * @private
      */
     _renderInlineRestTimer(restSeconds, index) {
-        const restDisplay = restSeconds >= 60 ? `${Math.floor(restSeconds / 60)}min` : `${restSeconds}s`;
+        const restDisplay = this._formatRestDisplay(restSeconds);
 
         return `
             <div class="inline-rest-timer" data-rest-seconds="${restSeconds}" data-rest-display="${restDisplay}">

@@ -82,7 +82,7 @@ body.menu-open {
    ============================================ */
 
 .app-brand-text {
-    background: linear-gradient(135deg, var(--ghost-primary), var(--ghost-secondary));
+    background: linear-gradient(135deg, var(--gs-primary), var(--gs-secondary));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -124,12 +124,12 @@ body.menu-open {
 /* Authentication UI button */
 .auth-sign-in {
     background: rgba(var(--bs-primary-rgb), 0.1);
-    border-color: var(--ghost-primary);
-    color: var(--ghost-primary);
+    border-color: var(--gs-primary);
+    color: var(--gs-primary);
 }
 
 .auth-sign-in:hover {
-    background: var(--ghost-primary);
+    background: var(--gs-primary);
     color: white;
 }
 
@@ -155,7 +155,7 @@ body.menu-open {
 }
 
 [data-bs-theme="dark"] .app-brand-text {
-    background: linear-gradient(135deg, var(--ghost-primary), var(--ghost-secondary));
+    background: linear-gradient(135deg, var(--gs-primary), var(--gs-secondary));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -189,7 +189,7 @@ body.menu-open {
 }
 
 [data-bs-theme="dark"] .menu-item.active > .menu-link::before {
-    background: linear-gradient(135deg, var(--ghost-primary), var(--ghost-secondary));
+    background: linear-gradient(135deg, var(--gs-primary), var(--gs-secondary));
 }
 
 [data-bs-theme="dark"] .menu-sub .menu-link {

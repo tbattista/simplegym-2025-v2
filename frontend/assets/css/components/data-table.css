@@ -400,15 +400,15 @@
 
 /* Outline badge styles with Ghost Gym colors */
 .badge-outline-success {
-    color: var(--ghost-success);
-    border: 1px solid rgba(var(--ghost-success-rgb), 0.25);
-    background: rgba(var(--ghost-success-rgb), 0.05);
+    color: var(--gs-success);
+    border: 1px solid rgba(var(--gs-success-rgb), 0.25);
+    background: rgba(var(--gs-success-rgb), 0.05);
 }
 
 .badge-outline-warning {
-    color: #06b6d4;
-    border: 1px solid rgba(6, 182, 212, 0.25);
-    background: rgba(6, 182, 212, 0.05);
+    color: var(--gs-accent);
+    border: 1px solid rgba(var(--gs-accent-rgb), 0.25);
+    background: rgba(var(--gs-accent-rgb), 0.05);
 }
 
 .badge-outline-danger {

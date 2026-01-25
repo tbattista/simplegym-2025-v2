@@ -276,28 +276,10 @@ class WeightFieldController {
         const currentUnit = this.container.dataset.unit || 'lbs';
         const isDIY = currentUnit === 'diy';
 
-        // DEBUG: Log all data attributes and unit buttons
-        console.log('🔍 DEBUG enterEditMode:', {
-            exerciseName: this.exerciseName,
-            'dataset.weight': this.container.dataset.weight,
-            'dataset.unit': this.container.dataset.unit,
-            'dataset.weightMode': this.container.dataset.weightMode,
-            currentWeight,
-            currentUnit,
-            isDIY,
-            unitButtonsCount: this.unitButtons?.length,
-            unitButtons: Array.from(this.unitButtons || []).map(btn => ({
-                unit: btn.dataset.unit,
-                hasActive: btn.classList.contains('active')
-            }))
-        });
-
         // Always sync the unit selector buttons to match current unit
         this.currentUnit = currentUnit;
         this.unitButtons.forEach(btn => {
-            const shouldBeActive = btn.dataset.unit === currentUnit;
-            btn.classList.toggle('active', shouldBeActive);
-            console.log(`🔘 Button ${btn.dataset.unit}: shouldBeActive=${shouldBeActive}, isActive=${btn.classList.contains('active')}`);
+            btn.classList.toggle('active', btn.dataset.unit === currentUnit);
         });
 
         // Toggle DIY mode class on editor

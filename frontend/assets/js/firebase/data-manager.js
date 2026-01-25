@@ -714,6 +714,23 @@ class FirebaseDataManager {
         }
     }
     
+    /**
+     * Toggle workout favorite status
+     * @param {string} workoutId - The workout ID
+     * @param {boolean} isFavorite - New favorite state
+     * @returns {Promise<Object>} Updated workout
+     */
+    async toggleWorkoutFavorite(workoutId, isFavorite) {
+        console.log(`⭐ Toggling favorite for ${workoutId}: ${isFavorite}`);
+
+        const update = {
+            is_favorite: isFavorite,
+            favorited_at: isFavorite ? new Date().toISOString() : null
+        };
+
+        return this.updateWorkout(workoutId, update);
+    }
+
     updateLocalStorageWorkout(workoutId, workoutData) {
         try {
             // Get all existing workouts from localStorage

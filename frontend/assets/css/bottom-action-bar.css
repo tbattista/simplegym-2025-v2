@@ -22,6 +22,9 @@
     --floating-fab-icon-size: 18px;
     --floating-timer-width: 100px; /* Fixed width for timer to prevent reshaping */
     --floating-timer-paused-width: 140px; /* Wider width for paused state with controls */
+
+    /* Content padding to clear bottom bar + floating FABs */
+    --bottom-bar-content-padding: calc(56px + 56px + env(safe-area-inset-bottom, 0px) + 16px);
 }
 
 /* ============================================
@@ -550,7 +553,7 @@
 .global-rest-timer-button.ready .global-timer-btn:hover {
     background: #218838;
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(var(--ghost-success-rgb), 0.4);
+    box-shadow: 0 4px 12px rgba(var(--gs-success-rgb), 0.4);
 }
 
 /* Counting state - display with pause option */
@@ -657,12 +660,12 @@
 }
 
 .global-timer-controls button:last-child {
-    background: rgba(var(--ghost-success-rgb), 0.8);
+    background: rgba(var(--gs-success-rgb), 0.8);
     color: white;
 }
 
 .global-timer-controls button:last-child:hover {
-    background: rgba(var(--ghost-success-rgb), 1);
+    background: rgba(var(--gs-success-rgb), 1);
 }
 
 /* Done state - success button */
@@ -729,19 +732,19 @@
 @keyframes timer-complete-pulse {
     0%, 100% {
         transform: scale(1);
-        box-shadow: 0 2px 8px rgba(var(--ghost-success-rgb), 0.3);
+        box-shadow: 0 2px 8px rgba(var(--gs-success-rgb), 0.3);
     }
     25% {
         transform: scale(1.05);
-        box-shadow: 0 4px 16px rgba(var(--ghost-success-rgb), 0.5);
+        box-shadow: 0 4px 16px rgba(var(--gs-success-rgb), 0.5);
     }
     50% {
         transform: scale(1.08);
-        box-shadow: 0 6px 20px rgba(var(--ghost-success-rgb), 0.6);
+        box-shadow: 0 6px 20px rgba(var(--gs-success-rgb), 0.6);
     }
     75% {
         transform: scale(1.05);
-        box-shadow: 0 4px 16px rgba(var(--ghost-success-rgb), 0.5);
+        box-shadow: 0 4px 16px rgba(var(--gs-success-rgb), 0.5);
     }
 }
 
@@ -788,7 +791,7 @@
 .floating-action-fab:hover:not(.floating-start-button):not(.floating-end-button) {
     background: #218838;
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(var(--ghost-success-rgb), 0.4);
+    box-shadow: 0 4px 12px rgba(var(--gs-success-rgb), 0.4);
 }
 
 .floating-action-fab:active:not(.floating-start-button):not(.floating-end-button) {
@@ -886,10 +889,11 @@
 /* ============================================
    CONTENT PADDING ADJUSTMENT
    Add space for bottom bar on pages
+   Only applies when body has .has-bottom-action-bar class
    ============================================ */
 
-.content-wrapper {
-    padding-bottom: 100px;
+body.has-bottom-action-bar .content-wrapper {
+    padding-bottom: var(--bottom-bar-content-padding, 128px);
 }
 
 /* ============================================

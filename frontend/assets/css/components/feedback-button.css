@@ -292,19 +292,19 @@
    DARK MODE ADJUSTMENTS
    ============================================ */
 
-[data-theme="dark"] #feedbackModal .modal-content {
+[data-bs-theme="dark"] #feedbackModal .modal-content {
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
 }
 
-[data-theme="dark"] #feedbackModal .form-check {
+[data-bs-theme="dark"] #feedbackModal .form-check {
     border-color: rgba(255, 255, 255, 0.12);
 }
 
-[data-theme="dark"] #feedbackModal .form-check:hover {
+[data-bs-theme="dark"] #feedbackModal .form-check:hover {
     background-color: rgba(var(--bs-primary-rgb), 0.08);
 }
 
-[data-theme="dark"] #priorityField {
+[data-bs-theme="dark"] #priorityField {
     background-color: rgba(var(--bs-warning-rgb), 0.08);
     border-color: rgba(var(--bs-warning-rgb), 0.25);
 }

@@ -63,7 +63,7 @@
 [data-bs-theme="dark"] .exercise-group-card .card:hover,
 [data-bs-theme="dark"] .bonus-exercise-card .card:hover {
     background: #334155;
-    border-color: var(--ghost-primary);
+    border-color: var(--gs-primary);
 }
 
 [data-bs-theme="dark"] .exercise-group-card.editing .card {
@@ -85,7 +85,7 @@
 }
 
 [data-bs-theme="dark"] .list-group-item.active {
-    background: linear-gradient(135deg, var(--ghost-primary), var(--ghost-secondary));
+    background: linear-gradient(135deg, var(--gs-primary), var(--gs-secondary));
 }
 
 /* ============================================
@@ -122,12 +122,12 @@
 
 /* Bonus Exercise Specific */
 [data-bs-theme="dark"] .bonus-exercise .card-header {
-    background: rgba(var(--ghost-success-rgb), 0.1);
-    border-color: rgba(var(--ghost-success-rgb), 0.3);
+    background: rgba(var(--gs-success-rgb), 0.1);
+    border-color: rgba(var(--gs-success-rgb), 0.3);
 }
 
 [data-bs-theme="dark"] .bonus-exercise-title {
-    color: #6ee7b7;
+    color: var(--gs-success-light);
 }
 
 /* ============================================
@@ -141,7 +141,7 @@
 }
 
 [data-bs-theme="dark"] .workout-card:hover {
-    border-color: var(--ghost-primary);
+    border-color: var(--gs-primary);
     box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
 }
 
@@ -164,7 +164,7 @@
 }
 
 [data-bs-theme="dark"] .workout-list-card:hover {
-    border-color: var(--ghost-primary);
+    border-color: var(--gs-primary);
     box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
 }
 
@@ -191,8 +191,8 @@
    ============================================ */
 
 [data-bs-theme="dark"] .alert-success {
-    background: linear-gradient(135deg, rgba(var(--ghost-success-rgb), 0.2), rgba(var(--ghost-success-rgb), 0.1));
-    color: #6ee7b7;
+    background: linear-gradient(135deg, rgba(var(--gs-success-rgb), 0.2), rgba(var(--gs-success-rgb), 0.1));
+    color: var(--gs-success-light);
 }
 
 [data-bs-theme="dark"] .alert-danger {
@@ -201,12 +201,12 @@
 }
 
 [data-bs-theme="dark"] .alert-warning {
-    background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(245, 158, 11, 0.1));
+    background: linear-gradient(135deg, rgba(var(--gs-warning-rgb), 0.2), rgba(var(--gs-warning-rgb), 0.1));
     color: #fcd34d;
 }
 
 [data-bs-theme="dark"] .alert-info {
-    background: linear-gradient(135deg, rgba(6, 182, 212, 0.2), rgba(6, 182, 212, 0.1));
+    background: linear-gradient(135deg, rgba(var(--gs-accent-rgb), 0.2), rgba(var(--gs-accent-rgb), 0.1));
     color: #67e8f9;
 }
 
@@ -239,7 +239,7 @@
 
 [data-bs-theme="dark"] .program-workout-chip:hover {
     background: #475569;
-    border-color: var(--ghost-primary);
+    border-color: var(--gs-primary);
 }
 
 /* ============================================
@@ -258,7 +258,7 @@
 }
 
 [data-bs-theme="dark"] .badge.bg-label-info {
-    background: rgba(6, 182, 212, 0.2);
+    background: rgba(var(--gs-accent-rgb), 0.2);
     color: #67e8f9;
 }
 
@@ -267,15 +267,15 @@
    ============================================ */
 
 [data-bs-theme="dark"] .autosave-indicator.saving {
-    background: rgba(6, 182, 212, 0.2);
+    background: rgba(var(--gs-accent-rgb), 0.2);
 }
 
 [data-bs-theme="dark"] .autosave-indicator.saved {
-    background: rgba(var(--ghost-success-rgb), 0.2);
+    background: rgba(var(--gs-success-rgb), 0.2);
 }
 
 [data-bs-theme="dark"] .autosave-indicator.unsaved {
-    background: rgba(245, 158, 11, 0.2);
+    background: rgba(var(--gs-warning-rgb), 0.2);
 }
 
 [data-bs-theme="dark"] .autosave-indicator.error {
@@ -304,7 +304,7 @@
 }
 
 [data-bs-theme="dark"] .app-brand-text {
-    background: linear-gradient(135deg, var(--ghost-primary), var(--ghost-secondary));
+    background: linear-gradient(135deg, var(--gs-primary), var(--gs-secondary));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -337,7 +337,7 @@
 }
 
 [data-bs-theme="dark"] .menu-item.active > .menu-link::before {
-    background: linear-gradient(135deg, var(--ghost-primary), var(--ghost-secondary));
+    background: linear-gradient(135deg, var(--gs-primary), var(--gs-secondary));
 }
 
 [data-bs-theme="dark"] .menu-sub .menu-link {
@@ -562,13 +562,13 @@
 
 /* Primary buttons in offcanvas */
 [data-bs-theme="dark"] .offcanvas .btn-primary {
-    background: linear-gradient(135deg, var(--ghost-primary, #6366f1), var(--ghost-secondary, #8b5cf6));
+    background: linear-gradient(135deg, var(--gs-primary), var(--gs-secondary));
     border-color: transparent;
     color: #fff;
 }
 
 [data-bs-theme="dark"] .offcanvas .btn-primary:hover {
-    background: linear-gradient(135deg, #5855eb, #7c3aed);
+    background: linear-gradient(135deg, var(--gs-primary-hover), #7c3aed);
     border-color: transparent;
     color: #fff;
 }
@@ -613,20 +613,20 @@
 
 /* Offcanvas alerts */
 [data-bs-theme="dark"] .offcanvas .alert-info {
-    background: rgba(6, 182, 212, 0.15);
-    border-color: rgba(6, 182, 212, 0.3);
+    background: rgba(var(--gs-accent-rgb), 0.15);
+    border-color: rgba(var(--gs-accent-rgb), 0.3);
     color: #67e8f9;
 }
 
 [data-bs-theme="dark"] .offcanvas .alert-success {
-    background: rgba(var(--ghost-success-rgb), 0.15);
-    border-color: rgba(var(--ghost-success-rgb), 0.3);
-    color: #6ee7b7;
+    background: rgba(var(--gs-success-rgb), 0.15);
+    border-color: rgba(var(--gs-success-rgb), 0.3);
+    color: var(--gs-success-light);
 }
 
 [data-bs-theme="dark"] .offcanvas .alert-warning {
-    background: rgba(245, 158, 11, 0.15);
-    border-color: rgba(245, 158, 11, 0.3);
+    background: rgba(var(--gs-warning-rgb), 0.15);
+    border-color: rgba(var(--gs-warning-rgb), 0.3);
     color: #fcd34d;
 }
 
@@ -660,15 +660,15 @@
 }
 
 [data-bs-theme="dark"] .offcanvas .card.bg-label-success {
-    background-color: rgba(var(--ghost-success-rgb), 0.15);
+    background-color: rgba(var(--gs-success-rgb), 0.15);
 }
 
 [data-bs-theme="dark"] .offcanvas .card.bg-label-info {
-    background-color: rgba(6, 182, 212, 0.15);
+    background-color: rgba(var(--gs-accent-rgb), 0.15);
 }
 
 [data-bs-theme="dark"] .offcanvas .card.bg-label-warning {
-    background-color: rgba(245, 158, 11, 0.15);
+    background-color: rgba(var(--gs-warning-rgb), 0.15);
 }
 
 [data-bs-theme="dark"] .offcanvas .card .h4,
@@ -913,17 +913,17 @@
    ============================================ */
 
 [data-bs-theme="dark"] .accordion-workout-groups.edit-mode-active {
-    background: rgba(245, 158, 11, 0.1);
+    background: rgba(var(--gs-warning-rgb), 0.1);
     border-color: var(--bs-warning);
 }
 
 [data-bs-theme="dark"] .accordion-workout-groups.edit-mode-active .accordion-item {
-    background: rgba(245, 158, 11, 0.15);
+    background: rgba(var(--gs-warning-rgb), 0.15);
     border-color: var(--bs-warning);
 }
 
 [data-bs-theme="dark"] .accordion-workout-groups.edit-mode-active .accordion-button {
-    background: rgba(245, 158, 11, 0.2);
+    background: rgba(var(--gs-warning-rgb), 0.2);
 }
 
 [data-bs-theme="dark"] .accordion-workout-groups.edit-mode-active .drag-handle {
@@ -933,7 +933,7 @@
 /* Edit mode for compact cards */
 [data-bs-theme="dark"] .exercise-groups-container.edit-mode-active .exercise-group-card.compact .card,
 [data-bs-theme="dark"] .exercise-groups-container.edit-mode-active .bonus-exercise-card.compact .card {
-    background: rgba(245, 158, 11, 0.1);
+    background: rgba(var(--gs-warning-rgb), 0.1);
     border-color: var(--bs-warning);
 }
 
@@ -1018,7 +1018,7 @@
 
 [data-bs-theme="dark"] .floating-timer-widget {
     background: var(--bs-gray-900);
-    border-color: var(--ghost-primary);
+    border-color: var(--gs-primary);
     box-shadow: 0 8px 24px rgba(var(--bs-primary-rgb), 0.4);
 }
 
@@ -1050,7 +1050,7 @@
 }
 
 [data-bs-theme="dark"] .exercise-card:hover {
-    border-color: var(--ghost-primary);
+    border-color: var(--gs-primary);
     background: var(--bs-gray-800);
 }
 

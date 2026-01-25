@@ -314,6 +314,17 @@ class WorkoutTemplate(BaseModel):
         description="When the workout was last modified"
     )
 
+    # Favorites support
+    is_favorite: bool = Field(
+        default=False,
+        description="Whether this workout is marked as a favorite"
+    )
+
+    favorited_at: Optional[datetime] = Field(
+        default=None,
+        description="When the workout was marked as favorite"
+    )
+
 class ProgramWorkout(BaseModel):
     """Association model for workouts within a program"""
     
@@ -406,12 +417,16 @@ class CreateWorkoutRequest(BaseModel):
 
 class UpdateWorkoutRequest(BaseModel):
     """Request model for updating a workout"""
-    
+
     name: Optional[str] = Field(None, min_length=1, max_length=100)
     description: Optional[str] = Field(None, max_length=500)
     exercise_groups: Optional[List[ExerciseGroup]] = Field(None)
     bonus_exercises: Optional[List[BonusExercise]] = Field(None)
     tags: Optional[List[str]] = Field(None, max_items=10)
+
+    # Favorites support
+    is_favorite: Optional[bool] = Field(None, description="Whether this workout is marked as a favorite")
+    favorited_at: Optional[datetime] = Field(None, description="When the workout was marked as favorite")
 
 class CreateProgramRequest(BaseModel):
     """Request model for creating a new program"""

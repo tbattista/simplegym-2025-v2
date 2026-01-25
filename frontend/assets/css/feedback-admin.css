@@ -182,17 +182,17 @@
    DARK MODE SUPPORT
    ============================================================================ */
 
-[data-theme="dark"] .feedback-detail .bg-light {
+[data-bs-theme="dark"] .feedback-detail .bg-light {
     background-color: var(--bs-gray-800) !important;
     color: var(--bs-gray-100);
 }
 
-[data-theme="dark"] .table {
+[data-bs-theme="dark"] .table {
     --bs-table-bg: transparent;
     --bs-table-hover-bg: rgba(255, 255, 255, 0.05);
 }
 
-[data-theme="dark"] .badge {
+[data-bs-theme="dark"] .badge {
     border: 1px solid rgba(255, 255, 255, 0.1);
 }
 

@@ -45,6 +45,9 @@
     
     <!-- Dashboard Demo CSS -->
     <link rel="stylesheet" href="/static/assets/css/dashboard-demo.css" />
+
+    <!-- Calendar View CSS -->
+    <link rel="stylesheet" href="/static/assets/css/components/calendar-view.css" />
     
     <!-- Bottom Action Bar CSS -->
     <link rel="stylesheet" href="/static/assets/css/bottom-action-bar.css?v=3.0.2" />
@@ -100,29 +103,55 @@
                   <!-- Compact header will be rendered by JS -->
                 </div>
 
-                <!-- My Workouts Section (MOVED UP - most important!) -->
-                <div class="mb-4">
-                  <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h5 class="mb-0">
-                      <i class="bx bx-dumbbell me-2"></i>
-                      My Workouts
-                    </h5>
-                    <a href="workout-database.html" class="btn btn-sm btn-link p-0">
-                      View All →
-                    </a>
-                  </div>
-                  <div id="myWorkoutsCarousel">
-                    <!-- Workout cards will be rendered by JS -->
-                    <!-- Loading skeleton -->
-                    <div class="horizontal-scroll-container">
-                      <div class="skeleton skeleton-card"></div>
-                      <div class="skeleton skeleton-card"></div>
-                      <div class="skeleton skeleton-card"></div>
+                <!-- Activity Calendar Section (NEW) -->
+                <div id="calendarSection" class="mb-4">
+                  <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center py-3">
+                      <h6 class="mb-0 fw-semibold">
+                        <i class="bx bx-calendar me-2"></i>Activity Calendar
+                      </h6>
+                      <div class="d-flex align-items-center gap-2">
+                        <button id="prevMonth" class="btn btn-sm btn-icon btn-outline-secondary rounded-circle">
+                          <i class="bx bx-chevron-left"></i>
+                        </button>
+                        <span id="currentMonth" class="fw-medium text-nowrap" style="min-width: 110px; text-align: center;">January 2026</span>
+                        <button id="nextMonth" class="btn btn-sm btn-icon btn-outline-secondary rounded-circle">
+                          <i class="bx bx-chevron-right"></i>
+                        </button>
+                      </div>
+                    </div>
+                    <div class="card-body pt-2">
+                      <div id="calendarGrid" class="calendar-grid">
+                        <!-- Calendar rendered by calendar-view.js -->
+                        <div class="text-center py-4">
+                          <div class="spinner-border spinner-border-sm text-primary" role="status">
+                            <span class="visually-hidden">Loading calendar...</span>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
 
-                <!-- Weekly Progress (moved below workouts) -->
+
+                <!-- Quick Stats Section (moved up) -->
+                <div class="mb-4">
+                  <h6 class="mb-3 fw-semibold">
+                    <i class="bx bx-bar-chart me-2"></i>
+                    Quick Stats
+                  </h6>
+                  <div id="quickStatsContainer">
+                    <!-- Stats grid will be rendered by JS -->
+                    <!-- Loading skeleton -->
+                    <div class="stats-grid">
+                      <div class="skeleton skeleton-stat-card"></div>
+                      <div class="skeleton skeleton-stat-card"></div>
+                      <div class="skeleton skeleton-stat-card"></div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Weekly Progress -->
                 <div id="weeklyProgressContainer" class="mb-4">
                   <!-- Weekly progress will be rendered by JS -->
                 </div>
@@ -130,12 +159,12 @@
                 <!-- Recent Activity Section -->
                 <div class="mb-4">
                   <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h5 class="mb-0">
+                    <h6 class="mb-0 fw-semibold">
                       <i class="bx bx-history me-2"></i>
                       Recent Activity
-                    </h5>
+                    </h6>
                     <a href="workout-history.html" class="btn btn-sm btn-link p-0">
-                      View All →
+                      View All
                     </a>
                   </div>
                   <div id="recentActivityContainer">
@@ -146,23 +175,6 @@
                   </div>
                 </div>
 
-                <!-- Quick Stats Section -->
-                <div class="mb-4">
-                  <h5 class="mb-3">
-                    <i class="bx bx-bar-chart me-2"></i>
-                    Quick Stats
-                  </h5>
-                  <div id="quickStatsContainer">
-                    <!-- Stats grid will be rendered by JS -->
-                    <!-- Loading skeleton -->
-                    <div class="stats-grid">
-                      <div class="skeleton skeleton-stat-card"></div>
-                      <div class="skeleton skeleton-stat-card"></div>
-                      <div class="skeleton skeleton-stat-card"></div>
-                      <div class="skeleton skeleton-stat-card"></div>
-                    </div>
-                  </div>
-                </div>
 
               </div>
               <!-- / Dashboard Content -->
@@ -217,6 +229,9 @@
     <!-- Common Utilities -->
     <script src="/static/assets/js/utils/common-utils.js"></script>
 
+    <!-- Calendar View Component -->
+    <script src="/static/assets/js/components/calendar-view.js"></script>
+
     <!-- Dashboard Components -->
     <script src="/static/assets/js/dashboard/dashboard-workout-card.js"></script>
     <script src="/static/assets/js/dashboard/recent-session-card.js"></script>
@@ -226,6 +241,213 @@
     <!-- Dashboard Demo Controller -->
     <script src="/static/assets/js/dashboard/dashboard-demo.js"></script>
 
-    <!-- Initialize Dashboard (already handled in dashboard-demo.js DOMContentLoaded) -->
+    <!-- Calendar Integration Script -->
+    <script>
+        // Global offcanvas instance
+        let dayOffcanvas = null;
+
+        // Initialize calendar after dashboard loads
+        document.addEventListener('DOMContentLoaded', function() {
+            // Wait for dashboard to initialize, then add calendar
+            setTimeout(initCalendar, 500);
+        });
+
+        async function initCalendar() {
+            console.log('📅 Initializing Activity Calendar...');
+
+            // Initialize offcanvas
+            const offcanvasEl = document.getElementById('calendarDayOffcanvas');
+            if (offcanvasEl) {
+                dayOffcanvas = new bootstrap.Offcanvas(offcanvasEl);
+            }
+
+            // Create calendar instance (must be on window for onclick handlers)
+            window.calendarView = new CalendarView('calendarGrid', {
+                monthLabelId: 'currentMonth',
+                prevButtonId: 'prevMonth',
+                nextButtonId: 'nextMonth',
+                onDayClick: showDayDetail
+            });
+
+            // Load sessions for calendar
+            await loadCalendarSessions();
+
+            // Reload calendar when auth state changes
+            window.addEventListener('authStateChanged', async (event) => {
+                console.log('📅 Auth state changed, reloading calendar...');
+                await loadCalendarSessions();
+            });
+        }
+
+        async function loadCalendarSessions() {
+            console.log('📅 loadCalendarSessions() starting...');
+            try {
+                // Wait for Firebase/dataManager to be ready (with timeout)
+                const waitForDataManager = async (maxWait = 5000) => {
+                    const start = Date.now();
+                    while (!window.dataManager && (Date.now() - start) < maxWait) {
+                        await new Promise(r => setTimeout(r, 100));
+                    }
+                    return !!window.dataManager;
+                };
+
+                const dataManagerReady = await waitForDataManager();
+                if (!dataManagerReady) {
+                    console.warn('⚠️ DataManager not available - showing empty calendar');
+                    window.calendarView.render();
+                    return;
+                }
+                console.log('📅 DataManager is ready');
+
+                // Wait for auth to be ready
+                await window.dataManager.waitForAuthReady();
+                console.log('📅 Auth is ready');
+
+                if (!window.dataManager.isUserAuthenticated()) {
+                    console.log('ℹ️ User not authenticated - showing empty calendar');
+                    window.calendarView.render();
+                    return;
+                }
+                console.log('📅 User is authenticated, fetching sessions...');
+
+                const token = await window.dataManager.getAuthToken();
+                const response = await fetch('/api/v3/workout-sessions?page_size=100', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                console.log('📅 API response status:', response.status);
+
+                if (response.ok) {
+                    const data = await response.json();
+                    const sessions = data.sessions || [];
+                    console.log(`✅ Loaded ${sessions.length} sessions for calendar`);
+                    if (sessions.length > 0) {
+                        console.log('📅 Sample session dates:', sessions.slice(0, 3).map(s => ({
+                            name: s.workout_name,
+                            started: s.started_at,
+                            completed: s.completed_at
+                        })));
+                    }
+                    window.calendarView.setSessionData(sessions);
+                } else {
+                    const errorText = await response.text();
+                    console.warn('⚠️ Could not load sessions for calendar, status:', response.status, 'Error:', errorText);
+                    window.calendarView.render();
+                }
+            } catch (error) {
+                console.error('❌ Error loading calendar sessions:', error);
+                window.calendarView.render();
+            }
+        }
+
+        function showDayDetail(dateKey, sessions) {
+            const title = document.getElementById('selectedDayTitle');
+            const content = document.getElementById('dayDetailContent');
+
+            if (!title || !content) return;
+
+            // Format the date for display
+            const [year, month, day] = dateKey.split('-').map(Number);
+            const date = new Date(year, month - 1, day);
+            const options = { weekday: 'long', month: 'long', day: 'numeric' };
+            title.textContent = date.toLocaleDateString('en-US', options);
+
+            if (sessions.length === 0) {
+                content.innerHTML = `
+                    <div class="text-center py-4">
+                        <i class="bx bx-calendar-x text-muted" style="font-size: 3rem;"></i>
+                        <p class="text-muted mt-3 mb-3">No workouts on this day</p>
+                        <a href="workout-database.html" class="btn btn-primary">
+                            <i class="bx bx-play me-1"></i>Start a workout
+                        </a>
+                    </div>
+                `;
+            } else {
+                content.innerHTML = sessions.map(session => {
+                    const duration = session.duration_minutes
+                        ? (session.duration_minutes >= 60
+                            ? `${Math.floor(session.duration_minutes / 60)}h ${session.duration_minutes % 60}m`
+                            : `${session.duration_minutes}m`)
+                        : '';
+
+                    const statusBadge = session.status === 'completed'
+                        ? '<span class="badge bg-success">Completed</span>'
+                        : session.status === 'in_progress'
+                            ? '<span class="badge bg-warning">In Progress</span>'
+                            : '<span class="badge bg-secondary">Partial</span>';
+
+                    // Build exercises count text (exercises_performed is an array)
+                    const exerciseCount = session.exercises_performed?.length
+                        ? `${session.exercises_performed.length} exercises`
+                        : '';
+
+                    return `
+                        <div class="day-session-card card mb-2">
+                            <div class="card-body py-3">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div class="day-session-info">
+                                        <div class="day-session-name fw-semibold">${escapeHtmlCalendar(session.workout_name || 'Workout')}</div>
+                                        <div class="day-session-meta text-muted small mt-1">
+                                            ${duration ? `<i class="bx bx-time-five me-1"></i>${duration}` : ''}
+                                            ${duration && exerciseCount ? '<span class="mx-1">•</span>' : ''}
+                                            ${exerciseCount}
+                                        </div>
+                                    </div>
+                                    <div class="day-session-badge">
+                                        ${statusBadge}
+                                    </div>
+                                </div>
+                                <div class="mt-3">
+                                    <a href="workout-history.html?session=${session.id}"
+                                       class="btn btn-sm btn-outline-primary w-100">
+                                        <i class="bx bx-show me-1"></i>View Session Details
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            // Show the offcanvas
+            if (dayOffcanvas) {
+                dayOffcanvas.show();
+            }
+        }
+
+        function closeDayPanel() {
+            if (dayOffcanvas) {
+                dayOffcanvas.hide();
+            }
+        }
+
+        function escapeHtmlCalendar(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Make functions globally available
+        window.showDayDetail = showDayDetail;
+        window.closeDayPanel = closeDayPanel;
+    </script>
+
+    <!-- Calendar Day Detail Offcanvas (Bottom Sheet) -->
+    <div class="offcanvas offcanvas-bottom calendar-day-offcanvas"
+         tabindex="-1"
+         id="calendarDayOffcanvas"
+         aria-labelledby="calendarDayOffcanvasLabel">
+        <div class="offcanvas-header">
+            <h6 class="offcanvas-title" id="calendarDayOffcanvasLabel">
+                <i class="bx bx-calendar me-2"></i>
+                <span id="selectedDayTitle">Thursday, January 23</span>
+            </h6>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body" id="dayDetailContent">
+            <!-- Session cards rendered here -->
+        </div>
+    </div>
   </body>
 </html>

@@ -84,19 +84,51 @@
           <div class="content-wrapper">
             <!-- Content -->
             <div class="container-xxl flex-grow-1 container-p-y">
-              
-              <!-- Workout List Section -->
-              <div class="mb-3">
-                <h6 class="mb-2">
+
+              <!-- Today's Suggestion Section -->
+              <div id="todaySection" class="mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                  <h6 class="section-header mb-0">
+                    <i class="bx bx-sun me-1"></i>
+                    Today's Suggestion
+                  </h6>
+                  <i class="bx bx-info-circle text-muted"
+                     data-bs-toggle="tooltip"
+                     data-bs-placement="left"
+                     title="Shows an in-progress workout to resume, or suggests a workout you haven't done in 2+ days."
+                     style="font-size: 1.25rem; cursor: help;"></i>
+                </div>
+                <div id="todayContent">
+                  <!-- Populated by JS: resume card, suggest card, or empty state -->
+                </div>
+              </div>
+
+              <!-- Favorites Section -->
+              <div id="favoritesSection" class="mb-4" style="display: none;">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                  <h6 class="section-header mb-0">
+                    <i class="bx bx-star me-1"></i>
+                    Favorites
+                  </h6>
+                  <a href="#" class="small text-muted" id="viewAllFavorites">View all</a>
+                </div>
+                <div id="favoritesContent">
+                  <!-- Populated by JS -->
+                </div>
+              </div>
+
+              <!-- My Workouts Section -->
+              <div id="myWorkoutsSection" class="mb-3">
+                <h6 class="section-header mb-2">
                   <i class="bx bx-dumbbell me-1"></i>
-                  Workout List
+                  My Workouts
                 </h6>
                 <p class="text-muted small mb-3">Browse and manage your <span id="totalWorkoutsCount">0</span> workout templates</p>
-                
+
                 <!-- Hidden delete mode toggle (controlled by More menu) -->
                 <input class="form-check-input" type="checkbox" role="switch"
                        id="deleteModeToggle" style="display: none;">
-                
+
                 <!-- DataTable Container -->
                 <div id="workoutTableContainer"></div>
               </div>
@@ -258,6 +290,8 @@
     <script src="/static/assets/js/components/workout-card.js"></script>
     <script src="/static/assets/js/components/workout-grid.js"></script>
     <script src="/static/assets/js/components/workout-detail-offcanvas.js"></script>
+    <script src="/static/assets/js/components/starter-workout.js"></script>
+    <script src="/static/assets/js/components/share-modal.js"></script>
 
     <!-- Workout Database JS (Refactored) -->
     <script src="/static/assets/js/dashboard/workout-database.js?v=3.0.0"></script>
@@ -326,23 +360,33 @@
             authChangeTimeout = setTimeout(async () => {
                 const { user, isAuthenticated } = event.detail;
                 console.log('🔄 Auth state changed on workout database page, reloading workouts...');
-                
+
                 // Wait a moment for data manager to update its mode
                 await new Promise(resolve => setTimeout(resolve, 300));
-                
+
                 // Reload workouts with new auth state
                 if (window.loadWorkouts) {
                     await window.loadWorkouts();
                 }
+
+                // Re-render Today section (may show different recommendation based on auth)
+                if (window.renderTodaySection) {
+                    await window.renderTodaySection();
+                }
+
+                // Re-render Favorites section
+                if (window.renderFavoritesSection) {
+                    window.renderFavoritesSection();
+                }
             }, 500); // Wait 500ms for auth state to settle
         });
 
-        function initWorkoutDatabase() {
+        async function initWorkoutDatabase() {
             console.log('🚀 Initializing Workout Database Page');
-            
+
             // Set up event listeners
             document.getElementById('clearFiltersBtn')?.addEventListener('click', clearFilters);
-            
+
             // Connect sort dropdown to filter logic
             const sortBySelect = document.getElementById('sortBySelect');
             if (sortBySelect) {
@@ -353,15 +397,25 @@
                     filterWorkouts();
                 });
             }
-            
+
             // Initialize delete mode toggle
             if (window.initDeleteModeToggle) {
                 initDeleteModeToggle();
             }
-            
-            // Load workouts
-            loadWorkouts();
-            
+
+            // Load workouts first (needed for Today section to find workout data)
+            await loadWorkouts();
+
+            // Render Today section (after workouts loaded)
+            if (window.renderTodaySection) {
+                await renderTodaySection();
+            }
+
+            // Render Favorites section
+            if (window.renderFavoritesSection) {
+                renderFavoritesSection();
+            }
+
             console.log('✅ Workout Database initialized');
         }
     </script>

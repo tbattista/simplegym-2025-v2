@@ -52,6 +52,7 @@ class WorkoutCard {
         card.innerHTML = `
             <div class="card-body position-relative">
                 ${this._renderDropdownMenu()}
+                ${this._renderFavoriteButton()}
                 ${this._renderHeader()}
                 ${this._renderMetadata()}
                 ${this._renderDescription()}
@@ -119,6 +120,15 @@ class WorkoutCard {
                     </li>`;
         }
 
+        if (dropdownActions.includes('share')) {
+            menuItems += `
+                    <li>
+                        <a class="dropdown-item" href="javascript:void(0);" data-action="share">
+                            <i class="bx bx-share-alt me-2"></i>Share
+                        </a>
+                    </li>`;
+        }
+
         if (dropdownActions.includes('delete')) {
             // Add divider before delete if there are other items
             if (menuItems) {
@@ -142,7 +152,31 @@ class WorkoutCard {
             </div>
         `;
     }
-    
+
+    /**
+     * Render favorite heart toggle button
+     * Positioned to the left of the dropdown menu
+     */
+    _renderFavoriteButton() {
+        // Don't show for starter template or in delete mode
+        if (this.workout.isStarterTemplate || this.config.deleteMode) return '';
+
+        const workoutData = this.workout.workout_data || this.workout;
+        const isFavorite = workoutData.is_favorite || false;
+        const iconClass = isFavorite ? 'bxs-heart' : 'bx-heart';
+        const colorClass = isFavorite ? 'text-danger' : '';
+
+        return `
+            <button class="btn btn-icon btn-card-menu favorite-toggle ${colorClass}"
+                    data-workout-id="${this.workout.id}"
+                    data-is-favorite="${isFavorite}"
+                    title="${isFavorite ? 'Remove from favorites' : 'Add to favorites'}"
+                    style="position: absolute; top: 8px; right: 44px; z-index: 1050;">
+                <i class="bx ${iconClass}"></i>
+            </button>
+        `;
+    }
+
     /**
      * Render card header (title)
      */
@@ -450,6 +484,12 @@ class WorkoutCard {
                     if (duplicateAction && duplicateAction.onClick) {
                         duplicateAction.onClick(this.workout);
                     }
+                } else if (actionId === 'share') {
+                    // Share action from dropdown
+                    const shareAction = this.config.actions.find(a => a.id === 'share');
+                    if (shareAction && shareAction.onClick) {
+                        shareAction.onClick(this.workout);
+                    }
                 } else {
                     // Other actions (like 'start')
                     const action = this.config.actions.find(a => a.id === actionId);
@@ -459,6 +499,20 @@ class WorkoutCard {
                 }
             });
         });
+
+        // Favorite toggle handler
+        const favoriteToggle = this.element.querySelector('.favorite-toggle');
+        if (favoriteToggle) {
+            favoriteToggle.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const workoutId = favoriteToggle.dataset.workoutId;
+                const currentState = favoriteToggle.dataset.isFavorite === 'true';
+                // Call global handler
+                if (window.toggleWorkoutFavorite) {
+                    window.toggleWorkoutFavorite(e, workoutId, currentState);
+                }
+            });
+        }
     }
     
     /**

@@ -226,7 +226,7 @@
     transform: translate(-50%, -50%);
     width: 40px;
     height: 40px;
-    border: 3px solid var(--ghost-primary);
+    border: 3px solid var(--gs-primary);
     border-top-color: transparent;
     border-radius: 50%;
     animation: spin 0.8s linear infinite;
@@ -357,36 +357,150 @@
 }
 
 [data-bs-theme="dark"] .workout-list-card:hover {
-    border-color: var(--ghost-primary);
+    border-color: var(--gs-primary);
     box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
 }
 
 [data-bs-theme="dark"] .quick-actions-card .btn-outline-primary {
-    border-color: var(--ghost-primary);
-    color: var(--ghost-primary);
+    border-color: var(--gs-primary);
+    color: var(--gs-primary);
 }
 
 [data-bs-theme="dark"] .quick-actions-card .btn-outline-success {
-    border-color: var(--ghost-success);
-    color: var(--ghost-success);
+    border-color: var(--gs-success);
+    color: var(--gs-success);
 }
 
 [data-bs-theme="dark"] .quick-actions-card .btn-outline-info {
-    border-color: var(--ghost-accent);
-    color: var(--ghost-accent);
+    border-color: var(--gs-accent);
+    color: var(--gs-accent);
 }
 
 [data-bs-theme="dark"] .quick-actions-card .btn-outline-primary:hover {
-    background: var(--ghost-primary);
+    background: var(--gs-primary);
     color: white;
 }
 
 [data-bs-theme="dark"] .quick-actions-card .btn-outline-success:hover {
-    background: var(--ghost-success);
+    background: var(--gs-success);
     color: white;
 }
 
 [data-bs-theme="dark"] .quick-actions-card .btn-outline-info:hover {
-    background: var(--ghost-accent);
+    background: var(--gs-accent);
     color: white;
+}
+
+/* ============================================
+   HOME PAGE SECTIONS
+   ============================================ */
+
+/* Primary CTA Section */
+.primary-cta-section .btn-lg {
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.primary-cta-section .btn-lg .small {
+    font-weight: 400;
+    font-size: 0.8rem;
+}
+
+/* Section Headers */
+.section-header h6 {
+    color: var(--gs-primary-text, #1f2937);
+}
+
+/* Today Card */
+.today-card {
+    border-left: 4px solid var(--gs-primary, #696cff);
+}
+
+.today-card.border-warning {
+    border-left-color: var(--bs-warning);
+}
+
+/* Favorites Horizontal Scroll */
+.favorites-scroll {
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/Edge */
+}
+
+.favorites-scroll::-webkit-scrollbar {
+    display: none; /* Chrome/Safari */
+}
+
+.favorite-card {
+    scroll-snap-align: start;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.favorite-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* This Week Stats */
+#thisWeekSection .card {
+    border: 1px solid var(--gs-border, #e2e8f0);
+}
+
+#thisWeekSection .border-end {
+    border-color: var(--gs-border, #e2e8f0) !important;
+}
+
+/* ============================================
+   HOME PAGE RESPONSIVE
+   ============================================ */
+
+@media (max-width: 576px) {
+    .primary-cta-section .btn-lg {
+        font-size: 1rem;
+        padding: 0.875rem 1rem;
+    }
+
+    .primary-cta-section .btn-lg .small {
+        font-size: 0.75rem;
+    }
+
+    .favorite-card {
+        min-width: 180px !important;
+    }
+}
+
+/* ============================================
+   HOME PAGE DARK MODE
+   ============================================ */
+
+[data-bs-theme="dark"] .section-header h6 {
+    color: var(--gs-primary-text-dark, #f8fafc);
+}
+
+[data-bs-theme="dark"] .today-card {
+    background: var(--gs-card-bg-dark, #1e293b);
+    border-color: var(--gs-border-dark, #334155);
+}
+
+[data-bs-theme="dark"] .today-card.border-warning {
+    border-left-color: var(--bs-warning);
+}
+
+[data-bs-theme="dark"] .favorite-card {
+    background: var(--gs-card-bg-dark, #1e293b);
+    border-color: var(--gs-border-dark, #334155);
+}
+
+[data-bs-theme="dark"] .favorite-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+[data-bs-theme="dark"] #thisWeekSection .card {
+    background: var(--gs-card-bg-dark, #1e293b);
+    border-color: var(--gs-border-dark, #334155);
+}
+
+[data-bs-theme="dark"] #thisWeekSection .border-end {
+    border-color: var(--gs-border-dark, #334155) !important;
 }

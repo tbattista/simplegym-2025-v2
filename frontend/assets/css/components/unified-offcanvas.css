@@ -78,7 +78,7 @@
 
 /* Primary buttons */
 .offcanvas-bottom-base .btn-primary {
-    background: linear-gradient(135deg, var(--ghost-primary, #6366f1), var(--ghost-secondary, #8b5cf6));
+    background: linear-gradient(135deg, var(--gs-primary, #6366f1), var(--gs-secondary, #8b5cf6));
     border: none;
     box-shadow: 0 2px 4px rgba(var(--bs-primary-rgb), 0.3);
 }
@@ -495,8 +495,8 @@
         font-size: 1rem;
     }
     
-    /* Stack buttons vertically on very small screens - EXCEPT workout builder offcanvases */
-    .offcanvas-bottom-base .offcanvas-footer .d-flex:not(.workout-builder-buttons) {
+    /* Stack buttons vertically on very small screens - EXCEPT workout builder and detail offcanvases */
+    .offcanvas-bottom-base .offcanvas-footer .d-flex:not(.workout-builder-buttons):not(.detail-offcanvas-buttons) {
         flex-direction: column;
     }
     

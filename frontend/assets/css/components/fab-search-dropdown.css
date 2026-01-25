@@ -176,16 +176,16 @@ body.fab-search-active {
    DARK MODE
    ============================================ */
 
-[data-theme="dark"] .fab-search-dropdown {
+[data-bs-theme="dark"] .fab-search-dropdown {
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
     border-bottom-color: rgba(255, 255, 255, 0.1);
 }
 
-[data-theme="dark"] .fab-search-close:hover {
+[data-bs-theme="dark"] .fab-search-close:hover {
     background: rgba(255, 255, 255, 0.06);
 }
 
-[data-theme="dark"] .fab-search-close:active {
+[data-bs-theme="dark"] .fab-search-close:active {
     background: rgba(255, 255, 255, 0.1);
 }
 
