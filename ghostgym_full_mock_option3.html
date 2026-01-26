@@ -1,0 +1,882 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Ghost Gym — Full Mock (Option 3: Soft Clay + Slate)</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+
+  <style>
+    :root{
+      /* Option 3 — Soft Clay + Slate */
+      --gg-primary: #C97C5D;
+      --gg-secondary:#64748B;
+      --gg-accent:#E5E7EB;
+      --gg-bg:#FBFAF8;
+      --gg-surface:#FFFFFF;
+      --gg-text:#1F2937;
+      --gg-muted:#6B7280;
+      --gg-success:#8CBF9F;
+
+      --radius-1: 16px;
+      --radius-2: 20px;
+      --shadow-1: 0 10px 24px rgba(15,23,42,.08);
+      --shadow-2: 0 2px 10px rgba(15,23,42,.06);
+      --border: 1px solid rgba(15,23,42,.10);
+    }
+
+    html,body{height:100%;}
+    body{
+      background: var(--gg-bg);
+      color: var(--gg-text);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* Mobile app frame */
+    .app{
+      max-width: 420px;
+      margin: 0 auto;
+      min-height: 100vh;
+      display:flex;
+      flex-direction:column;
+      background: var(--gg-bg);
+    }
+
+    /* Top bar */
+    .topbar{
+      position: sticky;
+      top:0;
+      z-index: 20;
+      background: rgba(251,250,248,.92);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(15,23,42,.08);
+    }
+
+    .icon-btn{
+      width:40px;height:40px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      border-radius: 12px;
+      border: 1px solid rgba(15,23,42,.10);
+      background: #fff;
+      box-shadow: 0 1px 0 rgba(15,23,42,.04);
+      color: var(--gg-secondary);
+    }
+    .icon-btn:active{transform: translateY(1px);}
+
+    /* Cards */
+    .gg-card{
+      background: var(--gg-surface);
+      border: var(--border);
+      border-radius: var(--radius-2);
+      box-shadow: var(--shadow-2);
+    }
+    .gg-card.soft{
+      background: rgba(255,255,255,.85);
+    }
+
+    /* Buttons */
+    .btn-primary-gg{
+      background: var(--gg-primary);
+      border: 0;
+      color:#fff;
+      border-radius: 16px;
+      box-shadow: 0 10px 22px rgba(201,124,93,.25);
+    }
+    .btn-primary-gg:hover{background: #BE6F52;}
+    .btn-primary-gg:active{transform: translateY(1px);}
+
+    .btn-ghost{
+      background: #fff;
+      border: 1px solid rgba(15,23,42,.12);
+      border-radius: 16px;
+      color: var(--gg-text);
+    }
+    .btn-ghost:hover{border-color: rgba(15,23,42,.20);}
+
+    .pill{
+      display:inline-flex; align-items:center; gap:.4rem;
+      padding: .25rem .55rem;
+      border-radius: 999px;
+      border: 1px solid rgba(15,23,42,.10);
+      background: rgba(255,255,255,.75);
+      color: var(--gg-secondary);
+      font-size:.8rem;
+      white-space:nowrap;
+    }
+
+    .tag{
+      display:inline-flex; align-items:center;
+      padding: .22rem .5rem;
+      border-radius: 999px;
+      border: 1px solid rgba(15,23,42,.10);
+      background: #fff;
+      color: var(--gg-muted);
+      font-size:.78rem;
+    }
+
+    .muted{color: var(--gg-muted);}
+    .small-muted{color: var(--gg-muted); font-size:.85rem;}
+
+    /* Sections */
+    .section-title{
+      display:flex; align-items:center; justify-content:space-between;
+      margin-top: 14px;
+      margin-bottom: 8px;
+      padding: 0 2px;
+    }
+    .section-title .title{
+      font-weight: 700;
+      letter-spacing: -.2px;
+    }
+    .section-title a{
+      color: var(--gg-secondary);
+      text-decoration:none;
+      font-weight: 600;
+      font-size:.85rem;
+    }
+
+    /* Bottom nav */
+    .bottom-nav{
+      position: sticky;
+      bottom:0;
+      z-index: 30;
+      background: rgba(251,250,248,.92);
+      backdrop-filter: blur(10px);
+      border-top: 1px solid rgba(15,23,42,.08);
+      padding: 8px 10px;
+    }
+    .nav-item-gg{
+      flex:1;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:2px;
+      border-radius: 14px;
+      padding: 8px 0;
+      color: var(--gg-secondary);
+      text-decoration:none;
+      border: 1px solid transparent;
+    }
+    .nav-item-gg .bi{font-size: 1.1rem;}
+    .nav-item-gg span{font-size:.75rem; font-weight:600;}
+    .nav-item-gg.active{
+      background: rgba(201,124,93,.10);
+      border-color: rgba(201,124,93,.20);
+      color: var(--gg-primary);
+    }
+
+    /* Views */
+    .view{display:none;}
+    .view.active{display:block;}
+
+    /* Horizontal scroller */
+    .h-scroll{
+      display:flex; gap:10px;
+      overflow:auto;
+      padding-bottom: 4px;
+      -webkit-overflow-scrolling: touch;
+    }
+    .h-scroll::-webkit-scrollbar{display:none;}
+    .mini-card{
+      min-width: 180px;
+      border-radius: 18px;
+      border: 1px solid rgba(15,23,42,.10);
+      background: rgba(255,255,255,.92);
+      padding: 12px;
+      box-shadow: 0 1px 0 rgba(15,23,42,.03);
+    }
+
+    /* Calendar */
+    .calendar{
+      display:grid;
+      grid-template-columns: repeat(7,1fr);
+      gap: 8px;
+      text-align:center;
+      user-select:none;
+    }
+    .cal-head{
+      font-size:.78rem;
+      color: var(--gg-muted);
+      font-weight:700;
+      letter-spacing:.2px;
+    }
+    .day{
+      position:relative;
+      border-radius: 14px;
+      padding: 10px 0;
+      cursor:pointer;
+    }
+    .day:hover{background: rgba(15,23,42,.04);}
+    .day.today{
+      outline: 2px solid rgba(201,124,93,.35);
+      background: rgba(201,124,93,.08);
+    }
+    .dot{
+      width:6px;height:6px;border-radius:50%;
+      background: var(--gg-primary);
+      position:absolute; left:50%; bottom:6px; transform:translateX(-50%);
+    }
+    .dots{
+      display:flex; gap:3px;
+      position:absolute; left:50%; bottom:6px; transform:translateX(-50%);
+    }
+    .dots span{width:5px;height:5px;border-radius:50%; background: var(--gg-primary);}
+    .empty{opacity:.25; cursor:default;}
+    .selected{
+      background: rgba(100,116,139,.10);
+      outline: 2px solid rgba(100,116,139,.25);
+    }
+
+    /* Exercise card */
+    .exercise-header{
+      display:flex; align-items:flex-start; justify-content:space-between; gap:10px;
+    }
+    .exercise-title{
+      font-weight:800; letter-spacing:-.3px;
+    }
+    .metric{
+      font-weight:800;
+      font-size: 1.7rem;
+      letter-spacing: -.4px;
+      line-height: 1.05;
+    }
+    .metric small{font-size:.9rem; font-weight:800; color: var(--gg-secondary);}
+    .label{
+      font-size:.72rem;
+      letter-spacing:.08rem;
+      text-transform:uppercase;
+      color: var(--gg-muted);
+      font-weight:800;
+    }
+    .inline-actions{
+      display:flex; gap:10px; flex-wrap:wrap;
+    }
+    .chip-action{
+      flex:1;
+      min-width: 120px;
+      display:flex; align-items:center; justify-content:center; gap:.45rem;
+      padding: 10px 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(15,23,42,.12);
+      background:#fff;
+      color: var(--gg-secondary);
+      font-weight: 700;
+      font-size:.9rem;
+    }
+    .chip-action.primary{
+      background: rgba(201,124,93,.12);
+      border-color: rgba(201,124,93,.25);
+      color: var(--gg-primary);
+    }
+
+    .status-banner{
+      display:flex; align-items:center; justify-content:center; gap:.55rem;
+      background: rgba(140,191,159,.18);
+      border: 1px solid rgba(140,191,159,.35);
+      color: #2F6D49;
+      padding: 10px 12px;
+      border-radius: 14px;
+      font-weight: 800;
+      font-size:.9rem;
+    }
+
+    .divider{height:1px;background:rgba(15,23,42,.08); margin: 12px 0;}
+    .list-row{display:flex; align-items:center; justify-content:space-between; gap:10px; padding: 10px 0; border-top: 1px solid rgba(15,23,42,.08);}
+    .list-row:first-child{border-top:none;}
+    .badge-ok{
+      background: rgba(140,191,159,.18);
+      border: 1px solid rgba(140,191,159,.35);
+      color:#2F6D49;
+      font-weight: 800;
+      font-size:.75rem;
+      padding: .25rem .6rem;
+      border-radius: 999px;
+      white-space:nowrap;
+    }
+    .badge-partial{
+      background: rgba(201,124,93,.14);
+      border: 1px solid rgba(201,124,93,.30);
+      color: var(--gg-primary);
+      font-weight: 800;
+      font-size:.75rem;
+      padding: .25rem .6rem;
+      border-radius: 999px;
+      white-space:nowrap;
+    }
+
+    /* Keep content above bottom nav */
+    main{padding-bottom: 90px;}
+  </style>
+</head>
+
+<body>
+<div class="app">
+
+  <!-- Top Bar -->
+  <header class="topbar">
+    <div class="d-flex align-items-center justify-content-between px-3 py-3">
+      <button class="icon-btn" type="button" aria-label="Menu"><i class="bi bi-list"></i></button>
+
+      <div class="text-center">
+        <div class="small-muted" id="topSub">Saturday, Jan 24</div>
+        <div class="fw-bold" id="topTitle" style="letter-spacing:-.3px;">Home</div>
+      </div>
+
+      <div class="d-flex gap-2">
+        <button class="icon-btn" type="button" aria-label="Feedback"><i class="bi bi-chat-left-text"></i></button>
+        <button class="icon-btn" type="button" aria-label="Profile"><i class="bi bi-person-circle"></i></button>
+      </div>
+    </div>
+  </header>
+
+  <main class="px-3 pt-3">
+
+    <!-- HOME VIEW -->
+    <section class="view active" id="view-home">
+
+      <div class="mb-2">
+        <div class="h5 mb-1" style="font-weight:900; letter-spacing:-.4px;">Good Evening, Tom Battista!</div>
+        <div class="small-muted">Log your training like a notebook — calm, fast, and reliable.</div>
+      </div>
+
+      <div class="gg-card p-3 mb-3">
+        <div class="d-flex justify-content-between align-items-start gap-2">
+          <div>
+            <div class="pill mb-2"><i class="bi bi-lightning-charge"></i> Ready to train</div>
+            <div class="fw-bold" style="letter-spacing:-.2px;">Start or Resume</div>
+            <div class="small-muted">One tap to jump into the workout.</div>
+          </div>
+          <div class="text-end">
+            <div class="small-muted">Next up</div>
+            <div class="fw-bold">Overhead Press</div>
+          </div>
+        </div>
+        <div class="d-grid gap-2 mt-3">
+          <button class="btn btn-primary-gg py-3 fw-bold"><i class="bi bi-play-fill"></i> Start Workout</button>
+          <button class="btn btn-ghost py-2 fw-bold"><i class="bi bi-clock-history"></i> Resume last session</button>
+        </div>
+      </div>
+
+      <div class="section-title">
+        <div class="title">Today</div>
+        <a href="javascript:void(0)">Details <i class="bi bi-chevron-right"></i></a>
+      </div>
+
+      <div class="gg-card p-3 mb-3">
+        <div class="d-flex justify-content-between align-items-start gap-2">
+          <div>
+            <div class="fw-bold">Overhead press day winter 2026</div>
+            <div class="small-muted">7 exercises • ~35 min</div>
+            <div class="d-flex gap-2 mt-2 flex-wrap">
+              <span class="tag">Upper</span><span class="tag">Press</span><span class="tag">Strength</span>
+            </div>
+          </div>
+          <div class="text-end">
+            <div class="pill"><i class="bi bi-check2"></i> Last: 4d</div>
+          </div>
+        </div>
+        <div class="d-grid mt-3">
+          <button class="btn btn-primary-gg py-2 fw-bold"><i class="bi bi-play-fill"></i> Start</button>
+        </div>
+      </div>
+
+      <div class="section-title">
+        <div class="title">Favorites</div>
+        <a href="javascript:void(0)">Edit</a>
+      </div>
+
+      <div class="h-scroll mb-3">
+        <div class="mini-card">
+          <div class="fw-bold">Chest Day</div>
+          <div class="small-muted">8 exercises</div>
+          <div class="mt-2 d-grid">
+            <button class="btn btn-sm btn-ghost fw-bold"><i class="bi bi-play-fill"></i> Start</button>
+          </div>
+        </div>
+        <div class="mini-card">
+          <div class="fw-bold">Leg Day</div>
+          <div class="small-muted">7 exercises</div>
+          <div class="mt-2 d-grid">
+            <button class="btn btn-sm btn-ghost fw-bold"><i class="bi bi-play-fill"></i> Start</button>
+          </div>
+        </div>
+        <div class="mini-card">
+          <div class="fw-bold">Pull Day</div>
+          <div class="small-muted">6 exercises</div>
+          <div class="mt-2 d-grid">
+            <button class="btn btn-sm btn-ghost fw-bold"><i class="bi bi-play-fill"></i> Start</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-title">
+        <div class="title">My Workouts</div>
+        <a href="javascript:void(0)">View all</a>
+      </div>
+
+      <div class="gg-card p-3 mb-3">
+        <div class="list-row">
+          <div>
+            <div class="fw-bold">Overhead press day winter 2026</div>
+            <div class="small-muted">7 exercises • ~35 min</div>
+          </div>
+          <button class="btn btn-sm btn-primary-gg fw-bold px-3"><i class="bi bi-play-fill"></i></button>
+        </div>
+        <div class="list-row">
+          <div>
+            <div class="fw-bold">Leg Day — Barbell Squat</div>
+            <div class="small-muted">7 exercises • ~35 min</div>
+          </div>
+          <button class="btn btn-sm btn-primary-gg fw-bold px-3"><i class="bi bi-play-fill"></i></button>
+        </div>
+        <div class="list-row">
+          <div>
+            <div class="fw-bold">Chest Day Winter 2025/26</div>
+            <div class="small-muted">8 exercises • ~40 min</div>
+          </div>
+          <button class="btn btn-sm btn-primary-gg fw-bold px-3"><i class="bi bi-play-fill"></i></button>
+        </div>
+      </div>
+
+      <div class="section-title">
+        <div class="title">This Week</div>
+        <a href="javascript:void(0)">Dashboard <i class="bi bi-chevron-right"></i></a>
+      </div>
+
+      <div class="row g-2 mb-3">
+        <div class="col-6">
+          <div class="gg-card p-3 text-center">
+            <div class="small-muted">Workouts</div>
+            <div class="display-6 fw-bold mb-0" style="letter-spacing:-.6px;">2/5</div>
+            <div class="small-muted">goal</div>
+          </div>
+        </div>
+        <div class="col-6">
+          <div class="gg-card p-3 text-center">
+            <div class="small-muted">Streak</div>
+            <div class="display-6 fw-bold mb-0" style="letter-spacing:-.6px;">🔥 2</div>
+            <div class="small-muted">days</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="gg-card p-3">
+        <div class="d-flex justify-content-between align-items-center">
+          <div class="fw-bold">Recent activity</div>
+          <a class="small-muted text-decoration-none" href="javascript:void(0)">View all</a>
+        </div>
+        <div class="divider"></div>
+        <div class="list-row">
+          <div>
+            <div class="fw-bold">Pull Day</div>
+            <div class="small-muted">Yesterday • 44 min</div>
+          </div>
+          <span class="badge-ok">Completed</span>
+        </div>
+        <div class="list-row">
+          <div>
+            <div class="fw-bold">Overhead Press</div>
+            <div class="small-muted">3 days ago • 32 min</div>
+          </div>
+          <span class="badge-ok">Completed</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- DASHBOARD VIEW -->
+    <section class="view" id="view-dashboard">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <div>
+          <div class="h6 mb-0 fw-bold">January 2026</div>
+          <div class="small-muted">Tap a day to recall sessions</div>
+        </div>
+        <div class="d-flex gap-2">
+          <button class="icon-btn" type="button" aria-label="Prev month"><i class="bi bi-chevron-left"></i></button>
+          <button class="icon-btn" type="button" aria-label="Next month"><i class="bi bi-chevron-right"></i></button>
+        </div>
+      </div>
+
+      <div class="gg-card p-3 mb-3">
+        <div class="calendar mb-2">
+          <div class="cal-head">S</div><div class="cal-head">M</div><div class="cal-head">T</div><div class="cal-head">W</div><div class="cal-head">T</div><div class="cal-head">F</div><div class="cal-head">S</div>
+
+          <div class="day empty"></div>
+          <div class="day empty"></div>
+          <div class="day" data-day="1">1</div>
+          <div class="day" data-day="2">2<div class="dot"></div></div>
+          <div class="day" data-day="3">3</div>
+          <div class="day" data-day="4">4<div class="dot"></div></div>
+          <div class="day" data-day="5">5</div>
+
+          <div class="day" data-day="6">6<div class="dots"><span></span><span></span></div></div>
+          <div class="day" data-day="7">7</div>
+          <div class="day" data-day="8">8<div class="dot"></div></div>
+          <div class="day" data-day="9">9</div>
+          <div class="day" data-day="10">10<div class="dot"></div></div>
+          <div class="day" data-day="11">11</div>
+          <div class="day" data-day="12">12</div>
+
+          <div class="day" data-day="13">13<div class="dot"></div></div>
+          <div class="day" data-day="14">14</div>
+          <div class="day today" data-day="15">15<div class="dot"></div></div>
+          <div class="day" data-day="16">16</div>
+          <div class="day" data-day="17">17</div>
+          <div class="day" data-day="18">18<div class="dot"></div></div>
+          <div class="day" data-day="19">19</div>
+
+          <div class="day" data-day="20">20<div class="dot"></div></div>
+          <div class="day" data-day="21">21</div>
+          <div class="day" data-day="22">22<div class="dots"><span></span><span></span></div></div>
+          <div class="day" data-day="23">23</div>
+          <div class="day" data-day="24">24</div>
+          <div class="day" data-day="25">25</div>
+          <div class="day" data-day="26">26<div class="dot"></div></div>
+
+          <div class="day" data-day="27">27</div>
+          <div class="day" data-day="28">28</div>
+          <div class="day" data-day="29">29<div class="dot"></div></div>
+          <div class="day" data-day="30">30</div>
+          <div class="day" data-day="31">31</div>
+          <div class="day empty"></div>
+          <div class="day empty"></div>
+        </div>
+      </div>
+
+      <div class="row g-2 mb-3">
+        <div class="col-6">
+          <div class="gg-card p-3 text-center">
+            <div class="small-muted">This week</div>
+            <div class="display-6 fw-bold mb-0" style="letter-spacing:-.6px;">4</div>
+            <div class="small-muted">workouts</div>
+          </div>
+        </div>
+        <div class="col-6">
+          <div class="gg-card p-3 text-center">
+            <div class="small-muted">Streak</div>
+            <div class="display-6 fw-bold mb-0" style="letter-spacing:-.6px;">🔥 2</div>
+            <div class="small-muted">days</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-title">
+        <div class="title">Recent Activity</div>
+        <a href="javascript:void(0)">View all</a>
+      </div>
+
+      <div class="gg-card p-3">
+        <div class="list-row">
+          <div>
+            <div class="fw-bold">Overhead Press Day</div>
+            <div class="small-muted">Yesterday • 49 min</div>
+          </div>
+          <span class="badge-ok">Completed</span>
+        </div>
+        <div class="list-row">
+          <div>
+            <div class="fw-bold">Chest Day</div>
+            <div class="small-muted">3 days ago • 28 min</div>
+          </div>
+          <span class="badge-partial">Partial</span>
+        </div>
+        <div class="list-row">
+          <div>
+            <div class="fw-bold">Leg Day</div>
+            <div class="small-muted">5 days ago • 42 min</div>
+          </div>
+          <span class="badge-ok">Completed</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- WORKOUTS VIEW -->
+    <section class="view" id="view-workouts">
+      <div class="d-flex justify-content-between align-items-start mb-2">
+        <div>
+          <div class="h6 mb-0 fw-bold">Workout Templates</div>
+          <div class="small-muted">Browse and start your saved workouts</div>
+        </div>
+        <button class="btn btn-primary-gg px-3 py-2 fw-bold"><i class="bi bi-plus-lg"></i> New</button>
+      </div>
+
+      <div class="gg-card p-3 mb-3">
+        <div class="d-flex justify-content-between align-items-start gap-2">
+          <div>
+            <div class="fw-bold">Overhead press day winter 2026</div>
+            <div class="small-muted">7 exercises • ~35 min</div>
+            <div class="small-muted mt-2">Stair Master • Barbell Overhead Press • +5 more</div>
+          </div>
+          <div class="dropdown">
+            <button class="icon-btn" data-bs-toggle="dropdown" aria-label="Menu"><i class="bi bi-three-dots-vertical"></i></button>
+            <ul class="dropdown-menu dropdown-menu-end shadow">
+              <li><a class="dropdown-item" href="javascript:void(0)"><i class="bi bi-clock-history me-2"></i>History</a></li>
+              <li><a class="dropdown-item" href="javascript:void(0)"><i class="bi bi-pencil-square me-2"></i>Edit</a></li>
+              <li><a class="dropdown-item" href="javascript:void(0)"><i class="bi bi-copy me-2"></i>Duplicate</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item text-danger" href="javascript:void(0)"><i class="bi bi-trash me-2"></i>Delete</a></li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="d-grid mt-3">
+          <button class="btn btn-primary-gg py-3 fw-bold"><i class="bi bi-play-fill"></i> Start Workout</button>
+        </div>
+      </div>
+
+      <div class="gg-card p-3 mb-3">
+        <div class="d-flex justify-content-between align-items-start gap-2">
+          <div>
+            <div class="fw-bold">Leg Day — Barbell Squat Winter 2025/26</div>
+            <div class="small-muted">7 exercises • ~35 min</div>
+            <div class="small-muted mt-2">Stair Master • Barbell Back Squat • +5 more</div>
+          </div>
+          <button class="icon-btn" aria-label="Menu"><i class="bi bi-three-dots-vertical"></i></button>
+        </div>
+        <div class="d-grid mt-3">
+          <button class="btn btn-primary-gg py-3 fw-bold"><i class="bi bi-play-fill"></i> Start Workout</button>
+        </div>
+      </div>
+
+      <div class="gg-card p-3">
+        <div class="fw-bold">Shared with me</div>
+        <div class="small-muted">Workouts shared by friends or coaches</div>
+        <div class="divider"></div>
+        <div class="list-row">
+          <div>
+            <div class="fw-bold">Upper Split (Coach Mike)</div>
+            <div class="small-muted">Notes included • 6 exercises</div>
+          </div>
+          <button class="btn btn-sm btn-ghost fw-bold"><i class="bi bi-plus-circle me-1"></i>Add</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- WORKOUT MODE VIEW -->
+    <section class="view" id="view-workout">
+      <div class="d-flex justify-content-between align-items-start mb-2">
+        <div>
+          <div class="h6 mb-0 fw-bold">Workout Mode</div>
+          <div class="small-muted">Logbook view — quick edits only</div>
+        </div>
+        <button class="btn btn-ghost fw-bold px-3"><i class="bi bi-x-lg me-1"></i>End</button>
+      </div>
+
+      <div class="gg-card p-3 mb-3">
+        <div class="exercise-header">
+          <div>
+            <div class="exercise-title">Barbell Bench Press</div>
+            <div class="small-muted">3×8–12 • ~60s rest</div>
+            <div class="small-muted"><span style="color:var(--gg-primary);font-weight:800;">Today:</span> 165 lbs • <span class="muted">Last:</span> 165 lbs</div>
+          </div>
+          <div class="d-flex gap-2">
+            <button class="icon-btn" aria-label="Edit"><i class="bi bi-pencil"></i></button>
+            <button class="icon-btn" aria-label="Menu" data-bs-toggle="dropdown"><i class="bi bi-three-dots-vertical"></i></button>
+            <ul class="dropdown-menu dropdown-menu-end shadow">
+              <li><a class="dropdown-item" href="javascript:void(0)"><i class="bi bi-pencil-square me-2"></i>Modify exercise</a></li>
+              <li><a class="dropdown-item" href="javascript:void(0)"><i class="bi bi-arrow-repeat me-2"></i>Replace exercise</a></li>
+              <li><a class="dropdown-item" href="javascript:void(0)"><i class="bi bi-calculator me-2"></i>Plate calculator</a></li>
+              <li><a class="dropdown-item" href="javascript:void(0)"><i class="bi bi-skip-forward me-2"></i>Skip for today</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item text-danger" href="javascript:void(0)"><i class="bi bi-trash me-2"></i>Remove from workout</a></li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="status-banner mb-3">
+          <i class="bi bi-arrow-up"></i> From last session: increase weight
+        </div>
+
+        <div class="mb-3">
+          <div class="label mb-1"><i class="bi bi-bar-chart me-1"></i>Weight</div>
+          <div class="metric">165 <small>lbs</small></div>
+          <div class="small-muted"><i class="bi bi-plus-slash-minus me-1"></i>45lb bar + (1×25lb + 1×35lb) each side</div>
+        </div>
+
+        <div class="mb-3">
+          <div class="label mb-1"><i class="bi bi-list-ol me-1"></i>Protocol</div>
+          <div class="metric">3×8–12</div>
+        </div>
+
+        <div class="inline-actions mb-3">
+          <button class="chip-action"><i class="bi bi-journal-text"></i> Add note</button>
+          <button class="chip-action"><i class="bi bi-stopwatch"></i> 60s</button>
+          <button class="chip-action primary"><i class="bi bi-play-circle"></i> Start rest</button>
+        </div>
+
+        <div class="divider"></div>
+
+        <div>
+          <div class="label mb-2"><i class="bi bi-clock-history me-1"></i>Weight history</div>
+          <div class="small-muted">Last: 165 lbs on Jan 13</div>
+          <div class="small-muted">165 lbs on Jan 6</div>
+          <div class="small-muted">160 lbs on Dec 31</div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="label mb-2"><i class="bi bi-calendar2-week me-1"></i>Next session (optional)</div>
+        <div class="inline-actions">
+          <button class="chip-action">Decrease</button>
+          <button class="chip-action primary">Same</button>
+          <button class="chip-action">Increase</button>
+        </div>
+
+        <div class="d-grid mt-3">
+          <button class="btn btn-primary-gg py-3 fw-bold"><i class="bi bi-check2-circle"></i> Mark Done</button>
+        </div>
+      </div>
+
+      <div class="gg-card p-3">
+        <div class="d-flex justify-content-between align-items-center">
+          <div class="fw-bold">Exercise list</div>
+          <button class="btn btn-ghost btn-sm fw-bold"><i class="bi bi-plus-lg me-1"></i>Add</button>
+        </div>
+        <div class="divider"></div>
+        <div class="list-row">
+          <div>
+            <div class="fw-bold">Stair Master</div>
+            <div class="small-muted">15 min @ speed 8</div>
+          </div>
+          <span class="badge-ok">Done</span>
+        </div>
+        <div class="list-row">
+          <div>
+            <div class="fw-bold">Barbell Bench Press</div>
+            <div class="small-muted">165 lbs • 3×8–12</div>
+          </div>
+          <span class="badge-partial">Active</span>
+        </div>
+        <div class="list-row">
+          <div>
+            <div class="fw-bold">Dumbbell Deadlift</div>
+            <div class="small-muted">3×10</div>
+          </div>
+          <span class="pill"><i class="bi bi-dash"></i> Not started</span>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Day Detail Modal -->
+  <div class="modal fade" id="dayModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content" style="border-radius: 20px; border: var(--border); background: rgba(255,255,255,.96);">
+        <div class="modal-header" style="border-bottom: 1px solid rgba(15,23,42,.08);">
+          <h5 class="modal-title fw-bold" id="dayModalTitle">Jan 15</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="small-muted mb-2">Sessions</div>
+
+          <div class="gg-card p-3 mb-2" style="box-shadow:none;">
+            <div class="d-flex justify-content-between">
+              <div>
+                <div class="fw-bold">Overhead Press Day</div>
+                <div class="small-muted">49 min • Completed</div>
+              </div>
+              <span class="badge-ok">Completed</span>
+            </div>
+            <div class="d-grid mt-2">
+              <button class="btn btn-ghost fw-bold">View session</button>
+            </div>
+          </div>
+
+          <div class="gg-card p-3" style="box-shadow:none;">
+            <div class="d-flex justify-content-between">
+              <div>
+                <div class="fw-bold">Core + Accessories</div>
+                <div class="small-muted">18 min • Notes only</div>
+              </div>
+              <span class="pill"><i class="bi bi-journal-text"></i> Note</span>
+            </div>
+            <div class="d-grid mt-2">
+              <button class="btn btn-ghost fw-bold">View notes</button>
+            </div>
+          </div>
+
+        </div>
+        <div class="modal-footer" style="border-top: 1px solid rgba(15,23,42,.08);">
+          <button type="button" class="btn btn-ghost fw-bold w-100" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom Nav -->
+  <nav class="bottom-nav">
+    <div class="d-flex gap-2">
+      <a class="nav-item-gg active" href="javascript:void(0)" data-target="home">
+        <i class="bi bi-house"></i><span>Home</span>
+      </a>
+      <a class="nav-item-gg" href="javascript:void(0)" data-target="dashboard">
+        <i class="bi bi-calendar3"></i><span>Dashboard</span>
+      </a>
+      <a class="nav-item-gg" href="javascript:void(0)" data-target="workouts">
+        <i class="bi bi-layout-text-window"></i><span>Workouts</span>
+      </a>
+      <a class="nav-item-gg" href="javascript:void(0)" data-target="workout">
+        <i class="bi bi-lightning-charge"></i><span>Workout</span>
+      </a>
+    </div>
+  </nav>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  // Simple view router
+  const views = {
+    home: document.getElementById('view-home'),
+    dashboard: document.getElementById('view-dashboard'),
+    workouts: document.getElementById('view-workouts'),
+    workout: document.getElementById('view-workout'),
+  };
+
+  const topTitle = document.getElementById('topTitle');
+  const topSub = document.getElementById('topSub');
+
+  function setActive(target){
+    Object.values(views).forEach(v => v.classList.remove('active'));
+    views[target].classList.add('active');
+
+    document.querySelectorAll('.nav-item-gg').forEach(a => a.classList.remove('active'));
+    document.querySelector(`.nav-item-gg[data-target="${target}"]`).classList.add('active');
+
+    const titles = {home:'Home', dashboard:'Dashboard', workouts:'Workouts', workout:'Workout Mode'};
+    topTitle.textContent = titles[target] || 'Ghost Gym';
+    topSub.textContent = (target === 'dashboard') ? 'Recall your month' :
+                         (target === 'workout') ? 'Logbook mode' :
+                         'Saturday, Jan 24';
+    window.scrollTo({top:0, behavior:'instant'});
+  }
+
+  document.querySelectorAll('.nav-item-gg').forEach(a=>{
+    a.addEventListener('click', ()=> setActive(a.dataset.target));
+  });
+
+  // Calendar day click -> modal
+  const dayModal = new bootstrap.Modal('#dayModal');
+  const dayModalTitle = document.getElementById('dayModalTitle');
+
+  document.querySelectorAll('#view-dashboard .day').forEach(d=>{
+    if(d.classList.contains('empty')) return;
+    d.addEventListener('click', ()=>{
+      document.querySelectorAll('#view-dashboard .day').forEach(x=>x.classList.remove('selected'));
+      d.classList.add('selected');
+      const day = d.dataset.day || d.textContent.trim();
+      dayModalTitle.textContent = `Jan ${day}`;
+      dayModal.show();
+    });
+  });
+</script>
+</body>
+</html>

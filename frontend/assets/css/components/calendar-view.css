@@ -1,0 +1,336 @@
+/**
+ * Calendar View Component Styles
+ *
+ * @version 1.0.0
+ * @date 2026-01-24
+ */
+
+/* ============================================
+   CALENDAR GRID LAYOUT
+   ============================================ */
+
+.calendar-grid {
+    width: 100%;
+}
+
+.calendar-header-row {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+    margin-bottom: 0.5rem;
+}
+
+.calendar-header-cell {
+    text-align: center;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--gs-secondary-text, #64748b);
+    padding: 0.5rem 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.calendar-body {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+}
+
+/* ============================================
+   CALENDAR CELLS
+   ============================================ */
+
+.calendar-cell {
+    aspect-ratio: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border-radius: 8px;
+    position: relative;
+    transition: background-color 0.15s ease, transform 0.15s ease;
+    min-height: 40px;
+}
+
+.calendar-cell:hover:not(.empty) {
+    background-color: var(--gs-hover-bg, rgba(99, 102, 241, 0.08));
+}
+
+.calendar-cell:active:not(.empty) {
+    transform: scale(0.95);
+}
+
+.calendar-cell.empty {
+    cursor: default;
+    opacity: 0.3;
+}
+
+/* Today highlight */
+.calendar-cell.today {
+    background-color: var(--gs-primary-bg, rgba(99, 102, 241, 0.1));
+    border: 2px solid var(--gs-primary, #696cff);
+}
+
+.calendar-cell.today .day-number {
+    font-weight: 700;
+    color: var(--gs-primary, #696cff);
+}
+
+/* Day number */
+.day-number {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--gs-primary-text, #1f2937);
+    line-height: 1;
+}
+
+/* ============================================
+   WORKOUT DOTS
+   ============================================ */
+
+.workout-dots {
+    display: flex;
+    gap: 2px;
+    justify-content: center;
+    position: absolute;
+    bottom: 4px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.workout-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.workout-dot.completed {
+    background-color: var(--gs-success, #22c55e);
+}
+
+.workout-dot.partial {
+    background-color: var(--gs-warning, #f59e0b);
+}
+
+.workout-dot-more {
+    font-size: 0.6rem;
+    color: var(--gs-secondary-text, #64748b);
+    font-weight: 600;
+    line-height: 6px;
+}
+
+/* Has workout indicator */
+.calendar-cell.has-workout {
+    background-color: var(--gs-success-bg, rgba(34, 197, 94, 0.08));
+}
+
+.calendar-cell.has-workout:hover {
+    background-color: var(--gs-success-bg-hover, rgba(34, 197, 94, 0.15));
+}
+
+/* ============================================
+   DAY DETAIL PANEL
+   ============================================ */
+
+#dayDetailPanel .card-header {
+    font-size: 0.9rem;
+}
+
+/* #dayDetailContent height is controlled by parent offcanvas-body */
+
+.day-session-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--gs-border, #e2e8f0);
+}
+
+.day-session-item:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.day-session-item:first-child {
+    padding-top: 0;
+}
+
+.day-session-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.day-session-name {
+    font-weight: 500;
+    color: var(--gs-primary-text, #1f2937);
+    margin-bottom: 0.25rem;
+}
+
+.day-session-meta {
+    font-size: 0.8rem;
+    color: var(--gs-secondary-text, #64748b);
+}
+
+.day-session-badge {
+    flex-shrink: 0;
+    margin-left: 0.75rem;
+}
+
+/* ============================================
+   RESPONSIVE ADJUSTMENTS
+   ============================================ */
+
+@media (max-width: 576px) {
+    .calendar-cell {
+        min-height: 36px;
+        border-radius: 6px;
+    }
+
+    .day-number {
+        font-size: 0.8rem;
+    }
+
+    .calendar-header-cell {
+        font-size: 0.65rem;
+    }
+
+    .workout-dot {
+        width: 5px;
+        height: 5px;
+    }
+
+    .workout-dots {
+        bottom: 3px;
+    }
+}
+
+/* ============================================
+   DARK MODE
+   ============================================ */
+
+[data-bs-theme="dark"] .calendar-header-cell {
+    color: var(--gs-secondary-text-dark, #94a3b8);
+}
+
+[data-bs-theme="dark"] .day-number {
+    color: var(--gs-primary-text-dark, #f8fafc);
+}
+
+[data-bs-theme="dark"] .calendar-cell.today {
+    background-color: rgba(99, 102, 241, 0.2);
+    border-color: var(--gs-primary, #696cff);
+}
+
+[data-bs-theme="dark"] .calendar-cell:hover:not(.empty) {
+    background-color: rgba(99, 102, 241, 0.15);
+}
+
+[data-bs-theme="dark"] .calendar-cell.has-workout {
+    background-color: rgba(34, 197, 94, 0.15);
+}
+
+[data-bs-theme="dark"] .calendar-cell.has-workout:hover {
+    background-color: rgba(34, 197, 94, 0.25);
+}
+
+[data-bs-theme="dark"] .day-session-item {
+    border-color: var(--gs-border-dark, #334155);
+}
+
+[data-bs-theme="dark"] .day-session-name {
+    color: var(--gs-primary-text-dark, #f8fafc);
+}
+
+[data-bs-theme="dark"] .day-session-meta {
+    color: var(--gs-secondary-text-dark, #94a3b8);
+}
+
+/* ============================================
+   BOTTOM SHEET / OFFCANVAS STYLES
+   ============================================ */
+
+.calendar-day-offcanvas {
+    border-radius: 1rem 1rem 0 0;
+}
+
+.calendar-day-offcanvas.offcanvas-bottom {
+    /* Dynamic height based on content, capped at 85vh */
+    height: auto !important;
+    max-height: 85vh !important;
+    min-height: auto;
+}
+
+.calendar-day-offcanvas .offcanvas-header {
+    border-bottom: 1px solid var(--gs-border, #e2e8f0);
+    padding: 1rem 1.25rem;
+    flex-shrink: 0;
+}
+
+.calendar-day-offcanvas .offcanvas-title {
+    display: flex;
+    align-items: center;
+}
+
+/* Single consolidated body rule - scrolls only when content exceeds container */
+.calendar-day-offcanvas .offcanvas-body {
+    padding: 1rem 1.25rem;
+    overflow-y: auto;
+    /* No max-height - parent container controls the limit */
+}
+
+.day-session-card {
+    border: 1px solid var(--gs-border, #e2e8f0);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.day-session-card:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.day-session-card .card-body {
+    padding: 0.875rem 1rem;
+}
+
+.day-session-card .day-session-name {
+    font-size: 0.95rem;
+    color: var(--gs-primary-text, #1f2937);
+}
+
+.day-session-card .day-session-meta {
+    font-size: 0.8rem;
+}
+
+.day-session-card .day-session-meta i {
+    font-size: 0.9rem;
+    vertical-align: middle;
+}
+
+/* Dark mode for bottom sheet */
+[data-bs-theme="dark"] .calendar-day-offcanvas {
+    background-color: var(--gs-card-bg-dark, #1e293b);
+    border-color: var(--gs-border-dark, #334155);
+}
+
+[data-bs-theme="dark"] .calendar-day-offcanvas .offcanvas-header {
+    border-color: var(--gs-border-dark, #334155);
+}
+
+[data-bs-theme="dark"] .calendar-day-offcanvas .btn-close {
+    filter: invert(1) grayscale(100%) brightness(200%);
+}
+
+[data-bs-theme="dark"] .day-session-card {
+    background-color: var(--gs-card-bg-dark, #1e293b);
+    border-color: var(--gs-border-dark, #334155);
+}
+
+[data-bs-theme="dark"] .day-session-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+[data-bs-theme="dark"] .day-session-card .day-session-name {
+    color: var(--gs-primary-text-dark, #f8fafc);
+}
