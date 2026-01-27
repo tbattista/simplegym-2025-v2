@@ -13,6 +13,7 @@ window.ghostGym.workoutHistory = {
   exerciseHistories: {},
   expandedSessions: new Set(),
   expandedExercises: new Set(),
+  calendarView: null,
   statistics: {
     totalWorkouts: 0,
     avgDuration: 0,
@@ -82,11 +83,12 @@ async function loadWorkoutHistory(workoutId) {
     renderStatistics();
     renderSessionHistory();
     renderExercisePerformance();
-    
+    initHistoryCalendar();
+
     // Show content
     hideLoading();
     document.getElementById('historyContent').style.display = 'block';
-    
+
     console.log('✅ Workout history loaded successfully');
     
   } catch (error) {
@@ -212,56 +214,119 @@ function renderWorkoutInfo() {
 }
 
 /**
- * Render statistics cards
+ * Render compact statistics summary
+ * V2.2.1 - Single row instead of 4 cards
  */
 function renderStatistics() {
   const stats = window.ghostGym.workoutHistory.statistics;
   const container = document.getElementById('statisticsCards');
-  
-  const lastCompletedText = stats.lastCompleted ? 
-    formatDate(stats.lastCompleted) : 'Never';
-  
+
+  // Guard against NaN/undefined
+  const sessionCount = stats.totalWorkouts || 0;
+  const avgDuration = isNaN(stats.avgDuration) ? 0 : stats.avgDuration;
+  const lastDate = stats.lastCompleted
+    ? formatDate(stats.lastCompleted, { short: true })
+    : null;
+
+  // Build compact summary parts
+  let summaryParts = [];
+
+  if (lastDate) {
+    summaryParts.push(`Last trained: ${lastDate}`);
+    if (avgDuration > 0) {
+      summaryParts.push(`${avgDuration} min`);
+    }
+  }
+
+  const thisMonthCount = getThisMonthSessionCount();
+  if (thisMonthCount > 0) {
+    summaryParts.push(`This month: ${thisMonthCount} sessions`);
+  } else if (sessionCount > 0) {
+    summaryParts.push(`${sessionCount} total sessions`);
+  }
+
+  if (summaryParts.length === 0) {
+    container.innerHTML = '';
+    container.style.display = 'none';
+    return;
+  }
+
   container.innerHTML = `
-    <div class="col-6 col-md-3">
-      <div class="card">
-        <div class="card-body text-center">
-          <i class="bx bx-dumbbell bx-lg text-primary mb-2"></i>
-          <h3 class="mb-1">${stats.totalWorkouts}</h3>
-          <small class="text-muted">Total Workouts</small>
-        </div>
-      </div>
-    </div>
-    
-    <div class="col-6 col-md-3">
-      <div class="card">
-        <div class="card-body text-center">
-          <i class="bx bx-time bx-lg text-success mb-2"></i>
-          <h3 class="mb-1">${stats.avgDuration}</h3>
-          <small class="text-muted">Avg Duration (min)</small>
-        </div>
-      </div>
-    </div>
-    
-    <div class="col-6 col-md-3">
-      <div class="card">
-        <div class="card-body text-center">
-          <i class="bx bx-calendar bx-lg text-info mb-2"></i>
-          <h3 class="mb-1 small">${lastCompletedText}</h3>
-          <small class="text-muted">Last Completed</small>
-        </div>
-      </div>
-    </div>
-    
-    <div class="col-6 col-md-3">
-      <div class="card">
-        <div class="card-body text-center">
-          <i class="bx bx-trending-up bx-lg text-warning mb-2"></i>
-          <h3 class="mb-1">${Math.round(stats.totalVolume)}</h3>
-          <small class="text-muted">Total Volume (lbs)</small>
-        </div>
+    <div class="col-12">
+      <div class="stats-summary-row">
+        ${summaryParts.join(' <span class="stats-dot">•</span> ')}
       </div>
     </div>
   `;
+  container.style.display = 'block';
+}
+
+/**
+ * Get count of sessions this month
+ */
+function getThisMonthSessionCount() {
+  const sessions = window.ghostGym.workoutHistory.sessions;
+  const now = new Date();
+  const thisMonth = now.getMonth();
+  const thisYear = now.getFullYear();
+
+  return sessions.filter(s => {
+    const d = new Date(s.completed_at);
+    return d.getMonth() === thisMonth && d.getFullYear() === thisYear;
+  }).length;
+}
+
+/**
+ * Initialize the history calendar view
+ * Shows only sessions for the selected workout
+ */
+function initHistoryCalendar() {
+  const sessions = window.ghostGym.workoutHistory.sessions;
+
+  // Create calendar instance if it doesn't exist
+  if (!window.ghostGym.workoutHistory.calendarView) {
+    window.ghostGym.workoutHistory.calendarView = new CalendarView('historyCalendarGrid', {
+      monthLabelId: 'historyCurrentMonth',
+      prevButtonId: 'historyPrevMonth',
+      nextButtonId: 'historyNextMonth',
+      onDayClick: handleCalendarDayClick
+    });
+
+    // CalendarView uses window.calendarView for onclick handlers
+    window.calendarView = window.ghostGym.workoutHistory.calendarView;
+  }
+
+  // Set the session data (already filtered by workout)
+  window.ghostGym.workoutHistory.calendarView.setSessionData(sessions);
+  console.log(`📅 History calendar initialized with ${sessions.length} sessions`);
+}
+
+/**
+ * Handle calendar day click - scroll to that session or show info
+ */
+function handleCalendarDayClick(dateKey, daySessions) {
+  if (daySessions.length === 0) {
+    return; // No sessions on this day
+  }
+
+  // If there's one session, scroll to it
+  if (daySessions.length === 1) {
+    scrollToSession(daySessions[0].id);
+    return;
+  }
+
+  // Multiple sessions - scroll to the first one
+  scrollToSession(daySessions[0].id);
+}
+
+/**
+ * Format duration with validation (clamp unrealistic values)
+ */
+function formatDuration(minutes) {
+  if (!minutes || minutes <= 0) return '—';
+  // Clamp to reasonable max (4 hours = 240 min)
+  if (minutes > 240) return '—';
+  return `${minutes} min`;
 }
 
 /**
@@ -274,21 +339,17 @@ function renderLastSessionCard() {
   if (!container || sessions.length === 0) return;
 
   const lastSession = sessions[0]; // Already sorted by date (most recent first)
-  const workoutName = window.ghostGym.workoutHistory.workoutInfo?.name || 'Workout';
   const dateStr = formatDate(lastSession.completed_at, { short: true });
-  const duration = lastSession.duration_minutes || 0;
+  const duration = formatDuration(lastSession.duration_minutes);
 
   container.innerHTML = `
-    <div class="last-session-card">
-      <div class="last-session-badge">LAST SESSION</div>
+    <div class="last-session-card" onclick="scrollToSession('${lastSession.id}')" role="button" tabindex="0">
+      <div class="last-session-badge">Last</div>
       <div class="last-session-content">
-        <h5 class="last-session-title">${escapeHtml(workoutName)}</h5>
-        <span class="last-session-meta">${dateStr} • ${duration} min</span>
+        <span class="last-session-title">${dateStr}</span>
+        <span class="last-session-meta">${duration}</span>
       </div>
-      <button class="btn btn-sm btn-outline-primary last-session-action"
-              onclick="scrollToSession('${lastSession.id}')">
-        View Details →
-      </button>
+      <i class="bx bx-chevron-right last-session-chevron"></i>
     </div>
   `;
   container.style.display = 'block';
@@ -335,9 +396,9 @@ function renderSessionHistory() {
   // Group sessions by time period
   const groups = groupSessionsByTimePeriod(sessions);
 
-  let html = '<div class="session-list">';
+  let html = '';
 
-  // Render each time period
+  // Render each time period as separate card group
   if (groups.thisWeek.length > 0) {
     html += renderSessionGroup('This Week', groups.thisWeek);
   }
@@ -361,40 +422,50 @@ function renderSessionHistory() {
     html += renderSessionGroup(monthKey, groups.byMonth[monthKey]);
   });
 
-  html += '</div>';
   container.innerHTML = html;
 }
 
 /**
- * Render a group of sessions with a header
+ * Render a group of sessions with header outside the card
  */
 function renderSessionGroup(title, sessions) {
   return `
     <div class="session-group">
       <div class="time-period-header">${escapeHtml(title)}</div>
-      ${sessions.map((session, index) => createSessionEntry(session)).join('')}
+      <div class="session-list">
+        ${sessions.map((session, index) => createSessionEntry(session)).join('')}
+      </div>
     </div>
   `;
 }
 
 /**
  * Create a compact session entry (new design)
+ * Date is primary (workout name is already in page context)
  */
 function createSessionEntry(session) {
   const collapseId = `session-${session.id}`;
   const isExpanded = window.ghostGym.workoutHistory.expandedSessions.has(session.id);
-  const workoutName = window.ghostGym.workoutHistory.workoutInfo?.name || 'Workout';
   const dateStr = formatDate(session.completed_at, { short: true });
-  const duration = session.duration_minutes || 0;
+  const duration = formatDuration(session.duration_minutes);
 
   // Determine status
-  let statusClass = 'completed';
   const exercises = session.exercises_performed || [];
   const skippedCount = exercises.filter(e => e.is_skipped).length;
+  const completedCount = exercises.filter(e => !e.is_skipped).length;
+
+  let statusClass = 'completed';
+  let statusLabel = '✓';
+  let statusTitle = 'Completed';
+
   if (session.status === 'abandoned') {
     statusClass = 'abandoned';
-  } else if (skippedCount > exercises.length / 2) {
+    statusLabel = '✗';
+    statusTitle = 'Abandoned';
+  } else if (exercises.length > 0 && skippedCount > exercises.length / 2) {
     statusClass = 'partial';
+    statusLabel = '~';
+    statusTitle = `Partial (${completedCount}/${exercises.length})`;
   }
 
   // Check for notes
@@ -407,15 +478,14 @@ function createSessionEntry(session) {
          role="button"
          aria-expanded="${isExpanded}"
          aria-controls="${collapseId}">
-      <div class="session-status-dot ${statusClass}"></div>
+      <div class="session-status" title="${statusTitle}">
+        <span class="session-status-icon ${statusClass}">${statusLabel}</span>
+      </div>
       <div class="session-info">
-        <span class="session-workout-name">${escapeHtml(workoutName)}</span>
-        <span class="session-meta">${dateStr} • ${duration} min</span>
+        <span class="session-date">${dateStr}</span>
+        <span class="session-meta">${duration}${hasNotes ? ' • <i class="bx bx-note"></i>' : ''}</span>
       </div>
-      <div class="session-indicators">
-        ${hasNotes ? '<span class="session-notes-indicator" title="Has notes"><i class="bx bx-note"></i></span>' : ''}
-        <i class="bx bx-chevron-down session-chevron"></i>
-      </div>
+      <i class="bx bx-chevron-down session-chevron"></i>
     </div>
     <div id="${collapseId}" class="collapse session-details-collapse ${isExpanded ? 'show' : ''}">
       <div class="session-details-wrapper">
@@ -538,124 +608,128 @@ function renderExerciseRow(ex) {
 
 /**
  * Render exercise performance section
+ * V2.1 - Logbook-style exercise list
  */
 function renderExercisePerformance() {
   const histories = window.ghostGym.workoutHistory.exerciseHistories;
   const container = document.getElementById('exercisePerformanceContainer');
-  
+
   const historyArray = Object.values(histories);
-  
+
   if (historyArray.length === 0) {
     container.innerHTML = `
-      <div class="text-center py-4">
-        <i class="bx bx-line-chart display-4 text-muted"></i>
-        <p class="mt-3 text-muted">No exercise performance data yet</p>
+      <div class="exercise-list-empty">
+        <p class="text-muted">No exercise data yet</p>
       </div>
     `;
     return;
   }
-  
-  container.innerHTML = historyArray.map(history => 
-    createExercisePerformanceCard(history)
-  ).join('');
+
+  // Wrap in exercise list container (no card)
+  container.innerHTML = `
+    <div class="exercise-list">
+      ${historyArray.map(history => createExerciseRow(history)).join('')}
+    </div>
+  `;
 }
 
 /**
- * Create exercise performance card
+ * Create exercise row (logbook style)
+ * V2.2.2 - No chevron, clean notebook look
  */
-function createExercisePerformanceCard(history) {
-  // Sanitize ID to make it a valid CSS selector (remove spaces and special chars)
+function createExerciseRow(history) {
   const sanitizedId = history.id.replace(/[^a-zA-Z0-9-_]/g, '-');
   const collapseId = `exercise-${sanitizedId}`;
   const isExpanded = window.ghostGym.workoutHistory.expandedExercises.has(history.id);
-  
+
+  // Primary stat: last working set
+  const lastWeight = history.last_weight || '—';
+  const lastUnit = history.last_weight_unit || 'lbs';
+  const lastReps = getLastReps(history);
+  const lastDate = formatExerciseDate(history.last_session_date);
+
+  // Trend arrow (muted)
+  const trendArrow = getTrendArrow(history.last_weight_direction);
+
   return `
-    <div class="card mb-3 history-card">
-      <div class="card-header history-header" 
-           data-bs-toggle="collapse" 
-           data-bs-target="#${collapseId}"
-           style="cursor: pointer;">
-        <div class="d-flex align-items-center justify-content-between">
-          <div class="d-flex align-items-center gap-3">
-            <div class="history-icon">
-              <span class="avatar-initial rounded bg-label-success">
-                <i class="bx bx-trending-up"></i>
-              </span>
-            </div>
-            <div>
-              <h6 class="mb-0">${escapeHtml(history.exercise_name)}</h6>
-              <small class="text-muted">
-                Last: ${history.last_weight || 0} ${history.last_weight_unit || 'lbs'} • 
-                PR: ${history.best_weight || 0} ${history.last_weight_unit || 'lbs'}
-              </small>
-            </div>
-          </div>
-          <div class="d-flex align-items-center gap-2">
-            <span class="badge bg-label-info">${history.total_sessions || 0} sessions</span>
-            <i class="bx bx-chevron-down"></i>
-          </div>
-        </div>
+    <div class="exercise-row" id="exercise-entry-${sanitizedId}"
+         data-bs-toggle="collapse"
+         data-bs-target="#${collapseId}"
+         role="button"
+         aria-expanded="${isExpanded}"
+         aria-controls="${collapseId}">
+      <div class="exercise-row-main">
+        <span class="exercise-name">${escapeHtml(history.exercise_name)}</span>
+        ${trendArrow}
       </div>
-      
-      <div id="${collapseId}" class="collapse ${isExpanded ? 'show' : ''}">
-        <div class="card-body">
-          ${renderExercisePerformanceDetails(history)}
-        </div>
+      <div class="exercise-row-meta">
+        <span class="exercise-last-set">${lastWeight} ${lastUnit} × ${lastReps}</span>
+        <span class="exercise-date">· ${lastDate}</span>
+      </div>
+    </div>
+    <div id="${collapseId}" class="collapse exercise-details-collapse ${isExpanded ? 'show' : ''}">
+      <div class="exercise-details-wrapper">
+        ${renderExerciseHistory(history)}
       </div>
     </div>
   `;
 }
 
 /**
- * Render exercise performance details
+ * Render exercise history (logbook style expansion)
+ * V2.2.2 - Deduplicated, opacity fade for older entries
  */
-function renderExercisePerformanceDetails(history) {
-  const recentSessions = history.recent_sessions || [];
-  
-  return `
-    <div class="exercise-performance-details">
-      <!-- Performance Metrics -->
-      <div class="row g-3 mb-3">
-        <div class="col-6">
-          <div class="text-center p-2 bg-label-primary rounded">
-            <div class="fw-bold">${history.last_weight || 0} ${history.last_weight_unit || 'lbs'}</div>
-            <small class="text-muted">Last Weight</small>
-          </div>
-        </div>
-        <div class="col-6">
-          <div class="text-center p-2 bg-label-success rounded">
-            <div class="fw-bold">${history.best_weight || 0} ${history.last_weight_unit || 'lbs'}</div>
-            <small class="text-muted">Personal Record</small>
-          </div>
-        </div>
+function renderExerciseHistory(history) {
+  const recentSessions = (history.recent_sessions || []).slice(0, 5);
+
+  if (recentSessions.length === 0) {
+    return '<div class="exercise-history-empty">No session data yet</div>';
+  }
+
+  // Deduplicate by date (keep highest weight per date)
+  const uniqueSessions = deduplicateSessions(recentSessions, history.last_weight_unit);
+
+  const sessionsHtml = uniqueSessions.map((session, index) => {
+    const date = formatExerciseDate(session.date);
+    const weight = session.weight || '—';
+    const unit = session.weight_unit || history.last_weight_unit || 'lbs';
+    const reps = session.reps || session.sets || '—';
+
+    // Fade older entries: first is full, rest are muted
+    const fadeClass = index === 0 ? '' : 'history-row-faded';
+
+    return `
+      <div class="exercise-history-row ${fadeClass}">
+        <span class="history-date">${date}</span>
+        <span class="history-dash">—</span>
+        <span class="history-set">${weight}${unit} × ${reps}</span>
       </div>
-      
-      <!-- Recent Sessions -->
-      ${recentSessions.length > 0 ? `
-        <h6 class="mb-2">Recent Sessions</h6>
-        <div class="table-responsive">
-          <table class="table table-sm">
-            <thead>
-              <tr>
-                <th>Date</th>
-                <th>Weight</th>
-                <th>Sets</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${recentSessions.slice(0, 5).map(session => `
-                <tr>
-                  <td>${formatDate(session.date)}</td>
-                  <td>${session.weight || '-'} ${session.weight_unit || 'lbs'}</td>
-                  <td>${session.sets || '-'}</td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
-        </div>
-      ` : '<p class="text-muted small">No recent session data</p>'}
-    </div>
-  `;
+    `;
+  }).join('');
+
+  return `<div class="exercise-history-list">${sessionsHtml}</div>`;
+}
+
+/**
+ * Deduplicate sessions by date, keeping best set per date
+ */
+function deduplicateSessions(sessions, defaultUnit) {
+  const byDate = {};
+
+  sessions.forEach(s => {
+    const dateKey = new Date(s.date).toDateString();
+    const weight = parseFloat(s.weight) || 0;
+
+    // Keep the entry with highest weight for each date
+    if (!byDate[dateKey] || weight > (parseFloat(byDate[dateKey].weight) || 0)) {
+      byDate[dateKey] = s;
+    }
+  });
+
+  // Return sorted by date descending
+  return Object.values(byDate).sort((a, b) =>
+    new Date(b.date) - new Date(a.date)
+  );
 }
 
 /**
@@ -687,6 +761,48 @@ function formatDate(dateString, options = {}) {
   } catch (e) {
     return 'Invalid date';
   }
+}
+
+/**
+ * Format date for exercise rows (compact)
+ */
+function formatExerciseDate(dateString) {
+  if (!dateString) return '—';
+  try {
+    const date = new Date(dateString);
+    const now = new Date();
+    if (date.getFullYear() === now.getFullYear()) {
+      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    }
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  } catch (e) {
+    return '—';
+  }
+}
+
+/**
+ * Get last reps from exercise history
+ */
+function getLastReps(history) {
+  if (history.recent_sessions && history.recent_sessions.length > 0) {
+    const lastSession = history.recent_sessions[0];
+    return lastSession.reps || lastSession.sets || '—';
+  }
+  return '—';
+}
+
+/**
+ * Get muted trend arrow based on direction
+ */
+function getTrendArrow(direction) {
+  if (!direction) return '';
+  if (direction === 'up') {
+    return '<span class="trend-arrow trend-up" title="Trending up">↑</span>';
+  }
+  if (direction === 'down') {
+    return '<span class="trend-arrow trend-down" title="Trending down">↓</span>';
+  }
+  return '<span class="trend-arrow trend-stable" title="Stable">→</span>';
 }
 
 /**
@@ -788,4 +904,4 @@ window.initWorkoutHistory = initWorkoutHistory;
 window.loadWorkoutHistory = loadWorkoutHistory;
 window.scrollToSession = scrollToSession;
 
-console.log('📦 Workout History module loaded (v2.0.0 - UX Improvements)');
+console.log('📦 Workout History module loaded (v2.2.1 - Pure Logbook)');
