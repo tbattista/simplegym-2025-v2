@@ -1,0 +1,192 @@
+/**
+ * Ghost Gym - Workout Mode Landing Page Styles
+ * Empty state when no workout is in progress
+ * @version 1.0.0
+ * @date 2026-01-27
+ */
+
+/* ==========================================================================
+   Landing Page Container
+   ========================================================================== */
+
+.workout-landing-page {
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 1rem 0;
+}
+
+/* Header icon animation */
+.workout-landing-page .landing-icon {
+    animation: ghost-float 3s ease-in-out infinite;
+}
+
+@keyframes ghost-float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+}
+
+/* ==========================================================================
+   Stacked Action Cards
+   ========================================================================== */
+
+.landing-cards-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.landing-action-card {
+    border: 1px solid var(--bs-border-color);
+    transition: all 0.2s ease;
+    cursor: pointer;
+    color: inherit;
+}
+
+.landing-action-card:hover {
+    border-color: var(--bs-primary);
+    background-color: var(--bs-tertiary-bg);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.landing-action-card:active {
+    transform: scale(0.99);
+}
+
+.landing-action-card .card-body {
+    min-height: auto;
+    padding: 1rem;
+}
+
+.landing-action-card .card-title {
+    color: var(--bs-heading-color);
+    font-weight: 600;
+    font-size: 1rem;
+    margin-bottom: 0;
+}
+
+.landing-action-card:hover .card-title {
+    color: var(--bs-primary);
+}
+
+/* Icon container on left */
+.landing-card-icon {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bs-tertiary-bg);
+    border-radius: 0.5rem;
+    flex-shrink: 0;
+}
+
+.landing-card-icon i {
+    font-size: 1.5rem;
+}
+
+/* Content area */
+.landing-card-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.landing-card-content small {
+    color: var(--bs-secondary-color);
+}
+
+/* Chevron on right */
+.landing-action-card .bx-chevron-right {
+    font-size: 1.25rem;
+    opacity: 0.5;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.landing-action-card:hover .bx-chevron-right {
+    opacity: 1;
+    transform: translateX(2px);
+}
+
+/* ==========================================================================
+   Suggestion Card (matches stacked action card format)
+   ========================================================================== */
+
+.landing-suggestion-card {
+    border: 1px solid var(--bs-warning);
+    background: linear-gradient(135deg,
+        rgba(var(--bs-warning-rgb), 0.05) 0%,
+        rgba(var(--bs-warning-rgb), 0.02) 100%);
+}
+
+.landing-suggestion-card:hover {
+    border-color: var(--bs-warning);
+    box-shadow: 0 2px 8px rgba(var(--bs-warning-rgb), 0.15);
+}
+
+.landing-suggestion-card .card-body {
+    padding: 1rem;
+}
+
+.landing-suggestion-card .landing-card-icon {
+    background: rgba(var(--bs-warning-rgb), 0.15);
+}
+
+.landing-suggestion-card .card-title {
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--bs-heading-color);
+    margin-bottom: 0;
+}
+
+.landing-suggestion-card .suggestion-meta {
+    font-size: 0.85rem;
+    color: var(--bs-secondary-color);
+}
+
+/* ==========================================================================
+   Sign-in Prompt
+   ========================================================================== */
+
+#landingSignInPrompt {
+    background: var(--bs-tertiary-bg);
+    border-color: var(--bs-border-color) !important;
+    font-size: 0.9rem;
+}
+
+#landingSignInPrompt .alert-link {
+    font-weight: 600;
+}
+
+/* ==========================================================================
+   Responsive Adjustments
+   ========================================================================== */
+
+@media (max-width: 575.98px) {
+    .workout-landing-page {
+        padding: 0.5rem 0;
+    }
+
+    .landing-card-icon {
+        width: 40px;
+        height: 40px;
+    }
+
+    .landing-card-icon i {
+        font-size: 1.25rem;
+    }
+
+    .landing-action-card .card-title {
+        font-size: 0.9rem;
+    }
+
+    .landing-card-content small {
+        font-size: 0.75rem;
+    }
+}
+
+/* Ensure touch targets are large enough on mobile */
+@media (hover: none) and (pointer: coarse) {
+    .landing-action-card .card-body {
+        min-height: 56px;
+        padding: 0.875rem 1rem;
+    }
+}

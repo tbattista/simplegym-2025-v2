@@ -127,7 +127,107 @@ class WorkoutUIStateManager {
         const error = document.getElementById(this.containerIds.error);
         if (error) error.style.display = 'none';
     }
-    
+
+    // ==================== Landing Page State ====================
+
+    /**
+     * Show landing page (no workout in progress)
+     * @param {Object} options - Landing page options
+     * @param {boolean} options.isAuthenticated - Whether user is authenticated
+     * @param {Object} options.suggestion - Workout suggestion (optional)
+     */
+    showLanding(options = {}) {
+        const { isAuthenticated = false, suggestion = null } = options;
+
+        console.log('📄 Showing landing page', { isAuthenticated, hasSuggestion: !!suggestion });
+
+        const loading = document.getElementById(this.containerIds.loading);
+        const error = document.getElementById(this.containerIds.error);
+        const content = document.getElementById(this.containerIds.content);
+        const footer = document.getElementById(this.containerIds.footer);
+        const header = document.getElementById(this.containerIds.header);
+        const landing = document.getElementById(this.containerIds.landing);
+
+        // Hide all other states
+        if (loading) loading.style.display = 'none';
+        if (error) error.style.display = 'none';
+        if (content) content.style.display = 'none';
+        if (footer) footer.style.display = 'none';
+        if (header) header.style.display = 'none';
+
+        // Show landing page
+        if (landing) landing.style.display = 'block';
+
+        // Handle sign-in prompt visibility
+        const signInPrompt = document.getElementById('landingSignInPrompt');
+        if (signInPrompt) {
+            signInPrompt.style.display = isAuthenticated ? 'none' : 'block';
+        }
+
+        // Handle suggestion card
+        this.renderSuggestionCard(suggestion);
+    }
+
+    /**
+     * Hide landing page
+     */
+    hideLanding() {
+        const landing = document.getElementById(this.containerIds.landing);
+        if (landing) landing.style.display = 'none';
+    }
+
+    /**
+     * Render suggestion card on landing page
+     * @param {Object} suggestion - Suggestion data from getTodayRecommendation()
+     */
+    renderSuggestionCard(suggestion) {
+        const container = document.getElementById('landingSuggestionCard');
+        if (!container) return;
+
+        // Hide if no suggestion or type is 'empty'
+        if (!suggestion || suggestion.type === 'empty') {
+            container.style.display = 'none';
+            return;
+        }
+
+        const workout = suggestion.workout;
+        if (!workout) {
+            container.style.display = 'none';
+            return;
+        }
+
+        // Escape workout name for safety
+        const escapedName = workout.name
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+
+        // Build card HTML - matches stacked card format
+        const isResume = suggestion.type === 'resume';
+        const iconClass = isResume ? 'bx-play' : 'bx-star';
+        const iconColor = isResume ? 'text-success' : 'text-warning';
+        const cardTitle = isResume ? 'Resume Workout' : escapedName;
+        const cardSubtitle = isResume ? escapedName : (suggestion.message || 'Suggested for today');
+
+        container.innerHTML = `
+            <a href="workout-mode.html?id=${workout.id}" class="card landing-action-card landing-suggestion-card text-decoration-none mb-3">
+                <div class="card-body d-flex align-items-center py-3 px-3">
+                    <div class="landing-card-icon me-3">
+                        <i class="bx ${iconClass} ${iconColor}"></i>
+                    </div>
+                    <div class="landing-card-content">
+                        <h6 class="card-title mb-0">${cardTitle}</h6>
+                        <small class="suggestion-meta">${cardSubtitle}</small>
+                    </div>
+                    <i class="bx bx-chevron-right text-muted ms-auto"></i>
+                </div>
+            </a>
+        `;
+
+        container.style.display = 'block';
+    }
+
     // ==================== Session UI ====================
     
     /**

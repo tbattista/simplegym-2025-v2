@@ -56,9 +56,6 @@ class WeeklyProgress {
           <i class="bx bx-calendar-week me-2"></i>
           This Week
         </h6>
-        <a href="workout-database.html" class="btn btn-sm btn-link p-0">
-          View All →
-        </a>
       </div>
     `;
   }

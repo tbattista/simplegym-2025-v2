@@ -18,7 +18,8 @@ import {
 // Import menu components
 import {
     createMenuOffcanvas,
-    createWorkoutSelectionPrompt
+    createWorkoutSelectionPrompt,
+    createBuilderResumePrompt
 } from './offcanvas-menu.js';
 
 // Import exercise components
@@ -91,6 +92,10 @@ class UnifiedOffcanvasFactory {
     
     static createWorkoutSelectionPrompt() {
         return createWorkoutSelectionPrompt();
+    }
+
+    static createBuilderResumePrompt(workoutData, onContinue, onCreate) {
+        return createBuilderResumePrompt(workoutData, onContinue, onCreate);
     }
     
     /* ============================================
@@ -280,6 +285,7 @@ export {
     // Menu
     createMenuOffcanvas,
     createWorkoutSelectionPrompt,
+    createBuilderResumePrompt,
     
     // Exercise
     createBonusExercise,

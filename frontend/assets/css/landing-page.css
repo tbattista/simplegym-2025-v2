@@ -206,19 +206,19 @@
 }
 
 /* ============================================================================
-   HOME PAGE - THUMB ZONE OPTIMIZATION
+   HOME PAGE LAYOUT - NOTEBOOK LAUNCHER
    ============================================================================ */
 
-/* Flex layout for home dashboard to push CTA to bottom */
+/* Home dashboard layout */
 .home-dashboard-layout {
   display: flex;
   flex-direction: column;
-  min-height: calc(100vh - 140px); /* Account for nav/padding */
+  margin-top: -1rem;
 }
 
 /* Greeting section */
 .home-greeting {
-  padding-top: 0.5rem;
+  padding-top: 0;
 }
 
 .home-greeting h4 {
@@ -226,65 +226,63 @@
   font-weight: 600;
 }
 
-/* Spacer pushes CTA to bottom on taller screens */
-.home-spacer {
-  min-height: 20px;
+/* Notebook Prompt */
+.notebook-prompt h6 {
+  font-weight: 400;
+  font-size: 0.95rem;
 }
 
-/* Primary CTA section */
-.home-primary-cta {
-  margin-top: auto;
-  padding-top: 1rem;
+/* Favorites List (Stacked Cards) */
+.favorites-list {
+  display: flex;
+  flex-direction: column;
 }
 
-/* On mobile, make CTA sticky at bottom for thumb accessibility */
-@media (max-width: 768px) {
-  .home-dashboard-layout {
-    min-height: calc(100vh - 120px);
-    padding-bottom: 160px; /* Space for sticky CTA */
-  }
-
-  .home-primary-cta {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: var(--bs-body-bg);
-    padding: 1rem;
-    border-top: 1px solid var(--bs-border-color);
-    z-index: 1000;
-    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
-  }
-
-  /* Account for safe area on newer iPhones */
-  @supports (padding-bottom: env(safe-area-inset-bottom)) {
-    .home-primary-cta {
-      padding-bottom: calc(1rem + env(safe-area-inset-bottom));
-    }
-  }
+/* Row-style Favorite Cards */
+.favorite-card-row {
+  border-left: 3px solid transparent;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-/* On larger screens, CTA is inline */
-@media (min-width: 769px) {
-  .home-dashboard-layout {
-    min-height: auto;
-    padding-bottom: 0;
-  }
-
-  .home-primary-cta {
-    position: static;
-    background: transparent;
-    padding: 0;
-    border-top: none;
-    box-shadow: none;
-    margin-top: 1rem;
-  }
+.favorite-card-row:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
-/* Dark mode support for sticky CTA */
-[data-bs-theme="dark"] .home-primary-cta {
-  background: var(--bs-body-bg);
-  border-color: var(--bs-border-color);
+.favorite-card-row .favorite-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.favorite-card-row .favorite-info .fw-medium {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* In-Progress Card (Resume state) */
+.favorite-card-row.in-progress {
+  border-left-color: var(--bs-warning);
+  background-color: rgba(255, 193, 7, 0.05);
+}
+
+/* View All Workouts Card */
+.view-all-card {
+  text-decoration: none;
+  color: inherit;
+  border-left-color: var(--bs-primary);
+  background-color: rgba(105, 108, 255, 0.03);
+}
+
+.view-all-card:hover {
+  color: inherit;
+  text-decoration: none;
+  background-color: rgba(105, 108, 255, 0.08);
+}
+
+/* Secondary Actions */
+.home-secondary-actions {
+  margin-top: 1.5rem;
 }
 
 /* ============================================================================

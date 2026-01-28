@@ -88,7 +88,7 @@ async function loadRealData() {
     // Load recent sessions (if API available)
     try {
       const token = await window.dataManager.getAuthToken();
-      const response = await fetch('/api/v3/workout-sessions/?page_size=5&sort=desc', {
+      const response = await fetch('/api/v3/workout-sessions/?page_size=100&sort=desc', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       
@@ -311,12 +311,6 @@ async function calculateQuickStats() {
 
   return [
     {
-      label: 'This Week',
-      value: weekCount,
-      icon: 'bx-calendar-week',
-      iconColor: 'var(--bs-primary)'
-    },
-    {
       label: 'This Month',
       value: monthCount,
       icon: 'bx-calendar',
@@ -490,7 +484,6 @@ function getMockWeeklyProgress() {
 
 function getMockQuickStats() {
   return [
-    { label: 'This Week', value: 3, icon: 'bx-calendar-week', iconColor: 'var(--bs-primary)' },
     { label: 'This Month', value: 12, icon: 'bx-calendar', iconColor: 'var(--bs-success)' },
     { label: 'Avg Duration', value: '45min', icon: 'bx-time', iconColor: 'var(--bs-info)' }
   ];

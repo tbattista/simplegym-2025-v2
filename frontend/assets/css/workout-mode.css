@@ -54,5 +54,8 @@
 /* Session controls */
 @import url('workout-mode/_session-controls.css');
 
+/* Landing page (no workout in progress) */
+@import url('workout-mode/_landing.css');
+
 /* Responsive - must be last */
 @import url('workout-mode/_responsive.css');

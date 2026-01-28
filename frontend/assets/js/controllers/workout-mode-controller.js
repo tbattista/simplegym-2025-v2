@@ -24,7 +24,8 @@ class WorkoutModeController {
             errorMessage: 'workoutErrorMessage',
             content: 'exerciseCardsSection',
             footer: 'workoutModeFooter',
-            header: 'workoutInfoHeader'
+            header: 'workoutInfoHeader',
+            landing: 'workoutLandingPage'
         });
         
         // Phase 2: Initialize Timer Manager
@@ -195,9 +196,9 @@ class WorkoutModeController {
             // Get workout ID from URL
             const workoutId = this.getWorkoutIdFromUrl();
             if (!workoutId) {
-                // Redirect to workout database for workout selection
-                console.log('🔄 No workout ID provided, redirecting to workout database...');
-                window.location.href = 'workout-database.html';
+                // Show landing page instead of redirecting
+                console.log('📄 No workout ID provided, showing landing page...');
+                await this.showLandingPage(authState.isAuthenticated);
                 return;
             }
             
@@ -232,7 +233,133 @@ class WorkoutModeController {
         const urlParams = new URLSearchParams(window.location.search);
         return urlParams.get('id');
     }
-    
+
+    /**
+     * Show landing page when no workout is in progress
+     * @param {boolean} isAuthenticated - Whether user is authenticated
+     */
+    async showLandingPage(isAuthenticated) {
+        console.log('📄 Showing landing page, authenticated:', isAuthenticated);
+
+        // Try to get a suggestion for authenticated users
+        let suggestion = null;
+        if (isAuthenticated) {
+            try {
+                suggestion = await this.getLandingSuggestion();
+            } catch (error) {
+                console.warn('⚠️ Failed to get landing suggestion:', error);
+            }
+        }
+
+        // Show landing page via UI state manager
+        this.uiStateManager.showLanding({
+            isAuthenticated,
+            suggestion
+        });
+    }
+
+    /**
+     * Get workout suggestion for landing page
+     * Reuses logic from workout-database.js but simplified
+     * @returns {Promise<Object|null>} Suggestion object or null
+     */
+    async getLandingSuggestion() {
+        try {
+            const user = window.firebaseAuth?.currentUser;
+            if (!user) return null;
+
+            const idToken = await user.getIdToken();
+
+            // Fetch recent completed sessions
+            const response = await fetch('/api/v3/workout-sessions?status=completed&page_size=50', {
+                headers: {
+                    'Authorization': `Bearer ${idToken}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) return null;
+
+            const data = await response.json();
+            const sessions = data.sessions || [];
+
+            // Build map of workout_id -> most recent completion date
+            const lastDoneMap = new Map();
+            for (const session of sessions) {
+                if (session.workout_id && session.completed_at && !lastDoneMap.has(session.workout_id)) {
+                    lastDoneMap.set(session.workout_id, session.completed_at);
+                }
+            }
+
+            // Get all user workouts
+            const workouts = await this.dataManager.getWorkouts();
+            if (!workouts || workouts.length === 0) return null;
+
+            // Calculate days since last done for each workout
+            const workoutsWithRest = workouts.map(workout => {
+                const lastDone = lastDoneMap.get(workout.id);
+                const daysAgo = lastDone ? this.getDaysAgo(lastDone) : Infinity;
+                return { workout, lastDone, daysAgo };
+            });
+
+            // Filter to workouts not done in 2+ days, sort by oldest first
+            const rested = workoutsWithRest
+                .filter(w => w.daysAgo >= 2)
+                .sort((a, b) => b.daysAgo - a.daysAgo);
+
+            if (rested.length > 0) {
+                const suggestion = rested[0];
+                const message = suggestion.daysAgo === Infinity
+                    ? 'Never done - give it a try!'
+                    : suggestion.daysAgo === 2
+                        ? 'Last done 2 days ago'
+                        : `Last done ${suggestion.daysAgo} days ago`;
+
+                return {
+                    type: 'suggest',
+                    workout: suggestion.workout,
+                    lastDone: suggestion.lastDone,
+                    message
+                };
+            }
+
+            // All workouts done recently - suggest the oldest one anyway
+            if (workoutsWithRest.length > 0) {
+                const oldest = workoutsWithRest.sort((a, b) => b.daysAgo - a.daysAgo)[0];
+                if (oldest.daysAgo < Infinity) {
+                    return {
+                        type: 'suggest',
+                        workout: oldest.workout,
+                        lastDone: oldest.lastDone,
+                        message: oldest.daysAgo === 0 ? 'Done today - rest up!' :
+                                 oldest.daysAgo === 1 ? 'Done yesterday' :
+                                 `Last done ${oldest.daysAgo} days ago`
+                    };
+                }
+            }
+
+            return null;
+
+        } catch (error) {
+            console.warn('⚠️ Error getting landing suggestion:', error);
+            return null;
+        }
+    }
+
+    /**
+     * Calculate days since a date
+     * @param {string} dateString - ISO date string
+     * @returns {number} Days ago (0 = today)
+     */
+    getDaysAgo(dateString) {
+        const date = new Date(dateString);
+        const now = new Date();
+        date.setHours(0, 0, 0, 0);
+        now.setHours(0, 0, 0, 0);
+        const diffTime = now - date;
+        return Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    }
+
     /**
      * Load workout data
      */
@@ -287,7 +414,7 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
             
             // Update page title and header
             document.getElementById('workoutName').textContent = this.currentWorkout.name;
-            document.title = `👻 ${this.currentWorkout.name} - Workout Mode - Ghost Gym`;
+            document.title = `${this.currentWorkout.name} - Session - Ghost Gym`;
             
             // Show workout info header
             const workoutInfoHeader = document.getElementById('workoutInfoHeader');

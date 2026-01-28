@@ -11,7 +11,7 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
     
-    <title>Workout Mode</title>
+    <title>Session - Ghost Gym</title>
 
     <meta name="description" content="Execute your workout with rest timers and exercise tracking" />
 
@@ -56,7 +56,7 @@
     <link rel="stylesheet" href="/static/assets/css/design-system.css" />
 
     <!-- Workout Mode CSS (Consolidated in Phase 4 - includes former logbook-theme.css) -->
-    <link rel="stylesheet" href="/static/assets/css/workout-mode.css?v=20260120-02" />
+    <link rel="stylesheet" href="/static/assets/css/workout-mode.css?v=20260127-02" />
 
     <!-- Workout Database CSS (for workout list component) -->
     <link rel="stylesheet" href="/static/assets/css/workout-database.css?v=20260116-01" />
@@ -132,6 +132,61 @@
                 <button class="btn btn-primary mt-2" onclick="location.reload()">
                   <i class="bx bx-refresh me-1"></i>Retry
                 </button>
+              </div>
+
+              <!-- Landing Page (No Workout in Progress) -->
+              <div id="workoutLandingPage" class="workout-landing-page" style="display: none;">
+                <!-- Header -->
+                <div class="text-center mb-4">
+                  <div class="landing-icon mb-3">
+                    <span style="font-size: 3.5rem;">&#128123;</span>
+                  </div>
+                  <h4 class="mb-2">No Workout in Progress</h4>
+                  <p class="text-muted mb-0">Ready to train? Choose an option below.</p>
+                </div>
+
+                <!-- Stacked Action Cards -->
+                <div class="landing-cards-stack">
+                  <!-- Today's Suggestion Card (conditional - populated by JS) -->
+                  <div id="landingSuggestionCard" style="display: none;">
+                    <!-- Will be populated by JavaScript if a suggestion is available -->
+                  </div>
+
+                  <!-- Start a Workout -->
+                  <a href="workout-database.html" class="card landing-action-card text-decoration-none mb-3">
+                    <div class="card-body d-flex align-items-center py-3 px-3">
+                      <div class="landing-card-icon me-3">
+                        <i class="bx bx-play-circle text-primary"></i>
+                      </div>
+                      <div class="landing-card-content">
+                        <h6 class="card-title mb-0">Start a Workout</h6>
+                        <small class="text-muted">Browse your saved workouts</small>
+                      </div>
+                      <i class="bx bx-chevron-right text-muted ms-auto"></i>
+                    </div>
+                  </a>
+
+                  <!-- Create a Workout -->
+                  <a href="workout-builder.html?new=true" class="card landing-action-card text-decoration-none mb-3">
+                    <div class="card-body d-flex align-items-center py-3 px-3">
+                      <div class="landing-card-icon me-3">
+                        <i class="bx bx-plus-circle text-success"></i>
+                      </div>
+                      <div class="landing-card-content">
+                        <h6 class="card-title mb-0">Create a Workout</h6>
+                        <small class="text-muted">Build a new workout from scratch</small>
+                      </div>
+                      <i class="bx bx-chevron-right text-muted ms-auto"></i>
+                    </div>
+                  </a>
+                </div>
+
+                <!-- Sign-in Prompt (conditional - shown for unauthenticated users) -->
+                <div id="landingSignInPrompt" class="alert alert-light border text-center mt-4" style="display: none;">
+                  <i class="bx bx-user-circle me-1"></i>
+                  <a href="#" onclick="window.authService?.showLoginModal(); return false;" class="alert-link">Sign in</a>
+                  to track your progress and get personalized suggestions.
+                </div>
               </div>
 
               <!-- Exercise Cards Section (Header + Container) -->
@@ -277,7 +332,7 @@
     
     <!-- Phase 1 Refactoring: Utilities & State Management -->
     <script src="/static/assets/js/utils/workout-utils.js?v=1.0.0"></script>
-    <script src="/static/assets/js/services/workout-ui-state-manager.js?v=1.0.0"></script>
+    <script src="/static/assets/js/services/workout-ui-state-manager.js?v=20260127-02"></script>
     
     <!-- Phase 2 Refactoring: Timer Consolidation -->
     <script src="/static/assets/js/services/workout-timer-manager.js?v=1.0.0"></script>
@@ -285,7 +340,7 @@
     <!-- Phase 3 Refactoring: Card Interactions -->
     <script src="/static/assets/js/components/exercise-card-manager.js?v=1.0.0"></script>
     
-    <script src="/static/assets/js/controllers/workout-mode-controller.js?v=20251109-06"></script>
+    <script src="/static/assets/js/controllers/workout-mode-controller.js?v=20260127-01"></script>
     
     <!-- Logbook V2 Controllers (NEW - Phase 2 & 3) -->
     <script src="/static/assets/js/controllers/weight-field-controller.js?v=2.4.0"></script>

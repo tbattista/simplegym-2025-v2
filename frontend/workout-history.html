@@ -11,7 +11,7 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
     
-    <title>👻 Workout History - Ghost Gym V0.5.0</title>
+    <title>History - Ghost Gym</title>
 
     <meta name="description" content="View your workout history and performance metrics" />
 
@@ -181,11 +181,6 @@
                       </div>
                     </div>
 
-                    <!-- Last Session Reference Card -->
-                    <div id="lastSessionContainer" class="mb-4" style="display: none;">
-                      <!-- Rendered by JS -->
-                    </div>
-
                     <!-- Session History (Time-Grouped) -->
                     <div id="sessionHistoryContainer">
                       <!-- Session entries will be rendered here -->
@@ -203,10 +198,8 @@
 
                     <!-- Exercise Performance Section -->
                     <div class="mb-4">
-                      <h5 class="mb-3">
-                        <i class="bx bx-trending-up me-2"></i>
-                        Exercise Performance
-                      </h5>
+                      <h5 class="mb-2">Exercises</h5>
+                      <p class="exercise-section-hint text-muted small mb-3">Last working set shown per exercise</p>
                       <div id="exercisePerformanceContainer">
                         <!-- Exercise performance cards will be rendered here -->
                       </div>
@@ -270,29 +263,29 @@
     <script src="/static/assets/js/components/calendar-view.js"></script>
 
     <!-- Workout History JS -->
-    <script src="/static/assets/js/dashboard/workout-history.js?v=2.2.1"></script>
+    <script src="/static/assets/js/dashboard/workout-history.js?v=2.3.0"></script>
 
     <!-- Initialize -->
     <script>
         document.addEventListener('DOMContentLoaded', async function() {
             console.log('📄 Workout History Page - DOM Ready');
-            
+
             // Wait for Firebase to be ready
             if (!window.firebaseReady) {
                 await new Promise(resolve => {
                     window.addEventListener('firebaseReady', resolve, { once: true });
                 });
             }
-            
+
             // Wait for data manager to be ready
             if (!window.dataManager) {
                 console.error('❌ Data manager not available');
                 return;
             }
-            
+
             // Wait for auth state to settle
             await new Promise(resolve => setTimeout(resolve, 1000));
-            
+
             // Only initialize if user is authenticated
             if (window.dataManager.isUserAuthenticated()) {
                 console.log('✅ User authenticated, loading workout history');
@@ -303,29 +296,27 @@
                 console.log('⏭️ User not authenticated, waiting for auth state change');
                 // Show loading state - will be handled by auth state change event
             }
-            
+
             console.log('✅ Workout History page ready!');
         });
-        
+
         // Listen for auth state changes
         window.addEventListener('authStateChanged', async (event) => {
             const { user, isAuthenticated } = event.detail;
             console.log('🔄 Auth state changed on workout history page', { isAuthenticated });
-            
+
             // Only reload if user is authenticated
             if (!isAuthenticated) {
                 console.log('⏭️ User not authenticated, skipping history load');
                 return;
             }
-            
+
             // Wait a moment for data manager to update its mode
             await new Promise(resolve => setTimeout(resolve, 300));
-            
-            // Reload history if needed
-            const urlParams = new URLSearchParams(window.location.search);
-            const workoutId = urlParams.get('id');
-            if (workoutId && window.loadWorkoutHistory) {
-                await window.loadWorkoutHistory(workoutId);
+
+            // Reinitialize - handles all URL patterns (all sessions, single workout, session jump)
+            if (window.initWorkoutHistory) {
+                await window.initWorkoutHistory();
             }
         });
     </script>

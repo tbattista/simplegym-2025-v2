@@ -269,7 +269,7 @@ function renderTodayEmptyState() {
     return `
         <div class="today-empty-state">
             <p class="text-muted mb-3">Ready to start your fitness journey?</p>
-            <button class="btn btn-primary w-100 mb-3" onclick="window.location.href='/workout-builder.html'">
+            <button class="btn btn-primary w-100 mb-3" onclick="window.location.href='/workout-builder.html?new=true'">
                 <i class="bx bx-plus me-1"></i>
                 Create Your First Workout
             </button>

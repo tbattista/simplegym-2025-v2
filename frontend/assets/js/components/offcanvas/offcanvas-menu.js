@@ -190,4 +190,63 @@ export function createWorkoutSelectionPrompt() {
     });
 }
 
+/**
+ * Create workout builder resume prompt offcanvas
+ * Shown when user navigates to workout-builder without URL params but has localStorage workout
+ * @param {Object} workoutData - { workoutId, workoutName }
+ * @param {Function} onContinue - Callback when user chooses to continue editing
+ * @param {Function} onCreate - Callback when user chooses to create new
+ * @returns {Object} Offcanvas instance
+ */
+export function createBuilderResumePrompt(workoutData, onContinue, onCreate) {
+    const { workoutId, workoutName } = workoutData;
+
+    const offcanvasHtml = `
+        <div class="offcanvas offcanvas-bottom offcanvas-bottom-base" tabindex="-1"
+             id="builderResumeOffcanvas" aria-labelledby="builderResumeOffcanvasLabel"
+             data-bs-backdrop="static" data-bs-keyboard="false" data-bs-scroll="false">
+            <div class="offcanvas-header border-bottom">
+                <h5 class="offcanvas-title" id="builderResumeOffcanvasLabel">
+                    <i class="bx bx-edit me-2"></i>Continue Editing?
+                </h5>
+            </div>
+            <div class="offcanvas-body">
+                <div class="text-center mb-4">
+                    <i class="bx bx-edit-alt" style="font-size: 3rem; color: var(--bs-primary);"></i>
+                    <h5 class="mt-3">${escapeHtml(workoutName)}</h5>
+                    <p class="text-muted">You were editing this workout</p>
+                </div>
+                <div class="d-grid gap-3">
+                    <button type="button" class="btn btn-lg btn-primary" id="continueEditingBtn">
+                        <i class="bx bx-play me-2"></i>
+                        <div class="text-start">
+                            <div class="fw-bold">Continue Editing</div>
+                            <small class="d-block opacity-75">Resume where you left off</small>
+                        </div>
+                    </button>
+                    <button type="button" class="btn btn-lg btn-outline-secondary" id="startNewWorkoutBtn">
+                        <i class="bx bx-plus-circle me-2"></i>
+                        <div class="text-start">
+                            <div class="fw-bold">Start New Workout</div>
+                            <small class="d-block opacity-75">Create a blank template</small>
+                        </div>
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+
+    return createOffcanvas('builderResumeOffcanvas', offcanvasHtml, (offcanvas) => {
+        document.getElementById('continueEditingBtn')?.addEventListener('click', () => {
+            offcanvas.hide();
+            setTimeout(() => onContinue(), 250);
+        });
+
+        document.getElementById('startNewWorkoutBtn')?.addEventListener('click', () => {
+            offcanvas.hide();
+            setTimeout(() => onCreate(), 250);
+        });
+    });
+}
+
 console.log('📦 Offcanvas menu components loaded');

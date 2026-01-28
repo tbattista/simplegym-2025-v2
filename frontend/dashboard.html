@@ -11,7 +11,7 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
 
-    <title>Dashboard - Ghost Gym</title>
+    <title>Log - Ghost Gym</title>
 
     <meta name="description" content="Your workout dashboard - track progress, start workouts, and review activity" />
 
@@ -134,26 +134,19 @@
                 </div>
 
 
-                <!-- Quick Stats Section (moved up) -->
-                <div class="mb-4">
-                  <h6 class="mb-3 fw-semibold">
-                    <i class="bx bx-bar-chart me-2"></i>
-                    Quick Stats
-                  </h6>
-                  <div id="quickStatsContainer">
-                    <!-- Stats grid will be rendered by JS -->
-                    <!-- Loading skeleton -->
-                    <div class="stats-grid">
-                      <div class="skeleton skeleton-stat-card"></div>
-                      <div class="skeleton skeleton-stat-card"></div>
-                      <div class="skeleton skeleton-stat-card"></div>
-                    </div>
-                  </div>
+                <!-- Weekly Progress (This Week) -->
+                <div id="weeklyProgressContainer" class="mb-3">
+                  <!-- Weekly progress will be rendered by JS -->
                 </div>
 
-                <!-- Weekly Progress -->
-                <div id="weeklyProgressContainer" class="mb-4">
-                  <!-- Weekly progress will be rendered by JS -->
+                <!-- Quick Stats (This Month, Avg Duration) -->
+                <div id="quickStatsContainer" class="mb-4">
+                  <!-- Stats grid will be rendered by JS -->
+                  <!-- Loading skeleton -->
+                  <div class="stats-grid">
+                    <div class="skeleton skeleton-stat-card"></div>
+                    <div class="skeleton skeleton-stat-card"></div>
+                  </div>
                 </div>
 
                 <!-- Recent Activity Section -->
