@@ -26,19 +26,19 @@ function getMenuHTML(activePage = 'home') {
         <div class="menu-inner-shadow"></div>
 
         <ul class="menu-inner py-1">
-            <!-- Session (was Workout) - TOP PRIORITY -->
-            <li class="menu-item ${activePage === 'workout-mode' ? 'active' : ''}">
+            <!-- Session - Only visible when active session exists -->
+            <li class="menu-item ${activePage === 'workout-mode' ? 'active' : ''}" id="sessionMenuItem" style="display: none;">
                 <a href="workout-mode.html" class="menu-link">
                     <i class="menu-icon tf-icons bx bx-play"></i>
                     <div class="text-truncate">Session</div>
                 </a>
             </li>
 
-            <!-- Train (was Home) -->
+            <!-- Home -->
             <li class="menu-item ${activePage === 'home' ? 'active' : ''}" data-section="home">
                 <a href="index.html" class="menu-link">
-                    <i class="menu-icon tf-icons bx bx-target-lock"></i>
-                    <div class="text-truncate">Train</div>
+                    <i class="menu-icon tf-icons bx bx-home"></i>
+                    <div class="text-truncate">Home</div>
                 </a>
             </li>
 

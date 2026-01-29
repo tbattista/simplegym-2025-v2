@@ -111,11 +111,26 @@ class MenuInjectionService {
             });
             
             console.log('✅ Menu toggle listeners re-attached');
+
+            // Update session menu visibility after injection
+            this.updateSessionMenuVisibility();
+
+            // Listen for session state changes
+            window.addEventListener('sessionStateChanged', () => {
+                this.updateSessionMenuVisibility();
+            });
+
+            // Listen for storage changes (cross-tab support)
+            window.addEventListener('storage', (e) => {
+                if (e.key === 'ghost_gym_active_workout_session') {
+                    this.updateSessionMenuVisibility();
+                }
+            });
         }, 150); // Slightly longer delay to ensure Menu is fully initialized
     }
 
-    
-    
+
+
     /**
      * Inject the menu into the layout-menu container
      */
@@ -162,6 +177,48 @@ class MenuInjectionService {
         console.log('✅ Authentication modals injected');
     }
     
+    /**
+     * Check if there's an active session in localStorage
+     * @returns {boolean} True if active session exists
+     */
+    hasPersistedSession() {
+        try {
+            const stored = localStorage.getItem('ghost_gym_active_workout_session');
+            if (!stored) return false;
+
+            const session = JSON.parse(stored);
+            return session.status === 'in_progress' && session.sessionId;
+        } catch {
+            return false;
+        }
+    }
+
+    /**
+     * Check if user is currently on the workout-mode page
+     * @returns {boolean} True if on workout-mode.html
+     */
+    isOnWorkoutModePage() {
+        const path = window.location.pathname;
+        const filename = path.split('/').pop() || '';
+        return filename.includes('workout-mode');
+    }
+
+    /**
+     * Update Session menu item visibility based on session state
+     * Shows when: on workout-mode page OR has persisted in_progress session
+     */
+    updateSessionMenuVisibility() {
+        const sessionMenuItem = document.getElementById('sessionMenuItem');
+        if (!sessionMenuItem) return;
+
+        const onWorkoutPage = this.isOnWorkoutModePage();
+        const hasPersistedSession = this.hasPersistedSession();
+        const shouldShow = onWorkoutPage || hasPersistedSession;
+
+        sessionMenuItem.style.display = shouldShow ? '' : 'none';
+        console.log(`📍 Session menu visibility: ${shouldShow ? 'visible' : 'hidden'} (onPage: ${onWorkoutPage}, persisted: ${hasPersistedSession})`);
+    }
+
     /**
      * Determine the active page from the current URL
      * @returns {string} The active page identifier

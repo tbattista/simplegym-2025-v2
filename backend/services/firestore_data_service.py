@@ -794,7 +794,8 @@ class FirestoreDataService:
                 workout_id=session_request.workout_id,
                 workout_name=session_request.workout_name,
                 started_at=session_request.started_at,
-                status="in_progress"
+                status="in_progress",
+                session_mode=getattr(session_request, 'session_mode', 'timed')
             )
             
             # Save to Firestore
@@ -898,21 +899,29 @@ class FirestoreDataService:
                 return None
             
             current_data = current_doc.to_dict()
-            
+
             # Calculate duration
-            started_at = current_data.get('started_at')
-            completed_at = complete_request.completed_at
-            duration_minutes = None
-            
-            if started_at and completed_at:
-                # Ensure both datetimes are timezone-naive for comparison
-                if hasattr(started_at, 'replace') and started_at.tzinfo is not None:
-                    started_at = started_at.replace(tzinfo=None)
-                if hasattr(completed_at, 'replace') and completed_at.tzinfo is not None:
-                    completed_at = completed_at.replace(tzinfo=None)
-                
-                duration = completed_at - started_at
-                duration_minutes = int(duration.total_seconds() / 60)
+            # For quick_log sessions, use manual duration if provided
+            manual_duration = getattr(complete_request, 'duration_minutes', None)
+            if manual_duration is not None:
+                # Use manually provided duration (for quick_log sessions)
+                duration_minutes = manual_duration
+                logger.info(f"Using manual duration: {duration_minutes} minutes")
+            else:
+                # Auto-calculate from timestamps (for timed sessions)
+                started_at = current_data.get('started_at')
+                completed_at = complete_request.completed_at
+                duration_minutes = None
+
+                if started_at and completed_at:
+                    # Ensure both datetimes are timezone-naive for comparison
+                    if hasattr(started_at, 'replace') and started_at.tzinfo is not None:
+                        started_at = started_at.replace(tzinfo=None)
+                    if hasattr(completed_at, 'replace') and completed_at.tzinfo is not None:
+                        completed_at = completed_at.replace(tzinfo=None)
+
+                    duration = completed_at - started_at
+                    duration_minutes = int(duration.total_seconds() / 60)
             
             # Prepare completion data
             completion_data = {

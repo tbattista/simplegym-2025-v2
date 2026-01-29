@@ -979,7 +979,13 @@ class WorkoutSession(BaseModel):
         default="in_progress",
         description="Session status: 'in_progress', 'completed', or 'abandoned'"
     )
-    
+
+    # Session Mode (Quick Log Feature)
+    session_mode: str = Field(
+        default="timed",
+        description="Session mode: 'timed' (real-time tracking with timer) or 'quick_log' (retrospective logging without timer)"
+    )
+
     # Metadata
     created_at: datetime = Field(default_factory=datetime.now, description="When session was created")
     version: int = Field(default=1, description="Workout template version at time of session")
@@ -1035,12 +1041,16 @@ class ExerciseHistory(BaseModel):
 
 class CreateSessionRequest(BaseModel):
     """Request to create/start a new workout session"""
-    
+
     workout_id: str = Field(..., description="ID of the workout template")
     workout_name: str = Field(..., description="Name of the workout")
     started_at: Optional[datetime] = Field(
         default_factory=datetime.now,
         description="Start time (defaults to now)"
+    )
+    session_mode: str = Field(
+        default="timed",
+        description="Session mode: 'timed' (real-time tracking) or 'quick_log' (retrospective logging)"
     )
 
 class UpdateSessionRequest(BaseModel):
@@ -1073,7 +1083,13 @@ class CompleteSessionRequest(BaseModel):
         None,
         description="Custom order of exercises (list of exercise names). Saves user's preferred exercise sequence."
     )
-    
+    duration_minutes: Optional[int] = Field(
+        None,
+        ge=1,
+        le=600,
+        description="Manual duration for quick_log sessions (in minutes). If provided, overrides auto-calculated duration."
+    )
+
     @field_validator('exercise_order', mode='before')
     @classmethod
     def validate_exercise_order_unique(cls, v):

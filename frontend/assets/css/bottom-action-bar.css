@@ -505,6 +505,224 @@
 /* All floating FABs now use consistent 44px height across all breakpoints */
 
 /* ============================================
+   DUAL FLOATING BUTTONS (QUICK LOG + TIMED)
+   Pre-session state with two button options
+   ============================================ */
+
+.floating-dual-buttons {
+    position: absolute;
+    right: var(--floating-fab-spacing-right);
+    bottom: calc(100% + var(--floating-fab-spacing-bottom));
+    display: flex;
+    gap: var(--floating-fab-gap);
+    z-index: 1002;
+    pointer-events: auto;
+}
+
+/* Quick Log Button (secondary/gray) */
+.floating-quicklog-button {
+    height: var(--floating-fab-height);
+    min-width: var(--floating-fab-min-width);
+    padding: 0 var(--floating-fab-padding-x);
+    border: none;
+    border-radius: var(--floating-fab-border-radius);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--floating-fab-gap);
+    font-size: var(--floating-fab-font-size);
+    font-weight: 600;
+    line-height: 1.5;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+    white-space: nowrap;
+    color: white;
+    background: #6c757d;  /* Bootstrap secondary gray */
+    box-shadow: 0 2px 8px rgba(108, 117, 125, 0.3);
+}
+
+.floating-quicklog-button:hover {
+    background: #5a6268;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(108, 117, 125, 0.4);
+}
+
+.floating-quicklog-button:active {
+    transform: translateY(0);
+}
+
+.floating-quicklog-button i {
+    font-size: var(--floating-fab-icon-size);
+}
+
+/* ============================================
+   QUICK LOG COMBO (BADGE + SAVE BUTTON)
+   Active Quick Log state
+   ============================================ */
+
+.floating-quicklog-combo {
+    position: absolute;
+    right: var(--floating-fab-spacing-right);
+    bottom: calc(100% + var(--floating-fab-spacing-bottom));
+    display: flex;
+    align-items: center;
+    gap: var(--floating-fab-gap);
+    z-index: 1002;
+    pointer-events: auto;
+}
+
+/* Quick Log Badge (static indicator) */
+.floating-quicklog-badge {
+    height: var(--floating-fab-height);
+    padding: 0 var(--floating-fab-padding-x);
+    border-radius: var(--floating-fab-border-radius);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--floating-fab-gap);
+    font-size: var(--floating-fab-font-size);
+    font-weight: 600;
+    line-height: 1.5;
+    white-space: nowrap;
+    color: white;
+    background: #6c757d;  /* Bootstrap secondary gray */
+    box-shadow: 0 2px 8px rgba(108, 117, 125, 0.3);
+}
+
+.floating-quicklog-badge i {
+    font-size: var(--floating-fab-icon-size);
+}
+
+/* Save Button (green, for Quick Log completion) */
+.floating-save-button {
+    height: var(--floating-fab-height);
+    min-width: var(--floating-fab-min-width);
+    padding: 0 var(--floating-fab-padding-x);
+    border: none;
+    border-radius: var(--floating-fab-border-radius);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--floating-fab-gap);
+    font-size: var(--floating-fab-font-size);
+    font-weight: 600;
+    line-height: 1.5;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+    white-space: nowrap;
+    color: white;
+    background: #228B22;  /* Forest Green - matches Timed button */
+    box-shadow: 0 2px 8px rgba(34, 139, 34, 0.3);
+}
+
+.floating-save-button:hover {
+    background: #1B6B1B;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(34, 139, 34, 0.4);
+}
+
+.floating-save-button:active {
+    transform: translateY(0);
+}
+
+.floating-save-button i {
+    font-size: var(--floating-fab-icon-size);
+}
+
+/* ============================================
+   QUICK LOG MODE BANNER
+   Shows at top of page during Quick Log mode
+   ============================================ */
+
+.quick-log-mode-banner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 16px;
+    background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    position: sticky;
+    top: 0;
+    z-index: 1050;
+}
+
+.quick-log-mode-banner i {
+    font-size: 18px;
+}
+
+.quick-log-mode-banner span {
+    font-weight: 700;
+}
+
+.quick-log-mode-banner small {
+    font-weight: 400;
+    opacity: 0.85;
+    margin-left: 4px;
+}
+
+/* Dark mode adjustments */
+[data-bs-theme="dark"] .quick-log-mode-banner {
+    background: linear-gradient(135deg, #495057 0%, #343a40 100%);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+/* Cancel Button (for Quick Log) */
+.floating-cancel-button {
+    height: var(--floating-fab-height);
+    width: var(--floating-fab-height);  /* Square button */
+    min-width: var(--floating-fab-height);
+    padding: 0;
+    border: none;
+    border-radius: var(--floating-fab-border-radius);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+    color: white;
+    background: var(--bs-danger);
+    box-shadow: 0 2px 8px rgba(var(--bs-danger-rgb), 0.3);
+}
+
+.floating-cancel-button:hover {
+    background: #c82333;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(var(--bs-danger-rgb), 0.4);
+}
+
+.floating-cancel-button:active {
+    transform: translateY(0);
+}
+
+.floating-cancel-button i {
+    font-size: calc(var(--floating-fab-icon-size) + 2px);
+}
+
+/* Dark mode adjustments for Quick Log elements */
+[data-bs-theme="dark"] .floating-quicklog-button,
+[data-bs-theme="dark"] .floating-quicklog-badge {
+    background: #495057;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+[data-bs-theme="dark"] .floating-quicklog-button:hover {
+    background: #3d4349;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+}
+
+[data-bs-theme="dark"] .floating-save-button {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+[data-bs-theme="dark"] .floating-save-button:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+}
+
+/* ============================================
    GLOBAL REST TIMER BUTTON (WORKOUT MODE)
    Floating rest timer that morphs between states
    ============================================ */

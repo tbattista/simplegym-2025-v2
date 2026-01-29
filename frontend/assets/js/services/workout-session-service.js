@@ -30,21 +30,24 @@ class WorkoutSessionService {
      * Start a new workout session
      * @param {string} workoutId - Workout ID
      * @param {string} workoutName - Workout name
+     * @param {Object|null} workoutData - Optional workout template data
+     * @param {string} sessionMode - Session mode: 'timed' (default) or 'quick_log'
      * @returns {Promise<Object>} Session object
      */
-    async startSession(workoutId, workoutName, workoutData = null) {
+    async startSession(workoutId, workoutName, workoutData = null, sessionMode = 'timed') {
         try {
-            console.log('🏋️ Starting workout session:', workoutName);
-            
+            const modeIcon = sessionMode === 'quick_log' ? '📝' : '🏋️';
+            console.log(`${modeIcon} Starting ${sessionMode} workout session:`, workoutName);
+
             // Get auth token from existing service
             const token = await window.authService.getIdToken();
             if (!token) {
                 throw new Error('Authentication required. Please log in to track your workout.');
             }
-            
+
             // Use centralized API config
             const url = window.config.api.getUrl('/api/v3/workout-sessions');
-            
+
             const response = await fetch(url, {
                 method: 'POST',
                 headers: {
@@ -54,17 +57,18 @@ class WorkoutSessionService {
                 body: JSON.stringify({
                     workout_id: workoutId,
                     workout_name: workoutName,
-                    started_at: new Date().toISOString()
+                    started_at: new Date().toISOString(),
+                    session_mode: sessionMode
                 })
             });
-            
+
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}));
                 throw new Error(errorData.detail || `Failed to create session: ${response.statusText}`);
             }
-            
+
             const session = await response.json();
-            
+
             // Store current session
             this.currentSession = {
                 id: session.id,
@@ -72,6 +76,7 @@ class WorkoutSessionService {
                 workoutName: workoutName,
                 startedAt: new Date(session.started_at),
                 status: 'in_progress',
+                sessionMode: sessionMode,
                 exercises: {}
             };
             
@@ -101,6 +106,7 @@ class WorkoutSessionService {
             
             console.log('✅ Workout session started:', session.id);
             this.notifyListeners('sessionStarted', this.currentSession);
+            window.dispatchEvent(new CustomEvent('sessionStateChanged', { detail: { type: 'started' } }));
             
             // Persist session immediately after start
             this.persistSession();
@@ -173,9 +179,10 @@ class WorkoutSessionService {
     /**
      * Complete the current workout session
      * @param {Array} exercisesPerformed - Array of exercise data
+     * @param {number|null} durationMinutes - Optional manual duration for Quick Log mode
      * @returns {Promise<Object>} Completed session object
      */
-    async completeSession(exercisesPerformed) {
+    async completeSession(exercisesPerformed, durationMinutes = null) {
         try {
             if (!this.currentSession || !this.currentSession.id) {
                 throw new Error('No active session to complete');
@@ -215,7 +222,13 @@ class WorkoutSessionService {
                 requestBody.exercise_order = this.preSessionOrder;
                 console.log('📋 Including custom exercise order in completion:', this.preSessionOrder.length, 'exercises');
             }
-            
+
+            // Quick Log: Include manual duration if provided
+            if (durationMinutes !== null && durationMinutes > 0) {
+                requestBody.duration_minutes = durationMinutes;
+                console.log('⏱️ Including manual duration for Quick Log:', durationMinutes, 'minutes');
+            }
+
             const response = await fetch(url, {
                 method: 'POST',
                 headers: {
@@ -238,7 +251,8 @@ class WorkoutSessionService {
             
             console.log('✅ Workout session completed:', this.currentSession.id);
             this.notifyListeners('sessionCompleted', completedSession);
-            
+            window.dispatchEvent(new CustomEvent('sessionStateChanged', { detail: { type: 'completed' } }));
+
             // Clear persisted session after completion
             this.clearPersistedSession();
             
@@ -894,6 +908,22 @@ class WorkoutSessionService {
     isSessionActive() {
         return this.currentSession && this.currentSession.status === 'in_progress';
     }
+
+    /**
+     * Check if current session is in Quick Log mode
+     * @returns {boolean} True if session is Quick Log mode
+     */
+    isQuickLogMode() {
+        return this.currentSession?.sessionMode === 'quick_log';
+    }
+
+    /**
+     * Get session mode ('timed' or 'quick_log')
+     * @returns {string} Session mode, defaults to 'timed'
+     */
+    getSessionMode() {
+        return this.currentSession?.sessionMode || 'timed';
+    }
     
     /**
      * Get exercise weight from current session
@@ -927,6 +957,7 @@ class WorkoutSessionService {
 
         console.log('🧹 Session cleared');
         this.notifyListeners('sessionCleared', {});
+        window.dispatchEvent(new CustomEvent('sessionStateChanged', { detail: { type: 'cleared' } }));
 
         // Clear persisted session
         this.clearPersistedSession();
@@ -1342,11 +1373,12 @@ class WorkoutSessionService {
             workoutName: this.currentSession.workoutName,
             startedAt: this.currentSession.startedAt.toISOString(),
             status: this.currentSession.status,
+            sessionMode: this.currentSession.sessionMode || 'timed',  // Quick Log feature
             exercises: this.currentSession.exercises || {},
             sessionNotes: this.sessionNotes || [],  // Session notes for inline notes
             lastUpdated: now,  // When session data was last changed
             lastPageActive: now,  // When page was last visible (will be updated by page events)
-            version: '2.2',  // Bump version for sessionNotes
+            version: '2.3',  // Bump version for sessionMode
             schemaVersion: 2  // PHASE 1: Explicit schema version
         };
         
@@ -1389,6 +1421,11 @@ class WorkoutSessionService {
             if (sessionData.version === '2.1') {
                 console.log('🔄 Migrating session from v2.1 to v2.2...');
                 sessionData = this._migrateSessionV2_1toV2_2(sessionData);
+            }
+
+            if (sessionData.version === '2.2') {
+                console.log('🔄 Migrating session from v2.2 to v2.3...');
+                sessionData = this._migrateSessionV2_2toV2_3(sessionData);
             }
 
             // Restore session notes from persisted data
@@ -1473,7 +1510,22 @@ class WorkoutSessionService {
         console.log('✅ Session migrated to v2.2 (sessionNotes added)');
         return sessionData;
     }
-    
+
+    /**
+     * Migrate session from v2.2 to v2.3
+     * Adds sessionMode field for Quick Log feature
+     * @param {Object} sessionData - Old session data
+     * @returns {Object} Migrated session data
+     * @private
+     */
+    _migrateSessionV2_2toV2_3(sessionData) {
+        sessionData.version = '2.3';
+        // Default to 'timed' for existing sessions (backward compatible)
+        sessionData.sessionMode = sessionData.sessionMode || 'timed';
+        console.log('✅ Session migrated to v2.3 (sessionMode added)');
+        return sessionData;
+    }
+
     /**
      * Clear persisted session from localStorage
      * Called when session is completed or explicitly abandoned

@@ -1201,25 +1201,43 @@
                     }
                 }
             ],
-            fab: {
-                icon: 'bx-play',
-                label: 'Start',
-                title: 'Start workout',
-                variant: 'success',
-                action: function() {
-                    console.log('▶️ Start workout button clicked');
-                    if (window.workoutModeController?.handleStartWorkout) {
-                        window.workoutModeController.handleStartWorkout();
-                    } else {
-                        console.error('❌ Workout mode controller not available');
-                        alert('Workout mode is still loading. Please wait a moment and try again.');
+            // Dual floating buttons: Quick Log + Timed Session
+            dualFab: {
+                secondary: {
+                    icon: 'bx-edit-alt',
+                    label: 'Quick Log',
+                    title: 'Log a completed workout (no timer)',
+                    variant: 'secondary',
+                    action: function() {
+                        console.log('📝 Quick Log button clicked');
+                        if (window.workoutModeController?.handleStartQuickLog) {
+                            window.workoutModeController.handleStartQuickLog();
+                        } else {
+                            console.error('❌ Workout mode controller not available');
+                            alert('Workout mode is still loading. Please wait a moment and try again.');
+                        }
+                    }
+                },
+                primary: {
+                    icon: 'bx-play',
+                    label: 'Timed',
+                    title: 'Start timed workout session',
+                    variant: 'success',
+                    action: function() {
+                        console.log('▶️ Timed session button clicked');
+                        if (window.workoutModeController?.handleStartWorkout) {
+                            window.workoutModeController.handleStartWorkout();
+                        } else {
+                            console.error('❌ Workout mode controller not available');
+                            alert('Workout mode is still loading. Please wait a moment and try again.');
+                        }
                     }
                 }
             }
         },
 
         // ============================================
-        // WORKOUT MODE PAGE (ACTIVE/STARTED) - NEW 4-BUTTON LAYOUT
+        // WORKOUT MODE PAGE (ACTIVE/STARTED - TIMED) - 4-BUTTON LAYOUT
         // ============================================
         'workout-mode-active': {
             buttons: [
@@ -1373,6 +1391,120 @@
                 } else {
                     console.error('❌ Workout mode controller not available');
                     alert('Unable to end workout. Please try again.');
+                }
+            }
+        },
+
+        // ============================================
+        // WORKOUT MODE PAGE (ACTIVE/STARTED - QUICK LOG) - 4-BUTTON LAYOUT
+        // ============================================
+        'workout-mode-quick-log-active': {
+            buttons: [
+                {
+                    icon: 'bx-plus-circle',
+                    label: 'Add',
+                    title: 'Add exercise',
+                    action: function() {
+                        if (window.workoutModeController?.handleBonusExercises) {
+                            window.workoutModeController.handleBonusExercises();
+                        } else {
+                            console.warn('⚠️ Workout mode controller not ready');
+                        }
+                    }
+                },
+                {
+                    icon: 'bx-comment',
+                    label: 'Note',
+                    title: 'Add workout note',
+                    action: function() {
+                        if (window.workoutModeController?.handleAddNote) {
+                            window.workoutModeController.handleAddNote();
+                        } else {
+                            console.warn('⚠️ Workout mode controller not ready for notes');
+                        }
+                    }
+                },
+                {
+                    icon: 'bx-sort',
+                    label: 'Reorder',
+                    title: 'Reorder exercises',
+                    action: function() {
+                        if (window.workoutModeController?.showReorderOffcanvas) {
+                            window.workoutModeController.showReorderOffcanvas();
+                        } else {
+                            console.warn('⚠️ Workout mode controller not ready');
+                        }
+                    }
+                },
+                {
+                    icon: 'bx-dots-vertical-rounded',
+                    label: 'More',
+                    title: 'More options',
+                    action: function() {
+                        if (window.UnifiedOffcanvasFactory) {
+                            window.UnifiedOffcanvasFactory.createMenuOffcanvas({
+                                id: 'quickLogSettingsOffcanvas',
+                                title: 'Quick Log Settings',
+                                icon: 'bx-cog',
+                                menuItems: [
+                                    {
+                                        icon: 'bx-edit',
+                                        title: 'Edit Workout',
+                                        description: 'Modify workout template',
+                                        onClick: () => {
+                                            if (window.workoutModeController?.handleEditWorkout) {
+                                                window.workoutModeController.handleEditWorkout();
+                                            }
+                                        }
+                                    },
+                                    {
+                                        icon: 'bx-refresh',
+                                        title: 'Change Workout',
+                                        description: 'Switch to different workout',
+                                        onClick: () => {
+                                            if (window.workoutModeController?.handleChangeWorkout) {
+                                                window.workoutModeController.handleChangeWorkout();
+                                            }
+                                        }
+                                    },
+                                    { type: 'divider' },
+                                    {
+                                        icon: 'bx-x-circle',
+                                        title: 'Cancel Quick Log',
+                                        description: 'Discard and exit',
+                                        variant: 'danger',
+                                        onClick: () => {
+                                            if (window.workoutModeController?.handleCancelWorkout) {
+                                                window.workoutModeController.handleCancelWorkout();
+                                            }
+                                        }
+                                    }
+                                ]
+                            });
+                        }
+                    }
+                }
+            ],
+            // Quick Log badge + save button combo (replaces timer for Quick Log mode)
+            quickLogCombo: true,
+            // Handle save quick log action
+            saveQuickLogAction: function() {
+                console.log('💾 Save Quick Log button clicked');
+                if (window.workoutModeController?.handleSaveQuickLog) {
+                    window.workoutModeController.handleSaveQuickLog();
+                } else {
+                    console.error('❌ Workout mode controller not available');
+                    alert('Unable to save Quick Log. Please try again.');
+                }
+            },
+            // Handle cancel quick log action
+            cancelQuickLogAction: function() {
+                console.log('❌ Cancel Quick Log button clicked');
+                if (window.workoutModeController?.handleCancelWorkout) {
+                    window.workoutModeController.handleCancelWorkout();
+                } else {
+                    console.error('❌ Workout mode controller not available');
+                    alert('Unable to cancel Quick Log. Please try again.');
                 }
             }
         },

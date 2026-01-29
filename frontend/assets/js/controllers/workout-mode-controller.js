@@ -1128,13 +1128,29 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
     }
     
     /**
-     * Handle start workout
+     * Handle start workout (timed session)
      * Phase 5: Delegates to WorkoutLifecycleManager
      */
     async handleStartWorkout() {
         return await this.lifecycleManager.handleStartWorkout();
     }
-    
+
+    /**
+     * Handle start Quick Log session
+     * Quick Log Feature: Delegates to WorkoutLifecycleManager
+     */
+    async handleStartQuickLog() {
+        return await this.lifecycleManager.handleStartQuickLog();
+    }
+
+    /**
+     * Handle save Quick Log session
+     * Quick Log Feature: Delegates to WorkoutLifecycleManager
+     */
+    async handleSaveQuickLog() {
+        return await this.lifecycleManager.handleSaveQuickLog();
+    }
+
     /**
      * Setup bonus exercise button handler
      */
@@ -2083,24 +2099,84 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
     }
 
     /**
-     * Handle cancel workout - discard session completely
+     * Handle cancel workout - discard session and reset page to fresh state
      */
     handleCancelWorkout() {
-        const modalManager = this.getModalManager();
-        modalManager.confirm(
-            'Cancel Workout?',
-            'Are you sure you want to cancel this workout session?<br><br>All progress from this session will be discarded.',
-            () => {
-                // User confirmed - clear session and redirect
-                this.sessionService.clearPersistedSession();
-                window.location.href = 'workout-database.html';
-            },
-            {
-                confirmText: 'Yes, Cancel Workout',
-                confirmClass: 'btn-danger',
-                cancelText: 'Go Back'
-            }
-        );
+        // Use offcanvas for cancel confirmation
+        if (window.UnifiedOffcanvasFactory) {
+            window.UnifiedOffcanvasFactory.createConfirmOffcanvas({
+                id: 'cancelWorkoutOffcanvas',
+                title: 'Cancel Workout?',
+                icon: 'bx-x-circle',
+                iconColor: 'danger',
+                message: 'Are you sure you want to cancel this workout session?',
+                subMessage: 'All progress from this session will be discarded.',
+                confirmText: 'Yes, Cancel',
+                confirmVariant: 'danger',
+                cancelText: 'Go Back',
+                onConfirm: () => {
+                    this.resetToFreshState();
+                }
+            });
+        } else {
+            // Fallback to modal if offcanvas factory not available
+            const modalManager = this.getModalManager();
+            modalManager.confirm(
+                'Cancel Workout?',
+                'Are you sure you want to cancel this workout session?<br><br>All progress from this session will be discarded.',
+                () => {
+                    this.resetToFreshState();
+                },
+                {
+                    confirmText: 'Yes, Cancel',
+                    confirmClass: 'btn-danger',
+                    cancelText: 'Go Back'
+                }
+            );
+        }
+    }
+
+    /**
+     * Reset page to fresh state (as if user just loaded the page)
+     * Keeps the current workout loaded but clears all session data
+     */
+    resetToFreshState() {
+        console.log('🔄 Resetting page to fresh state...');
+
+        // Clear the persisted session
+        this.sessionService.clearPersistedSession();
+
+        // Stop the timer if running
+        if (this.timerManager) {
+            this.timerManager.stopSessionTimer();
+        }
+
+        // Reset UI state to inactive
+        if (this.uiStateManager) {
+            this.uiStateManager.updateSessionState(false, null);
+        }
+
+        // Reset floating controls to show dual buttons
+        if (this.lifecycleManager) {
+            this.lifecycleManager.showFloatingControls(false);
+        }
+
+        // Hide the Quick Log banner
+        if (window.bottomActionBar) {
+            window.bottomActionBar.showQuickLogBanner(false);
+        }
+
+        // Re-render the workout with fresh state (no weight inputs, no session data)
+        this.renderWorkout();
+
+        // Show success toast
+        if (window.toastNotifications) {
+            window.toastNotifications.info('Workout cancelled. Ready to start fresh!', 'Cancelled');
+        } else if (window.showAlert) {
+            window.showAlert('Workout cancelled.', 'info');
+        }
+
+        console.log('✅ Page reset to fresh state');
     }
 
     /**

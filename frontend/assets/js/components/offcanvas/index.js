@@ -42,6 +42,7 @@ import {
 
 // Import form components
 import {
+    createConfirmOffcanvas,
     createFilterOffcanvas,
     createSkipExercise,
     createExerciseGroupEditor,
@@ -149,11 +150,15 @@ class UnifiedOffcanvasFactory {
     /* ============================================
        FORM OFFCANVAS
        ============================================ */
-    
+
+    static createConfirmOffcanvas(config) {
+        return createConfirmOffcanvas(config);
+    }
+
     static createFilterOffcanvas(config) {
         return createFilterOffcanvas(config);
     }
-    
+
     static createSkipExercise(data, onConfirm) {
         return createSkipExercise(data, onConfirm);
     }
@@ -302,6 +307,7 @@ export {
     createReorderOffcanvas,
     
     // Forms
+    createConfirmOffcanvas,
     createFilterOffcanvas,
     createSkipExercise,
     createExerciseGroupEditor,

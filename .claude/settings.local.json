@@ -29,7 +29,9 @@
       "Bash(python:*)",
       "Bash(del \"\\\\?\\\\c:\\\\Users\\\\user\\\\iCloudDrive\\\\PARA\\\\1 - Projects\\\\_Websites\\\\simple gym log\\\\simplegym_v2\\\\nul\")",
       "Bash(git clean:*)",
-      "Bash(cmd.exe /c \"del /f /q \"\"\\\\?\\\\c:\\\\Users\\\\user\\\\iCloudDrive\\\\PARA\\\\1 - Projects\\\\_Websites\\\\simple gym log\\\\simplegym_v2\\\\nul\"\"\")"
+      "Bash(cmd.exe /c \"del /f /q \"\"\\\\?\\\\c:\\\\Users\\\\user\\\\iCloudDrive\\\\PARA\\\\1 - Projects\\\\_Websites\\\\simple gym log\\\\simplegym_v2\\\\nul\"\"\")",
+      "Bash(npx playwright:*)",
+      "Bash(node test-quicklog.js:*)"
     ]
   }
 }
