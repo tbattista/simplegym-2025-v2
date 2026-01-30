@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ workout_name }} - Workout</title>
+    <style>
+        @page {
+            size: letter;
+            margin: 0.75in;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            font-size: 12pt;
+            line-height: 1.4;
+            color: #000;
+            background: #fff;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 24pt;
+            padding-bottom: 16pt;
+            border-bottom: 2pt solid #000;
+        }
+
+        .workout-name {
+            font-size: 24pt;
+            font-weight: 700;
+            margin-bottom: 8pt;
+        }
+
+        .description {
+            font-size: 11pt;
+            color: #444;
+        }
+
+        .section-title {
+            font-size: 14pt;
+            font-weight: 700;
+            margin: 20pt 0 12pt 0;
+            padding-bottom: 6pt;
+            border-bottom: 1pt solid #ccc;
+        }
+
+        .exercise-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 16pt;
+        }
+
+        .exercise-table th {
+            text-align: left;
+            font-weight: 600;
+            padding: 8pt 12pt;
+            background: #f5f5f5;
+            border: 1pt solid #ddd;
+            font-size: 10pt;
+            text-transform: uppercase;
+            letter-spacing: 0.5pt;
+        }
+
+        .exercise-table td {
+            padding: 10pt 12pt;
+            border: 1pt solid #ddd;
+            vertical-align: top;
+        }
+
+        .group-num {
+            font-weight: 700;
+            width: 40pt;
+            text-align: center;
+        }
+
+        .exercise-names {
+            font-weight: 500;
+        }
+
+        .exercise-names ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .exercise-names li {
+            padding: 2pt 0;
+        }
+
+        .exercise-names li:before {
+            content: "- ";
+            color: #666;
+        }
+
+        .sets-reps {
+            white-space: nowrap;
+            text-align: center;
+            width: 100pt;
+        }
+
+        .rest {
+            text-align: center;
+            width: 60pt;
+        }
+
+        .weight {
+            text-align: center;
+            width: 80pt;
+            white-space: nowrap;
+        }
+
+        .bonus-section {
+            margin-top: 20pt;
+        }
+
+        .bonus-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .bonus-list li {
+            padding: 6pt 0;
+            border-bottom: 1pt dotted #ddd;
+        }
+
+        .bonus-list li:last-child {
+            border-bottom: none;
+        }
+
+        .bonus-name {
+            font-weight: 500;
+        }
+
+        .bonus-detail {
+            color: #666;
+            margin-left: 8pt;
+        }
+
+        .tags {
+            margin-top: 20pt;
+            padding-top: 12pt;
+            border-top: 1pt solid #ddd;
+        }
+
+        .tag {
+            display: inline-block;
+            background: #f0f0f0;
+            padding: 4pt 10pt;
+            border-radius: 12pt;
+            font-size: 10pt;
+            margin-right: 6pt;
+            margin-bottom: 6pt;
+        }
+
+        .footer {
+            margin-top: 30pt;
+            padding-top: 12pt;
+            border-top: 1pt solid #ccc;
+            text-align: center;
+            font-size: 10pt;
+            color: #666;
+        }
+
+        .notes-section {
+            margin-top: 30pt;
+            padding: 16pt;
+            background: #fafafa;
+            border: 1pt solid #eee;
+        }
+
+        .notes-title {
+            font-weight: 600;
+            margin-bottom: 12pt;
+        }
+
+        .notes-lines {
+            border-bottom: 1pt solid #ddd;
+            height: 24pt;
+            margin-bottom: 8pt;
+        }
+
+        @media print {
+            body {
+                print-color-adjust: exact;
+                -webkit-print-color-adjust: exact;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1 class="workout-name">{{ workout_name }}</h1>
+        {% if description %}
+        <p class="description">{{ description }}</p>
+        {% endif %}
+    </div>
+
+    <div class="section-title">Exercises</div>
+    <table class="exercise-table">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Exercise</th>
+                <th>Sets x Reps</th>
+                <th>Rest</th>
+                {% if include_weights %}
+                <th>Weight</th>
+                {% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for group in exercises %}
+            <tr>
+                <td class="group-num">{{ group.group_num }}</td>
+                <td class="exercise-names">
+                    {% if group.names|length == 1 %}
+                    {{ group.names[0] }}
+                    {% else %}
+                    <ul>
+                        {% for name in group.names %}
+                        <li>{{ name }}</li>
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
+                </td>
+                <td class="sets-reps">{{ group.sets }} x {{ group.reps }}</td>
+                <td class="rest">{{ group.rest }}</td>
+                {% if include_weights %}
+                <td class="weight">{{ group.weight or '-' }}</td>
+                {% endif %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {% if bonus_exercises %}
+    <div class="bonus-section">
+        <div class="section-title">Bonus Exercises</div>
+        <ul class="bonus-list">
+            {% for bonus in bonus_exercises %}
+            <li>
+                <span class="bonus-name">{{ bonus.name }}</span>
+                <span class="bonus-detail">{{ bonus.sets }} x {{ bonus.reps }}{% if bonus.rest %} | {{ bonus.rest }} rest{% endif %}</span>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    {% if tags %}
+    <div class="tags">
+        {% for tag in tags %}
+        <span class="tag">#{{ tag }}</span>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="notes-section">
+        <div class="notes-title">Notes</div>
+        <div class="notes-lines"></div>
+        <div class="notes-lines"></div>
+        <div class="notes-lines"></div>
+    </div>
+
+    <div class="footer">
+        Generated by Ghost Gym | ghostgym.app
+    </div>
+</body>
+</html>

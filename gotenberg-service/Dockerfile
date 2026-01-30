@@ -1,5 +1,6 @@
 # Use the official Gotenberg image
-FROM gotenberg/gotenberg:8
+# Pinned to 8.10.0 to avoid tiling bug #1065 (introduced in 8.11)
+FROM gotenberg/gotenberg:8.10.0
 
 # Gotenberg runs on port 3000 by default, but Railway expects $PORT
 EXPOSE 3000

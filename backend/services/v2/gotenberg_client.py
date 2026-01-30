@@ -70,10 +70,10 @@ class GotenbergClient:
                 data=data,
                 timeout=30
             )
-            
-            # Clean up temporary HTML file
-            os.unlink(temp_html_path)
+
+            # Clean up: close file handle FIRST (required on Windows), then delete
             files['files'][1].close()
+            os.unlink(temp_html_path)
             
             if response.status_code == 200:
                 # Save PDF to temporary file
@@ -89,12 +89,12 @@ class GotenbergClient:
                 raise Exception(f"Gotenberg conversion failed: {response.status_code} - {response.text}")
                 
         except Exception as e:
-            # Clean up temporary file if it exists
+            # Clean up: close file handle FIRST (required on Windows), then delete
             try:
-                if 'temp_html_path' in locals():
-                    os.unlink(temp_html_path)
                 if 'files' in locals() and files['files'][1]:
                     files['files'][1].close()
+                if 'temp_html_path' in locals():
+                    os.unlink(temp_html_path)
             except:
                 pass
             raise Exception(f"Error converting HTML to PDF: {str(e)}")
@@ -103,3 +103,93 @@ class GotenbergClient:
         """Check if Gotenberg service is currently available"""
         self._check_availability()
         return self.available
+
+    def html_to_image(
+        self,
+        html_content: str,
+        filename: str = "image.png",
+        width: int = 1080,
+        height: int = 1920,
+        format: str = "png"
+    ) -> Optional[Path]:
+        """
+        Convert HTML content to image using Gotenberg screenshot endpoint.
+
+        Args:
+            html_content: The HTML content to convert
+            filename: Name for the output image file
+            width: Image width in pixels (default 1080)
+            height: Image height in pixels (default 1920)
+            format: Image format - 'png' or 'jpeg' (default 'png')
+
+        Returns:
+            Path to the generated image file, or None if conversion failed
+        """
+        if not self.available:
+            raise Exception("Gotenberg service is not available")
+
+        try:
+            # Create temporary HTML file
+            with tempfile.NamedTemporaryFile(mode='w', suffix='.html', delete=False, encoding='utf-8') as temp_html:
+                temp_html.write(html_content)
+                temp_html_path = temp_html.name
+
+            # Prepare files for Gotenberg
+            files = {
+                'files': ('index.html', open(temp_html_path, 'rb'), 'text/html')
+            }
+
+            # Screenshot conversion options with explicit clip region
+            # NOTE: skipNetworkIdleEvent must be 'false' to fix tiling bug (Gotenberg #1065)
+            # This was broken in Gotenberg 8.11+ when the default changed from false to true
+            data = {
+                'width': str(width),
+                'height': str(height),
+                'clipX': '0',
+                'clipY': '0',
+                'clipWidth': str(width),
+                'clipHeight': str(height),
+                'captureBeyondViewport': 'false',
+                'deviceScaleFactor': '1',
+                'omitBackground': 'false',
+                'format': format,
+                'quality': '90',  # JPEG quality (ignored for PNG)
+                'optimizeForSpeed': 'false',
+                'skipNetworkIdleEvent': 'false'  # Critical: fixes screenshot tiling bug #1065
+            }
+
+            # Make request to Gotenberg screenshot endpoint
+            response = requests.post(
+                f"{self.gotenberg_url}/forms/chromium/screenshot/html",
+                files=files,
+                data=data,
+                timeout=30
+            )
+
+            # Clean up: close file handle FIRST (required on Windows), then delete
+            files['files'][1].close()
+            os.unlink(temp_html_path)
+
+            if response.status_code == 200:
+                # Save image to uploads directory
+                output_dir = Path("backend/uploads")
+                output_dir.mkdir(exist_ok=True)
+
+                image_path = output_dir / filename
+                with open(image_path, 'wb') as image_file:
+                    image_file.write(response.content)
+
+                return image_path
+            else:
+                raise Exception(f"Gotenberg screenshot failed: {response.status_code} - {response.text}")
+
+        except Exception as e:
+            # Clean up: close file handle FIRST (required on Windows), then delete
+            try:
+                if 'files' in locals() and files['files'][1]:
+                    files['files'][1].close()
+                if 'temp_html_path' in locals():
+                    os.unlink(temp_html_path)
+            except:
+                pass
+            raise Exception(f"Error converting HTML to image: {str(e)}")

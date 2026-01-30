@@ -54,6 +54,13 @@
                                     Private Link
                                 </button>
                             </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="export-tab" data-bs-toggle="tab"
+                                        data-bs-target="#export-options" type="button" role="tab">
+                                    <i class="bx bx-export me-1"></i>
+                                    Export
+                                </button>
+                            </li>
                         </ul>
 
                         <!-- Tab Content -->
@@ -186,6 +193,71 @@
                                     </div>
                                 </div>
                             </div>
+
+                            <!-- Export Tab -->
+                            <div class="tab-pane fade" id="export-options" role="tabpanel">
+                                <p class="text-muted small mb-3">
+                                    Export your workout in different formats for sharing or printing.
+                                </p>
+
+                                <!-- Image Export -->
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">
+                                        <i class="bx bx-image me-1"></i>
+                                        Share as Image
+                                    </label>
+                                    <p class="text-muted small mb-2">
+                                        Download a story-sized image (1080x1920) perfect for Instagram or TikTok.
+                                    </p>
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" id="includeWeightsCheckbox">
+                                        <label class="form-check-label small" for="includeWeightsCheckbox">
+                                            Include weights
+                                        </label>
+                                    </div>
+                                    <button type="button" class="btn btn-outline-primary w-100" id="exportImageBtn">
+                                        <i class="bx bx-download me-1"></i>
+                                        Download Image
+                                    </button>
+                                </div>
+
+                                <hr class="my-3">
+
+                                <!-- Text Export -->
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">
+                                        <i class="bx bx-text me-1"></i>
+                                        Copy as Text
+                                    </label>
+                                    <p class="text-muted small mb-2">
+                                        Copy plain text to share via SMS, notes, or messaging apps.
+                                    </p>
+                                    <button type="button" class="btn btn-outline-secondary w-100" id="exportTextBtn">
+                                        <i class="bx bx-copy me-1"></i>
+                                        Copy to Clipboard
+                                    </button>
+                                </div>
+
+                                <hr class="my-3">
+
+                                <!-- Print Export -->
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">
+                                        <i class="bx bx-printer me-1"></i>
+                                        Printable PDF
+                                    </label>
+                                    <p class="text-muted small mb-2">
+                                        Download a clean, printer-friendly PDF of your workout.
+                                    </p>
+                                    <button type="button" class="btn btn-outline-secondary w-100" id="exportPrintBtn">
+                                        <i class="bx bx-download me-1"></i>
+                                        Download PDF
+                                    </button>
+                                </div>
+
+                                <!-- Export Status Message -->
+                                <div id="exportStatusMessage" class="alert mb-0" style="display: none;"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -219,6 +291,29 @@
                 privateTab.addEventListener('shown.bs.tab', () => {
                     this.activeTab = 'private';
                 });
+            }
+
+            const exportTab = document.getElementById('export-tab');
+            if (exportTab) {
+                exportTab.addEventListener('shown.bs.tab', () => {
+                    this.activeTab = 'export';
+                });
+            }
+
+            // Export buttons
+            const exportImageBtn = document.getElementById('exportImageBtn');
+            if (exportImageBtn) {
+                exportImageBtn.addEventListener('click', () => this.handleImageExport());
+            }
+
+            const exportTextBtn = document.getElementById('exportTextBtn');
+            if (exportTextBtn) {
+                exportTextBtn.addEventListener('click', () => this.handleTextExport());
+            }
+
+            const exportPrintBtn = document.getElementById('exportPrintBtn');
+            if (exportPrintBtn) {
+                exportPrintBtn.addEventListener('click', () => this.handlePrintExport());
             }
 
             // Public share button
@@ -449,6 +544,166 @@
                 // Reset button
                 btn.disabled = false;
                 btn.innerHTML = '<i class="bx bx-trash me-1"></i>Delete Link';
+            }
+        }
+
+        // Export handlers
+        async handleImageExport() {
+            const btn = document.getElementById('exportImageBtn');
+            const originalHTML = btn.innerHTML;
+            const includeWeights = document.getElementById('includeWeightsCheckbox')?.checked || false;
+
+            try {
+                btn.disabled = true;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Generating...';
+
+                const token = await this.getAuthToken();
+
+                const response = await fetch(`/api/v3/export/image/${this.currentWorkoutId}?include_weights=${includeWeights}`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Failed to generate image');
+                }
+
+                // Download the image
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${this.currentWorkout?.name || 'workout'}.png`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                a.remove();
+
+                this.showExportStatus('Image downloaded successfully!', 'success');
+                console.log('✅ Image exported');
+
+            } catch (error) {
+                console.error('❌ Error exporting image:', error);
+                this.showExportStatus(error.message, 'danger');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalHTML;
+            }
+        }
+
+        async handleTextExport() {
+            const btn = document.getElementById('exportTextBtn');
+            const originalHTML = btn.innerHTML;
+            const includeWeights = document.getElementById('includeWeightsCheckbox')?.checked || false;
+
+            try {
+                btn.disabled = true;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Copying...';
+
+                const token = await this.getAuthToken();
+
+                const response = await fetch(`/api/v3/export/text/${this.currentWorkoutId}?include_weights=${includeWeights}`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Failed to generate text');
+                }
+
+                const text = await response.text();
+
+                // Copy to clipboard
+                await navigator.clipboard.writeText(text);
+
+                // Show success
+                btn.innerHTML = '<i class="bx bx-check me-1"></i>Copied!';
+                btn.classList.remove('btn-outline-secondary');
+                btn.classList.add('btn-success');
+
+                this.showExportStatus('Text copied to clipboard!', 'success');
+                console.log('✅ Text exported and copied');
+
+                setTimeout(() => {
+                    btn.innerHTML = originalHTML;
+                    btn.classList.remove('btn-success');
+                    btn.classList.add('btn-outline-secondary');
+                }, 2000);
+
+            } catch (error) {
+                console.error('❌ Error exporting text:', error);
+                this.showExportStatus(error.message, 'danger');
+                btn.innerHTML = originalHTML;
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        async handlePrintExport() {
+            const btn = document.getElementById('exportPrintBtn');
+            const originalHTML = btn.innerHTML;
+            const includeWeights = document.getElementById('includeWeightsCheckbox')?.checked || false;
+
+            try {
+                btn.disabled = true;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Generating...';
+
+                const token = await this.getAuthToken();
+
+                const response = await fetch(`/api/v3/export/print/${this.currentWorkoutId}?include_weights=${includeWeights}`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Failed to generate PDF');
+                }
+
+                // Download the PDF
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${this.currentWorkout?.name || 'workout'}.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                a.remove();
+
+                this.showExportStatus('PDF downloaded successfully!', 'success');
+                console.log('✅ PDF exported');
+
+            } catch (error) {
+                console.error('❌ Error exporting PDF:', error);
+                this.showExportStatus(error.message, 'danger');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalHTML;
+            }
+        }
+
+        showExportStatus(message, type) {
+            const statusEl = document.getElementById('exportStatusMessage');
+            if (!statusEl) return;
+
+            statusEl.textContent = message;
+            statusEl.className = `alert alert-${type} mb-0`;
+            statusEl.style.display = 'block';
+
+            // Auto-hide success messages
+            if (type === 'success') {
+                setTimeout(() => {
+                    statusEl.style.display = 'none';
+                }, 3000);
             }
         }
 

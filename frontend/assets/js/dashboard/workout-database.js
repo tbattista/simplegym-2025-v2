@@ -24,6 +24,21 @@ let completedWorkoutIds = new Set();
 
 /**
  * ============================================
+ * TOOLBAR SORT OPTIONS
+ * ============================================
+ */
+
+const SORT_OPTIONS = [
+    { value: 'modified_date', label: 'Newest', icon: 'bx-sort-alt-2' },
+    { value: 'created_date', label: 'Created', icon: 'bx-calendar-plus' },
+    { value: 'name', label: 'A-Z', icon: 'bx-sort-a-z' },
+    { value: 'exercise_count', label: 'Exercises', icon: 'bx-list-ol' }
+];
+
+let currentSortIndex = 0;
+
+/**
+ * ============================================
  * SESSION STATE MANAGEMENT
  * ============================================
  */
@@ -69,239 +84,6 @@ async function loadSessionStates() {
     } catch (error) {
         console.warn('⚠️ Could not load session states:', error);
     }
-}
-
-/**
- * ============================================
- * TODAY SECTION LOGIC
- * ============================================
- */
-
-/**
- * Get recommendation for Today section
- * Priority: 1) In-progress session, 2) Workout not done in 2+ days (oldest first), 3) Empty + starter
- * @returns {Promise<Object>} { type: 'resume'|'suggest'|'empty', workout?, session?, message? }
- */
-async function getTodayRecommendation() {
-    // 1. Check for in-progress session (already loaded by loadSessionStates)
-    if (activeSessionWorkoutId) {
-        const workout = window.ghostGym.workoutDatabase.all.find(w => w.id === activeSessionWorkoutId);
-        if (workout) {
-            const persistedSession = JSON.parse(localStorage.getItem('ghost_gym_active_workout_session') || '{}');
-            return {
-                type: 'resume',
-                workout,
-                session: persistedSession,
-                message: 'Workout in progress'
-            };
-        }
-    }
-
-    // 2. Smart rest gap: find workout not done in 2+ days (authenticated users only)
-    if (window.authService?.isUserAuthenticated()) {
-        try {
-            const user = window.firebaseAuth?.currentUser;
-            if (user) {
-                const idToken = await user.getIdToken();
-                // Fetch recent sessions to build a "last done" map for each workout
-                const response = await fetch('/api/v3/workout-sessions?status=completed&page_size=50', {
-                    headers: {
-                        'Authorization': `Bearer ${idToken}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-
-                if (response.ok) {
-                    const data = await response.json();
-                    const sessions = data.sessions || [];
-
-                    // Build map of workout_id -> most recent completion date
-                    const lastDoneMap = new Map();
-                    for (const session of sessions) {
-                        if (session.workout_id && session.completed_at && !lastDoneMap.has(session.workout_id)) {
-                            lastDoneMap.set(session.workout_id, session.completed_at);
-                        }
-                    }
-
-                    // Get all user workouts and calculate days since last done
-                    const allWorkouts = window.ghostGym.workoutDatabase.all || [];
-                    const workoutsWithRest = allWorkouts.map(workout => {
-                        const lastDone = lastDoneMap.get(workout.id);
-                        const daysAgo = lastDone ? getDaysAgo(lastDone) : Infinity; // Never done = highest priority
-                        return { workout, lastDone, daysAgo };
-                    });
-
-                    // Filter to workouts not done in 2+ days, sort by oldest first
-                    const rested = workoutsWithRest
-                        .filter(w => w.daysAgo >= 2)
-                        .sort((a, b) => b.daysAgo - a.daysAgo); // Oldest first
-
-                    if (rested.length > 0) {
-                        const suggestion = rested[0];
-                        const message = suggestion.daysAgo === Infinity
-                            ? 'Never done - give it a try!'
-                            : suggestion.daysAgo === 2
-                                ? 'Last done 2 days ago'
-                                : `Last done ${suggestion.daysAgo} days ago`;
-
-                        return {
-                            type: 'suggest',
-                            workout: suggestion.workout,
-                            lastDone: suggestion.lastDone,
-                            message
-                        };
-                    }
-
-                    // All workouts done recently - suggest the oldest one anyway
-                    if (workoutsWithRest.length > 0) {
-                        const oldest = workoutsWithRest.sort((a, b) => b.daysAgo - a.daysAgo)[0];
-                        if (oldest.daysAgo < Infinity) {
-                            return {
-                                type: 'suggest',
-                                workout: oldest.workout,
-                                lastDone: oldest.lastDone,
-                                message: oldest.daysAgo === 0 ? 'Done today - rest up!' :
-                                         oldest.daysAgo === 1 ? 'Done yesterday' :
-                                         `Last done ${oldest.daysAgo} days ago`
-                            };
-                        }
-                    }
-                }
-            }
-        } catch (e) {
-            console.warn('Failed to fetch sessions for Today recommendation:', e);
-        }
-    }
-
-    // 3. No history or not authenticated - show empty state
-    return { type: 'empty' };
-}
-
-/**
- * Calculate days since a date
- * @param {string} dateString - ISO date string
- * @returns {number} Days ago (0 = today)
- */
-function getDaysAgo(dateString) {
-    const date = new Date(dateString);
-    const now = new Date();
-    // Reset to midnight for accurate day comparison
-    date.setHours(0, 0, 0, 0);
-    now.setHours(0, 0, 0, 0);
-    const diffTime = now - date;
-    return Math.floor(diffTime / (1000 * 60 * 60 * 24));
-}
-
-/**
- * Render Today section based on recommendation
- */
-async function renderTodaySection() {
-    const container = document.getElementById('todayContent');
-    if (!container) return;
-
-    const recommendation = await getTodayRecommendation();
-    console.log('📅 Today recommendation:', recommendation.type);
-
-    switch (recommendation.type) {
-        case 'resume':
-            container.innerHTML = renderTodayCard(recommendation.workout, {
-                state: 'resume',
-                message: recommendation.message,
-                sessionId: recommendation.session.id
-            });
-            break;
-
-        case 'suggest':
-            container.innerHTML = renderTodayCard(recommendation.workout, {
-                state: 'suggest',
-                message: recommendation.message
-            });
-            break;
-
-        case 'empty':
-            container.innerHTML = renderTodayEmptyState();
-            break;
-    }
-}
-
-/**
- * Render a Today card for resume or suggest state
- */
-function renderTodayCard(workout, options) {
-    const isResume = options.state === 'resume';
-    const buttonText = isResume ? 'Resume Workout' : 'Start Workout';
-    const buttonClass = isResume ? 'btn-warning' : 'btn-primary';
-    const buttonIcon = isResume ? 'bx-play-circle' : 'bx-play';
-    const cardClass = isResume ? 'today-card resume' : 'today-card';
-
-    return `
-        <div class="card ${cardClass} shadow-sm">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-start mb-2">
-                    <div>
-                        <h6 class="card-title mb-1">${workout.name}</h6>
-                        <p class="text-muted small mb-0">${options.message}</p>
-                    </div>
-                </div>
-                <div class="d-flex gap-2 mt-3">
-                    <button class="btn ${buttonClass} flex-grow-1"
-                            onclick="doWorkout('${workout.id}')">
-                        <i class="bx ${buttonIcon} me-1"></i>
-                        ${buttonText}
-                    </button>
-                    <button class="btn btn-outline-secondary"
-                            onclick="viewWorkoutDetails('${workout.id}')">
-                        <i class="bx bx-show"></i>
-                    </button>
-                </div>
-            </div>
-        </div>
-    `;
-}
-
-/**
- * Render empty state for Today section with starter workout
- */
-function renderTodayEmptyState() {
-    const starterWorkout = window.STARTER_WORKOUT;
-    const exerciseCount = starterWorkout?.exercise_groups?.length || 4;
-
-    return `
-        <div class="today-empty-state">
-            <p class="text-muted mb-3">Ready to start your fitness journey?</p>
-            <button class="btn btn-primary w-100 mb-3" onclick="window.location.href='/workout-builder.html?new=true'">
-                <i class="bx bx-plus me-1"></i>
-                Create Your First Workout
-            </button>
-
-            ${starterWorkout ? `
-            <div class="text-muted small mb-2">or try our starter template:</div>
-
-            <div class="card starter-workout-card">
-                <div class="card-body py-2">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="mb-0">${starterWorkout.name}</h6>
-                            <small class="text-muted">
-                                ${exerciseCount} exercises
-                            </small>
-                        </div>
-                        <div class="d-flex gap-2">
-                            <button class="btn btn-sm btn-outline-secondary"
-                                    onclick="previewStarterWorkout()">
-                                Preview
-                            </button>
-                            <button class="btn btn-sm btn-primary"
-                                    onclick="startStarterWorkout()">
-                                Start
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            ` : ''}
-        </div>
-    `;
 }
 
 /**
@@ -866,31 +648,40 @@ function sortWorkouts(workouts, sortBy) {
 function clearFilters() {
     console.log('🧹 Clearing all filters');
     
-    // Clear search in morphing FAB
-    const searchFabInput = document.getElementById('searchFabInput');
-    if (searchFabInput) {
-        searchFabInput.value = '';
+    // Clear search in toolbar
+    const workoutSearchInput = document.getElementById('workoutSearchInput');
+    const clearSearchBtn = document.getElementById('clearSearchBtn');
+    if (workoutSearchInput) {
+        workoutSearchInput.value = '';
     }
-    
+    if (clearSearchBtn) {
+        clearSearchBtn.style.display = 'none';
+    }
+
     // Reset filter state (including search)
     window.ghostGym.workoutDatabase.filters.search = '';
     window.ghostGym.workoutDatabase.filters.tags = [];
     window.ghostGym.workoutDatabase.filters.sortBy = 'modified_date';
-    
-    // Reset sort dropdown in offcanvas
-    const sortBySelect = document.getElementById('sortBySelect');
-    if (sortBySelect) {
-        sortBySelect.value = 'modified_date';
+
+    // Reset sort cycle button to default
+    currentSortIndex = 0;
+    const sortCycleBtn = document.getElementById('sortCycleBtn');
+    if (sortCycleBtn) {
+        sortCycleBtn.querySelector('.sort-label').textContent = SORT_OPTIONS[0].label;
+        sortCycleBtn.querySelector('i').className = `bx ${SORT_OPTIONS[0].icon}`;
     }
-    
+
     // Uncheck all tag checkboxes
     document.querySelectorAll('.tag-filter-checkbox').forEach(checkbox => {
         checkbox.checked = false;
     });
-    
+
     // Re-apply filters (will show all workouts)
     filterWorkouts();
-    
+
+    // Update filter badge
+    updateFilterBadge();
+
     console.log('✅ Filters cleared');
 }
 
@@ -1001,11 +792,25 @@ function initializeComponents() {
                     icon: 'bx-share-alt',
                     variant: 'outline-secondary',
                     onClick: (workout) => shareWorkout(workout.id)
+                },
+                {
+                    id: 'multi-delete',
+                    label: 'Multi Delete',
+                    icon: 'bx-select-multiple',
+                    variant: 'outline-danger',
+                    onClick: () => {
+                        // Toggle checkbox to activate delete mode
+                        const toggle = document.getElementById('deleteModeToggle');
+                        if (toggle) {
+                            toggle.checked = true;
+                            toggle.dispatchEvent(new Event('change'));
+                        }
+                    }
                 }
             ],
-            // Configure which actions appear in dropdown menu (History, Edit, Duplicate, Share, Delete)
+            // Configure which actions appear in dropdown menu
             // Only 'start' remains as the primary button
-            dropdownActions: ['history', 'edit', 'duplicate', 'share', 'delete'],
+            dropdownActions: ['history', 'edit', 'duplicate', 'share', 'delete', 'multi-delete'],
             // View details callback for dropdown
             onViewDetails: (workout) => viewWorkoutDetails(workout.id),
             // Card tap also opens detail view
@@ -1331,38 +1136,80 @@ function hideSearchOverlay() {
  * Toggle delete mode on/off
  */
 function toggleDeleteMode() {
-    const isActive = document.getElementById('deleteModeToggle').checked;
+    const toggle = document.getElementById('deleteModeToggle');
+    const isActive = toggle ? toggle.checked : !window.ghostGym.workoutDatabase.deleteMode;
+
+    // Sync toggle state
+    if (toggle) toggle.checked = isActive;
     window.ghostGym.workoutDatabase.deleteMode = isActive;
-    
+
     console.log(`🗑️ Delete mode ${isActive ? 'activated' : 'deactivated'}`);
-    
+
     // Update grid delete mode
     if (workoutGrid) {
         workoutGrid.setDeleteMode(isActive);
     }
-    
-    // Show/hide end delete mode button and search FAB
-    const searchFab = document.getElementById('searchFab');
-    if (window.bottomActionBar) {
-        if (isActive) {
-            window.bottomActionBar.showEndDeleteModeButton();
-            // Hide search FAB when delete mode is active
-            if (searchFab) {
-                searchFab.style.display = 'none';
-            }
-        } else {
-            window.bottomActionBar.hideEndDeleteModeButton();
-            // Show search FAB when delete mode is inactive
-            if (searchFab) {
-                searchFab.style.display = 'flex';
-            }
-        }
-    }
-    
-    // Optional: Add body class for global styling
+
+    // Show/hide delete mode indicator
     if (isActive) {
-        document.body.classList.add('delete-mode-active');
+        showDeleteModeIndicator();
     } else {
+        hideDeleteModeIndicator();
+    }
+
+    // Body class for global styling
+    document.body.classList.toggle('delete-mode-active', isActive);
+}
+
+/**
+ * Show delete mode floating action bar
+ */
+function showDeleteModeIndicator() {
+    let indicator = document.getElementById('deleteModeIndicator');
+    if (!indicator) {
+        indicator = document.createElement('div');
+        indicator.id = 'deleteModeIndicator';
+        indicator.className = 'delete-mode-indicator';
+        indicator.innerHTML = `
+            <div class="delete-mode-label">
+                <i class="bx bx-trash"></i>
+                <span>Tap cards to delete</span>
+            </div>
+            <button class="btn-done" onclick="exitDeleteMode()" type="button">
+                <i class="bx bx-x"></i>
+                <span>Done</span>
+            </button>
+        `;
+        document.body.appendChild(indicator);
+    }
+    indicator.style.display = 'flex';
+}
+
+/**
+ * Hide delete mode floating indicator
+ */
+function hideDeleteModeIndicator() {
+    const indicator = document.getElementById('deleteModeIndicator');
+    if (indicator) {
+        indicator.style.display = 'none';
+    }
+}
+
+/**
+ * Exit delete mode - called from indicator button
+ */
+function exitDeleteMode() {
+    const toggle = document.getElementById('deleteModeToggle');
+    if (toggle) {
+        toggle.checked = false;
+        toggle.dispatchEvent(new Event('change'));
+    } else {
+        // Direct toggle if checkbox not available
+        window.ghostGym.workoutDatabase.deleteMode = false;
+        if (workoutGrid) {
+            workoutGrid.setDeleteMode(false);
+        }
+        hideDeleteModeIndicator();
         document.body.classList.remove('delete-mode-active');
     }
 }
@@ -1402,11 +1249,6 @@ async function deleteWorkoutFromDatabase(workoutId, workoutName) {
         
         // Re-apply filters and render
         filterWorkouts();
-
-        // Re-render Today section (in case deleted workout was shown there)
-        if (window.renderTodaySection) {
-            renderTodaySection();
-        }
 
         // Re-render Favorites section (in case deleted workout was favorited)
         if (window.renderFavoritesSection) {
@@ -1453,6 +1295,78 @@ function viewWorkoutHistory(workoutId) {
     window.location.href = `workout-history.html?id=${workoutId}`;
 }
 
+/**
+ * ============================================
+ * TOOLBAR FUNCTIONS
+ * ============================================
+ */
+
+/**
+ * Cycle through sort options
+ */
+function cycleWorkoutSort() {
+    currentSortIndex = (currentSortIndex + 1) % SORT_OPTIONS.length;
+    const sortOption = SORT_OPTIONS[currentSortIndex];
+
+    // Update filter state (reuse existing)
+    window.ghostGym.workoutDatabase.filters.sortBy = sortOption.value;
+
+    // Update button UI
+    const btn = document.getElementById('sortCycleBtn');
+    if (btn) {
+        btn.querySelector('.sort-label').textContent = sortOption.label;
+        btn.querySelector('i').className = `bx ${sortOption.icon}`;
+    }
+
+    console.log('📊 Sort changed to:', sortOption.label);
+
+    // Reuse existing filter function
+    filterWorkouts();
+}
+
+/**
+ * Initialize toolbar search input
+ */
+function initToolbarSearch() {
+    const searchInput = document.getElementById('workoutSearchInput');
+    const clearBtn = document.getElementById('clearSearchBtn');
+    if (!searchInput) return;
+
+    let searchTimeout;
+    searchInput.addEventListener('input', (e) => {
+        clearTimeout(searchTimeout);
+        const query = e.target.value.trim();
+        clearBtn.style.display = query ? 'block' : 'none';
+
+        searchTimeout = setTimeout(() => {
+            // Reuse existing filter state & function
+            window.ghostGym.workoutDatabase.filters.search = query;
+            filterWorkouts();
+        }, 300);
+    });
+
+    clearBtn?.addEventListener('click', () => {
+        searchInput.value = '';
+        clearBtn.style.display = 'none';
+        window.ghostGym.workoutDatabase.filters.search = '';
+        filterWorkouts();
+    });
+
+    console.log('✅ Toolbar search initialized');
+}
+
+/**
+ * Update filter badge with active filter count
+ */
+function updateFilterBadge() {
+    const badge = document.getElementById('filterBadge');
+    if (!badge) return;
+
+    const count = window.ghostGym.workoutDatabase.filters.tags.length;
+    badge.textContent = count;
+    badge.style.display = count > 0 ? 'inline-block' : 'none';
+}
+
 // Make functions globally available
 window.loadWorkouts = loadWorkouts;
 window.filterWorkouts = filterWorkouts;
@@ -1469,11 +1383,17 @@ window.hideSearchOverlay = hideSearchOverlay;
 window.toggleDeleteMode = toggleDeleteMode;
 window.deleteWorkoutFromDatabase = deleteWorkoutFromDatabase;
 window.initDeleteModeToggle = initDeleteModeToggle;
+window.exitDeleteMode = exitDeleteMode;
+window.showDeleteModeIndicator = showDeleteModeIndicator;
+window.hideDeleteModeIndicator = hideDeleteModeIndicator;
 
-// Today & Favorites section functions
-window.renderTodaySection = renderTodaySection;
-window.getTodayRecommendation = getTodayRecommendation;
+// Favorites section functions
 window.toggleWorkoutFavorite = toggleWorkoutFavorite;
 window.renderFavoritesSection = renderFavoritesSection;
+
+// Toolbar functions
+window.cycleWorkoutSort = cycleWorkoutSort;
+window.initToolbarSearch = initToolbarSearch;
+window.updateFilterBadge = updateFilterBadge;
 
 console.log('📦 Workout Database module loaded (v3.0 - using shared components)');

@@ -49,9 +49,6 @@
     <!-- Workout Database CSS -->
     <link rel="stylesheet" href="/static/assets/css/workout-database.css" />
     
-    <!-- Bottom Action Bar CSS -->
-    <link rel="stylesheet" href="/static/assets/css/bottom-action-bar.css?v=3.0.2" />
-
     <!-- Helpers -->
     <script src="/static/assets/vendor/js/helpers.js"></script>
     <script src="/static/assets/js/config.js"></script>
@@ -85,22 +82,59 @@
             <!-- Content -->
             <div class="container-xxl flex-grow-1 container-p-y">
 
-              <!-- Today's Suggestion Section -->
-              <div id="todaySection" class="mb-4">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                  <h6 class="section-header mb-0">
-                    <i class="bx bx-sun me-1"></i>
-                    Today's Suggestion
-                  </h6>
-                  <i class="bx bx-info-circle text-muted"
-                     data-bs-toggle="tooltip"
-                     data-bs-placement="left"
-                     title="Shows an in-progress workout to resume, or suggests a workout you haven't done in 2+ days."
-                     style="font-size: 1.25rem; cursor: help;"></i>
+              <!-- Page Header -->
+              <div class="mb-3">
+                <h6 class="mb-2">
+                  <i class="bx bx-library me-1"></i>
+                  Workout Library
+                </h6>
+                <p class="text-muted small mb-3">Browse and manage your <span id="totalWorkoutsCount">0</span> workout templates</p>
+              </div>
+
+              <!-- Workout Toolbar -->
+              <div class="workout-toolbar mb-3" id="workoutToolbar">
+                <!-- Search Input -->
+                <div class="workout-toolbar-search">
+                  <i class="bx bx-search"></i>
+                  <input type="text"
+                         id="workoutSearchInput"
+                         placeholder="Search workouts..."
+                         autocomplete="off">
+                  <button class="workout-toolbar-clear"
+                          id="clearSearchBtn"
+                          style="display: none;"
+                          type="button">
+                    <i class="bx bx-x"></i>
+                  </button>
                 </div>
-                <div id="todayContent">
-                  <!-- Populated by JS: resume card, suggest card, or empty state -->
-                </div>
+
+                <!-- Sort Cycle Button -->
+                <button class="btn btn-outline-secondary workout-toolbar-btn"
+                        id="sortCycleBtn"
+                        type="button"
+                        onclick="cycleWorkoutSort()">
+                  <i class="bx bx-sort-alt-2"></i>
+                  <span class="sort-label">Newest</span>
+                </button>
+
+                <!-- Filter Button -->
+                <button class="btn btn-outline-secondary workout-toolbar-btn"
+                        id="filterBtn"
+                        type="button"
+                        data-bs-toggle="offcanvas"
+                        data-bs-target="#filtersOffcanvas">
+                  <i class="bx bx-filter"></i>
+                  <span class="filter-label">Filter</span>
+                  <span class="filter-badge badge bg-primary ms-1" id="filterBadge" style="display: none;">0</span>
+                </button>
+
+                <!-- Create Button -->
+                <button class="btn btn-primary workout-toolbar-btn"
+                        type="button"
+                        onclick="window.location.href='/workout-builder.html?new=true'">
+                  <i class="bx bx-plus"></i>
+                  <span class="create-label">New</span>
+                </button>
               </div>
 
               <!-- Favorites Section -->
@@ -119,11 +153,10 @@
 
               <!-- My Workouts Section -->
               <div id="myWorkoutsSection" class="mb-3">
-                <h6 class="section-header mb-2">
+                <h6 class="section-header mb-3">
                   <i class="bx bx-dumbbell me-1"></i>
                   My Workouts
                 </h6>
-                <p class="text-muted small mb-3">Browse and manage your <span id="totalWorkoutsCount">0</span> workout templates</p>
 
                 <!-- Hidden delete mode toggle (controlled by More menu) -->
                 <input class="form-check-input" type="checkbox" role="switch"
@@ -147,88 +180,47 @@
     </div>
     <!-- / Layout wrapper -->
 
-    <!-- Filters Offcanvas (Bottom) with Tabs -->
-    <div class="offcanvas offcanvas-bottom offcanvas-bottom-base" tabindex="-1" id="filtersOffcanvas" aria-labelledby="filtersOffcanvasLabel" data-bs-scroll="false" style="height: 60vh;">
+    <!-- Filters Offcanvas (Bottom) -->
+    <div class="offcanvas offcanvas-bottom offcanvas-bottom-base" tabindex="-1" id="filtersOffcanvas" aria-labelledby="filtersOffcanvasLabel" data-bs-scroll="false" style="height: auto; max-height: 60vh;">
       <div class="offcanvas-header">
         <h5 class="offcanvas-title" id="filtersOffcanvasLabel">
           <i class="bx bx-filter-alt me-2"></i>
-          <span id="offcanvasMainTitle">Filters & Sort</span>
+          Filter Workouts
         </h5>
         <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
       </div>
       <div class="offcanvas-body">
-        <!-- Nav Tabs -->
-        <ul class="nav nav-tabs mb-3" id="filtersTabs" role="tablist">
-          <li class="nav-item" role="presentation">
-            <button class="nav-link active" id="filters-tab" data-bs-toggle="tab" data-bs-target="#filters-tab-pane" type="button" role="tab" aria-controls="filters-tab-pane" aria-selected="true">
-              <i class="bx bx-filter me-1"></i>Filters
-            </button>
-          </li>
-          <li class="nav-item" role="presentation">
-            <button class="nav-link" id="sort-tab" data-bs-toggle="tab" data-bs-target="#sort-tab-pane" type="button" role="tab" aria-controls="sort-tab-pane" aria-selected="false">
-              <i class="bx bx-sort me-1"></i>Sort
-            </button>
-          </li>
-        </ul>
-
-        <!-- Tab Content -->
-        <div class="tab-content" id="filtersTabContent">
-          <!-- Filters Tab Pane -->
-          <div class="tab-pane fade show active" id="filters-tab-pane" role="tabpanel" aria-labelledby="filters-tab" tabindex="0">
-            <div class="row">
-              <!-- Tags Filter -->
-              <div class="col-12 mb-4">
-                <label class="form-label fw-semibold">Filter by Tags</label>
-                <div id="tagsFilterContainer">
-                  <!-- Tags will be loaded dynamically -->
-                  <p class="text-muted small">Loading tags...</p>
-                </div>
-              </div>
-
-              <!-- Stats -->
-              <div class="col-12">
-                <label class="form-label fw-semibold">Your Stats</label>
-                <div class="d-flex justify-content-between mb-2">
-                  <span class="text-muted">Total Workouts:</span>
-                  <span class="fw-semibold" id="totalCount">0</span>
-                </div>
-                <div class="d-flex justify-content-between">
-                  <span class="text-muted">Showing:</span>
-                  <span class="fw-semibold" id="showingCount">0</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Sort Tab Pane -->
-          <div class="tab-pane fade" id="sort-tab-pane" role="tabpanel" aria-labelledby="sort-tab" tabindex="0">
-            <div class="row">
-              <div class="col-12 mb-4">
-                <label class="form-label fw-semibold">Sort By</label>
-                <select class="form-select" id="sortBySelect">
-                  <option value="modified_date">Recently Modified</option>
-                  <option value="created_date">Recently Created</option>
-                  <option value="name">Name (A-Z)</option>
-                  <option value="exercise_count">Most Exercises</option>
-                </select>
-                <div class="form-text">Choose how to organize your workouts</div>
-              </div>
-            </div>
+        <!-- Tags Filter -->
+        <div class="mb-4">
+          <label class="form-label fw-semibold">Filter by Tags</label>
+          <div id="tagsFilterContainer">
+            <p class="text-muted small">Loading tags...</p>
           </div>
         </div>
 
-        <!-- Action Buttons (shown on both tabs) -->
-        <div class="row mt-auto pt-3 border-top">
-          <div class="col-12">
-            <button type="button" class="btn btn-outline-secondary w-100 mb-2" id="clearFiltersBtn">
-              <i class="bx bx-x me-1"></i>
-              Clear All Filters
-            </button>
-            <button type="button" class="btn btn-primary w-100" data-bs-dismiss="offcanvas">
-              <i class="bx bx-check me-1"></i>
-              Done
-            </button>
+        <!-- Stats -->
+        <div class="mb-4">
+          <label class="form-label fw-semibold">Your Stats</label>
+          <div class="d-flex justify-content-between mb-2">
+            <span class="text-muted">Total Workouts:</span>
+            <span class="fw-semibold" id="totalCount">0</span>
           </div>
+          <div class="d-flex justify-content-between">
+            <span class="text-muted">Showing:</span>
+            <span class="fw-semibold" id="showingCount">0</span>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="pt-3 border-top">
+          <button type="button" class="btn btn-outline-secondary w-100 mb-2" id="clearFiltersBtn">
+            <i class="bx bx-x me-1"></i>
+            Clear Filters
+          </button>
+          <button type="button" class="btn btn-primary w-100" data-bs-dismiss="offcanvas">
+            <i class="bx bx-check me-1"></i>
+            Done
+          </button>
         </div>
       </div>
     </div>
@@ -257,10 +249,6 @@
     <!-- Main JS -->
     <script src="/static/assets/js/main.js"></script>
     
-    <!-- Bottom Action Bar (load after main.js) -->
-    <script src="/static/assets/js/config/bottom-action-bar-config.js?v=2.0.5"></script>
-    <script src="/static/assets/js/services/bottom-action-bar-service.js?v=3.0.3"></script>
-
     <!-- Firebase Services -->
     <script src="/static/assets/js/firebase/firebase-init.js?v=20251020-03"></script>
     <script src="/static/assets/js/firebase/auth-service.js?v=20251020-03"></script>
@@ -369,11 +357,6 @@
                     await window.loadWorkouts();
                 }
 
-                // Re-render Today section (may show different recommendation based on auth)
-                if (window.renderTodaySection) {
-                    await window.renderTodaySection();
-                }
-
                 // Re-render Favorites section
                 if (window.renderFavoritesSection) {
                     window.renderFavoritesSection();
@@ -387,29 +370,18 @@
             // Set up event listeners
             document.getElementById('clearFiltersBtn')?.addEventListener('click', clearFilters);
 
-            // Connect sort dropdown to filter logic
-            const sortBySelect = document.getElementById('sortBySelect');
-            if (sortBySelect) {
-                sortBySelect.addEventListener('change', (e) => {
-                    const sortBy = e.target.value;
-                    console.log('📊 Sort changed to:', sortBy);
-                    window.ghostGym.workoutDatabase.filters.sortBy = sortBy;
-                    filterWorkouts();
-                });
-            }
-
             // Initialize delete mode toggle
             if (window.initDeleteModeToggle) {
                 initDeleteModeToggle();
             }
 
-            // Load workouts first (needed for Today section to find workout data)
-            await loadWorkouts();
-
-            // Render Today section (after workouts loaded)
-            if (window.renderTodaySection) {
-                await renderTodaySection();
+            // Initialize toolbar search
+            if (window.initToolbarSearch) {
+                initToolbarSearch();
             }
+
+            // Load workouts
+            await loadWorkouts();
 
             // Render Favorites section
             if (window.renderFavoritesSection) {

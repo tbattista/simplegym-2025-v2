@@ -96,6 +96,7 @@ document.addEventListener('DOMContentLoaded', function () {
           layoutMenu.classList.remove('menu-open');
           layoutOverlay.classList.remove('active');
           document.body.classList.remove('menu-open');
+          document.body.style.overflow = '';  // Clear overflow set by menu-injection-service
         }
       } else {
         // Desktop behavior - only close the menu if it's open
@@ -126,6 +127,7 @@ document.addEventListener('DOMContentLoaded', function () {
             layoutOverlay.classList.remove('active');
           }
           document.body.classList.remove('menu-open');
+          document.body.style.overflow = '';  // Clear overflow set by menu-injection-service
         }
       }
     }

@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1080, height=1920, initial-scale=1.0">
+    <title>{{ workout_name }}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 1080px;
+            height: 1920px;
+            overflow: hidden;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(180deg, #6366f1 0%, #8b5cf6 100%);
+            color: #1a1a2e;
+            padding: 60px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card {
+            background: white;
+            border-radius: 32px;
+            padding: 48px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            overflow: hidden;
+        }
+
+        .header {
+            border-bottom: 2px solid #f1f1f1;
+            padding-bottom: 32px;
+            margin-bottom: 32px;
+        }
+
+        .workout-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .workout-name {
+            font-size: 56px;
+            font-weight: 700;
+            color: #1a1a2e;
+            line-height: 1.2;
+            margin-bottom: 16px;
+        }
+
+        .workout-meta {
+            font-size: 28px;
+            color: #6b7280;
+        }
+
+        .section-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 24px;
+        }
+
+        .exercise-list {
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .exercise-item {
+            padding: 28px 0;
+            border-bottom: 1px solid #f1f1f1;
+        }
+
+        .exercise-item:last-child {
+            border-bottom: none;
+        }
+
+        .exercise-name {
+            font-size: 36px;
+            font-weight: 600;
+            color: #1a1a2e;
+            margin-bottom: 12px;
+        }
+
+        .exercise-details {
+            font-size: 28px;
+            color: #6b7280;
+            display: flex;
+            gap: 24px;
+            flex-wrap: wrap;
+        }
+
+        .exercise-detail {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .detail-value {
+            color: #4f46e5;
+            font-weight: 600;
+        }
+
+        .tags {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-top: 32px;
+            padding-top: 32px;
+            border-top: 2px solid #f1f1f1;
+        }
+
+        .tag {
+            background: #f3f4f6;
+            color: #4f46e5;
+            padding: 12px 24px;
+            border-radius: 20px;
+            font-size: 24px;
+            font-weight: 500;
+        }
+
+        .footer {
+            margin-top: auto;
+            padding-top: 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .brand-icon {
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .brand-icon::after {
+            content: '';
+            width: 28px;
+            height: 28px;
+            background: white;
+            border-radius: 6px;
+        }
+
+        .brand-text {
+            font-size: 32px;
+            font-weight: 700;
+            color: #1a1a2e;
+        }
+
+        .stats {
+            display: flex;
+            gap: 40px;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 40px;
+            font-weight: 700;
+            color: #4f46e5;
+        }
+
+        .stat-label {
+            font-size: 22px;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="header">
+            <div class="workout-icon">🏋️</div>
+            <h1 class="workout-name">{{ workout_name }}</h1>
+            {% if description %}
+            <p class="workout-meta">{{ description }}</p>
+            {% endif %}
+        </div>
+
+        <div class="section-title">Exercise Groups</div>
+
+        <div class="exercise-list">
+            {% for exercise in exercise_preview %}
+            <div class="exercise-item">
+                <div class="exercise-name">{{ exercise.name }}</div>
+                <div class="exercise-details">
+                    <span class="exercise-detail">
+                        <span class="detail-value">{{ exercise.sets }}</span> sets
+                    </span>
+                    <span class="exercise-detail">
+                        <span class="detail-value">{{ exercise.reps }}</span> reps
+                    </span>
+                    {% if exercise.rest %}
+                    <span class="exercise-detail">
+                        <span class="detail-value">{{ exercise.rest }}</span> rest
+                    </span>
+                    {% endif %}
+                    {% if exercise.weight %}
+                    <span class="exercise-detail">
+                        <span class="detail-value">{{ exercise.weight }}</span>
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        {% if tags %}
+        <div class="tags">
+            {% for tag in tags %}
+            <span class="tag">#{{ tag }}</span>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="footer">
+            <div class="brand">
+                <div class="brand-icon"></div>
+                <span class="brand-text">Ghost Gym</span>
+            </div>
+            <div class="stats">
+                <div class="stat">
+                    <div class="stat-value">{{ total_exercises }}</div>
+                    <div class="stat-label">Exercises</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">{{ total_sets }}</div>
+                    <div class="stat-label">Total Sets</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

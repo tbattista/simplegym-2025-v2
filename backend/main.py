@@ -16,7 +16,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Import routers
-from .api import health, documents, workouts, programs, exercises, favorites, auth, data, migration, workout_sessions, sharing, user_profile
+from .api import health, documents, workouts, programs, exercises, favorites, auth, data, migration, workout_sessions, sharing, user_profile, export
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -53,8 +53,9 @@ app.include_router(migration.router)
 app.include_router(workout_sessions.router)  # Workout session logging (premium feature)
 app.include_router(sharing.router)  # Workout sharing endpoints
 app.include_router(user_profile.router)  # User profile management
+app.include_router(export.router)  # Export endpoints (text, image, print)
 
-logger.info("✅ All routers included successfully (14 routers total)")
+logger.info("✅ All routers included successfully (15 routers total)")
 
 # Create necessary directories
 os.makedirs("backend/uploads", exist_ok=True)

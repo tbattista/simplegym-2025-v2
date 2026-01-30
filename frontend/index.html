@@ -104,7 +104,7 @@
                 <div id="weeklyProgressCard" class="card home-weekly-card mb-4">
                   <div class="card-body py-2 px-3">
                     <div class="d-flex justify-content-between align-items-center mb-2">
-                      <span class="home-weekly-stat" id="weeklyStatText">This Week: 0/5 Workouts</span>
+                      <span class="home-weekly-stat" id="weeklyStatText">This Week: 0/7 Workouts</span>
                       <span class="home-streak-badge" id="weeklyStreakBadge">🔥 0 day streak</span>
                     </div>
                     <div class="progress home-progress-bar mb-2">
@@ -539,7 +539,7 @@
 
             const weekSessions = sessions.filter(s => new Date(s.completed_at) >= weekStart);
             const completed = weekSessions.length;
-            const goal = 5;
+            const goal = 7;
             const percentage = Math.min(Math.round((completed / goal) * 100), 100);
             const streak = calculateStreak(sessions);
 
@@ -583,23 +583,31 @@
         function calculateStreak(sessions) {
             if (sessions.length === 0) return 0;
 
-            const sorted = [...sessions].sort((a, b) =>
-                new Date(b.completed_at) - new Date(a.completed_at)
-            );
+            // Get unique workout days (timestamps at midnight)
+            const workoutDays = new Set();
+            sessions.forEach(s => {
+                const date = new Date(s.completed_at);
+                date.setHours(0, 0, 0, 0);
+                workoutDays.add(date.getTime());
+            });
 
-            let streak = 0;
-            let currentDate = new Date();
-            currentDate.setHours(0, 0, 0, 0);
+            // Sort days descending (most recent first)
+            const sortedDays = [...workoutDays].sort((a, b) => b - a);
 
-            for (const session of sorted) {
-                const sessionDate = new Date(session.completed_at);
-                sessionDate.setHours(0, 0, 0, 0);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const oneDayMs = 1000 * 60 * 60 * 24;
 
-                const diffDays = Math.floor((currentDate - sessionDate) / (1000 * 60 * 60 * 24));
+            // Check if most recent workout is today or yesterday (streak is active)
+            const daysSinceLast = Math.round((today.getTime() - sortedDays[0]) / oneDayMs);
+            if (daysSinceLast > 1) return 0;
 
-                if (diffDays === streak || (streak === 0 && diffDays <= 1)) {
+            // Count consecutive days starting from most recent
+            let streak = 1; // Count the first day
+            for (let i = 1; i < sortedDays.length; i++) {
+                const diff = Math.round((sortedDays[i - 1] - sortedDays[i]) / oneDayMs);
+                if (diff === 1) {
                     streak++;
-                    currentDate = sessionDate;
                 } else {
                     break;
                 }

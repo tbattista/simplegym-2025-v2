@@ -38,7 +38,16 @@
       "mcp__playwright__browser_navigate",
       "mcp__playwright__browser_wait_for",
       "mcp__playwright__browser_snapshot",
-      "mcp__playwright__browser_close"
+      "mcp__playwright__browser_close",
+      "Bash(git rm:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nRemove duplicate requirements\\(1\\).txt causing Railway build failure\n\nThe duplicate file with parentheses in the name was confusing Nixpacks.\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nFix Railway build: remove package.json that confused Nixpacks\n\npackage.json \\(for local Playwright testing\\) was causing Nixpacks to\ndetect the project as Node.js instead of Python, resulting in instant\nbuild failure. Added package.json to .gitignore to prevent recurrence.\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(xargs -I {} git show HEAD:{})",
+      "Bash(pip install:*)",
+      "Bash(move:*)",
+      "Bash(cmd /c move:*)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:gotenberg.dev)"
     ]
   }
 }
