@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gym Log v4 - A5 Book</title>
+    <style>
+        /* A5 Print Styles */
+        @page {
+            size: A5;
+            margin: 8mm;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Calibri, Arial, sans-serif;
+            font-size: 8pt;
+            line-height: 1.1;
+        }
+
+        /* Page structure */
+        .page {
+            width: 132mm;
+            height: 194mm;
+            page-break-after: always;
+            page-break-inside: avoid;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        .blank-page {
+            /* Intentionally blank - first page */
+        }
+
+        /* Table styles */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+
+        td, th {
+            border: 1px solid #000;
+            padding: 1px 3px;
+            vertical-align: top;
+            font-size: 8pt;
+        }
+
+        .header-row {
+            background-color: #D0CECE;
+            font-weight: bold;
+        }
+
+        .subheader-row {
+            background-color: #F2F2F2;
+        }
+
+        .exercise-col { width: 50%; }
+        .sets-col { width: 10%; }
+        .reps-col { width: 15%; }
+        .rest-col { width: 10%; }
+        .wt-col { width: 15%; }
+
+        .row-height {
+            height: 5mm;
+        }
+
+        .row-height-tall {
+            height: 10mm;
+        }
+
+        .notes-row {
+            height: 12mm;
+        }
+
+        .exercise-list {
+            list-style-type: lower-alpha;
+            margin-left: 12px;
+            padding: 0;
+        }
+
+        .exercise-list li {
+            margin: 0;
+            line-height: 1.1;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .bold {
+            font-weight: bold;
+        }
+
+        /* Weekly tracking table */
+        .weekly-table {
+            margin-top: 2mm;
+        }
+
+        .weekly-table td {
+            width: 25%;
+            height: 4.5mm;
+        }
+
+        .weekly-label {
+            background-color: #F2F2F2;
+        }
+
+        .placeholder-text {
+            color: #D9D9D9;
+        }
+
+        /* Screen preview styles */
+        @media screen {
+            body {
+                background: #ccc;
+                padding: 20px;
+            }
+            .page {
+                background: white;
+                margin: 20px auto;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+                padding: 8mm;
+            }
+        }
+
+        @media print {
+            body {
+                background: white;
+            }
+            .page {
+                margin: 0;
+                box-shadow: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Page 1: Blank (front of first sheet) -->
+    <div class="page blank-page"></div>
+
+    <!-- Page 2: Workout Log (back of first sheet) -->
+    <div class="page">
+        <table>
+            <!-- Warm Up Header -->
+            <tr class="header-row row-height">
+                <td colspan="5"><b>Warm Up</b></td>
+            </tr>
+            <tr class="row-height">
+                <td colspan="3">foam rolling, yoga, body priming - 5+ minute</td>
+                <td></td>
+                <td></td>
+            </tr>
+
+            <!-- Workout Name Header -->
+            <tr class="header-row row-height">
+                <td colspan="5"><b>{{ workout_name }}</b></td>
+            </tr>
+
+            <!-- Column Headers -->
+            <tr class="subheader-row row-height">
+                <td class="exercise-col">exercise</td>
+                <td class="sets-col">sets</td>
+                <td class="reps-col">reps</td>
+                <td class="rest-col">rest</td>
+                <td class="wt-col"></td>
+            </tr>
+
+            <!-- Date Row -->
+            <tr class="subheader-row row-height">
+                <td colspan="5" class="text-right">today's date:</td>
+            </tr>
+
+            <!-- Exercise 1 -->
+            <tr class="row-height-tall">
+                <td rowspan="2">
+                    <ol class="exercise-list">
+                        <li>{{ exercise-1a }}</li>
+                        <li>{{ exercise-1b }}</li>
+                        <li>{{ exercise-1c }}</li>
+                    </ol>
+                </td>
+                <td rowspan="2" class="bold">{{ sets-1 }}</td>
+                <td rowspan="2" class="bold">{{ reps-1 }}</td>
+                <td rowspan="2" class="bold">{{ rest-1 }}</td>
+                <td>wt</td>
+            </tr>
+            <tr class="row-height">
+                <td>reps</td>
+            </tr>
+
+            <!-- Exercise 2 -->
+            <tr class="row-height-tall">
+                <td rowspan="2">
+                    <ol class="exercise-list">
+                        <li>{{ exercise-2a }}</li>
+                        <li>{{ exercise-2b }}</li>
+                        <li>{{ exercise-2c }}</li>
+                    </ol>
+                </td>
+                <td rowspan="2" class="bold">{{ sets-2 }}</td>
+                <td rowspan="2" class="bold">{{ reps-2 }}</td>
+                <td rowspan="2" class="bold">{{ rest-2 }}</td>
+                <td>wt</td>
+            </tr>
+            <tr class="row-height">
+                <td>reps</td>
+            </tr>
+
+            <!-- Exercise 3 -->
+            <tr class="row-height-tall">
+                <td rowspan="2">
+                    <ol class="exercise-list">
+                        <li>{{ exercise-3a }}</li>
+                        <li>{{ exercise-3b }}</li>
+                        <li>{{ exercise-3c }}</li>
+                    </ol>
+                </td>
+                <td rowspan="2" class="bold">{{ sets-3 }}</td>
+                <td rowspan="2" class="bold">{{ reps-3 }}</td>
+                <td rowspan="2" class="bold">{{ rest-3 }}</td>
+                <td>wt</td>
+            </tr>
+            <tr class="row-height">
+                <td>reps</td>
+            </tr>
+
+            <!-- Exercise 4 -->
+            <tr class="row-height-tall">
+                <td rowspan="2">
+                    <ol class="exercise-list">
+                        <li>{{ exercise-4a }}</li>
+                        <li>{{ exercise-4b }}</li>
+                        <li>{{ exercise-4c }}</li>
+                    </ol>
+                </td>
+                <td rowspan="2" class="bold">{{ sets-4 }}</td>
+                <td rowspan="2" class="bold">{{ reps-4 }}</td>
+                <td rowspan="2" class="bold">{{ rest-4 }}</td>
+                <td>wt</td>
+            </tr>
+            <tr class="row-height">
+                <td>reps</td>
+            </tr>
+
+            <!-- Exercise 5 -->
+            <tr class="row-height-tall">
+                <td rowspan="2">
+                    <ol class="exercise-list">
+                        <li>{{ exercise-5a }}</li>
+                        <li>{{ exercise-5b }}</li>
+                        <li>{{ exercise-5c }}</li>
+                    </ol>
+                </td>
+                <td rowspan="2" class="bold">{{ sets-5 }}</td>
+                <td rowspan="2" class="bold">{{ reps-5 }}</td>
+                <td rowspan="2" class="bold">{{ rest-5 }}</td>
+                <td>wt</td>
+            </tr>
+            <tr class="row-height">
+                <td>reps</td>
+            </tr>
+
+            <!-- Exercise 6 -->
+            <tr class="row-height-tall">
+                <td rowspan="2">
+                    <ol class="exercise-list">
+                        <li>{{ exercise-6a }}</li>
+                        <li>{{ exercise-6b }}</li>
+                        <li>{{ exercise-6c }}</li>
+                    </ol>
+                </td>
+                <td rowspan="2" class="bold">{{ sets-6 }}</td>
+                <td rowspan="2" class="bold">{{ reps-6 }}</td>
+                <td rowspan="2" class="bold">{{ rest-6 }}</td>
+                <td>wt</td>
+            </tr>
+            <tr class="row-height">
+                <td>reps</td>
+            </tr>
+
+            <!-- Bonus Exercise 1 -->
+            <tr class="row-height-tall">
+                <td>{{ exercise-bonus-1 }}</td>
+                <td class="bold">{{ sets-bonus-1 }}</td>
+                <td class="bold">{{ reps-bonus-1 }}</td>
+                <td class="bold">{{ rest-bonus-1 }}</td>
+                <td></td>
+            </tr>
+
+            <!-- Bonus Exercise 2 -->
+            <tr class="row-height-tall">
+                <td>{{ exercise-bonus-2 }}</td>
+                <td class="bold">{{ sets-bonus-2 }}</td>
+                <td class="bold">{{ reps-bonus-2 }}</td>
+                <td class="bold">{{ rest-bonus-2 }}</td>
+                <td></td>
+            </tr>
+
+            <!-- Mets Row -->
+            <tr class="header-row row-height">
+                <td colspan="5" class="text-right">Mets (Time/Cals):</td>
+            </tr>
+
+            <!-- Notes Row -->
+            <tr class="subheader-row notes-row">
+                <td colspan="5"><b>Notes:</b></td>
+            </tr>
+        </table>
+
+        <!-- Weekly Tracking Table -->
+        <table class="weekly-table">
+            <tr class="header-row">
+                <td colspan="4"></td>
+            </tr>
+            <tr class="weekly-label">
+                <td>Week 1</td>
+                <td>Week 2</td>
+                <td>Week 3</td>
+                <td>Week 4</td>
+            </tr>
+            <tr>
+                <td class="placeholder-text">a b c</td>
+                <td class="placeholder-text">a b c</td>
+                <td class="placeholder-text">a b c</td>
+                <td class="placeholder-text">a b c</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td class="placeholder-text">a b c</td>
+                <td class="placeholder-text">a b c</td>
+                <td class="placeholder-text">a b c</td>
+                <td class="placeholder-text">a b c</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td class="placeholder-text">a b c</td>
+                <td class="placeholder-text">a b c</td>
+                <td class="placeholder-text">a b c</td>
+                <td class="placeholder-text">a b c</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td class="placeholder-text">a b c</td>
+                <td class="placeholder-text">a b c</td>
+                <td class="placeholder-text">a b c</td>
+                <td class="placeholder-text">a b c</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+        </table>
+    </div>
+</body>
+</html>

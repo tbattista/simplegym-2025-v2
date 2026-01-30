@@ -1203,3 +1203,332 @@
     color: #666 !important;
   }
 }
+
+/* ============================================
+   V2.4.1 - SESSION THREE-DOT MENU
+   Mobile-friendly dropdown menu for session actions
+   ============================================ */
+
+.session-menu {
+  flex-shrink: 0;
+}
+
+.session-menu-btn {
+  padding: 0.25rem 0.5rem;
+  color: var(--bs-secondary-color);
+  background: transparent;
+  border: none;
+  transition: color 0.15s ease;
+}
+
+.session-menu-btn:hover,
+.session-menu-btn:focus {
+  color: var(--bs-body-color);
+  background: transparent;
+  box-shadow: none;
+}
+
+.session-menu-btn i {
+  font-size: 1.25rem;
+}
+
+/* Dropdown menu styling */
+.session-menu .dropdown-menu {
+  min-width: 120px;
+  font-size: 0.875rem;
+  box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.15);
+}
+
+.session-menu .dropdown-item {
+  padding: 0.5rem 1rem;
+}
+
+.session-menu .dropdown-item i {
+  font-size: 1rem;
+}
+
+/* Dark mode */
+[data-bs-theme="dark"] .session-menu-btn {
+  color: var(--bs-gray-500);
+}
+
+[data-bs-theme="dark"] .session-menu-btn:hover {
+  color: var(--bs-gray-300);
+}
+
+[data-bs-theme="dark"] .session-menu .dropdown-menu {
+  background-color: var(--bs-gray-800);
+  border-color: var(--bs-gray-700);
+}
+
+[data-bs-theme="dark"] .session-menu .dropdown-item:hover {
+  background-color: var(--bs-gray-700);
+}
+
+/* Print - hide menu */
+@media print {
+  .session-menu {
+    display: none !important;
+  }
+}
+
+/* ============================================
+   V2.4.2 - SESSION PAGINATION
+   ============================================ */
+
+.session-pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 0;
+  margin-top: 1rem;
+  border-top: 1px solid var(--bs-border-color);
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.pagination-info {
+  font-size: 0.8125rem;
+  color: var(--bs-secondary-color);
+}
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.pagination-btn {
+  min-width: 2rem;
+  height: 2rem;
+  padding: 0 0.5rem;
+  border: 1px solid var(--bs-border-color);
+  background: var(--bs-body-bg);
+  color: var(--bs-body-color);
+  border-radius: 0.25rem;
+  font-size: 0.8125rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  border-color: var(--bs-primary);
+  color: var(--bs-primary);
+}
+
+.pagination-btn.active {
+  background: var(--bs-primary);
+  border-color: var(--bs-primary);
+  color: white;
+}
+
+.pagination-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pagination-ellipsis {
+  padding: 0 0.25rem;
+  color: var(--bs-secondary-color);
+}
+
+.session-pagesize-select {
+  width: auto;
+  min-width: 110px;
+  font-size: 0.8125rem;
+  padding: 0.375rem 0.75rem;
+}
+
+/* Pagination mobile responsive */
+@media (max-width: 767.98px) {
+  .session-pagination {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .pagination-controls {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}
+
+/* Pagination dark mode */
+[data-bs-theme="dark"] .pagination-btn {
+  background: var(--bs-gray-800);
+  border-color: var(--bs-gray-700);
+}
+
+[data-bs-theme="dark"] .pagination-btn:hover:not(:disabled) {
+  border-color: var(--bs-primary);
+}
+
+[data-bs-theme="dark"] .pagination-btn.active {
+  background: var(--bs-primary);
+  border-color: var(--bs-primary);
+}
+
+[data-bs-theme="dark"] .session-pagesize-select {
+  background-color: var(--bs-gray-900);
+  border-color: var(--bs-gray-600);
+  color: var(--bs-gray-200);
+}
+
+/* Pagination print */
+@media print {
+  .session-pagination {
+    display: none !important;
+  }
+
+  .session-pagesize-select {
+    display: none !important;
+  }
+}
+
+/* ============================================
+   V2.4.3 - CALENDAR ACCORDION
+   Simple accordion-style collapsible calendar
+   ============================================ */
+
+.calendar-accordion {
+  border: 1px solid var(--bs-border-color);
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.calendar-accordion-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: var(--bs-body-bg);
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.calendar-accordion-toggle:hover {
+  background-color: var(--bs-gray-100);
+}
+
+.calendar-accordion-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--bs-body-color);
+}
+
+.calendar-accordion-label i {
+  font-size: 1.125rem;
+  color: var(--bs-secondary-color);
+}
+
+.calendar-accordion-icon {
+  font-size: 1.25rem;
+  color: var(--bs-secondary-color);
+  transition: transform 0.2s ease;
+}
+
+.calendar-accordion-toggle[aria-expanded="true"] .calendar-accordion-icon {
+  transform: rotate(180deg);
+}
+
+.calendar-accordion-content {
+  padding: 0.75rem 1rem 1rem;
+  border-top: 1px solid var(--bs-border-color);
+  background: var(--bs-body-bg);
+}
+
+.calendar-month-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.calendar-month-nav span {
+  min-width: 120px;
+  text-align: center;
+}
+
+/* ============================================
+   V2.4.3 - DATE FILTER INDICATOR
+   ============================================ */
+
+.date-filter-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  background: rgba(var(--bs-primary-rgb), 0.1);
+  border: 1px solid rgba(var(--bs-primary-rgb), 0.2);
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.date-filter-text {
+  display: flex;
+  align-items: center;
+  color: var(--bs-body-color);
+}
+
+.date-filter-text i {
+  color: var(--bs-primary);
+  font-size: 1.125rem;
+}
+
+/* Mobile responsive */
+@media (max-width: 767.98px) {
+  .date-filter-indicator {
+    padding: 0.625rem 0.875rem;
+    font-size: 0.8125rem;
+  }
+
+  .calendar-accordion-toggle {
+    padding: 0.625rem 0.875rem;
+  }
+
+  .calendar-accordion-content {
+    padding: 0.625rem 0.875rem 0.875rem;
+  }
+}
+
+/* Dark mode */
+[data-bs-theme="dark"] .calendar-accordion {
+  border-color: var(--bs-gray-700);
+}
+
+[data-bs-theme="dark"] .calendar-accordion-toggle {
+  background-color: var(--bs-gray-900);
+}
+
+[data-bs-theme="dark"] .calendar-accordion-toggle:hover {
+  background-color: var(--bs-gray-800);
+}
+
+[data-bs-theme="dark"] .calendar-accordion-content {
+  background-color: var(--bs-gray-900);
+  border-top-color: var(--bs-gray-700);
+}
+
+[data-bs-theme="dark"] .date-filter-indicator {
+  background: rgba(var(--bs-primary-rgb), 0.15);
+  border-color: rgba(var(--bs-primary-rgb), 0.3);
+}
+
+/* Print - hide calendar and filter indicator */
+@media print {
+  #historyCalendarCard {
+    display: none !important;
+  }
+
+  .date-filter-indicator {
+    display: none !important;
+  }
+}

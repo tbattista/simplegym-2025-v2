@@ -22,6 +22,11 @@ window.ghostGym.workoutHistory = {
   workoutTypeFilter: 'all', // 'all' or specific workout_name
   sessionSort: 'date-desc', // 'date-desc', 'date-asc', 'duration-desc', 'duration-asc'
   uniqueWorkouts: [], // Unique workout names for dropdown
+  // V2.4.2 - Pagination
+  pageSize: 20,      // 10, 20, 50, or 'all'
+  currentPage: 1,    // Current page number
+  // V2.4.3 - Date filter (calendar click)
+  dateFilter: null,  // null or 'YYYY-MM-DD' string
   statistics: {
     totalWorkouts: 0,
     avgDuration: 0,
@@ -180,10 +185,10 @@ function renderAllModeUI() {
     insightsTab.parentElement.classList.add('d-none');
   }
 
-  // V2.4.0 - Hide calendar in All Mode
+  // V2.4.3 - Show calendar in All Mode (collapsible)
   const calendarCard = document.getElementById('historyCalendarCard');
   if (calendarCard) {
-    calendarCard.style.display = 'none';
+    calendarCard.style.display = 'block';
   }
 
   // Extract unique workout names for filter dropdown
@@ -333,12 +338,6 @@ function renderWorkoutInfo() {
     if (descEl) {
       descEl.textContent = 'View all your completed workouts';
     }
-    // Update back button to go to dashboard
-    const backBtn = document.querySelector('a[href="workout-database.html"]');
-    if (backBtn) {
-      backBtn.href = 'dashboard.html';
-      backBtn.innerHTML = '<i class="bx bx-arrow-back me-1"></i>Back to Dashboard';
-    }
     return;
   }
 
@@ -442,21 +441,89 @@ function initHistoryCalendar() {
 }
 
 /**
- * Handle calendar day click - scroll to that session or show info
+ * Handle calendar day click - filter sessions to show only that day
+ * V2.4.3 - Now filters instead of scrolling
  */
 function handleCalendarDayClick(dateKey, daySessions) {
-  if (daySessions.length === 0) {
-    return; // No sessions on this day
-  }
+  const isAllMode = window.ghostGym.workoutHistory.isAllMode;
 
-  // If there's one session, scroll to it
-  if (daySessions.length === 1) {
-    scrollToSession(daySessions[0].id);
+  // In All Mode, filter to show only that day's sessions
+  if (isAllMode) {
+    setDateFilter(dateKey);
     return;
   }
 
-  // Multiple sessions - scroll to the first one
+  // In Single Workout mode, scroll to session (original behavior)
+  if (daySessions.length === 0) {
+    return;
+  }
   scrollToSession(daySessions[0].id);
+}
+
+/**
+ * Set date filter and re-render sessions
+ * V2.4.3
+ * @param {string} dateKey - Date in 'YYYY-MM-DD' format
+ */
+function setDateFilter(dateKey) {
+  const state = window.ghostGym.workoutHistory;
+  state.dateFilter = dateKey;
+  state.currentPage = 1; // Reset pagination
+
+  // Update date filter indicator
+  updateDateFilterIndicator(dateKey);
+
+  // Collapse the calendar after selection
+  const calendarCollapse = document.getElementById('historyCalendarCollapse');
+  if (calendarCollapse) {
+    const bsCollapse = bootstrap.Collapse.getInstance(calendarCollapse);
+    if (bsCollapse) {
+      bsCollapse.hide();
+    }
+  }
+
+  // Re-render sessions
+  renderSessionHistory();
+}
+
+/**
+ * Clear date filter and show all sessions
+ * V2.4.3
+ */
+function clearDateFilter() {
+  const state = window.ghostGym.workoutHistory;
+  state.dateFilter = null;
+  state.currentPage = 1;
+
+  // Hide indicator
+  const indicator = document.getElementById('dateFilterIndicator');
+  if (indicator) {
+    indicator.style.display = 'none';
+  }
+
+  // Re-render sessions
+  renderSessionHistory();
+}
+
+/**
+ * Update the date filter indicator UI
+ * V2.4.3
+ * @param {string} dateKey - Date in 'YYYY-MM-DD' format
+ */
+function updateDateFilterIndicator(dateKey) {
+  const indicator = document.getElementById('dateFilterIndicator');
+  const label = document.getElementById('dateFilterLabel');
+
+  if (!indicator || !label) return;
+
+  // Format date nicely
+  const [year, month, day] = dateKey.split('-').map(Number);
+  const date = new Date(year, month - 1, day);
+  const options = { weekday: 'long', month: 'long', day: 'numeric' };
+  const formattedDate = date.toLocaleDateString('en-US', options);
+
+  label.textContent = formattedDate;
+  indicator.style.display = 'flex';
 }
 
 /**
@@ -560,8 +627,26 @@ function renderSessionHistory() {
     return;
   }
 
-  // Group sessions by time period
-  const groups = groupSessionsByTimePeriod(filteredSessions);
+  // V2.4.2 - Apply pagination (All Mode only)
+  const state = window.ghostGym.workoutHistory;
+  let paginatedSessions = filteredSessions;
+  let totalPages = 1;
+  const pageSize = state.pageSize;
+  const currentPage = state.currentPage;
+
+  if (isAllMode && pageSize !== 'all') {
+    const size = parseInt(pageSize);
+    totalPages = Math.ceil(filteredSessions.length / size);
+    // Clamp current page to valid range
+    if (currentPage > totalPages) {
+      state.currentPage = totalPages;
+    }
+    const startIndex = (state.currentPage - 1) * size;
+    paginatedSessions = filteredSessions.slice(startIndex, startIndex + size);
+  }
+
+  // Group sessions by time period (use paginated sessions)
+  const groups = groupSessionsByTimePeriod(paginatedSessions);
 
   // Render each time period as separate card group
   if (groups.thisWeek.length > 0) {
@@ -587,17 +672,23 @@ function renderSessionHistory() {
     html += renderSessionGroup(monthKey, groups.byMonth[monthKey]);
   });
 
+  // V2.4.2 - Add pagination controls at the bottom (All Mode only)
+  if (isAllMode && pageSize !== 'all' && totalPages > 1) {
+    html += renderPaginationControls(state.currentPage, totalPages, filteredSessions.length);
+  }
+
   container.innerHTML = html;
 }
 
 /**
  * Render session filter bar (All Mode only)
- * V2.4.0 - Simplified: workout dropdown + sort only
+ * V2.4.2 - Added page size selector
  */
 function renderSessionFilterBar() {
   const state = window.ghostGym.workoutHistory;
   const activeWorkout = state.workoutTypeFilter;
   const activeSort = state.sessionSort;
+  const activePageSize = state.pageSize;
   const uniqueWorkouts = state.uniqueWorkouts;
 
   // Sort label mapping
@@ -629,24 +720,51 @@ function renderSessionFilterBar() {
                 onclick="cycleSessionSort()">
           <i class="bx bx-sort-alt-2 me-1"></i>${sortLabels[activeSort]}
         </button>
+
+        <!-- Page Size Selector -->
+        <select class="form-select form-select-sm session-pagesize-select"
+                onchange="setPageSize(this.value)">
+          <option value="10" ${activePageSize == 10 ? 'selected' : ''}>10 per page</option>
+          <option value="20" ${activePageSize == 20 ? 'selected' : ''}>20 per page</option>
+          <option value="50" ${activePageSize == 50 ? 'selected' : ''}>50 per page</option>
+          <option value="all" ${activePageSize === 'all' ? 'selected' : ''}>All</option>
+        </select>
       </div>
     </div>
   `;
 }
 
 /**
- * Apply session filters (workout type only)
- * V2.4.0 - Simplified
+ * Apply session filters (workout type and date)
+ * V2.4.3 - Added date filter support
  */
 function applySessionFilters(sessions) {
-  const workoutFilter = window.ghostGym.workoutHistory.workoutTypeFilter;
+  const state = window.ghostGym.workoutHistory;
+  const workoutFilter = state.workoutTypeFilter;
+  const dateFilter = state.dateFilter;
 
-  if (workoutFilter === 'all') return sessions;
+  let filtered = sessions;
 
-  return sessions.filter(session => {
-    const workoutName = session.workout_name || 'Unknown Workout';
-    return workoutName === workoutFilter;
-  });
+  // Filter by workout type
+  if (workoutFilter !== 'all') {
+    filtered = filtered.filter(session => {
+      const workoutName = session.workout_name || 'Unknown Workout';
+      return workoutName === workoutFilter;
+    });
+  }
+
+  // V2.4.3 - Filter by date
+  if (dateFilter) {
+    filtered = filtered.filter(session => {
+      const dateStr = session.completed_at || session.started_at;
+      if (!dateStr) return false;
+      const date = new Date(dateStr);
+      const sessionDateKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+      return sessionDateKey === dateFilter;
+    });
+  }
+
+  return filtered;
 }
 
 /**
@@ -677,16 +795,17 @@ function sortSessions(sessions) {
 
 /**
  * Set workout type filter and re-render
- * V2.4.0
+ * V2.4.2 - Also resets page to 1
  */
 function setWorkoutTypeFilter(workoutName) {
   window.ghostGym.workoutHistory.workoutTypeFilter = workoutName;
+  window.ghostGym.workoutHistory.currentPage = 1; // Reset page
   renderSessionHistory();
 }
 
 /**
  * Cycle through session sort options
- * V2.4.0 - Simplified: Newest/Oldest only
+ * V2.4.2 - Also resets page to 1
  */
 function cycleSessionSort() {
   const sortOrder = ['date-desc', 'date-asc'];
@@ -695,18 +814,119 @@ function cycleSessionSort() {
   const nextIndex = (currentIndex + 1) % sortOrder.length;
 
   window.ghostGym.workoutHistory.sessionSort = sortOrder[nextIndex];
+  window.ghostGym.workoutHistory.currentPage = 1; // Reset page
   renderSessionHistory();
 }
 
 /**
  * Reset all session filters to defaults
- * V2.4.0
+ * V2.4.3 - Also resets date filter
  */
 function resetSessionFilters() {
   window.ghostGym.workoutHistory.sessionFilter = 'all';
   window.ghostGym.workoutHistory.workoutTypeFilter = 'all';
   window.ghostGym.workoutHistory.sessionSort = 'date-desc';
+  window.ghostGym.workoutHistory.currentPage = 1;
+  window.ghostGym.workoutHistory.pageSize = 20;
+  window.ghostGym.workoutHistory.dateFilter = null;
+
+  // Hide date filter indicator
+  const indicator = document.getElementById('dateFilterIndicator');
+  if (indicator) {
+    indicator.style.display = 'none';
+  }
+
   renderSessionHistory();
+}
+
+/**
+ * Set page size and re-render
+ * V2.4.2
+ */
+function setPageSize(size) {
+  window.ghostGym.workoutHistory.pageSize = size;
+  window.ghostGym.workoutHistory.currentPage = 1; // Reset to page 1
+  renderSessionHistory();
+}
+
+/**
+ * Navigate to a specific page
+ * V2.4.2
+ */
+function goToPage(page) {
+  const state = window.ghostGym.workoutHistory;
+
+  if (state.pageSize === 'all') return;
+
+  const pageSize = parseInt(state.pageSize);
+  const filteredSessions = applySessionFilters(state.sessions);
+  const sortedSessions = sortSessions(filteredSessions);
+  const totalPages = Math.ceil(sortedSessions.length / pageSize);
+
+  if (page < 1 || page > totalPages) return;
+
+  state.currentPage = page;
+  renderSessionHistory();
+
+  // Scroll to top of session list
+  document.getElementById('sessionHistoryContainer')?.scrollIntoView({ behavior: 'smooth' });
+}
+
+/**
+ * Render pagination controls
+ * V2.4.2
+ */
+function renderPaginationControls(currentPage, totalPages, totalItems) {
+  const state = window.ghostGym.workoutHistory;
+  const pageSize = parseInt(state.pageSize);
+  const start = (currentPage - 1) * pageSize + 1;
+  const end = Math.min(currentPage * pageSize, totalItems);
+
+  // Build page numbers (show max 5 pages with ellipsis)
+  let pageNumbers = '';
+  const maxVisible = 5;
+  let startPage = Math.max(1, currentPage - 2);
+  let endPage = Math.min(totalPages, startPage + maxVisible - 1);
+
+  if (endPage - startPage < maxVisible - 1) {
+    startPage = Math.max(1, endPage - maxVisible + 1);
+  }
+
+  if (startPage > 1) {
+    pageNumbers += `<button class="pagination-btn" onclick="goToPage(1)">1</button>`;
+    if (startPage > 2) pageNumbers += `<span class="pagination-ellipsis">...</span>`;
+  }
+
+  for (let i = startPage; i <= endPage; i++) {
+    pageNumbers += `<button class="pagination-btn ${i === currentPage ? 'active' : ''}"
+                            onclick="goToPage(${i})">${i}</button>`;
+  }
+
+  if (endPage < totalPages) {
+    if (endPage < totalPages - 1) pageNumbers += `<span class="pagination-ellipsis">...</span>`;
+    pageNumbers += `<button class="pagination-btn" onclick="goToPage(${totalPages})">${totalPages}</button>`;
+  }
+
+  return `
+    <div class="session-pagination">
+      <div class="pagination-info">
+        Showing ${start}-${end} of ${totalItems}
+      </div>
+      <div class="pagination-controls">
+        <button class="pagination-btn pagination-prev"
+                onclick="goToPage(${currentPage - 1})"
+                ${currentPage === 1 ? 'disabled' : ''}>
+          <i class="bx bx-chevron-left"></i>
+        </button>
+        ${pageNumbers}
+        <button class="pagination-btn pagination-next"
+                onclick="goToPage(${currentPage + 1})"
+                ${currentPage === totalPages ? 'disabled' : ''}>
+          <i class="bx bx-chevron-right"></i>
+        </button>
+      </div>
+    </div>
+  `;
 }
 
 /**
@@ -744,6 +964,9 @@ function createSessionEntry(session) {
     ? `<span class="session-workout-name">${escapeHtml(session.workout_name || 'Workout')}</span>`
     : '';
 
+  // Escape workout name for use in onclick attribute
+  const escapedWorkoutName = (session.workout_name || 'Workout').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+
   return `
     <div class="session-entry" id="session-entry-${session.id}"
          data-bs-toggle="collapse"
@@ -755,6 +978,23 @@ function createSessionEntry(session) {
         ${workoutNameHtml}
         <span class="session-date">${dateStr}</span>
         <span class="session-meta">${duration}${hasNotes ? ' • <i class="bx bx-note"></i>' : ''}</span>
+      </div>
+      <div class="dropdown session-menu" onclick="event.stopPropagation();">
+        <button class="btn btn-sm btn-icon session-menu-btn"
+                type="button"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+                title="Session options">
+          <i class="bx bx-dots-vertical-rounded"></i>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end">
+          <li>
+            <a class="dropdown-item text-danger" href="javascript:void(0);"
+               onclick="deleteSession('${session.id}', '${escapedWorkoutName}');">
+              <i class="bx bx-trash me-2"></i>Delete
+            </a>
+          </li>
+        </ul>
       </div>
       <i class="bx bx-chevron-down session-chevron"></i>
     </div>
@@ -1422,6 +1662,58 @@ function showEmptyState() {
   document.getElementById('historyContent').style.display = 'none';
 }
 
+/**
+ * Delete a workout session
+ * V2.4.1 - Added session deletion
+ * @param {string} sessionId - Session ID to delete
+ * @param {string} workoutName - Workout name for confirmation message
+ */
+async function deleteSession(sessionId, workoutName) {
+  // Confirmation
+  const confirmed = confirm(`Delete this ${workoutName} session? This cannot be undone.`);
+  if (!confirmed) return;
+
+  try {
+    // Check authentication
+    if (!window.dataManager || !window.dataManager.isUserAuthenticated()) {
+      throw new Error('Authentication required');
+    }
+
+    const token = await window.dataManager.getAuthToken();
+    const response = await fetch(`/api/v3/workout-sessions/${sessionId}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.detail || 'Failed to delete session');
+    }
+
+    // Remove from local state
+    window.ghostGym.workoutHistory.sessions =
+      window.ghostGym.workoutHistory.sessions.filter(s => s.id !== sessionId);
+
+    // Re-render
+    renderSessionHistory();
+    calculateStatistics();
+    renderStatistics();
+
+    // Update calendar if visible
+    if (window.ghostGym.workoutHistory.calendarView) {
+      window.ghostGym.workoutHistory.calendarView.setSessionData(
+        window.ghostGym.workoutHistory.sessions
+      );
+    }
+
+    console.log('✅ Session deleted:', sessionId);
+
+  } catch (error) {
+    console.error('❌ Error deleting session:', error);
+    alert('Failed to delete session. Please try again.');
+  }
+}
+
 // Export functions
 window.initWorkoutHistory = initWorkoutHistory;
 window.loadWorkoutHistory = loadWorkoutHistory;
@@ -1433,5 +1725,13 @@ window.cycleExerciseSort = cycleExerciseSort;
 window.setWorkoutTypeFilter = setWorkoutTypeFilter;
 window.cycleSessionSort = cycleSessionSort;
 window.resetSessionFilters = resetSessionFilters;
+// V2.4.1 - Session delete
+window.deleteSession = deleteSession;
+// V2.4.2 - Pagination
+window.setPageSize = setPageSize;
+window.goToPage = goToPage;
+// V2.4.3 - Calendar date filter
+window.setDateFilter = setDateFilter;
+window.clearDateFilter = clearDateFilter;
 
-console.log('📦 Workout History module loaded (v2.4.0 - Session filters)');
+console.log('📦 Workout History module loaded (v2.4.3 - Calendar Filter)');

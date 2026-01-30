@@ -42,13 +42,14 @@ function getMenuHTML(activePage = 'home') {
                 </a>
             </li>
 
-            <!-- Log (was Dashboard) -->
+            <!-- Log - Hidden for now
             <li class="menu-item ${activePage === 'dashboard' ? 'active' : ''}">
                 <a href="dashboard.html" class="menu-link">
                     <i class="menu-icon tf-icons bx bx-calendar"></i>
                     <div class="text-truncate">Log</div>
                 </a>
             </li>
+            -->
 
             <!-- Library (was Workout Database) -->
             <li class="menu-item ${activePage === 'workout-database' ? 'active' : ''}">
