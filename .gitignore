@@ -71,8 +71,9 @@ firebase-adminsdk-*.json
 serviceAccountKey.json
 *.temp
 
-# Node
+# Node (package.json confuses Nixpacks into Node.js build)
 node_modules/
+package.json
 package-lock.json
 
 # Windows reserved names
