@@ -185,12 +185,6 @@ function renderAllModeUI() {
     insightsTab.parentElement.classList.add('d-none');
   }
 
-  // V2.4.3 - Show calendar in All Mode (collapsible)
-  const calendarCard = document.getElementById('historyCalendarCard');
-  if (calendarCard) {
-    calendarCard.style.display = 'block';
-  }
-
   // Extract unique workout names for filter dropdown
   extractUniqueWorkouts();
 
@@ -600,10 +594,8 @@ function renderSessionHistory() {
 
   let html = '';
 
-  // V2.4.0 - Add filter bar in All Mode
-  if (isAllMode) {
-    html += renderSessionFilterBar();
-  }
+  // V2.4.4 - Render toolbar (full in All Mode, simple in single workout mode)
+  html += renderSessionFilterBar();
 
   // Apply filters and sort (only in All Mode)
   let filteredSessions = sessions;
@@ -681,15 +673,16 @@ function renderSessionHistory() {
 }
 
 /**
- * Render session filter bar (All Mode only)
- * V2.4.2 - Added page size selector
+ * Render session toolbar
+ * V2.4.4 - Unified toolbar (full controls in All Mode, simple in single workout mode)
  */
 function renderSessionFilterBar() {
   const state = window.ghostGym.workoutHistory;
+  const isAllMode = state.isAllMode;
   const activeWorkout = state.workoutTypeFilter;
   const activeSort = state.sessionSort;
   const activePageSize = state.pageSize;
-  const uniqueWorkouts = state.uniqueWorkouts;
+  const uniqueWorkouts = state.uniqueWorkouts || [];
 
   // Sort label mapping
   const sortLabels = {
@@ -697,18 +690,33 @@ function renderSessionFilterBar() {
     'date-asc': 'Oldest'
   };
 
-  // Build workout dropdown options
+  // Build workout dropdown options (All Mode only)
   const workoutOptions = uniqueWorkouts.map(w =>
     `<option value="${escapeHtml(w.name)}" ${activeWorkout === w.name ? 'selected' : ''}>
       ${escapeHtml(w.name)} (${w.count})
     </option>`
   ).join('');
 
-  return `
-    <div class="session-filter-bar mb-3">
-      <div class="d-flex flex-wrap align-items-center gap-2">
+  // Calendar toggle (both modes)
+  const calendarBtn = `
+    <button class="btn btn-sm btn-outline-secondary session-toolbar-btn"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#historyCalendarCollapse"
+            aria-expanded="false"
+            aria-controls="historyCalendarCollapse">
+      <i class="bx bx-calendar"></i>
+      <span class="d-none d-sm-inline ms-1">Calendar</span>
+    </button>`;
+
+  // All Mode: full toolbar
+  if (isAllMode) {
+    return `
+      <div class="session-toolbar mb-3">
+        ${calendarBtn}
+
         <!-- Workout Type Dropdown -->
-        <select class="form-select form-select-sm session-workout-select"
+        <select class="form-select form-select-sm session-toolbar-select"
                 id="workoutTypeFilter"
                 onchange="setWorkoutTypeFilter(this.value)">
           <option value="all" ${activeWorkout === 'all' ? 'selected' : ''}>All Workouts</option>
@@ -716,20 +724,28 @@ function renderSessionFilterBar() {
         </select>
 
         <!-- Sort Cycle Button -->
-        <button class="btn btn-sm btn-outline-secondary session-sort-btn"
+        <button class="btn btn-sm btn-outline-secondary session-toolbar-btn"
                 onclick="cycleSessionSort()">
-          <i class="bx bx-sort-alt-2 me-1"></i>${sortLabels[activeSort]}
+          <i class="bx bx-sort-alt-2"></i>
+          <span class="d-none d-sm-inline ms-1">${sortLabels[activeSort]}</span>
         </button>
 
         <!-- Page Size Selector -->
-        <select class="form-select form-select-sm session-pagesize-select"
+        <select class="form-select form-select-sm session-toolbar-select"
                 onchange="setPageSize(this.value)">
-          <option value="10" ${activePageSize == 10 ? 'selected' : ''}>10 per page</option>
-          <option value="20" ${activePageSize == 20 ? 'selected' : ''}>20 per page</option>
-          <option value="50" ${activePageSize == 50 ? 'selected' : ''}>50 per page</option>
+          <option value="10" ${activePageSize == 10 ? 'selected' : ''}>10</option>
+          <option value="20" ${activePageSize == 20 ? 'selected' : ''}>20</option>
+          <option value="50" ${activePageSize == 50 ? 'selected' : ''}>50</option>
           <option value="all" ${activePageSize === 'all' ? 'selected' : ''}>All</option>
         </select>
       </div>
+    `;
+  }
+
+  // Single workout mode: just calendar toggle
+  return `
+    <div class="session-toolbar mb-3">
+      ${calendarBtn}
     </div>
   `;
 }
