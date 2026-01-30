@@ -31,7 +31,14 @@
       "Bash(git clean:*)",
       "Bash(cmd.exe /c \"del /f /q \"\"\\\\?\\\\c:\\\\Users\\\\user\\\\iCloudDrive\\\\PARA\\\\1 - Projects\\\\_Websites\\\\simple gym log\\\\simplegym_v2\\\\nul\"\"\")",
       "Bash(npx playwright:*)",
-      "Bash(node test-quicklog.js:*)"
+      "Bash(node test-quicklog.js:*)",
+      "Bash(claude mcp:*)",
+      "Bash(npm install:*)",
+      "Bash(node:*)",
+      "mcp__playwright__browser_navigate",
+      "mcp__playwright__browser_wait_for",
+      "mcp__playwright__browser_snapshot",
+      "mcp__playwright__browser_close"
     ]
   }
 }

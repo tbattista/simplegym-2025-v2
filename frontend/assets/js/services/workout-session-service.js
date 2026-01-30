@@ -128,17 +128,21 @@ class WorkoutSessionService {
      */
     _initializeExercisesFromTemplate(workout) {
         const exercises = {};
-        
+
         // Initialize regular exercise groups
         if (workout.exercise_groups) {
             workout.exercise_groups.forEach((group, index) => {
                 const exerciseName = group.exercises?.a;
                 if (exerciseName) {
+                    const templateWeight = group.default_weight || null;
+                    const templateSets = group.sets || '3';
+                    const templateReps = group.reps || '8-12';
+
                     exercises[exerciseName] = {
-                        weight: group.default_weight || null,
+                        weight: templateWeight,
                         weight_unit: group.default_weight_unit || 'lbs',
-                        target_sets: group.sets || '3',
-                        target_reps: group.reps || '8-12',
+                        target_sets: templateSets,
+                        target_reps: templateReps,
                         rest: group.rest || '60s',
                         previous_weight: null,
                         weight_change: 0,
@@ -146,21 +150,29 @@ class WorkoutSessionService {
                         is_bonus: false,
                         is_modified: false,  // Track if user changes it
                         is_skipped: false,   // For Phase 2
-                        notes: ''
+                        notes: '',
+                        // Store original template values for modification tracking
+                        original_weight: templateWeight,
+                        original_sets: templateSets,
+                        original_reps: templateReps
                     };
                 }
             });
         }
-        
+
         // Initialize bonus exercises from template
         if (workout.bonus_exercises) {
             const baseIndex = workout.exercise_groups?.length || 0;
             workout.bonus_exercises.forEach((bonus, index) => {
+                const templateWeight = bonus.default_weight || null;
+                const templateSets = bonus.sets || '3';
+                const templateReps = bonus.reps || '12';
+
                 exercises[bonus.name] = {
-                    weight: bonus.default_weight || null,
+                    weight: templateWeight,
                     weight_unit: bonus.default_weight_unit || 'lbs',
-                    target_sets: bonus.sets || '3',
-                    target_reps: bonus.reps || '12',
+                    target_sets: templateSets,
+                    target_reps: templateReps,
                     rest: bonus.rest || '30s',
                     previous_weight: null,
                     weight_change: 0,
@@ -168,11 +180,15 @@ class WorkoutSessionService {
                     is_bonus: true,
                     is_modified: false,
                     is_skipped: false,
-                    notes: ''
+                    notes: '',
+                    // Store original template values for modification tracking
+                    original_weight: templateWeight,
+                    original_sets: templateSets,
+                    original_reps: templateReps
                 };
             });
         }
-        
+
         return exercises;
     }
     

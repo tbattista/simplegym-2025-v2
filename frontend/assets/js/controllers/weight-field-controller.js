@@ -433,12 +433,24 @@ class WeightFieldController {
             }
         }
         
+        // Update collapsed header weight display (fixes bug where header showed old values after in-card edit)
+        const card = this.container.closest('.workout-card');
+        if (card) {
+            const headerWeightDisplay = card.querySelector('.workout-state-row .workout-state-item.highlight');
+            if (headerWeightDisplay) {
+                // Get the display value from the DOM element we just updated
+                const headerDisplayValue = this.valueDisplay.textContent;
+                const headerUnitDisplay = this.currentUnit !== 'other' && this.currentUnit !== 'diy' ? ` ${this.currentUnit}` : '';
+                headerWeightDisplay.textContent = `Today: ${headerDisplayValue}${headerUnitDisplay}`;
+            }
+        }
+
         // Trigger save animation (green flash)
         this.displayEl.classList.add('saved');
         setTimeout(() => {
             this.displayEl.classList.remove('saved');
         }, 600);
-        
+
         // Dispatch custom event for external listeners
         this.container.dispatchEvent(new CustomEvent('weightChanged', {
             bubbles: true,

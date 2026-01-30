@@ -17,6 +17,11 @@ window.ghostGym.workoutHistory = {
   calendarView: null,
   exerciseFilter: 'all', // 'all', 'low', 'mid', 'high' (dynamic)
   exerciseSort: 'count-desc', // 'name', 'count-asc', 'count-desc'
+  // V2.4.0 - Session filters for All Mode
+  sessionFilter: 'all', // 'all', 'completed', 'partial', 'abandoned'
+  workoutTypeFilter: 'all', // 'all' or specific workout_name
+  sessionSort: 'date-desc', // 'date-desc', 'date-asc', 'duration-desc', 'duration-asc'
+  uniqueWorkouts: [], // Unique workout names for dropdown
   statistics: {
     totalWorkouts: 0,
     avgDuration: 0,
@@ -175,9 +180,43 @@ function renderAllModeUI() {
     insightsTab.parentElement.classList.add('d-none');
   }
 
+  // V2.4.0 - Hide calendar in All Mode
+  const calendarCard = document.getElementById('historyCalendarCard');
+  if (calendarCard) {
+    calendarCard.style.display = 'none';
+  }
+
+  // Extract unique workout names for filter dropdown
+  extractUniqueWorkouts();
+
   renderWorkoutInfo();
   renderStatistics();
   renderSessionHistory();
+}
+
+/**
+ * Extract unique workout names from sessions
+ * V2.4.0
+ */
+function extractUniqueWorkouts() {
+  const sessions = window.ghostGym.workoutHistory.sessions;
+  const workoutMap = new Map();
+
+  sessions.forEach(session => {
+    const name = session.workout_name || 'Unknown Workout';
+    if (!workoutMap.has(name)) {
+      workoutMap.set(name, {
+        name: name,
+        count: 1
+      });
+    } else {
+      workoutMap.get(name).count++;
+    }
+  });
+
+  // Sort by count (most frequent first)
+  window.ghostGym.workoutHistory.uniqueWorkouts = Array.from(workoutMap.values())
+    .sort((a, b) => b.count - a.count);
 }
 
 /**
@@ -475,10 +514,12 @@ function scrollToSession(sessionId) {
 
 /**
  * Render session history with time-based grouping
+ * V2.4.0 - Added filter bar and filter/sort support for All Mode
  */
 function renderSessionHistory() {
   const sessions = window.ghostGym.workoutHistory.sessions;
   const container = document.getElementById('sessionHistoryContainer');
+  const isAllMode = window.ghostGym.workoutHistory.isAllMode;
 
   if (sessions.length === 0) {
     container.innerHTML = `
@@ -490,10 +531,37 @@ function renderSessionHistory() {
     return;
   }
 
-  // Group sessions by time period
-  const groups = groupSessionsByTimePeriod(sessions);
-
   let html = '';
+
+  // V2.4.0 - Add filter bar in All Mode
+  if (isAllMode) {
+    html += renderSessionFilterBar();
+  }
+
+  // Apply filters and sort (only in All Mode)
+  let filteredSessions = sessions;
+  if (isAllMode) {
+    filteredSessions = applySessionFilters(sessions);
+    filteredSessions = sortSessions(filteredSessions);
+  }
+
+  // Check if filters resulted in empty list
+  if (filteredSessions.length === 0) {
+    html += `
+      <div class="text-center py-4">
+        <i class="bx bx-filter-alt display-4 text-muted"></i>
+        <p class="mt-3 text-muted">No sessions match your filters</p>
+        <button class="btn btn-sm btn-outline-secondary mt-2" onclick="resetSessionFilters()">
+          Clear Filters
+        </button>
+      </div>
+    `;
+    container.innerHTML = html;
+    return;
+  }
+
+  // Group sessions by time period
+  const groups = groupSessionsByTimePeriod(filteredSessions);
 
   // Render each time period as separate card group
   if (groups.thisWeek.length > 0) {
@@ -523,6 +591,125 @@ function renderSessionHistory() {
 }
 
 /**
+ * Render session filter bar (All Mode only)
+ * V2.4.0 - Simplified: workout dropdown + sort only
+ */
+function renderSessionFilterBar() {
+  const state = window.ghostGym.workoutHistory;
+  const activeWorkout = state.workoutTypeFilter;
+  const activeSort = state.sessionSort;
+  const uniqueWorkouts = state.uniqueWorkouts;
+
+  // Sort label mapping
+  const sortLabels = {
+    'date-desc': 'Newest',
+    'date-asc': 'Oldest'
+  };
+
+  // Build workout dropdown options
+  const workoutOptions = uniqueWorkouts.map(w =>
+    `<option value="${escapeHtml(w.name)}" ${activeWorkout === w.name ? 'selected' : ''}>
+      ${escapeHtml(w.name)} (${w.count})
+    </option>`
+  ).join('');
+
+  return `
+    <div class="session-filter-bar mb-3">
+      <div class="d-flex flex-wrap align-items-center gap-2">
+        <!-- Workout Type Dropdown -->
+        <select class="form-select form-select-sm session-workout-select"
+                id="workoutTypeFilter"
+                onchange="setWorkoutTypeFilter(this.value)">
+          <option value="all" ${activeWorkout === 'all' ? 'selected' : ''}>All Workouts</option>
+          ${workoutOptions}
+        </select>
+
+        <!-- Sort Cycle Button -->
+        <button class="btn btn-sm btn-outline-secondary session-sort-btn"
+                onclick="cycleSessionSort()">
+          <i class="bx bx-sort-alt-2 me-1"></i>${sortLabels[activeSort]}
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+/**
+ * Apply session filters (workout type only)
+ * V2.4.0 - Simplified
+ */
+function applySessionFilters(sessions) {
+  const workoutFilter = window.ghostGym.workoutHistory.workoutTypeFilter;
+
+  if (workoutFilter === 'all') return sessions;
+
+  return sessions.filter(session => {
+    const workoutName = session.workout_name || 'Unknown Workout';
+    return workoutName === workoutFilter;
+  });
+}
+
+/**
+ * Sort sessions by current sort mode
+ * V2.4.0
+ */
+function sortSessions(sessions) {
+  const sortMode = window.ghostGym.workoutHistory.sessionSort;
+  const sorted = [...sessions];
+
+  switch (sortMode) {
+    case 'date-desc':
+      sorted.sort((a, b) => new Date(b.completed_at || b.started_at) - new Date(a.completed_at || a.started_at));
+      break;
+    case 'date-asc':
+      sorted.sort((a, b) => new Date(a.completed_at || a.started_at) - new Date(b.completed_at || b.started_at));
+      break;
+    case 'duration-desc':
+      sorted.sort((a, b) => (b.duration_minutes || 0) - (a.duration_minutes || 0));
+      break;
+    case 'duration-asc':
+      sorted.sort((a, b) => (a.duration_minutes || 0) - (b.duration_minutes || 0));
+      break;
+  }
+
+  return sorted;
+}
+
+/**
+ * Set workout type filter and re-render
+ * V2.4.0
+ */
+function setWorkoutTypeFilter(workoutName) {
+  window.ghostGym.workoutHistory.workoutTypeFilter = workoutName;
+  renderSessionHistory();
+}
+
+/**
+ * Cycle through session sort options
+ * V2.4.0 - Simplified: Newest/Oldest only
+ */
+function cycleSessionSort() {
+  const sortOrder = ['date-desc', 'date-asc'];
+  const currentSort = window.ghostGym.workoutHistory.sessionSort;
+  const currentIndex = sortOrder.indexOf(currentSort);
+  const nextIndex = (currentIndex + 1) % sortOrder.length;
+
+  window.ghostGym.workoutHistory.sessionSort = sortOrder[nextIndex];
+  renderSessionHistory();
+}
+
+/**
+ * Reset all session filters to defaults
+ * V2.4.0
+ */
+function resetSessionFilters() {
+  window.ghostGym.workoutHistory.sessionFilter = 'all';
+  window.ghostGym.workoutHistory.workoutTypeFilter = 'all';
+  window.ghostGym.workoutHistory.sessionSort = 'date-desc';
+  renderSessionHistory();
+}
+
+/**
  * Render a group of sessions with header outside the card
  */
 function renderSessionGroup(title, sessions) {
@@ -540,6 +727,7 @@ function renderSessionGroup(title, sessions) {
  * Create a compact session entry (new design)
  * In All Mode: shows workout name as primary
  * In Single Workout Mode: date is primary (workout name is already in page context)
+ * V2.4.1 - Removed status icon (redundant in history view)
  */
 function createSessionEntry(session) {
   const collapseId = `session-${session.id}`;
@@ -547,25 +735,6 @@ function createSessionEntry(session) {
   const isAllMode = window.ghostGym.workoutHistory.isAllMode;
   const dateStr = formatDate(session.completed_at, { short: true });
   const duration = formatDuration(session.duration_minutes);
-
-  // Determine status
-  const exercises = session.exercises_performed || [];
-  const skippedCount = exercises.filter(e => e.is_skipped).length;
-  const completedCount = exercises.filter(e => !e.is_skipped).length;
-
-  let statusClass = 'completed';
-  let statusLabel = '✓';
-  let statusTitle = 'Completed';
-
-  if (session.status === 'abandoned') {
-    statusClass = 'abandoned';
-    statusLabel = '✗';
-    statusTitle = 'Abandoned';
-  } else if (exercises.length > 0 && skippedCount > exercises.length / 2) {
-    statusClass = 'partial';
-    statusLabel = '~';
-    statusTitle = `Partial (${completedCount}/${exercises.length})`;
-  }
 
   // Check for notes
   const hasNotes = session.notes || (session.session_notes && session.session_notes.length > 0);
@@ -582,9 +751,6 @@ function createSessionEntry(session) {
          role="button"
          aria-expanded="${isExpanded}"
          aria-controls="${collapseId}">
-      <div class="session-status" title="${statusTitle}">
-        <span class="session-status-icon ${statusClass}">${statusLabel}</span>
-      </div>
       <div class="session-info">
         ${workoutNameHtml}
         <span class="session-date">${dateStr}</span>
@@ -636,13 +802,14 @@ function renderSessionDetails(session) {
 
 /**
  * Render a single exercise row with progression indicators (Phase 3)
+ * V2.4.1 - Shows strikethrough for modified values
  * @private
  */
 function renderExerciseRow(ex) {
     // Determine status badge
     let statusBadge = '';
     let rowClass = '';
-    
+
     if (ex.is_skipped) {
         statusBadge = '<span class="badge bg-warning">Skipped</span>';
         rowClass = 'text-muted';
@@ -653,11 +820,11 @@ function renderExerciseRow(ex) {
     } else {
         statusBadge = '<span class="badge bg-secondary">Default</span>';
     }
-    
+
     // PHASE 3: Determine weight change indicator
     let changeIndicator = '—';
     let changeIcon = '';
-    
+
     if (ex.is_skipped) {
         changeIndicator = '—';
     } else if (ex.weight_change !== undefined && ex.weight_change !== null) {
@@ -684,19 +851,52 @@ function renderExerciseRow(ex) {
             ${changeIcon} New
         </span>`;
     }
-    
+
+    // V2.4.1 - Build weight display with strikethrough for modified values
+    let weightDisplay = '—';
+    if (!ex.is_skipped) {
+        const weightChanged = ex.is_modified && ex.original_weight !== undefined &&
+                              ex.original_weight !== null && String(ex.original_weight) !== String(ex.weight);
+        if (weightChanged) {
+            weightDisplay = `<span class="exercise-original-value">${ex.original_weight}</span>${ex.weight || '—'} ${ex.weight_unit || ''}`;
+        } else {
+            weightDisplay = `${ex.weight || '—'} ${ex.weight_unit || ''}`;
+        }
+    }
+
+    // V2.4.1 - Build sets/reps display with strikethrough for modified values
+    let setsRepsDisplay = '—';
+    if (!ex.is_skipped) {
+        const setsChanged = ex.is_modified && ex.original_sets !== undefined &&
+                            ex.original_sets !== null && String(ex.original_sets) !== String(ex.target_sets);
+        const repsChanged = ex.is_modified && ex.original_reps !== undefined &&
+                            ex.original_reps !== null && String(ex.original_reps) !== String(ex.target_reps);
+
+        let setsStr = '';
+        if (setsChanged) {
+            setsStr = `<span class="exercise-original-value">${ex.original_sets}</span>${ex.target_sets}`;
+        } else {
+            setsStr = ex.target_sets || '—';
+        }
+
+        let repsStr = '';
+        if (repsChanged) {
+            repsStr = `<span class="exercise-original-value">${ex.original_reps}</span>${ex.target_reps}`;
+        } else {
+            repsStr = ex.target_reps || '—';
+        }
+
+        setsRepsDisplay = `${setsStr} × ${repsStr}`;
+    }
+
     return `
         <tr class="${rowClass}">
             <td>
                 ${ex.is_skipped ? '<i class="bx bx-x-circle text-warning me-1"></i>' : ''}
                 ${escapeHtml(ex.exercise_name)}
             </td>
-            <td>
-                ${ex.is_skipped ? '—' : `${ex.weight || '—'} ${ex.weight_unit || ''}`}
-            </td>
-            <td>
-                ${ex.is_skipped ? '—' : `${ex.target_sets} × ${ex.target_reps}`}
-            </td>
+            <td>${weightDisplay}</td>
+            <td>${setsRepsDisplay}</td>
             <td>${changeIndicator}</td>
             <td>${statusBadge}</td>
         </tr>
@@ -1229,5 +1429,9 @@ window.loadAllSessions = loadAllSessions;
 window.scrollToSession = scrollToSession;
 window.setExerciseFilter = setExerciseFilter;
 window.cycleExerciseSort = cycleExerciseSort;
+// V2.4.0 - Session filter/sort exports
+window.setWorkoutTypeFilter = setWorkoutTypeFilter;
+window.cycleSessionSort = cycleSessionSort;
+window.resetSessionFilters = resetSessionFilters;
 
-console.log('📦 Workout History module loaded (v2.3.0 - All Sessions mode)');
+console.log('📦 Workout History module loaded (v2.4.0 - Session filters)');

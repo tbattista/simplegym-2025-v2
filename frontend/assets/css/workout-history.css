@@ -1096,3 +1096,110 @@
     opacity: 1 !important;
   }
 }
+
+/* ============================================
+   V2.4.0 - SESSION FILTER BAR (All Mode)
+   Simplified: workout dropdown + sort button
+   ============================================ */
+
+.session-filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+/* Workout Type Dropdown */
+.session-workout-select {
+  width: auto;
+  min-width: 140px;
+  max-width: 200px;
+  font-size: 0.8125rem;
+  padding: 0.375rem 0.75rem;
+}
+
+/* Sort Button */
+.session-sort-btn {
+  font-size: 0.8125rem;
+  padding: 0.375rem 0.75rem;
+  white-space: nowrap;
+}
+
+.session-sort-btn i {
+  font-size: 0.875rem;
+}
+
+/* ============================================
+   V2.4.0 - SESSION FILTER BAR RESPONSIVE
+   ============================================ */
+
+@media (max-width: 767.98px) {
+  .session-filter-bar {
+    gap: 0.5rem;
+  }
+
+  .session-workout-select {
+    flex: 1;
+    min-width: 0;
+    max-width: none;
+  }
+
+  .session-sort-btn {
+    flex-shrink: 0;
+  }
+}
+
+/* ============================================
+   V2.4.0 - SESSION FILTER BAR DARK MODE
+   ============================================ */
+
+[data-bs-theme="dark"] .session-workout-select {
+  background-color: var(--bs-gray-900);
+  border-color: var(--bs-gray-600);
+  color: var(--bs-gray-200);
+}
+
+[data-bs-theme="dark"] .session-sort-btn {
+  border-color: var(--bs-gray-600);
+  color: var(--bs-gray-300);
+}
+
+[data-bs-theme="dark"] .session-sort-btn:hover {
+  background-color: var(--bs-gray-700);
+  border-color: var(--bs-gray-500);
+}
+
+/* ============================================
+   V2.4.0 - SESSION FILTER BAR PRINT
+   ============================================ */
+
+@media print {
+  .session-filter-bar {
+    display: none !important;
+  }
+}
+
+/* ============================================
+   V2.4.1 - EXERCISE MODIFICATION STRIKETHROUGH
+   Shows original template values when modified
+   ============================================ */
+
+.exercise-original-value {
+  text-decoration: line-through;
+  opacity: 0.5;
+  margin-right: 0.25rem;
+  font-size: 0.9em;
+}
+
+/* Dark mode - slightly more visible strikethrough */
+[data-bs-theme="dark"] .exercise-original-value {
+  opacity: 0.45;
+}
+
+/* Print - ensure strikethrough is visible */
+@media print {
+  .exercise-original-value {
+    opacity: 0.6;
+    color: #666 !important;
+  }
+}

@@ -1,0 +1,173 @@
+/* home-notebook.css - Home Page Card-Based Layout */
+
+/* ============================================
+   SECTION 2: GREETING SECTION
+   ============================================ */
+.home-greeting-section {
+  padding: 0 0 0.5rem 0;
+}
+
+/* ============================================
+   SECTION 3: WEEKLY PROGRESS CARD
+   ============================================ */
+.home-weekly-card {
+  background: var(--bs-card-bg);
+  border: 1px solid var(--bs-border-color);
+  border-radius: 0.75rem;
+}
+
+.home-weekly-stat {
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--bs-body-color);
+}
+
+.home-streak-badge {
+  color: var(--bs-warning);
+  font-weight: 500;
+}
+
+.home-progress-bar {
+  height: 8px;
+  border-radius: 4px;
+  background: var(--bs-gray-200);
+}
+
+.home-progress-bar .progress-bar {
+  background: linear-gradient(90deg, var(--bs-primary) 0%, var(--bs-success) 100%);
+  transition: width 0.5s ease;
+}
+
+/* ============================================
+   SECTION 4: FAVORITES SECTION
+   ============================================ */
+#favoritesSection .favorite-card {
+  border: 1px solid var(--bs-border-color);
+  border-radius: 0.5rem;
+  margin-bottom: 0.5rem;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  cursor: pointer;
+}
+
+#favoritesSection .favorite-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+#favoritesSection .favorite-card:active {
+  transform: scale(0.99);
+}
+
+/* ============================================
+   SECTION 5: WORKOUT NAVIGATION BUTTONS
+   ============================================ */
+.home-nav-buttons .btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ============================================
+   SECTION 6: PRIMARY CTA
+   ============================================ */
+.home-primary-cta {
+  font-size: 1.125rem;
+  font-weight: 600;
+  border-radius: 0.5rem;
+}
+
+/* ============================================
+   SECTION 7: RECENT ACTIVITY
+   ============================================ */
+.recent-activity-card {
+  border: 1px solid var(--bs-border-color);
+  border-radius: 0.5rem;
+  margin-bottom: 0.75rem;
+  cursor: pointer;
+  transition: background-color 0.15s ease, transform 0.15s ease;
+}
+
+.recent-activity-card:hover {
+  background-color: var(--bs-gray-100);
+}
+
+.recent-activity-card:active {
+  transform: scale(0.99);
+}
+
+/* Activity card icon */
+.recent-activity-card .bg-label-primary {
+  background-color: rgba(var(--bs-primary-rgb), 0.12) !important;
+  color: var(--bs-primary);
+}
+
+/* ============================================
+   SECTION 8: BOTTOM NAVIGATION
+   ============================================ */
+.home-bottom-nav {
+  padding-bottom: 1rem;
+}
+
+/* ============================================
+   DARK MODE ADJUSTMENTS
+   ============================================ */
+[data-bs-theme="dark"] .home-weekly-card {
+  background: var(--bs-gray-800);
+  border-color: var(--bs-gray-700);
+}
+
+[data-bs-theme="dark"] .home-progress-bar {
+  background: var(--bs-gray-700);
+}
+
+[data-bs-theme="dark"] #favoritesSection .favorite-card {
+  border-color: var(--bs-gray-700);
+  background: var(--bs-card-bg);
+}
+
+[data-bs-theme="dark"] #favoritesSection .favorite-card:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+[data-bs-theme="dark"] .recent-activity-card {
+  border-color: var(--bs-gray-700);
+  background: var(--bs-card-bg);
+}
+
+[data-bs-theme="dark"] .recent-activity-card:hover {
+  background-color: var(--bs-gray-800);
+}
+
+/* ============================================
+   RESPONSIVE ADJUSTMENTS
+   ============================================ */
+@media (max-width: 576px) {
+  .home-greeting-section {
+    padding: 0.75rem 0;
+  }
+
+  .home-greeting-section h4 {
+    font-size: 1.25rem;
+  }
+
+  .home-weekly-stat {
+    font-size: 0.9375rem;
+  }
+
+  .home-streak-badge {
+    font-size: 0.875rem;
+  }
+
+  .home-primary-cta {
+    font-size: 1rem;
+    padding: 0.875rem 1.5rem !important;
+  }
+
+  #favoritesSection .favorite-card .card-body {
+    padding: 0.625rem 0.75rem;
+  }
+
+  .recent-activity-card .card-body {
+    padding: 0.625rem 0.75rem;
+  }
+}

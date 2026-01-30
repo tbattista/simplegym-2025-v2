@@ -482,7 +482,7 @@ class ExerciseCardRenderer {
         }
 
         return `
-            <div class="workout-repssets-field" data-sets-reps="${displayValue}" data-exercise-name="${this._escapeHtml(exerciseName)}">
+            <div class="workout-repssets-field" data-protocol="${displayValue}" data-exercise-name="${this._escapeHtml(exerciseName)}">
                 <!-- Display Mode (click to edit) -->
                 <div class="repssets-display click-to-edit" onclick="event.stopPropagation(); this.closest('.workout-card')?.dispatchEvent(new CustomEvent('enterUnifiedEditMode', { bubbles: false }));">
                     <span class="repssets-value-text">${displayValue}</span>

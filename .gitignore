@@ -70,3 +70,10 @@ backend/uploads/*.docx
 firebase-adminsdk-*.json
 serviceAccountKey.json
 *.temp
+
+# Node
+node_modules/
+package-lock.json
+
+# Windows reserved names
+nul

@@ -1,0 +1,1075 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ghost Gym V2 - User Flows Documentation</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <style>
+        :root {
+            --primary: #696cff;
+            --primary-light: #8385ff;
+            --bg-dark: #232333;
+            --bg-card: #2b2c40;
+            --bg-sidebar: #1a1b2e;
+            --text: #d5d5e2;
+            --text-muted: #8b8b9a;
+            --border: #434558;
+            --success: #71dd37;
+            --warning: #ffab00;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        /* Layout */
+        .layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: var(--bg-sidebar);
+            border-right: 1px solid var(--border);
+            padding: 20px;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .sidebar h1 {
+            font-size: 1.25rem;
+            margin-bottom: 8px;
+            color: var(--primary);
+        }
+
+        .sidebar .subtitle {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 24px;
+        }
+
+        .nav-section {
+            margin-bottom: 24px;
+        }
+
+        .nav-section h3 {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+        }
+
+        .nav-link {
+            display: block;
+            padding: 10px 12px;
+            color: var(--text);
+            text-decoration: none;
+            border-radius: 6px;
+            margin-bottom: 4px;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            background: var(--bg-card);
+            color: var(--primary);
+        }
+
+        .nav-link .badge {
+            font-size: 0.65rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-left: 8px;
+            background: var(--border);
+        }
+
+        .nav-link .badge.auth {
+            background: var(--warning);
+            color: #000;
+        }
+
+        /* Main Content */
+        .main {
+            margin-left: 280px;
+            flex: 1;
+            padding: 40px;
+            max-width: 1200px;
+        }
+
+        /* Header */
+        .header {
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            color: var(--text-muted);
+        }
+
+        /* View Toggle */
+        .view-toggle {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+        }
+
+        .view-toggle button {
+            padding: 8px 16px;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--text);
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+
+        .view-toggle button.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: #fff;
+        }
+
+        .view-toggle button:hover:not(.active) {
+            border-color: var(--primary);
+        }
+
+        /* Sections */
+        .section {
+            margin-bottom: 60px;
+        }
+
+        .section h2 {
+            font-size: 1.5rem;
+            margin-bottom: 16px;
+            color: var(--primary-light);
+        }
+
+        .section-description {
+            color: var(--text-muted);
+            margin-bottom: 24px;
+        }
+
+        /* Flow Diagram */
+        .flow-diagram {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 32px;
+            overflow-x: auto;
+        }
+
+        .flow-diagram h3 {
+            font-size: 1rem;
+            margin-bottom: 16px;
+            color: var(--text);
+        }
+
+        .mermaid {
+            display: flex;
+            justify-content: center;
+        }
+
+        /* Screenshot Gallery */
+        .screenshot-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 24px;
+        }
+
+        .screenshot-card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            overflow: hidden;
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
+        }
+
+        .screenshot-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+        }
+
+        .screenshot-card img {
+            width: 100%;
+            height: auto;
+            display: block;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .screenshot-card .card-body {
+            padding: 16px;
+        }
+
+        .screenshot-card h4 {
+            font-size: 0.95rem;
+            margin-bottom: 4px;
+        }
+
+        .screenshot-card p {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .screenshot-card .badge {
+            display: inline-block;
+            font-size: 0.65rem;
+            padding: 2px 8px;
+            border-radius: 4px;
+            background: var(--border);
+            margin-top: 8px;
+        }
+
+        .screenshot-card .badge.desktop {
+            background: var(--primary);
+        }
+
+        .screenshot-card .badge.mobile {
+            background: var(--success);
+            color: #000;
+        }
+
+        /* Lightbox */
+        .lightbox {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.95);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+        }
+
+        .lightbox.active {
+            display: flex;
+        }
+
+        .lightbox img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            border-radius: 8px;
+        }
+
+        .lightbox-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: var(--bg-card);
+            border: none;
+            color: var(--text);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.5rem;
+        }
+
+        .lightbox-title {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--bg-card);
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+
+        /* Steps List */
+        .steps-list {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 24px;
+            margin-top: 24px;
+        }
+
+        .steps-list h3 {
+            font-size: 1rem;
+            margin-bottom: 16px;
+        }
+
+        .step {
+            display: flex;
+            gap: 16px;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .step:last-child {
+            border-bottom: none;
+        }
+
+        .step-number {
+            width: 28px;
+            height: 28px;
+            background: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        .step-content h4 {
+            font-size: 0.9rem;
+            margin-bottom: 4px;
+        }
+
+        .step-content p {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        /* Mobile Screenshots Indicator */
+        .view-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 16px;
+        }
+
+        .view-indicator span {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .view-indicator .desktop-dot { background: var(--primary); }
+        .view-indicator .mobile-dot { background: var(--success); }
+
+        /* Placeholder for missing screenshots */
+        .placeholder {
+            background: var(--bg-card);
+            border: 2px dashed var(--border);
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            color: var(--text-muted);
+        }
+
+        .placeholder h4 {
+            margin-bottom: 8px;
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+            .main {
+                margin-left: 0;
+            }
+            .layout {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="layout">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <h1>Ghost Gym V2</h1>
+            <p class="subtitle">User Flow Documentation</p>
+
+            <div class="nav-section">
+                <h3>Overview</h3>
+                <a href="#overview" class="nav-link active">App Overview</a>
+                <a href="#navigation" class="nav-link">Navigation Structure</a>
+            </div>
+
+            <div class="nav-section">
+                <h3>User Flows</h3>
+                <a href="#flow-auth" class="nav-link">Authentication</a>
+                <a href="#flow-workout-create" class="nav-link">Create Workout</a>
+                <a href="#flow-workout-execute" class="nav-link">Execute Workout <span class="badge auth">Auth</span></a>
+                <a href="#flow-exercise" class="nav-link">Exercise Discovery</a>
+                <a href="#flow-history" class="nav-link">View History <span class="badge auth">Auth</span></a>
+                <a href="#flow-programs" class="nav-link">Programs <span class="badge auth">Auth</span></a>
+                <a href="#flow-sharing" class="nav-link">Sharing</a>
+            </div>
+
+            <div class="nav-section">
+                <h3>Pages</h3>
+                <a href="#pages-public" class="nav-link">Public Pages</a>
+                <a href="#pages-auth" class="nav-link">Authenticated Pages <span class="badge auth">Auth</span></a>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main">
+            <!-- Header -->
+            <header class="header" id="overview">
+                <h1>Ghost Gym V2 - User Flows</h1>
+                <p>Interactive documentation of all user journeys and page flows</p>
+            </header>
+
+            <!-- View Toggle -->
+            <div class="view-toggle">
+                <button class="active" onclick="setView('all')">All Views</button>
+                <button onclick="setView('desktop')">Desktop Only</button>
+                <button onclick="setView('mobile')">Mobile Only</button>
+            </div>
+
+            <div class="view-indicator">
+                <span class="desktop-dot"></span> Desktop (1440x900)
+                <span class="mobile-dot"></span> Mobile (iPhone 14)
+            </div>
+
+            <!-- App Overview Section -->
+            <section class="section" id="navigation">
+                <h2>Navigation Structure</h2>
+                <p class="section-description">The app uses a sidebar menu for navigation with context-aware options based on authentication state.</p>
+
+                <div class="flow-diagram">
+                    <h3>Main Navigation Flow</h3>
+                    <pre class="mermaid">
+flowchart TB
+    subgraph Public["Public Access"]
+        Landing[Landing Page]
+        Library[Workout Library]
+        Builder[Workout Builder]
+        Exercises[Exercise Database]
+        Explore[Public Workouts]
+        WorkoutMode[Workout Mode]
+    end
+
+    subgraph Auth["Requires Authentication"]
+        Dashboard[Home Dashboard]
+        Log[Activity Log/Calendar]
+        History[Workout History]
+        Programs[Programs]
+        Profile[Profile Settings]
+    end
+
+    Landing -->|Sign In| Dashboard
+    Landing --> Library
+    Library --> Builder
+    Library --> WorkoutMode
+    Builder --> WorkoutMode
+    Exercises --> Builder
+    Dashboard --> Log
+    Dashboard --> History
+    Dashboard --> Programs
+                    </pre>
+                </div>
+            </section>
+
+            <!-- Authentication Flow -->
+            <section class="section" id="flow-auth">
+                <h2>Authentication Flow</h2>
+                <p class="section-description">Users can sign in with email/password or Google OAuth. Anonymous users can still use core features with local storage.</p>
+
+                <div class="flow-diagram">
+                    <h3>Sign In / Sign Up Flow</h3>
+                    <pre class="mermaid">
+flowchart LR
+    A[Landing Page] --> B{Has Account?}
+    B -->|Yes| C[Click Sign In]
+    B -->|No| D[Click Sign Up]
+    C --> E[Auth Modal - Sign In Tab]
+    D --> F[Auth Modal - Sign Up Tab]
+    E --> G{Method}
+    F --> G
+    G -->|Email| H[Enter Credentials]
+    G -->|Google| I[Google OAuth]
+    H --> J[Authenticated Dashboard]
+    I --> J
+    A -->|Skip| K[Use Anonymously]
+    K --> L[Local Storage Mode]
+                    </pre>
+                </div>
+
+                <div class="steps-list">
+                    <h3>Authentication Steps</h3>
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <h4>Access Auth Modal</h4>
+                            <p>Click the user icon in the top-right navbar to open the authentication modal</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <h4>Choose Method</h4>
+                            <p>Select Sign In or Sign Up tab, then choose Email/Password or Google OAuth</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <h4>Complete Authentication</h4>
+                            <p>Enter credentials and submit. On success, you're redirected to the dashboard</p>
+                        </div>
+                    </div>
+                </div>
+
+                <h3 style="margin-top: 32px; margin-bottom: 16px;">Screenshots</h3>
+                <div class="screenshot-gallery">
+                    <div class="screenshot-card" data-view="desktop" onclick="openLightbox(this)">
+                        <img src="screenshots/desktop/modals/modal-auth-signin.png" alt="Sign In Modal - Desktop">
+                        <div class="card-body">
+                            <h4>Sign In Modal</h4>
+                            <p>Email/password and Google OAuth options</p>
+                            <span class="badge desktop">Desktop</span>
+                        </div>
+                    </div>
+                    <div class="screenshot-card" data-view="mobile" onclick="openLightbox(this)">
+                        <img src="screenshots/mobile/modals/modal-auth-signin.png" alt="Sign In Modal - Mobile">
+                        <div class="card-body">
+                            <h4>Sign In Modal</h4>
+                            <p>Mobile-optimized auth form</p>
+                            <span class="badge mobile">Mobile</span>
+                        </div>
+                    </div>
+                    <div class="screenshot-card" data-view="desktop" onclick="openLightbox(this)">
+                        <img src="screenshots/desktop/modals/modal-auth-signup.png" alt="Sign Up Modal - Desktop">
+                        <div class="card-body">
+                            <h4>Sign Up Modal</h4>
+                            <p>New account registration form</p>
+                            <span class="badge desktop">Desktop</span>
+                        </div>
+                    </div>
+                    <div class="screenshot-card" data-view="mobile" onclick="openLightbox(this)">
+                        <img src="screenshots/mobile/modals/modal-auth-signup.png" alt="Sign Up Modal - Mobile">
+                        <div class="card-body">
+                            <h4>Sign Up Modal</h4>
+                            <p>Mobile registration form</p>
+                            <span class="badge mobile">Mobile</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Workout Creation Flow -->
+            <section class="section" id="flow-workout-create">
+                <h2>Create Workout Flow</h2>
+                <p class="section-description">Users can create custom workouts by adding exercises, setting reps/sets, and organizing exercise groups.</p>
+
+                <div class="flow-diagram">
+                    <h3>Workout Creation Flow</h3>
+                    <pre class="mermaid">
+flowchart LR
+    A[Workout Library] --> B[Click Create New]
+    B --> C[Workout Builder]
+    C --> D[Enter Workout Name]
+    D --> E[Add Tags/Description]
+    E --> F[Add Exercise Group]
+    F --> G{Find Exercise}
+    G -->|Search| H[Exercise Search]
+    G -->|Create| I[Custom Exercise Modal]
+    H --> J[Select Exercise]
+    I --> J
+    J --> K[Set Reps/Sets/Rest]
+    K --> L{More Exercises?}
+    L -->|Yes| F
+    L -->|No| M[Save Workout]
+    M --> N[Workout Library]
+                    </pre>
+                </div>
+
+                <h3 style="margin-top: 32px; margin-bottom: 16px;">Screenshots</h3>
+                <div class="screenshot-gallery">
+                    <div class="screenshot-card" data-view="desktop" onclick="openLightbox(this)">
+                        <img src="screenshots/desktop/04-workout-library.png" alt="Workout Library - Desktop">
+                        <div class="card-body">
+                            <h4>Workout Library</h4>
+                            <p>Browse and manage saved workouts</p>
+                            <span class="badge desktop">Desktop</span>
+                        </div>
+                    </div>
+                    <div class="screenshot-card" data-view="mobile" onclick="openLightbox(this)">
+                        <img src="screenshots/mobile/04-workout-library.png" alt="Workout Library - Mobile">
+                        <div class="card-body">
+                            <h4>Workout Library</h4>
+                            <p>Mobile workout list view</p>
+                            <span class="badge mobile">Mobile</span>
+                        </div>
+                    </div>
+                    <div class="screenshot-card" data-view="desktop" onclick="openLightbox(this)">
+                        <img src="screenshots/desktop/05-workout-builder.png" alt="Workout Builder - Desktop">
+                        <div class="card-body">
+                            <h4>Workout Builder</h4>
+                            <p>Create and edit workout templates</p>
+                            <span class="badge desktop">Desktop</span>
+                        </div>
+                    </div>
+                    <div class="screenshot-card" data-view="mobile" onclick="openLightbox(this)">
+                        <img src="screenshots/mobile/05-workout-builder.png" alt="Workout Builder - Mobile">
+                        <div class="card-body">
+                            <h4>Workout Builder</h4>
+                            <p>Mobile workout editor</p>
+                            <span class="badge mobile">Mobile</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Workout Execution Flow -->
+            <section class="section" id="flow-workout-execute">
+                <h2>Execute Workout Flow</h2>
+                <p class="section-description">Start a workout session, track sets and reps in real-time, use rest timers, and complete the session.</p>
+
+                <div class="flow-diagram">
+                    <h3>Workout Execution Flow</h3>
+                    <pre class="mermaid">
+flowchart TB
+    A[Select Workout] --> B[Workout Mode Landing]
+    B --> C[Start Session]
+    C --> D[Exercise Card View]
+    D --> E{Complete Set?}
+    E -->|Yes| F[Log Set]
+    F --> G[Rest Timer]
+    G --> H{More Sets?}
+    H -->|Yes| E
+    H -->|No| I{More Exercises?}
+    I -->|Yes| D
+    I -->|No| J[Complete Session]
+    J --> K[Save to History]
+    K --> L[Session Summary]
+                    </pre>
+                </div>
+
+                <h3 style="margin-top: 32px; margin-bottom: 16px;">Screenshots</h3>
+                <div class="screenshot-gallery">
+                    <div class="screenshot-card" data-view="desktop" onclick="openLightbox(this)">
+                        <img src="screenshots/desktop/06-workout-mode.png" alt="Workout Mode - Desktop">
+                        <div class="card-body">
+                            <h4>Workout Mode Landing</h4>
+                            <p>Start or resume a workout session</p>
+                            <span class="badge desktop">Desktop</span>
+                        </div>
+                    </div>
+                    <div class="screenshot-card" data-view="mobile" onclick="openLightbox(this)">
+                        <img src="screenshots/mobile/06-workout-mode.png" alt="Workout Mode - Mobile">
+                        <div class="card-body">
+                            <h4>Workout Mode Landing</h4>
+                            <p>Mobile workout start screen</p>
+                            <span class="badge mobile">Mobile</span>
+                        </div>
+                    </div>
+                    <div class="placeholder" data-view="desktop">
+                        <h4>Active Session View</h4>
+                        <p>Requires authentication - screenshot pending</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Exercise Discovery Flow -->
+            <section class="section" id="flow-exercise">
+                <h2>Exercise Discovery Flow</h2>
+                <p class="section-description">Browse 2,500+ exercises, filter by muscle group/equipment, view details, and add to workouts.</p>
+
+                <div class="flow-diagram">
+                    <h3>Exercise Discovery Flow</h3>
+                    <pre class="mermaid">
+flowchart LR
+    A[Exercise Database] --> B{Filter Options}
+    B --> C[By Muscle Group]
+    B --> D[By Equipment]
+    B --> E[By Difficulty]
+    B --> F[Search by Name]
+    C --> G[View Results]
+    D --> G
+    E --> G
+    F --> G
+    G --> H[Click Exercise]
+    H --> I[Exercise Detail Modal]
+    I --> J{Action}
+    J -->|Favorite| K[Add to Favorites]
+    J -->|Add| L[Add to Workout]
+    L --> M[Workout Builder]
+                    </pre>
+                </div>
+
+                <h3 style="margin-top: 32px; margin-bottom: 16px;">Screenshots</h3>
+                <div class="screenshot-gallery">
+                    <div class="screenshot-card" data-view="desktop" onclick="openLightbox(this)">
+                        <img src="screenshots/desktop/08-exercise-database.png" alt="Exercise Database - Desktop">
+                        <div class="card-body">
+                            <h4>Exercise Database</h4>
+                            <p>Browse and filter 2,500+ exercises</p>
+                            <span class="badge desktop">Desktop</span>
+                        </div>
+                    </div>
+                    <div class="screenshot-card" data-view="mobile" onclick="openLightbox(this)">
+                        <img src="screenshots/mobile/08-exercise-database.png" alt="Exercise Database - Mobile">
+                        <div class="card-body">
+                            <h4>Exercise Database</h4>
+                            <p>Mobile exercise browser</p>
+                            <span class="badge mobile">Mobile</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- History Flow -->
+            <section class="section" id="flow-history">
+                <h2>View History Flow</h2>
+                <p class="section-description">Review past workout sessions, view calendar heatmap, and analyze performance trends.</p>
+
+                <div class="flow-diagram">
+                    <h3>History & Analytics Flow</h3>
+                    <pre class="mermaid">
+flowchart TB
+    A[Workout History] --> B{View Mode}
+    B --> C[Calendar View]
+    B --> D[List View]
+    B --> E[Insights Tab]
+    C --> F[Click Day]
+    F --> G[Day Detail Offcanvas]
+    G --> H[View Session]
+    D --> H
+    H --> I[Session Details]
+    I --> J[Exercise Performance]
+    E --> K[Statistics Cards]
+    E --> L[Progress Charts]
+                    </pre>
+                </div>
+
+                <div class="placeholder">
+                    <h4>Authenticated Screenshots Required</h4>
+                    <p>History, Calendar, and Insights views require authentication. Add screenshots manually or re-run capture script with email/password login.</p>
+                </div>
+            </section>
+
+            <!-- Programs Flow -->
+            <section class="section" id="flow-programs">
+                <h2>Programs Flow</h2>
+                <p class="section-description">Create and manage multi-week training programs with scheduled workouts.</p>
+
+                <div class="flow-diagram">
+                    <h3>Program Management Flow</h3>
+                    <pre class="mermaid">
+flowchart LR
+    A[Programs Page] --> B{Action}
+    B --> C[Create Program]
+    B --> D[Edit Program]
+    B --> E[Delete Program]
+    C --> F[Program Modal]
+    F --> G[Set Name/Duration]
+    G --> H[Add Workouts to Days]
+    H --> I[Save Program]
+    I --> A
+    D --> F
+                    </pre>
+                </div>
+
+                <div class="placeholder">
+                    <h4>Authenticated Screenshots Required</h4>
+                    <p>Programs page requires authentication. Add screenshots manually or re-run capture script.</p>
+                </div>
+            </section>
+
+            <!-- Sharing Flow -->
+            <section class="section" id="flow-sharing">
+                <h2>Sharing Flow</h2>
+                <p class="section-description">Share workouts publicly or privately with other users.</p>
+
+                <div class="flow-diagram">
+                    <h3>Workout Sharing Flow</h3>
+                    <pre class="mermaid">
+flowchart LR
+    A[Workout Builder] --> B[Click Share]
+    B --> C[Share Menu Offcanvas]
+    C --> D{Share Type}
+    D -->|Public| E[Generate Public Link]
+    D -->|Private| F[Generate Token Link]
+    E --> G[Copy Link]
+    F --> G
+    G --> H[Recipient Opens Link]
+    H --> I[Share Page]
+    I --> J[View Workout Details]
+    J --> K[Save to Library]
+                    </pre>
+                </div>
+
+                <h3 style="margin-top: 32px; margin-bottom: 16px;">Screenshots</h3>
+                <div class="screenshot-gallery">
+                    <div class="screenshot-card" data-view="desktop" onclick="openLightbox(this)">
+                        <img src="screenshots/desktop/10-public-workouts.png" alt="Public Workouts - Desktop">
+                        <div class="card-body">
+                            <h4>Explore Public Workouts</h4>
+                            <p>Discover shared workouts from the community</p>
+                            <span class="badge desktop">Desktop</span>
+                        </div>
+                    </div>
+                    <div class="screenshot-card" data-view="mobile" onclick="openLightbox(this)">
+                        <img src="screenshots/mobile/10-public-workouts.png" alt="Public Workouts - Mobile">
+                        <div class="card-body">
+                            <h4>Explore Public Workouts</h4>
+                            <p>Mobile public workouts browser</p>
+                            <span class="badge mobile">Mobile</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Public Pages Gallery -->
+            <section class="section" id="pages-public">
+                <h2>Public Pages</h2>
+                <p class="section-description">Pages accessible without authentication.</p>
+
+                <div class="screenshot-gallery">
+                    <div class="screenshot-card" data-view="desktop" onclick="openLightbox(this)">
+                        <img src="screenshots/desktop/01-landing.png" alt="Landing Page - Desktop">
+                        <div class="card-body">
+                            <h4>Landing Page</h4>
+                            <p>App entry point for new users</p>
+                            <span class="badge desktop">Desktop</span>
+                        </div>
+                    </div>
+                    <div class="screenshot-card" data-view="mobile" onclick="openLightbox(this)">
+                        <img src="screenshots/mobile/01-landing.png" alt="Landing Page - Mobile">
+                        <div class="card-body">
+                            <h4>Landing Page</h4>
+                            <p>Mobile landing experience</p>
+                            <span class="badge mobile">Mobile</span>
+                        </div>
+                    </div>
+                    <div class="screenshot-card" data-view="desktop" onclick="openLightbox(this)">
+                        <img src="screenshots/desktop/04-workout-library.png" alt="Workout Library - Desktop">
+                        <div class="card-body">
+                            <h4>Workout Library</h4>
+                            <p>Browse and manage workouts</p>
+                            <span class="badge desktop">Desktop</span>
+                        </div>
+                    </div>
+                    <div class="screenshot-card" data-view="mobile" onclick="openLightbox(this)">
+                        <img src="screenshots/mobile/04-workout-library.png" alt="Workout Library - Mobile">
+                        <div class="card-body">
+                            <h4>Workout Library</h4>
+                            <p>Mobile workout list</p>
+                            <span class="badge mobile">Mobile</span>
+                        </div>
+                    </div>
+                    <div class="screenshot-card" data-view="desktop" onclick="openLightbox(this)">
+                        <img src="screenshots/desktop/05-workout-builder.png" alt="Workout Builder - Desktop">
+                        <div class="card-body">
+                            <h4>Workout Builder</h4>
+                            <p>Create and edit workouts</p>
+                            <span class="badge desktop">Desktop</span>
+                        </div>
+                    </div>
+                    <div class="screenshot-card" data-view="mobile" onclick="openLightbox(this)">
+                        <img src="screenshots/mobile/05-workout-builder.png" alt="Workout Builder - Mobile">
+                        <div class="card-body">
+                            <h4>Workout Builder</h4>
+                            <p>Mobile workout editor</p>
+                            <span class="badge mobile">Mobile</span>
+                        </div>
+                    </div>
+                    <div class="screenshot-card" data-view="desktop" onclick="openLightbox(this)">
+                        <img src="screenshots/desktop/06-workout-mode.png" alt="Workout Mode - Desktop">
+                        <div class="card-body">
+                            <h4>Workout Mode</h4>
+                            <p>Active workout execution</p>
+                            <span class="badge desktop">Desktop</span>
+                        </div>
+                    </div>
+                    <div class="screenshot-card" data-view="mobile" onclick="openLightbox(this)">
+                        <img src="screenshots/mobile/06-workout-mode.png" alt="Workout Mode - Mobile">
+                        <div class="card-body">
+                            <h4>Workout Mode</h4>
+                            <p>Mobile workout session</p>
+                            <span class="badge mobile">Mobile</span>
+                        </div>
+                    </div>
+                    <div class="screenshot-card" data-view="desktop" onclick="openLightbox(this)">
+                        <img src="screenshots/desktop/08-exercise-database.png" alt="Exercise Database - Desktop">
+                        <div class="card-body">
+                            <h4>Exercise Database</h4>
+                            <p>2,500+ exercises</p>
+                            <span class="badge desktop">Desktop</span>
+                        </div>
+                    </div>
+                    <div class="screenshot-card" data-view="mobile" onclick="openLightbox(this)">
+                        <img src="screenshots/mobile/08-exercise-database.png" alt="Exercise Database - Mobile">
+                        <div class="card-body">
+                            <h4>Exercise Database</h4>
+                            <p>Mobile exercise browser</p>
+                            <span class="badge mobile">Mobile</span>
+                        </div>
+                    </div>
+                    <div class="screenshot-card" data-view="desktop" onclick="openLightbox(this)">
+                        <img src="screenshots/desktop/10-public-workouts.png" alt="Public Workouts - Desktop">
+                        <div class="card-body">
+                            <h4>Public Workouts</h4>
+                            <p>Community shared workouts</p>
+                            <span class="badge desktop">Desktop</span>
+                        </div>
+                    </div>
+                    <div class="screenshot-card" data-view="mobile" onclick="openLightbox(this)">
+                        <img src="screenshots/mobile/10-public-workouts.png" alt="Public Workouts - Mobile">
+                        <div class="card-body">
+                            <h4>Public Workouts</h4>
+                            <p>Mobile public workouts</p>
+                            <span class="badge mobile">Mobile</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Authenticated Pages -->
+            <section class="section" id="pages-auth">
+                <h2>Authenticated Pages</h2>
+                <p class="section-description">Pages that require user authentication. Screenshots pending - run capture script with email/password login or add manually.</p>
+
+                <div class="screenshot-gallery">
+                    <div class="placeholder">
+                        <h4>Home Dashboard</h4>
+                        <p>Personalized dashboard with favorites and recent activity</p>
+                    </div>
+                    <div class="placeholder">
+                        <h4>Activity Log / Calendar</h4>
+                        <p>Calendar view of workout history with activity heatmap</p>
+                    </div>
+                    <div class="placeholder">
+                        <h4>Workout History</h4>
+                        <p>Detailed history with insights and analytics</p>
+                    </div>
+                    <div class="placeholder">
+                        <h4>Programs</h4>
+                        <p>Training program management</p>
+                    </div>
+                    <div class="placeholder">
+                        <h4>Profile Settings</h4>
+                        <p>Account settings and preferences</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Lightbox -->
+    <div class="lightbox" id="lightbox">
+        <button class="lightbox-close" onclick="closeLightbox()">&times;</button>
+        <img id="lightbox-img" src="" alt="">
+        <div class="lightbox-title" id="lightbox-title"></div>
+    </div>
+
+    <script>
+        // Initialize Mermaid
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'dark',
+            themeVariables: {
+                primaryColor: '#696cff',
+                primaryTextColor: '#d5d5e2',
+                primaryBorderColor: '#434558',
+                lineColor: '#696cff',
+                secondaryColor: '#2b2c40',
+                tertiaryColor: '#232333',
+                background: '#2b2c40',
+                mainBkg: '#2b2c40',
+                nodeBorder: '#696cff',
+                clusterBkg: '#1a1b2e',
+                titleColor: '#d5d5e2',
+                edgeLabelBackground: '#2b2c40'
+            }
+        });
+
+        // View filtering
+        let currentView = 'all';
+
+        function setView(view) {
+            currentView = view;
+
+            // Update buttons
+            document.querySelectorAll('.view-toggle button').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.textContent.toLowerCase().includes(view) ||
+                    (view === 'all' && btn.textContent === 'All Views')) {
+                    btn.classList.add('active');
+                }
+            });
+
+            // Filter screenshots
+            document.querySelectorAll('.screenshot-card').forEach(card => {
+                const cardView = card.dataset.view;
+                if (view === 'all' || cardView === view) {
+                    card.style.display = '';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        // Lightbox
+        function openLightbox(card) {
+            const img = card.querySelector('img');
+            const title = card.querySelector('h4').textContent;
+            const badge = card.querySelector('.badge').textContent;
+
+            document.getElementById('lightbox-img').src = img.src;
+            document.getElementById('lightbox-title').textContent = `${title} (${badge})`;
+            document.getElementById('lightbox').classList.add('active');
+        }
+
+        function closeLightbox() {
+            document.getElementById('lightbox').classList.remove('active');
+        }
+
+        // Close lightbox on escape
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeLightbox();
+        });
+
+        // Close lightbox on background click
+        document.getElementById('lightbox').addEventListener('click', (e) => {
+            if (e.target.id === 'lightbox') closeLightbox();
+        });
+
+        // Smooth scroll for nav links
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', function(e) {
+                const href = this.getAttribute('href');
+                if (href.startsWith('#')) {
+                    e.preventDefault();
+                    const target = document.querySelector(href);
+                    if (target) {
+                        target.scrollIntoView({ behavior: 'smooth' });
+                    }
+
+                    // Update active state
+                    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                    this.classList.add('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

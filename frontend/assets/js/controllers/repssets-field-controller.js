@@ -204,12 +204,25 @@ class RepsSetsFieldController {
             }
         }
         
+        // Update collapsed header protocol display (fixes bug where header showed old values after in-card edit)
+        const card = this.container.closest('.workout-card');
+        if (card) {
+            const headerMeta = card.querySelector('.workout-exercise-meta');
+            if (headerMeta) {
+                // Get rest time from current header (preserve it)
+                const currentMetaText = headerMeta.textContent;
+                const restMatch = currentMetaText.match(/•\s*(.+)$/);
+                const rest = restMatch ? restMatch[1].trim() : '60s';
+                headerMeta.textContent = `${protocolValue} • ${rest}`;
+            }
+        }
+
         // Trigger save animation (green flash)
         this.displayEl.classList.add('saved');
         setTimeout(() => {
             this.displayEl.classList.remove('saved');
         }, 600);
-        
+
         // Dispatch custom event for external listeners
         this.container.dispatchEvent(new CustomEvent('repsSetsChanged', {
             bubbles: true,

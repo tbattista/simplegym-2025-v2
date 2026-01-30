@@ -223,13 +223,13 @@ class WorkoutDetailOffcanvas {
                 const metaText = parts.join(' • ');
                 
                 html += `
-                    <div class="card mb-3">
-                        <div class="card-body">
-                            <div class="exercise-list mb-2">
+                    <div class="card mb-2">
+                        <div class="card-body py-2 px-3">
+                            <div class="exercise-list mb-1">
                                 ${exercisesHtml}
                             </div>
                             <div class="exercise-meta-text text-muted small">${metaText}</div>
-                            ${group.notes ? `<div class="mt-2 small text-muted">${this._escapeHtml(group.notes)}</div>` : ''}
+                            ${group.notes ? `<div class="mt-1 small text-muted">${this._escapeHtml(group.notes)}</div>` : ''}
                         </div>
                     </div>
                 `;
@@ -247,10 +247,10 @@ class WorkoutDetailOffcanvas {
                 
                 html += `
                     <div class="card mb-2">
-                        <div class="card-body">
+                        <div class="card-body py-2 px-3">
                             <div class="exercise-line">${this._escapeHtml(bonus.name)}</div>
                             <div class="exercise-meta-text text-muted small">${metaText}</div>
-                            ${bonus.notes ? `<div class="mt-2 small text-muted">${this._escapeHtml(bonus.notes)}</div>` : ''}
+                            ${bonus.notes ? `<div class="mt-1 small text-muted">${this._escapeHtml(bonus.notes)}</div>` : ''}
                         </div>
                     </div>
                 `;
