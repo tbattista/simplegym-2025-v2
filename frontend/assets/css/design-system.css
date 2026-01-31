@@ -70,9 +70,25 @@
     --gs-weight-new: #C97C5D;             /* Soft Clay (Primary) */
     --gs-weight-modified: #E3A14F;        /* Warm Amber */
 
-    /* Override Bootstrap success to use Kelly Green */
+    /* Override Bootstrap primary to use Soft Clay */
+    --bs-primary: var(--gs-primary);
+    --bs-primary-rgb: var(--gs-primary-rgb);
+
+    /* Override Bootstrap success to use Sage Green */
     --bs-success: var(--gs-success);
     --bs-success-rgb: var(--gs-success-rgb);
+
+    /* Override Bootstrap warning to use Warm Amber */
+    --bs-warning: var(--gs-warning);
+    --bs-warning-rgb: var(--gs-warning-rgb);
+
+    /* Override Bootstrap danger to use Muted Red */
+    --bs-danger: var(--gs-danger);
+    --bs-danger-rgb: var(--gs-danger-rgb);
+
+    /* Override Bootstrap info to use Slate */
+    --bs-info: var(--gs-info);
+    --bs-info-rgb: var(--gs-info-rgb);
 
     /* ============================================
        OPACITY SCALE

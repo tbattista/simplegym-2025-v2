@@ -14,6 +14,16 @@
    ============================================ */
 
 .btn-primary {
+    /* Override Bootstrap's button variables */
+    --bs-btn-bg: var(--gs-primary);
+    --bs-btn-border-color: var(--gs-primary);
+    --bs-btn-hover-bg: var(--gs-primary-hover);
+    --bs-btn-hover-border-color: var(--gs-primary-hover);
+    --bs-btn-active-bg: var(--gs-primary-active);
+    --bs-btn-active-border-color: var(--gs-primary-active);
+    --bs-btn-disabled-bg: var(--gs-primary);
+    --bs-btn-disabled-border-color: var(--gs-primary);
+
     background: var(--gs-primary);
     border: none;
     box-shadow: 0 2px 4px rgba(201, 124, 93, 0.3);
@@ -33,7 +43,14 @@
 .btn-primary:active {
     transform: translateY(0);
     box-shadow: 0 1px 2px rgba(201, 124, 93, 0.3);
-    background: var(--gs-primary-active);
+    background: var(--gs-primary-active) !important;
+}
+
+/* Focus state - override Bootstrap's purple focus ring */
+.btn-primary:focus,
+.btn-primary:focus-visible {
+    background: var(--gs-primary);
+    box-shadow: 0 0 0 0.25rem rgba(201, 124, 93, 0.5);
 }
 
 /* ============================================
@@ -41,6 +58,18 @@
    ============================================ */
 
 .btn-outline-primary {
+    /* Override Bootstrap's outline button variables */
+    --bs-btn-color: var(--gs-primary);
+    --bs-btn-border-color: var(--gs-primary);
+    --bs-btn-hover-color: #fff;
+    --bs-btn-hover-bg: var(--gs-primary);
+    --bs-btn-hover-border-color: var(--gs-primary);
+    --bs-btn-active-color: #fff;
+    --bs-btn-active-bg: var(--gs-primary);
+    --bs-btn-active-border-color: var(--gs-primary);
+    --bs-btn-disabled-color: var(--gs-primary);
+    --bs-btn-disabled-border-color: var(--gs-primary);
+
     border-color: var(--gs-primary);
     color: var(--gs-primary);
 }
@@ -48,6 +77,11 @@
 .btn-outline-primary:hover {
     background: var(--gs-primary);
     border-color: var(--gs-primary);
+}
+
+.btn-outline-primary:focus,
+.btn-outline-primary:focus-visible {
+    box-shadow: 0 0 0 0.25rem rgba(201, 124, 93, 0.5);
 }
 
 /* Hover effects ONLY on devices with true hover capability */
