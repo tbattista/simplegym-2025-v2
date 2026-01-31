@@ -261,7 +261,7 @@
 }
 
 [data-bs-theme="dark"] .accordion-workout-groups .drag-handle:hover {
-    color: #c4b5fd;
+    color: #d49378;  /* Brighter Clay */
 }
 
 /* Form Elements */

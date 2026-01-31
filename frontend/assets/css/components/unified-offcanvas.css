@@ -78,15 +78,15 @@
 
 /* Primary buttons */
 .offcanvas-bottom-base .btn-primary {
-    background: linear-gradient(135deg, var(--gs-primary, #C97C5D), var(--gs-secondary, #64748B));
+    background: var(--gs-primary, #C97C5D);
     border: none;
-    box-shadow: 0 2px 4px rgba(var(--bs-primary-rgb), 0.3);
+    box-shadow: 0 2px 4px rgba(201, 124, 93, 0.3);
 }
 
 .offcanvas-bottom-base .btn-primary:hover {
-    background: linear-gradient(135deg, #b86f53, #576577);  /* Darker Clay, Darker Slate */
+    background: var(--gs-primary-hover, #b86f53);
     transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(var(--bs-primary-rgb), 0.4);
+    box-shadow: 0 4px 8px rgba(201, 124, 93, 0.4);
 }
 
 .offcanvas-bottom-base .btn-primary:active {
