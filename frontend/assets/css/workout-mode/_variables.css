@@ -19,8 +19,8 @@
     --workout-card-bg: #ffffff;
     --workout-border: #e2e8f0;
     --workout-text: #1e293b;
-    --workout-muted: #64748b;
-    --workout-accent: #6366f1;
+    --workout-muted: #6B7280;
+    --workout-accent: #C97C5D;           /* Soft Clay */
 
     /* Semantic colors - reference design-system.css */
     --workout-success: var(--gs-success);
@@ -74,24 +74,24 @@
     --workout-border: var(--bs-border-color, #3a3f47);
     --workout-text: var(--bs-body-color, #e4e6eb);
     --workout-muted: var(--bs-secondary-color, #9ca3af);
-    --workout-accent: #818cf8;
+    --workout-accent: #d49378;            /* Brighter Clay for dark mode */
 
     /* Semantic colors - dark variants */
-    --workout-success: #5fd068;
-    --workout-warning: #fbbf24;
-    --workout-danger: #f87171;
+    --workout-success: #9ad2af;           /* Brighter Sage */
+    --workout-warning: #edb26a;           /* Brighter Amber */
+    --workout-danger: #e07c7c;            /* Brighter Muted Red */
 
     /* Status backgrounds - dark variants */
-    --workout-status-logged: rgba(95, 208, 104, 0.15);
-    --workout-status-active: rgba(129, 140, 248, 0.1);
-    --workout-status-skipped: rgba(251, 191, 36, 0.15);
+    --workout-status-logged: rgba(154, 210, 175, 0.15);
+    --workout-status-active: rgba(212, 147, 120, 0.1);
+    --workout-status-skipped: rgba(237, 178, 106, 0.15);
 
     /* Accent opacity aliases - dark */
-    --workout-accent-5: rgba(129, 140, 248, 0.05);
-    --workout-accent-6: rgba(129, 140, 248, 0.06);
-    --workout-accent-10: rgba(129, 140, 248, 0.10);
-    --workout-accent-12: rgba(129, 140, 248, 0.12);
-    --workout-accent-15: rgba(129, 140, 248, 0.15);
+    --workout-accent-5: rgba(212, 147, 120, 0.05);
+    --workout-accent-6: rgba(212, 147, 120, 0.06);
+    --workout-accent-10: rgba(212, 147, 120, 0.10);
+    --workout-accent-12: rgba(212, 147, 120, 0.12);
+    --workout-accent-15: rgba(212, 147, 120, 0.15);
 
     /* Dark mode specific backgrounds */
     --workout-dark-bg: var(--gs-gray-800);
@@ -99,9 +99,9 @@
     --workout-dark-border: var(--gs-gray-600);
 
     /* Weight progression - dark mode overrides */
-    --workout-weight-increased: #5DD91E;
-    --workout-weight-decreased: #f85149;
+    --workout-weight-increased: #9ad2af;  /* Brighter Sage */
+    --workout-weight-decreased: #e07c7c;  /* Brighter Muted Red */
     --workout-weight-same: #8b949e;
-    --workout-weight-new: #58a6ff;
-    --workout-weight-modified: #ffd33d;
+    --workout-weight-new: #d49378;        /* Brighter Clay */
+    --workout-weight-modified: #edb26a;   /* Brighter Amber */
 }

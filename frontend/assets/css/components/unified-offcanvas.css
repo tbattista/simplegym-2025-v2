@@ -78,13 +78,13 @@
 
 /* Primary buttons */
 .offcanvas-bottom-base .btn-primary {
-    background: linear-gradient(135deg, var(--gs-primary, #6366f1), var(--gs-secondary, #8b5cf6));
+    background: linear-gradient(135deg, var(--gs-primary, #C97C5D), var(--gs-secondary, #64748B));
     border: none;
     box-shadow: 0 2px 4px rgba(var(--bs-primary-rgb), 0.3);
 }
 
 .offcanvas-bottom-base .btn-primary:hover {
-    background: linear-gradient(135deg, #5855eb, #7c3aed);
+    background: linear-gradient(135deg, #b86f53, #576577);  /* Darker Clay, Darker Slate */
     transform: translateY(-1px);
     box-shadow: 0 4px 8px rgba(var(--bs-primary-rgb), 0.4);
 }
@@ -1032,9 +1032,191 @@
         transition: none;
         transform: none !important;
     }
-    
+
     .sortable-drag,
     .sortable-fallback {
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+    }
+}
+
+/* ============================================
+   SESSION COMPLETE - NOTEBOOK STYLE
+   Clean, calm completion panel with save-first hierarchy
+   ============================================ */
+
+/* Header - left aligned, no hero icon */
+.session-complete-header {
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--bs-border-color);
+}
+
+.session-complete-header h5 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+    color: var(--bs-heading-color);
+}
+
+.session-complete-header small {
+    font-size: 0.8125rem;
+}
+
+/* Stats row - horizontal, neutral */
+.session-stats-row {
+    display: flex;
+    gap: 2rem;
+    padding: 1rem 0;
+}
+
+.session-stat {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--bs-body-color);
+}
+
+.session-stat i {
+    font-size: 1.125rem;
+    color: var(--bs-secondary-color);
+}
+
+.session-stat input {
+    width: 50px;
+    text-align: center;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    padding: 0.25rem;
+    font-size: 1rem;
+    font-weight: 600;
+    background: transparent;
+    transition: border-color 0.2s, background-color 0.2s;
+    color: var(--bs-body-color);
+}
+
+.session-stat input::placeholder {
+    color: var(--bs-secondary-color);
+    opacity: 0.7;
+}
+
+.session-stat input:hover {
+    border-color: var(--bs-border-color);
+    background: rgba(var(--bs-primary-rgb), 0.05);
+}
+
+.session-stat input:focus {
+    outline: none;
+    border-color: var(--bs-primary);
+    background: var(--bs-body-bg);
+    box-shadow: 0 0 0 2px rgba(var(--bs-primary-rgb), 0.1);
+}
+
+.session-stat .stat-value {
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+/* Editable stat with pencil hint */
+.session-stat.editable {
+    cursor: pointer;
+    position: relative;
+}
+
+.session-stat .edit-hint {
+    font-size: 0.75rem;
+    color: var(--bs-secondary-color);
+    opacity: 0.6;
+    margin-left: 0.25rem;
+    transition: opacity 0.2s, color 0.2s;
+}
+
+.session-stat.editable:hover .edit-hint {
+    opacity: 1;
+    color: var(--bs-primary);
+}
+
+.session-stat.editable:hover input {
+    border-color: var(--bs-border-color);
+    background: rgba(var(--bs-primary-rgb), 0.05);
+}
+
+/* Link-style secondary buttons */
+.offcanvas-bottom-base .btn-link {
+    padding: 0.5rem 1rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: opacity 0.2s, color 0.2s;
+    border: none;
+    background: transparent;
+}
+
+.offcanvas-bottom-base .btn-link:hover {
+    text-decoration: underline;
+    opacity: 0.8;
+}
+
+.offcanvas-bottom-base .btn-link.text-muted {
+    color: var(--bs-secondary-color) !important;
+}
+
+.offcanvas-bottom-base .btn-link.text-muted:hover {
+    color: var(--bs-body-color) !important;
+}
+
+.offcanvas-bottom-base .btn-link.text-danger {
+    color: var(--bs-danger) !important;
+}
+
+.offcanvas-bottom-base .btn-link.text-danger:hover {
+    color: var(--bs-danger) !important;
+    opacity: 0.8;
+}
+
+/* Dark theme support for session complete */
+[data-bs-theme="dark"] .session-complete-header {
+    border-bottom-color: var(--bs-gray-700);
+}
+
+[data-bs-theme="dark"] .session-complete-header h5 {
+    color: #f8fafc;
+}
+
+[data-bs-theme="dark"] .session-stat {
+    color: #f8fafc;
+}
+
+[data-bs-theme="dark"] .session-stat input {
+    color: #f8fafc;
+}
+
+[data-bs-theme="dark"] .session-stat input::placeholder {
+    color: #94a3b8;
+}
+
+[data-bs-theme="dark"] .session-stat input:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: var(--bs-gray-600);
+}
+
+[data-bs-theme="dark"] .session-stat input:focus {
+    background: var(--bs-gray-800);
+    border-color: var(--bs-primary);
+}
+
+[data-bs-theme="dark"] .offcanvas-bottom-base .btn-link.text-muted {
+    color: #94a3b8 !important;
+}
+
+[data-bs-theme="dark"] .offcanvas-bottom-base .btn-link.text-muted:hover {
+    color: #f8fafc !important;
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    .session-stat input {
+        transition: none;
+    }
+
+    .offcanvas-bottom-base .btn-link {
+        transition: none;
     }
 }

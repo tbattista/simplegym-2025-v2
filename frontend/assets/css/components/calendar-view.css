@@ -54,7 +54,7 @@
 }
 
 .calendar-cell:hover:not(.empty) {
-    background-color: var(--gs-hover-bg, rgba(99, 102, 241, 0.08));
+    background-color: var(--gs-hover-bg, rgba(201, 124, 93, 0.08));  /* Soft Clay */
 }
 
 .calendar-cell:active:not(.empty) {
@@ -68,13 +68,13 @@
 
 /* Today highlight */
 .calendar-cell.today {
-    background-color: var(--gs-primary-bg, rgba(99, 102, 241, 0.1));
-    border: 2px solid var(--gs-primary, #696cff);
+    background-color: var(--gs-primary-bg, rgba(201, 124, 93, 0.1));  /* Soft Clay */
+    border: 2px solid var(--gs-primary, #C97C5D);
 }
 
 .calendar-cell.today .day-number {
     font-weight: 700;
-    color: var(--gs-primary, #696cff);
+    color: var(--gs-primary, #C97C5D);
 }
 
 /* Day number */
@@ -219,20 +219,20 @@
 }
 
 [data-bs-theme="dark"] .calendar-cell.today {
-    background-color: rgba(99, 102, 241, 0.2);
-    border-color: var(--gs-primary, #696cff);
+    background-color: rgba(201, 124, 93, 0.2);  /* Soft Clay */
+    border-color: var(--gs-primary, #C97C5D);
 }
 
 [data-bs-theme="dark"] .calendar-cell:hover:not(.empty) {
-    background-color: rgba(99, 102, 241, 0.15);
+    background-color: rgba(201, 124, 93, 0.15);  /* Soft Clay */
 }
 
 [data-bs-theme="dark"] .calendar-cell.has-workout {
-    background-color: rgba(34, 197, 94, 0.15);
+    background-color: rgba(140, 191, 159, 0.15);  /* Sage Green */
 }
 
 [data-bs-theme="dark"] .calendar-cell.has-workout:hover {
-    background-color: rgba(34, 197, 94, 0.25);
+    background-color: rgba(140, 191, 159, 0.25);  /* Sage Green */
 }
 
 [data-bs-theme="dark"] .day-session-item {

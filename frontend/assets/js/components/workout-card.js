@@ -21,9 +21,11 @@ class WorkoutCard {
             // Dropdown menu actions (Edit, Delete, View Details go here)
             dropdownActions: ['edit', 'delete'], // Default dropdown actions
 
-            // Delete mode
+            // Delete mode (checkbox selection for batch delete)
             deleteMode: false,
             onDelete: null,
+            onSelectionChange: null, // Callback: (workoutId, isSelected) => {}
+            isSelected: false,       // Current selection state
 
             // Custom metadata
             customMetadata: null,
@@ -362,11 +364,23 @@ class WorkoutCard {
      * Supports smart button states: never_started, in_progress, completed
      */
     _renderActions() {
-        if (this.config.deleteMode && this.config.onDelete) {
+        // Checkbox selection mode for batch delete (Gmail-style)
+        if (this.config.deleteMode) {
+            const isSelected = this.config.isSelected || false;
+            const checkedAttr = isSelected ? 'checked' : '';
             return `
-                <button class="btn btn-danger btn-card-action w-100" data-action="delete">
-                    <i class="bx bx-trash me-1"></i>Delete Workout
-                </button>
+                <div class="delete-mode-actions d-flex align-items-center gap-3">
+                    <div class="form-check form-check-lg mb-0 flex-grow-1">
+                        <input type="checkbox"
+                               class="form-check-input workout-select-checkbox"
+                               id="select-${this.workout.id}"
+                               ${checkedAttr}>
+                        <label class="form-check-label text-muted"
+                               for="select-${this.workout.id}">
+                            Select for deletion
+                        </label>
+                    </div>
+                </div>
             `;
         }
 
@@ -458,8 +472,12 @@ class WorkoutCard {
         // Card click handler (tap card to view details)
         if (this.config.onCardClick) {
             this.element.addEventListener('click', (e) => {
-                // Don't trigger if clicking a button, dropdown, or link
-                if (!e.target.closest('button') && !e.target.closest('.dropdown') && !e.target.closest('a')) {
+                // Don't trigger if in delete mode (checkbox selection takes over)
+                if (this.config.deleteMode) {
+                    return;
+                }
+                // Don't trigger if clicking a button, dropdown, link, or form-check
+                if (!e.target.closest('button') && !e.target.closest('.dropdown') && !e.target.closest('a') && !e.target.closest('.form-check')) {
                     this.config.onCardClick(this.workout, e);
                 }
             });
@@ -532,6 +550,33 @@ class WorkoutCard {
                 }
             });
         }
+
+        // Checkbox selection handler (for batch delete mode)
+        const checkbox = this.element.querySelector('.workout-select-checkbox');
+        if (checkbox) {
+            checkbox.addEventListener('change', (e) => {
+                e.stopPropagation();
+                this.config.isSelected = e.target.checked;
+                this.element.classList.toggle('selected', e.target.checked);
+                if (this.config.onSelectionChange) {
+                    this.config.onSelectionChange(this.workout.id, e.target.checked);
+                }
+            });
+        }
+
+        // Make entire card clickable in delete mode to toggle checkbox
+        if (this.config.deleteMode) {
+            this.element.addEventListener('click', (e) => {
+                // Don't toggle if clicking checkbox itself or its label
+                if (!e.target.closest('.form-check')) {
+                    const cb = this.element.querySelector('.workout-select-checkbox');
+                    if (cb) {
+                        cb.checked = !cb.checked;
+                        cb.dispatchEvent(new Event('change', { bubbles: true }));
+                    }
+                }
+            });
+        }
     }
     
     /**
@@ -540,17 +585,23 @@ class WorkoutCard {
      */
     setDeleteMode(enabled) {
         this.config.deleteMode = enabled;
-        
+
+        // Clear selection state when exiting delete mode
+        if (!enabled) {
+            this.config.isSelected = false;
+        }
+
         if (this.element) {
             const cardBody = this.element.querySelector('.card-body');
             const footerContent = cardBody?.querySelector('.card-footer-content');
-            
+
             if (enabled) {
                 this.element.classList.add('delete-mode');
             } else {
                 this.element.classList.remove('delete-mode');
+                this.element.classList.remove('selected');
             }
-            
+
             // Replace footer content with updated actions
             if (footerContent) {
                 footerContent.innerHTML = this._renderActions();

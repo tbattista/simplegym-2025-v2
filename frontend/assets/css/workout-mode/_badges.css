@@ -61,13 +61,13 @@
 }
 
 .weight-badge.direction-reminder.direction-same {
-    background-color: #6366f1;
+    background-color: #C97C5D;           /* Soft Clay */
     color: white;
 }
 
-/* Dark mode override for direction-same (uses indigo, not a variable) */
+/* Dark mode override for direction-same */
 [data-bs-theme="dark"] .weight-badge.direction-reminder.direction-same {
-    background-color: #58a6ff;
+    background-color: #d49378;           /* Brighter Clay */
 }
 
 @keyframes subtlePulse {

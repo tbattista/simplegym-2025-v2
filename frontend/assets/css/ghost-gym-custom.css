@@ -136,7 +136,7 @@
 
 .workout-item:hover {
     border-left-color: var(--gs-accent);
-    background-color: rgba(6, 182, 212, 0.04);
+    background-color: rgba(201, 124, 93, 0.04);  /* Soft Clay */
 }
 
 .workout-tags {
@@ -310,13 +310,13 @@
 }
 
 .alert-warning {
-    background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(245, 158, 11, 0.05));
+    background: linear-gradient(135deg, rgba(227, 161, 79, 0.1), rgba(227, 161, 79, 0.05));  /* Warm Amber */
     color: #92400e;
 }
 
 .alert-info {
-    background: linear-gradient(135deg, rgba(6, 182, 212, 0.1), rgba(6, 182, 212, 0.05));
-    color: #155e75;
+    background: linear-gradient(135deg, rgba(229, 231, 235, 0.35), rgba(229, 231, 235, 0.25));  /* Border Gray (Accent) */
+    color: #475569;
 }
 
 /* ============================================
@@ -394,12 +394,12 @@
 
 /* Saving state */
 .autosave-indicator.saving {
-    background: rgba(6, 182, 212, 0.1);
-    color: var(--gs-accent);
+    background: rgba(201, 124, 93, 0.1);  /* Soft Clay */
+    color: var(--gs-primary);
 }
 
 .autosave-indicator.saving i {
-    color: var(--gs-accent);
+    color: var(--gs-primary);
 }
 
 /* Saved state */
@@ -414,7 +414,7 @@
 
 /* Unsaved changes state */
 .autosave-indicator.unsaved {
-    background: rgba(245, 158, 11, 0.1);
+    background: rgba(227, 161, 79, 0.1);  /* Warm Amber */
     color: var(--gs-warning);
 }
 

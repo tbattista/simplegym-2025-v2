@@ -1,0 +1,251 @@
+/**
+ * Program Detail Offcanvas Styles
+ * Styles for the program detail view and workout list
+ * @version 1.0.0
+ */
+
+/* ============================================
+   PROGRAM DETAIL OFFCANVAS
+   ============================================ */
+
+#programDetailOffcanvas.offcanvas-bottom {
+    height: auto;
+    max-height: 85vh;
+    min-height: 30vh;
+    transition: transform 0.3s ease-in-out;
+}
+
+#programDetailOffcanvas .offcanvas-body {
+    overflow-y: auto;
+    max-height: calc(85vh - 140px);
+}
+
+#programDetailOffcanvas .offcanvas-header {
+    flex-shrink: 0;
+}
+
+#programDetailOffcanvas .offcanvas-footer {
+    flex-shrink: 0;
+    background: var(--bs-body-bg);
+}
+
+/* ============================================
+   PROGRAM METADATA
+   ============================================ */
+
+.program-detail-meta {
+    padding-bottom: 0.75rem;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid var(--bs-border-color);
+}
+
+.program-detail-meta p {
+    font-size: 0.875rem;
+    margin-bottom: 0.5rem;
+}
+
+.program-detail-meta .badge {
+    font-size: 0.75rem;
+    padding: 0.35em 0.65em;
+}
+
+/* ============================================
+   PROGRAM WORKOUTS SECTION
+   ============================================ */
+
+.program-workouts-section h6 {
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.workout-list-sortable {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+/* ============================================
+   WORKOUT CHIP (Draggable Item)
+   ============================================ */
+
+.workout-chip {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    background: var(--bs-gray-100);
+    border: 1px solid var(--bs-border-color);
+    border-radius: 0.5rem;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+}
+
+.workout-chip:hover {
+    background: var(--bs-gray-200);
+}
+
+/* Drag handle */
+.workout-chip-handle {
+    cursor: grab;
+    color: var(--bs-secondary);
+    padding: 0.25rem;
+    touch-action: none;
+}
+
+.workout-chip-handle:active {
+    cursor: grabbing;
+}
+
+.workout-chip-handle i {
+    font-size: 1.25rem;
+}
+
+/* Chip content */
+.workout-chip-content {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+}
+
+.workout-chip-name {
+    font-weight: 500;
+    font-size: 0.875rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.workout-chip-meta {
+    font-size: 0.75rem;
+}
+
+/* Remove button */
+.workout-chip-remove {
+    padding: 0.25rem;
+    color: var(--bs-secondary);
+    opacity: 0.6;
+    transition: opacity 0.15s, color 0.15s;
+}
+
+.workout-chip-remove:hover {
+    opacity: 1;
+    color: var(--bs-danger);
+}
+
+.workout-chip-remove i {
+    font-size: 1.25rem;
+}
+
+/* ============================================
+   SORTABLE.JS DRAG STATES
+   ============================================ */
+
+/* Ghost element (placeholder during drag) */
+.workout-chip.sortable-ghost {
+    opacity: 0.4;
+    background: rgba(var(--bs-primary-rgb), 0.1);
+    border-color: var(--bs-primary);
+    border-style: dashed;
+}
+
+/* Element being dragged */
+.workout-chip.sortable-drag {
+    opacity: 1;
+    background: var(--bs-body-bg);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    transform: scale(1.02);
+    z-index: 10;
+}
+
+/* Chosen element (before drag starts) */
+.workout-chip.sortable-chosen {
+    background: rgba(var(--bs-primary-rgb), 0.05);
+}
+
+/* ============================================
+   EMPTY STATE
+   ============================================ */
+
+.program-workouts-section .text-center {
+    background: var(--bs-gray-50);
+}
+
+.program-workouts-section .display-4 {
+    font-size: 3rem;
+    opacity: 0.5;
+}
+
+/* ============================================
+   RESPONSIVE DESIGN
+   ============================================ */
+
+@media (max-width: 575.98px) {
+    .workout-chip {
+        padding: 0.625rem;
+        gap: 0.5rem;
+    }
+
+    .workout-chip-name {
+        font-size: 0.8125rem;
+    }
+
+    .workout-chip-handle i,
+    .workout-chip-remove i {
+        font-size: 1.125rem;
+    }
+}
+
+/* ============================================
+   DARK MODE
+   ============================================ */
+
+[data-bs-theme="dark"] .workout-chip {
+    background: var(--bs-gray-800);
+    border-color: var(--bs-gray-700);
+}
+
+[data-bs-theme="dark"] .workout-chip:hover {
+    background: var(--bs-gray-700);
+}
+
+[data-bs-theme="dark"] .workout-chip.sortable-ghost {
+    background: rgba(var(--bs-primary-rgb), 0.15);
+}
+
+[data-bs-theme="dark"] .workout-chip.sortable-drag {
+    background: var(--bs-gray-900);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+[data-bs-theme="dark"] .program-workouts-section .text-center {
+    background: var(--bs-gray-800);
+}
+
+[data-bs-theme="dark"] .program-detail-meta {
+    border-bottom-color: var(--bs-gray-700);
+}
+
+/* ============================================
+   ACCESSIBILITY
+   ============================================ */
+
+/* Focus visible for keyboard navigation */
+.workout-chip:focus-visible {
+    outline: 2px solid var(--bs-primary);
+    outline-offset: 2px;
+}
+
+.workout-chip-remove:focus-visible {
+    outline: 2px solid var(--bs-danger);
+    outline-offset: 2px;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    .workout-chip,
+    .workout-chip.sortable-ghost,
+    .workout-chip.sortable-drag {
+        transition: none !important;
+    }
+}

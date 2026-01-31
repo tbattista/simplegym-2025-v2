@@ -135,17 +135,17 @@
    ============================================ */
 
 [data-bs-theme="dark"] .accordion-workout-groups.edit-mode-active {
-    background: rgba(245, 158, 11, 0.1);
+    background: rgba(227, 161, 79, 0.1);   /* Warm Amber */
     border-color: var(--bs-warning);
 }
 
 [data-bs-theme="dark"] .accordion-workout-groups.edit-mode-active .accordion-item {
-    background: rgba(245, 158, 11, 0.15);
+    background: rgba(227, 161, 79, 0.15);  /* Warm Amber */
     border-color: var(--bs-warning);
 }
 
 [data-bs-theme="dark"] .accordion-workout-groups.edit-mode-active .accordion-button {
-    background: rgba(245, 158, 11, 0.2);
+    background: rgba(227, 161, 79, 0.2);   /* Warm Amber */
 }
 
 [data-bs-theme="dark"] .accordion-workout-groups.edit-mode-active .drag-handle {

@@ -123,7 +123,7 @@
 
 .note-textarea:focus {
     border-color: var(--workout-accent);
-    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.1);
+    box-shadow: 0 0 0 2px rgba(201, 124, 93, 0.1);  /* Soft Clay */
     outline: none;
 }
 

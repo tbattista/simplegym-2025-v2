@@ -39,9 +39,18 @@ async def export_workout_text(
     if not workout:
         raise HTTPException(status_code=404, detail="Workout not found")
 
+    # Fetch exercise history for weights if requested
+    exercise_weights = None
+    if include_weights:
+        exercise_weights = await firestore_data_service.get_exercise_history_for_workout(user_id, workout_id)
+
     # Generate text export
     try:
-        text_content = export_service.generate_text_export(workout, include_weights=include_weights)
+        text_content = export_service.generate_text_export(
+            workout,
+            include_weights=include_weights,
+            exercise_weights=exercise_weights
+        )
         return PlainTextResponse(content=text_content)
     except Exception as e:
         logger.error(f"Error generating text export: {str(e)}")
@@ -67,9 +76,18 @@ async def export_workout_image(
     if not workout:
         raise HTTPException(status_code=404, detail="Workout not found")
 
+    # Fetch exercise history for weights if requested
+    exercise_weights = None
+    if include_weights:
+        exercise_weights = await firestore_data_service.get_exercise_history_for_workout(user_id, workout_id)
+
     # Generate image
     try:
-        image_path = export_service.generate_shareable_image(workout, include_weights=include_weights)
+        image_path = export_service.generate_shareable_image(
+            workout,
+            include_weights=include_weights,
+            exercise_weights=exercise_weights
+        )
         if not image_path:
             raise HTTPException(status_code=500, detail="Failed to generate image")
 
@@ -102,9 +120,18 @@ async def export_workout_print(
     if not workout:
         raise HTTPException(status_code=404, detail="Workout not found")
 
+    # Fetch exercise history for weights if requested
+    exercise_weights = None
+    if include_weights:
+        exercise_weights = await firestore_data_service.get_exercise_history_for_workout(user_id, workout_id)
+
     # Generate printable PDF
     try:
-        pdf_path = export_service.generate_printable_pdf(workout, include_weights=include_weights)
+        pdf_path = export_service.generate_printable_pdf(
+            workout,
+            include_weights=include_weights,
+            exercise_weights=exercise_weights
+        )
         if not pdf_path:
             raise HTTPException(status_code=500, detail="Failed to generate PDF")
 

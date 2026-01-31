@@ -159,6 +159,12 @@ function renderFavoritesSection() {
 
     if (!section || !container) return;
 
+    // Hide section if favorites filter is active (redundant cards)
+    if (window.ghostGym.workoutDatabase.filters.favoritesOnly) {
+        section.style.display = 'none';
+        return;
+    }
+
     const favorites = window.ghostGym.workoutDatabase.all
         .filter(w => w.is_favorite)
         .sort((a, b) => new Date(b.favorited_at) - new Date(a.favorited_at));
@@ -172,25 +178,20 @@ function renderFavoritesSection() {
 
     // Show max 3 in collapsed view
     const displayFavorites = favorites.slice(0, 3);
-    const hasMore = favorites.length > 3;
 
     container.innerHTML = displayFavorites.map(workout =>
         renderCompactWorkoutCard(workout)
     ).join('');
 
-    // Update "View all" link
+    // Always show "View all" link when there are favorites
     const viewAllLink = document.getElementById('viewAllFavorites');
     if (viewAllLink) {
-        if (hasMore) {
-            viewAllLink.style.display = 'inline';
-            viewAllLink.textContent = `View all (${favorites.length})`;
-            viewAllLink.onclick = (e) => {
-                e.preventDefault();
-                scrollToMyWorkoutsWithFavoritesFilter();
-            };
-        } else {
-            viewAllLink.style.display = 'none';
-        }
+        viewAllLink.style.display = 'inline';
+        viewAllLink.textContent = `View all (${favorites.length})`;
+        viewAllLink.onclick = (e) => {
+            e.preventDefault();
+            filterFavoritesOnly();
+        };
     }
 }
 
@@ -203,18 +204,12 @@ function renderCompactWorkoutCard(workout) {
     return `
         <div class="card mb-2 workout-card-compact" onclick="viewWorkoutDetails('${workout.id}')">
             <div class="card-body py-3 px-3">
-                <div class="d-flex justify-content-between align-items-start">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bx bxs-heart text-danger"></i>
                     <div>
-                        <div class="d-flex align-items-center gap-2 mb-1">
-                            <i class="bx bxs-heart text-danger"></i>
-                            <span class="fw-medium">${workout.name}</span>
-                        </div>
-                        <small class="text-muted">${exerciseCount} exercises</small>
+                        <span class="fw-medium">${workout.name}</span>
+                        <small class="text-muted d-block">${exerciseCount} exercises</small>
                     </div>
-                    <button class="btn btn-sm btn-primary"
-                            onclick="event.stopPropagation(); doWorkout('${workout.id}')">
-                        Start
-                    </button>
                 </div>
             </div>
         </div>
@@ -222,15 +217,37 @@ function renderCompactWorkoutCard(workout) {
 }
 
 /**
- * Scroll to My Workouts section with favorites filter applied
+ * Filter to show only favorites in the main grid
+ * @param {boolean} enabled - Whether to enable or disable favorites filter
  */
-function scrollToMyWorkoutsWithFavoritesFilter() {
-    // For now, just scroll to the section
-    // In the future, we could add a favorites filter to the My Workouts section
-    const myWorkoutsSection = document.getElementById('myWorkoutsSection');
-    if (myWorkoutsSection) {
-        myWorkoutsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+function filterFavoritesOnly(enabled = true) {
+    console.log('⭐ Favorites filter:', enabled ? 'enabled' : 'disabled');
+
+    // Update filter state
+    window.ghostGym.workoutDatabase.filters.favoritesOnly = enabled;
+
+    // Sync the toggle in offcanvas
+    const toggle = document.getElementById('favoritesFilterToggle');
+    if (toggle) {
+        toggle.checked = enabled;
     }
+
+    // Apply filters (will hide favorites section when enabled)
+    filterWorkouts();
+
+    // Re-render favorites section
+    renderFavoritesSection();
+
+    // Update filter badge
+    updateFilterBadge();
+}
+
+/**
+ * Handle favorites filter toggle change from offcanvas
+ */
+function handleFavoritesFilterToggle(e) {
+    const enabled = e.target.checked;
+    filterFavoritesOnly(enabled);
 }
 
 /**
@@ -554,52 +571,58 @@ function initializeTagsPopover(tags) {
  */
 function filterWorkouts() {
     let filtered = [...window.ghostGym.workoutDatabase.all];
-    
+
     // Get filter values from state
     const searchTerm = window.ghostGym.workoutDatabase.filters.search || '';
     const selectedTags = window.ghostGym.workoutDatabase.filters.tags || [];
     const sortBy = window.ghostGym.workoutDatabase.filters.sortBy || 'modified_date';
-    
-    console.log('🔍 Applying filters:', { searchTerm, selectedTags, sortBy });
-    
+    const favoritesOnly = window.ghostGym.workoutDatabase.filters.favoritesOnly || false;
+
+    console.log('🔍 Applying filters:', { searchTerm, selectedTags, sortBy, favoritesOnly });
+
+    // Apply favorites filter
+    if (favoritesOnly) {
+        filtered = filtered.filter(workout => workout.is_favorite);
+    }
+
     // Apply search filter
     if (searchTerm) {
         const searchLower = searchTerm.toLowerCase();
-        
+
         filtered = filtered.filter(workout => {
             return workout.name.toLowerCase().includes(searchLower) ||
                    (workout.description || '').toLowerCase().includes(searchLower) ||
                    (workout.tags || []).some(tag => tag.toLowerCase().includes(searchLower));
         });
     }
-    
+
     // Apply tag filter
     if (selectedTags.length > 0) {
         filtered = filtered.filter(workout => {
             return selectedTags.some(tag => (workout.tags || []).includes(tag));
         });
     }
-    
+
     // Sort workouts
     filtered = sortWorkouts(filtered, sortBy);
-    
+
     // Update filtered array
     window.ghostGym.workoutDatabase.filtered = filtered;
-    
+
     // Reset to page 1
     window.ghostGym.workoutDatabase.currentPage = 1;
-    
+
     // Update grid with filtered data
     if (workoutGrid) {
         workoutGrid.setData(filtered);
     }
-    
+
     // Update stats display
     updateStatsDisplay();
-    
+
     // Update filter badge
     updateFilterBadge();
-    
+
     console.log('📊 Filter results:', filtered.length, 'of', window.ghostGym.workoutDatabase.all.length);
 }
 
@@ -647,7 +670,7 @@ function sortWorkouts(workouts, sortBy) {
  */
 function clearFilters() {
     console.log('🧹 Clearing all filters');
-    
+
     // Clear search in toolbar
     const workoutSearchInput = document.getElementById('workoutSearchInput');
     const clearSearchBtn = document.getElementById('clearSearchBtn');
@@ -658,10 +681,19 @@ function clearFilters() {
         clearSearchBtn.style.display = 'none';
     }
 
-    // Reset filter state (including search)
+    // Reset filter state (including search and favorites)
     window.ghostGym.workoutDatabase.filters.search = '';
     window.ghostGym.workoutDatabase.filters.tags = [];
     window.ghostGym.workoutDatabase.filters.sortBy = 'modified_date';
+    window.ghostGym.workoutDatabase.filters.favoritesOnly = false;
+
+    // Reset favorites filter toggle immediately after state change
+    const favoritesToggle = document.getElementById('favoritesFilterToggle');
+    console.log('🔄 Resetting favorites toggle:', favoritesToggle, favoritesToggle?.checked);
+    if (favoritesToggle) {
+        favoritesToggle.checked = false;
+        console.log('✅ Favorites toggle set to:', favoritesToggle.checked);
+    }
 
     // Reset sort cycle button to default
     currentSortIndex = 0;
@@ -678,6 +710,9 @@ function clearFilters() {
 
     // Re-apply filters (will show all workouts)
     filterWorkouts();
+
+    // Re-render favorites section (will be shown again)
+    renderFavoritesSection();
 
     // Update filter badge
     updateFilterBadge();
@@ -815,7 +850,10 @@ function initializeComponents() {
             onViewDetails: (workout) => viewWorkoutDetails(workout.id),
             // Card tap also opens detail view
             onCardClick: (workout) => viewWorkoutDetails(workout.id),
-            onDelete: (workoutId, workoutName) => deleteWorkoutFromDatabase(workoutId, workoutName)
+            // Delete callbacks
+            onDelete: (workoutId, workoutName) => deleteWorkoutFromDatabase(workoutId, workoutName),
+            // Selection change callback for batch delete
+            onSelectionChange: handleSelectionChange
         },
         onPageChange: (page) => {
             window.ghostGym.workoutDatabase.currentPage = page;
@@ -1128,7 +1166,7 @@ function hideSearchOverlay() {
 
 /**
  * ============================================
- * DELETE MODE MANAGEMENT
+ * DELETE MODE MANAGEMENT (Gmail-style batch selection)
  * ============================================
  */
 
@@ -1143,18 +1181,22 @@ function toggleDeleteMode() {
     if (toggle) toggle.checked = isActive;
     window.ghostGym.workoutDatabase.deleteMode = isActive;
 
+    // Clear selection when entering/exiting
+    window.ghostGym.workoutDatabase.selectedWorkoutIds.clear();
+
     console.log(`🗑️ Delete mode ${isActive ? 'activated' : 'deactivated'}`);
 
     // Update grid delete mode
     if (workoutGrid) {
         workoutGrid.setDeleteMode(isActive);
+        workoutGrid.clearSelection();
     }
 
-    // Show/hide delete mode indicator
+    // Show/hide selection action bar
     if (isActive) {
-        showDeleteModeIndicator();
+        showSelectionActionBar();
     } else {
-        hideDeleteModeIndicator();
+        hideSelectionActionBar();
     }
 
     // Body class for global styling
@@ -1162,41 +1204,71 @@ function toggleDeleteMode() {
 }
 
 /**
- * Show delete mode floating action bar
+ * Handle selection change from card checkbox
+ * @param {string} workoutId - The workout ID
+ * @param {boolean} isSelected - Whether it's selected
  */
-function showDeleteModeIndicator() {
-    let indicator = document.getElementById('deleteModeIndicator');
-    if (!indicator) {
-        indicator = document.createElement('div');
-        indicator.id = 'deleteModeIndicator';
-        indicator.className = 'delete-mode-indicator';
-        indicator.innerHTML = `
-            <div class="delete-mode-label">
-                <i class="bx bx-trash"></i>
-                <span>Tap cards to delete</span>
+function handleSelectionChange(workoutId, isSelected) {
+    const selected = window.ghostGym.workoutDatabase.selectedWorkoutIds;
+    if (isSelected) {
+        selected.add(workoutId);
+    } else {
+        selected.delete(workoutId);
+    }
+    updateSelectionCount();
+}
+
+/**
+ * Show selection action bar (contextual action bar)
+ */
+function showSelectionActionBar() {
+    let bar = document.getElementById('selectionActionBar');
+    if (!bar) {
+        bar = document.createElement('div');
+        bar.id = 'selectionActionBar';
+        bar.className = 'selection-action-bar';
+        bar.innerHTML = `
+            <div class="selection-info">
+                <button class="btn-close-selection" onclick="exitDeleteMode()" type="button">
+                    <i class="bx bx-x"></i>
+                </button>
+                <span class="selection-count">0 selected</span>
             </div>
-            <button class="btn-done" onclick="exitDeleteMode()" type="button">
-                <i class="bx bx-x"></i>
-                <span>Done</span>
+            <button class="btn-batch-delete" onclick="confirmBatchDelete()" type="button" disabled>
+                <i class="bx bx-trash"></i>
+                Delete
             </button>
         `;
-        document.body.appendChild(indicator);
+        document.body.appendChild(bar);
     }
-    indicator.style.display = 'flex';
+    bar.style.display = 'flex';
+    updateSelectionCount();
 }
 
 /**
- * Hide delete mode floating indicator
+ * Hide selection action bar
  */
-function hideDeleteModeIndicator() {
-    const indicator = document.getElementById('deleteModeIndicator');
-    if (indicator) {
-        indicator.style.display = 'none';
+function hideSelectionActionBar() {
+    const bar = document.getElementById('selectionActionBar');
+    if (bar) {
+        bar.style.display = 'none';
     }
 }
 
 /**
- * Exit delete mode - called from indicator button
+ * Update the selection count display
+ */
+function updateSelectionCount() {
+    const count = window.ghostGym.workoutDatabase.selectedWorkoutIds.size;
+    const countEl = document.querySelector('.selection-count');
+    const deleteBtn = document.querySelector('.btn-batch-delete');
+
+    if (countEl) countEl.textContent = `${count} selected`;
+    if (deleteBtn) deleteBtn.disabled = count === 0;
+}
+
+/**
+ * Exit delete mode - called from action bar button
  */
 function exitDeleteMode() {
     const toggle = document.getElementById('deleteModeToggle');
@@ -1206,11 +1278,112 @@ function exitDeleteMode() {
     } else {
         // Direct toggle if checkbox not available
         window.ghostGym.workoutDatabase.deleteMode = false;
+        window.ghostGym.workoutDatabase.selectedWorkoutIds.clear();
         if (workoutGrid) {
             workoutGrid.setDeleteMode(false);
+            workoutGrid.clearSelection();
         }
-        hideDeleteModeIndicator();
+        hideSelectionActionBar();
         document.body.classList.remove('delete-mode-active');
+    }
+}
+
+/**
+ * Confirm batch delete of selected workouts
+ */
+async function confirmBatchDelete() {
+    const selected = window.ghostGym.workoutDatabase.selectedWorkoutIds;
+    const count = selected.size;
+    if (count === 0) return;
+
+    // Get workout names for confirmation
+    const workoutNames = [...selected].map(id => {
+        const workout = window.ghostGym.workoutDatabase.all.find(w => w.id === id);
+        return workout?.name || 'Unknown workout';
+    }).slice(0, 3); // Show max 3 names
+
+    let message = `Are you sure you want to delete ${count} workout${count > 1 ? 's' : ''}?\n\n`;
+    message += workoutNames.join('\n');
+    if (count > 3) {
+        message += `\n...and ${count - 3} more`;
+    }
+    message += '\n\nThis action cannot be undone.';
+
+    const confirmed = confirm(message);
+
+    if (confirmed) {
+        await batchDeleteWorkouts([...selected]);
+    }
+}
+
+/**
+ * Batch delete multiple workouts
+ * @param {Array<string>} workoutIds - Array of workout IDs to delete
+ */
+async function batchDeleteWorkouts(workoutIds) {
+    console.log('🗑️ Batch deleting workouts:', workoutIds);
+
+    // Show loading state
+    const deleteBtn = document.querySelector('.btn-batch-delete');
+    if (deleteBtn) {
+        deleteBtn.innerHTML = '<i class="bx bx-loader-alt bx-spin"></i> Deleting...';
+        deleteBtn.disabled = true;
+    }
+
+    try {
+        // Delete each workout
+        let deletedCount = 0;
+        for (const id of workoutIds) {
+            try {
+                await window.dataManager.deleteWorkout(id);
+                deletedCount++;
+            } catch (error) {
+                console.error(`Failed to delete workout ${id}:`, error);
+            }
+        }
+
+        // Update local state
+        window.ghostGym.workoutDatabase.all = window.ghostGym.workoutDatabase.all.filter(
+            w => !workoutIds.includes(w.id)
+        );
+        window.ghostGym.workouts = window.ghostGym.workouts.filter(
+            w => !workoutIds.includes(w.id)
+        );
+
+        // Update stats
+        window.ghostGym.workoutDatabase.stats.total = window.ghostGym.workoutDatabase.all.length;
+
+        // Update total count display
+        const totalCountEl = document.getElementById('totalWorkoutsCount');
+        if (totalCountEl) {
+            totalCountEl.textContent = window.ghostGym.workoutDatabase.stats.total;
+        }
+
+        // Show success message
+        if (window.showToast) {
+            window.showToast(`Deleted ${deletedCount} workout${deletedCount > 1 ? 's' : ''}`, 'success');
+        }
+
+        // Exit delete mode and refresh
+        exitDeleteMode();
+        filterWorkouts();
+
+        // Re-render favorites section
+        if (window.renderFavoritesSection) {
+            window.renderFavoritesSection();
+        }
+
+    } catch (error) {
+        console.error('Batch delete failed:', error);
+        if (window.showToast) {
+            window.showToast('Failed to delete some workouts', 'error');
+        }
+    } finally {
+        // Reset button state
+        if (deleteBtn) {
+            deleteBtn.innerHTML = '<i class="bx bx-trash"></i> Delete';
+            deleteBtn.disabled = false;
+        }
     }
 }
 
@@ -1362,7 +1535,13 @@ function updateFilterBadge() {
     const badge = document.getElementById('filterBadge');
     if (!badge) return;
 
-    const count = window.ghostGym.workoutDatabase.filters.tags.length;
+    let count = window.ghostGym.workoutDatabase.filters.tags.length;
+
+    // Include favorites filter in count
+    if (window.ghostGym.workoutDatabase.filters.favoritesOnly) {
+        count += 1;
+    }
+
     badge.textContent = count;
     badge.style.display = count > 0 ? 'inline-block' : 'none';
 }
@@ -1384,12 +1563,17 @@ window.toggleDeleteMode = toggleDeleteMode;
 window.deleteWorkoutFromDatabase = deleteWorkoutFromDatabase;
 window.initDeleteModeToggle = initDeleteModeToggle;
 window.exitDeleteMode = exitDeleteMode;
-window.showDeleteModeIndicator = showDeleteModeIndicator;
-window.hideDeleteModeIndicator = hideDeleteModeIndicator;
+window.handleSelectionChange = handleSelectionChange;
+window.showSelectionActionBar = showSelectionActionBar;
+window.hideSelectionActionBar = hideSelectionActionBar;
+window.updateSelectionCount = updateSelectionCount;
+window.confirmBatchDelete = confirmBatchDelete;
+window.batchDeleteWorkouts = batchDeleteWorkouts;
 
 // Favorites section functions
 window.toggleWorkoutFavorite = toggleWorkoutFavorite;
 window.renderFavoritesSection = renderFavoritesSection;
+window.filterFavoritesOnly = filterFavoritesOnly;
 
 // Toolbar functions
 window.cycleWorkoutSort = cycleWorkoutSort;

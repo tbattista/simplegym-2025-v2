@@ -358,7 +358,7 @@
 
 [data-bs-theme="dark"] .workout-list-card:hover {
     border-color: var(--gs-primary);
-    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+    box-shadow: 0 4px 12px rgba(201, 124, 93, 0.3);  /* Soft Clay */
 }
 
 [data-bs-theme="dark"] .quick-actions-card .btn-outline-primary {

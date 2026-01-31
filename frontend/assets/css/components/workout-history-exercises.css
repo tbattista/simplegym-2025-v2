@@ -1,0 +1,410 @@
+/**
+ * Workout History - Exercise Styles
+ * Exercise list, performance cards, and filter bar
+ * @version 1.0.0
+ */
+
+/* ============================================
+   EXERCISE LIST CONTAINER
+   ============================================ */
+
+.exercise-list {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  overflow: visible;
+}
+
+/* ============================================
+   EXERCISE ROW
+   ============================================ */
+
+.exercise-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--bs-border-color);
+  cursor: pointer;
+  background: transparent;
+}
+
+.exercise-row:last-of-type {
+  border-bottom: none;
+}
+
+.exercise-row:hover {
+  background-color: transparent;
+}
+
+.exercise-row[aria-expanded="true"] {
+  background-color: transparent;
+}
+
+/* Row tap feedback */
+.exercise-row:active {
+  opacity: 0.8;
+}
+
+/* ============================================
+   EXERCISE ROW MAIN
+   ============================================ */
+
+.exercise-row-main {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Exercise name - bold anchor text */
+.exercise-name {
+  font-weight: 600;
+  font-size: 0.9375rem;
+  color: var(--bs-heading-color);
+}
+
+/* ============================================
+   EXERCISE ROW META
+   ============================================ */
+
+.exercise-row-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Weight - medium, secondary */
+.exercise-last-set {
+  font-weight: 500;
+  font-size: 0.8125rem;
+  color: var(--bs-body-color);
+}
+
+/* Date - small, muted */
+.exercise-date {
+  font-size: 0.75rem;
+  color: var(--bs-secondary-color);
+}
+
+/* Remove dot separator (now inline with date) */
+.exercise-dot {
+  display: none;
+}
+
+/* ============================================
+   SESSION COUNT BADGE
+   ============================================ */
+
+.exercise-session-count {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: var(--bs-secondary-color);
+  background: var(--bs-gray-100);
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.25rem;
+  margin-left: 0.5rem;
+}
+
+/* ============================================
+   TREND ARROWS
+   ============================================ */
+
+.trend-arrow {
+  font-size: 0.6875rem;
+  color: var(--bs-secondary-color);
+  opacity: 0.6;
+}
+
+.trend-arrow.trend-up {
+  color: var(--bs-secondary-color);
+}
+
+.trend-arrow.trend-down {
+  color: var(--bs-secondary-color);
+}
+
+.trend-arrow.trend-stable {
+  color: var(--bs-secondary-color);
+}
+
+/* ============================================
+   EXERCISE DETAILS COLLAPSE
+   ============================================ */
+
+.exercise-details-collapse {
+  border-bottom: 1px solid var(--bs-border-color);
+}
+
+.exercise-details-collapse:last-child {
+  border-bottom: none;
+}
+
+.exercise-details-wrapper {
+  padding: 0.5rem 0 0.75rem 0;
+  background: transparent;
+  border-left: 2px solid var(--bs-border-color);
+  margin-left: 0.25rem;
+  padding-left: 0.75rem;
+}
+
+/* ============================================
+   EXERCISE HISTORY LIST
+   ============================================ */
+
+.exercise-history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.exercise-history-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--bs-body-color);
+}
+
+.history-set {
+  font-weight: 500;
+}
+
+.history-date {
+  font-size: 0.75rem;
+  color: var(--bs-secondary-color);
+}
+
+/* Fade older history rows */
+.history-row-faded {
+  opacity: 0.65;
+}
+
+/* ============================================
+   EXERCISE HISTORY NOTES
+   ============================================ */
+
+.exercise-history-notes {
+  margin-top: 0.75rem;
+  padding-top: 0.5rem;
+  border-top: 1px dashed var(--bs-border-color);
+  font-size: 0.8125rem;
+  font-style: italic;
+  color: var(--bs-secondary-color);
+}
+
+.notes-label {
+  font-style: normal;
+  font-weight: 500;
+}
+
+/* ============================================
+   EMPTY STATES
+   ============================================ */
+
+.exercise-history-empty,
+.exercise-list-empty {
+  padding: 1.5rem;
+  text-align: center;
+  color: var(--bs-secondary-color);
+  font-size: 0.875rem;
+}
+
+/* Section hint text */
+.exercise-section-hint {
+  font-size: 0.75rem;
+  opacity: 0.7;
+}
+
+/* ============================================
+   EXERCISE FILTER BAR
+   ============================================ */
+
+.exercise-filter-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.exercise-filter-group {
+  display: flex;
+  gap: 0.375rem;
+  flex-wrap: wrap;
+}
+
+/* ============================================
+   EXERCISE FILTER BUTTONS
+   ============================================ */
+
+.exercise-filter-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--bs-secondary-color);
+  background: transparent;
+  border: 1px solid var(--bs-border-color);
+  border-radius: 0.25rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.exercise-filter-btn:hover:not(:disabled) {
+  color: var(--bs-body-color);
+  border-color: var(--bs-gray-400);
+}
+
+.exercise-filter-btn.active {
+  color: var(--bs-primary);
+  background: rgba(var(--bs-primary-rgb), 0.1);
+  border-color: var(--bs-primary);
+}
+
+.exercise-filter-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.exercise-filter-btn .filter-count {
+  font-size: 0.625rem;
+  opacity: 0.7;
+}
+
+/* ============================================
+   EXERCISE SORT BUTTON
+   ============================================ */
+
+.exercise-sort-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--bs-secondary-color);
+  background: transparent;
+  border: 1px solid var(--bs-border-color);
+  border-radius: 0.25rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.exercise-sort-btn:hover {
+  color: var(--bs-body-color);
+  border-color: var(--bs-gray-400);
+}
+
+.exercise-sort-btn i {
+  font-size: 0.875rem;
+}
+
+/* ============================================
+   RESPONSIVE - MOBILE
+   ============================================ */
+
+@media (max-width: 767.98px) {
+  .exercise-row {
+    padding: 0.625rem 0;
+  }
+
+  .exercise-name {
+    font-size: 0.875rem;
+  }
+
+  .exercise-last-set {
+    font-size: 0.75rem;
+  }
+
+  .exercise-row-meta {
+    gap: 0.375rem;
+  }
+
+  .exercise-details-wrapper {
+    padding: 0.375rem 0 0.625rem 0;
+    padding-left: 0.625rem;
+  }
+
+  .exercise-history-row {
+    font-size: 0.8125rem;
+  }
+}
+
+/* ============================================
+   DARK MODE
+   ============================================ */
+
+[data-bs-theme="dark"] .exercise-list {
+  background: transparent;
+}
+
+[data-bs-theme="dark"] .exercise-row {
+  background: transparent;
+}
+
+[data-bs-theme="dark"] .exercise-details-wrapper {
+  background: transparent;
+}
+
+[data-bs-theme="dark"] .exercise-session-count {
+  background: var(--bs-gray-800);
+}
+
+[data-bs-theme="dark"] .exercise-filter-btn {
+  border-color: var(--bs-gray-700);
+}
+
+[data-bs-theme="dark"] .exercise-filter-btn:hover:not(:disabled) {
+  border-color: var(--bs-gray-600);
+}
+
+[data-bs-theme="dark"] .exercise-filter-btn.active {
+  background: rgba(var(--bs-primary-rgb), 0.2);
+}
+
+[data-bs-theme="dark"] .exercise-sort-btn {
+  border-color: var(--bs-gray-700);
+}
+
+[data-bs-theme="dark"] .exercise-sort-btn:hover {
+  border-color: var(--bs-gray-600);
+}
+
+/* ============================================
+   PRINT STYLES
+   ============================================ */
+
+@media print {
+  .exercise-list {
+    border: 1px solid #dee2e6 !important;
+  }
+
+  .exercise-details-collapse {
+    display: block !important;
+    height: auto !important;
+  }
+
+  .exercise-details-wrapper {
+    background: transparent !important;
+    border-left-color: #dee2e6 !important;
+  }
+
+  .history-row-faded {
+    opacity: 1 !important;
+  }
+}
+
+/* ============================================
+   REDUCED MOTION
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .exercise-row,
+  .exercise-details-collapse {
+    transition: none !important;
+  }
+}

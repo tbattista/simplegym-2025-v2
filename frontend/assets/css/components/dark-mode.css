@@ -81,7 +81,7 @@
 }
 
 [data-bs-theme="dark"] .list-group-item:hover {
-    background-color: rgba(139, 92, 246, 0.1);
+    background-color: rgba(100, 116, 139, 0.1);  /* Slate secondary */
 }
 
 [data-bs-theme="dark"] .list-group-item.active {
@@ -142,7 +142,7 @@
 
 [data-bs-theme="dark"] .workout-card:hover {
     border-color: var(--gs-primary);
-    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+    box-shadow: 0 4px 12px rgba(201, 124, 93, 0.3);  /* Soft Clay */
 }
 
 [data-bs-theme="dark"] .workout-card-title {
@@ -165,7 +165,7 @@
 
 [data-bs-theme="dark"] .workout-list-card:hover {
     border-color: var(--gs-primary);
-    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+    box-shadow: 0 4px 12px rgba(201, 124, 93, 0.3);  /* Soft Clay */
 }
 
 /* ============================================
@@ -248,8 +248,8 @@
 
 [data-bs-theme="dark"] .workout-tag,
 [data-bs-theme="dark"] .workout-card-tag {
-    background: rgba(139, 92, 246, 0.2);
-    color: #c4b5fd;
+    background: rgba(100, 116, 139, 0.2);  /* Slate secondary */
+    color: #94a3b8;
 }
 
 [data-bs-theme="dark"] .badge {
@@ -332,8 +332,8 @@
 }
 
 [data-bs-theme="dark"] .menu-item.active > .menu-link {
-    background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(139, 92, 246, 0.15));
-    color: #c4b5fd;
+    background: linear-gradient(135deg, rgba(201, 124, 93, 0.15), rgba(100, 116, 139, 0.15));  /* Clay to Slate */
+    color: #d49378;  /* Brighter Clay */
 }
 
 [data-bs-theme="dark"] .menu-item.active > .menu-link::before {
@@ -656,7 +656,7 @@
 
 /* Offcanvas Stats Cards (Complete Workout, Resume Session, etc.) */
 [data-bs-theme="dark"] .offcanvas .card.bg-label-primary {
-    background-color: rgba(99, 102, 241, 0.15);
+    background-color: rgba(201, 124, 93, 0.15);  /* Soft Clay */
 }
 
 [data-bs-theme="dark"] .offcanvas .card.bg-label-success {

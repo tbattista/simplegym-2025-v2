@@ -105,40 +105,23 @@ class WorkoutWeightManager {
      * Update weight direction button states in DOM without re-rendering
      * This prevents the card from collapsing when direction buttons are clicked
      * @param {string} exerciseName - Name of exercise
-     * @param {string|null} direction - 'up', 'down', or null
+     * @param {string|null} direction - 'up', 'down', 'same', or null
      */
     updateWeightDirectionButtons(exerciseName, direction) {
         // Find the card for this exercise
         const card = document.querySelector(`.exercise-card[data-exercise-name="${exerciseName}"]`);
         if (!card) return;
-        
-        // Find all direction buttons in this card
-        const buttons = card.querySelectorAll('.weight-direction-btn');
-        const dot = card.querySelector('.weight-direction-dot');
-        
-        // Update button states
-        buttons.forEach(btn => {
-            const btnDirection = btn.getAttribute('data-direction');
-            btn.classList.remove('active', 'btn-direction-up', 'btn-direction-down', 'btn-outline-secondary');
-            
-            if (btnDirection === direction) {
-                // This button is active
-                btn.classList.add('active', `btn-direction-${direction}`);
-            } else {
-                // This button is inactive
-                btn.classList.add('btn-outline-secondary');
-            }
-        });
-        
-        // Toggle dot visibility
-        if (dot) {
-            if (direction) {
-                // A direction is selected, hide the dot
-                dot.classList.add('hidden');
-            } else {
-                // No direction selected, show the dot
-                dot.classList.remove('hidden');
-            }
+
+        // Find ALL direction buttons and remove active class from all first
+        const allButtons = card.querySelectorAll('.workout-chip[data-direction]');
+        allButtons.forEach(btn => btn.classList.remove('active'));
+
+        // Now add active class to the correct button
+        // Default to 'same' if direction is null or undefined
+        const effectiveDirection = direction || 'same';
+        const targetBtn = card.querySelector(`.workout-chip[data-direction="${effectiveDirection}"]`);
+        if (targetBtn) {
+            targetBtn.classList.add('active');
         }
     }
     
@@ -350,7 +333,7 @@ class WorkoutWeightManager {
      * Direct one-tap toggle system replacing popover
      * @param {HTMLElement} button - The clicked button element
      * @param {string} exerciseName - Exercise name
-     * @param {string} direction - Direction ('up' or 'down')
+     * @param {string} direction - Direction ('up', 'down', or 'same')
      */
     toggleWeightDirection(button, exerciseName, direction) {
         if (!this.sessionService.isSessionActive()) {
@@ -360,31 +343,43 @@ class WorkoutWeightManager {
             }
             return;
         }
-        
+
         // Get current direction for this exercise
         const currentDirection = this.sessionService.getWeightDirection(exerciseName);
-        
-        // Toggle logic: if clicking the same button, deselect it (set to null)
-        // Otherwise, set to the clicked direction
-        const newDirection = (currentDirection === direction) ? null : direction;
-        
+
+        // Determine new direction:
+        // - If clicking 'same', always set to 'same' (or null if already same)
+        // - If clicking the same button that's active, deselect (set to 'same' as default)
+        // - Otherwise, set to the clicked direction
+        let newDirection;
+        if (direction === 'same') {
+            // Clicking Same: if already same/null, stay same; otherwise switch to same
+            newDirection = 'same';
+        } else if (currentDirection === direction) {
+            // Clicking same button that's active: revert to 'same' (default)
+            newDirection = 'same';
+        } else {
+            // Clicking a different button: switch to that direction
+            newDirection = direction;
+        }
+
         console.log(`🎯 Toggle weight direction for ${exerciseName}: ${currentDirection} → ${newDirection}`);
-        
+
         // Update session service
         this.sessionService.setWeightDirection(exerciseName, newDirection);
-        
+
         // Update UI directly without re-rendering (keeps card expanded)
         this._updateWeightDirectionButtonsUI(exerciseName, newDirection);
-        
-        // Show feedback toast
-        if (window.showAlert && newDirection) {
+
+        // Show feedback toast (only for up/down changes, not for 'same')
+        if (window.showAlert && newDirection && newDirection !== 'same') {
             const messages = {
                 'up': 'Increase weight next session ↑',
                 'down': 'Decrease weight next session ↓'
             };
             window.showAlert(messages[newDirection], 'success');
         }
-        
+
         // Auto-save
         this.onAutoSave().catch(error => {
             console.error('❌ Failed to auto-save weight direction:', error);
@@ -401,38 +396,25 @@ class WorkoutWeightManager {
         // Find the exercise card
         const card = document.querySelector(`.exercise-card[data-exercise-name="${exerciseName}"]`);
         if (!card) return;
-        
-        // Find all three direction buttons
-        const decreaseBtn = card.querySelector('.weight-direction-btn.decrease');
-        const sameBtn = card.querySelector('.weight-direction-btn.same');
-        const increaseBtn = card.querySelector('.weight-direction-btn.increase');
-        
-        // Update button states for all three buttons
-        if (direction === 'down') {
-            if (decreaseBtn) decreaseBtn.classList.add('active');
-            if (sameBtn) sameBtn.classList.remove('active');
-            if (increaseBtn) increaseBtn.classList.remove('active');
-        } else if (direction === 'up') {
-            if (decreaseBtn) decreaseBtn.classList.remove('active');
-            if (sameBtn) sameBtn.classList.remove('active');
-            if (increaseBtn) increaseBtn.classList.add('active');
-        } else if (direction === 'same') {
-            if (decreaseBtn) decreaseBtn.classList.remove('active');
-            if (sameBtn) sameBtn.classList.add('active');
-            if (increaseBtn) increaseBtn.classList.remove('active');
-        } else {
-            // No direction selected (null) - "No Change" should be active by default
-            if (decreaseBtn) decreaseBtn.classList.remove('active');
-            if (sameBtn) sameBtn.classList.add('active');
-            if (increaseBtn) increaseBtn.classList.remove('active');
+
+        // Find ALL direction buttons and remove active class from all first
+        const allButtons = card.querySelectorAll('.workout-chip[data-direction]');
+        allButtons.forEach(btn => btn.classList.remove('active'));
+
+        // Now add active class to the correct button
+        // Default to 'same' if direction is null or undefined
+        const effectiveDirection = direction || 'same';
+        const targetBtn = card.querySelector(`.workout-chip[data-direction="${effectiveDirection}"]`);
+        if (targetBtn) {
+            targetBtn.classList.add('active');
         }
-        
+
         // Update weight badge if it exists (shows direction indicator)
         const weightBadge = card.querySelector('.weight-badge');
         if (weightBadge) {
             // Update data attribute
             weightBadge.setAttribute('data-direction', direction || 'none');
-            
+
             // Update classes for styling
             weightBadge.classList.remove('direction-up', 'direction-down', 'direction-same');
             if (direction === 'up') {

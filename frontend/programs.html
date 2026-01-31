@@ -45,12 +45,12 @@
     
     <!-- Unified Offcanvas CSS -->
     <link rel="stylesheet" href="/static/assets/css/components/unified-offcanvas.css" />
-    
-    <!-- Programs Page CSS (reuses workout-database styles) -->
-    <link rel="stylesheet" href="/static/assets/css/workout-database.css" />
-    
-    <!-- Bottom Action Bar CSS -->
-    <link rel="stylesheet" href="/static/assets/css/bottom-action-bar.css?v=3.0.2" />
+
+    <!-- Programs Page CSS -->
+    <link rel="stylesheet" href="/static/assets/css/programs.css?v=1.0.0" />
+
+    <!-- Program Detail CSS -->
+    <link rel="stylesheet" href="/static/assets/css/components/program-detail.css?v=1.0.0" />
 
     <!-- Helpers -->
     <script src="/static/assets/vendor/js/helpers.js"></script>
@@ -85,48 +85,76 @@
             <!-- Content -->
             <div class="container-xxl flex-grow-1 container-p-y">
               
-              <!-- Programs List Section -->
+              <!-- Page Header -->
               <div class="mb-3">
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                  <h6 class="mb-0">
-                    <i class="bx bx-folder me-1"></i>
-                    Programs List
-                  </h6>
-                  <div class="form-check form-switch mb-0">
-                    <input class="form-check-input" type="checkbox" role="switch"
-                           id="deleteModeToggle" style="cursor: pointer;">
-                    <label class="form-check-label" for="deleteModeToggle" style="cursor: pointer;">
-                      <span class="delete-mode-label">Delete Mode</span>
-                    </label>
-                  </div>
+                <h6 class="mb-2">
+                  <i class="bx bx-folder me-1"></i>
+                  Programs
+                </h6>
+                <p class="text-muted small mb-3">Organize your <span id="totalProgramsCount">0</span> training programs</p>
+              </div>
+
+              <!-- Programs Toolbar -->
+              <div class="programs-toolbar mb-3" id="programsToolbar">
+                <!-- Search Input -->
+                <div class="programs-toolbar-search">
+                  <i class="bx bx-search"></i>
+                  <input type="text"
+                         id="programSearchInput"
+                         placeholder="Search programs..."
+                         autocomplete="off">
+                  <button class="programs-toolbar-clear"
+                          id="clearSearchBtn"
+                          style="display: none;"
+                          type="button">
+                    <i class="bx bx-x"></i>
+                  </button>
                 </div>
-                <p class="text-muted small mb-3">Browse and manage your <span id="totalProgramsCount">0</span> training programs</p>
-                
-                <!-- Programs Grid Container -->
-                <div id="programsGridContainer">
-                  <!-- Loading state -->
-                  <div id="programsLoadingState" class="text-center py-5">
-                    <div class="spinner-border text-primary" role="status">
-                      <span class="visually-hidden">Loading programs...</span>
-                    </div>
-                    <p class="mt-3 text-muted">Loading programs...</p>
-                  </div>
-                  
-                  <!-- Empty state (hidden by default) -->
-                  <div id="programsEmptyState" class="text-center py-5" style="display: none;">
-                    <i class="bx bx-folder-open display-1 text-muted mb-3"></i>
-                    <h5>No Programs Yet</h5>
-                    <p class="text-muted">Create your first program to get started</p>
-                    <button class="btn btn-primary mt-3" onclick="showProgramModal()">
-                      <i class="bx bx-plus me-1"></i>Create Your First Program
-                    </button>
-                  </div>
-                  
-                  <!-- Programs Grid (hidden by default) -->
-                  <div id="programsGrid" class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3" style="display: none;">
-                    <!-- Program cards will be rendered here -->
-                  </div>
-                </div>
+
+                <!-- Sort Cycle Button -->
+                <button class="btn btn-outline-secondary programs-toolbar-btn"
+                        id="sortCycleBtn"
+                        type="button">
+                  <i class="bx bx-sort-alt-2"></i>
+                  <span class="sort-label">Newest</span>
+                </button>
+
+                <!-- Filter Button -->
+                <button class="btn btn-outline-secondary programs-toolbar-btn"
+                        id="filterBtn"
+                        type="button"
+                        data-bs-toggle="offcanvas"
+                        data-bs-target="#filtersOffcanvas">
+                  <i class="bx bx-filter"></i>
+                  <span class="filter-label">Filter</span>
+                  <span class="filter-badge badge bg-primary ms-1" id="filterBadge" style="display: none;">0</span>
+                </button>
+
+                <!-- Delete Mode Toggle Button -->
+                <button class="btn btn-outline-secondary programs-toolbar-btn"
+                        id="deleteModeBtn"
+                        type="button"
+                        title="Toggle delete mode">
+                  <i class="bx bx-trash"></i>
+                  <span class="delete-label">Delete</span>
+                </button>
+
+                <!-- Create Button -->
+                <button class="btn btn-primary programs-toolbar-btn"
+                        type="button"
+                        id="createProgramBtn">
+                  <i class="bx bx-plus"></i>
+                  <span class="create-label">New</span>
+                </button>
+              </div>
+
+              <!-- Hidden delete mode toggle (for state management) -->
+              <input class="form-check-input" type="checkbox" role="switch"
+                     id="deleteModeToggle" style="display: none;">
+
+              <!-- Programs Grid Container (managed by ProgramGrid component) -->
+              <div id="programsGridContainer">
+                <!-- Grid content will be rendered by ProgramGrid -->
               </div>
             </div>
             <!-- / Content -->
@@ -142,6 +170,62 @@
       <div class="layout-overlay layout-menu-toggle"></div>
     </div>
     <!-- / Layout wrapper -->
+
+    <!-- Filters Offcanvas (Bottom) -->
+    <div class="offcanvas offcanvas-bottom offcanvas-bottom-base" tabindex="-1" id="filtersOffcanvas" aria-labelledby="filtersOffcanvasLabel" data-bs-scroll="false" style="height: auto; max-height: 60vh;">
+      <div class="offcanvas-header">
+        <h5 class="offcanvas-title" id="filtersOffcanvasLabel">
+          <i class="bx bx-filter-alt me-2"></i>
+          Filter Programs
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+      </div>
+      <div class="offcanvas-body">
+        <!-- Difficulty Filter -->
+        <div class="mb-4">
+          <label class="form-label fw-semibold">Difficulty</label>
+          <div class="btn-group w-100" role="group">
+            <button type="button" class="btn btn-outline-secondary active" data-filter-difficulty="all">All</button>
+            <button type="button" class="btn btn-outline-success" data-filter-difficulty="beginner">Beginner</button>
+            <button type="button" class="btn btn-outline-warning" data-filter-difficulty="intermediate">Intermediate</button>
+            <button type="button" class="btn btn-outline-danger" data-filter-difficulty="advanced">Advanced</button>
+          </div>
+        </div>
+
+        <!-- Tags Filter -->
+        <div class="mb-4">
+          <label class="form-label fw-semibold">Filter by Tags</label>
+          <div id="tagsFilterContainer">
+            <p class="text-muted small">Loading tags...</p>
+          </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="mb-4">
+          <label class="form-label fw-semibold">Your Stats</label>
+          <div class="d-flex justify-content-between mb-2">
+            <span class="text-muted">Total Programs:</span>
+            <span class="fw-semibold" id="totalCount">0</span>
+          </div>
+          <div class="d-flex justify-content-between">
+            <span class="text-muted">Showing:</span>
+            <span class="fw-semibold" id="showingCount">0</span>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="pt-3 border-top">
+          <button type="button" class="btn btn-outline-secondary w-100 mb-2" id="clearFiltersBtn">
+            <i class="bx bx-x me-1"></i>
+            Clear Filters
+          </button>
+          <button type="button" class="btn btn-primary w-100" data-bs-dismiss="offcanvas">
+            <i class="bx bx-check me-1"></i>
+            Done
+          </button>
+        </div>
+      </div>
+    </div>
 
     <!-- Program Modal -->
     <div class="modal fade" id="programModal" tabindex="-1">
@@ -305,10 +389,6 @@
 
     <!-- Main JS -->
     <script src="/static/assets/js/main.js"></script>
-    
-    <!-- Bottom Action Bar (load after main.js) -->
-    <script src="/static/assets/js/config/bottom-action-bar-config.js?v=2.0.5"></script>
-    <script src="/static/assets/js/services/bottom-action-bar-service.js?v=3.0.3"></script>
 
     <!-- Firebase Services -->
     <script src="/static/assets/js/firebase/firebase-init.js?v=20251020-03"></script>
@@ -335,6 +415,11 @@
     <!-- Program Card Component -->
     <script src="/static/assets/js/components/program-card.js"></script>
 
+    <!-- Program Components (new mobile-first design) -->
+    <script src="/static/assets/js/components/program-grid.js?v=1.0.0"></script>
+    <script src="/static/assets/js/components/program-detail-offcanvas.js?v=1.0.0"></script>
+    <script src="/static/assets/js/components/workout-picker-offcanvas.js?v=1.0.0"></script>
+
     <!-- UI Helpers -->
     <script src="/static/assets/js/dashboard/ui-helpers.js?v=20251020-04"></script>
 
@@ -342,286 +427,40 @@
     <script src="/static/assets/js/dashboard/programs.js?v=20251020-04"></script>
     <script src="/static/assets/js/dashboard/views.js?v=20251020-04"></script>
 
+    <!-- Programs Page Controller (new mobile-first design) -->
+    <script src="/static/assets/js/dashboard/programs-page.js?v=1.0.0"></script>
+
     <!-- Initialize Programs Page -->
     <script>
-        // Initialize global state for programs
-        window.ghostGym = window.ghostGym || {
-            programs: [],
-            workouts: [],
-            currentProgram: null,
-            // Add exercises structure for compatibility
-            exercises: {
-                all: [],
-                favorites: new Set(),
-                custom: []
-            },
-            // Programs page state
-            programsPage: {
-                all: [],
-                filtered: [],
-                displayed: [],
-                currentPage: 1,
-                pageSize: 50,
-                deleteMode: false,
-                filters: {
-                    search: '',
-                    tags: [],
-                    sortBy: 'modified_date',
-                    sortOrder: 'desc'
-                },
-                stats: {
-                    total: 0,
-                    showing: 0
-                }
-            }
-        };
+        // programs-page.js handles all initialization and state management
+        // This script just bridges legacy functions for backward compatibility
 
-        // Track if we've loaded data yet
-        let dataLoaded = false;
-        
         // Initialize when Firebase is ready
         document.addEventListener('DOMContentLoaded', function() {
             if (window.firebaseReady) {
-                initProgramsPage();
-            } else {
-                window.addEventListener('firebaseReady', initProgramsPage);
-            }
-        });
-        
-        // Listen for auth state changes and reload data
-        window.addEventListener('authStateChanged', function(event) {
-            console.log('🔄 Auth state changed event received, reloading programs...', event.detail);
-            if (dataLoaded && event.detail.isAuthenticated) {
-                // User just signed in, reload from Firestore
-                loadProgramsData();
-            }
-        });
-        
-        async function loadProgramsData() {
-            // Show loading state
-            document.getElementById('programsLoadingState').style.display = 'block';
-            document.getElementById('programsEmptyState').style.display = 'none';
-            document.getElementById('programsGrid').style.display = 'none';
-            
-            if (window.dataManager) {
-                try {
-                    const programs = await window.dataManager.getPrograms();
-                    window.ghostGym.programs = programs || [];
-                    window.ghostGym.programsPage.all = programs || [];
-                    console.log(`✅ Loaded ${window.ghostGym.programs.length} programs`, programs);
-                } catch (error) {
-                    console.error('❌ Error loading programs:', error);
-                    window.ghostGym.programs = [];
-                    window.ghostGym.programsPage.all = [];
-                }
-                
-                try {
-                    const workouts = await window.dataManager.getWorkouts();
-                    window.ghostGym.workouts = workouts || [];
-                    console.log(`✅ Loaded ${window.ghostGym.workouts.length} workouts`);
-                } catch (error) {
-                    console.error('❌ Error loading workouts:', error);
-                    window.ghostGym.workouts = [];
+                if (window.initProgramsPage) {
+                    window.initProgramsPage();
                 }
             } else {
-                console.error('❌ dataManager not available');
-                window.ghostGym.programs = [];
-                window.ghostGym.programsPage.all = [];
-            }
-            
-            // Render programs
-            renderProgramsGrid();
-            
-            dataLoaded = true;
-        }
-
-        async function initProgramsPage() {
-            console.log('🚀 Initializing Programs Page');
-            
-            // Check authentication state
-            console.log('🔍 Auth check:', {
-                authService: !!window.authService,
-                isAuthenticated: window.authService?.isUserAuthenticated(),
-                currentUser: window.authService?.getCurrentUser()?.email,
-                dataManager: !!window.dataManager,
-                storageMode: window.dataManager?.getStorageMode(),
-                isOnline: navigator.onLine
-            });
-            
-            // Set up event listeners
-            document.getElementById('saveProgramBtn')?.addEventListener('click', saveProgram);
-            document.getElementById('confirmGenerateBtn')?.addEventListener('click', generateDocument);
-            
-            // Initialize delete mode toggle
-            initDeleteModeToggle();
-            
-            // Bottom action bar auto-initializes via bottom-action-bar-service.js
-            // based on URL detection (programs.html -> 'programs' config)
-            
-            // Load data
-            await loadProgramsData();
-            
-            console.log('✅ Programs Page initialized');
-        }
-        
-        /**
-         * Initialize delete mode toggle
-         */
-        function initDeleteModeToggle() {
-            const toggle = document.getElementById('deleteModeToggle');
-            if (!toggle) return;
-            
-            toggle.addEventListener('change', function() {
-                window.ghostGym.programsPage.deleteMode = this.checked;
-                document.body.classList.toggle('delete-mode-active', this.checked);
-                renderProgramsGrid();
-            });
-        }
-        
-        /**
-         * Render programs in grid layout using ProgramCard component
-         */
-        function renderProgramsGrid() {
-            const loadingState = document.getElementById('programsLoadingState');
-            const emptyState = document.getElementById('programsEmptyState');
-            const grid = document.getElementById('programsGrid');
-            const countEl = document.getElementById('totalProgramsCount');
-            
-            // Hide loading state
-            loadingState.style.display = 'none';
-            
-            // Get filtered programs
-            const searchTerm = window.ghostGym.programsPage.filters.search.toLowerCase();
-            const filteredPrograms = window.ghostGym.programs.filter(program =>
-                program.name.toLowerCase().includes(searchTerm) ||
-                (program.description || '').toLowerCase().includes(searchTerm) ||
-                (program.tags || []).some(tag => tag.toLowerCase().includes(searchTerm))
-            );
-            
-            // Update count
-            if (countEl) {
-                countEl.textContent = filteredPrograms.length;
-            }
-            
-            // Update stats
-            window.ghostGym.programsPage.stats.total = window.ghostGym.programs.length;
-            window.ghostGym.programsPage.stats.showing = filteredPrograms.length;
-            
-            // Show empty state if no programs
-            if (filteredPrograms.length === 0) {
-                emptyState.style.display = 'block';
-                grid.style.display = 'none';
-                
-                // Update empty state message based on search
-                const emptyTitle = emptyState.querySelector('h5');
-                const emptyText = emptyState.querySelector('p');
-                const emptyBtn = emptyState.querySelector('button');
-                
-                if (searchTerm) {
-                    emptyTitle.textContent = `No Programs Match "${searchTerm}"`;
-                    emptyText.textContent = 'Try adjusting your search or create a new program';
-                    emptyBtn.style.display = 'none';
-                } else {
-                    emptyTitle.textContent = 'No Programs Yet';
-                    emptyText.textContent = 'Create your first program to get started';
-                    emptyBtn.style.display = 'inline-block';
-                }
-                return;
-            }
-            
-            // Show grid
-            emptyState.style.display = 'none';
-            grid.style.display = 'flex';
-            grid.innerHTML = '';
-            
-            // Render program cards
-            const deleteMode = window.ghostGym.programsPage.deleteMode;
-            
-            filteredPrograms.forEach(program => {
-                const card = new ProgramCard(program, {
-                    showStats: true,
-                    showTags: true,
-                    showDescription: true,
-                    showDifficulty: true,
-                    showDuration: true,
-                    deleteMode: deleteMode,
-                    workouts: window.ghostGym.workouts,
-                    onDelete: deleteMode ? handleDeleteProgram : null,
-                    onCardClick: (prog) => showProgramDetailOffcanvas(prog),
-                    actions: deleteMode ? [] : [
-                        {
-                            id: 'open',
-                            label: 'Open',
-                            icon: 'bx-folder-open',
-                            variant: 'outline-primary',
-                            onClick: (prog) => selectProgramAndGoToBuilder(prog.id)
-                        },
-                        {
-                            id: 'edit',
-                            label: 'Edit',
-                            icon: 'bx-edit',
-                            variant: 'outline-secondary',
-                            onClick: (prog) => editProgram(prog.id)
-                        }
-                    ]
+                window.addEventListener('firebaseReady', function() {
+                    if (window.initProgramsPage) {
+                        window.initProgramsPage();
+                    }
                 });
-                
-                grid.appendChild(card.render());
-            });
-        }
-        
-        /**
-         * Handle program deletion
-         */
-        async function handleDeleteProgram(programId, programName) {
-            if (!confirm(`Are you sure you want to delete "${programName}"?\n\nThis action cannot be undone.`)) {
-                return;
             }
-            
-            try {
-                // Delete from data manager
-                if (window.dataManager && window.dataManager.deleteProgram) {
-                    await window.dataManager.deleteProgram(programId);
-                }
-                
-                // Remove from local state
-                window.ghostGym.programs = window.ghostGym.programs.filter(p => p.id !== programId);
-                window.ghostGym.programsPage.all = window.ghostGym.programs;
-                
-                // Re-render
-                renderProgramsGrid();
-                
-                // Show success message
-                if (window.showAlert) {
-                    showAlert(`Program "${programName}" deleted successfully`, 'success');
-                }
-            } catch (error) {
-                console.error('❌ Error deleting program:', error);
-                if (window.showAlert) {
-                    showAlert('Failed to delete program: ' + error.message, 'danger');
-                }
-            }
-        }
-        
-        /**
-         * Show program detail in offcanvas (similar to workout detail)
-         */
-        function showProgramDetailOffcanvas(program) {
-            // For now, just open the edit modal
-            // TODO: Create a proper offcanvas detail view like workout-database
-            editProgram(program.id);
-        }
+        });
 
-        // Show program modal
+        // Legacy function for modal-based program creation (still used by modals)
         function showProgramModal() {
-            clearProgramForm();
+            if (typeof clearProgramForm === 'function') {
+                clearProgramForm();
+            }
             document.getElementById('programModalTitle').textContent = 'Create Program';
             const modal = new bootstrap.Modal(document.getElementById('programModal'));
             modal.show();
         }
-        
-        // Make functions globally accessible for bottom action bar
-        window.renderProgramsGrid = renderProgramsGrid;
+
+        // Make showProgramModal globally accessible
         window.showProgramModal = showProgramModal;
     </script>
   </body>

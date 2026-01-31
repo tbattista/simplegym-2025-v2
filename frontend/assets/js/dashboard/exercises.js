@@ -551,7 +551,7 @@ function getTierBadgeCompact(exercise) {
     const isFoundational = exercise.isFoundational || false;
     
     if (isFoundational || exerciseTier === 1) {
-        return '<span class="badge" style="font-size: 0.75rem; padding: 0.25rem 0.5rem; background: rgba(139, 92, 246, 0.1); color: #8b5cf6; border: 1px solid rgba(139, 92, 246, 0.25);"><i class="bx bxs-star" style="font-size: 0.75rem;"></i> Standard</span>';
+        return '<span class="badge" style="font-size: 0.75rem; padding: 0.25rem 0.5rem; background: rgba(100, 116, 139, 0.1); color: #64748B; border: 1px solid rgba(100, 116, 139, 0.25);"><i class="bx bxs-star" style="font-size: 0.75rem;"></i> Standard</span>';
     } else if (exerciseTier === 3) {
         return '<span class="badge bg-secondary" style="font-size: 0.75rem; padding: 0.25rem 0.5rem; opacity: 0.7;"><i class="bx bx-dots-horizontal-rounded" style="font-size: 0.75rem;"></i></span>';
     }

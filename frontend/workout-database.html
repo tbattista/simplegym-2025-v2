@@ -190,6 +190,17 @@
         <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
       </div>
       <div class="offcanvas-body">
+        <!-- Favorites Filter -->
+        <div class="mb-4">
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" role="switch" id="favoritesFilterToggle">
+            <label class="form-check-label fw-semibold" for="favoritesFilterToggle">
+              <i class="bx bxs-heart text-danger me-1"></i>
+              Favorites only
+            </label>
+          </div>
+        </div>
+
         <!-- Tags Filter -->
         <div class="mb-4">
           <label class="form-label fw-semibold">Filter by Tags</label>
@@ -298,11 +309,13 @@
             currentPage: 1,
             pageSize: 50,
             deleteMode: false, // Track delete mode state
+            selectedWorkoutIds: new Set(), // Track selected items for batch delete
             filters: {
                 search: '',
                 tags: [],
                 sortBy: 'modified_date',
-                sortOrder: 'desc'
+                sortOrder: 'desc',
+                favoritesOnly: false
             },
             stats: {
                 total: 0,
@@ -369,6 +382,13 @@
 
             // Set up event listeners
             document.getElementById('clearFiltersBtn')?.addEventListener('click', clearFilters);
+
+            // Initialize favorites filter toggle
+            document.getElementById('favoritesFilterToggle')?.addEventListener('change', (e) => {
+                if (window.filterFavoritesOnly) {
+                    window.filterFavoritesOnly(e.target.checked);
+                }
+            });
 
             // Initialize delete mode toggle
             if (window.initDeleteModeToggle) {

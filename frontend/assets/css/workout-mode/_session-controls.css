@@ -194,14 +194,14 @@
 
 .workout-grid-btn.btn-outline-primary {
     border-color: #cbd5e1;
-    color: #6366f1;
+    color: #C97C5D;                      /* Soft Clay */
     background: transparent;
 }
 
 .workout-grid-btn.btn-outline-primary:hover {
     background: rgba(var(--bs-primary-rgb), 0.08);
-    border-color: #6366f1;
-    color: #6366f1;
+    border-color: #C97C5D;               /* Soft Clay */
+    color: #C97C5D;                      /* Soft Clay */
 }
 
 /* ============================================

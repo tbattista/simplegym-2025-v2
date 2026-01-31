@@ -43,8 +43,11 @@
     <!-- Navbar CSS -->
     <link rel="stylesheet" href="/static/assets/css/navbar-custom.css" />
     
-    <!-- Workout History CSS -->
+    <!-- Workout History CSS (Modular) -->
     <link rel="stylesheet" href="/static/assets/css/workout-history.css" />
+    <link rel="stylesheet" href="/static/assets/css/components/workout-history-sessions.css" />
+    <link rel="stylesheet" href="/static/assets/css/components/workout-history-exercises.css" />
+    <link rel="stylesheet" href="/static/assets/css/components/workout-history-toolbar.css" />
 
     <!-- Calendar View CSS -->
     <link rel="stylesheet" href="/static/assets/css/components/calendar-view.css" />
@@ -121,23 +124,36 @@
               <!-- History Content -->
               <div id="historyContent" style="display: none;">
 
-                <!-- Tab Navigation -->
-                <ul class="nav nav-tabs history-tabs mb-4" id="historyTabs" role="tablist">
-                  <li class="nav-item" role="presentation">
-                    <button class="nav-link active" id="history-tab" data-bs-toggle="tab"
-                            data-bs-target="#historyTabPane" type="button" role="tab"
-                            aria-controls="historyTabPane" aria-selected="true">
-                      <i class="bx bx-history me-1"></i>History
-                    </button>
-                  </li>
-                  <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="insights-tab" data-bs-toggle="tab"
-                            data-bs-target="#insightsTabPane" type="button" role="tab"
-                            aria-controls="insightsTabPane" aria-selected="false">
-                      <i class="bx bx-bar-chart-alt-2 me-1"></i>Insights
-                    </button>
-                  </li>
-                </ul>
+                <!-- Tab Navigation with Calendar Toggle -->
+                <div class="history-tabs-wrapper d-flex align-items-end mb-4">
+                  <ul class="nav nav-tabs history-tabs flex-grow-1 mb-0" id="historyTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                      <button class="nav-link active" id="history-tab" data-bs-toggle="tab"
+                              data-bs-target="#historyTabPane" type="button" role="tab"
+                              aria-controls="historyTabPane" aria-selected="true">
+                        <i class="bx bx-history me-1"></i>History
+                      </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                      <button class="nav-link" id="insights-tab" data-bs-toggle="tab"
+                              data-bs-target="#insightsTabPane" type="button" role="tab"
+                              aria-controls="insightsTabPane" aria-selected="false">
+                        <i class="bx bx-bar-chart-alt-2 me-1"></i>Insights
+                      </button>
+                    </li>
+                  </ul>
+                  <!-- Calendar Toggle (next to tabs) -->
+                  <button class="btn btn-icon calendar-tab-btn"
+                          type="button"
+                          id="calendarTabBtn"
+                          data-bs-toggle="collapse"
+                          data-bs-target="#historyCalendarCollapse"
+                          aria-expanded="false"
+                          aria-controls="historyCalendarCollapse"
+                          title="Toggle calendar">
+                    <i class="bx bx-calendar"></i>
+                  </button>
+                </div>
 
                 <!-- Tab Content -->
                 <div class="tab-content" id="historyTabContent">
@@ -262,8 +278,15 @@
     <!-- Calendar View Component -->
     <script src="/static/assets/js/components/calendar-view.js"></script>
 
-    <!-- Workout History JS -->
-    <script src="/static/assets/js/dashboard/workout-history.js?v=2.3.0"></script>
+    <!-- Workout History JS (Modular) -->
+    <script src="/static/assets/js/dashboard/workout-history.js?v=3.1.0"></script>
+    <script src="/static/assets/js/dashboard/workout-history-utils.js?v=1.0.0"></script>
+    <script src="/static/assets/js/dashboard/workout-history-delete.js?v=1.0.0"></script>
+    <script src="/static/assets/js/dashboard/workout-history-exercises.js?v=1.0.0"></script>
+    <script src="/static/assets/js/dashboard/workout-history-calendar.js?v=1.0.0"></script>
+    <script src="/static/assets/js/dashboard/workout-history-filters.js?v=1.0.0"></script>
+    <script src="/static/assets/js/dashboard/workout-history-sessions.js?v=1.2.0"></script>
+    <script src="/static/assets/js/dashboard/workout-history-loader.js?v=1.0.0"></script>
 
     <!-- Initialize -->
     <script>

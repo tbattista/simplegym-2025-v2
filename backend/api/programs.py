@@ -458,7 +458,7 @@ async def remove_workout_from_program_firebase(
     """Remove a workout from a program (Firebase-enabled with fallback)"""
     try:
         user_id = extract_user_id(current_user)
-        
+
         if user_id and firebase_service.is_available():
             # Authenticated user - use Firestore
             program = await firestore_data_service.remove_workout_from_program(user_id, program_id, workout_id)
@@ -472,12 +472,76 @@ async def remove_workout_from_program_firebase(
             if not program:
                 raise HTTPException(status_code=404, detail="Program or workout not found")
             return {"message": "Workout removed from program successfully"}
-        
+
     except HTTPException:
         raise
     except Exception as e:
         logger.error(f"Error removing workout from program: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error removing workout from program: {str(e)}")
+
+
+@firebase_router.put("/{program_id}", response_model=Program)
+async def update_program_firebase(
+    program_id: str,
+    update_request: UpdateProgramRequest,
+    current_user: Optional[dict] = Depends(get_current_user_optional)
+):
+    """Update a program (Firebase-enabled with fallback)"""
+    try:
+        user_id = extract_user_id(current_user)
+
+        if user_id and firebase_service.is_available():
+            # Authenticated user - use Firestore
+            program = await firestore_data_service.update_program(user_id, program_id, update_request)
+            if not program:
+                raise HTTPException(status_code=404, detail="Program not found")
+            logger.info(f"✅ Program updated in Firestore: {program.name}")
+            return program
+        else:
+            # Anonymous user or Firebase unavailable - use local storage
+            data_service = DataService()
+            program = data_service.update_program(program_id, update_request)
+            if not program:
+                raise HTTPException(status_code=404, detail="Program not found")
+            return program
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating program: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error updating program: {str(e)}")
+
+
+@firebase_router.delete("/{program_id}")
+async def delete_program_firebase(
+    program_id: str,
+    current_user: Optional[dict] = Depends(get_current_user_optional)
+):
+    """Delete a program (Firebase-enabled with fallback)"""
+    try:
+        user_id = extract_user_id(current_user)
+
+        if user_id and firebase_service.is_available():
+            # Authenticated user - use Firestore
+            success = await firestore_data_service.delete_program(user_id, program_id)
+            if not success:
+                raise HTTPException(status_code=404, detail="Program not found")
+            logger.info(f"✅ Program deleted from Firestore: {program_id}")
+            return {"message": "Program deleted successfully"}
+        else:
+            # Anonymous user or Firebase unavailable - use local storage
+            data_service = DataService()
+            success = data_service.delete_program(program_id)
+            if not success:
+                raise HTTPException(status_code=404, detail="Program not found")
+            return {"message": "Program deleted successfully"}
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error deleting program: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error deleting program: {str(e)}")
+
 
 # Export both routers
 __all__ = ['router', 'firebase_router']

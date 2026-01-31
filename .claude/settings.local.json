@@ -47,7 +47,11 @@
       "Bash(move:*)",
       "Bash(cmd /c move:*)",
       "WebFetch(domain:github.com)",
-      "WebFetch(domain:gotenberg.dev)"
+      "WebFetch(domain:gotenberg.dev)",
+      "mcp__playwright__browser_click",
+      "mcp__playwright__browser_handle_dialog",
+      "Bash(wc:*)",
+      "Bash(for f in workout-history*.js)"
     ]
   }
 }

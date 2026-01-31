@@ -139,99 +139,82 @@ export function setupWeightEditListeners(offcanvasElement, offcanvas, exerciseNa
 
 /**
  * Create complete workout confirmation offcanvas
+ * Notebook-style design: clean, calm, save-first hierarchy
  * @param {Object} data - Session and workout data
  * @param {boolean} data.isQuickLog - Whether this is a Quick Log session
- * @param {Function} onConfirm - Callback when user confirms completion (receives durationMinutes for Quick Log)
+ * @param {Function} onConfirm - Callback when user confirms completion (receives durationMinutes)
  * @returns {Object} Offcanvas instance
  */
 export function createCompleteWorkout(data, onConfirm) {
     const { workoutName, minutes, totalExercises, isQuickLog = false } = data;
 
-    // Title and button text based on mode
-    const title = isQuickLog ? 'Save Quick Log' : 'Complete Workout';
-    const buttonText = isQuickLog ? 'Save Quick Log' : 'Complete Workout';
-    const buttonIcon = isQuickLog ? 'bx-check' : 'bx-check';
-    const description = isQuickLog
-        ? 'Ready to save your logged workout?'
-        : 'Ready to complete your workout?';
+    // Format current date/time for display
+    const now = new Date();
+    const formattedDateTime = now.toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit'
+    });
 
-    // Duration section: editable input for Quick Log, static display for Timed
-    const durationSection = isQuickLog ? `
-                    <div class="col-6">
-                        <div class="card bg-label-primary">
-                            <div class="card-body text-center py-3">
-                                <input type="number"
-                                    id="quickLogDurationInput"
-                                    class="form-control form-control-sm text-center mb-1"
-                                    placeholder="--"
-                                    min="1"
-                                    max="600"
-                                    style="font-size: 1.25rem; font-weight: bold; width: 80px; margin: 0 auto;"
-                                >
-                                <small class="text-muted">Duration (min)</small>
-                            </div>
-                        </div>
-                    </div>
-    ` : `
-                    <div class="col-6">
-                        <div class="card bg-label-primary">
-                            <div class="card-body text-center py-3">
-                                <div class="h4 mb-0">${minutes} min</div>
-                                <small class="text-muted">Duration</small>
-                            </div>
-                        </div>
-                    </div>
-    `;
+    // Duration value: empty for Quick Log, actual minutes for timed workout
+    const durationValue = isQuickLog ? '' : (minutes || '');
+    const durationPlaceholder = isQuickLog ? '--' : '';
 
     const offcanvasHtml = `
         <div class="offcanvas offcanvas-bottom offcanvas-bottom-base" tabindex="-1" id="completeWorkoutOffcanvas" aria-labelledby="completeWorkoutOffcanvasLabel" data-bs-scroll="false">
             <div class="offcanvas-header border-bottom">
                 <h5 class="offcanvas-title" id="completeWorkoutOffcanvasLabel">
-                    <i class="bx ${isQuickLog ? 'bx-edit-alt' : 'bx-check-circle'} me-2"></i>${title}
+                    <i class="bx bx-check-circle me-2"></i>Session Complete
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
             </div>
             <div class="offcanvas-body">
-                <div class="text-center mb-4">
-                    <div class="mb-3">
-                        <i class="bx bx-dumbbell" style="font-size: 3rem; color: var(--bs-primary);"></i>
-                    </div>
-                    <h5 class="mb-2">${escapeHtml(workoutName)}</h5>
-                    <p class="text-muted mb-0">${description}</p>
+                <!-- Workout info - simple, left-aligned, notebook style -->
+                <div class="session-complete-header mb-4">
+                    <h5 class="mb-1">${escapeHtml(workoutName)}</h5>
+                    <small class="text-muted">${formattedDateTime}</small>
                 </div>
 
-                <div class="row g-3 mb-4">
-                    ${durationSection}
-                    <div class="col-6">
-                        <div class="card bg-label-success">
-                            <div class="card-body text-center py-3">
-                                <div class="h4 mb-0">${totalExercises}</div>
-                                <small class="text-muted">Exercises</small>
-                            </div>
-                        </div>
+                <!-- Stats row - horizontal, neutral, inline editable duration -->
+                <div class="session-stats-row mb-4">
+                    <div class="session-stat editable" title="Click to edit duration">
+                        <i class="bx bx-time-five"></i>
+                        <input type="number"
+                               id="sessionDurationInput"
+                               value="${durationValue}"
+                               placeholder="${durationPlaceholder}"
+                               min="1"
+                               max="600">
+                        <span>min</span>
+                        <i class="bx bx-pencil edit-hint"></i>
                     </div>
-                </div>
-
-                <div class="alert alert-info d-flex align-items-start mb-4">
-                    <i class="bx bx-info-circle me-2 mt-1"></i>
-                    <div>
-                        <strong>Your progress will be saved</strong>
-                        <p class="mb-0 small">All weight data and exercise history will be recorded.</p>
+                    <div class="session-stat">
+                        <i class="bx bx-list-check"></i>
+                        <span class="stat-value">${totalExercises}</span>
+                        <span>exercise${totalExercises !== 1 ? 's' : ''}</span>
                     </div>
                 </div>
 
-                <div class="d-flex gap-2 mb-3">
-                    <button type="button" class="btn btn-outline-secondary flex-fill" data-bs-dismiss="offcanvas">
-                        <i class="bx bx-arrow-back me-1"></i>Go Back
-                    </button>
-                    <button type="button" class="btn btn-outline-danger flex-fill" id="cancelDiscardBtn">
-                        <i class="bx bx-trash me-1"></i>Cancel
-                    </button>
-                </div>
-
-                <button type="button" class="btn btn-success w-100" id="confirmCompleteBtn">
-                    <i class="bx ${buttonIcon} me-1"></i>${buttonText}
+                <!-- Primary action - Save Session (first and prominent) -->
+                <button type="button" class="btn btn-primary w-100 mb-3" id="confirmCompleteBtn">
+                    <i class="bx bx-save me-1"></i>Save Session
                 </button>
+
+                <!-- Secondary actions - subtle text links -->
+                <div class="d-flex justify-content-center gap-4">
+                    <button type="button" class="btn btn-link text-muted" data-bs-dismiss="offcanvas">
+                        Resume
+                    </button>
+                    <button type="button" class="btn btn-link text-danger" id="cancelDiscardBtn">
+                        Discard
+                    </button>
+                </div>
+
+                <!-- Helper text - calm reassurance (replaces info banner) -->
+                <small class="text-muted d-block text-center mt-3">
+                    Session will be added to your training log.
+                </small>
             </div>
         </div>
     `;
@@ -240,51 +223,50 @@ export function createCompleteWorkout(data, onConfirm) {
         const confirmBtn = document.getElementById('confirmCompleteBtn');
         const cancelDiscardBtn = document.getElementById('cancelDiscardBtn');
 
-        // Handle complete/save button
+        // Handle save session button
         confirmBtn.addEventListener('click', async () => {
             confirmBtn.disabled = true;
-            confirmBtn.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span>${isQuickLog ? 'Saving...' : 'Completing...'}`;
+            confirmBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Saving...';
 
             try {
-                // For Quick Log, get the manual duration if provided
+                // Get the manual duration from input
                 let durationMinutes = null;
-                if (isQuickLog) {
-                    const durationInput = document.getElementById('quickLogDurationInput');
-                    if (durationInput && durationInput.value) {
-                        durationMinutes = parseInt(durationInput.value, 10);
-                        if (isNaN(durationMinutes) || durationMinutes < 1) {
-                            durationMinutes = null;
-                        }
+                const durationInput = document.getElementById('sessionDurationInput');
+
+                if (durationInput && durationInput.value) {
+                    durationMinutes = parseInt(durationInput.value, 10);
+                    if (isNaN(durationMinutes) || durationMinutes < 1) {
+                        durationMinutes = null;
                     }
                 }
                 await onConfirm(durationMinutes);
                 offcanvas.hide();
             } catch (error) {
                 confirmBtn.disabled = false;
-                confirmBtn.innerHTML = `<i class="bx ${buttonIcon} me-1"></i>${buttonText}`;
+                confirmBtn.innerHTML = '<i class="bx bx-save me-1"></i>Save Session';
                 throw error;
             }
         });
 
-        // Handle cancel and discard button
+        // Handle discard button
         if (cancelDiscardBtn) {
             cancelDiscardBtn.addEventListener('click', () => {
                 // Hide the complete workout offcanvas first
                 offcanvas.hide();
 
-                // Show confirmation offcanvas for cancel
+                // Show confirmation offcanvas for discard
                 setTimeout(() => {
                     if (window.UnifiedOffcanvasFactory?.createConfirmOffcanvas) {
                         window.UnifiedOffcanvasFactory.createConfirmOffcanvas({
                             id: 'cancelWorkoutConfirmOffcanvas',
-                            title: 'Cancel Workout?',
+                            title: 'Discard Session?',
                             icon: 'bx-error-circle',
                             iconColor: 'danger',
-                            message: 'Are you sure you want to cancel?',
-                            subMessage: 'All progress from this session will be permanently discarded and cannot be recovered.',
+                            message: 'Are you sure you want to discard this session?',
+                            subMessage: 'All progress will be permanently lost and cannot be recovered.',
                             confirmText: 'Yes, Discard',
                             confirmVariant: 'danger',
-                            cancelText: 'Go Back',
+                            cancelText: 'Resume',
                             onConfirm: () => {
                                 // Call the controller's reset method
                                 if (window.workoutModeController?.resetToFreshState) {
@@ -294,7 +276,7 @@ export function createCompleteWorkout(data, onConfirm) {
                         });
                     } else {
                         // Fallback: just call the reset directly with browser confirm
-                        if (confirm('Are you sure you want to cancel? All progress will be discarded.')) {
+                        if (confirm('Are you sure you want to discard this session? All progress will be lost.')) {
                             if (window.workoutModeController?.resetToFreshState) {
                                 window.workoutModeController.resetToFreshState();
                             }

@@ -1,65 +1,71 @@
 /**
- * Ghost Gym - Workout Grid Component
- * Manages a grid of workout cards with pagination and state management
+ * Ghost Gym - Program Grid Component
+ * Manages a grid of program cards with pagination and state management
+ * Follows WorkoutGrid patterns for consistency
  * @version 1.0.0
  */
 
-class WorkoutGrid {
+class ProgramGrid {
     constructor(containerId, config = {}) {
         this.container = document.getElementById(containerId);
         if (!this.container) {
             throw new Error(`Container element with id "${containerId}" not found`);
         }
-        
+
         this.config = {
             // Card configuration
             cardConfig: {},
-            
+
             // Pagination
             pageSize: 20,
             showPagination: true,
-            
+
             // Empty state
-            emptyIcon: 'bx-dumbbell',
-            emptyTitle: 'No workouts found',
-            emptyMessage: 'Try adjusting your filters or create a new workout',
+            emptyIcon: 'bx-folder-open',
+            emptyTitle: 'No programs found',
+            emptyMessage: 'Create your first program to organize your workouts',
             emptyAction: null,
-            
+
             // Loading state
-            loadingMessage: 'Loading workouts...',
-            
+            loadingMessage: 'Loading programs...',
+
+            // Workouts reference for calculating stats
+            workouts: [],
+
             // Callbacks
             onPageChange: null,
-            
+            onSelectionChange: null,
+
             ...config
         };
-        
+
         // State
-        this.workouts = [];
+        this.programs = [];
         this.currentPage = 1;
         this.cards = [];
-        
+        this.selectedIds = new Set();
+
         // DOM elements
         this.elements = {};
-        
+
         this.initialize();
     }
-    
+
     /**
      * Initialize the grid
      */
     initialize() {
         this.createStructure();
     }
-    
+
     /**
      * Create grid structure
      */
     createStructure() {
         this.container.innerHTML = `
-            <div class="workout-grid-wrapper">
+            <div class="program-grid-wrapper">
                 <!-- Loading State -->
-                <div class="workout-grid-loading" style="display: none;">
+                <div class="program-grid-loading" style="display: none;">
                     <div class="text-center py-5">
                         <div class="spinner-border text-primary mb-3" role="status" style="width: 3rem; height: 3rem;">
                             <span class="visually-hidden">${this.config.loadingMessage}</span>
@@ -67,51 +73,66 @@ class WorkoutGrid {
                         <h5 class="mt-3">${this.config.loadingMessage}</h5>
                     </div>
                 </div>
-                
+
                 <!-- Empty State -->
-                <div class="workout-grid-empty" style="display: none;">
+                <div class="program-grid-empty" style="display: none;">
                     <div class="text-center py-5">
                         <i class="bx ${this.config.emptyIcon} display-1 text-muted"></i>
                         <h5 class="mt-3">${this.config.emptyTitle}</h5>
                         <p class="text-muted">${this.config.emptyMessage}</p>
                         ${this.config.emptyAction ? `
                             <button class="btn btn-primary mt-2" id="emptyActionBtn">
-                                <i class="bx bx-plus me-1"></i>${this.config.emptyAction.label}
+                                <i class="bx ${this.config.emptyAction.icon || 'bx-plus'} me-1"></i>${this.config.emptyAction.label}
                             </button>
                         ` : ''}
                     </div>
                 </div>
-                
+
                 <!-- Grid Container -->
-                <div class="workout-grid-content" style="display: none;">
-                    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3" id="workoutCardsGrid">
+                <div class="program-grid-content" style="display: none;">
+                    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3" id="programCardsGrid">
                         <!-- Cards will be inserted here -->
                     </div>
                 </div>
-                
+
                 <!-- Pagination -->
                 ${this.config.showPagination ? `
-                <div class="workout-grid-pagination mt-4" style="display: none;">
-                    <nav aria-label="Workout pagination">
-                        <ul class="pagination pagination-sm justify-content-center" id="paginationList">
+                <div class="program-grid-pagination mt-4" style="display: none;">
+                    <nav aria-label="Program pagination">
+                        <ul class="pagination pagination-sm justify-content-center" id="programPaginationList">
                             <!-- Pagination will be inserted here -->
                         </ul>
                     </nav>
                 </div>
                 ` : ''}
+
+                <!-- Selection Action Bar (for batch operations) -->
+                <div class="selection-action-bar" id="selectionActionBar">
+                    <div class="selection-info">
+                        <button class="btn-close-selection" onclick="window.programGrid?.clearSelection()">×</button>
+                        <span class="selection-count" id="selectionCount">0 selected</span>
+                    </div>
+                    <button class="btn-batch-delete" id="batchDeleteBtn">
+                        <i class="bx bx-trash"></i>
+                        Delete
+                    </button>
+                </div>
             </div>
         `;
-        
+
         // Cache DOM elements
         this.elements = {
-            loading: this.container.querySelector('.workout-grid-loading'),
-            empty: this.container.querySelector('.workout-grid-empty'),
-            content: this.container.querySelector('.workout-grid-content'),
-            grid: this.container.querySelector('#workoutCardsGrid'),
-            pagination: this.container.querySelector('.workout-grid-pagination'),
-            paginationList: this.container.querySelector('#paginationList')
+            loading: this.container.querySelector('.program-grid-loading'),
+            empty: this.container.querySelector('.program-grid-empty'),
+            content: this.container.querySelector('.program-grid-content'),
+            grid: this.container.querySelector('#programCardsGrid'),
+            pagination: this.container.querySelector('.program-grid-pagination'),
+            paginationList: this.container.querySelector('#programPaginationList'),
+            selectionBar: this.container.querySelector('#selectionActionBar'),
+            selectionCount: this.container.querySelector('#selectionCount'),
+            batchDeleteBtn: this.container.querySelector('#batchDeleteBtn')
         };
-        
+
         // Attach empty action listener
         if (this.config.emptyAction) {
             const emptyActionBtn = this.container.querySelector('#emptyActionBtn');
@@ -121,18 +142,36 @@ class WorkoutGrid {
                 });
             }
         }
+
+        // Attach batch delete listener
+        if (this.elements.batchDeleteBtn) {
+            this.elements.batchDeleteBtn.addEventListener('click', () => {
+                if (this.config.onBatchDelete) {
+                    this.config.onBatchDelete(Array.from(this.selectedIds));
+                }
+            });
+        }
     }
-    
+
     /**
-     * Set workout data
-     * @param {Array} workouts
+     * Set program data
+     * @param {Array} programs
      */
-    setData(workouts) {
-        this.workouts = workouts;
+    setData(programs) {
+        this.programs = programs;
         this.currentPage = 1;
         this.render();
     }
-    
+
+    /**
+     * Set workouts reference (for program stats calculation)
+     * @param {Array} workouts
+     */
+    setWorkouts(workouts) {
+        this.config.workouts = workouts;
+        this.config.cardConfig.workouts = workouts;
+    }
+
     /**
      * Set current page
      * @param {number} page
@@ -140,18 +179,18 @@ class WorkoutGrid {
     setPage(page) {
         const totalPages = this.getTotalPages();
         if (page < 1 || page > totalPages) return;
-        
+
         this.currentPage = page;
         this.render();
-        
+
         // Scroll to top of grid
         this.container.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        
+
         if (this.config.onPageChange) {
             this.config.onPageChange(page);
         }
     }
-    
+
     /**
      * Show loading state
      */
@@ -162,20 +201,41 @@ class WorkoutGrid {
         if (this.elements.pagination) {
             this.elements.pagination.style.display = 'none';
         }
+        this.hideSelectionBar();
     }
-    
+
     /**
      * Show empty state
+     * @param {string} title - Optional custom title
+     * @param {string} message - Optional custom message
+     * @param {boolean} showAction - Whether to show the action button
      */
-    showEmpty() {
+    showEmpty(title = null, message = null, showAction = true) {
         this.elements.loading.style.display = 'none';
         this.elements.empty.style.display = 'block';
         this.elements.content.style.display = 'none';
         if (this.elements.pagination) {
             this.elements.pagination.style.display = 'none';
         }
+        this.hideSelectionBar();
+
+        // Update empty state text if provided
+        if (title) {
+            const titleEl = this.elements.empty.querySelector('h5');
+            if (titleEl) titleEl.textContent = title;
+        }
+        if (message) {
+            const messageEl = this.elements.empty.querySelector('p');
+            if (messageEl) messageEl.textContent = message;
+        }
+
+        // Show/hide action button
+        const actionBtn = this.elements.empty.querySelector('#emptyActionBtn');
+        if (actionBtn) {
+            actionBtn.style.display = showAction ? 'inline-block' : 'none';
+        }
     }
-    
+
     /**
      * Show content
      */
@@ -187,24 +247,24 @@ class WorkoutGrid {
             this.elements.pagination.style.display = 'block';
         }
     }
-    
+
     /**
      * Render the grid
      */
     render() {
         // Show appropriate state
-        if (this.workouts.length === 0) {
+        if (this.programs.length === 0) {
             this.showEmpty();
             return;
         }
-        
+
         this.showContent();
         this.renderCards();
         this.renderPagination();
     }
-    
+
     /**
-     * Render workout cards
+     * Render program cards
      */
     renderCards() {
         // Clear existing cards
@@ -215,14 +275,23 @@ class WorkoutGrid {
         // Calculate pagination
         const startIndex = (this.currentPage - 1) * this.config.pageSize;
         const endIndex = startIndex + this.config.pageSize;
-        const pageWorkouts = this.workouts.slice(startIndex, endIndex);
+        const pagePrograms = this.programs.slice(startIndex, endIndex);
 
-        // Create and render cards (wrapped in column divs for proper grid stretching)
-        pageWorkouts.forEach(workout => {
-            const card = new WorkoutCard(workout, this.config.cardConfig);
+        // Create and render cards
+        pagePrograms.forEach(program => {
+            const cardConfig = {
+                ...this.config.cardConfig,
+                workouts: this.config.workouts,
+                isSelected: this.selectedIds.has(program.id),
+                onSelectionChange: (programId, isSelected) => {
+                    this.handleSelectionChange(programId, isSelected);
+                }
+            };
+
+            const card = new ProgramCard(program, cardConfig);
             const cardElement = card.render();
 
-            // Wrap card in column div for Bootstrap grid to work with equal heights
+            // Wrap card in column div for Bootstrap grid
             const colWrapper = document.createElement('div');
             colWrapper.className = 'col';
             colWrapper.appendChild(cardElement);
@@ -231,28 +300,70 @@ class WorkoutGrid {
             this.cards.push(card);
         });
     }
-    
+
+    /**
+     * Handle card selection change
+     * @param {string} programId
+     * @param {boolean} isSelected
+     */
+    handleSelectionChange(programId, isSelected) {
+        if (isSelected) {
+            this.selectedIds.add(programId);
+        } else {
+            this.selectedIds.delete(programId);
+        }
+
+        this.updateSelectionBar();
+
+        if (this.config.onSelectionChange) {
+            this.config.onSelectionChange(programId, isSelected, this.selectedIds.size);
+        }
+    }
+
+    /**
+     * Update selection action bar visibility and count
+     */
+    updateSelectionBar() {
+        const count = this.selectedIds.size;
+
+        if (count > 0 && this.config.cardConfig.deleteMode) {
+            this.elements.selectionBar.classList.add('active');
+            this.elements.selectionCount.textContent = `${count} selected`;
+        } else {
+            this.hideSelectionBar();
+        }
+    }
+
+    /**
+     * Hide selection action bar
+     */
+    hideSelectionBar() {
+        if (this.elements.selectionBar) {
+            this.elements.selectionBar.classList.remove('active');
+        }
+    }
+
     /**
      * Render pagination
      */
     renderPagination() {
         if (!this.config.showPagination || !this.elements.paginationList) return;
-        
+
         const totalPages = this.getTotalPages();
-        
+
         if (totalPages <= 1) {
             if (this.elements.pagination) {
                 this.elements.pagination.style.display = 'none';
             }
             return;
         }
-        
+
         if (this.elements.pagination) {
             this.elements.pagination.style.display = 'block';
         }
-        
+
         let html = '';
-        
+
         // Previous button
         html += `
             <li class="page-item ${this.currentPage === 1 ? 'disabled' : ''}">
@@ -261,11 +372,11 @@ class WorkoutGrid {
                 </a>
             </li>
         `;
-        
+
         // Page numbers (show max 5 pages)
         const startPage = Math.max(1, this.currentPage - 2);
         const endPage = Math.min(totalPages, startPage + 4);
-        
+
         for (let i = startPage; i <= endPage; i++) {
             html += `
                 <li class="page-item ${i === this.currentPage ? 'active' : ''}">
@@ -273,7 +384,7 @@ class WorkoutGrid {
                 </li>
             `;
         }
-        
+
         // Next button
         html += `
             <li class="page-item ${this.currentPage === totalPages ? 'disabled' : ''}">
@@ -282,9 +393,9 @@ class WorkoutGrid {
                 </a>
             </li>
         `;
-        
+
         this.elements.paginationList.innerHTML = html;
-        
+
         // Attach pagination listeners
         this.elements.paginationList.querySelectorAll('[data-page]').forEach(link => {
             link.addEventListener('click', (e) => {
@@ -296,14 +407,14 @@ class WorkoutGrid {
             });
         });
     }
-    
+
     /**
      * Refresh the grid (re-render current page)
      */
     refresh() {
         this.render();
     }
-    
+
     /**
      * Update card configuration
      * @param {Object} cardConfig
@@ -312,26 +423,37 @@ class WorkoutGrid {
         this.config.cardConfig = { ...this.config.cardConfig, ...cardConfig };
         this.refresh();
     }
-    
+
     /**
      * Set delete mode for all cards
      * @param {boolean} enabled
      */
     setDeleteMode(enabled) {
         this.config.cardConfig.deleteMode = enabled;
+
+        if (!enabled) {
+            this.clearSelection();
+        }
+
         this.cards.forEach(card => card.setDeleteMode(enabled));
     }
 
     /**
-     * Clear all card selections (for batch delete mode)
+     * Clear all card selections
      */
     clearSelection() {
+        this.selectedIds.clear();
+
         this.cards.forEach(card => {
             card.config.isSelected = false;
-            const checkbox = card.element?.querySelector('.workout-select-checkbox');
+            const checkbox = card.element?.querySelector('.program-select-checkbox');
             if (checkbox) checkbox.checked = false;
-            card.element?.classList.remove('selected');
+
+            const cardEl = card.element?.querySelector('.card');
+            if (cardEl) cardEl.classList.remove('selected');
         });
+
+        this.hideSelectionBar();
     }
 
     /**
@@ -339,9 +461,7 @@ class WorkoutGrid {
      * @returns {Array<string>}
      */
     getSelectedIds() {
-        return this.cards
-            .filter(card => card.config.isSelected)
-            .map(card => card.workout.id);
+        return Array.from(this.selectedIds);
     }
 
     /**
@@ -351,33 +471,78 @@ class WorkoutGrid {
     getCurrentPage() {
         return this.currentPage;
     }
-    
+
     /**
      * Get total pages
      * @returns {number}
      */
     getTotalPages() {
-        return Math.ceil(this.workouts.length / this.config.pageSize);
+        return Math.ceil(this.programs.length / this.config.pageSize);
     }
-    
+
     /**
-     * Get displayed workouts
+     * Get displayed programs
      * @returns {Array}
      */
     getDisplayedData() {
         const startIndex = (this.currentPage - 1) * this.config.pageSize;
         const endIndex = startIndex + this.config.pageSize;
-        return this.workouts.slice(startIndex, endIndex);
+        return this.programs.slice(startIndex, endIndex);
     }
-    
+
     /**
-     * Get all workouts
+     * Get all programs
      * @returns {Array}
      */
     getAllData() {
-        return this.workouts;
+        return this.programs;
     }
-    
+
+    /**
+     * Find a program by ID
+     * @param {string} programId
+     * @returns {Object|null}
+     */
+    findProgram(programId) {
+        return this.programs.find(p => p.id === programId) || null;
+    }
+
+    /**
+     * Remove a program from the grid
+     * @param {string} programId
+     */
+    removeProgram(programId) {
+        this.programs = this.programs.filter(p => p.id !== programId);
+        this.selectedIds.delete(programId);
+
+        // Adjust current page if needed
+        const totalPages = this.getTotalPages();
+        if (this.currentPage > totalPages && totalPages > 0) {
+            this.currentPage = totalPages;
+        }
+
+        this.render();
+    }
+
+    /**
+     * Remove multiple programs from the grid
+     * @param {Array<string>} programIds
+     */
+    removePrograms(programIds) {
+        const idsToRemove = new Set(programIds);
+        this.programs = this.programs.filter(p => !idsToRemove.has(p.id));
+
+        programIds.forEach(id => this.selectedIds.delete(id));
+
+        // Adjust current page if needed
+        const totalPages = this.getTotalPages();
+        if (this.currentPage > totalPages && totalPages > 0) {
+            this.currentPage = totalPages;
+        }
+
+        this.render();
+    }
+
     /**
      * Destroy the grid
      */
@@ -389,11 +554,11 @@ class WorkoutGrid {
 }
 
 // Export for global use
-window.WorkoutGrid = WorkoutGrid;
+window.ProgramGrid = ProgramGrid;
 
 // Export for module use
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = WorkoutGrid;
+    module.exports = ProgramGrid;
 }
 
-console.log('📦 WorkoutGrid component loaded');
+console.log('📦 ProgramGrid component loaded');

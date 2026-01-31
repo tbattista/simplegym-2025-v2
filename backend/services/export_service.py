@@ -27,7 +27,12 @@ class ExportService:
         template_dir = Path(__file__).parent.parent / "templates" / "html"
         self.jinja_env = Environment(loader=FileSystemLoader(str(template_dir)))
 
-    def generate_text_export(self, workout: WorkoutTemplate, include_weights: bool = False) -> str:
+    def generate_text_export(
+        self,
+        workout: WorkoutTemplate,
+        include_weights: bool = False,
+        exercise_weights: dict = None
+    ) -> str:
         """
         Generate plain text representation of a workout.
         Designed for SMS/copy-paste compatibility (ASCII only, no emojis).
@@ -35,6 +40,7 @@ class ExportService:
         Args:
             workout: The workout template to export
             include_weights: Whether to include exercise weights
+            exercise_weights: Dict of {exercise_name: ExerciseHistory} with last weights
 
         Returns:
             Formatted plain text string
@@ -54,9 +60,8 @@ class ExportService:
         # Exercise groups
         for i, group in enumerate(workout.exercise_groups, 1):
             # Get exercise names joined with " / "
-            exercise_names = " / ".join(
-                name for name in group.exercises.values() if name
-            )
+            exercise_names_list = [name for name in group.exercises.values() if name]
+            exercise_names = " / ".join(exercise_names_list)
 
             if not exercise_names:
                 continue
@@ -65,9 +70,29 @@ class ExportService:
 
             # Build detail line with optional weight
             detail_parts = [f"{group.sets} sets x {group.reps} reps", f"{group.rest} rest"]
-            if include_weights and group.default_weight:
-                weight_unit = group.default_weight_unit or "lbs"
-                detail_parts.append(f"{group.default_weight} {weight_unit}")
+
+            # Get weight from history first, then fall back to template default
+            if include_weights:
+                weight = None
+                weight_unit = "lbs"
+
+                # Try to get weight from exercise history (use first exercise in group)
+                if exercise_weights and exercise_names_list:
+                    for name in exercise_names_list:
+                        if name in exercise_weights:
+                            history = exercise_weights[name]
+                            weight = history.last_weight if hasattr(history, 'last_weight') else history.get('last_weight')
+                            weight_unit = (history.last_weight_unit if hasattr(history, 'last_weight_unit')
+                                          else history.get('last_weight_unit', 'lbs'))
+                            break
+
+                # Fall back to template default
+                if not weight and group.default_weight:
+                    weight = group.default_weight
+                    weight_unit = group.default_weight_unit or "lbs"
+
+                if weight:
+                    detail_parts.append(f"{weight} {weight_unit}")
 
             lines.append(f"   {' | '.join(detail_parts)}")
             lines.append("")
@@ -91,7 +116,12 @@ class ExportService:
 
         return "\n".join(lines)
 
-    def generate_shareable_image(self, workout: WorkoutTemplate, include_weights: bool = False) -> Optional[Path]:
+    def generate_shareable_image(
+        self,
+        workout: WorkoutTemplate,
+        include_weights: bool = False,
+        exercise_weights: dict = None
+    ) -> Optional[Path]:
         """
         Generate a shareable image (1080x1920 story format) for social media.
         Uses Gotenberg screenshot endpoint with dark gradient template.
@@ -99,6 +129,7 @@ class ExportService:
         Args:
             workout: The workout template to export
             include_weights: Whether to include exercise weights in the image
+            exercise_weights: Dict of {exercise_name: ExerciseHistory} with last weights
 
         Returns:
             Path to generated PNG file, or None if generation failed
@@ -113,7 +144,11 @@ class ExportService:
             raise Exception(f"Failed to load share image template: {str(e)}")
 
         # Prepare template data
-        template_data = self._prepare_image_template_data(workout, include_weights=include_weights)
+        template_data = self._prepare_image_template_data(
+            workout,
+            include_weights=include_weights,
+            exercise_weights=exercise_weights
+        )
         html_content = template.render(**template_data)
 
         # Generate image using Gotenberg
@@ -124,7 +159,12 @@ class ExportService:
         filename = f"workout_{workout.id}_{workout.name.replace(' ', '_')[:20]}.png"
         return client.html_to_image(html_content, filename)
 
-    def _prepare_image_template_data(self, workout: WorkoutTemplate, include_weights: bool = False) -> dict:
+    def _prepare_image_template_data(
+        self,
+        workout: WorkoutTemplate,
+        include_weights: bool = False,
+        exercise_weights: dict = None
+    ) -> dict:
         """Prepare data for the shareable image template"""
         # Count total exercises
         total_exercises = sum(
@@ -163,10 +203,26 @@ class ExportService:
                         "reps": group.reps,
                         "rest": group.rest
                     }
-                    # Include weight if requested and available
-                    if include_weights and group.default_weight:
-                        weight_unit = group.default_weight_unit or "lbs"
-                        exercise_data["weight"] = f"{group.default_weight} {weight_unit}"
+                    # Include weight if requested - check history first, then template default
+                    if include_weights:
+                        weight = None
+                        weight_unit = "lbs"
+
+                        # Try to get weight from exercise history
+                        if exercise_weights and name in exercise_weights:
+                            history = exercise_weights[name]
+                            weight = history.last_weight if hasattr(history, 'last_weight') else history.get('last_weight')
+                            weight_unit = (history.last_weight_unit if hasattr(history, 'last_weight_unit')
+                                          else history.get('last_weight_unit', 'lbs'))
+
+                        # Fall back to template default
+                        if not weight and group.default_weight:
+                            weight = group.default_weight
+                            weight_unit = group.default_weight_unit or "lbs"
+
+                        if weight:
+                            exercise_data["weight"] = f"{weight} {weight_unit}"
+
                     exercise_preview.append(exercise_data)
 
         return {
@@ -179,7 +235,12 @@ class ExportService:
             "include_weights": include_weights,
         }
 
-    def generate_printable_pdf(self, workout: WorkoutTemplate, include_weights: bool = False) -> Optional[Path]:
+    def generate_printable_pdf(
+        self,
+        workout: WorkoutTemplate,
+        include_weights: bool = False,
+        exercise_weights: dict = None
+    ) -> Optional[Path]:
         """
         Generate a clean, printable PDF of the workout.
         Uses simple black & white template optimized for printing.
@@ -187,6 +248,7 @@ class ExportService:
         Args:
             workout: The workout template to export
             include_weights: Whether to include exercise weights
+            exercise_weights: Dict of {exercise_name: ExerciseHistory} with last weights
 
         Returns:
             Path to generated PDF file, or None if generation failed
@@ -201,7 +263,11 @@ class ExportService:
             raise Exception(f"Failed to load print template: {str(e)}")
 
         # Prepare template data
-        template_data = self._prepare_print_template_data(workout, include_weights=include_weights)
+        template_data = self._prepare_print_template_data(
+            workout,
+            include_weights=include_weights,
+            exercise_weights=exercise_weights
+        )
         html_content = template.render(**template_data)
 
         # Generate PDF using Gotenberg
@@ -212,7 +278,12 @@ class ExportService:
         filename = f"workout_{workout.id}_{workout.name.replace(' ', '_')[:20]}.pdf"
         return client.html_to_pdf(html_content, filename)
 
-    def _prepare_print_template_data(self, workout: WorkoutTemplate, include_weights: bool = False) -> dict:
+    def _prepare_print_template_data(
+        self,
+        workout: WorkoutTemplate,
+        include_weights: bool = False,
+        exercise_weights: dict = None
+    ) -> dict:
         """Prepare data for the printable PDF template"""
         # Build exercise list with all details
         exercises = []
@@ -228,10 +299,29 @@ class ExportService:
                     "reps": group.reps,
                     "rest": group.rest
                 }
-                # Include weight if requested and available
-                if include_weights and group.default_weight:
-                    weight_unit = group.default_weight_unit or "lbs"
-                    exercise_data["weight"] = f"{group.default_weight} {weight_unit}"
+                # Include weight if requested - check history first, then template default
+                if include_weights:
+                    weight = None
+                    weight_unit = "lbs"
+
+                    # Try to get weight from exercise history (use first exercise in group)
+                    if exercise_weights and exercise_names:
+                        for name in exercise_names:
+                            if name in exercise_weights:
+                                history = exercise_weights[name]
+                                weight = history.last_weight if hasattr(history, 'last_weight') else history.get('last_weight')
+                                weight_unit = (history.last_weight_unit if hasattr(history, 'last_weight_unit')
+                                              else history.get('last_weight_unit', 'lbs'))
+                                break
+
+                    # Fall back to template default
+                    if not weight and group.default_weight:
+                        weight = group.default_weight
+                        weight_unit = group.default_weight_unit or "lbs"
+
+                    if weight:
+                        exercise_data["weight"] = f"{weight} {weight_unit}"
+
                 exercises.append(exercise_data)
                 group_num += 1
 

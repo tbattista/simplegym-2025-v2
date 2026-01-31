@@ -184,8 +184,8 @@ body.menu-open {
 }
 
 [data-bs-theme="dark"] .menu-item.active > .menu-link {
-    background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(139, 92, 246, 0.15));
-    color: #c4b5fd;
+    background: linear-gradient(135deg, rgba(201, 124, 93, 0.15), rgba(100, 116, 139, 0.15));  /* Clay to Slate */
+    color: #d49378;  /* Brighter Clay */
 }
 
 [data-bs-theme="dark"] .menu-item.active > .menu-link::before {

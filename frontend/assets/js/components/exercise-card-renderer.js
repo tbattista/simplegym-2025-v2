@@ -509,7 +509,7 @@ class ExerciseCardRenderer {
         return `
             <div class="workout-next-chips">
                 <button class="workout-chip ${currentDirection === 'down' ? 'active' : ''}"
-                        data-direction="decrease"
+                        data-direction="down"
                         onclick="window.workoutModeController?.toggleWeightDirection?.(this, '${this._escapeHtml(exerciseName)}', 'down'); event.stopPropagation();">
                     Decrease
                 </button>
@@ -519,7 +519,7 @@ class ExerciseCardRenderer {
                     Same
                 </button>
                 <button class="workout-chip ${currentDirection === 'up' ? 'active' : ''}"
-                        data-direction="increase"
+                        data-direction="up"
                         onclick="window.workoutModeController?.toggleWeightDirection?.(this, '${this._escapeHtml(exerciseName)}', 'up'); event.stopPropagation();">
                     Increase
                 </button>

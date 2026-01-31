@@ -1,8 +1,7 @@
 /**
  * Ghost Gym - Program Card Component
- * Reusable program card with configurable actions and display options
- * Matches the WorkoutCard component styling for UI consistency
- * @version 1.0.0
+ * Clean, modern program card following WorkoutCard patterns
+ * @version 2.0.0
  */
 
 class ProgramCard {
@@ -15,263 +14,403 @@ class ProgramCard {
             showDescription: true,
             showDifficulty: true,
             showDuration: true,
-            
-            // Action buttons
-            actions: [],
-            
+
+            // Primary action button
+            primaryAction: null, // { label, icon, variant, onClick }
+
+            // Dropdown menu actions
+            dropdownActions: ['edit', 'delete'],
+
             // Delete mode
             deleteMode: false,
             onDelete: null,
-            
+
+            // Selection mode (for batch operations)
+            isSelected: false,
+            onSelectionChange: null,
+
             // Callbacks
             onCardClick: null,
-            
+            onEdit: null,
+
             // Workouts reference for calculating stats
             workouts: [],
-            
+
             ...config
         };
-        
+
         this.element = null;
     }
-    
+
     /**
      * Render the program card
      * @returns {HTMLElement} The card element
      */
     render() {
-        const col = document.createElement('div');
-        col.className = 'col';
-        
-        const cardClass = this.config.deleteMode ? 'card h-100 delete-mode' : 'card h-100';
-        
-        col.innerHTML = `
-            <div class="${cardClass}" data-program-id="${this.program.id}">
-                <div class="card-body">
-                    ${this._renderHeader()}
-                    ${this._renderMetadata()}
-                    ${this._renderDescription()}
-                    ${this._renderTags()}
-                    ${this._renderActions()}
+        const card = document.createElement('div');
+
+        // Build card classes
+        let cardClass = 'card program-card h-100';
+        if (this.config.deleteMode) {
+            cardClass += ' delete-mode';
+            if (this.config.isSelected) {
+                cardClass += ' selected';
+            }
+        }
+
+        card.className = cardClass;
+        card.setAttribute('data-program-id', this.program.id);
+
+        card.innerHTML = `
+            <div class="card-body d-flex flex-column position-relative">
+                ${this._renderDropdownMenu()}
+                ${this._renderSelectionCheckbox()}
+                ${this._renderHeader()}
+                ${this._renderStats()}
+                ${this._renderDescription()}
+                ${this._renderTags()}
+                <div class="mt-auto pt-2">
+                    ${this._renderPrimaryAction()}
                 </div>
             </div>
         `;
-        
-        this.element = col;
+
+        this.element = card;
         this._attachEventListeners();
-        
-        return col;
+
+        return card;
     }
-    
+
+    /**
+     * Render dropdown menu (3 dots)
+     */
+    _renderDropdownMenu() {
+        if (this.config.deleteMode) return '';
+
+        const dropdownActions = this.config.dropdownActions || ['edit', 'delete'];
+        let menuItems = '';
+
+        if (dropdownActions.includes('edit')) {
+            menuItems += `
+                <li>
+                    <a class="dropdown-item" href="javascript:void(0);" data-action="edit">
+                        <i class="bx bx-edit me-2"></i>Edit Details
+                    </a>
+                </li>`;
+        }
+
+        if (dropdownActions.includes('duplicate')) {
+            menuItems += `
+                <li>
+                    <a class="dropdown-item" href="javascript:void(0);" data-action="duplicate">
+                        <i class="bx bx-copy me-2"></i>Duplicate
+                    </a>
+                </li>`;
+        }
+
+        if (dropdownActions.includes('generate')) {
+            menuItems += `
+                <li>
+                    <a class="dropdown-item" href="javascript:void(0);" data-action="generate">
+                        <i class="bx bx-download me-2"></i>Generate PDF
+                    </a>
+                </li>`;
+        }
+
+        if (dropdownActions.includes('delete')) {
+            if (menuItems) {
+                menuItems += `<li><hr class="dropdown-divider"></li>`;
+            }
+            menuItems += `
+                <li>
+                    <a class="dropdown-item text-danger" href="javascript:void(0);" data-action="delete">
+                        <i class="bx bx-trash me-2"></i>Delete
+                    </a>
+                </li>`;
+        }
+
+        return `
+            <div class="dropdown position-absolute" style="top: 8px; right: 8px; z-index: 10;">
+                <button class="btn btn-icon btn-sm btn-text-secondary rounded-circle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bx bx-dots-vertical-rounded"></i>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">${menuItems}</ul>
+            </div>
+        `;
+    }
+
+    /**
+     * Render selection checkbox (shown in delete mode for batch operations)
+     */
+    _renderSelectionCheckbox() {
+        if (!this.config.deleteMode || !this.config.onSelectionChange) {
+            return '';
+        }
+
+        return `
+            <div class="form-check position-absolute" style="top: 12px; left: 12px; z-index: 10;">
+                <input class="form-check-input program-select-checkbox"
+                       type="checkbox"
+                       id="select-${this.program.id}"
+                       ${this.config.isSelected ? 'checked' : ''}>
+            </div>
+        `;
+    }
+
     /**
      * Render card header (title with difficulty badge)
      */
     _renderHeader() {
         const name = this.program.name || 'Untitled Program';
-        
+
         let difficultyBadge = '';
         if (this.config.showDifficulty && this.program.difficulty_level) {
-            const difficultyColors = {
-                'beginner': 'success',
-                'intermediate': 'warning',
-                'advanced': 'danger'
+            const difficultyConfig = {
+                'beginner': { color: 'success', label: 'Beginner' },
+                'intermediate': { color: 'warning', label: 'Intermediate' },
+                'advanced': { color: 'danger', label: 'Advanced' }
             };
-            const color = difficultyColors[this.program.difficulty_level] || 'secondary';
-            difficultyBadge = `<span class="badge bg-label-${color} ms-2">${this.program.difficulty_level}</span>`;
+            const cfg = difficultyConfig[this.program.difficulty_level] || { color: 'secondary', label: this.program.difficulty_level };
+            difficultyBadge = `<span class="badge bg-${cfg.color} badge-sm">${cfg.label}</span>`;
         }
-        
+
+        // Duration badge
+        let durationBadge = '';
+        if (this.config.showDuration && this.program.duration_weeks) {
+            durationBadge = `<span class="badge bg-label-secondary badge-sm">${this.program.duration_weeks}w</span>`;
+        }
+
         return `
-            <h5 class="card-title mb-2 d-flex align-items-center">
-                ${this._escapeHtml(name)}
-                ${difficultyBadge}
-            </h5>
+            <div class="mb-2 ${this.config.deleteMode ? 'ps-4' : ''}" style="padding-right: 2rem;">
+                <h6 class="card-title mb-1 text-truncate" title="${this._escapeHtml(name)}">
+                    ${this._escapeHtml(name)}
+                </h6>
+                <div class="d-flex gap-1 flex-wrap">
+                    ${difficultyBadge}
+                    ${durationBadge}
+                </div>
+            </div>
         `;
     }
-    
+
     /**
-     * Render metadata (workouts, exercises, duration)
+     * Render stats (workouts and exercises count)
      */
-    _renderMetadata() {
+    _renderStats() {
+        if (!this.config.showStats) return '';
+
         const workoutCount = this.program.workouts?.length || 0;
         const totalExercises = this._getTotalExerciseCount();
-        
-        let html = `
-            <div class="mb-2">
-                <span class="badge bg-label-primary me-1">
+
+        return `
+            <div class="d-flex gap-3 mb-2 text-muted small">
+                <span>
                     <i class="bx bx-dumbbell me-1"></i>${workoutCount} ${workoutCount === 1 ? 'workout' : 'workouts'}
                 </span>
-                <span class="badge bg-label-info">
-                    <i class="bx bx-list-ul me-1"></i>${totalExercises} ${totalExercises === 1 ? 'exercise' : 'exercises'}
+                <span>
+                    <i class="bx bx-list-ul me-1"></i>${totalExercises} exercises
                 </span>
+            </div>
         `;
-        
-        // Show duration if available
-        if (this.config.showDuration && this.program.duration_weeks) {
-            html += `
-                <span class="badge bg-label-secondary ms-1">
-                    <i class="bx bx-time me-1"></i>${this.program.duration_weeks} ${this.program.duration_weeks === 1 ? 'week' : 'weeks'}
-                </span>
-            `;
-        }
-        
-        html += `</div>`;
-        
-        return html;
     }
-    
+
     /**
      * Render description preview
      */
     _renderDescription() {
         if (!this.config.showDescription) return '';
-        
+
         const description = this.program.description;
-        
         if (!description) return '';
-        
-        const preview = description.length > 100 
-            ? description.substring(0, 100) + '...' 
+
+        const preview = description.length > 80
+            ? description.substring(0, 80) + '...'
             : description;
-        
+
         return `
-            <p class="card-text text-muted small mb-2" style="min-height: 2.2em; line-height: 1.3;">
+            <p class="card-text text-muted small mb-2 line-clamp-2">
                 ${this._escapeHtml(preview)}
             </p>
         `;
     }
-    
+
     /**
      * Render tags
      */
     _renderTags() {
         if (!this.config.showTags) return '';
-        
+
         const tags = this.program.tags || [];
-        
         if (tags.length === 0) return '';
-        
+
+        // Show max 2 tags to keep it clean
         return `
-            <div class="mb-2">
-                ${tags.slice(0, 3).map(tag => 
-                    `<span class="badge bg-label-secondary me-1 small">${this._escapeHtml(tag)}</span>`
+            <div class="d-flex gap-1 flex-wrap mb-2">
+                ${tags.slice(0, 2).map(tag =>
+                    `<span class="badge bg-label-primary badge-sm">${this._escapeHtml(tag)}</span>`
                 ).join('')}
-                ${tags.length > 3 ? `<span class="badge bg-label-secondary small">+${tags.length - 3}</span>` : ''}
+                ${tags.length > 2 ? `<span class="badge bg-label-secondary badge-sm">+${tags.length - 2}</span>` : ''}
             </div>
         `;
     }
-    
+
     /**
-     * Render action buttons
+     * Render primary action button
      */
-    _renderActions() {
-        if (this.config.deleteMode && this.config.onDelete) {
+    _renderPrimaryAction() {
+        if (this.config.deleteMode) {
             return `
-                <button class="btn btn-delete-program w-100 mt-auto" data-action="delete">
-                    <i class="bx bx-trash me-1"></i>Delete Program
+                <button class="btn btn-outline-danger btn-sm w-100" data-action="delete-single">
+                    <i class="bx bx-trash me-1"></i>Delete
                 </button>
             `;
         }
-        
-        if (this.config.actions.length === 0) return '';
-        
-        // Single action - full width button
-        if (this.config.actions.length === 1) {
-            const action = this.config.actions[0];
-            return `
-                <button class="btn btn-${action.variant} w-100 mt-auto" data-action="${action.id}">
-                    ${action.icon ? `<i class="bx ${action.icon} me-1"></i>` : ''}${action.label}
-                </button>
-            `;
-        }
-        
-        // Multiple actions - button group
+
+        // Default primary action is "Open"
+        const action = this.config.primaryAction || {
+            label: 'Open',
+            icon: 'bx-folder-open',
+            variant: 'primary'
+        };
+
         return `
-            <div class="btn-group btn-group-sm w-100 mt-auto" role="group">
-                ${this.config.actions.map(action => `
-                    <button class="btn btn-${action.variant}" data-action="${action.id}">
-                        ${action.icon ? `<i class="bx ${action.icon} me-1"></i>` : ''}${action.label}
-                    </button>
-                `).join('')}
-            </div>
+            <button class="btn btn-${action.variant || 'primary'} btn-sm w-100" data-action="primary">
+                ${action.icon ? `<i class="bx ${action.icon} me-1"></i>` : ''}${action.label}
+            </button>
         `;
     }
-    
+
     /**
      * Attach event listeners
      */
     _attachEventListeners() {
         if (!this.element) return;
-        
-        const card = this.element.querySelector('.card');
-        
+
+        // Checkbox selection handler (for batch delete mode)
+        const checkbox = this.element.querySelector('.program-select-checkbox');
+        if (checkbox && this.config.onSelectionChange) {
+            checkbox.addEventListener('change', (e) => {
+                e.stopPropagation();
+                this.config.isSelected = e.target.checked;
+
+                if (this.config.isSelected) {
+                    this.element.classList.add('selected');
+                } else {
+                    this.element.classList.remove('selected');
+                }
+
+                this.config.onSelectionChange(this.program.id, this.config.isSelected);
+            });
+        }
+
         // Card click handler
-        if (this.config.onCardClick) {
-            card.addEventListener('click', (e) => {
-                // Don't trigger if clicking a button
-                if (!e.target.closest('button')) {
+        if (this.config.deleteMode && this.config.onSelectionChange && checkbox) {
+            // In delete mode with batch selection, clicking card toggles checkbox
+            this.element.addEventListener('click', (e) => {
+                if (!e.target.closest('button') && !e.target.closest('.form-check') && !e.target.closest('.dropdown')) {
+                    checkbox.checked = !checkbox.checked;
+                    checkbox.dispatchEvent(new Event('change'));
+                }
+            });
+        } else if (this.config.onCardClick) {
+            this.element.addEventListener('click', (e) => {
+                // Don't trigger if clicking a button, checkbox, or dropdown
+                if (!e.target.closest('button') && !e.target.closest('.form-check') && !e.target.closest('.dropdown')) {
                     this.config.onCardClick(this.program, e);
                 }
             });
         }
-        
-        // Action button handlers
-        const buttons = this.element.querySelectorAll('[data-action]');
-        buttons.forEach(button => {
-            button.addEventListener('click', (e) => {
+
+        // Primary action button
+        const primaryBtn = this.element.querySelector('[data-action="primary"]');
+        if (primaryBtn) {
+            primaryBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
-                const actionId = button.dataset.action;
-                
-                if (actionId === 'delete' && this.config.onDelete) {
-                    const name = this.program.name || 'Untitled Program';
-                    this.config.onDelete(this.program.id, name);
-                } else {
-                    const action = this.config.actions.find(a => a.id === actionId);
-                    if (action && action.onClick) {
-                        action.onClick(this.program);
-                    }
+                if (this.config.primaryAction?.onClick) {
+                    this.config.primaryAction.onClick(this.program);
+                } else if (this.config.onCardClick) {
+                    // Default to card click behavior
+                    this.config.onCardClick(this.program, e);
+                }
+            });
+        }
+
+        // Delete single button (in delete mode)
+        const deleteSingleBtn = this.element.querySelector('[data-action="delete-single"]');
+        if (deleteSingleBtn && this.config.onDelete) {
+            deleteSingleBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const name = this.program.name || 'Untitled Program';
+                this.config.onDelete(this.program.id, name);
+            });
+        }
+
+        // Dropdown action handlers
+        const dropdownItems = this.element.querySelectorAll('.dropdown-item[data-action]');
+        dropdownItems.forEach(item => {
+            item.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const action = item.dataset.action;
+
+                switch (action) {
+                    case 'edit':
+                        if (this.config.onEdit) {
+                            this.config.onEdit(this.program);
+                        }
+                        break;
+                    case 'delete':
+                        if (this.config.onDelete) {
+                            const name = this.program.name || 'Untitled Program';
+                            this.config.onDelete(this.program.id, name);
+                        }
+                        break;
+                    case 'duplicate':
+                        if (this.config.onDuplicate) {
+                            this.config.onDuplicate(this.program);
+                        }
+                        break;
+                    case 'generate':
+                        if (this.config.onGenerate) {
+                            this.config.onGenerate(this.program);
+                        }
+                        break;
                 }
             });
         });
     }
-    
+
     /**
      * Set delete mode
      * @param {boolean} enabled
      */
     setDeleteMode(enabled) {
         this.config.deleteMode = enabled;
-        
+
+        // Clear selection when exiting delete mode
+        if (!enabled) {
+            this.config.isSelected = false;
+        }
+
         if (this.element) {
-            const card = this.element.querySelector('.card');
-            if (enabled) {
-                card.classList.add('delete-mode');
-            } else {
-                card.classList.remove('delete-mode');
-            }
-            
-            // Re-render actions
-            const cardBody = card.querySelector('.card-body');
-            const actionsContainer = cardBody.querySelector('.btn-group, .btn-delete-program, button[data-action]')?.parentElement;
-            if (actionsContainer) {
-                actionsContainer.innerHTML = this._renderActions();
-                this._attachEventListeners();
-            }
+            // Re-render the entire card
+            const newElement = this.render();
+            this.element.replaceWith(newElement);
         }
     }
-    
+
     /**
      * Update program data
      * @param {Object} program
      */
     update(program) {
         this.program = program;
-        
+
         if (this.element) {
             const newElement = this.render();
             this.element.replaceWith(newElement);
         }
     }
-    
+
     /**
      * Destroy the card
      */
@@ -281,13 +420,13 @@ class ProgramCard {
             this.element = null;
         }
     }
-    
+
     /**
      * Get total exercise count from all workouts in program
      */
     _getTotalExerciseCount() {
         let count = 0;
-        
+
         if (this.program.workouts && this.config.workouts) {
             this.program.workouts.forEach(programWorkout => {
                 const workout = this.config.workouts.find(w => w.id === programWorkout.workout_id);
@@ -303,10 +442,10 @@ class ProgramCard {
                 }
             });
         }
-        
+
         return count;
     }
-    
+
     /**
      * Escape HTML to prevent XSS
      */
@@ -326,4 +465,4 @@ if (typeof module !== 'undefined' && module.exports) {
     module.exports = ProgramCard;
 }
 
-console.log('📦 ProgramCard component loaded');
+console.log('📦 ProgramCard component loaded (v2.0)');

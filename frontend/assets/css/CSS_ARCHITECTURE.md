@@ -2,8 +2,8 @@
 
 A comprehensive guide to the CSS organization in Ghost Gym V2. This document helps developers quickly find where to edit specific styles.
 
-**Version:** 1.0.0
-**Last Updated:** 2026-01-22
+**Version:** 1.1.0
+**Last Updated:** 2026-01-30
 
 ---
 
@@ -159,23 +159,23 @@ Most pages load CSS in this order:
 ### Color Tokens
 
 ```css
-/* Brand Colors */
---gs-primary: #6366f1;          /* Indigo - primary actions */
---gs-secondary: #8b5cf6;        /* Purple - secondary accent */
---gs-accent: #06b6d4;           /* Cyan - highlights */
+/* Brand Colors - Soft Clay Palette */
+--gs-primary: #C97C5D;          /* Soft Clay - primary actions */
+--gs-secondary: #64748B;        /* Slate - secondary accent */
+--gs-accent: #E5E7EB;           /* Border Gray - highlights */
 
 /* Semantic Colors */
---gs-success: #4CBB17;          /* Kelly Green - positive states */
---gs-warning: #f59e0b;          /* Amber - warnings */
---gs-danger: #ef4444;           /* Red - errors, destructive */
---gs-info: #0ea5e9;             /* Sky blue - informational */
+--gs-success: #8CBF9F;          /* Sage Green - positive states */
+--gs-warning: #E3A14F;          /* Warm Amber - warnings */
+--gs-danger: #D66A6A;           /* Muted Red - errors, destructive */
+--gs-info: #64748B;             /* Slate - informational */
 
 /* Weight Progression Colors (workout mode) */
---gs-weight-increased: #4CBB17; /* Green - weight went up */
---gs-weight-decreased: #dc3545; /* Red - weight went down */
+--gs-weight-increased: #8CBF9F; /* Sage Green - weight went up */
+--gs-weight-decreased: #D66A6A; /* Muted Red - weight went down */
 --gs-weight-same: #6c757d;      /* Gray - no change */
---gs-weight-new: #007bff;       /* Blue - first time */
---gs-weight-modified: #ffc107;  /* Yellow - modified */
+--gs-weight-new: #C97C5D;       /* Soft Clay - first time */
+--gs-weight-modified: #E3A14F;  /* Warm Amber - modified */
 ```
 
 ### Spacing Scale
@@ -209,8 +209,8 @@ Most pages load CSS in this order:
 --workout-card-bg: #ffffff;
 --workout-border: #e2e8f0;
 --workout-text: #1e293b;
---workout-muted: #64748b;
---workout-accent: #6366f1;
+--workout-muted: #6B7280;
+--workout-accent: #C97C5D;           /* Soft Clay */
 
 /* Status backgrounds (card states) */
 --workout-status-logged: rgba(var(--gs-success-rgb), 0.1);

@@ -1519,9 +1519,11 @@
                     label: 'Filter',
                     title: 'Open filters',
                     action: function() {
-                        // TODO: Implement filters offcanvas for programs
-                        console.log('🔍 Filter button clicked');
-                        alert('Filter feature coming soon!');
+                        // Open the filters offcanvas
+                        const offcanvas = new bootstrap.Offcanvas(
+                            document.getElementById('filtersOffcanvas')
+                        );
+                        offcanvas.show();
                     }
                 },
                 {
@@ -1529,109 +1531,148 @@
                     label: 'Sort',
                     title: 'Sort programs',
                     action: function() {
-                        // TODO: Implement sort offcanvas for programs
-                        console.log('📊 Sort button clicked');
-                        alert('Sort feature coming soon!');
-                    }
-                },
-                {
-                    icon: 'bx-plus',
-                    label: 'Add',
-                    title: 'Create new program',
-                    action: function() {
-                        // Open program modal
-                        if (window.showProgramModal) {
-                            window.showProgramModal();
+                        // Cycle through sort options using programs-page.js function
+                        if (window.cycleProgramSort) {
+                            window.cycleProgramSort();
                         } else {
-                            console.error('❌ showProgramModal not available');
+                            console.error('❌ cycleProgramSort not available');
                         }
                     }
                 },
                 {
-                    icon: 'bx-info-circle',
-                    label: 'Info',
-                    title: 'Page information',
+                    icon: 'bx-search',
+                    label: 'Search',
+                    title: 'Search programs',
                     action: function() {
-                        // Show info modal with page explanation
-                        const modalHtml = `
-                            <div class="modal fade" id="programsInfoModal" tabindex="-1" aria-hidden="true">
-                                <div class="modal-dialog modal-dialog-centered">
-                                    <div class="modal-content">
-                                        <div class="modal-header">
-                                            <h5 class="modal-title">
-                                                <i class="bx bx-info-circle me-2"></i>
-                                                Programs
-                                            </h5>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                        </div>
-                                        <div class="modal-body">
-                                            <h6 class="mb-3">📚 What is this page?</h6>
-                                            <p class="mb-3">This is your program library where you can organize workouts into structured training programs.</p>
-                                            
-                                            <h6 class="mb-3">🔍 How to use:</h6>
-                                            <ul class="mb-3">
-                                                <li><strong>Search:</strong> Tap the Search button to find programs by name, description, or tags</li>
-                                                <li><strong>Filter:</strong> Use the Filter button to narrow down by tags</li>
-                                                <li><strong>Sort:</strong> Tap Sort to organize by date, name, or workout count</li>
-                                                <li><strong>Create:</strong> Tap the + button to create a new program</li>
-                                            </ul>
-                                            
-                                            <h6 class="mb-3">💡 Quick Actions:</h6>
-                                            <ul class="mb-0">
-                                                <li><strong>Open:</strong> Tap "Open" to view and manage program workouts</li>
-                                                <li><strong>Edit:</strong> Tap "Edit" to modify program details</li>
-                                                <li><strong>Delete Mode:</strong> Toggle delete mode to remove programs</li>
-                                            </ul>
-                                        </div>
-                                        <div class="modal-footer">
-                                            <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Got it!</button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        `;
-                        
-                        // Remove existing modal if present
-                        const existingModal = document.getElementById('programsInfoModal');
-                        if (existingModal) {
-                            existingModal.remove();
+                        const searchFab = document.getElementById('searchFab');
+                        const searchInput = document.getElementById('searchFabInput');
+
+                        if (!searchFab || !searchInput) {
+                            console.error('❌ Search FAB elements not found');
+                            return;
                         }
-                        
-                        // Add modal to body
-                        document.body.insertAdjacentHTML('beforeend', modalHtml);
-                        
-                        // Show modal
-                        const modal = new bootstrap.Modal(document.getElementById('programsInfoModal'));
-                        modal.show();
-                        
-                        // Clean up after modal is hidden
-                        document.getElementById('programsInfoModal').addEventListener('hidden.bs.modal', function() {
-                            this.remove();
-                        });
+
+                        // Only open if collapsed
+                        if (!searchFab.classList.contains('expanded')) {
+                            openMorphingSearch(searchFab, searchInput);
+                        }
+                    }
+                },
+                {
+                    icon: 'bx-dots-vertical-rounded',
+                    label: 'More',
+                    title: 'More options',
+                    action: function() {
+                        // Use UnifiedOffcanvasFactory to create more menu
+                        if (window.UnifiedOffcanvasFactory) {
+                            window.UnifiedOffcanvasFactory.createMenuOffcanvas({
+                                id: 'moreMenuOffcanvas',
+                                title: 'More Options',
+                                icon: 'bx-dots-vertical-rounded',
+                                menuItems: [
+                                    {
+                                        icon: 'bx-trash',
+                                        title: 'Delete Programs',
+                                        description: 'Toggle delete mode to remove programs',
+                                        onClick: () => {
+                                            const toggle = document.getElementById('deleteModeToggle');
+                                            if (toggle) {
+                                                toggle.checked = !toggle.checked;
+                                                toggle.dispatchEvent(new Event('change'));
+                                            }
+                                        }
+                                    },
+                                    {
+                                        icon: 'bx-info-circle',
+                                        title: 'Page Information',
+                                        description: 'Learn how to use this page',
+                                        onClick: () => {
+                                            // Show info modal with page explanation
+                                            const modalHtml = `
+                                                <div class="modal fade" id="programsInfoModal" tabindex="-1" aria-hidden="true">
+                                                    <div class="modal-dialog modal-dialog-centered">
+                                                        <div class="modal-content">
+                                                            <div class="modal-header">
+                                                                <h5 class="modal-title">
+                                                                    <i class="bx bx-info-circle me-2"></i>
+                                                                    Programs
+                                                                </h5>
+                                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                            </div>
+                                                            <div class="modal-body">
+                                                                <h6 class="mb-3">📚 What is this page?</h6>
+                                                                <p class="mb-3">This is your program library where you can organize workouts into structured training programs.</p>
+
+                                                                <h6 class="mb-3">🔍 How to use:</h6>
+                                                                <ul class="mb-3">
+                                                                    <li><strong>Search:</strong> Tap the Search button to find programs by name, description, or tags</li>
+                                                                    <li><strong>Filter:</strong> Use the Filter button to filter by difficulty or tags</li>
+                                                                    <li><strong>Sort:</strong> Tap Sort to organize by date, name, or workout count</li>
+                                                                    <li><strong>Create:</strong> Tap the + button to create a new program</li>
+                                                                </ul>
+
+                                                                <h6 class="mb-3">💡 Quick Actions:</h6>
+                                                                <ul class="mb-0">
+                                                                    <li><strong>View Details:</strong> Tap a program card to see workouts and details</li>
+                                                                    <li><strong>Add Workouts:</strong> Use the "Add Workouts" button in the detail view</li>
+                                                                    <li><strong>Reorder:</strong> Drag and drop workouts to reorder them</li>
+                                                                    <li><strong>Delete Mode:</strong> Use More menu to toggle delete mode</li>
+                                                                </ul>
+                                                            </div>
+                                                            <div class="modal-footer">
+                                                                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Got it!</button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            `;
+
+                                            // Remove existing modal if present
+                                            const existingModal = document.getElementById('programsInfoModal');
+                                            if (existingModal) {
+                                                existingModal.remove();
+                                            }
+
+                                            // Add modal to body
+                                            document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+                                            // Show modal
+                                            const modal = new bootstrap.Modal(document.getElementById('programsInfoModal'));
+                                            modal.show();
+
+                                            // Clean up after modal is hidden
+                                            document.getElementById('programsInfoModal').addEventListener('hidden.bs.modal', function() {
+                                                this.remove();
+                                            });
+                                        }
+                                    }
+                                ]
+                            });
+                        } else {
+                            console.error('❌ UnifiedOffcanvasFactory not loaded');
+                            alert('More options is loading. Please try again in a moment.');
+                        }
                     }
                 }
             ],
             fab: {
-                icon: 'bx-search',
-                title: 'Search programs',
+                icon: 'bx-plus',
+                title: 'Create new program',
                 variant: 'primary',
                 action: function() {
-                    const searchFab = document.getElementById('searchFab');
-                    const searchInput = document.getElementById('searchFabInput');
-                    
-                    if (!searchFab || !searchInput) {
-                        console.error('❌ Search FAB elements not found');
-                        return;
-                    }
-                    
-                    // Only toggle if NOT expanded (only open when collapsed)
-                    if (!searchFab.classList.contains('expanded')) {
-                        // Open search - morph FAB to search box
-                        if (window.openMorphingSearch) {
-                            window.openMorphingSearch(searchFab, searchInput);
-                        }
+                    // Open program modal
+                    if (window.showProgramModal) {
+                        window.showProgramModal();
+                    } else {
+                        console.error('❌ showProgramModal not available');
                     }
                 }
+            },
+            // Hidden search FAB config (renders the morphing search elements but triggered by button)
+            searchFab: {
+                icon: 'bx-search',
+                title: 'Search programs',
+                variant: 'primary'
             }
         },
 
