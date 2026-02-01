@@ -359,7 +359,9 @@ class SharingService:
             # Generate share URL based on environment
             # Check for Railway production URL, otherwise use localhost
             base_url = os.getenv('RAILWAY_PUBLIC_DOMAIN', 'localhost:8001')
-            protocol = 'https' if 'railway.app' in base_url else 'http'
+            # Use HTTPS for any production domain (not localhost)
+            is_localhost = base_url.startswith('localhost') or base_url.startswith('127.0.0.1')
+            protocol = 'http' if is_localhost else 'https'
             share_url = f"{protocol}://{base_url}/share/{token}"
             
             logger.info(f"✅ Created private share for workout {workout.id} with token {token}")

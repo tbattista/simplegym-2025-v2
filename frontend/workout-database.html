@@ -340,11 +340,17 @@
                 return;
             }
             
-            // Wait for auth state to settle (important for Firebase mode)
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            
-            // Initialize workout database
-            initWorkoutDatabase();
+            // Wait for auth state to be properly determined
+            await window.dataManager.waitForAuthReady();
+
+            // Only initialize if user is authenticated
+            if (window.dataManager.isUserAuthenticated()) {
+                console.log('✅ User authenticated, loading workout database');
+                initWorkoutDatabase();
+            } else {
+                console.log('⏭️ User not authenticated, waiting for auth state change');
+                // Will be handled by authStateChanged event listener below
+            }
             
             console.log('✅ Workout Database page ready!');
         });
