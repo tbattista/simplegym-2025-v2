@@ -10,3 +10,4 @@ restartPolicyMaxRetries = 10
 
 [env]
 ENVIRONMENT = "production"
+GOTENBERG_URL = "https://gotenberg-production-c928.up.railway.app"
