@@ -742,51 +742,127 @@ async function toggleExerciseFavorite(exerciseId) {
 function showExerciseDetails(exerciseId) {
     const exercise = [...window.ghostGym.exercises.all, ...window.ghostGym.exercises.custom]
         .find(e => e.id === exerciseId);
-    
+
     if (!exercise) return;
-    
+
     const modal = new bootstrap.Modal(document.getElementById('exerciseDetailModal'));
     document.getElementById('exerciseDetailTitle').textContent = exercise.name;
-    
+
+    // Helper to render field if value exists
+    const field = (label, value) => value ? `
+        <div class="col-md-6 mb-2">
+            <small class="text-muted">${label}</small><br>
+            <span>${value}</span>
+        </div>` : '';
+
+    // Build equipment display with count
+    const equipmentDisplay = (equipment, count) => {
+        if (!equipment) return null;
+        return equipment + (count ? ` (${count})` : '');
+    };
+
     const detailsHtml = `
-        <div class="row">
-            <div class="col-md-6 mb-3">
-                <strong>Muscle Group:</strong><br>
-                ${exercise.targetMuscleGroup || 'N/A'}
+        <!-- Video Links Section -->
+        ${(exercise.shortVideoUrl || exercise.detailedVideoUrl) ? `
+        <div class="mb-3">
+            <h6 class="mb-2"><i class="bx bx-video me-1"></i>Video Tutorials</h6>
+            <div class="d-flex gap-2 flex-wrap">
+                ${exercise.shortVideoUrl ? `
+                <a href="${exercise.shortVideoUrl}" target="_blank" class="btn btn-outline-primary btn-sm">
+                    <i class="bx bx-play-circle me-1"></i>Quick Demo
+                </a>` : ''}
+                ${exercise.detailedVideoUrl ? `
+                <a href="${exercise.detailedVideoUrl}" target="_blank" class="btn btn-outline-secondary btn-sm">
+                    <i class="bx bx-video me-1"></i>In-Depth Tutorial
+                </a>` : ''}
             </div>
-            <div class="col-md-6 mb-3">
-                <strong>Equipment:</strong><br>
-                ${exercise.primaryEquipment || 'N/A'}
+        </div>
+        <hr>
+        ` : ''}
+
+        <!-- Basic Info Section -->
+        <div class="row mb-3">
+            ${field('Difficulty', exercise.difficultyLevel)}
+            ${field('Mechanics', exercise.mechanics)}
+            ${field('Body Region', exercise.bodyRegion)}
+            ${field('Force Type', exercise.forceType)}
+            ${field('Classification', exercise.classification)}
+            ${field('Laterality', exercise.laterality)}
+        </div>
+
+        <!-- Muscles Section -->
+        <div class="mb-3">
+            <h6 class="mb-2"><i class="bx bx-body me-1"></i>Muscles Worked</h6>
+            <div class="row">
+                ${field('Target Muscle Group', exercise.targetMuscleGroup)}
+                ${field('Prime Mover', exercise.primeMoverMuscle)}
+                ${field('Secondary Muscle', exercise.secondaryMuscle)}
+                ${field('Tertiary Muscle', exercise.tertiaryMuscle)}
             </div>
-            <div class="col-md-6 mb-3">
-                <strong>Difficulty:</strong><br>
-                ${exercise.difficultyLevel || 'N/A'}
+        </div>
+
+        <!-- Equipment Section -->
+        <div class="mb-3">
+            <h6 class="mb-2"><i class="bx bx-dumbbell me-1"></i>Equipment</h6>
+            <div class="row">
+                ${field('Primary Equipment', equipmentDisplay(exercise.primaryEquipment, exercise.primaryEquipmentCount))}
+                ${field('Secondary Equipment', equipmentDisplay(exercise.secondaryEquipment, exercise.secondaryEquipmentCount))}
             </div>
-            <div class="col-md-6 mb-3">
-                <strong>Mechanics:</strong><br>
-                ${exercise.mechanics || 'N/A'}
-            </div>
-            ${exercise.popularityScore ? `
-            <div class="col-md-6 mb-3">
-                <strong>Popularity Score:</strong><br>
-                <div class="progress" style="height: 20px;">
-                    <div class="progress-bar" role="progressbar" style="width: ${exercise.popularityScore}%"
-                         aria-valuenow="${exercise.popularityScore}" aria-valuemin="0" aria-valuemax="100">
-                        ${exercise.popularityScore}/100
-                    </div>
+        </div>
+
+        <!-- Movement Details (Collapsible) -->
+        ${(exercise.posture || exercise.armType || exercise.grip || exercise.loadPosition) ? `
+        <div class="mb-3">
+            <h6 class="mb-2" data-bs-toggle="collapse" data-bs-target="#movementDetails"
+                style="cursor: pointer;">
+                <i class="bx bx-move me-1"></i>Movement Details
+                <i class="bx bx-chevron-down float-end"></i>
+            </h6>
+            <div class="collapse show" id="movementDetails">
+                <div class="row">
+                    ${field('Posture', exercise.posture)}
+                    ${field('Arm Type', exercise.armType)}
+                    ${field('Arm Pattern', exercise.armPattern)}
+                    ${field('Grip', exercise.grip)}
+                    ${field('Load Position', exercise.loadPosition)}
+                    ${field('Foot Elevation', exercise.footElevation)}
                 </div>
             </div>
-            ` : ''}
-            ${!exercise.isGlobal ? `
-            <div class="col-12">
-                <span class="badge bg-label-primary">
-                    <i class="bx bx-user me-1"></i>Custom Exercise
-                </span>
-            </div>
-            ` : ''}
         </div>
+        ` : ''}
+
+        <!-- Movement Patterns (Collapsible) -->
+        ${(exercise.movementPattern1 || exercise.planeOfMotion1) ? `
+        <div class="mb-3">
+            <h6 class="mb-2" data-bs-toggle="collapse" data-bs-target="#movementPatterns"
+                style="cursor: pointer;">
+                <i class="bx bx-rotate-right me-1"></i>Movement Patterns
+                <i class="bx bx-chevron-down float-end"></i>
+            </h6>
+            <div class="collapse" id="movementPatterns">
+                <div class="row">
+                    ${field('Pattern 1', exercise.movementPattern1)}
+                    ${field('Pattern 2', exercise.movementPattern2)}
+                    ${field('Pattern 3', exercise.movementPattern3)}
+                    ${field('Plane 1', exercise.planeOfMotion1)}
+                    ${field('Plane 2', exercise.planeOfMotion2)}
+                    ${field('Plane 3', exercise.planeOfMotion3)}
+                    ${field('Combination', exercise.combinationExercise)}
+                </div>
+            </div>
+        </div>
+        ` : ''}
+
+        <!-- Custom Exercise Badge -->
+        ${!exercise.isGlobal ? `
+        <div class="mt-3">
+            <span class="badge bg-label-primary">
+                <i class="bx bx-user me-1"></i>Custom Exercise
+            </span>
+        </div>
+        ` : ''}
     `;
-    
+
     document.getElementById('exerciseDetailBody').innerHTML = detailsHtml;
     modal.show();
 }
