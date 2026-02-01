@@ -259,52 +259,50 @@
 
     <!-- Initialize -->
     <script>
+        // Initialize page with proper auth waiting (fixes mobile race condition)
         document.addEventListener('DOMContentLoaded', async function() {
             console.log('📄 Workout History Page - DOM Ready');
 
-            // Wait for Firebase to be ready
+            // 1. Wait for Firebase SDK to be ready
             if (!window.firebaseReady) {
                 await new Promise(resolve => {
                     window.addEventListener('firebaseReady', resolve, { once: true });
                 });
             }
 
-            // Wait for data manager to be ready
+            // 2. Wait for data manager to exist
             if (!window.dataManager) {
                 console.error('❌ Data manager not available');
                 return;
             }
 
-            // Check auth and initialize (same pattern as index.html)
-            const checkAuthAndInit = async () => {
-                const user = window.firebaseAuth?.currentUser;
-                if (user) {
-                    console.log('✅ User authenticated, loading workout history');
-                    if (window.initWorkoutHistory) {
-                        await window.initWorkoutHistory();
-                    }
-                } else {
-                    console.log('⏭️ User not authenticated, waiting for auth state change');
+            // 3. Wait for auth state to be FULLY determined (key fix for mobile)
+            await window.dataManager.waitForAuthReady();
+            console.log('📄 Auth ready, storageMode:', window.dataManager.getStorageMode());
+
+            // 4. Initialize if authenticated
+            if (window.dataManager.isUserAuthenticated()) {
+                console.log('✅ User authenticated, loading workout history');
+                if (window.initWorkoutHistory) {
+                    await window.initWorkoutHistory();
                 }
-            };
+            } else {
+                console.log('⏭️ User not authenticated, waiting for auth state change');
+            }
 
-            await checkAuthAndInit();
-
-            // Listen for auth state changes using firebaseAuth directly (like index.html)
+            // 5. Listen for future auth state changes
             if (window.firebaseAuth) {
                 window.firebaseAuth.onAuthStateChanged(async (user) => {
-                    console.log('🔄 Auth state changed on workout history page:', user ? 'authenticated' : 'not authenticated');
+                    console.log('🔄 Auth state changed:', user ? 'authenticated' : 'not authenticated');
 
-                    // Only reload if user is authenticated
                     if (!user) {
                         console.log('⏭️ User not authenticated, skipping history load');
                         return;
                     }
 
-                    // Wait a moment for data manager to update its mode
+                    // Wait for dataManager to sync storageMode
                     await new Promise(resolve => setTimeout(resolve, 300));
 
-                    // Reinitialize - handles all URL patterns (all sessions, single workout, session jump)
                     if (window.initWorkoutHistory) {
                         await window.initWorkoutHistory();
                     }

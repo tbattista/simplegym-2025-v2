@@ -435,19 +435,49 @@
         // programs-page.js handles all initialization and state management
         // This script just bridges legacy functions for backward compatibility
 
-        // Initialize when Firebase is ready
-        document.addEventListener('DOMContentLoaded', function() {
-            if (window.firebaseReady) {
-                if (window.initProgramsPage) {
-                    window.initProgramsPage();
-                }
-            } else {
-                window.addEventListener('firebaseReady', function() {
-                    if (window.initProgramsPage) {
-                        window.initProgramsPage();
+        // Initialize page with proper auth waiting (fixes mobile race condition)
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('📄 Programs Page - DOM Ready');
+
+            // 1. Wait for Firebase SDK to be ready
+            if (!window.firebaseReady) {
+                await new Promise(resolve => {
+                    window.addEventListener('firebaseReady', resolve, { once: true });
+                });
+            }
+
+            // 2. Wait for data manager to exist
+            if (!window.dataManager) {
+                console.error('❌ Data manager not available');
+                return;
+            }
+
+            // 3. Wait for auth state to be FULLY determined (key fix for mobile)
+            await window.dataManager.waitForAuthReady();
+            console.log('📄 Auth ready, storageMode:', window.dataManager.getStorageMode());
+
+            // 4. Initialize programs page
+            if (window.initProgramsPage) {
+                window.initProgramsPage();
+            }
+
+            // 5. Listen for future auth state changes
+            if (window.firebaseAuth) {
+                window.firebaseAuth.onAuthStateChanged(async (user) => {
+                    console.log('🔄 Auth state changed:', user ? 'authenticated' : 'not authenticated');
+
+                    if (user) {
+                        // Wait for dataManager to sync storageMode
+                        await new Promise(resolve => setTimeout(resolve, 300));
+
+                        if (window.initProgramsPage) {
+                            window.initProgramsPage();
+                        }
                     }
                 });
             }
+
+            console.log('✅ Programs page ready!');
         });
 
         // Legacy function for modal-based program creation (still used by modals)

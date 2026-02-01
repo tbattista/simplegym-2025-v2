@@ -1,0 +1,36 @@
+{
+  "count": 5,
+  "generated": "2026-02-01T17:01:23.683124",
+  "exercises": [
+    {
+      "id": "exercise-96c5e2f7",
+      "name": "Single Arm Dumbbell V Sit Overhead Press",
+      "score": 95,
+      "targetMuscleGroup": "Shoulders"
+    },
+    {
+      "id": "exercise-00baf5a7",
+      "name": "Single Arm Kettlebell Bottoms Up Knee Over Toe Split Squat Thruster",
+      "score": 85,
+      "targetMuscleGroup": "Shoulders"
+    },
+    {
+      "id": "exercise-9cbdd302",
+      "name": "Miniband Thigh In and Out Jump Squat",
+      "score": 85,
+      "targetMuscleGroup": "Abductors"
+    },
+    {
+      "id": "exercise-ba3f43bd",
+      "name": "Miniband Side Plank Hip Abduction",
+      "score": 85,
+      "targetMuscleGroup": "Abductors"
+    },
+    {
+      "id": "exercise-d27bbf09",
+      "name": "Miniband Ankle In and Out Jump Squat",
+      "score": 85,
+      "targetMuscleGroup": "Abductors"
+    }
+  ]
+}

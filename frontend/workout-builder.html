@@ -603,8 +603,9 @@
                 return;
             }
             
-            // Wait for auth state to settle (important for Firebase mode)
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            // Wait for auth state to be FULLY determined (key fix for mobile)
+            await window.dataManager.waitForAuthReady();
+            console.log('📄 Auth ready, storageMode:', window.dataManager.getStorageMode());
             
             // Check URL parameters for different loading modes
             const urlParams = new URLSearchParams(window.location.search);

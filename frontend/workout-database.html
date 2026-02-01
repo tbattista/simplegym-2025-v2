@@ -323,52 +323,50 @@
             }
         };
 
-        // Initialize page using same pattern as index.html (which works on mobile)
+        // Initialize page with proper auth waiting (fixes mobile race condition)
         document.addEventListener('DOMContentLoaded', async function() {
             console.log('📄 Workout Database Page - DOM Ready');
 
-            // Wait for Firebase to be ready
+            // 1. Wait for Firebase SDK to be ready
             if (!window.firebaseReady) {
                 await new Promise(resolve => {
                     window.addEventListener('firebaseReady', resolve, { once: true });
                 });
             }
 
-            // Wait for data manager to be ready
+            // 2. Wait for data manager to exist
             if (!window.dataManager) {
                 console.error('❌ Data manager not available');
                 return;
             }
 
-            // Check auth and initialize (same pattern as index.html)
-            const checkAuthAndInit = async () => {
-                const user = window.firebaseAuth?.currentUser;
-                if (user) {
-                    console.log('✅ User authenticated, loading workout database');
-                    initWorkoutDatabase();
-                } else {
-                    console.log('⏭️ User not authenticated, waiting for auth state change');
-                }
-            };
+            // 3. Wait for auth state to be FULLY determined (key fix for mobile)
+            await window.dataManager.waitForAuthReady();
+            console.log('📄 Auth ready, storageMode:', window.dataManager.getStorageMode());
 
-            await checkAuthAndInit();
+            // 4. Initialize if authenticated
+            if (window.dataManager.isUserAuthenticated()) {
+                console.log('✅ User authenticated, loading workout database');
+                initWorkoutDatabase();
+            } else {
+                console.log('⏭️ User not authenticated, waiting for auth state change');
+            }
 
-            // Listen for auth state changes using firebaseAuth directly (like index.html)
+            // 5. Listen for future auth state changes
             if (window.firebaseAuth) {
                 window.firebaseAuth.onAuthStateChanged(async (user) => {
-                    console.log('🔄 Auth state changed on workout database page:', user ? 'authenticated' : 'not authenticated');
+                    console.log('🔄 Auth state changed:', user ? 'authenticated' : 'not authenticated');
 
-                    // Wait a moment for data manager to update its mode
-                    await new Promise(resolve => setTimeout(resolve, 300));
+                    if (user) {
+                        // Wait for dataManager to sync storageMode
+                        await new Promise(resolve => setTimeout(resolve, 300));
 
-                    // Reload workouts with new auth state
-                    if (user && window.loadWorkouts) {
-                        await window.loadWorkouts();
-                    }
-
-                    // Re-render Favorites section
-                    if (window.renderFavoritesSection) {
-                        window.renderFavoritesSection();
+                        if (window.loadWorkouts) {
+                            await window.loadWorkouts();
+                        }
+                        if (window.renderFavoritesSection) {
+                            window.renderFavoritesSection();
+                        }
                     }
                 });
             }

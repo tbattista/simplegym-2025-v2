@@ -125,7 +125,7 @@ class FirebaseDataManager {
                             });
                         }
                     }
-                }, 2000); // 2 second timeout as safety net
+                }, 3000); // 3 second timeout as safety net
             }
         }
         
