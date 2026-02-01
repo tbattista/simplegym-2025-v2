@@ -10,6 +10,23 @@ After completing any action or task, provide a brief 2-3 sentence summary that i
 
 Example: "You asked me to add a logout button to the navbar. I added a logout button in `navbar.html` that calls `authService.logout()` and redirects to the login page."
 
+## Git Commit Message
+
+After completing any task that modifies code, always provide a ready-to-use git commit command that the user can copy and paste. Use conventional commit format:
+
+```bash
+git add -A && git commit -m "type: brief description of changes"
+```
+
+**Commit types:**
+- `feat:` - New feature
+- `fix:` - Bug fix
+- `refactor:` - Code restructuring without changing behavior
+- `docs:` - Documentation changes
+- `chore:` - Maintenance tasks, dependencies, config
+- `style:` - Formatting, whitespace (no code change)
+- `test:` - Adding or updating tests
+
 ---
 
 ## Build & Run Commands

@@ -275,41 +275,43 @@
                 return;
             }
 
-            // Wait for auth state to settle
-            await new Promise(resolve => setTimeout(resolve, 1000));
-
-            // Only initialize if user is authenticated
-            if (window.dataManager.isUserAuthenticated()) {
-                console.log('✅ User authenticated, loading workout history');
-                if (window.initWorkoutHistory) {
-                    await window.initWorkoutHistory();
+            // Check auth and initialize (same pattern as index.html)
+            const checkAuthAndInit = async () => {
+                const user = window.firebaseAuth?.currentUser;
+                if (user) {
+                    console.log('✅ User authenticated, loading workout history');
+                    if (window.initWorkoutHistory) {
+                        await window.initWorkoutHistory();
+                    }
+                } else {
+                    console.log('⏭️ User not authenticated, waiting for auth state change');
                 }
-            } else {
-                console.log('⏭️ User not authenticated, waiting for auth state change');
-                // Show loading state - will be handled by auth state change event
+            };
+
+            await checkAuthAndInit();
+
+            // Listen for auth state changes using firebaseAuth directly (like index.html)
+            if (window.firebaseAuth) {
+                window.firebaseAuth.onAuthStateChanged(async (user) => {
+                    console.log('🔄 Auth state changed on workout history page:', user ? 'authenticated' : 'not authenticated');
+
+                    // Only reload if user is authenticated
+                    if (!user) {
+                        console.log('⏭️ User not authenticated, skipping history load');
+                        return;
+                    }
+
+                    // Wait a moment for data manager to update its mode
+                    await new Promise(resolve => setTimeout(resolve, 300));
+
+                    // Reinitialize - handles all URL patterns (all sessions, single workout, session jump)
+                    if (window.initWorkoutHistory) {
+                        await window.initWorkoutHistory();
+                    }
+                });
             }
 
             console.log('✅ Workout History page ready!');
-        });
-
-        // Listen for auth state changes
-        window.addEventListener('authStateChanged', async (event) => {
-            const { user, isAuthenticated } = event.detail;
-            console.log('🔄 Auth state changed on workout history page', { isAuthenticated });
-
-            // Only reload if user is authenticated
-            if (!isAuthenticated) {
-                console.log('⏭️ User not authenticated, skipping history load');
-                return;
-            }
-
-            // Wait a moment for data manager to update its mode
-            await new Promise(resolve => setTimeout(resolve, 300));
-
-            // Reinitialize - handles all URL patterns (all sessions, single workout, session jump)
-            if (window.initWorkoutHistory) {
-                await window.initWorkoutHistory();
-            }
         });
     </script>
   </body>
