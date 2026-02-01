@@ -93,7 +93,7 @@
 .landing-feature-icon {
   width: 80px;
   height: 80px;
-  background: #f8f9fa;
+  background: var(--gs-gray-100);
   border-radius: 0.5rem;
   display: flex;
   align-items: center;
@@ -114,15 +114,15 @@
 }
 
 .row .col-12:nth-child(2) .landing-feature-icon i {
-  color: #71dd37;
+  color: var(--gs-success);
 }
 
 .row .col-12:nth-child(2) .landing-feature-link:hover .landing-feature-icon {
-  background: #71dd37;
+  background: var(--gs-success);
 }
 
 .row .col-12:nth-child(3) .landing-feature-icon i {
-  color: #03c3ec;
+  color: var(--gs-secondary);
 }
 
 /* CTA Card */
@@ -271,13 +271,13 @@
   text-decoration: none;
   color: inherit;
   border-left-color: var(--bs-primary);
-  background-color: rgba(105, 108, 255, 0.03);
+  background-color: rgba(var(--gs-primary-rgb), 0.03);
 }
 
 .view-all-card:hover {
   color: inherit;
   text-decoration: none;
-  background-color: rgba(105, 108, 255, 0.08);
+  background-color: rgba(var(--gs-primary-rgb), 0.08);
 }
 
 /* Secondary Actions */

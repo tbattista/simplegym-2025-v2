@@ -317,9 +317,9 @@ function renderExerciseTableRow(ex) {
   } else if (ex.is_bonus) {
     statusBadge = '<span class="badge bg-success">Added</span>';
   } else if (ex.is_modified) {
-    statusBadge = '<span class="badge bg-info">Modified</span>';
+    statusBadge = '<span class="badge bg-primary">Modified</span>';
   } else {
-    statusBadge = '<span class="badge bg-secondary">Default</span>';
+    statusBadge = '<span class="badge bg-label-secondary">Default</span>';
   }
 
   // Determine weight change indicator

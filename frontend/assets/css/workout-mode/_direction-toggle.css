@@ -140,16 +140,16 @@
 }
 
 [data-bs-theme="dark"] .weight-direction-btn.same {
-    border-color: #94a3b8;
-    color: #94a3b8;
+    border-color: var(--gs-gray-400);
+    color: var(--gs-gray-400);
 }
 
 [data-bs-theme="dark"] .weight-direction-btn.same:hover:not(.active) {
-    background: rgba(148, 163, 184, 0.15);
+    background: rgba(var(--gs-gray-400), 0.15);
 }
 
 [data-bs-theme="dark"] .weight-direction-btn.same.active {
-    background: #64748b;
+    background: var(--gs-gray-300);
     color: white;
 }
 

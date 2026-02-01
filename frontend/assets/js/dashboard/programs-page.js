@@ -17,6 +17,7 @@
         workouts: [],      // All workouts (for program stats)
         deleteMode: false,
         currentSortIndex: 0,
+        editingProgramId: null,  // ID of program being edited in modal
         filters: {
             search: '',
             tags: [],
@@ -108,13 +109,6 @@
                 showDifficulty: true,
                 showDuration: true,
                 deleteMode: false,
-                // Primary action button (shown at bottom of card)
-                primaryAction: {
-                    label: 'Open',
-                    icon: 'bx-folder-open',
-                    variant: 'primary',
-                    onClick: (program) => openProgramDetail(program)
-                },
                 // Dropdown menu actions (3-dot menu)
                 dropdownActions: ['edit', 'generate', 'delete'],
                 // Callbacks
@@ -242,16 +236,27 @@
         if (deleteModeBtn) {
             deleteModeBtn.addEventListener('click', () => toggleDeleteMode());
         }
+
+        // Save program button (in modal)
+        const saveProgramBtn = document.getElementById('saveProgramBtn');
+        if (saveProgramBtn) {
+            saveProgramBtn.addEventListener('click', () => handleSaveProgramModal());
+        }
     }
 
     /**
      * Toggle delete mode on/off
      */
     function toggleDeleteMode() {
+        console.log('🗑️ toggleDeleteMode called');
         const toggle = document.getElementById('deleteModeToggle');
         if (toggle) {
+            console.log('🗑️ Toggle found, current checked:', toggle.checked);
             toggle.checked = !toggle.checked;
+            console.log('🗑️ Toggle now:', toggle.checked);
             toggle.dispatchEvent(new Event('change'));
+        } else {
+            console.error('❌ deleteModeToggle element not found');
         }
     }
 
@@ -286,11 +291,15 @@
         if (!toggle) return;
 
         toggle.addEventListener('change', function() {
+            console.log('🗑️ Delete mode toggle changed:', this.checked);
             state.deleteMode = this.checked;
             document.body.classList.toggle('delete-mode-active', this.checked);
 
             if (programGrid) {
+                console.log('🗑️ Calling programGrid.setDeleteMode:', this.checked);
                 programGrid.setDeleteMode(this.checked);
+            } else {
+                console.error('❌ programGrid is null!');
             }
 
             // Sync delete mode button appearance
@@ -863,14 +872,29 @@
     }
 
     /**
-     * Edit program
+     * Edit program - populate modal with existing data
      */
     function editProgram(programId) {
-        if (window.editProgram) {
-            window.editProgram(programId);
-        } else {
-            showProgramModal(programId);
+        const program = state.all.find(p => p.id === programId);
+        if (!program) {
+            console.error('Program not found:', programId);
+            return;
         }
+
+        // Set editing state
+        state.editingProgramId = programId;
+
+        // Populate form fields
+        document.getElementById('programName').value = program.name || '';
+        document.getElementById('programDescription').value = program.description || '';
+        document.getElementById('programDuration').value = program.duration_weeks || '';
+        document.getElementById('programDifficulty').value = program.difficulty_level || 'intermediate';
+        document.getElementById('programTags').value = (program.tags || []).join(', ');
+        document.getElementById('programModalTitle').textContent = 'Edit Program';
+
+        // Show modal
+        const modal = new bootstrap.Modal(document.getElementById('programModal'));
+        modal.show();
     }
 
     /**
@@ -892,6 +916,82 @@
         document.getElementById('programDifficulty').value = 'intermediate';
         document.getElementById('programTags').value = '';
         document.getElementById('programModalTitle').textContent = 'Create Program';
+        // Clear any stored editing program ID
+        state.editingProgramId = null;
+    }
+
+    /**
+     * Handle save program from modal (create or edit)
+     */
+    async function handleSaveProgramModal() {
+        try {
+            // Collect form data
+            const programData = {
+                name: document.getElementById('programName')?.value?.trim(),
+                description: document.getElementById('programDescription')?.value?.trim() || '',
+                duration_weeks: parseInt(document.getElementById('programDuration')?.value) || null,
+                difficulty_level: document.getElementById('programDifficulty')?.value || 'intermediate',
+                tags: document.getElementById('programTags')?.value?.split(',').map(tag => tag.trim()).filter(tag => tag) || []
+            };
+
+            // Validate required fields
+            if (!programData.name) {
+                showError('Program name is required');
+                return;
+            }
+
+            // Show loading state
+            const saveBtn = document.getElementById('saveProgramBtn');
+            const originalText = saveBtn.innerHTML;
+            saveBtn.innerHTML = '<i class="bx bx-loader-alt bx-spin me-1"></i>Saving...';
+            saveBtn.disabled = true;
+
+            let savedProgram;
+
+            try {
+                if (state.editingProgramId) {
+                    // Update existing program
+                    savedProgram = await window.dataManager.updateProgram(state.editingProgramId, programData);
+
+                    // Update local state
+                    const index = state.all.findIndex(p => p.id === state.editingProgramId);
+                    if (index >= 0) {
+                        state.all[index] = savedProgram;
+                    }
+
+                    showSuccess(`Program "${savedProgram.name}" updated successfully!`);
+                } else {
+                    // Create new program
+                    savedProgram = await window.dataManager.createProgram(programData);
+
+                    // Add to local state
+                    state.all.unshift(savedProgram);
+
+                    showSuccess(`Program "${savedProgram.name}" created successfully!`);
+                }
+
+                // Refresh grid
+                filterPrograms();
+
+                // Close modal
+                const modal = bootstrap.Modal.getInstance(document.getElementById('programModal'));
+                if (modal) {
+                    modal.hide();
+                }
+
+                // Clear form
+                clearProgramForm();
+
+            } finally {
+                // Reset button state
+                saveBtn.innerHTML = originalText;
+                saveBtn.disabled = false;
+            }
+
+        } catch (error) {
+            console.error('❌ Error saving program:', error);
+            showError('Failed to save program: ' + error.message);
+        }
     }
 
     // ============================================

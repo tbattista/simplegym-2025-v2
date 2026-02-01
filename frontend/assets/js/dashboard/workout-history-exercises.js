@@ -15,6 +15,10 @@
 function renderExercisePerformance() {
   const histories = window.ghostGym.workoutHistory.exerciseHistories;
   const container = document.getElementById('exercisePerformanceContainer');
+
+  // Guard against missing container (Insights tab removed)
+  if (!container) return;
+
   const currentFilter = window.ghostGym.workoutHistory.exerciseFilter;
   const currentSort = window.ghostGym.workoutHistory.exerciseSort;
 

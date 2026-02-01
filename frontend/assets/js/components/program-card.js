@@ -15,9 +15,6 @@ class ProgramCard {
             showDifficulty: true,
             showDuration: true,
 
-            // Primary action button
-            primaryAction: null, // { label, icon, variant, onClick }
-
             // Dropdown menu actions
             dropdownActions: ['edit', 'delete'],
 
@@ -69,9 +66,6 @@ class ProgramCard {
                 ${this._renderStats()}
                 ${this._renderDescription()}
                 ${this._renderTags()}
-                <div class="mt-auto pt-2">
-                    ${this._renderPrimaryAction()}
-                </div>
             </div>
         `;
 
@@ -143,15 +137,16 @@ class ProgramCard {
      * Render selection checkbox (shown in delete mode for batch operations)
      */
     _renderSelectionCheckbox() {
-        if (!this.config.deleteMode || !this.config.onSelectionChange) {
+        if (!this.config.deleteMode) {
             return '';
         }
 
         return `
-            <div class="form-check position-absolute" style="top: 12px; left: 12px; z-index: 10;">
+            <div class="form-check position-absolute" style="top: 10px; left: 10px; z-index: 10;">
                 <input class="form-check-input program-select-checkbox"
                        type="checkbox"
                        id="select-${this.program.id}"
+                       style="width: 1.25rem; height: 1.25rem; cursor: pointer;"
                        ${this.config.isSelected ? 'checked' : ''}>
             </div>
         `;
@@ -181,7 +176,7 @@ class ProgramCard {
         }
 
         return `
-            <div class="mb-2 ${this.config.deleteMode ? 'ps-4' : ''}" style="padding-right: 2rem;">
+            <div class="mb-2" style="padding-right: 2rem; ${this.config.deleteMode ? 'padding-left: 2rem;' : ''}">
                 <h6 class="card-title mb-1 text-truncate" title="${this._escapeHtml(name)}">
                     ${this._escapeHtml(name)}
                 </h6>
@@ -255,32 +250,6 @@ class ProgramCard {
     }
 
     /**
-     * Render primary action button
-     */
-    _renderPrimaryAction() {
-        if (this.config.deleteMode) {
-            return `
-                <button class="btn btn-outline-danger btn-sm w-100" data-action="delete-single">
-                    <i class="bx bx-trash me-1"></i>Delete
-                </button>
-            `;
-        }
-
-        // Default primary action is "Open"
-        const action = this.config.primaryAction || {
-            label: 'Open',
-            icon: 'bx-folder-open',
-            variant: 'primary'
-        };
-
-        return `
-            <button class="btn btn-${action.variant || 'primary'} btn-sm w-100" data-action="primary">
-                ${action.icon ? `<i class="bx ${action.icon} me-1"></i>` : ''}${action.label}
-            </button>
-        `;
-    }
-
-    /**
      * Attach event listeners
      */
     _attachEventListeners() {
@@ -288,7 +257,7 @@ class ProgramCard {
 
         // Checkbox selection handler (for batch delete mode)
         const checkbox = this.element.querySelector('.program-select-checkbox');
-        if (checkbox && this.config.onSelectionChange) {
+        if (checkbox) {
             checkbox.addEventListener('change', (e) => {
                 e.stopPropagation();
                 this.config.isSelected = e.target.checked;
@@ -299,13 +268,16 @@ class ProgramCard {
                     this.element.classList.remove('selected');
                 }
 
-                this.config.onSelectionChange(this.program.id, this.config.isSelected);
+                // Notify grid of selection change if callback exists
+                if (this.config.onSelectionChange) {
+                    this.config.onSelectionChange(this.program.id, this.config.isSelected);
+                }
             });
         }
 
         // Card click handler
-        if (this.config.deleteMode && this.config.onSelectionChange && checkbox) {
-            // In delete mode with batch selection, clicking card toggles checkbox
+        if (this.config.deleteMode && checkbox) {
+            // In delete mode, clicking card toggles checkbox
             this.element.addEventListener('click', (e) => {
                 if (!e.target.closest('button') && !e.target.closest('.form-check') && !e.target.closest('.dropdown')) {
                     checkbox.checked = !checkbox.checked;
@@ -318,30 +290,6 @@ class ProgramCard {
                 if (!e.target.closest('button') && !e.target.closest('.form-check') && !e.target.closest('.dropdown')) {
                     this.config.onCardClick(this.program, e);
                 }
-            });
-        }
-
-        // Primary action button
-        const primaryBtn = this.element.querySelector('[data-action="primary"]');
-        if (primaryBtn) {
-            primaryBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                if (this.config.primaryAction?.onClick) {
-                    this.config.primaryAction.onClick(this.program);
-                } else if (this.config.onCardClick) {
-                    // Default to card click behavior
-                    this.config.onCardClick(this.program, e);
-                }
-            });
-        }
-
-        // Delete single button (in delete mode)
-        const deleteSingleBtn = this.element.querySelector('[data-action="delete-single"]');
-        if (deleteSingleBtn && this.config.onDelete) {
-            deleteSingleBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const name = this.program.name || 'Untitled Program';
-                this.config.onDelete(this.program.id, name);
             });
         }
 
@@ -384,6 +332,7 @@ class ProgramCard {
      * @param {boolean} enabled
      */
     setDeleteMode(enabled) {
+        console.log('🗑️ ProgramCard.setDeleteMode:', enabled, 'element exists:', !!this.element);
         this.config.deleteMode = enabled;
 
         // Clear selection when exiting delete mode
@@ -392,9 +341,12 @@ class ProgramCard {
         }
 
         if (this.element) {
-            // Re-render the entire card
+            const oldElement = this.element;
+            console.log('🗑️ Old element in DOM:', document.body.contains(oldElement));
             const newElement = this.render();
-            this.element.replaceWith(newElement);
+            console.log('🗑️ New element has checkbox:', !!newElement.querySelector('.program-select-checkbox'));
+            oldElement.replaceWith(newElement);
+            console.log('🗑️ Replacement done, new element in DOM:', document.body.contains(this.element));
         }
     }
 
@@ -406,8 +358,10 @@ class ProgramCard {
         this.program = program;
 
         if (this.element) {
+            // Save old element reference before render() overwrites this.element
+            const oldElement = this.element;
             const newElement = this.render();
-            this.element.replaceWith(newElement);
+            oldElement.replaceWith(newElement);
         }
     }
 

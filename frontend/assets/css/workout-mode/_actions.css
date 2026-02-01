@@ -65,7 +65,7 @@
 }
 
 .workout-primary-action:hover {
-    background: #45a814;
+    background: var(--gs-success-dark);
     transform: translateY(-1px);
 }
 

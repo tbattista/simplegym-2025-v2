@@ -160,12 +160,6 @@ async function loadAllSessions(scrollToSessionId = null) {
  * Render UI for All Sessions mode
  */
 function renderAllModeUI() {
-  // Hide insights tab (requires workout_id for exercise history API)
-  const insightsTab = document.getElementById('insights-tab');
-  if (insightsTab && insightsTab.parentElement) {
-    insightsTab.parentElement.classList.add('d-none');
-  }
-
   // Extract unique workout names for filter dropdown
   extractUniqueWorkouts();
 

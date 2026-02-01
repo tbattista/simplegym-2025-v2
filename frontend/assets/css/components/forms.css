@@ -39,9 +39,9 @@
 }
 
 .input-group-text {
-    background: #f8fafc;
-    border-color: #e2e8f0;
-    color: #64748b;
+    background: var(--gs-gray-50);
+    border-color: var(--gs-gray-200);
+    color: var(--gs-gray-500);
 }
 
 /* ============================================
@@ -67,31 +67,31 @@
    ============================================ */
 
 [data-bs-theme="dark"] .form-label {
-    color: #f8fafc;
+    color: var(--gs-gray-800);
 }
 
 [data-bs-theme="dark"] .form-control,
 [data-bs-theme="dark"] .form-select {
-    background: #334155;
-    border-color: #475569;
-    color: #f8fafc;
+    background: var(--gs-gray-100);
+    border-color: var(--gs-gray-200);
+    color: var(--gs-gray-800);
 }
 
 [data-bs-theme="dark"] .form-control:focus,
 [data-bs-theme="dark"] .form-select:focus {
-    background: #334155;
+    background: var(--gs-gray-100);
     border-color: var(--gs-primary);
-    color: #f8fafc;
+    color: var(--gs-gray-800);
 }
 
 [data-bs-theme="dark"] .form-control::placeholder {
-    color: #64748b;
+    color: var(--gs-gray-300);
 }
 
 [data-bs-theme="dark"] .input-group-text {
-    background: #334155;
-    border-color: #475569;
-    color: #94a3b8;
+    background: var(--gs-gray-100);
+    border-color: var(--gs-gray-200);
+    color: var(--gs-gray-400);
 }
 
 /* ============================================
@@ -121,7 +121,7 @@
 
 /* Dark mode exercise input */
 [data-bs-theme="dark"] .exercise-input-label {
-    color: #f8fafc;
+    color: var(--gs-gray-800);
 }
 
 /* ============================================
@@ -214,19 +214,19 @@
 
 /* Dark mode offcanvas forms */
 [data-bs-theme="dark"] .offcanvas-body .form-label {
-    color: #f8fafc;
+    color: var(--gs-gray-800);
 }
 
 [data-bs-theme="dark"] .offcanvas-body .form-control {
-    background: #334155;
-    border-color: #475569;
-    color: #f8fafc;
+    background: var(--gs-gray-100);
+    border-color: var(--gs-gray-200);
+    color: var(--gs-gray-800);
 }
 
 [data-bs-theme="dark"] .offcanvas-body .form-control:focus {
-    background: #334155;
+    background: var(--gs-gray-100);
     border-color: var(--gs-primary);
-    color: #f8fafc;
+    color: var(--gs-gray-800);
 }
 
 /* ============================================

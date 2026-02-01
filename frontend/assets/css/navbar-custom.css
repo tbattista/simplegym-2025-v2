@@ -184,6 +184,17 @@
     text-transform: uppercase;
 }
 
+/* Override Bootstrap's bg-label-primary for avatar - Soft Clay palette */
+.avatar-initial.bg-label-primary {
+    background-color: rgba(var(--gs-primary-rgb), 0.12) !important;
+    color: var(--gs-primary) !important;
+}
+
+[data-bs-theme="dark"] .avatar-initial.bg-label-primary {
+    background-color: rgba(var(--gs-primary-rgb), 0.15) !important;
+    color: var(--gs-primary-dark) !important;
+}
+
 /* Online Status Indicator */
 .avatar-online::before {
     content: '';

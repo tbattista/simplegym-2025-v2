@@ -35,7 +35,7 @@
 }
 
 [data-bs-theme="dark"] #exerciseSearchOffcanvas .search-section {
-  background-color: #2b2c40;
+  background-color: var(--gs-gray-100);
 }
 
 #exerciseSearchOffcanvas .filters-section {
@@ -63,7 +63,7 @@
 }
 
 [data-bs-theme="dark"] #exerciseSearchOffcanvas .card {
-  background-color: #2b2c40;
+  background-color: var(--gs-gray-100);
 }
 
 /* ============================================
@@ -75,7 +75,7 @@
 }
 
 [data-bs-theme="dark"] .add-exercise-section {
-  background-color: #2b2c40;
+  background-color: var(--gs-gray-100);
 }
 
 .add-exercise-section .form-label {
@@ -102,7 +102,7 @@
 }
 
 [data-bs-theme="dark"] .filter-accordion-section .btn-link:hover {
-  background-color: #2b2c40;
+  background-color: var(--gs-gray-100);
 }
 
 .filter-accordion-section #filterChevron {

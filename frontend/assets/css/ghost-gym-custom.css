@@ -106,7 +106,7 @@
 
 .program-meta {
     font-size: 0.75rem;
-    color: #64748b;
+    color: var(--gs-secondary);
     margin-top: 0.25rem;
 }
 
@@ -121,7 +121,7 @@
     align-items: center;
     gap: 0.25rem;
     font-size: 0.75rem;
-    color: #64748b;
+    color: var(--gs-secondary);
 }
 
 /* ============================================
@@ -157,22 +157,22 @@
 
 /* Program Workouts Sortable List */
 .program-workouts .workout-item {
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
+    background: var(--gs-gray-50);
+    border: 1px solid var(--gs-gray-200);
     border-radius: 8px;
     margin-bottom: 0.5rem;
     padding: 0.75rem;
 }
 
 .program-workouts .workout-item:hover {
-    background: #f1f5f9;
+    background: var(--gs-gray-100);
     border-color: var(--gs-primary);
 }
 
 /* Program Workout Chip */
 .program-workout-chip {
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
+    background: var(--gs-gray-50);
+    border: 1px solid var(--gs-gray-200);
     border-radius: 20px;
     padding: 0.5rem 1rem;
     font-size: 0.875rem;
@@ -183,13 +183,13 @@
 }
 
 .program-workout-chip:hover {
-    background: #f1f5f9;
+    background: var(--gs-gray-100);
     border-color: var(--gs-primary);
 }
 
 .program-workout-chip .drag-handle {
     cursor: grab;
-    color: #94a3b8;
+    color: var(--gs-gray-400);
 }
 
 .program-workout-chip .remove-btn {
@@ -208,8 +208,8 @@
 }
 
 .modal-header {
-    background: linear-gradient(135deg, #f8fafc, #f1f5f9);
-    border-bottom: 1px solid #e2e8f0;
+    background: linear-gradient(135deg, var(--gs-gray-50), var(--gs-gray-100));
+    border-bottom: 1px solid var(--gs-gray-200);
 }
 
 .modal-title {
@@ -222,8 +222,8 @@
    ============================================ */
 
 .exercise-group {
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
+    background: var(--gs-gray-50);
+    border: 1px solid var(--gs-gray-200);
     border-radius: 8px;
     padding: 1rem;
     margin-bottom: 1rem;
@@ -236,7 +236,7 @@
     align-items: center;
     margin-bottom: 1rem;
     padding-bottom: 0.5rem;
-    border-bottom: 1px solid #e2e8f0;
+    border-bottom: 1px solid var(--gs-gray-200);
 }
 
 .exercise-group-title {
@@ -260,7 +260,7 @@
 .exercise-input-group label {
     font-size: 0.75rem;
     font-weight: 500;
-    color: #64748b;
+    color: var(--gs-secondary);
     margin-bottom: 0.25rem;
 }
 
@@ -301,22 +301,22 @@
 
 .alert-success {
     background: linear-gradient(135deg, rgba(var(--gs-success-rgb), 0.1), rgba(var(--gs-success-rgb), 0.05));
-    color: #065f46;
+    color: var(--gs-alert-success-text-light);
 }
 
 .alert-danger {
     background: linear-gradient(135deg, rgba(var(--gs-danger-rgb), 0.1), rgba(var(--gs-danger-rgb), 0.05));
-    color: #991b1b;
+    color: var(--gs-alert-danger-text-light);
 }
 
 .alert-warning {
     background: linear-gradient(135deg, rgba(227, 161, 79, 0.1), rgba(227, 161, 79, 0.05));  /* Warm Amber */
-    color: #92400e;
+    color: var(--gs-alert-warning-text-light);
 }
 
 .alert-info {
     background: linear-gradient(135deg, rgba(229, 231, 235, 0.35), rgba(229, 231, 235, 0.25));  /* Border Gray (Accent) */
-    color: #475569;
+    color: var(--gs-gray-600);
 }
 
 /* ============================================
@@ -325,7 +325,7 @@
 
 .stats-display {
     font-size: 0.75rem;
-    color: #64748b;
+    color: var(--gs-secondary);
 }
 
 .stats-item {
@@ -362,7 +362,7 @@
 
 .navbar-welcome-description {
     font-size: 0.7rem;
-    color: #64748b;
+    color: var(--gs-secondary);
     line-height: 1.3;
 }
 
@@ -470,25 +470,26 @@
 
 /* Metadata button states */
 .btn-outline-primary[id$="PopoverBtn"] {
-    border-color: var(--gs-primary);
-    color: var(--gs-primary);
+    border-color: var(--gs-primary) !important;
+    color: var(--gs-primary) !important;
     font-weight: 500;
 }
 
 .btn-outline-primary[id$="PopoverBtn"]:hover {
-    background: var(--gs-primary);
-    color: white;
+    background-color: var(--gs-primary) !important;
+    border-color: var(--gs-primary) !important;
+    color: white !important;
 }
 
 .btn-outline-secondary[id$="PopoverBtn"] {
-    border-color: #cbd5e1;
-    color: #64748b;
+    border-color: var(--gs-gray-300);
+    color: var(--gs-secondary);
 }
 
 .btn-outline-secondary[id$="PopoverBtn"]:hover {
-    background: #f1f5f9;
-    border-color: #94a3b8;
-    color: #475569;
+    background: var(--gs-gray-100);
+    border-color: var(--gs-gray-400);
+    color: var(--gs-gray-600);
 }
 
 /* Popover button icons */
@@ -502,7 +503,7 @@
 
 .workout-card {
     background: #fff;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--gs-gray-200);
     border-radius: 8px;
     padding: 1rem;
     cursor: pointer;
@@ -542,7 +543,7 @@
 
 .workout-card-description {
     font-size: 0.75rem;
-    color: #64748b;
+    color: var(--gs-secondary);
     margin-bottom: 0.75rem;
     display: -webkit-box;
     -webkit-line-clamp: 2;
@@ -554,7 +555,7 @@
     display: flex;
     gap: 1rem;
     font-size: 0.7rem;
-    color: #64748b;
+    color: var(--gs-secondary);
     margin-bottom: 0.5rem;
 }
 

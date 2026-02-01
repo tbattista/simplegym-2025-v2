@@ -11,21 +11,24 @@
 
 /* ============================================
    PRIMARY BUTTON STYLES
+   Override vendor core.css hardcoded purple colors
+   Using !important to beat vendor specificity
    ============================================ */
 
 .btn-primary {
-    /* Override Bootstrap's button variables */
-    --bs-btn-bg: var(--gs-primary);
-    --bs-btn-border-color: var(--gs-primary);
-    --bs-btn-hover-bg: var(--gs-primary-hover);
-    --bs-btn-hover-border-color: var(--gs-primary-hover);
-    --bs-btn-active-bg: var(--gs-primary-active);
-    --bs-btn-active-border-color: var(--gs-primary-active);
-    --bs-btn-disabled-bg: var(--gs-primary);
-    --bs-btn-disabled-border-color: var(--gs-primary);
+    /* Override Bootstrap's button variables with hardcoded Soft Clay colors */
+    --bs-btn-bg: #C97C5D !important;
+    --bs-btn-border-color: #C97C5D !important;
+    --bs-btn-hover-bg: #b86f53 !important;
+    --bs-btn-hover-border-color: #b86f53 !important;
+    --bs-btn-active-bg: #a76349 !important;
+    --bs-btn-active-border-color: #a76349 !important;
+    --bs-btn-disabled-bg: #C97C5D !important;
+    --bs-btn-disabled-border-color: #C97C5D !important;
+    --bs-btn-focus-shadow-rgb: 201, 124, 93 !important;
 
-    background: var(--gs-primary);
-    border: none;
+    background-color: #C97C5D !important;
+    border-color: #C97C5D !important;
     box-shadow: 0 2px 4px rgba(201, 124, 93, 0.3);
     transition: background 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 }
@@ -33,55 +36,162 @@
 /* Hover effect ONLY on devices with true hover capability (not mobile) */
 @media (hover: hover) {
     .btn-primary:hover {
-        background: var(--gs-primary-hover);
+        background-color: #b86f53 !important;
+        border-color: #b86f53 !important;
         box-shadow: 0 4px 8px rgba(201, 124, 93, 0.4);
         transform: translateY(-1px);
     }
 }
 
 /* Active state for ALL devices (mobile-friendly press down) */
-.btn-primary:active {
+.btn-primary:active,
+.btn-primary.active,
+.btn-primary:first-child:active,
+.btn-check:checked + .btn-primary {
     transform: translateY(0);
     box-shadow: 0 1px 2px rgba(201, 124, 93, 0.3);
-    background: var(--gs-primary-active) !important;
+    background-color: #a76349 !important;
+    border-color: #a76349 !important;
 }
 
 /* Focus state - override Bootstrap's purple focus ring */
 .btn-primary:focus,
 .btn-primary:focus-visible {
-    background: var(--gs-primary);
-    box-shadow: 0 0 0 0.25rem rgba(201, 124, 93, 0.5);
+    background-color: var(--gs-primary) !important;
+    border-color: var(--gs-primary) !important;
+    box-shadow: 0 0 0 0.25rem rgba(var(--gs-primary-rgb), 0.5) !important;
 }
 
 /* ============================================
    OUTLINE BUTTON STYLES
+   Override vendor core.css hardcoded purple colors
    ============================================ */
 
 .btn-outline-primary {
-    /* Override Bootstrap's outline button variables */
-    --bs-btn-color: var(--gs-primary);
-    --bs-btn-border-color: var(--gs-primary);
-    --bs-btn-hover-color: #fff;
-    --bs-btn-hover-bg: var(--gs-primary);
-    --bs-btn-hover-border-color: var(--gs-primary);
-    --bs-btn-active-color: #fff;
-    --bs-btn-active-bg: var(--gs-primary);
-    --bs-btn-active-border-color: var(--gs-primary);
-    --bs-btn-disabled-color: var(--gs-primary);
-    --bs-btn-disabled-border-color: var(--gs-primary);
+    /* Override Bootstrap's outline button variables with hardcoded Soft Clay */
+    --bs-btn-color: #C97C5D !important;
+    --bs-btn-border-color: #C97C5D !important;
+    --bs-btn-hover-color: #fff !important;
+    --bs-btn-hover-bg: #C97C5D !important;
+    --bs-btn-hover-border-color: #C97C5D !important;
+    --bs-btn-active-color: #fff !important;
+    --bs-btn-active-bg: #a76349 !important;
+    --bs-btn-active-border-color: #a76349 !important;
+    --bs-btn-disabled-color: #C97C5D !important;
+    --bs-btn-disabled-border-color: #C97C5D !important;
+    --bs-btn-focus-shadow-rgb: 201, 124, 93 !important;
 
-    border-color: var(--gs-primary);
-    color: var(--gs-primary);
+    border-color: #C97C5D !important;
+    color: #C97C5D !important;
 }
 
 .btn-outline-primary:hover {
-    background: var(--gs-primary);
-    border-color: var(--gs-primary);
+    background-color: #C97C5D !important;
+    border-color: #C97C5D !important;
+    color: #fff !important;
+}
+
+.btn-outline-primary:active,
+.btn-outline-primary.active,
+.btn-outline-primary:first-child:active {
+    background-color: #a76349 !important;
+    border-color: #a76349 !important;
+    color: #fff !important;
 }
 
 .btn-outline-primary:focus,
 .btn-outline-primary:focus-visible {
-    box-shadow: 0 0 0 0.25rem rgba(201, 124, 93, 0.5);
+    box-shadow: 0 0 0 0.25rem rgba(201, 124, 93, 0.5) !important;
+}
+
+/* ============================================
+   SUCCESS BUTTON STYLES (Green - Sage Green)
+   Override vendor core.css hardcoded #71dd37
+   ============================================ */
+
+.btn-success {
+    /* Override Bootstrap's button variables with hardcoded Sage Green */
+    --bs-btn-bg: #8CBF9F !important;
+    --bs-btn-border-color: #8CBF9F !important;
+    --bs-btn-hover-bg: #7ab38f !important;
+    --bs-btn-hover-border-color: #7ab38f !important;
+    --bs-btn-active-bg: #6fa384 !important;
+    --bs-btn-active-border-color: #6fa384 !important;
+    --bs-btn-disabled-bg: #8CBF9F !important;
+    --bs-btn-disabled-border-color: #8CBF9F !important;
+    --bs-btn-focus-shadow-rgb: 140, 191, 159 !important;
+
+    background-color: #8CBF9F !important;
+    border-color: #8CBF9F !important;
+    color: #fff !important;
+    box-shadow: 0 2px 4px rgba(140, 191, 159, 0.3);
+    transition: background 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+@media (hover: hover) {
+    .btn-success:hover {
+        background-color: #7ab38f !important;
+        border-color: #7ab38f !important;
+        box-shadow: 0 4px 8px rgba(140, 191, 159, 0.4);
+        transform: translateY(-1px);
+    }
+}
+
+.btn-success:active,
+.btn-success.active,
+.btn-success:first-child:active,
+.btn-check:checked + .btn-success {
+    transform: translateY(0);
+    box-shadow: 0 1px 2px rgba(140, 191, 159, 0.3);
+    background-color: #6fa384 !important;
+    border-color: #6fa384 !important;
+}
+
+.btn-success:focus,
+.btn-success:focus-visible {
+    background-color: #8CBF9F !important;
+    border-color: #8CBF9F !important;
+    box-shadow: 0 0 0 0.25rem rgba(140, 191, 159, 0.5) !important;
+}
+
+/* ============================================
+   OUTLINE SUCCESS BUTTON STYLES
+   ============================================ */
+
+.btn-outline-success {
+    --bs-btn-color: #8CBF9F !important;
+    --bs-btn-border-color: #8CBF9F !important;
+    --bs-btn-hover-color: #fff !important;
+    --bs-btn-hover-bg: #8CBF9F !important;
+    --bs-btn-hover-border-color: #8CBF9F !important;
+    --bs-btn-active-color: #fff !important;
+    --bs-btn-active-bg: #6fa384 !important;
+    --bs-btn-active-border-color: #6fa384 !important;
+    --bs-btn-disabled-color: #8CBF9F !important;
+    --bs-btn-disabled-border-color: #8CBF9F !important;
+    --bs-btn-focus-shadow-rgb: 140, 191, 159 !important;
+
+    border-color: #8CBF9F !important;
+    color: #8CBF9F !important;
+}
+
+.btn-outline-success:hover {
+    background-color: #8CBF9F !important;
+    border-color: #8CBF9F !important;
+    color: #fff !important;
+}
+
+.btn-outline-success:active,
+.btn-outline-success.active,
+.btn-outline-success:first-child:active {
+    background-color: #6fa384 !important;
+    border-color: #6fa384 !important;
+    color: #fff !important;
+}
+
+.btn-outline-success:focus,
+.btn-outline-success:focus-visible {
+    box-shadow: 0 0 0 0.25rem rgba(140, 191, 159, 0.5) !important;
 }
 
 /* Hover effects ONLY on devices with true hover capability */
@@ -197,64 +307,125 @@ button:focus-visible,
 }
 
 /* ============================================
-   PULSE ANIMATION FOR IMPORTANT BUTTONS
-   ============================================ */
-
-@keyframes pulse {
-    0%, 100% {
-        box-shadow: 0 0 0 0 rgba(var(--bs-primary-rgb), 0.4);
-    }
-    50% {
-        box-shadow: 0 0 0 10px rgba(var(--bs-primary-rgb), 0);
-    }
-}
-
-.btn-primary:focus {
-    animation: pulse 1.5s infinite;
-}
-
-/* ============================================
    DARK MODE BUTTON STYLES
    ============================================ */
 
 [data-bs-theme="dark"] .btn-outline-secondary {
-    border-color: #475569;
-    color: #94a3b8;
+    border-color: var(--gs-gray-200);
+    color: var(--gs-gray-400);
 }
 
 [data-bs-theme="dark"] .btn-outline-secondary:hover {
-    background: #334155;
-    border-color: #64748b;
-    color: #f8fafc;
+    background: var(--gs-gray-100);
+    border-color: var(--gs-gray-300);
+    color: var(--gs-gray-800);
 }
 
 /* Quick Actions Card Dark Mode */
 [data-bs-theme="dark"] .quick-actions-card .btn-outline-primary {
-    border-color: var(--gs-primary);
-    color: var(--gs-primary);
+    border-color: var(--gs-primary-dark) !important;
+    color: var(--gs-primary-dark) !important;
 }
 
 [data-bs-theme="dark"] .quick-actions-card .btn-outline-success {
-    border-color: var(--gs-success);
-    color: var(--gs-success);
+    border-color: var(--gs-success-dark) !important;
+    color: var(--gs-success-dark) !important;
 }
 
 [data-bs-theme="dark"] .quick-actions-card .btn-outline-info {
-    border-color: var(--gs-accent);
-    color: var(--gs-accent);
+    border-color: var(--gs-accent) !important;
+    color: var(--gs-accent) !important;
 }
 
 [data-bs-theme="dark"] .quick-actions-card .btn-outline-primary:hover {
-    background: var(--gs-primary);
-    color: white;
+    background-color: var(--gs-primary-dark) !important;
+    color: white !important;
 }
 
 [data-bs-theme="dark"] .quick-actions-card .btn-outline-success:hover {
-    background: var(--gs-success);
-    color: white;
+    background-color: var(--gs-success-dark) !important;
+    color: white !important;
 }
 
 [data-bs-theme="dark"] .quick-actions-card .btn-outline-info:hover {
-    background: var(--gs-accent);
-    color: white;
+    background-color: var(--gs-accent) !important;
+    color: var(--gs-gray-50) !important;
+}
+
+/* Dark mode primary button overrides */
+[data-bs-theme="dark"] .btn-primary {
+    --bs-btn-bg: #d49378 !important;
+    --bs-btn-border-color: #d49378 !important;
+    --bs-btn-hover-bg: #c48269 !important;
+    --bs-btn-hover-border-color: #c48269 !important;
+    --bs-btn-active-bg: #b4725a !important;
+    --bs-btn-active-border-color: #b4725a !important;
+    background-color: #d49378 !important;
+    border-color: #d49378 !important;
+}
+
+[data-bs-theme="dark"] .btn-primary:hover {
+    background-color: #c48269 !important;
+    border-color: #c48269 !important;
+}
+
+[data-bs-theme="dark"] .btn-primary:active,
+[data-bs-theme="dark"] .btn-primary.active {
+    background-color: #b4725a !important;
+    border-color: #b4725a !important;
+}
+
+[data-bs-theme="dark"] .btn-outline-primary {
+    border-color: #d49378 !important;
+    color: #d49378 !important;
+}
+
+[data-bs-theme="dark"] .btn-outline-primary:hover {
+    background-color: #d49378 !important;
+    border-color: #d49378 !important;
+    color: #fff !important;
+}
+
+[data-bs-theme="dark"] .btn-outline-primary:active {
+    background-color: #b4725a !important;
+    border-color: #b4725a !important;
+}
+
+/* Dark mode success button overrides - Brighter Sage */
+[data-bs-theme="dark"] .btn-success {
+    --bs-btn-bg: #9ad2af !important;
+    --bs-btn-border-color: #9ad2af !important;
+    --bs-btn-hover-bg: #8ac49f !important;
+    --bs-btn-hover-border-color: #8ac49f !important;
+    --bs-btn-active-bg: #7ab38f !important;
+    --bs-btn-active-border-color: #7ab38f !important;
+    background-color: #9ad2af !important;
+    border-color: #9ad2af !important;
+}
+
+[data-bs-theme="dark"] .btn-success:hover {
+    background-color: #8ac49f !important;
+    border-color: #8ac49f !important;
+}
+
+[data-bs-theme="dark"] .btn-success:active,
+[data-bs-theme="dark"] .btn-success.active {
+    background-color: #7ab38f !important;
+    border-color: #7ab38f !important;
+}
+
+[data-bs-theme="dark"] .btn-outline-success {
+    border-color: #9ad2af !important;
+    color: #9ad2af !important;
+}
+
+[data-bs-theme="dark"] .btn-outline-success:hover {
+    background-color: #9ad2af !important;
+    border-color: #9ad2af !important;
+    color: #1e293b !important;
+}
+
+[data-bs-theme="dark"] .btn-outline-success:active {
+    background-color: #7ab38f !important;
+    border-color: #7ab38f !important;
 }

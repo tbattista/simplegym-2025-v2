@@ -124,9 +124,9 @@
               <!-- History Content -->
               <div id="historyContent" style="display: none;">
 
-                <!-- Tab Navigation with Calendar Toggle -->
-                <div class="history-tabs-wrapper d-flex align-items-end mb-4">
-                  <ul class="nav nav-tabs history-tabs flex-grow-1 mb-0" id="historyTabs" role="tablist">
+                <!-- Tab Navigation -->
+                <div class="history-tabs-wrapper">
+                  <ul class="nav nav-tabs history-tabs mb-0" id="historyTabs" role="tablist">
                     <li class="nav-item" role="presentation">
                       <button class="nav-link active" id="history-tab" data-bs-toggle="tab"
                               data-bs-target="#historyTabPane" type="button" role="tab"
@@ -135,93 +135,62 @@
                       </button>
                     </li>
                     <li class="nav-item" role="presentation">
-                      <button class="nav-link" id="insights-tab" data-bs-toggle="tab"
-                              data-bs-target="#insightsTabPane" type="button" role="tab"
-                              aria-controls="insightsTabPane" aria-selected="false">
-                        <i class="bx bx-bar-chart-alt-2 me-1"></i>Insights
+                      <button class="nav-link" id="calendar-tab" data-bs-toggle="tab"
+                              data-bs-target="#calendarTabPane" type="button" role="tab"
+                              aria-controls="calendarTabPane" aria-selected="false">
+                        <i class="bx bx-calendar me-1"></i>Calendar
                       </button>
                     </li>
                   </ul>
-                  <!-- Calendar Toggle (next to tabs) -->
-                  <button class="btn btn-icon calendar-tab-btn"
-                          type="button"
-                          id="calendarTabBtn"
-                          data-bs-toggle="collapse"
-                          data-bs-target="#historyCalendarCollapse"
-                          aria-expanded="false"
-                          aria-controls="historyCalendarCollapse"
-                          title="Toggle calendar">
-                    <i class="bx bx-calendar"></i>
-                  </button>
                 </div>
 
-                <!-- Tab Content -->
+                <!-- Tab Content (Calendar Panel only) -->
                 <div class="tab-content" id="historyTabContent">
-
-                  <!-- History Tab -->
+                  <!-- History Tab (empty - just hides calendar) -->
                   <div class="tab-pane fade show active" id="historyTabPane" role="tabpanel"
                        aria-labelledby="history-tab" tabindex="0">
+                  </div>
 
-                    <!-- Calendar Panel (collapsible, appears below filter bar) -->
-                    <div class="collapse" id="historyCalendarCollapse">
-                      <div class="calendar-panel mb-3" id="historyCalendarCard">
-                        <!-- Month Navigation -->
-                        <div class="calendar-panel-header">
-                          <button id="historyPrevMonth" class="btn btn-sm btn-icon btn-outline-secondary rounded-circle">
-                            <i class="bx bx-chevron-left"></i>
-                          </button>
-                          <span id="historyCurrentMonth" class="fw-medium">January 2026</span>
-                          <button id="historyNextMonth" class="btn btn-sm btn-icon btn-outline-secondary rounded-circle">
-                            <i class="bx bx-chevron-right"></i>
-                          </button>
-                        </div>
-                        <!-- Calendar Grid -->
-                        <div id="historyCalendarGrid" class="calendar-grid">
-                          <div class="text-center py-3">
-                            <div class="spinner-border spinner-border-sm text-primary" role="status">
-                              <span class="visually-hidden">Loading calendar...</span>
-                            </div>
+                  <!-- Calendar Tab -->
+                  <div class="tab-pane fade" id="calendarTabPane" role="tabpanel"
+                       aria-labelledby="calendar-tab" tabindex="0">
+                    <div class="calendar-panel mb-3 mt-3" id="historyCalendarCard">
+                      <!-- Month Navigation -->
+                      <div class="calendar-panel-header">
+                        <button id="historyPrevMonth" class="btn btn-sm btn-icon btn-outline-secondary rounded-circle">
+                          <i class="bx bx-chevron-left"></i>
+                        </button>
+                        <span id="historyCurrentMonth" class="fw-medium">January 2026</span>
+                        <button id="historyNextMonth" class="btn btn-sm btn-icon btn-outline-secondary rounded-circle">
+                          <i class="bx bx-chevron-right"></i>
+                        </button>
+                      </div>
+                      <!-- Calendar Grid -->
+                      <div id="historyCalendarGrid" class="calendar-grid">
+                        <div class="text-center py-3">
+                          <div class="spinner-border spinner-border-sm text-primary" role="status">
+                            <span class="visually-hidden">Loading calendar...</span>
                           </div>
                         </div>
                       </div>
                     </div>
-
-                    <!-- Date Filter Indicator (shown when filtering by date) -->
-                    <div id="dateFilterIndicator" class="date-filter-indicator mb-3" style="display: none;">
-                      <span class="date-filter-text">
-                        <i class="bx bx-calendar-check me-1"></i>
-                        Showing workouts for <strong id="dateFilterLabel"></strong>
-                      </span>
-                      <button class="btn btn-sm btn-link text-danger p-0 ms-2" onclick="clearDateFilter()">
-                        <i class="bx bx-x"></i> Clear
-                      </button>
-                    </div>
-
-                    <!-- Session History (Time-Grouped) -->
-                    <div id="sessionHistoryContainer">
-                      <!-- Session entries will be rendered here -->
-                    </div>
                   </div>
+                </div>
 
-                  <!-- Insights Tab -->
-                  <div class="tab-pane fade" id="insightsTabPane" role="tabpanel"
-                       aria-labelledby="insights-tab" tabindex="0">
+                <!-- Date Filter Indicator (shown when filtering by date) -->
+                <div id="dateFilterIndicator" class="date-filter-indicator mb-3" style="display: none;">
+                  <span class="date-filter-text">
+                    <i class="bx bx-calendar-check me-1"></i>
+                    Showing workouts for <strong id="dateFilterLabel"></strong>
+                  </span>
+                  <button class="btn btn-sm btn-link text-danger p-0 ms-2" onclick="clearDateFilter()">
+                    <i class="bx bx-x"></i> Clear
+                  </button>
+                </div>
 
-                    <!-- Statistics Cards -->
-                    <div class="row g-3 mb-4" id="statisticsCards">
-                      <!-- Cards will be rendered by JS -->
-                    </div>
-
-                    <!-- Exercise Performance Section -->
-                    <div class="mb-4">
-                      <h5 class="mb-2">Exercises</h5>
-                      <p class="exercise-section-hint text-muted small mb-3">Last working set shown per exercise</p>
-                      <div id="exercisePerformanceContainer">
-                        <!-- Exercise performance cards will be rendered here -->
-                      </div>
-                    </div>
-                  </div>
-
+                <!-- Session History (Time-Grouped) -->
+                <div id="sessionHistoryContainer">
+                  <!-- Session entries will be rendered here -->
                 </div>
 
               </div>

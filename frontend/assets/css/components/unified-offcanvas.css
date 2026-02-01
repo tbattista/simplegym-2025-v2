@@ -431,16 +431,27 @@
 }
 
 /* ============================================
-   VARIANT: TALL OFFCANVAS (for filters/forms with lots of content)
+   VARIANT: HEIGHT MODIFIERS
+   Use these with offcanvas-bottom-base for different content needs
    ============================================ */
 
+/* Compact: For simple filters/menus (60vh) */
+.offcanvas-bottom-compact {
+    max-height: 60vh;
+}
+
+.offcanvas-bottom-compact .offcanvas-body {
+    max-height: calc(60vh - 140px);
+}
+
+/* Tall: For pickers/lists with lots of content (90vh) */
 .offcanvas-bottom-tall {
     height: auto !important;
-    max-height: 80vh;
+    max-height: 90vh;
 }
 
 .offcanvas-bottom-tall .offcanvas-body {
-    max-height: calc(80vh - 140px);
+    max-height: calc(90vh - 140px);
 }
 
 /* ============================================
@@ -469,10 +480,18 @@
         font-size: 0.95rem;
     }
     
+    .offcanvas-bottom-compact {
+        max-height: 70vh;
+    }
+
+    .offcanvas-bottom-compact .offcanvas-body {
+        max-height: calc(70vh - 140px);
+    }
+
     .offcanvas-bottom-tall {
         max-height: 85vh;
     }
-    
+
     .offcanvas-bottom-tall .offcanvas-body {
         max-height: calc(85vh - 140px);
     }
@@ -504,10 +523,18 @@
         width: 100%;
     }
     
+    .offcanvas-bottom-compact {
+        max-height: 80vh;
+    }
+
+    .offcanvas-bottom-compact .offcanvas-body {
+        max-height: calc(80vh - 140px);
+    }
+
     .offcanvas-bottom-tall {
         max-height: 90vh;
     }
-    
+
     .offcanvas-bottom-tall .offcanvas-body {
         max-height: calc(90vh - 140px);
     }
@@ -622,11 +649,11 @@
 }
 
 [data-bs-theme="dark"] .offcanvas-bottom-base .more-menu-item.danger {
-    color: #fca5a5;
+    color: var(--gs-alert-danger-text);
 }
 
 [data-bs-theme="dark"] .offcanvas-bottom-base .more-menu-item.danger .more-menu-item-title {
-    color: #fca5a5;
+    color: var(--gs-alert-danger-text);
 }
 
 [data-bs-theme="dark"] .offcanvas-bottom-base .more-menu-item.danger:hover {
@@ -635,9 +662,9 @@
 }
 
 [data-bs-theme="dark"] .offcanvas-bottom-base .list-group-item {
-    background-color: #334155;
-    border-color: #475569;
-    color: #f8fafc;
+    background-color: var(--gs-gray-100);
+    border-color: var(--gs-gray-200);
+    color: var(--gs-gray-800);
 }
 
 /* btn-close visibility in dark mode */

@@ -14,13 +14,13 @@
    ============================================ */
 
 :root {
-    /* Card colors */
+    /* Card colors - reference design-system.css */
     --workout-bg: #ffffff;
     --workout-card-bg: #ffffff;
-    --workout-border: #e2e8f0;
-    --workout-text: #1e293b;
-    --workout-muted: #6B7280;
-    --workout-accent: #C97C5D;           /* Soft Clay */
+    --workout-border: var(--gs-gray-200);
+    --workout-text: var(--gs-gray-800);
+    --workout-muted: var(--gs-gray-500);
+    --workout-accent: var(--gs-primary);
 
     /* Semantic colors - reference design-system.css */
     --workout-success: var(--gs-success);
@@ -68,40 +68,40 @@
    ============================================ */
 
 [data-bs-theme="dark"] {
-    /* Card colors */
+    /* Card colors - reference design-system.css with fallbacks */
     --workout-bg: var(--bs-body-bg, #1a1d21);
     --workout-card-bg: var(--bs-card-bg, #232730);
     --workout-border: var(--bs-border-color, #3a3f47);
     --workout-text: var(--bs-body-color, #e4e6eb);
     --workout-muted: var(--bs-secondary-color, #9ca3af);
-    --workout-accent: #d49378;            /* Brighter Clay for dark mode */
+    --workout-accent: var(--gs-primary-dark);
 
-    /* Semantic colors - dark variants */
-    --workout-success: #9ad2af;           /* Brighter Sage */
-    --workout-warning: #edb26a;           /* Brighter Amber */
-    --workout-danger: #e07c7c;            /* Brighter Muted Red */
+    /* Semantic colors - reference design-system.css dark variants */
+    --workout-success: var(--gs-success-dark);
+    --workout-warning: var(--gs-warning-dark);
+    --workout-danger: var(--gs-danger-dark);
 
-    /* Status backgrounds - dark variants */
-    --workout-status-logged: rgba(154, 210, 175, 0.15);
-    --workout-status-active: rgba(212, 147, 120, 0.1);
-    --workout-status-skipped: rgba(237, 178, 106, 0.15);
+    /* Status backgrounds - use design-system RGB values */
+    --workout-status-logged: rgba(var(--gs-success-rgb), 0.15);
+    --workout-status-active: rgba(var(--gs-primary-rgb), 0.1);
+    --workout-status-skipped: rgba(var(--gs-warning-rgb), 0.15);
 
-    /* Accent opacity aliases - dark */
-    --workout-accent-5: rgba(212, 147, 120, 0.05);
-    --workout-accent-6: rgba(212, 147, 120, 0.06);
-    --workout-accent-10: rgba(212, 147, 120, 0.10);
-    --workout-accent-12: rgba(212, 147, 120, 0.12);
-    --workout-accent-15: rgba(212, 147, 120, 0.15);
+    /* Accent opacity aliases - use design-system primary */
+    --workout-accent-5: rgba(var(--gs-primary-rgb), 0.05);
+    --workout-accent-6: rgba(var(--gs-primary-rgb), 0.06);
+    --workout-accent-10: rgba(var(--gs-primary-rgb), 0.10);
+    --workout-accent-12: rgba(var(--gs-primary-rgb), 0.12);
+    --workout-accent-15: rgba(var(--gs-primary-rgb), 0.15);
 
-    /* Dark mode specific backgrounds */
+    /* Dark mode specific backgrounds - reference design-system.css */
     --workout-dark-bg: var(--gs-gray-800);
     --workout-dark-border-subtle: var(--gs-gray-700);
     --workout-dark-border: var(--gs-gray-600);
 
-    /* Weight progression - dark mode overrides */
-    --workout-weight-increased: #9ad2af;  /* Brighter Sage */
-    --workout-weight-decreased: #e07c7c;  /* Brighter Muted Red */
-    --workout-weight-same: #8b949e;
-    --workout-weight-new: #d49378;        /* Brighter Clay */
-    --workout-weight-modified: #edb26a;   /* Brighter Amber */
+    /* Weight progression - reference design-system.css */
+    --workout-weight-increased: var(--gs-weight-increased);
+    --workout-weight-decreased: var(--gs-weight-decreased);
+    --workout-weight-same: var(--gs-weight-same);
+    --workout-weight-new: var(--gs-weight-new);
+    --workout-weight-modified: var(--gs-weight-modified);
 }

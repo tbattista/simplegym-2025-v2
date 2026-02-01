@@ -153,11 +153,11 @@
 }
 
 .rest-timer-inline-btn.pause:hover {
-    background: #5457e5;
+    background: var(--gs-primary-hover);
 }
 
 [data-bs-theme="dark"] .rest-timer-inline-btn.pause:hover {
-    background: #7577f0;
+    background: var(--gs-primary-dark-hover);
 }
 
 /* ============================================

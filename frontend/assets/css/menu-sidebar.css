@@ -146,16 +146,16 @@ body.menu-open {
    ============================================ */
 
 [data-bs-theme="dark"] .layout-menu {
-    background: #1e293b;
+    background: var(--gs-gray-50);
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
 }
 
 [data-bs-theme="dark"] .app-brand {
-    border-bottom-color: #475569;
+    border-bottom-color: var(--gs-gray-200);
 }
 
 [data-bs-theme="dark"] .app-brand-text {
-    background: linear-gradient(135deg, #d49378, var(--gs-primary));
+    background: linear-gradient(135deg, var(--gs-primary-dark), var(--gs-primary));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -163,50 +163,50 @@ body.menu-open {
 
 /* Menu divider dark mode - use attribute selector for specificity */
 [data-bs-theme="dark"] .layout-menu .menu-divider {
-    border-color: #475569;
+    border-color: var(--gs-gray-200);
 }
 
 [data-bs-theme="dark"] .menu-inner-shadow {
-    background: linear-gradient(#1e293b 5%, rgba(30, 41, 59, 0.8) 95%, rgba(30, 41, 59, 0.4));
+    background: linear-gradient(var(--gs-gray-50) 5%, rgba(30, 41, 59, 0.8) 95%, rgba(30, 41, 59, 0.4));
 }
 
 [data-bs-theme="dark"] .menu-header {
-    color: #94a3b8;
+    color: var(--gs-gray-400);
 }
 
 [data-bs-theme="dark"] .menu-item .menu-link {
-    color: #cbd5e1;
+    color: var(--gs-gray-500);
 }
 
 [data-bs-theme="dark"] .menu-item .menu-link:hover {
-    background: #334155;
-    color: #f8fafc;
+    background: var(--gs-gray-100);
+    color: var(--gs-gray-800);
 }
 
 [data-bs-theme="dark"] .menu-item.active > .menu-link {
-    background: rgba(201, 124, 93, 0.15);
-    color: #d49378;  /* Brighter Clay */
+    background: rgba(var(--gs-primary-rgb), 0.15);
+    color: var(--gs-primary-dark);
 }
 
 [data-bs-theme="dark"] .menu-item.active > .menu-link::before {
-    background: linear-gradient(135deg, #d49378, var(--gs-primary));
+    background: linear-gradient(135deg, var(--gs-primary-dark), var(--gs-primary));
 }
 
 [data-bs-theme="dark"] .menu-sub .menu-link {
-    color: #94a3b8;
+    color: var(--gs-gray-400);
 }
 
 [data-bs-theme="dark"] .menu-sub .menu-link:hover {
-    background: #334155;
-    color: #f8fafc;
+    background: var(--gs-gray-100);
+    color: var(--gs-gray-800);
 }
 
 [data-bs-theme="dark"] .menu-icon {
-    color: #94a3b8;
+    color: var(--gs-gray-400);
 }
 
 [data-bs-theme="dark"] .menu-item.active .menu-icon {
-    color: #d49378;  /* Brighter Clay */
+    color: var(--gs-primary-dark);
 }
 
 /* NOTE: Badge dark mode styles are defined in components/badges.css
@@ -217,7 +217,7 @@ body.menu-open {
    ============================================ */
 
 [data-bs-theme="dark"] .content-footer {
-    background: #1e293b;
-    border-top-color: #475569;
-    color: #94a3b8;
+    background: var(--gs-gray-50);
+    border-top-color: var(--gs-gray-200);
+    color: var(--gs-gray-400);
 }

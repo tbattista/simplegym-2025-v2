@@ -15,22 +15,22 @@
    ============================================ */
 
 [data-bs-theme="dark"] {
-    --bs-body-bg: #0f172a;
-    --bs-body-color: #f8fafc;
-    --bs-card-bg: #1e293b;
-    --bs-card-color: #f8fafc;
-    --bs-border-color: #475569;
-    --bs-heading-color: #f8fafc;
-    --bs-secondary: #94a3b8;
-    --bs-gray-100: #334155;
-    --bs-gray-200: #475569;
-    --bs-gray-300: #64748b;
-    --bs-gray-400: #64748b;
-    --bs-gray-500: #94a3b8;
-    --bs-gray-600: #cbd5e1;
+    --bs-body-bg: var(--bs-body-bg);
+    --bs-body-color: var(--gs-gray-800);
+    --bs-card-bg: var(--gs-gray-50);
+    --bs-card-color: var(--gs-gray-800);
+    --bs-border-color: var(--gs-gray-200);
+    --bs-heading-color: var(--gs-gray-800);
+    --bs-secondary: var(--gs-gray-400);
+    --bs-gray-100: var(--gs-gray-100);
+    --bs-gray-200: var(--gs-gray-200);
+    --bs-gray-300: var(--gs-gray-300);
+    --bs-gray-400: var(--gs-gray-300);
+    --bs-gray-500: var(--gs-gray-400);
+    --bs-gray-600: var(--gs-gray-500);
     --bs-gray-700: #e2e8f0;
     --bs-gray-800: #f1f5f9;
-    --bs-gray-900: #f8fafc;
+    --bs-gray-900: var(--gs-gray-800);
 }
 
 /* ============================================
@@ -38,8 +38,8 @@
    ============================================ */
 
 [data-bs-theme="dark"] .card {
-    background: #1e293b;
-    color: #f8fafc;
+    background: var(--gs-gray-50);
+    color: var(--gs-gray-800);
     box-shadow: 0 2px 6px 0 rgba(0, 0, 0, 0.3);
 }
 
@@ -49,20 +49,20 @@
 
 /* Workout Editor Card */
 [data-bs-theme="dark"] .workout-editor-card {
-    background: #1e293b;
-    border-color: #475569;
+    background: var(--gs-gray-50);
+    border-color: var(--gs-gray-200);
 }
 
 /* Exercise Group Cards */
 [data-bs-theme="dark"] .exercise-group-card .card,
 [data-bs-theme="dark"] .bonus-exercise-card .card {
-    background: #1e293b;
-    border-color: #475569;
+    background: var(--gs-gray-50);
+    border-color: var(--gs-gray-200);
 }
 
 [data-bs-theme="dark"] .exercise-group-card .card:hover,
 [data-bs-theme="dark"] .bonus-exercise-card .card:hover {
-    background: #334155;
+    background: var(--gs-gray-100);
     border-color: var(--gs-primary);
 }
 
@@ -75,8 +75,8 @@
    ============================================ */
 
 [data-bs-theme="dark"] .list-group-item {
-    background: #1e293b;
-    color: #f8fafc;
+    background: var(--gs-gray-50);
+    color: var(--gs-gray-800);
     border-bottom-color: rgba(148, 163, 184, 0.1);
 }
 
@@ -85,7 +85,7 @@
 }
 
 [data-bs-theme="dark"] .list-group-item.active {
-    background: linear-gradient(135deg, #d49378, var(--gs-primary));
+    background: linear-gradient(135deg, var(--gs-primary-dark), var(--gs-primary));
 }
 
 /* ============================================
@@ -94,30 +94,30 @@
 
 [data-bs-theme="dark"] .exercise-group,
 [data-bs-theme="dark"] .program-workouts .workout-item {
-    background: #334155;
-    border-color: #475569;
-    color: #f8fafc;
+    background: var(--gs-gray-100);
+    border-color: var(--gs-gray-200);
+    color: var(--gs-gray-800);
 }
 
 [data-bs-theme="dark"] .exercise-group-title {
-    color: #f8fafc;
+    color: var(--gs-gray-800);
 }
 
 /* Bonus Exercise Card Base Style */
 [data-bs-theme="dark"] .bonus-exercise {
-    background: #1e293b;
-    border-color: #475569;
+    background: var(--gs-gray-50);
+    border-color: var(--gs-gray-200);
 }
 
 [data-bs-theme="dark"] .bonus-exercise .card-header {
-    background: #334155;
-    border-color: #475569;
-    color: #f8fafc;
+    background: var(--gs-gray-100);
+    border-color: var(--gs-gray-200);
+    color: var(--gs-gray-800);
 }
 
 [data-bs-theme="dark"] .bonus-exercise .card-body {
-    background: #1e293b;
-    color: #f8fafc;
+    background: var(--gs-gray-50);
+    color: var(--gs-gray-800);
 }
 
 /* Bonus Exercise Specific */
@@ -135,9 +135,9 @@
    ============================================ */
 
 [data-bs-theme="dark"] .workout-card {
-    background: #1e293b;
-    border-color: #475569;
-    color: #f8fafc;
+    background: var(--gs-gray-50);
+    border-color: var(--gs-gray-200);
+    color: var(--gs-gray-800);
 }
 
 [data-bs-theme="dark"] .workout-card:hover {
@@ -146,21 +146,21 @@
 }
 
 [data-bs-theme="dark"] .workout-card-title {
-    color: #f8fafc;
+    color: var(--gs-gray-800);
 }
 
 [data-bs-theme="dark"] .workout-card-description,
 [data-bs-theme="dark"] .workout-card-stats,
 [data-bs-theme="dark"] .program-meta,
 [data-bs-theme="dark"] .program-stat {
-    color: #94a3b8;
+    color: var(--gs-gray-400);
 }
 
 /* Workout List Cards */
 [data-bs-theme="dark"] .workout-list-card {
-    background: #1e293b;
-    color: #f8fafc;
-    border-color: #475569;
+    background: var(--gs-gray-50);
+    color: var(--gs-gray-800);
+    border-color: var(--gs-gray-200);
 }
 
 [data-bs-theme="dark"] .workout-list-card:hover {
@@ -173,17 +173,17 @@
    ============================================ */
 
 [data-bs-theme="dark"] .modal-content {
-    background: #1e293b;
-    color: #f8fafc;
+    background: var(--gs-gray-50);
+    color: var(--gs-gray-800);
 }
 
 [data-bs-theme="dark"] .modal-header {
-    background: linear-gradient(135deg, #1e293b, #334155);
-    border-bottom-color: #475569;
+    background: linear-gradient(135deg, var(--gs-gray-50), var(--gs-gray-100));
+    border-bottom-color: var(--gs-gray-200);
 }
 
 [data-bs-theme="dark"] .modal-title {
-    color: #f8fafc;
+    color: var(--gs-gray-800);
 }
 
 /* ============================================
@@ -197,17 +197,17 @@
 
 [data-bs-theme="dark"] .alert-danger {
     background: linear-gradient(135deg, rgba(var(--gs-danger-rgb), 0.2), rgba(var(--gs-danger-rgb), 0.1));
-    color: #fca5a5;
+    color: var(--gs-alert-danger-text);
 }
 
 [data-bs-theme="dark"] .alert-warning {
     background: linear-gradient(135deg, rgba(var(--gs-warning-rgb), 0.2), rgba(var(--gs-warning-rgb), 0.1));
-    color: #fcd34d;
+    color: var(--gs-alert-warning-text);
 }
 
 [data-bs-theme="dark"] .alert-info {
     background: linear-gradient(135deg, rgba(var(--gs-accent-rgb), 0.2), rgba(var(--gs-accent-rgb), 0.1));
-    color: #67e8f9;
+    color: var(--gs-alert-info-text);
 }
 
 /* ============================================
@@ -223,8 +223,8 @@
    ============================================ */
 
 [data-bs-theme="dark"] #emptyStatePanel {
-    background: linear-gradient(135deg, #1e293b, #334155);
-    border-color: #475569;
+    background: linear-gradient(135deg, var(--gs-gray-50), var(--gs-gray-100));
+    border-color: var(--gs-gray-200);
 }
 
 /* ============================================
@@ -232,13 +232,13 @@
    ============================================ */
 
 [data-bs-theme="dark"] .program-workout-chip {
-    background: #334155;
-    border-color: #475569;
-    color: #f8fafc;
+    background: var(--gs-gray-100);
+    border-color: var(--gs-gray-200);
+    color: var(--gs-gray-800);
 }
 
 [data-bs-theme="dark"] .program-workout-chip:hover {
-    background: #475569;
+    background: var(--gs-gray-200);
     border-color: var(--gs-primary);
 }
 
@@ -249,17 +249,17 @@
 [data-bs-theme="dark"] .workout-tag,
 [data-bs-theme="dark"] .workout-card-tag {
     background: rgba(100, 116, 139, 0.2);  /* Slate secondary */
-    color: #94a3b8;
+    color: var(--gs-gray-400);
 }
 
 [data-bs-theme="dark"] .badge {
-    background: #334155;
-    color: #f8fafc;
+    background: var(--gs-gray-100);
+    color: var(--gs-gray-800);
 }
 
 [data-bs-theme="dark"] .badge.bg-label-info {
     background: rgba(var(--gs-accent-rgb), 0.2);
-    color: #67e8f9;
+    color: var(--gs-alert-info-text);
 }
 
 /* ============================================
@@ -295,66 +295,66 @@
    ============================================ */
 
 [data-bs-theme="dark"] .layout-menu {
-    background: #1e293b;
+    background: var(--gs-gray-50);
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
 }
 
 [data-bs-theme="dark"] .app-brand {
-    border-bottom-color: #475569;
+    border-bottom-color: var(--gs-gray-200);
 }
 
 [data-bs-theme="dark"] .app-brand-text {
-    background: linear-gradient(135deg, #d49378, var(--gs-primary));
+    background: linear-gradient(135deg, var(--gs-primary-dark), var(--gs-primary));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
 }
 
 [data-bs-theme="dark"] .menu-divider {
-    border-color: #475569;
+    border-color: var(--gs-gray-200);
 }
 
 [data-bs-theme="dark"] .menu-inner-shadow {
-    background: linear-gradient(#1e293b 5%, rgba(30, 41, 59, 0.8) 95%, rgba(30, 41, 59, 0.4));
+    background: linear-gradient(var(--gs-gray-50) 5%, rgba(30, 41, 59, 0.8) 95%, rgba(30, 41, 59, 0.4));
 }
 
 [data-bs-theme="dark"] .menu-header {
-    color: #94a3b8;
+    color: var(--gs-gray-400);
 }
 
 [data-bs-theme="dark"] .menu-item .menu-link {
-    color: #cbd5e1;
+    color: var(--gs-gray-500);
 }
 
 [data-bs-theme="dark"] .menu-item .menu-link:hover {
-    background: #334155;
-    color: #f8fafc;
+    background: var(--gs-gray-100);
+    color: var(--gs-gray-800);
 }
 
 [data-bs-theme="dark"] .menu-item.active > .menu-link {
     background: rgba(201, 124, 93, 0.15);
-    color: #d49378;  /* Brighter Clay */
+    color: var(--gs-primary-dark);  /* Brighter Clay */
 }
 
 [data-bs-theme="dark"] .menu-item.active > .menu-link::before {
-    background: linear-gradient(135deg, #d49378, var(--gs-primary));
+    background: linear-gradient(135deg, var(--gs-primary-dark), var(--gs-primary));
 }
 
 [data-bs-theme="dark"] .menu-sub .menu-link {
-    color: #94a3b8;
+    color: var(--gs-gray-400);
 }
 
 [data-bs-theme="dark"] .menu-sub .menu-link:hover {
-    background: #334155;
-    color: #f8fafc;
+    background: var(--gs-gray-100);
+    color: var(--gs-gray-800);
 }
 
 [data-bs-theme="dark"] .menu-icon {
-    color: #94a3b8;
+    color: var(--gs-gray-400);
 }
 
 [data-bs-theme="dark"] .menu-item.active .menu-icon {
-    color: #d49378;  /* Brighter Clay */
+    color: var(--gs-primary-dark);  /* Brighter Clay */
 }
 
 /* ============================================
@@ -362,9 +362,9 @@
    ============================================ */
 
 [data-bs-theme="dark"] .content-footer {
-    background: #1e293b;
-    border-top-color: #475569;
-    color: #94a3b8;
+    background: var(--gs-gray-50);
+    border-top-color: var(--gs-gray-200);
+    color: var(--gs-gray-400);
 }
 
 /* ============================================
@@ -372,27 +372,27 @@
    ============================================ */
 
 [data-bs-theme="dark"] .list-group-flush::-webkit-scrollbar-track {
-    background: #1e293b;
+    background: var(--gs-gray-50);
 }
 
 [data-bs-theme="dark"] .list-group-flush::-webkit-scrollbar-thumb {
-    background: #475569;
+    background: var(--gs-gray-200);
 }
 
 [data-bs-theme="dark"] .list-group-flush::-webkit-scrollbar-thumb:hover {
-    background: #64748b;
+    background: var(--gs-gray-300);
 }
 
 [data-bs-theme="dark"] .workout-builder-container ::-webkit-scrollbar-track {
-    background: #1e293b;
+    background: var(--gs-gray-50);
 }
 
 [data-bs-theme="dark"] .workout-builder-container ::-webkit-scrollbar-thumb {
-    background: #475569;
+    background: var(--gs-gray-200);
 }
 
 [data-bs-theme="dark"] .workout-builder-container ::-webkit-scrollbar-thumb:hover {
-    background: #64748b;
+    background: var(--gs-gray-300);
 }
 
 /* ============================================
@@ -400,22 +400,22 @@
    ============================================ */
 
 [data-bs-theme="dark"] .popover {
-    background: #1e293b;
-    border-color: #475569;
+    background: var(--gs-gray-50);
+    border-color: var(--gs-gray-200);
 }
 
 [data-bs-theme="dark"] .popover-header {
-    background: #334155;
-    border-bottom-color: #475569;
-    color: #f8fafc;
+    background: var(--gs-gray-100);
+    border-bottom-color: var(--gs-gray-200);
+    color: var(--gs-gray-800);
 }
 
 [data-bs-theme="dark"] .popover-body {
-    color: #f8fafc;
+    color: var(--gs-gray-800);
 }
 
 [data-bs-theme="dark"] .popover-edit-container .form-label {
-    color: #f8fafc;
+    color: var(--gs-gray-800);
 }
 
 /* ============================================
@@ -423,21 +423,21 @@
    ============================================ */
 
 [data-bs-theme="dark"] .offcanvas {
-    background: #1e293b;
-    color: #f8fafc;
+    background: var(--gs-gray-50);
+    color: var(--gs-gray-800);
 }
 
 [data-bs-theme="dark"] .offcanvas-header {
-    background-color: #1e293b;
-    border-bottom-color: #475569;
+    background-color: var(--gs-gray-50);
+    border-bottom-color: var(--gs-gray-200);
 }
 
 [data-bs-theme="dark"] .offcanvas-title i {
-    color: #f8fafc;
+    color: var(--gs-gray-800);
 }
 
 [data-bs-theme="dark"] .offcanvas-title {
-    color: #f8fafc;
+    color: var(--gs-gray-800);
 }
 
 [data-bs-theme="dark"] .offcanvas .btn-close {
@@ -445,13 +445,13 @@
 }
 
 [data-bs-theme="dark"] .offcanvas-body {
-    background: #1e293b;
-    color: #f8fafc;
+    background: var(--gs-gray-50);
+    color: var(--gs-gray-800);
 }
 
 [data-bs-theme="dark"] .offcanvas-footer {
-    background: #1e293b;
-    border-color: #475569;
+    background: var(--gs-gray-50);
+    border-color: var(--gs-gray-200);
 }
 
 /* Offcanvas form controls */
@@ -461,9 +461,9 @@
 [data-bs-theme="dark"] .offcanvas input[type="number"],
 [data-bs-theme="dark"] .offcanvas textarea,
 [data-bs-theme="dark"] .offcanvas select {
-    background-color: #1e293b;
-    border-color: #475569;
-    color: #f8fafc;
+    background-color: var(--gs-gray-50);
+    border-color: var(--gs-gray-200);
+    color: var(--gs-gray-800);
 }
 
 [data-bs-theme="dark"] .offcanvas .form-control:focus,
@@ -472,46 +472,46 @@
 [data-bs-theme="dark"] .offcanvas input[type="number"]:focus,
 [data-bs-theme="dark"] .offcanvas textarea:focus,
 [data-bs-theme="dark"] .offcanvas select:focus {
-    background-color: #1e293b;
+    background-color: var(--gs-gray-50);
     border-color: var(--bs-primary);
-    color: #f8fafc;
+    color: var(--gs-gray-800);
 }
 
 [data-bs-theme="dark"] .offcanvas .form-control::placeholder,
 [data-bs-theme="dark"] .offcanvas input::placeholder,
 [data-bs-theme="dark"] .offcanvas textarea::placeholder {
-    color: #94a3b8;
+    color: var(--gs-gray-400);
 }
 
 [data-bs-theme="dark"] .offcanvas .form-label,
 [data-bs-theme="dark"] .offcanvas label {
-    color: #cbd5e1;
+    color: var(--gs-gray-500);
 }
 
 [data-bs-theme="dark"] .offcanvas .form-text,
 [data-bs-theme="dark"] .offcanvas .text-muted,
 [data-bs-theme="dark"] .offcanvas small {
-    color: #94a3b8;
+    color: var(--gs-gray-400);
 }
 
 /* Offcanvas input groups */
 [data-bs-theme="dark"] .offcanvas .input-group-text {
-    background-color: #334155;
-    border-color: #475569;
-    color: #f8fafc;
+    background-color: var(--gs-gray-100);
+    border-color: var(--gs-gray-200);
+    color: var(--gs-gray-800);
 }
 
 /* Offcanvas btn-group buttons */
 [data-bs-theme="dark"] .offcanvas .btn-group .btn-outline-secondary {
     background-color: transparent;
-    border-color: #475569;
-    color: #cbd5e1;
+    border-color: var(--gs-gray-200);
+    color: var(--gs-gray-500);
 }
 
 [data-bs-theme="dark"] .offcanvas .btn-group .btn-outline-secondary:hover {
-    background-color: #334155;
-    border-color: #64748b;
-    color: #f8fafc;
+    background-color: var(--gs-gray-100);
+    border-color: var(--gs-gray-300);
+    color: var(--gs-gray-800);
 }
 
 [data-bs-theme="dark"] .offcanvas .btn-group .btn-outline-secondary.active,
@@ -524,14 +524,14 @@
 /* Weight unit buttons in offcanvas */
 [data-bs-theme="dark"] .offcanvas .weight-unit-btn {
     background-color: transparent;
-    border-color: #475569;
-    color: #cbd5e1;
+    border-color: var(--gs-gray-200);
+    color: var(--gs-gray-500);
 }
 
 [data-bs-theme="dark"] .offcanvas .weight-unit-btn:hover {
-    background-color: #334155;
+    background-color: var(--gs-gray-100);
     border-color: var(--bs-primary);
-    color: #f8fafc;
+    color: var(--gs-gray-800);
 }
 
 [data-bs-theme="dark"] .offcanvas .weight-unit-btn.active {
@@ -545,19 +545,19 @@
 [data-bs-theme="dark"] .offcanvas h6,
 [data-bs-theme="dark"] .offcanvas .h5,
 [data-bs-theme="dark"] .offcanvas .h6 {
-    color: #f8fafc;
+    color: var(--gs-gray-800);
 }
 
 /* Offcanvas buttons */
 [data-bs-theme="dark"] .offcanvas .btn-outline-secondary {
-    border-color: #475569;
-    color: #cbd5e1;
+    border-color: var(--gs-gray-200);
+    color: var(--gs-gray-500);
 }
 
 [data-bs-theme="dark"] .offcanvas .btn-outline-secondary:hover {
-    background-color: #334155;
-    border-color: #64748b;
-    color: #f8fafc;
+    background-color: var(--gs-gray-100);
+    border-color: var(--gs-gray-300);
+    color: var(--gs-gray-800);
 }
 
 /* Primary buttons in offcanvas */
@@ -582,7 +582,7 @@
 [data-bs-theme="dark"] .offcanvas .btn-outline-primary:hover {
     background-color: rgba(var(--bs-primary-rgb), 0.15);
     border-color: var(--bs-primary);
-    color: #f8fafc;
+    color: var(--gs-gray-800);
 }
 
 /* Success buttons in offcanvas */
@@ -608,14 +608,14 @@
 [data-bs-theme="dark"] .offcanvas .btn-outline-danger:hover {
     background-color: rgba(var(--bs-danger-rgb), 0.15);
     border-color: var(--bs-danger);
-    color: #fca5a5;
+    color: var(--gs-alert-danger-text);
 }
 
 /* Offcanvas alerts */
 [data-bs-theme="dark"] .offcanvas .alert-info {
     background: rgba(var(--gs-accent-rgb), 0.15);
     border-color: rgba(var(--gs-accent-rgb), 0.3);
-    color: #67e8f9;
+    color: var(--gs-alert-info-text);
 }
 
 [data-bs-theme="dark"] .offcanvas .alert-success {
@@ -627,31 +627,31 @@
 [data-bs-theme="dark"] .offcanvas .alert-warning {
     background: rgba(var(--gs-warning-rgb), 0.15);
     border-color: rgba(var(--gs-warning-rgb), 0.3);
-    color: #fcd34d;
+    color: var(--gs-alert-warning-text);
 }
 
 [data-bs-theme="dark"] .offcanvas .alert-danger {
     background: rgba(var(--gs-danger-rgb), 0.15);
     border-color: rgba(var(--gs-danger-rgb), 0.3);
-    color: #fca5a5;
+    color: var(--gs-alert-danger-text);
 }
 
 /* Offcanvas Cards - base styling */
 [data-bs-theme="dark"] .offcanvas .card {
-    background-color: #334155;
-    border-color: #475569;
-    color: #f8fafc;
+    background-color: var(--gs-gray-100);
+    border-color: var(--gs-gray-200);
+    color: var(--gs-gray-800);
 }
 
 [data-bs-theme="dark"] .offcanvas .card-body {
     background-color: transparent;
-    color: #f8fafc;
+    color: var(--gs-gray-800);
 }
 
 [data-bs-theme="dark"] .offcanvas .card-header {
-    background-color: #1e293b;
-    border-color: #475569;
-    color: #f8fafc;
+    background-color: var(--gs-gray-50);
+    border-color: var(--gs-gray-200);
+    color: var(--gs-gray-800);
 }
 
 /* Offcanvas Stats Cards (Complete Workout, Resume Session, etc.) */
@@ -674,31 +674,31 @@
 [data-bs-theme="dark"] .offcanvas .card .h4,
 [data-bs-theme="dark"] .offcanvas .card .h3,
 [data-bs-theme="dark"] .offcanvas .card .h5 {
-    color: #f8fafc;
+    color: var(--gs-gray-800);
 }
 
 /* Text-muted inside offcanvas cards */
 [data-bs-theme="dark"] .offcanvas .card small.text-muted,
 [data-bs-theme="dark"] .offcanvas .card .text-muted {
-    color: #94a3b8;
+    color: var(--gs-gray-400);
 }
 
 /* Paragraph text inside offcanvas */
 [data-bs-theme="dark"] .offcanvas p,
 [data-bs-theme="dark"] .offcanvas .text-muted {
-    color: #94a3b8;
+    color: var(--gs-gray-400);
 }
 
 /* Main headings in offcanvas body */
 [data-bs-theme="dark"] .offcanvas h4,
 [data-bs-theme="dark"] .offcanvas h5,
 [data-bs-theme="dark"] .offcanvas h6 {
-    color: #f8fafc;
+    color: var(--gs-gray-800);
 }
 
 /* Center text in offcanvas */
 [data-bs-theme="dark"] .offcanvas .text-center p.text-muted {
-    color: #94a3b8;
+    color: var(--gs-gray-400);
 }
 
 /* Workout Selection Prompt buttons */
@@ -710,7 +710,7 @@
 [data-bs-theme="dark"] #workoutSelectionOffcanvas .btn-lg.btn-outline-primary:hover {
     background: rgba(var(--bs-primary-rgb), 0.15);
     border-color: var(--bs-primary);
-    color: #f8fafc;
+    color: var(--gs-gray-800);
 }
 
 [data-bs-theme="dark"] #workoutSelectionOffcanvas .btn-lg.btn-outline-secondary {
@@ -731,55 +731,55 @@
 [data-bs-theme="dark"] #plateSettingsOffcanvas input[type="number"],
 [data-bs-theme="dark"] #plateSettingsOffcanvas .form-control,
 [data-bs-theme="dark"] #plateSettingsOffcanvas .form-select {
-    background-color: #1e293b;
-    border-color: #475569;
-    color: #f8fafc;
+    background-color: var(--gs-gray-50);
+    border-color: var(--gs-gray-200);
+    color: var(--gs-gray-800);
 }
 
 [data-bs-theme="dark"] #plateSettingsOffcanvas input[type="number"]:focus,
 [data-bs-theme="dark"] #plateSettingsOffcanvas .form-control:focus,
 [data-bs-theme="dark"] #plateSettingsOffcanvas .form-select:focus {
-    background-color: #1e293b;
+    background-color: var(--gs-gray-50);
     border-color: var(--bs-primary);
 }
 
 [data-bs-theme="dark"] #plateSettingsOffcanvas h6 {
-    color: #f8fafc;
+    color: var(--gs-gray-800);
 }
 
 [data-bs-theme="dark"] .custom-plate-row .form-control {
-    background-color: #1e293b;
-    border-color: #475569;
-    color: #f8fafc;
+    background-color: var(--gs-gray-50);
+    border-color: var(--gs-gray-200);
+    color: var(--gs-gray-800);
 }
 
 /* More Menu Items (global dark mode) */
 [data-bs-theme="dark"] .offcanvas .more-menu-item {
-    background-color: #334155;
-    border-color: #475569;
-    color: #f8fafc;
+    background-color: var(--gs-gray-100);
+    border-color: var(--gs-gray-200);
+    color: var(--gs-gray-800);
 }
 
 [data-bs-theme="dark"] .offcanvas .more-menu-item .more-menu-item-title {
-    color: #f8fafc;
+    color: var(--gs-gray-800);
 }
 
 [data-bs-theme="dark"] .offcanvas .more-menu-item .more-menu-item-description {
-    color: #94a3b8;
+    color: var(--gs-gray-400);
 }
 
 [data-bs-theme="dark"] .offcanvas .more-menu-item > i {
-    color: #f8fafc;
+    color: var(--gs-gray-800);
 }
 
 [data-bs-theme="dark"] .offcanvas .more-menu-item:hover {
-    background-color: #475569;
+    background-color: var(--gs-gray-200);
     border-color: var(--bs-primary);
 }
 
 [data-bs-theme="dark"] .offcanvas .more-menu-item.toggle-item {
     background: transparent;
-    border-color: #475569;
+    border-color: var(--gs-gray-200);
 }
 
 [data-bs-theme="dark"] .offcanvas .more-menu-item.toggle-item:hover {
@@ -787,12 +787,12 @@
 }
 
 [data-bs-theme="dark"] .offcanvas .more-menu-item.danger {
-    color: #fca5a5;
+    color: var(--gs-alert-danger-text);
     border-color: rgba(var(--gs-danger-rgb), 0.3);
 }
 
 [data-bs-theme="dark"] .offcanvas .more-menu-item.danger .more-menu-item-title {
-    color: #fca5a5;
+    color: var(--gs-alert-danger-text);
 }
 
 [data-bs-theme="dark"] .offcanvas .more-menu-item.danger:hover {
@@ -803,30 +803,30 @@
 /* Exercise Details Editor Toggle Item */
 [data-bs-theme="dark"] #exerciseDetailsEditorOffcanvas .more-menu-item.toggle-item {
     background: transparent;
-    border-color: #475569;
+    border-color: var(--gs-gray-200);
 }
 
 [data-bs-theme="dark"] #exerciseDetailsEditorOffcanvas .more-menu-item-title {
-    color: #f8fafc;
+    color: var(--gs-gray-800);
 }
 
 [data-bs-theme="dark"] #exerciseDetailsEditorOffcanvas .more-menu-item-description {
-    color: #94a3b8;
+    color: var(--gs-gray-400);
 }
 
 /* Exercise Group Editor Offcanvas */
 [data-bs-theme="dark"] #exerciseGroupEditorOffcanvas .form-label {
-    color: #cbd5e1;
+    color: var(--gs-gray-500);
 }
 
 [data-bs-theme="dark"] #exerciseGroupEditorOffcanvas .exercise-slot-input {
-    background-color: #1e293b;
-    border-color: #475569;
-    color: #f8fafc;
+    background-color: var(--gs-gray-50);
+    border-color: var(--gs-gray-200);
+    color: var(--gs-gray-800);
 }
 
 [data-bs-theme="dark"] #exerciseGroupEditorOffcanvas .exercise-slot-input:focus {
-    background-color: #1e293b;
+    background-color: var(--gs-gray-50);
     border-color: var(--bs-primary);
 }
 
@@ -836,13 +836,13 @@
 
 /* Skip Exercise Offcanvas */
 [data-bs-theme="dark"] #skipExerciseOffcanvas textarea.form-control {
-    background-color: #1e293b;
-    border-color: #475569;
-    color: #f8fafc;
+    background-color: var(--gs-gray-50);
+    border-color: var(--gs-gray-200);
+    color: var(--gs-gray-800);
 }
 
 [data-bs-theme="dark"] #skipExerciseOffcanvas textarea.form-control:focus {
-    background-color: #1e293b;
+    background-color: var(--gs-gray-50);
     border-color: var(--bs-primary);
 }
 
@@ -852,14 +852,14 @@
 }
 
 [data-bs-theme="dark"] .filter-category .bg-light {
-    background-color: #334155;
-    color: #f8fafc;
+    background-color: var(--gs-gray-100);
+    color: var(--gs-gray-800);
 }
 
 /* Reorder Exercises Offcanvas */
 [data-bs-theme="dark"] #reorderExercisesOffcanvas .badge.bg-label-secondary {
     background-color: rgba(148, 163, 184, 0.15);
-    color: #94a3b8;
+    color: var(--gs-gray-400);
 }
 
 /* ============================================
@@ -867,45 +867,45 @@
    ============================================ */
 
 [data-bs-theme="dark"] .accordion-workout-groups .accordion-item {
-    background: #1e293b;
-    border-color: #475569;
+    background: var(--gs-gray-50);
+    border-color: var(--gs-gray-200);
 }
 
 [data-bs-theme="dark"] .accordion-workout-groups .accordion-button {
-    background: #1e293b;
-    color: #f8fafc;
+    background: var(--gs-gray-50);
+    color: var(--gs-gray-800);
 }
 
 [data-bs-theme="dark"] .accordion-workout-groups .accordion-button:not(.collapsed) {
-    background: #334155;
-    color: #f8fafc;
+    background: var(--gs-gray-100);
+    color: var(--gs-gray-800);
 }
 
 [data-bs-theme="dark"] .accordion-workout-groups .accordion-button:hover {
-    background: #334155;
+    background: var(--gs-gray-100);
 }
 
 [data-bs-theme="dark"] .accordion-workout-groups .exercise-preview-main {
-    color: #f8fafc;
+    color: var(--gs-gray-800);
 }
 
 [data-bs-theme="dark"] .accordion-workout-groups .exercise-preview-secondary,
 [data-bs-theme="dark"] .accordion-workout-groups .exercise-preview-info,
 [data-bs-theme="dark"] .accordion-workout-groups .exercise-preview-weight {
-    color: #94a3b8;
+    color: var(--gs-gray-400);
 }
 
 [data-bs-theme="dark"] .accordion-workout-groups .accordion-body {
-    background: #334155;
-    color: #f8fafc;
+    background: var(--gs-gray-100);
+    color: var(--gs-gray-800);
 }
 
 [data-bs-theme="dark"] .accordion-workout-groups .drag-handle {
-    color: #94a3b8;
+    color: var(--gs-gray-400);
 }
 
 [data-bs-theme="dark"] .accordion-workout-groups .drag-handle:hover {
-    color: #d49378;  /* Brighter Clay */
+    color: var(--gs-primary-dark);  /* Brighter Clay */
 }
 
 /* ============================================
@@ -947,7 +947,7 @@
 }
 
 [data-bs-theme="dark"] .save-status {
-    color: #94a3b8;
+    color: var(--gs-gray-400);
 }
 
 /* ============================================
@@ -955,12 +955,12 @@
    ============================================ */
 
 [data-bs-theme="dark"] .workout-editor-section {
-    background: #1e293b;
-    color: #f8fafc;
+    background: var(--gs-gray-50);
+    color: var(--gs-gray-800);
 }
 
 [data-bs-theme="dark"] .workout-editor-empty-state {
-    color: #94a3b8;
+    color: var(--gs-gray-400);
 }
 
 /* ============================================
@@ -968,19 +968,19 @@
    ============================================ */
 
 [data-bs-theme="dark"] .exercise-preview .exercise-main {
-    color: #f8fafc;
+    color: var(--gs-gray-800);
 }
 
 [data-bs-theme="dark"] .exercise-preview .exercise-alternates {
-    color: #94a3b8;
+    color: var(--gs-gray-400);
 }
 
 [data-bs-theme="dark"] .exercise-line {
-    color: #f8fafc;
+    color: var(--gs-gray-800);
 }
 
 [data-bs-theme="dark"] .exercise-meta-text {
-    color: #94a3b8;
+    color: var(--gs-gray-400);
 }
 
 /* ============================================

@@ -74,15 +74,6 @@ function setDateFilter(dateKey) {
   // Update date filter indicator
   updateDateFilterIndicator(dateKey);
 
-  // Collapse the calendar after selection
-  const calendarCollapse = document.getElementById('historyCalendarCollapse');
-  if (calendarCollapse) {
-    const bsCollapse = bootstrap.Collapse.getInstance(calendarCollapse);
-    if (bsCollapse) {
-      bsCollapse.hide();
-    }
-  }
-
   // Re-render sessions
   if (typeof renderSessionHistory === 'function') {
     renderSessionHistory();

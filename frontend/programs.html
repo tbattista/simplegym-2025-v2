@@ -172,7 +172,7 @@
     <!-- / Layout wrapper -->
 
     <!-- Filters Offcanvas (Bottom) -->
-    <div class="offcanvas offcanvas-bottom offcanvas-bottom-base" tabindex="-1" id="filtersOffcanvas" aria-labelledby="filtersOffcanvasLabel" data-bs-scroll="false" style="height: auto; max-height: 60vh;">
+    <div class="offcanvas offcanvas-bottom offcanvas-bottom-base offcanvas-bottom-compact" tabindex="-1" id="filtersOffcanvas" aria-labelledby="filtersOffcanvasLabel" data-bs-scroll="false">
       <div class="offcanvas-header">
         <h5 class="offcanvas-title" id="filtersOffcanvasLabel">
           <i class="bx bx-filter-alt me-2"></i>
@@ -201,7 +201,7 @@
         </div>
 
         <!-- Stats -->
-        <div class="mb-4">
+        <div class="mb-0">
           <label class="form-label fw-semibold">Your Stats</label>
           <div class="d-flex justify-content-between mb-2">
             <span class="text-muted">Total Programs:</span>
@@ -212,14 +212,14 @@
             <span class="fw-semibold" id="showingCount">0</span>
           </div>
         </div>
-
-        <!-- Action Buttons -->
-        <div class="pt-3 border-top">
-          <button type="button" class="btn btn-outline-secondary w-100 mb-2" id="clearFiltersBtn">
+      </div>
+      <div class="offcanvas-footer">
+        <div class="d-flex gap-2">
+          <button type="button" class="btn btn-outline-secondary flex-fill" id="clearFiltersBtn">
             <i class="bx bx-x me-1"></i>
             Clear Filters
           </button>
-          <button type="button" class="btn btn-primary w-100" data-bs-dismiss="offcanvas">
+          <button type="button" class="btn btn-primary flex-fill" data-bs-dismiss="offcanvas">
             <i class="bx bx-check me-1"></i>
             Done
           </button>

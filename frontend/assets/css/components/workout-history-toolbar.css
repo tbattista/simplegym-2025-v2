@@ -401,7 +401,7 @@
 }
 
 .btn-batch-delete:not(:disabled):hover {
-  background: #b02a37;
+  background: var(--gs-danger-active);
 }
 
 .btn-batch-delete i {
@@ -450,7 +450,7 @@
     display: none !important;
   }
 
-  #historyCalendarCollapse {
+  #calendarTabPane {
     display: none !important;
   }
 

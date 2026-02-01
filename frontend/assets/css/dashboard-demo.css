@@ -946,7 +946,7 @@
 }
 
 .progress-summary-value.increased { color: var(--bs-success); }
-.progress-summary-value.same { color: #6c757d; }
+.progress-summary-value.same { color: var(--gs-weight-same); }
 .progress-summary-value.decreased { color: var(--bs-danger); }
 
 .progress-summary-label {
@@ -1055,8 +1055,8 @@
 }
 
 .session-cell.same {
-  background: rgba(108, 117, 125, 0.05);
-  border-color: rgba(108, 117, 125, 0.2);
+  background: rgba(var(--gs-weight-same-rgb, 108, 117, 125), 0.05);
+  border-color: rgba(var(--gs-weight-same-rgb, 108, 117, 125), 0.2);
 }
 
 .session-cell.baseline {
@@ -1095,7 +1095,7 @@
 }
 
 .session-weight .indicator.same {
-  color: #6c757d;
+  color: var(--gs-weight-same);
 }
 
 @keyframes bounce-up {
@@ -1223,8 +1223,8 @@
 }
 
 [data-bs-theme="dark"] .session-cell.same {
-  background: rgba(108, 117, 125, 0.1);
-  border-color: rgba(108, 117, 125, 0.3);
+  background: rgba(var(--gs-weight-same-rgb, 108, 117, 125), 0.1);
+  border-color: rgba(var(--gs-weight-same-rgb, 108, 117, 125), 0.3);
 }
 
 [data-bs-theme="dark"] .session-cell.baseline {

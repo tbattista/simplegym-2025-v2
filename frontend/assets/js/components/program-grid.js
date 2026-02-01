@@ -429,13 +429,17 @@ class ProgramGrid {
      * @param {boolean} enabled
      */
     setDeleteMode(enabled) {
+        console.log('🗑️ ProgramGrid.setDeleteMode:', enabled, 'cards count:', this.cards.length);
         this.config.cardConfig.deleteMode = enabled;
 
         if (!enabled) {
             this.clearSelection();
         }
 
-        this.cards.forEach(card => card.setDeleteMode(enabled));
+        this.cards.forEach((card, index) => {
+            console.log(`🗑️ Calling card[${index}].setDeleteMode:`, enabled);
+            card.setDeleteMode(enabled);
+        });
     }
 
     /**

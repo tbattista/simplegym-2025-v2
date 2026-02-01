@@ -380,7 +380,7 @@
 
 @media print {
   .exercise-list {
-    border: 1px solid #dee2e6 !important;
+    border: 1px solid var(--gs-gray-200) !important;
   }
 
   .exercise-details-collapse {
@@ -390,7 +390,7 @@
 
   .exercise-details-wrapper {
     background: transparent !important;
-    border-left-color: #dee2e6 !important;
+    border-left-color: var(--gs-gray-200) !important;
   }
 
   .history-row-faded {

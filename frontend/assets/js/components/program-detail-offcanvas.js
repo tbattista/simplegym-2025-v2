@@ -57,15 +57,15 @@ class ProgramDetailOffcanvas {
         }
 
         const offcanvasHTML = `
-            <div class="offcanvas offcanvas-bottom offcanvas-bottom-base" tabindex="-1" id="${this.offcanvasId}" aria-labelledby="${this.offcanvasId}Label" style="height: auto; max-height: 85vh; min-height: 30vh;">
-                <div class="offcanvas-header border-bottom">
+            <div class="offcanvas offcanvas-bottom offcanvas-bottom-base" tabindex="-1" id="${this.offcanvasId}" aria-labelledby="${this.offcanvasId}Label">
+                <div class="offcanvas-header">
                     <h5 class="offcanvas-title" id="${this.offcanvasId}Label">
                         <i class="bx bx-folder me-2"></i>
                         <span id="programDetailName">Program Details</span>
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
                 </div>
-                <div class="offcanvas-body" id="programDetailBody" style="overflow-y: auto; max-height: calc(85vh - 140px);">
+                <div class="offcanvas-body" id="programDetailBody">
                     <!-- Loading state -->
                     <div id="programDetailLoading" class="text-center py-5">
                         <div class="spinner-border text-primary mb-3" role="status">
@@ -79,7 +79,7 @@ class ProgramDetailOffcanvas {
                         <!-- Content will be rendered here -->
                     </div>
                 </div>
-                <div class="offcanvas-footer border-top p-3" id="programDetailFooter">
+                <div class="offcanvas-footer" id="programDetailFooter">
                     <!-- Action buttons will be rendered here -->
                 </div>
             </div>

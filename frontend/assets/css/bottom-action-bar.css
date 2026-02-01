@@ -454,7 +454,7 @@
 }
 
 .floating-end-button:hover {
-    background: #c82333;
+    background: var(--gs-action-danger-hover);
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(var(--bs-danger-rgb), 0.4);
 }
@@ -465,14 +465,14 @@
 
 /* Start Button (Forest Green, for inactive session) */
 .floating-start-button {
-    background: #228B22;  /* Forest Green - more muted than Kelly Green */
-    box-shadow: 0 2px 8px rgba(34, 139, 34, 0.3);  /* Forest Green shadow */
+    background: var(--gs-action-start);
+    box-shadow: 0 2px 8px rgba(var(--gs-action-start-rgb), 0.3);
 }
 
 .floating-start-button:hover {
-    background: #1B6B1B;  /* Darker Forest Green */
+    background: var(--gs-action-start-hover);
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(34, 139, 34, 0.4);  /* Enhanced Forest Green shadow */
+    box-shadow: 0 4px 12px rgba(var(--gs-action-start-rgb), 0.4);
 }
 
 .floating-start-button:active {
@@ -486,7 +486,7 @@
 
 /* Dark mode adjustments */
 [data-bs-theme="dark"] .floating-timer-display {
-    background: #0f172a;
+    background: var(--bs-body-bg);
     border-color: var(--bs-primary);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
 }
@@ -537,14 +537,14 @@
     transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
     white-space: nowrap;
     color: white;
-    background: #6c757d;  /* Bootstrap secondary gray */
-    box-shadow: 0 2px 8px rgba(108, 117, 125, 0.3);
+    background: var(--gs-action-quicklog);
+    box-shadow: 0 2px 8px rgba(var(--gs-action-quicklog-rgb), 0.3);
 }
 
 .floating-quicklog-button:hover {
-    background: #5a6268;
+    background: var(--gs-action-quicklog-hover);
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(108, 117, 125, 0.4);
+    box-shadow: 0 4px 12px rgba(var(--gs-action-quicklog-rgb), 0.4);
 }
 
 .floating-quicklog-button:active {
@@ -585,8 +585,8 @@
     line-height: 1.5;
     white-space: nowrap;
     color: white;
-    background: #6c757d;  /* Bootstrap secondary gray */
-    box-shadow: 0 2px 8px rgba(108, 117, 125, 0.3);
+    background: var(--gs-action-quicklog);
+    box-shadow: 0 2px 8px rgba(var(--gs-action-quicklog-rgb), 0.3);
 }
 
 .floating-quicklog-badge i {
@@ -611,14 +611,14 @@
     transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
     white-space: nowrap;
     color: white;
-    background: #228B22;  /* Forest Green - matches Timed button */
-    box-shadow: 0 2px 8px rgba(34, 139, 34, 0.3);
+    background: var(--gs-action-start);
+    box-shadow: 0 2px 8px rgba(var(--gs-action-start-rgb), 0.3);
 }
 
 .floating-save-button:hover {
-    background: #1B6B1B;
+    background: var(--gs-action-start-hover);
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(34, 139, 34, 0.4);
+    box-shadow: 0 4px 12px rgba(var(--gs-action-start-rgb), 0.4);
 }
 
 .floating-save-button:active {
@@ -640,7 +640,7 @@
     justify-content: center;
     gap: 8px;
     padding: 10px 16px;
-    background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+    background: linear-gradient(135deg, var(--gs-action-quicklog) 0%, var(--gs-action-quicklog-dark) 100%);
     color: white;
     font-size: 14px;
     font-weight: 600;
@@ -666,7 +666,7 @@
 
 /* Dark mode adjustments */
 [data-bs-theme="dark"] .quick-log-mode-banner {
-    background: linear-gradient(135deg, #495057 0%, #343a40 100%);
+    background: linear-gradient(135deg, var(--gs-action-quicklog-dark) 0%, var(--gs-gray-700) 100%);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
 }
 
@@ -689,7 +689,7 @@
 }
 
 .floating-cancel-button:hover {
-    background: #c82333;
+    background: var(--gs-action-danger-hover);
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(var(--bs-danger-rgb), 0.4);
 }
@@ -705,12 +705,12 @@
 /* Dark mode adjustments for Quick Log elements */
 [data-bs-theme="dark"] .floating-quicklog-button,
 [data-bs-theme="dark"] .floating-quicklog-badge {
-    background: #495057;
+    background: var(--gs-action-quicklog-dark);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
 }
 
 [data-bs-theme="dark"] .floating-quicklog-button:hover {
-    background: #3d4349;
+    background: var(--gs-action-quicklog-dark-hover);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
 }
 
@@ -769,7 +769,7 @@
 }
 
 .global-rest-timer-button.ready .global-timer-btn:hover {
-    background: #218838;
+    background: var(--gs-action-success-hover);
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(var(--gs-success-rgb), 0.4);
 }
@@ -969,7 +969,7 @@
 /* Dark mode adjustments */
 [data-bs-theme="dark"] .global-timer-countdown,
 [data-bs-theme="dark"] .global-timer-countdown-mobile {
-    background: #0f172a;
+    background: var(--bs-body-bg);
     border-color: var(--bs-primary);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
 }
@@ -1007,7 +1007,7 @@
 }
 
 .floating-action-fab:hover:not(.floating-start-button):not(.floating-end-button) {
-    background: #218838;
+    background: var(--gs-action-success-hover);
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(var(--gs-success-rgb), 0.4);
 }
@@ -1015,7 +1015,7 @@
 .floating-action-fab:active:not(.floating-start-button):not(.floating-end-button) {
     /* Remove scale transform to prevent button from moving down */
     transform: none;
-    background: #1d7a3a; /* Darker shade for active feedback */
+    background: var(--gs-action-success-active);
 }
 
 .floating-action-fab i:not(.floating-start-button i):not(.floating-end-button i) {
@@ -1372,7 +1372,7 @@ body.has-bottom-action-bar .content-wrapper {
 }
 
 .search-fab-close.has-text:hover {
-    background: #c82333;
+    background: var(--gs-action-danger-hover);
 }
 
 /* Pulse animation for close button when text is present */
@@ -1409,7 +1409,7 @@ body.has-bottom-action-bar .content-wrapper {
 }
 
 [data-bs-theme="dark"] .search-fab-close.has-text:hover {
-    background: #e4606d;
+    background: var(--gs-alert-danger-text);
 }
 
 /* Accessibility */
@@ -1494,12 +1494,12 @@ body.has-bottom-action-bar .content-wrapper {
 
 /* Dark mode adjustments */
 [data-bs-theme="dark"] .floating-end-delete-button {
-    background: #334155;
+    background: var(--gs-gray-100);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
 }
 
 [data-bs-theme="dark"] .floating-end-delete-button:hover {
-    background: #475569;
+    background: var(--gs-gray-200);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
 }
 

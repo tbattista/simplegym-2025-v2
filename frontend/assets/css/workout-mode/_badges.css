@@ -61,13 +61,13 @@
 }
 
 .weight-badge.direction-reminder.direction-same {
-    background-color: #C97C5D;           /* Soft Clay */
+    background-color: var(--gs-primary);
     color: white;
 }
 
 /* Dark mode override for direction-same */
 [data-bs-theme="dark"] .weight-badge.direction-reminder.direction-same {
-    background-color: #d49378;           /* Brighter Clay */
+    background-color: var(--gs-primary-dark);
 }
 
 @keyframes subtlePulse {

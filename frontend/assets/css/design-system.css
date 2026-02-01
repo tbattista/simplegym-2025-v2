@@ -47,6 +47,30 @@
     --gs-info: #64748B;              /* Slate (same as secondary) */
     --gs-info-rgb: 100, 116, 139;
 
+    /* ============================================
+       ACTION BUTTON COLORS
+       Colors for floating action buttons (Start, End, etc.)
+       ============================================ */
+
+    /* Start Button - Forest Green */
+    --gs-action-start: #228B22;
+    --gs-action-start-hover: #1B6B1B;
+    --gs-action-start-rgb: 34, 139, 34;
+
+    /* Quick Log - Secondary Gray */
+    --gs-action-quicklog: #6c757d;
+    --gs-action-quicklog-hover: #5a6268;
+    --gs-action-quicklog-rgb: 108, 117, 125;
+    --gs-action-quicklog-dark: #495057;
+    --gs-action-quicklog-dark-hover: #3d4349;
+
+    /* End/Cancel Button hover state */
+    --gs-action-danger-hover: #c82333;
+
+    /* Success Button hover state */
+    --gs-action-success-hover: #218838;
+    --gs-action-success-active: #1d7a3a;
+
     /* Neutral Colors */
     --gs-dark: #1F2937;
     --gs-light: #FBFAF8;
@@ -353,6 +377,35 @@
 }
 
 /* ============================================
+   DARK MODE SPECIFIC COLORS
+   Bright alert colors for dark backgrounds
+   ============================================ */
+
+:root {
+    /* Alert text colors - light mode (dark text on light backgrounds) */
+    --gs-alert-success-text-light: #065f46; /* Dark green */
+    --gs-alert-danger-text-light: #991b1b;  /* Dark red */
+    --gs-alert-warning-text-light: #92400e; /* Dark amber */
+    --gs-alert-info-text-light: #475569;    /* Slate */
+
+    /* Alert text colors - dark mode uses brighter variants */
+    --gs-alert-info-text: #67e8f9;          /* Cyan for info */
+    --gs-alert-danger-text: #fca5a5;        /* Light red for danger */
+    --gs-alert-warning-text: #fcd34d;       /* Light yellow for warning */
+    --gs-alert-success-text: #9ad2af;       /* Light sage for success */
+
+    /* Dark mode primary/accent - brighter for visibility */
+    --gs-primary-dark: #d49378;             /* Brighter Clay */
+    --gs-primary-dark-hover: #c48269;
+    --gs-primary-dark-active: #b4725a;
+
+    /* Dark mode success - brighter sage */
+    --gs-success-dark: #9ad2af;
+    --gs-success-dark-hover: #8ac49f;
+    --gs-success-dark-active: #7ab38f;
+}
+
+/* ============================================
    DARK MODE OVERRIDES
    ============================================ */
 
@@ -368,6 +421,10 @@
     --gs-gray-700: #f1f5f9;
     --gs-gray-800: #f8fafc;
     --gs-gray-900: #ffffff;
+
+    /* Quick Log dark mode colors */
+    --gs-action-quicklog: var(--gs-action-quicklog-dark);
+    --gs-action-quicklog-hover: var(--gs-action-quicklog-dark-hover);
 
     /* Dark mode shadows */
     --gs-shadow-md: 0 2px 6px rgba(0, 0, 0, 0.3);
@@ -385,6 +442,16 @@
 
     /* Dark mode success color - brighter sage */
     --gs-success-light: #9ad2af;
+
+    /* Dark mode warning - brighter amber */
+    --gs-warning-dark: #edb26a;
+
+    /* Dark mode danger - brighter muted red */
+    --gs-danger-dark: #e07c7c;
+
+    /* Danger hover states */
+    --gs-danger-hover: #c25757;
+    --gs-danger-active: #b02a37;
 }
 
 /* ============================================

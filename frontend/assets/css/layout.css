@@ -21,8 +21,8 @@
 
 /* Empty State Panel Styling */
 #emptyStatePanel {
-    background: linear-gradient(135deg, #f8fafc, #f1f5f9);
-    border: 2px dashed #cbd5e1;
+    background: linear-gradient(135deg, var(--gs-gray-50), var(--gs-gray-100));
+    border: 2px dashed var(--gs-gray-300);
     border-radius: 8px;
     padding: 2rem;
 }
@@ -72,7 +72,7 @@
 /* Programs View Styling */
 .program-view-item {
     padding: 1.5rem;
-    border-bottom: 1px solid #e2e8f0;
+    border-bottom: 1px solid var(--gs-gray-200);
     transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
     animation: viewSlideIn 0.4s ease-out;
     animation-fill-mode: both;
@@ -346,19 +346,19 @@
    ============================================ */
 
 [data-bs-theme="dark"] #emptyStatePanel {
-    background: linear-gradient(135deg, #1e293b, #334155);
-    border-color: #475569;
+    background: linear-gradient(135deg, var(--gs-gray-50), var(--gs-gray-100));
+    border-color: var(--gs-gray-200);
 }
 
 [data-bs-theme="dark"] .workout-list-card {
-    background: #1e293b;
-    color: #f8fafc;
-    border-color: #475569;
+    background: var(--gs-gray-50);
+    color: var(--gs-gray-800);
+    border-color: var(--gs-gray-200);
 }
 
 [data-bs-theme="dark"] .workout-list-card:hover {
     border-color: var(--gs-primary);
-    box-shadow: 0 4px 12px rgba(201, 124, 93, 0.3);  /* Soft Clay */
+    box-shadow: 0 4px 12px rgba(var(--gs-primary-rgb), 0.3);
 }
 
 [data-bs-theme="dark"] .quick-actions-card .btn-outline-primary {
@@ -413,7 +413,7 @@
 
 /* Today Card */
 .today-card {
-    border-left: 4px solid var(--gs-primary, #696cff);
+    border-left: 4px solid var(--gs-primary, #C97C5D);
 }
 
 .today-card.border-warning {

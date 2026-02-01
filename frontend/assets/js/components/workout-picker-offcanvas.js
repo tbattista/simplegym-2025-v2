@@ -48,10 +48,9 @@ class WorkoutPickerOffcanvas {
         }
 
         const offcanvasHTML = `
-            <div class="offcanvas offcanvas-bottom" tabindex="-1" id="${this.offcanvasId}"
-                 aria-labelledby="${this.offcanvasId}Label"
-                 style="height: 90vh; max-height: 90vh;">
-                <div class="offcanvas-header border-bottom">
+            <div class="offcanvas offcanvas-bottom offcanvas-bottom-base offcanvas-bottom-tall" tabindex="-1" id="${this.offcanvasId}"
+                 aria-labelledby="${this.offcanvasId}Label">
+                <div class="offcanvas-header">
                     <h5 class="offcanvas-title" id="${this.offcanvasId}Label">
                         <i class="bx bx-plus-circle me-2"></i>
                         Add Workouts
@@ -91,7 +90,7 @@ class WorkoutPickerOffcanvas {
                         <p class="text-muted mb-0">No workouts found</p>
                     </div>
                 </div>
-                <div class="offcanvas-footer border-top p-3 bg-body">
+                <div class="offcanvas-footer">
                     <div class="d-flex gap-2">
                         <button type="button" class="btn btn-outline-secondary flex-fill" data-bs-dismiss="offcanvas">
                             Cancel
@@ -271,21 +270,45 @@ class WorkoutPickerOffcanvas {
             `;
         }).join('');
 
-        // Attach click listeners
+        // Attach click listeners - make entire row clickable
         listEl.querySelectorAll('.workout-picker-item').forEach(item => {
+            const checkbox = item.querySelector('.workout-picker-checkbox');
+
+            // Handle clicks anywhere on the item (except checkbox itself)
             item.addEventListener('click', (e) => {
-                // Don't double-toggle if clicking the checkbox itself
-                if (e.target.classList.contains('workout-picker-checkbox')) {
-                    this.toggleWorkout(item.dataset.workoutId);
-                } else {
-                    this.toggleWorkout(item.dataset.workoutId);
-                    // Also toggle the checkbox
-                    const checkbox = item.querySelector('.workout-picker-checkbox');
-                    if (checkbox) {
-                        checkbox.checked = this.selectedIds.has(item.dataset.workoutId);
-                    }
+                // If clicking the checkbox, let native behavior handle it
+                // then sync our state in the checkbox's change event
+                if (e.target === checkbox) {
+                    return;
+                }
+
+                // For clicks elsewhere, toggle manually
+                e.preventDefault();
+                this.toggleWorkout(item.dataset.workoutId);
+                if (checkbox) {
+                    checkbox.checked = this.selectedIds.has(item.dataset.workoutId);
                 }
             });
+
+            // Handle checkbox changes (for direct checkbox clicks and keyboard)
+            if (checkbox) {
+                checkbox.addEventListener('change', (e) => {
+                    e.stopPropagation();
+                    const workoutId = item.dataset.workoutId;
+
+                    // Sync selectedIds with checkbox state
+                    if (checkbox.checked) {
+                        this.selectedIds.add(workoutId);
+                    } else {
+                        this.selectedIds.delete(workoutId);
+                    }
+
+                    // Update UI
+                    item.classList.toggle('selected', checkbox.checked);
+                    this.updateConfirmButton();
+                    this.updateSelectAllButton();
+                });
+            }
         });
     }
 

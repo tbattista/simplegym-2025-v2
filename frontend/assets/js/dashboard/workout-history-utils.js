@@ -88,6 +88,9 @@ function renderStatistics() {
   const stats = window.ghostGym.workoutHistory.statistics;
   const container = document.getElementById('statisticsCards');
 
+  // Guard against missing container (Insights tab removed)
+  if (!container) return;
+
   // Guard against NaN/undefined
   const sessionCount = stats.totalWorkouts || 0;
   const avgDuration = isNaN(stats.avgDuration) ? 0 : stats.avgDuration;
