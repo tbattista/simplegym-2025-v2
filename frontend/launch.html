@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fitness Field Notes - Coming Soon</title>
+    <meta name="description" content="Your gym journal, digitized. Track workouts, build programs, share with friends. Sign up to get notified when we launch.">
+
+    <!-- Open Graph / Social -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Fitness Field Notes - Coming Soon">
+    <meta property="og:description" content="Your gym journal, digitized. Track workouts, build programs, share with friends.">
+    <meta property="og:image" content="/og-image.png">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%93%93</text></svg>">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* ============================================
+           CSS VARIABLES - Matches App Design System
+           ============================================ */
+        :root {
+            --gs-primary: #C97C5D;
+            --gs-primary-rgb: 201, 124, 93;
+            --gs-primary-hover: #b86f53;
+            --gs-secondary: #64748B;
+            --gs-success: #8CBF9F;
+            --gs-success-rgb: 140, 191, 159;
+            --gs-dark: #1F2937;
+            --gs-light: #FBFAF8;
+            --gs-gray-50: #f8fafc;
+            --gs-gray-100: #f1f5f9;
+            --gs-gray-200: #e2e8f0;
+            --gs-gray-300: #cbd5e1;
+            --gs-gray-400: #94a3b8;
+            --gs-gray-500: #64748b;
+            --gs-gray-600: #475569;
+
+            --gs-font-sans: 'Public Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            --gs-shadow-md: 0 2px 6px rgba(67, 89, 113, 0.12);
+            --gs-shadow-lg: 0 4px 12px rgba(67, 89, 113, 0.16);
+
+            --bg-body: var(--gs-gray-50);
+            --bg-card: #ffffff;
+            --text-heading: var(--gs-dark);
+            --text-body: var(--gs-gray-600);
+            --text-muted: var(--gs-gray-500);
+            --border-color: var(--gs-gray-200);
+        }
+
+        /* Dark mode */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-body: #1a1d21;
+                --bg-card: #232730;
+                --text-heading: #e4e6eb;
+                --text-body: #b0b3b8;
+                --text-muted: #8a8d91;
+                --border-color: #3a3f47;
+                --gs-shadow-md: 0 2px 6px rgba(0, 0, 0, 0.3);
+                --gs-shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.4);
+            }
+        }
+
+        /* ============================================
+           BASE STYLES
+           ============================================ */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: var(--gs-font-sans);
+            background: var(--bg-body);
+            color: var(--text-body);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem 1rem;
+            line-height: 1.5;
+        }
+
+        /* ============================================
+           CONTAINER
+           ============================================ */
+        .container {
+            max-width: 480px;
+            width: 100%;
+        }
+
+        /* ============================================
+           HERO SECTION
+           ============================================ */
+        .hero {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .badge {
+            display: inline-block;
+            background: rgba(var(--gs-primary-rgb), 0.15);
+            color: var(--gs-primary);
+            padding: 0.375rem 0.875rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 1.5rem;
+        }
+
+        .logo {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-heading);
+            margin-bottom: 0.75rem;
+            line-height: 1.2;
+        }
+
+        .tagline {
+            font-size: 1.125rem;
+            color: var(--text-muted);
+            max-width: 320px;
+            margin: 0 auto;
+        }
+
+        /* ============================================
+           FEATURES SECTION
+           ============================================ */
+        .features {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            margin-bottom: 2rem;
+        }
+
+        .feature-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 0.75rem;
+            padding: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            box-shadow: var(--gs-shadow-md);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--gs-shadow-lg);
+        }
+
+        .feature-icon {
+            width: 48px;
+            height: 48px;
+            background: rgba(var(--gs-primary-rgb), 0.1);
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .feature-card:nth-child(2) .feature-icon {
+            background: rgba(var(--gs-success-rgb), 0.1);
+        }
+
+        .feature-card:nth-child(3) .feature-icon {
+            background: rgba(100, 116, 139, 0.1);
+        }
+
+        .feature-text h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-heading);
+            margin-bottom: 0.25rem;
+        }
+
+        .feature-text p {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            margin: 0;
+        }
+
+        /* ============================================
+           SIGNUP SECTION
+           ============================================ */
+        .signup-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 0.75rem;
+            padding: 2rem 1.5rem;
+            text-align: center;
+            box-shadow: var(--gs-shadow-md);
+            margin-bottom: 2rem;
+        }
+
+        .signup-card h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-heading);
+            margin-bottom: 0.5rem;
+        }
+
+        .signup-card .subtitle {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            margin-bottom: 1.5rem;
+        }
+
+        /* Form styling */
+        .signup-form {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .signup-form input[type="email"] {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            font-family: inherit;
+            background: var(--bg-body);
+            color: var(--text-heading);
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .signup-form input[type="email"]:focus {
+            outline: none;
+            border-color: var(--gs-primary);
+            box-shadow: 0 0 0 3px rgba(var(--gs-primary-rgb), 0.15);
+        }
+
+        .signup-form input[type="email"]::placeholder {
+            color: var(--text-muted);
+        }
+
+        .signup-form button {
+            width: 100%;
+            padding: 0.875rem 1.5rem;
+            background: var(--gs-primary);
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: background 0.2s ease, transform 0.2s ease;
+        }
+
+        .signup-form button:hover {
+            background: var(--gs-primary-hover);
+            transform: translateY(-1px);
+        }
+
+        .signup-form button:active {
+            transform: translateY(0);
+        }
+
+        .privacy-note {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 0.75rem;
+        }
+
+        /* Success message (hidden by default) */
+        .success-message {
+            display: none;
+            padding: 1rem;
+            background: rgba(var(--gs-success-rgb), 0.1);
+            border-radius: 0.5rem;
+            color: var(--gs-success);
+            font-weight: 500;
+        }
+
+        .success-message.show {
+            display: block;
+        }
+
+        /* ============================================
+           FOOTER
+           ============================================ */
+        .footer {
+            text-align: center;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: auto;
+            padding-top: 2rem;
+        }
+
+        .footer a {
+            color: var(--gs-primary);
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* ============================================
+           RESPONSIVE
+           ============================================ */
+        @media (min-width: 480px) {
+            body {
+                padding: 3rem 1.5rem;
+            }
+
+            h1 {
+                font-size: 2.5rem;
+            }
+
+            .signup-form {
+                flex-direction: row;
+            }
+
+            .signup-form input[type="email"] {
+                flex: 1;
+            }
+
+            .signup-form button {
+                width: auto;
+                white-space: nowrap;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Hero Section -->
+        <section class="hero">
+            <span class="badge">Coming Soon</span>
+            <div class="logo" role="img" aria-label="Notebook">&#128211;</div>
+            <h1>Fitness Field Notes</h1>
+            <p class="tagline">Your gym journal, digitized. Track workouts, build programs, share with friends.</p>
+        </section>
+
+        <!-- Features Preview -->
+        <section class="features">
+            <div class="feature-card">
+                <div class="feature-icon">&#127947;</div>
+                <div class="feature-text">
+                    <h3>Build Custom Workouts</h3>
+                    <p>Create workout templates with exercises, sets, and reps</p>
+                </div>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">&#128200;</div>
+                <div class="feature-text">
+                    <h3>Track Your Progress</h3>
+                    <p>Log every session and see your gains over time</p>
+                </div>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">&#128279;</div>
+                <div class="feature-text">
+                    <h3>Share With Friends</h3>
+                    <p>Export and share workouts with your training partners</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Email Signup -->
+        <section class="signup-card">
+            <h2>Get Notified When We Launch</h2>
+            <p class="subtitle">Be the first to know. No spam, just one email.</p>
+
+            <form
+                class="signup-form"
+                action="https://gmail.us8.list-manage.com/subscribe/post?u=5bfacf9fb5eaf11769dd7ccf6&amp;id=a0c1653af0&amp;f_id=00ed7ce0f0"
+                method="post"
+                target="_blank"
+                id="mc-embedded-subscribe-form"
+                name="mc-embedded-subscribe-form"
+            >
+                <input
+                    type="email"
+                    name="EMAIL"
+                    placeholder="Enter your email"
+                    required
+                    autocomplete="email"
+                >
+                <!-- Anti-bot field (hidden) -->
+                <div style="position: absolute; left: -5000px;" aria-hidden="true">
+                    <input type="text" name="b_5bfacf9fb5eaf11769dd7ccf6_a0c1653af0" tabindex="-1" value="">
+                </div>
+                <button type="submit">Notify Me</button>
+            </form>
+
+            <p class="privacy-note">We respect your privacy. Unsubscribe anytime.</p>
+
+            <!-- Success message (shown via JS or Mailchimp redirect) -->
+            <div class="success-message" id="successMessage">
+                Thanks for signing up! We'll let you know when we launch.
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>&copy; 2026 Fitness Field Notes. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <script>
+        // Simple form enhancement (optional)
+        // Shows success message if URL contains ?subscribed=true
+        if (window.location.search.includes('subscribed=true')) {
+            document.querySelector('.signup-form').style.display = 'none';
+            document.querySelector('.subtitle').style.display = 'none';
+            document.getElementById('successMessage').classList.add('show');
+        }
+    </script>
+</body>
+</html>

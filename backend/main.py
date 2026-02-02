@@ -283,6 +283,19 @@ async def serve_workout_mode_logbook_demo():
             status_code=404
         )
 
+@app.get("/launch", response_class=HTMLResponse)
+@app.get("/launch.html", response_class=HTMLResponse)
+async def serve_launch_page():
+    """Serve the pre-launch landing page for email signups"""
+    try:
+        with open("frontend/launch.html", "r", encoding="utf-8") as f:
+            return HTMLResponse(content=f.read())
+    except FileNotFoundError:
+        return HTMLResponse(
+            content="<h1>Launch page not found</h1><p>Please ensure frontend/launch.html exists</p>",
+            status_code=404
+        )
+
 
 if __name__ == "__main__":
     import uvicorn
