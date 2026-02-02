@@ -323,7 +323,7 @@
             }
         };
 
-        // Initialize page with proper auth waiting (fixes mobile race condition)
+        // Initialize page - uses same pattern as index.html which works on mobile
         document.addEventListener('DOMContentLoaded', async function() {
             console.log('📄 Workout Database Page - DOM Ready');
 
@@ -340,35 +340,29 @@
                 return;
             }
 
-            // 3. Wait for auth state to be FULLY determined (key fix for mobile)
-            // IMPORTANT: Use the return value from waitForAuthReady() instead of calling
-            // isUserAuthenticated() separately - this fixes a mobile race condition
-            const authState = await window.dataManager.waitForAuthReady();
-            console.log('📄 Auth ready, storageMode:', authState.storageMode, 'isAuthenticated:', authState.isAuthenticated);
+            // 3. Check auth and load - same pattern as index.html (which works on mobile)
+            const checkAuthAndLoad = async () => {
+                // Check Firebase directly - this is the source of truth
+                const user = window.firebaseAuth?.currentUser;
+                console.log('📄 Auth check, user:', user ? user.email : 'null');
 
-            // 4. Initialize if authenticated (use authState from waitForAuthReady)
-            if (authState.isAuthenticated) {
-                console.log('✅ User authenticated, loading workout database');
-                initWorkoutDatabase();
-            } else {
-                console.log('⏭️ User not authenticated, waiting for auth state change');
-            }
+                if (user) {
+                    console.log('✅ User authenticated, loading workout database');
+                    await initWorkoutDatabase();
+                } else {
+                    console.log('⏭️ User not authenticated, waiting for auth state change');
+                }
+            };
 
-            // 5. Listen for future auth state changes
+            // Initial check
+            await checkAuthAndLoad();
+
+            // Listen for auth state changes (handles delayed auth on mobile)
             if (window.firebaseAuth) {
                 window.firebaseAuth.onAuthStateChanged(async (user) => {
                     console.log('🔄 Auth state changed:', user ? 'authenticated' : 'not authenticated');
-
                     if (user) {
-                        // Wait for dataManager to sync storageMode
-                        await new Promise(resolve => setTimeout(resolve, 300));
-
-                        if (window.loadWorkouts) {
-                            await window.loadWorkouts();
-                        }
-                        if (window.renderFavoritesSection) {
-                            window.renderFavoritesSection();
-                        }
+                        await checkAuthAndLoad();
                     }
                 });
             }
