@@ -91,7 +91,10 @@
             onAuthStateChanged,
             sendEmailVerification,
             sendPasswordResetEmail,
-            updateProfile
+            updateProfile,
+            // authStateReady returns a Promise that resolves when initial auth state is determined
+            // This is the recommended way to wait for auth initialization (Firebase v9.16.0+)
+            authStateReady: () => auth.authStateReady()
         };
         
         // Signal that Firebase is ready

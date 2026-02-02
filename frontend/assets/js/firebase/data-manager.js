@@ -26,10 +26,10 @@ class FirebaseDataManager {
         this.CACHE_TTL = 5000; // 5 seconds cache for identical requests
         
         // Auth state initialization promise
+        // Uses Firebase's authStateReady() for reliable initialization
         this.authReadyPromise = null;
         this.authReadyResolve = null;
         this.isAuthReady = false;
-        this.authStateCallCount = 0; // Track how many times auth state has changed
         
         // Create promise that resolves when initial auth state is determined
         this.authReadyPromise = new Promise((resolve) => {
@@ -65,76 +65,85 @@ class FirebaseDataManager {
         }
     }
     
-    initialize() {
+    async initialize() {
         try {
-            // Set up auth state listener
+            console.log('🔄 Waiting for Firebase auth state to be determined...');
+
+            // Use Firebase's authStateReady() - this resolves when Firebase has determined
+            // the initial auth state (either user is logged in or not)
+            // This is the official recommended approach (Firebase v9.16.0+)
+            if (window.firebaseAuth?.authStateReady) {
+                await window.firebaseAuth.authStateReady();
+                console.log('✅ Firebase auth state ready via authStateReady()');
+            } else if (window.firebaseAuthFunctions?.authStateReady) {
+                await window.firebaseAuthFunctions.authStateReady();
+                console.log('✅ Firebase auth state ready via firebaseAuthFunctions');
+            } else {
+                console.warn('⚠️ authStateReady not available, falling back to immediate check');
+            }
+
+            // Now we can safely check the current user
+            const user = window.firebaseAuth?.currentUser || null;
+
+            // Set initial auth state
+            this.isAuthenticated = !!user;
+            this.currentUser = user;
+            this.storageMode = this.isAuthenticated ? 'firestore' : 'localStorage';
+
+            console.log(`✅ Initial auth state determined: ${this.storageMode} mode`, {
+                isAuthenticated: this.isAuthenticated,
+                userEmail: user?.email,
+                userId: user?.uid
+            });
+
+            // Resolve the auth ready promise
+            this.isAuthReady = true;
+            if (this.authReadyResolve) {
+                this.authReadyResolve({
+                    isAuthenticated: this.isAuthenticated,
+                    storageMode: this.storageMode,
+                    user: this.currentUser
+                });
+            }
+
+            // Set up listener for future auth state changes (login/logout during session)
             if (window.authService) {
                 window.authService.onAuthStateChange((user) => {
                     this.handleAuthStateChange(user);
                 });
             }
-            
+
             console.log('✅ Firebase Data Manager initialized');
         } catch (error) {
             console.warn('⚠️ Firebase Data Manager initialization failed:', error.message);
+
+            // Even on error, resolve the promise so the app doesn't hang
+            this.isAuthReady = true;
+            if (this.authReadyResolve) {
+                this.authReadyResolve({
+                    isAuthenticated: false,
+                    storageMode: 'localStorage',
+                    user: null
+                });
+            }
         }
     }
     
     handleAuthStateChange(user) {
+        // This is called for auth state changes DURING the session (login/logout)
+        // Initial auth state is handled by initialize() using authStateReady()
         const wasAuthenticated = this.isAuthenticated;
         this.isAuthenticated = !!user;
         this.currentUser = user;
         this.storageMode = this.isAuthenticated ? 'firestore' : 'localStorage';
-        this.authStateCallCount++;
-        
-        console.log(`🔄 Auth state changed: ${this.storageMode} mode (call #${this.authStateCallCount})`, {
+
+        console.log(`🔄 Auth state changed: ${this.storageMode} mode`, {
             isAuthenticated: this.isAuthenticated,
             userEmail: user?.email,
             userId: user?.uid,
             isAnonymous: user?.isAnonymous
         });
-        
-        // Resolve auth ready promise on second auth state change OR after 1 second timeout
-        // Firebase onAuthStateChanged fires:
-        //   1st time: immediately with null (not yet determined)
-        //   2nd time: with actual user state (determined)
-        // We wait for the 2nd call to ensure we have the real auth state
-        if (!this.isAuthReady) {
-            if (this.authStateCallCount >= 2) {
-                // Second call - this is the real auth state
-                this.isAuthReady = true;
-                if (this.authReadyResolve) {
-                    console.log('✅ Auth state determined on second call, resolving promise');
-                    this.authReadyResolve({
-                        isAuthenticated: this.isAuthenticated,
-                        storageMode: this.storageMode,
-                        user: this.currentUser
-                    });
-                }
-            } else if (this.authStateCallCount === 1) {
-                // First call - set a timeout as safety net in case 2nd call never comes
-                setTimeout(() => {
-                    if (!this.isAuthReady) {
-                        this.isAuthReady = true;
-                        if (this.authReadyResolve) {
-                            console.log('⏱️ Auth state timeout reached, resolving with current state');
-                            this.authReadyResolve({
-                                isAuthenticated: this.isAuthenticated,
-                                storageMode: this.storageMode,
-                                user: this.currentUser
-                            });
-                        }
-                    }
-                }, 3000); // 3 second timeout as safety net
-            }
-        }
-        
-        // Migration functionality disabled - users can manually export/import if needed
-        // If user just authenticated, check for migration opportunity
-        // if (!wasAuthenticated && this.isAuthenticated) {
-        //     this.checkMigrationOpportunity();
-        // }
-        
+
         // Notify listeners of auth state change
         this.notifyAuthStateChange(user);
     }
