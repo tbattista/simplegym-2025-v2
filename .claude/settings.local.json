@@ -51,7 +51,8 @@
       "mcp__playwright__browser_click",
       "mcp__playwright__browser_handle_dialog",
       "Bash(wc:*)",
-      "Bash(for f in workout-history*.js)"
+      "Bash(for f in workout-history*.js)",
+      "WebFetch(domain:firebase.google.com)"
     ]
   }
 }
