@@ -48,7 +48,8 @@ async def get_current_user_optional(
         
         # Verify the Firebase ID token
         decoded_token = auth.verify_id_token(credentials.credentials, app=app)
-        
+        logger.info(f"📱 [AUTH DEBUG] Token verified - UID: {decoded_token.get('uid')}, Email: {decoded_token.get('email')}")
+
         # Extract user information
         user_info = {
             'uid': decoded_token.get('uid'),

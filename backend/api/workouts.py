@@ -168,14 +168,16 @@ async def get_workouts_firebase(
     """Get workout templates (Firebase-enabled with fallback)"""
     try:
         user_id = extract_user_id(current_user)
-        
+        logger.info(f"📱 [MOBILE DEBUG] get_workouts_firebase called - user_id: {user_id}, firebase_available: {firebase_service.is_available()}")
+
         if user_id and firebase_service.is_available():
             # Authenticated user - get from Firestore
             if search:
                 workouts = await firestore_data_service.search_workouts(user_id, search, limit=page_size)
             else:
                 workouts = await firestore_data_service.get_user_workouts(user_id, limit=page_size, tags=tags)
-            
+
+            logger.info(f"📱 [MOBILE DEBUG] Firestore returned {len(workouts)} workouts for user {user_id}")
             total_count = len(workouts)
             
             # Apply pagination
@@ -184,6 +186,7 @@ async def get_workouts_firebase(
             workouts = workouts[start_idx:end_idx]
         else:
             # Anonymous user or Firebase unavailable - use local storage
+            logger.info(f"📱 [MOBILE DEBUG] Using LOCAL STORAGE fallback - user_id: {user_id}, firebase_available: {firebase_service.is_available()}")
             data_service = DataService()
             if search:
                 workouts = data_service.search_workouts(search)
