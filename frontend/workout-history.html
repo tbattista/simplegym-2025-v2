@@ -277,11 +277,13 @@
             }
 
             // 3. Wait for auth state to be FULLY determined (key fix for mobile)
-            await window.dataManager.waitForAuthReady();
-            console.log('📄 Auth ready, storageMode:', window.dataManager.getStorageMode());
+            // IMPORTANT: Use the return value from waitForAuthReady() instead of calling
+            // isUserAuthenticated() separately - this fixes a mobile race condition
+            const authState = await window.dataManager.waitForAuthReady();
+            console.log('📄 Auth ready, storageMode:', authState.storageMode, 'isAuthenticated:', authState.isAuthenticated);
 
-            // 4. Initialize if authenticated
-            if (window.dataManager.isUserAuthenticated()) {
+            // 4. Initialize if authenticated (use authState from waitForAuthReady)
+            if (authState.isAuthenticated) {
                 console.log('✅ User authenticated, loading workout history');
                 if (window.initWorkoutHistory) {
                     await window.initWorkoutHistory();

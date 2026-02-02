@@ -105,13 +105,14 @@ async function loadAllSessions(scrollToSessionId = null) {
   try {
     showLoading();
 
-    // Check if user is authenticated
-    if (!window.dataManager || !window.dataManager.isUserAuthenticated()) {
-      throw new Error('Please sign in to view your workout history');
+    // Get auth token - getAuthToken() will throw if not authenticated
+    // Note: Don't check isUserAuthenticated() separately due to mobile race condition
+    if (!window.dataManager) {
+      throw new Error('Data manager not available');
     }
 
     const token = await window.dataManager.getAuthToken();
-    const response = await fetch('/api/v3/workout-sessions?page_size=100&sort=desc', {
+    const response = await fetch('/api/v3/workout-sessions/?page_size=100&sort=desc', {
       headers: { 'Authorization': `Bearer ${token}` }
     });
 
@@ -177,9 +178,10 @@ function renderAllModeUI() {
  */
 async function fetchWorkoutSessions(workoutId) {
   try {
-    // Check if user is authenticated
-    if (!window.dataManager || !window.dataManager.isUserAuthenticated()) {
-      throw new Error('User not authenticated');
+    // Get auth token - getAuthToken() will throw if not authenticated
+    // Note: Don't check isUserAuthenticated() separately due to mobile race condition
+    if (!window.dataManager) {
+      throw new Error('Data manager not available');
     }
 
     const token = await window.dataManager.getAuthToken();
@@ -220,9 +222,10 @@ async function fetchWorkoutSessions(workoutId) {
  */
 async function fetchExerciseHistory(workoutId) {
   try {
-    // Check if user is authenticated
-    if (!window.dataManager || !window.dataManager.isUserAuthenticated()) {
-      throw new Error('User not authenticated');
+    // Get auth token - getAuthToken() will throw if not authenticated
+    // Note: Don't check isUserAuthenticated() separately due to mobile race condition
+    if (!window.dataManager) {
+      throw new Error('Data manager not available');
     }
 
     const token = await window.dataManager.getAuthToken();
