@@ -11,7 +11,7 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
 
-    <title>Library - Ghost Gym</title>
+    <title>Library - Fitness Field Notes</title>
 
     <meta name="description" content="Browse and manage your workout templates" />
 
@@ -34,8 +34,8 @@
     <!-- Vendors CSS -->
     <link rel="stylesheet" href="/static/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css" />
 
-    <!-- Custom Ghost Gym CSS -->
-    <link rel="stylesheet" href="/static/assets/css/ghost-gym-custom.css" />
+    <!-- Custom FFN CSS -->
+    <link rel="stylesheet" href="/static/assets/css/ffn-custom.css" />
     
     <!-- Navbar CSS -->
     <link rel="stylesheet" href="/static/assets/css/navbar-custom.css" />
@@ -56,7 +56,7 @@
     <!-- Theme Manager (must load early to prevent flash) -->
     <script src="/static/assets/js/services/theme-manager.js"></script>
 
-    <!-- Ghost Gym Centralized Configuration -->
+    <!-- FFN Centralized Configuration -->
     <script src="/static/assets/js/app-config.js"></script>
     
     <!-- Firebase SDK Loader (Centralized) -->
@@ -301,8 +301,8 @@
     <!-- Initialize Workout Database -->
     <script>
         // Initialize global state for workout database
-        window.ghostGym = window.ghostGym || {};
-        window.ghostGym.workoutDatabase = {
+        window.ffn = window.ffn || {};
+        window.ffn.workoutDatabase = {
             all: [],
             filtered: [],
             displayed: [],
@@ -427,7 +427,7 @@
 
                 // Show workout count when state updates
                 const checkWorkouts = () => {
-                    const count = window.ghostGym?.workoutDatabase?.all?.length || 0;
+                    const count = window.ffn?.workoutDatabase?.all?.length || 0;
                     window.mobileDebugLog('📊 Workouts loaded: ' + count);
                 };
 
@@ -436,7 +436,7 @@
 
                 // Update every 3 seconds
                 setInterval(() => {
-                    const count = window.ghostGym?.workoutDatabase?.all?.length || 0;
+                    const count = window.ffn?.workoutDatabase?.all?.length || 0;
                     window.mobileDebugLog('-- POLL: user=' + (window.firebaseAuth?.currentUser?.email || 'NULL') + ' workouts=' + count);
                 }, 3000);
             }

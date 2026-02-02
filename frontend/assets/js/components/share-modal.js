@@ -369,7 +369,7 @@
             
             // Get workout data
             try {
-                const workouts = window.ghostGym?.workouts || [];
+                const workouts = window.ffn?.workouts || [];
                 this.currentWorkout = workouts.find(w => w.id === workoutId);
                 
                 if (!this.currentWorkout) {

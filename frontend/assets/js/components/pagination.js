@@ -4,7 +4,7 @@
  * @version 1.0.0
  */
 
-class GhostGymPagination {
+class FFNPagination {
     constructor(containerId, options = {}) {
         this.container = document.getElementById(containerId);
         if (!this.container) {
@@ -351,11 +351,11 @@ class GhostGymPagination {
 }
 
 // Export for global use
-window.GhostGymPagination = GhostGymPagination;
+window.FFNPagination = FFNPagination;
 
 // Export for module use
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = GhostGymPagination;
+    module.exports = FFNPagination;
 }
 
-console.log('📦 GhostGymPagination component loaded');
+console.log('📦 FFNPagination component loaded');

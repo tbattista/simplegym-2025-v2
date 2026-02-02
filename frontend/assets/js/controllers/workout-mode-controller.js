@@ -92,14 +92,14 @@ class WorkoutModeController {
         // Phase 5: isStartingSession moved to lifecycleManager
         
         console.log('🎮 Workout Mode Controller initialized');
-        console.log('🔍 DEBUG: Modal manager available?', !!window.ghostGymModalManager);
+        console.log('🔍 DEBUG: Modal manager available?', !!window.ffnModalManager);
     }
     
     /**
      * Get modal manager (lazy load to ensure it's available)
      */
     getModalManager() {
-        if (!window.ghostGymModalManager) {
+        if (!window.ffnModalManager) {
             console.warn('⚠️ Modal manager not available, using fallback');
             return {
                 confirm: (title, message, onConfirm) => {
@@ -116,7 +116,7 @@ class WorkoutModeController {
                 }
             };
         }
-        return window.ghostGymModalManager;
+        return window.ffnModalManager;
     }
     
     /**
@@ -153,12 +153,12 @@ class WorkoutModeController {
             // Use lastPageActive (separate from lastUpdated) to track page visibility
             // This ensures threshold check works even if user changes weights/completes exercises
             const updatePageActiveTimestamp = () => {
-                const stored = localStorage.getItem('ghost_gym_active_workout_session');
+                const stored = localStorage.getItem('ffn_active_workout_session');
                 if (stored) {
                     try {
                         const sessionData = JSON.parse(stored);
                         sessionData.lastPageActive = new Date().toISOString();
-                        localStorage.setItem('ghost_gym_active_workout_session', JSON.stringify(sessionData));
+                        localStorage.setItem('ffn_active_workout_session', JSON.stringify(sessionData));
                         console.log('📝 Page active timestamp updated');
                     } catch (e) {
                         console.warn('⚠️ Failed to update page active timestamp:', e);

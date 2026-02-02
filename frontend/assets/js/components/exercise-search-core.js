@@ -76,10 +76,10 @@ class ExerciseSearchCore {
      * Load user favorites from API
      */
     async loadUserFavorites() {
-        if (!window.ghostGym) window.ghostGym = {};
-        if (!window.ghostGym.exercises) window.ghostGym.exercises = {};
-        if (!window.ghostGym.exercises.favorites) {
-            window.ghostGym.exercises.favorites = new Set();
+        if (!window.ffn) window.ffn = {};
+        if (!window.ffn.exercises) window.ffn.exercises = {};
+        if (!window.ffn.exercises.favorites) {
+            window.ffn.exercises.favorites = new Set();
         }
         
         if (!window.firebaseAuth?.currentUser) {
@@ -95,8 +95,8 @@ class ExerciseSearchCore {
             
             if (response.ok) {
                 const data = await response.json();
-                window.ghostGym.exercises.favorites = new Set(data.favorites.map(f => f.exerciseId));
-                console.log(`✅ Loaded ${window.ghostGym.exercises.favorites.size} favorites`);
+                window.ffn.exercises.favorites = new Set(data.favorites.map(f => f.exerciseId));
+                console.log(`✅ Loaded ${window.ffn.exercises.favorites.size} favorites`);
             }
         } catch (error) {
             console.error('❌ Error loading favorites:', error);
@@ -152,8 +152,8 @@ class ExerciseSearchCore {
         
         // Favorites filter
         if (this.state.favoritesOnly) {
-            if (window.ghostGym?.exercises?.favorites) {
-                filtered = filtered.filter(ex => window.ghostGym.exercises.favorites.has(ex.id));
+            if (window.ffn?.exercises?.favorites) {
+                filtered = filtered.filter(ex => window.ffn.exercises.favorites.has(ex.id));
             } else {
                 filtered = [];
             }
@@ -405,8 +405,8 @@ class ExerciseSearchCore {
         
         // Favorites filter
         if (favoritesOnly) {
-            if (window.ghostGym?.exercises?.favorites) {
-                filtered = filtered.filter(ex => window.ghostGym.exercises.favorites.has(ex.id));
+            if (window.ffn?.exercises?.favorites) {
+                filtered = filtered.filter(ex => window.ffn.exercises.favorites.has(ex.id));
             } else {
                 filtered = [];
             }

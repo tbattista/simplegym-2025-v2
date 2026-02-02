@@ -12,7 +12,7 @@
  * Toggle session delete mode
  */
 function toggleSessionDeleteMode() {
-  const state = window.ghostGym.workoutHistory;
+  const state = window.ffn.workoutHistory;
   state.deleteMode = !state.deleteMode;
 
   // Clear selection when toggling
@@ -40,7 +40,7 @@ function toggleSessionDeleteMode() {
  * Exit session delete mode
  */
 function exitSessionDeleteMode() {
-  const state = window.ghostGym.workoutHistory;
+  const state = window.ffn.workoutHistory;
   state.deleteMode = false;
   state.selectedSessionIds.clear();
 
@@ -61,7 +61,7 @@ function exitSessionDeleteMode() {
  * Toggle selection of a session
  */
 function toggleSessionSelection(sessionId) {
-  const state = window.ghostGym.workoutHistory;
+  const state = window.ffn.workoutHistory;
   const selected = state.selectedSessionIds;
 
   if (selected.has(sessionId)) {
@@ -89,7 +89,7 @@ function toggleSessionSelection(sessionId) {
  * Update selection count in action bar
  */
 function updateSessionSelectionCount() {
-  const count = window.ghostGym.workoutHistory.selectedSessionIds.size;
+  const count = window.ffn.workoutHistory.selectedSessionIds.size;
   const countEl = document.querySelector('#sessionSelectionActionBar .selection-count');
   const deleteBtn = document.querySelector('#sessionSelectionActionBar .btn-batch-delete');
 
@@ -146,13 +146,13 @@ function hideSessionSelectionActionBar() {
  * Confirm batch delete of selected sessions
  */
 async function confirmBatchDeleteSessions() {
-  const selected = window.ghostGym.workoutHistory.selectedSessionIds;
+  const selected = window.ffn.workoutHistory.selectedSessionIds;
   const count = selected.size;
   if (count === 0) return;
 
   // Get session dates for confirmation
   const sessionDates = [...selected].map(id => {
-    const session = window.ghostGym.workoutHistory.sessions.find(s => s.id === id);
+    const session = window.ffn.workoutHistory.sessions.find(s => s.id === id);
     if (session) {
       const date = formatDate(session.completed_at, { short: true });
       const name = session.workout_name || 'Workout';
@@ -216,7 +216,7 @@ async function batchDeleteSessions(sessionIds) {
     }
 
     // Update local state
-    window.ghostGym.workoutHistory.sessions = window.ghostGym.workoutHistory.sessions.filter(
+    window.ffn.workoutHistory.sessions = window.ffn.workoutHistory.sessions.filter(
       s => !sessionIds.includes(s.id)
     );
 
@@ -238,9 +238,9 @@ async function batchDeleteSessions(sessionIds) {
     }
 
     // Update calendar if visible
-    if (window.ghostGym.workoutHistory.calendarView) {
-      window.ghostGym.workoutHistory.calendarView.setSessionData(
-        window.ghostGym.workoutHistory.sessions
+    if (window.ffn.workoutHistory.calendarView) {
+      window.ffn.workoutHistory.calendarView.setSessionData(
+        window.ffn.workoutHistory.sessions
       );
     }
 

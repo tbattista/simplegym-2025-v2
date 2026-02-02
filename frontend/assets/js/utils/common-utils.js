@@ -125,8 +125,8 @@ function showAlert(message, type = 'info', duration = 5000) {
  * @param {boolean} show - Whether to show or hide loading state
  */
 function showLoading(show) {
-    if (window.ghostGym) {
-        window.ghostGym.isLoading = show;
+    if (window.ffn) {
+        window.ffn.isLoading = show;
     }
     
     // Update UI to show loading state

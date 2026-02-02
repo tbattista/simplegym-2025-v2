@@ -32,12 +32,12 @@ async function initWorkoutHistory() {
 
   if (workoutId) {
     // Single Workout mode (existing behavior)
-    window.ghostGym.workoutHistory.workoutId = workoutId;
-    window.ghostGym.workoutHistory.isAllMode = false;
+    window.ffn.workoutHistory.workoutId = workoutId;
+    window.ffn.workoutHistory.isAllMode = false;
     await loadWorkoutHistory(workoutId);
   } else {
     // All Sessions mode (new)
-    window.ghostGym.workoutHistory.isAllMode = true;
+    window.ffn.workoutHistory.isAllMode = true;
     await loadAllSessions(sessionId); // Pass sessionId to scroll to if provided
   }
 }
@@ -60,12 +60,12 @@ async function loadWorkoutHistory(workoutId) {
     ]);
 
     // Update state
-    window.ghostGym.workoutHistory.sessions = sessionsData.sessions || [];
-    window.ghostGym.workoutHistory.workoutInfo = sessionsData.workout_info;
-    window.ghostGym.workoutHistory.exerciseHistories = exerciseData.exercises || {};
+    window.ffn.workoutHistory.sessions = sessionsData.sessions || [];
+    window.ffn.workoutHistory.workoutInfo = sessionsData.workout_info;
+    window.ffn.workoutHistory.exerciseHistories = exerciseData.exercises || {};
 
     // Check if we have any data
-    if (window.ghostGym.workoutHistory.sessions.length === 0) {
+    if (window.ffn.workoutHistory.sessions.length === 0) {
       hideLoading();
       showEmptyState();
       return;
@@ -136,13 +136,13 @@ async function loadAllSessions(scrollToSessionId = null) {
     console.log('🔍 [HISTORY] Got sessions:', data.sessions?.length || 0);
     if (window.mobileDebugLog) window.mobileDebugLog('Sessions: ' + (data.sessions?.length || 0));
 
-    window.ghostGym.workoutHistory.sessions = data.sessions || [];
+    window.ffn.workoutHistory.sessions = data.sessions || [];
 
     // No exercise history in all mode (API requires workout_id)
-    window.ghostGym.workoutHistory.exerciseHistories = {};
+    window.ffn.workoutHistory.exerciseHistories = {};
 
     // Check if we have any data
-    if (window.ghostGym.workoutHistory.sessions.length === 0) {
+    if (window.ffn.workoutHistory.sessions.length === 0) {
       hideLoading();
       showEmptyState();
       return;
@@ -164,7 +164,7 @@ async function loadAllSessions(scrollToSessionId = null) {
       setTimeout(() => scrollToSession(scrollToSessionId), 500);
     }
 
-    console.log(`✅ All sessions loaded: ${window.ghostGym.workoutHistory.sessions.length} sessions`);
+    console.log(`✅ All sessions loaded: ${window.ffn.workoutHistory.sessions.length} sessions`);
 
   } catch (error) {
     console.error('❌ Error loading all sessions:', error);
@@ -272,7 +272,7 @@ async function fetchExerciseHistory(workoutId) {
  * Extract unique workout names from sessions
  */
 function extractUniqueWorkouts() {
-  const sessions = window.ghostGym.workoutHistory.sessions;
+  const sessions = window.ffn.workoutHistory.sessions;
   const workoutMap = new Map();
 
   sessions.forEach(session => {
@@ -288,7 +288,7 @@ function extractUniqueWorkouts() {
   });
 
   // Sort by count (most frequent first)
-  window.ghostGym.workoutHistory.uniqueWorkouts = Array.from(workoutMap.values())
+  window.ffn.workoutHistory.uniqueWorkouts = Array.from(workoutMap.values())
     .sort((a, b) => b.count - a.count);
 }
 

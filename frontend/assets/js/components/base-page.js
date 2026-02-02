@@ -4,7 +4,7 @@
  * @version 1.0.0
  */
 
-class GhostGymBasePage {
+class FFNBasePage {
     constructor(options = {}) {
         this.options = {
             // Authentication
@@ -418,11 +418,11 @@ class GhostGymBasePage {
 }
 
 // Export for global use
-window.GhostGymBasePage = GhostGymBasePage;
+window.FFNBasePage = FFNBasePage;
 
 // Export for module use
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = GhostGymBasePage;
+    module.exports = FFNBasePage;
 }
 
-console.log('📦 GhostGymBasePage component loaded');
+console.log('📦 FFNBasePage component loaded');

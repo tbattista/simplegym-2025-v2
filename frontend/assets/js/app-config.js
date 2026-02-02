@@ -1,13 +1,36 @@
 /**
- * Ghost Gym V2 - Global Application Configuration
+ * Fitness Field Notes - Global Application Configuration
  * Single source of truth for all app settings
  *
  * This file centralizes configuration that was previously duplicated across multiple HTML files.
- * Load this BEFORE any other Ghost Gym scripts.
+ * Load this BEFORE any other Fitness Field Notes scripts.
  */
 (function() {
     'use strict';
-    
+
+    // ============================================
+    // localStorage Migration (Ghost Gym -> FFN)
+    // Preserves existing user data during rebrand
+    // ============================================
+    const migrations = [
+        { old: 'ghost_gym_active_workout_session', new: 'ffn_active_workout_session' },
+        { old: 'ghostGym_plateConfig', new: 'ffn_plateConfig' },
+        { old: 'ghostgym_feedback_draft', new: 'ffn_feedback_draft' },
+        { old: 'ghostgym_feedback_submissions', new: 'ffn_feedback_submissions' }
+    ];
+
+    migrations.forEach(({ old, new: newKey }) => {
+        try {
+            const value = localStorage.getItem(old);
+            if (value && !localStorage.getItem(newKey)) {
+                localStorage.setItem(newKey, value);
+                console.log(`🔄 Migrated localStorage: ${old} -> ${newKey}`);
+            }
+        } catch (e) {
+            // Ignore errors (e.g., private browsing mode)
+        }
+    });
+
     // Apply Content Security Policy only in production (HTTPS)
     // Railway automatically provides HTTPS, localhost uses HTTP
     if (window.location.protocol === 'https:') {
@@ -69,9 +92,9 @@
     };
     
     // Legacy compatibility - some code may still reference these
-    window.GHOST_GYM_API_URL = window.config.api.baseUrl;
+    window.FFN_API_URL = window.config.api.baseUrl;
     window.getApiUrl = window.config.api.getUrl.bind(window.config.api);
-    
-    console.log('✅ Ghost Gym app config loaded');
+
+    console.log('✅ Fitness Field Notes app config loaded');
     console.log('🔗 API Base URL:', window.config.api.baseUrl);
 })();

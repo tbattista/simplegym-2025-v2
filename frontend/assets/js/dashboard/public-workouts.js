@@ -276,10 +276,10 @@
             console.log('✅ Loaded public workouts:', data);
 
             // Update state
-            window.ghostGym.publicWorkouts.all = data.workouts;
-            window.ghostGym.publicWorkouts.displayed = data.workouts;
-            window.ghostGym.publicWorkouts.currentPage = data.page;
-            window.ghostGym.publicWorkouts.totalCount = data.total_count;
+            window.ffn.publicWorkouts.all = data.workouts;
+            window.ffn.publicWorkouts.displayed = data.workouts;
+            window.ffn.publicWorkouts.currentPage = data.page;
+            window.ffn.publicWorkouts.totalCount = data.total_count;
             totalCount = data.total_count;
 
             // Update UI

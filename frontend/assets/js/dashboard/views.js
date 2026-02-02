@@ -9,13 +9,13 @@
  */
 function renderProgramsView() {
     const programsList = document.getElementById('programsViewList');
-    if (!programsList || !window.ghostGym || !window.ghostGym.programs) return;
+    if (!programsList || !window.ffn || !window.ffn.programs) return;
     
     const searchInput = document.getElementById('programsViewSearch');
     const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
     
     // Enhanced filtering with tags
-    const filteredPrograms = window.ghostGym.programs.filter(program =>
+    const filteredPrograms = window.ffn.programs.filter(program =>
         program.name.toLowerCase().includes(searchTerm) ||
         (program.description || '').toLowerCase().includes(searchTerm) ||
         (program.tags || []).some(tag => tag.toLowerCase().includes(searchTerm))
@@ -45,7 +45,7 @@ function renderProgramsView() {
     const programsHTML = filteredPrograms.map(program => {
         const workoutCount = program.workouts?.length || 0;
         const totalExercises = program.workouts?.reduce((sum, pw) => {
-            const workout = window.ghostGym.workouts.find(w => w.id === pw.workout_id);
+            const workout = window.ffn.workouts.find(w => w.id === pw.workout_id);
             return sum + (workout?.exercise_groups?.length || 0);
         }, 0) || 0;
         

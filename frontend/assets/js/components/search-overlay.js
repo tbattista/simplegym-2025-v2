@@ -18,7 +18,7 @@
  * 4. Remove imports from HTML pages
  */
 
-class GhostGymSearchOverlay {
+class FFNSearchOverlay {
     constructor(options = {}) {
         this.options = {
             placeholder: options.placeholder || 'Search...',
@@ -238,6 +238,6 @@ class GhostGymSearchOverlay {
 }
 
 // Export for global access
-window.GhostGymSearchOverlay = GhostGymSearchOverlay;
+window.FFNSearchOverlay = FFNSearchOverlay;
 
 console.log('📦 Search Overlay component loaded');

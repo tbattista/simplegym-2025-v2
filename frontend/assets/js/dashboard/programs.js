@@ -8,7 +8,7 @@
  * Render programs in dropdown selector (Builder view)
  */
 function renderPrograms() {
-    console.log('🔍 DEBUG: renderPrograms called with', window.ghostGym.programs.length, 'programs');
+    console.log('🔍 DEBUG: renderPrograms called with', window.ffn.programs.length, 'programs');
     const programSelector = document.getElementById('programSelector');
     if (!programSelector) {
         console.log('❌ DEBUG: programSelector element not found!');
@@ -19,17 +19,17 @@ function renderPrograms() {
     programSelector.innerHTML = '<option value="">Select a program...</option>';
     
     // Add program options
-    window.ghostGym.programs.forEach(program => {
+    window.ffn.programs.forEach(program => {
         const option = document.createElement('option');
         option.value = program.id;
         option.textContent = `${program.name} (${program.workouts?.length || 0} workouts)`;
-        if (window.ghostGym.currentProgram?.id === program.id) {
+        if (window.ffn.currentProgram?.id === program.id) {
             option.selected = true;
         }
         programSelector.appendChild(option);
     });
     
-    console.log('🔍 DEBUG: Rendered', window.ghostGym.programs.length, 'programs in selector');
+    console.log('🔍 DEBUG: Rendered', window.ffn.programs.length, 'programs in selector');
 }
 
 /**
@@ -40,7 +40,7 @@ function handleProgramSelection(event) {
     if (programId) {
         selectProgram(programId);
     } else {
-        window.ghostGym.currentProgram = null;
+        window.ffn.currentProgram = null;
         showEmptyStatePanel();
     }
 }
@@ -49,10 +49,10 @@ function handleProgramSelection(event) {
  * Select a program and show its details
  */
 function selectProgram(programId) {
-    const program = window.ghostGym.programs.find(p => p.id === programId);
+    const program = window.ffn.programs.find(p => p.id === programId);
     if (!program) return;
     
-    window.ghostGym.currentProgram = program;
+    window.ffn.currentProgram = program;
     
     // Update dropdown selection
     const programSelector = document.getElementById('programSelector');
@@ -134,7 +134,7 @@ function renderProgramWorkouts(program) {
     }
     
     programWorkouts.innerHTML = program.workouts.map((programWorkout, index) => {
-        const workout = window.ghostGym.workouts.find(w => w.id === programWorkout.workout_id);
+        const workout = window.ffn.workouts.find(w => w.id === programWorkout.workout_id);
         if (!workout) return '';
         
         return `
@@ -180,7 +180,7 @@ async function saveProgram() {
         const savedProgram = await window.dataManager.createProgram(programData);
         
         // Update local state
-        window.ghostGym.programs.unshift(savedProgram);
+        window.ffn.programs.unshift(savedProgram);
         renderPrograms();
         renderProgramsView();
         updateStats();
@@ -210,8 +210,8 @@ async function saveProgram() {
  * Edit current program
  */
 function editCurrentProgram() {
-    if (window.ghostGym.currentProgram) {
-        editProgram(window.ghostGym.currentProgram.id);
+    if (window.ffn.currentProgram) {
+        editProgram(window.ffn.currentProgram.id);
     }
 }
 
@@ -219,7 +219,7 @@ function editCurrentProgram() {
  * Edit program by ID
  */
 function editProgram(id) {
-    const program = window.ghostGym.programs.find(p => p.id === id);
+    const program = window.ffn.programs.find(p => p.id === id);
     if (!program) return;
     
     // Populate form with program data
@@ -241,7 +241,7 @@ function editProgram(id) {
  * Duplicate program
  */
 function duplicateProgram(id) {
-    const program = window.ghostGym.programs.find(p => p.id === id);
+    const program = window.ffn.programs.find(p => p.id === id);
     if (!program) return;
     
     // Create duplicate with new name
@@ -255,7 +255,7 @@ function duplicateProgram(id) {
     
     // Save duplicate
     window.dataManager.createProgram(duplicateData).then(savedProgram => {
-        window.ghostGym.programs.unshift(savedProgram);
+        window.ffn.programs.unshift(savedProgram);
         renderPrograms();
         renderProgramsView();
         updateStats();
@@ -269,16 +269,16 @@ function duplicateProgram(id) {
  * Delete program
  */
 function deleteProgram(id) {
-    const program = window.ghostGym.programs.find(p => p.id === id);
+    const program = window.ffn.programs.find(p => p.id === id);
     if (!program) return;
     
     if (confirm(`Are you sure you want to delete "${program.name}"? This action cannot be undone.`)) {
         // Remove from local state
-        window.ghostGym.programs = window.ghostGym.programs.filter(p => p.id !== id);
+        window.ffn.programs = window.ffn.programs.filter(p => p.id !== id);
         
         // Clear selection if this was the current program
-        if (window.ghostGym.currentProgram?.id === id) {
-            window.ghostGym.currentProgram = null;
+        if (window.ffn.currentProgram?.id === id) {
+            window.ffn.currentProgram = null;
             showEmptyStatePanel();
         }
         
@@ -304,7 +304,7 @@ function clearProgramForm() {
  * Preview program
  */
 async function previewProgram() {
-    if (!window.ghostGym.currentProgram) {
+    if (!window.ffn.currentProgram) {
         showAlert('No program selected', 'warning');
         return;
     }
@@ -319,7 +319,7 @@ async function previewProgram() {
         document.getElementById('previewFrame').classList.add('d-none');
         
         // Generate preview
-        const response = await fetch(getApiUrl(`/api/v3/programs/${window.ghostGym.currentProgram.id}/preview-html`), {
+        const response = await fetch(getApiUrl(`/api/v3/programs/${window.ffn.currentProgram.id}/preview-html`), {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -351,7 +351,7 @@ async function previewProgram() {
  * Generate program document (HTML or PDF)
  */
 async function generateDocument() {
-    if (!window.ghostGym.currentProgram) {
+    if (!window.ffn.currentProgram) {
         showAlert('No program selected', 'warning');
         return;
     }
@@ -365,7 +365,7 @@ async function generateDocument() {
         const includeProgress = document.getElementById('includeProgress')?.checked;
         
         console.log('🔍 DEBUG: Generation request:', {
-            programId: window.ghostGym.currentProgram.id,
+            programId: window.ffn.currentProgram.id,
             format,
             startDate,
             includeCover,
@@ -380,7 +380,7 @@ async function generateDocument() {
         
         // Prepare request body
         const requestBody = {
-            program_id: window.ghostGym.currentProgram.id,
+            program_id: window.ffn.currentProgram.id,
             start_date: startDate || null,
             include_cover_page: includeCover !== false,
             include_table_of_contents: includeToc !== false,
@@ -410,7 +410,7 @@ async function generateDocument() {
         
         // Generate document
         const endpoint = format === 'pdf' ? 'generate-pdf' : 'generate-html';
-        const url = `/api/v3/programs/${window.ghostGym.currentProgram.id}/${endpoint}`;
+        const url = `/api/v3/programs/${window.ffn.currentProgram.id}/${endpoint}`;
         
         const response = await fetch(getApiUrl(url), {
             method: 'POST',
@@ -434,7 +434,7 @@ async function generateDocument() {
         const downloadUrl = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = downloadUrl;
-        a.download = `${window.ghostGym.currentProgram.name.replace(/[^a-z0-9]/gi, '_')}.${format}`;
+        a.download = `${window.ffn.currentProgram.name.replace(/[^a-z0-9]/gi, '_')}.${format}`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
@@ -462,8 +462,8 @@ async function generateDocument() {
  * Add workout to program
  */
 function addWorkoutToProgram(programId, workoutId) {
-    const program = window.ghostGym.programs.find(p => p.id === programId);
-    const workout = window.ghostGym.workouts.find(w => w.id === workoutId);
+    const program = window.ffn.programs.find(p => p.id === programId);
+    const workout = window.ffn.workouts.find(w => w.id === workoutId);
     
     if (!program || !workout) return;
     
@@ -483,7 +483,7 @@ function addWorkoutToProgram(programId, workoutId) {
     });
     
     // Update UI
-    if (window.ghostGym.currentProgram?.id === programId) {
+    if (window.ffn.currentProgram?.id === programId) {
         renderProgramWorkouts(program);
     }
     
@@ -494,17 +494,17 @@ function addWorkoutToProgram(programId, workoutId) {
  * Remove workout from program
  */
 function removeWorkoutFromProgram(programId, workoutId) {
-    const program = window.ghostGym.programs.find(p => p.id === programId);
+    const program = window.ffn.programs.find(p => p.id === programId);
     if (!program || !program.workouts) return;
     
-    const workout = window.ghostGym.workouts.find(w => w.id === workoutId);
+    const workout = window.ffn.workouts.find(w => w.id === workoutId);
     const workoutName = workout ? workout.name : 'Workout';
     
     if (confirm(`Remove "${workoutName}" from this program?`)) {
         program.workouts = program.workouts.filter(w => w.workout_id !== workoutId);
         
         // Update UI
-        if (window.ghostGym.currentProgram?.id === programId) {
+        if (window.ffn.currentProgram?.id === programId) {
             renderProgramWorkouts(program);
         }
         
@@ -516,9 +516,9 @@ function removeWorkoutFromProgram(programId, workoutId) {
  * Reorder program workouts after drag and drop
  */
 function reorderProgramWorkouts(evt) {
-    if (!window.ghostGym.currentProgram) return;
+    if (!window.ffn.currentProgram) return;
     
-    const program = window.ghostGym.currentProgram;
+    const program = window.ffn.currentProgram;
     if (!program.workouts) return;
     
     // Update order based on new positions

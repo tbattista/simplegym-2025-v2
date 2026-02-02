@@ -4,7 +4,7 @@
  * @version 1.0.0
  */
 
-class GhostGymFilterBar {
+class FFNFilterBar {
     constructor(containerId, options = {}) {
         this.container = document.getElementById(containerId);
         if (!this.container) {
@@ -541,11 +541,11 @@ class GhostGymFilterBar {
 }
 
 // Export for global use
-window.GhostGymFilterBar = GhostGymFilterBar;
+window.FFNFilterBar = FFNFilterBar;
 
 // Export for module use
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = GhostGymFilterBar;
+    module.exports = FFNFilterBar;
 }
 
-console.log('📦 GhostGymFilterBar component loaded');
+console.log('📦 FFNFilterBar component loaded');

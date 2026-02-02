@@ -122,7 +122,7 @@ class MenuInjectionService {
 
             // Listen for storage changes (cross-tab support)
             window.addEventListener('storage', (e) => {
-                if (e.key === 'ghost_gym_active_workout_session') {
+                if (e.key === 'ffn_active_workout_session') {
                     this.updateSessionMenuVisibility();
                 }
             });
@@ -183,7 +183,7 @@ class MenuInjectionService {
      */
     hasPersistedSession() {
         try {
-            const stored = localStorage.getItem('ghost_gym_active_workout_session');
+            const stored = localStorage.getItem('ffn_active_workout_session');
             if (!stored) return false;
 
             const session = JSON.parse(stored);

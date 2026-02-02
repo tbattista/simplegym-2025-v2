@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Development server launcher for Ghost Gym V2 - Advanced Log Book
+Development server launcher for Fitness Field Notes
 Modern HTML/PDF generation with Gotenberg integration
 """
 
@@ -45,7 +45,7 @@ def main():
         print("[WARN] Gotenberg service directory not found - PDF generation will be disabled")
     
     print("\n" + "="*60)
-    print("GHOST GYM V2 - ADVANCED LOG BOOK - DEVELOPMENT SERVER")
+    print("FITNESS FIELD NOTES - DEVELOPMENT SERVER")
     print("="*60)
     print(f"Project Directory: {project_root}")
     print(f"Server URL: http://localhost:8001")

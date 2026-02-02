@@ -4,7 +4,7 @@
  * @version 1.0.0
  */
 
-class GhostGymDataTable {
+class FFNDataTable {
     constructor(containerId, options = {}) {
         this.container = document.getElementById(containerId);
         if (!this.container) {
@@ -490,11 +490,11 @@ class GhostGymDataTable {
 }
 
 // Export for global use
-window.GhostGymDataTable = GhostGymDataTable;
+window.FFNDataTable = FFNDataTable;
 
 // Export for module use
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = GhostGymDataTable;
+    module.exports = FFNDataTable;
 }
 
-console.log('📦 GhostGymDataTable component loaded');
+console.log('📦 FFNDataTable component loaded');

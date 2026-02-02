@@ -5,7 +5,7 @@
  */
 
 // Initialize page with BasePage component
-const exercisePage = new GhostGymBasePage({
+const exercisePage = new FFNBasePage({
     requireAuth: false,
     autoLoad: true,
     onDataLoad: async (page) => {
@@ -21,8 +21,8 @@ const exercisePage = new GhostGymBasePage({
             }
         } else {
             // Clear user data
-            window.ghostGym.exercises.favorites.clear();
-            window.ghostGym.exercises.custom = [];
+            window.ffn.exercises.favorites.clear();
+            window.ffn.exercises.custom = [];
             if (window.exerciseTable) {
                 window.exerciseTable.refresh();
             }
@@ -31,7 +31,7 @@ const exercisePage = new GhostGymBasePage({
 });
 
 // Global state
-window.ghostGym = window.ghostGym || {
+window.ffn = window.ffn || {
     exercises: {
         all: [],
         favorites: new Set(),
@@ -131,7 +131,7 @@ async function initializeExerciseDatabase(page) {
         // and calls window.applyFiltersAndRender when search changes
         
         // Initialize DataTable component with compact single-line cards
-        exerciseTable = new GhostGymDataTable('exerciseTableContainer', {
+        exerciseTable = new FFNDataTable('exerciseTableContainer', {
             columns: [
                 {
                     key: 'card',
@@ -140,7 +140,7 @@ async function initializeExerciseDatabase(page) {
                     render: (value, row) => {
                         const isCustom = !row.isGlobal;
                         const tierBadge = getTierBadgeCompact(row);
-                        const isFavorited = window.ghostGym.exercises.favorites.has(row.id);
+                        const isFavorited = window.ffn.exercises.favorites.has(row.id);
                         const difficultyBadge = row.difficultyLevel ? getDifficultyBadgeWithPopover(row.difficultyLevel) : '';
                         
                         return `
@@ -253,8 +253,8 @@ async function loadAllExerciseData(page) {
     // Load global exercises with caching
     const cached = getExerciseCache();
     if (cached && isExerciseCacheValid(cached)) {
-        window.ghostGym.exercises.all = cached.exercises;
-        console.log(`✅ Loaded ${window.ghostGym.exercises.all.length} exercises from cache`);
+        window.ffn.exercises.all = cached.exercises;
+        console.log(`✅ Loaded ${window.ffn.exercises.all.length} exercises from cache`);
     } else {
         console.log('📡 Loading exercises from API...');
         const PAGE_SIZE = 500;
@@ -275,7 +275,7 @@ async function loadAllExerciseData(page) {
             pageNum++;
         }
         
-        window.ghostGym.exercises.all = allExercises;
+        window.ffn.exercises.all = allExercises;
         setExerciseCache(allExercises);
         
         // Update total count
@@ -292,8 +292,8 @@ async function loadAllExerciseData(page) {
  */
 async function loadUserExerciseData() {
     if (!window.firebaseAuth?.currentUser) {
-        window.ghostGym.exercises.favorites.clear();
-        window.ghostGym.exercises.custom = [];
+        window.ffn.exercises.favorites.clear();
+        window.ffn.exercises.custom = [];
         return;
     }
     
@@ -306,8 +306,8 @@ async function loadUserExerciseData() {
         });
         if (favResponse.ok) {
             const favData = await favResponse.json();
-            window.ghostGym.exercises.favorites = new Set(favData.favorites.map(f => f.exerciseId));
-            console.log(`✅ Loaded ${window.ghostGym.exercises.favorites.size} favorites`);
+            window.ffn.exercises.favorites = new Set(favData.favorites.map(f => f.exerciseId));
+            console.log(`✅ Loaded ${window.ffn.exercises.favorites.size} favorites`);
         }
         
         // Load custom exercises
@@ -316,8 +316,8 @@ async function loadUserExerciseData() {
         });
         if (customResponse.ok) {
             const customData = await customResponse.json();
-            window.ghostGym.exercises.custom = customData.exercises || [];
-            console.log(`✅ Loaded ${window.ghostGym.exercises.custom.length} custom exercises`);
+            window.ffn.exercises.custom = customData.exercises || [];
+            console.log(`✅ Loaded ${window.ffn.exercises.custom.length} custom exercises`);
         }
         
         updateStats();
@@ -338,7 +338,7 @@ async function loadUserExerciseData() {
  */
 function applyFiltersAndRender(filters) {
     // Combine global and custom exercises
-    let allExercises = [...window.ghostGym.exercises.all, ...window.ghostGym.exercises.custom];
+    let allExercises = [...window.ffn.exercises.all, ...window.ffn.exercises.custom];
     
     // Apply search filter
     if (filters.search) {
@@ -394,7 +394,7 @@ function applyFiltersAndRender(filters) {
     
     // Apply favorites only filter
     if (filters.favoritesOnly) {
-        allExercises = allExercises.filter(e => window.ghostGym.exercises.favorites.has(e.id));
+        allExercises = allExercises.filter(e => window.ffn.exercises.favorites.has(e.id));
     }
     
     // Apply custom only filter
@@ -491,8 +491,8 @@ function sortExercises(exercises, sortBy) {
             break;
         case 'favorites':
             sorted.sort((a, b) => {
-                const aFav = window.ghostGym.exercises.favorites.has(a.id) ? 1 : 0;
-                const bFav = window.ghostGym.exercises.favorites.has(b.id) ? 1 : 0;
+                const aFav = window.ffn.exercises.favorites.has(a.id) ? 1 : 0;
+                const bFav = window.ffn.exercises.favorites.has(b.id) ? 1 : 0;
                 if (aFav !== bFav) return bFav - aFav;
                 return a.name.localeCompare(b.name);
             });
@@ -599,7 +599,7 @@ function getTierBadge(exercise) {
  * Get unique muscle groups
  */
 function getUniqueMuscleGroups() {
-    return [...new Set(window.ghostGym.exercises.all
+    return [...new Set(window.ffn.exercises.all
         .map(e => e.targetMuscleGroup)
         .filter(m => m))]
         .sort();
@@ -609,7 +609,7 @@ function getUniqueMuscleGroups() {
  * Get unique equipment
  */
 function getUniqueEquipment() {
-    return [...new Set(window.ghostGym.exercises.all
+    return [...new Set(window.ffn.exercises.all
         .map(e => e.primaryEquipment)
         .filter(e => e))]
         .sort();
@@ -633,7 +633,7 @@ async function toggleExerciseFavorite(exerciseId) {
         return;
     }
     
-    const isFavorited = window.ghostGym.exercises.favorites.has(exerciseId);
+    const isFavorited = window.ffn.exercises.favorites.has(exerciseId);
     
     // Find the button that was clicked
     const button = document.querySelector(`.favorite-btn[data-exercise-id="${exerciseId}"]`);
@@ -661,7 +661,7 @@ async function toggleExerciseFavorite(exerciseId) {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             if (response.ok) {
-                window.ghostGym.exercises.favorites.delete(exerciseId);
+                window.ffn.exercises.favorites.delete(exerciseId);
                 console.log('✅ Removed from favorites');
                 
                 // If favorites filter is active, refresh the table to remove the exercise
@@ -697,7 +697,7 @@ async function toggleExerciseFavorite(exerciseId) {
                 body: JSON.stringify({ exerciseId })
             });
             if (response.ok) {
-                window.ghostGym.exercises.favorites.add(exerciseId);
+                window.ffn.exercises.favorites.add(exerciseId);
                 console.log('✅ Added to favorites');
             } else {
                 console.error('❌ Failed to add favorite:', response.status, response.statusText);
@@ -740,7 +740,7 @@ async function toggleExerciseFavorite(exerciseId) {
  * Show exercise details modal
  */
 function showExerciseDetails(exerciseId) {
-    const exercise = [...window.ghostGym.exercises.all, ...window.ghostGym.exercises.custom]
+    const exercise = [...window.ffn.exercises.all, ...window.ffn.exercises.custom]
         .find(e => e.id === exerciseId);
 
     if (!exercise) return;

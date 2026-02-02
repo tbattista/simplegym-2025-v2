@@ -138,7 +138,7 @@ class ComponentRegistry {
         }
         
         // Ensure ghostGym state exists
-        window.ghostGym = window.ghostGym || {
+        window.ffn = window.ffn || {
             programs: [],
             workouts: [],
             exercises: { all: [], favorites: new Set() },
@@ -151,22 +151,22 @@ class ComponentRegistry {
                     case 'workouts':
                         console.log('📥 Loading workouts...');
                         const workouts = await window.dataManager.getWorkouts();
-                        window.ghostGym.workouts = Array.isArray(workouts) ? workouts : [];
-                        console.log(`✅ Loaded ${window.ghostGym.workouts.length} workouts`);
+                        window.ffn.workouts = Array.isArray(workouts) ? workouts : [];
+                        console.log(`✅ Loaded ${window.ffn.workouts.length} workouts`);
                         break;
                         
                     case 'programs':
                         console.log('📥 Loading programs...');
                         const programs = await window.dataManager.getPrograms();
-                        window.ghostGym.programs = Array.isArray(programs) ? programs : [];
-                        console.log(`✅ Loaded ${window.ghostGym.programs.length} programs`);
+                        window.ffn.programs = Array.isArray(programs) ? programs : [];
+                        console.log(`✅ Loaded ${window.ffn.programs.length} programs`);
                         break;
                         
                     case 'exercises':
                         console.log('📥 Loading exercises...');
                         const exercises = await window.dataManager.getExercises();
-                        window.ghostGym.exercises.all = Array.isArray(exercises) ? exercises : [];
-                        console.log(`✅ Loaded ${window.ghostGym.exercises.all.length} exercises`);
+                        window.ffn.exercises.all = Array.isArray(exercises) ? exercises : [];
+                        console.log(`✅ Loaded ${window.ffn.exercises.all.length} exercises`);
                         break;
                         
                     default:
@@ -175,9 +175,9 @@ class ComponentRegistry {
             } catch (error) {
                 console.error(`❌ Error loading ${req}:`, error);
                 // Set empty array to prevent undefined errors
-                if (req === 'workouts') window.ghostGym.workouts = [];
-                if (req === 'programs') window.ghostGym.programs = [];
-                if (req === 'exercises') window.ghostGym.exercises.all = [];
+                if (req === 'workouts') window.ffn.workouts = [];
+                if (req === 'programs') window.ffn.programs = [];
+                if (req === 'exercises') window.ffn.exercises.all = [];
             }
         });
         

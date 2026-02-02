@@ -20,7 +20,7 @@ async def health_check():
     
     return {
         "status": "healthy",
-        "message": "Ghost Gym V3 API is running",
+        "message": "Fitness Field Notes API is running",
         "version": "v3",
         "firebase_status": firebase_status,
         "auth_status": auth_status

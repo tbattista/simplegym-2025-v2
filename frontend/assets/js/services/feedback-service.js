@@ -13,8 +13,8 @@
             this.sessionStartTime = Date.now();
             this.RATE_LIMIT = 5; // Max submissions per hour
             this.RATE_LIMIT_WINDOW = 60 * 60 * 1000; // 1 hour in milliseconds
-            this.DRAFT_KEY = 'ghostgym_feedback_draft';
-            this.SUBMISSIONS_KEY = 'ghostgym_feedback_submissions';
+            this.DRAFT_KEY = 'ffn_feedback_draft';
+            this.SUBMISSIONS_KEY = 'ffn_feedback_submissions';
             
             // Initialize session tracking
             this.initSessionTracking();

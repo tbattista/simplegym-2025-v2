@@ -11,9 +11,9 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
 
-    <title>Builder - Ghost Gym</title>
+    <title>Builder - Fitness Field Notes</title>
 
-    <meta name="description" content="Edit your workout templates with Ghost Gym" />
+    <meta name="description" content="Edit your workout templates with Fitness Field Notes" />
 
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="/static/assets/img/favicon/favicon.ico" />
@@ -34,8 +34,8 @@
     <!-- Vendors CSS -->
     <link rel="stylesheet" href="/static/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css" />
 
-    <!-- Custom Ghost Gym CSS -->
-    <link rel="stylesheet" href="/static/assets/css/ghost-gym-custom.css" />
+    <!-- Custom FFN CSS -->
+    <link rel="stylesheet" href="/static/assets/css/ffn-custom.css" />
     
     <!-- Shared Components CSS -->
     <link rel="stylesheet" href="/static/assets/css/components.css" />
@@ -68,7 +68,7 @@
     <!-- Theme Manager (must load early to prevent flash) -->
     <script src="/static/assets/js/services/theme-manager.js"></script>
 
-    <!-- Ghost Gym Centralized Configuration -->
+    <!-- FFN Centralized Configuration -->
     <script src="/static/assets/js/app-config.js"></script>
     
     <!-- Firebase SDK Loader (Centralized) -->
@@ -465,7 +465,7 @@
     <!-- Initialize Workouts Page with Component System -->
     <script>
         // Initialize global state for workouts
-        window.ghostGym = window.ghostGym || {
+        window.ffn = window.ffn || {
             workouts: [],
             programs: [],
             searchFilters: {
@@ -527,7 +527,7 @@
                 console.log('✅ Workout loaded:', workout.name);
                 
                 // Update global state
-                window.ghostGym.workouts = workouts;
+                window.ffn.workouts = workouts;
                 
                 return workout;
                 
@@ -635,7 +635,7 @@
                     loadingState.style.display = 'none';
                     
                     // Update global state with shared workout
-                    window.ghostGym.workouts = [sharedWorkout];
+                    window.ffn.workouts = [sharedWorkout];
                     
                     // Load into editor
                     if (window.loadWorkoutIntoEditor) {

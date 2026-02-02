@@ -112,7 +112,7 @@ class ExportService:
             lines.append("")
 
         # Footer
-        lines.append("ghostgym.app")
+        lines.append("fitnessfieldnotes.com")
 
         return "\n".join(lines)
 

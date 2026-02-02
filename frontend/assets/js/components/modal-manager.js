@@ -4,7 +4,7 @@
  * @version 1.0.0
  */
 
-class GhostGymModalManager {
+class FFNModalManager {
     constructor() {
         this.modals = new Map();
         this.modalCounter = 0;
@@ -492,14 +492,14 @@ class GhostGymModalManager {
 }
 
 // Create global instance
-window.ghostGymModalManager = new GhostGymModalManager();
+window.ffnModalManager = new FFNModalManager();
 
 // Export class for custom instances
-window.GhostGymModalManager = GhostGymModalManager;
+window.FFNModalManager = FFNModalManager;
 
 // Export for module use
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = GhostGymModalManager;
+    module.exports = FFNModalManager;
 }
 
-console.log('📦 GhostGymModalManager component loaded');
+console.log('📦 FFNModalManager component loaded');

@@ -27,8 +27,8 @@ class AutosaveManager {
         this.relativeTimeInterval = null;
         
         // Initialize state in global namespace
-        window.ghostGym = window.ghostGym || {};
-        window.ghostGym[this.namespace] = window.ghostGym[this.namespace] || {};
+        window.ffn = window.ffn || {};
+        window.ffn[this.namespace] = window.ffn[this.namespace] || {};
         
         // Set default state properties
         this.state.isDirty = false;
@@ -43,7 +43,7 @@ class AutosaveManager {
      * Get state object for this namespace
      */
     get state() {
-        return window.ghostGym[this.namespace];
+        return window.ffn[this.namespace];
     }
     
     /**

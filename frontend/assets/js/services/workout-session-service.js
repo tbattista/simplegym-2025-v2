@@ -1399,7 +1399,7 @@ class WorkoutSessionService {
         };
         
         try {
-            localStorage.setItem('ghost_gym_active_workout_session', JSON.stringify(sessionData));
+            localStorage.setItem('ffn_active_workout_session', JSON.stringify(sessionData));
             console.log('💾 Session persisted (v2.1):', sessionData.sessionId);
         } catch (error) {
             console.error('❌ Failed to persist session:', error);
@@ -1415,7 +1415,7 @@ class WorkoutSessionService {
      */
     restoreSession() {
         try {
-            const stored = localStorage.getItem('ghost_gym_active_workout_session');
+            const stored = localStorage.getItem('ffn_active_workout_session');
             if (!stored) {
                 console.log('ℹ️ No persisted session found');
                 return null;
@@ -1548,7 +1548,7 @@ class WorkoutSessionService {
      */
     clearPersistedSession() {
         try {
-            localStorage.removeItem('ghost_gym_active_workout_session');
+            localStorage.removeItem('ffn_active_workout_session');
             console.log('🧹 Persisted session cleared');
         } catch (error) {
             console.error('❌ Error clearing persisted session:', error);
@@ -1560,7 +1560,7 @@ class WorkoutSessionService {
      * @returns {boolean} True if persisted session exists
      */
     hasPersistedSession() {
-        return !!localStorage.getItem('ghost_gym_active_workout_session');
+        return !!localStorage.getItem('ffn_active_workout_session');
     }
     
     /**

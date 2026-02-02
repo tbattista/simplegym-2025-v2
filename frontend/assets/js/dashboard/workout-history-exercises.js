@@ -13,14 +13,14 @@
  * Dynamic filter buckets based on data distribution
  */
 function renderExercisePerformance() {
-  const histories = window.ghostGym.workoutHistory.exerciseHistories;
+  const histories = window.ffn.workoutHistory.exerciseHistories;
   const container = document.getElementById('exercisePerformanceContainer');
 
   // Guard against missing container (Insights tab removed)
   if (!container) return;
 
-  const currentFilter = window.ghostGym.workoutHistory.exerciseFilter;
-  const currentSort = window.ghostGym.workoutHistory.exerciseSort;
+  const currentFilter = window.ffn.workoutHistory.exerciseFilter;
+  const currentSort = window.ffn.workoutHistory.exerciseSort;
 
   const historyArray = Object.values(histories);
 
@@ -40,7 +40,7 @@ function renderExercisePerformance() {
   const validFilters = ['all', ...buckets.map(b => b.key)];
   const activeFilter = validFilters.includes(currentFilter) ? currentFilter : 'all';
   if (activeFilter !== currentFilter) {
-    window.ghostGym.workoutHistory.exerciseFilter = activeFilter;
+    window.ffn.workoutHistory.exerciseFilter = activeFilter;
   }
 
   // Apply filter
@@ -218,7 +218,7 @@ function filterExercisesByBucket(exercises, filterKey, buckets) {
  * Set exercise filter and re-render
  */
 function setExerciseFilter(filter) {
-  window.ghostGym.workoutHistory.exerciseFilter = filter;
+  window.ffn.workoutHistory.exerciseFilter = filter;
   renderExercisePerformance();
 }
 
@@ -252,11 +252,11 @@ function sortExercises(exercises, sortMode) {
  */
 function cycleExerciseSort() {
   const sortOrder = ['name', 'count-desc', 'count-asc'];
-  const currentSort = window.ghostGym.workoutHistory.exerciseSort;
+  const currentSort = window.ffn.workoutHistory.exerciseSort;
   const currentIndex = sortOrder.indexOf(currentSort);
   const nextIndex = (currentIndex + 1) % sortOrder.length;
 
-  window.ghostGym.workoutHistory.exerciseSort = sortOrder[nextIndex];
+  window.ffn.workoutHistory.exerciseSort = sortOrder[nextIndex];
   renderExercisePerformance();
 }
 
@@ -270,7 +270,7 @@ function cycleExerciseSort() {
 function createExerciseRow(history) {
   const sanitizedId = history.id.replace(/[^a-zA-Z0-9-_]/g, '-');
   const collapseId = `exercise-${sanitizedId}`;
-  const isExpanded = window.ghostGym.workoutHistory.expandedExercises.has(history.id);
+  const isExpanded = window.ffn.workoutHistory.expandedExercises.has(history.id);
 
   // Primary stat: last working set
   const lastWeight = history.last_weight || '—';

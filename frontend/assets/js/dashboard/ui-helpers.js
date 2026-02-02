@@ -35,10 +35,10 @@ function hideEmptyStatePanel() {
  */
 function updateStats() {
     const statsDisplay = document.getElementById('statsDisplay');
-    if (!statsDisplay || !window.ghostGym) return;
+    if (!statsDisplay || !window.ffn) return;
     
-    const programCount = window.ghostGym.programs.length;
-    const workoutCount = window.ghostGym.workouts.length;
+    const programCount = window.ffn.programs.length;
+    const workoutCount = window.ffn.workouts.length;
     
     statsDisplay.innerHTML = `
         <span class="stats-item">

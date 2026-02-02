@@ -11,9 +11,9 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
     
-    <title>Home - Ghost Gym</title>
+    <title>Home - Fitness Field Notes</title>
 
-    <meta name="description" content="Professional workout program management with Ghost Gym V0.4.1" />
+    <meta name="description" content="Professional workout program management with Fitness Field Notes" />
 
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="/static/assets/img/favicon/favicon.ico" />
@@ -34,8 +34,8 @@
     <!-- Vendors CSS -->
     <link rel="stylesheet" href="/static/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css" />
 
-    <!-- Custom Ghost Gym CSS -->
-    <link rel="stylesheet" href="/static/assets/css/ghost-gym-custom.css" />
+    <!-- Custom FFN CSS -->
+    <link rel="stylesheet" href="/static/assets/css/ffn-custom.css" />
     
     <!-- Component CSS (includes shared buttons, forms, dark-mode styles) -->
     <link rel="stylesheet" href="/static/assets/css/components.css" />
@@ -62,7 +62,7 @@
     <!-- Theme Manager (must load early to prevent flash) -->
     <script src="/static/assets/js/services/theme-manager.js"></script>
 
-    <!-- Ghost Gym Centralized Configuration -->
+    <!-- FFN Centralized Configuration -->
     <script src="/static/assets/js/app-config.js"></script>
     
     <!-- Firebase SDK Loader (Centralized) -->
@@ -183,7 +183,7 @@
                   <div class="card-body text-center py-5">
                     <h1 class="mb-2">
                       <i class="bx bx-dumbbell me-2"></i>
-                      Ghost Gym
+                      Fitness Field Notes
                     </h1>
                     <p class="text-muted mb-0">Create and manage your workout programs</p>
                   </div>
@@ -478,7 +478,7 @@
 
         function checkActiveSession() {
             try {
-                const persistedSession = localStorage.getItem('ghost_gym_active_workout_session');
+                const persistedSession = localStorage.getItem('ffn_active_workout_session');
                 if (persistedSession) {
                     const session = JSON.parse(persistedSession);
                     if (session.workoutId && session.status === 'in_progress') {

@@ -1,5 +1,5 @@
 """
-Ghost Gym V2 - Main Application Entry Point
+Fitness Field Notes - Main Application Entry Point
 Slim FastAPI application with modular router architecture
 """
 
@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 
 # Initialize FastAPI app
 app = FastAPI(
-    title="Ghost Gym V2 - Advanced Log Book API",
+    title="Fitness Field Notes API",
     description="API for generating customized gym log documents. Modular architecture with Firebase integration.",
     version="2.0.0"
 )
@@ -288,4 +288,4 @@ if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000, reload=True)
 
-logger.info("🚀 Ghost Gym V2 API initialized successfully")
+logger.info("🚀 Fitness Field Notes API initialized successfully")

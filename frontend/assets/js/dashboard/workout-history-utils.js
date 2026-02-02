@@ -12,8 +12,8 @@
  * Calculate statistics from session data
  */
 function calculateStatistics() {
-  const sessions = window.ghostGym.workoutHistory.sessions;
-  const stats = window.ghostGym.workoutHistory.statistics;
+  const sessions = window.ffn.workoutHistory.sessions;
+  const stats = window.ffn.workoutHistory.statistics;
 
   stats.totalWorkouts = sessions.length;
 
@@ -39,7 +39,7 @@ function calculateStatistics() {
  * Get count of sessions this month
  */
 function getThisMonthSessionCount() {
-  const sessions = window.ghostGym.workoutHistory.sessions;
+  const sessions = window.ffn.workoutHistory.sessions;
   const now = new Date();
   const thisMonth = now.getMonth();
   const thisYear = now.getFullYear();
@@ -58,7 +58,7 @@ function getThisMonthSessionCount() {
  * Render workout information header
  */
 function renderWorkoutInfo() {
-  const isAllMode = window.ghostGym.workoutHistory.isAllMode;
+  const isAllMode = window.ffn.workoutHistory.isAllMode;
 
   if (isAllMode) {
     // All Sessions mode - show generic title
@@ -71,7 +71,7 @@ function renderWorkoutInfo() {
   }
 
   // Single workout mode - show workout info
-  const info = window.ghostGym.workoutHistory.workoutInfo;
+  const info = window.ffn.workoutHistory.workoutInfo;
   if (info) {
     document.getElementById('workoutName').textContent = info.name;
     const descEl = document.getElementById('workoutDescription');
@@ -85,7 +85,7 @@ function renderWorkoutInfo() {
  * Render compact statistics summary
  */
 function renderStatistics() {
-  const stats = window.ghostGym.workoutHistory.statistics;
+  const stats = window.ffn.workoutHistory.statistics;
   const container = document.getElementById('statisticsCards');
 
   // Guard against missing container (Insights tab removed)
@@ -300,8 +300,8 @@ async function deleteSession(sessionId, workoutName) {
     }
 
     // Remove from local state
-    window.ghostGym.workoutHistory.sessions =
-      window.ghostGym.workoutHistory.sessions.filter(s => s.id !== sessionId);
+    window.ffn.workoutHistory.sessions =
+      window.ffn.workoutHistory.sessions.filter(s => s.id !== sessionId);
 
     // Re-render
     if (typeof renderSessionHistory === 'function') {
@@ -311,9 +311,9 @@ async function deleteSession(sessionId, workoutName) {
     renderStatistics();
 
     // Update calendar if visible
-    if (window.ghostGym.workoutHistory.calendarView) {
-      window.ghostGym.workoutHistory.calendarView.setSessionData(
-        window.ghostGym.workoutHistory.sessions
+    if (window.ffn.workoutHistory.calendarView) {
+      window.ffn.workoutHistory.calendarView.setSessionData(
+        window.ffn.workoutHistory.sessions
       );
     }
 

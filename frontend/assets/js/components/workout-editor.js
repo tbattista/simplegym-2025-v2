@@ -11,17 +11,17 @@
 function loadWorkoutIntoEditor(workoutId) {
     console.log('📝 Loading workout into editor:', workoutId);
     
-    const workout = window.ghostGym.workouts.find(w => w.id === workoutId);
+    const workout = window.ffn.workouts.find(w => w.id === workoutId);
     if (!workout) {
         console.error('❌ Workout not found:', workoutId);
         return;
     }
     
     // Update builder state
-    window.ghostGym.workoutBuilder.selectedWorkoutId = workoutId;
-    window.ghostGym.workoutBuilder.isEditing = true;
-    window.ghostGym.workoutBuilder.isDirty = false;
-    window.ghostGym.workoutBuilder.currentWorkout = { ...workout };
+    window.ffn.workoutBuilder.selectedWorkoutId = workoutId;
+    window.ffn.workoutBuilder.isEditing = true;
+    window.ffn.workoutBuilder.isDirty = false;
+    window.ffn.workoutBuilder.currentWorkout = { ...workout };
     
     // Persist workout ID to localStorage for page refresh recovery
     try {
@@ -80,7 +80,7 @@ function loadWorkoutIntoEditor(workoutId) {
     // Render template notes
     if (workout.template_notes && workout.template_notes.length > 0) {
         // Initialize template_notes in current workout
-        window.ghostGym.workoutBuilder.currentWorkout.template_notes = [...workout.template_notes];
+        window.ffn.workoutBuilder.currentWorkout.template_notes = [...workout.template_notes];
 
         // Render notes after exercise groups are rendered
         setTimeout(() => {
@@ -89,7 +89,7 @@ function loadWorkoutIntoEditor(workoutId) {
             }
         }, 50);
     } else {
-        window.ghostGym.workoutBuilder.currentWorkout.template_notes = [];
+        window.ffn.workoutBuilder.currentWorkout.template_notes = [];
     }
 
     // Bonus exercises section removed - no longer needed
@@ -199,18 +199,18 @@ async function createNewWorkoutInEditor() {
         console.log('✅ New workout auto-saved:', savedWorkout.id);
         
         // Initialize workouts array if it doesn't exist
-        if (!window.ghostGym.workouts) {
-            window.ghostGym.workouts = [];
+        if (!window.ffn.workouts) {
+            window.ffn.workouts = [];
         }
         
         // Add to local state
-        window.ghostGym.workouts.unshift(savedWorkout);
+        window.ffn.workouts.unshift(savedWorkout);
         
         // Update builder state
-        window.ghostGym.workoutBuilder.selectedWorkoutId = savedWorkout.id;
-        window.ghostGym.workoutBuilder.isEditing = true;
-        window.ghostGym.workoutBuilder.isDirty = false;
-        window.ghostGym.workoutBuilder.currentWorkout = { ...savedWorkout };
+        window.ffn.workoutBuilder.selectedWorkoutId = savedWorkout.id;
+        window.ffn.workoutBuilder.isEditing = true;
+        window.ffn.workoutBuilder.isDirty = false;
+        window.ffn.workoutBuilder.currentWorkout = { ...savedWorkout };
         
         // Store in localStorage for refresh recovery
         try {
@@ -480,7 +480,7 @@ async function saveWorkoutFromEditor(silent = false) {
         }
         
         let savedWorkout;
-        const workoutId = window.ghostGym.workoutBuilder.selectedWorkoutId;
+        const workoutId = window.ffn.workoutBuilder.selectedWorkoutId;
         
         // Check if this is a shared workout (temporary ID starting with "shared-")
         const isSharedWorkout = workoutId && workoutId.startsWith('shared-');
@@ -491,10 +491,10 @@ async function saveWorkoutFromEditor(silent = false) {
             savedWorkout = await window.dataManager.createWorkout(workoutData);
             
             // Add to local array
-            window.ghostGym.workouts.unshift(savedWorkout);
+            window.ffn.workouts.unshift(savedWorkout);
             
             // Update to the new workout ID
-            window.ghostGym.workoutBuilder.selectedWorkoutId = savedWorkout.id;
+            window.ffn.workoutBuilder.selectedWorkoutId = savedWorkout.id;
             
             // Update localStorage to track the new workout ID
             try {
@@ -512,9 +512,9 @@ async function saveWorkoutFromEditor(silent = false) {
             savedWorkout = await window.dataManager.updateWorkout(workoutId, workoutData);
             
             // Update in local array
-            const index = window.ghostGym.workouts.findIndex(w => w.id === workoutId);
+            const index = window.ffn.workouts.findIndex(w => w.id === workoutId);
             if (index !== -1) {
-                window.ghostGym.workouts[index] = savedWorkout;
+                window.ffn.workouts[index] = savedWorkout;
             }
             
             if (!silent) {
@@ -523,8 +523,8 @@ async function saveWorkoutFromEditor(silent = false) {
         } else {
             // Create new workout
             savedWorkout = await window.dataManager.createWorkout(workoutData);
-            window.ghostGym.workouts.unshift(savedWorkout);
-            window.ghostGym.workoutBuilder.selectedWorkoutId = savedWorkout.id;
+            window.ffn.workouts.unshift(savedWorkout);
+            window.ffn.workoutBuilder.selectedWorkoutId = savedWorkout.id;
             
             if (!silent) {
                 showAlert(`Workout "${savedWorkout.name}" created successfully!`, 'success');
@@ -532,8 +532,8 @@ async function saveWorkoutFromEditor(silent = false) {
         }
         
         // Update state
-        window.ghostGym.workoutBuilder.isDirty = false;
-        window.ghostGym.workoutBuilder.currentWorkout = { ...savedWorkout };
+        window.ffn.workoutBuilder.isDirty = false;
+        window.ffn.workoutBuilder.currentWorkout = { ...savedWorkout };
         
         // Refresh library
         if (window.renderWorkoutsView) {
@@ -598,7 +598,7 @@ async function saveWorkoutFromEditor(silent = false) {
  * Cancel editing and return to empty state
  */
 function cancelEditWorkout() {
-    if (window.ghostGym.workoutBuilder.isDirty) {
+    if (window.ffn.workoutBuilder.isDirty) {
         if (!confirm('You have unsaved changes. Are you sure you want to cancel?')) {
             return;
         }
@@ -613,9 +613,9 @@ function cancelEditWorkout() {
     }
     
     // Reset state
-    window.ghostGym.workoutBuilder.selectedWorkoutId = null;
-    window.ghostGym.workoutBuilder.isEditing = false;
-    window.ghostGym.workoutBuilder.isDirty = false;
+    window.ffn.workoutBuilder.selectedWorkoutId = null;
+    window.ffn.workoutBuilder.isEditing = false;
+    window.ffn.workoutBuilder.isDirty = false;
     
     // Hide "Hide Workouts" button
     const hideWorkoutsBtn = document.getElementById('hideWorkoutsBtn');
@@ -645,10 +645,10 @@ function cancelEditWorkout() {
  * Delete workout from editor
  */
 async function deleteWorkoutFromEditor() {
-    const workoutId = window.ghostGym.workoutBuilder.selectedWorkoutId;
+    const workoutId = window.ffn.workoutBuilder.selectedWorkoutId;
     if (!workoutId) return;
     
-    const workout = window.ghostGym.workouts.find(w => w.id === workoutId);
+    const workout = window.ffn.workouts.find(w => w.id === workoutId);
     if (!workout) return;
     
     if (!confirm(`Are you sure you want to delete "${workout.name}"? This action cannot be undone.`)) {
@@ -666,7 +666,7 @@ async function deleteWorkoutFromEditor() {
         await window.dataManager.deleteWorkout(workoutId);
         
         // Remove from local state
-        window.ghostGym.workouts = window.ghostGym.workouts.filter(w => w.id !== workoutId);
+        window.ffn.workouts = window.ffn.workouts.filter(w => w.id !== workoutId);
         
         // Refresh library
         if (window.renderWorkoutsView) {
@@ -786,10 +786,10 @@ function applyReorderedExercises(reorderedExercises) {
  * Integrates with autosave system from workouts.js
  */
 function markEditorDirty() {
-    if (!window.ghostGym.workoutBuilder.isEditing) return;
-    if (!window.ghostGym.workoutBuilder.selectedWorkoutId) return; // Don't autosave new workouts
+    if (!window.ffn.workoutBuilder.isEditing) return;
+    if (!window.ffn.workoutBuilder.selectedWorkoutId) return; // Don't autosave new workouts
     
-    window.ghostGym.workoutBuilder.isDirty = true;
+    window.ffn.workoutBuilder.isDirty = true;
     updateSaveStatus('unsaved');
     
     // Trigger autosave if available
@@ -889,7 +889,7 @@ function setupWorkoutEditorListeners() {
         console.log('✅ Save button found, attaching click listener');
         saveBtn.addEventListener('click', () => {
             console.log('🖱️ Save button clicked!');
-            console.log('📊 Current workout state:', window.ghostGym?.workoutBuilder);
+            console.log('📊 Current workout state:', window.ffn?.workoutBuilder);
             saveWorkoutFromEditor();
         });
     } else {
@@ -1017,8 +1017,8 @@ function setupWorkoutEditorListeners() {
             }
             
             // Get current workout ID
-            const workoutId = window.ghostGym?.workoutBuilder?.selectedWorkoutId ||
-                            window.ghostGym?.workoutBuilder?.currentWorkout?.id;
+            const workoutId = window.ffn?.workoutBuilder?.selectedWorkoutId ||
+                            window.ffn?.workoutBuilder?.currentWorkout?.id;
             
             if (workoutId) {
                 // Open share offcanvas after more menu closes (300ms animation)
@@ -1059,13 +1059,13 @@ function setupWorkoutEditorListeners() {
             setTimeout(() => {
                 if (window.shareModal && window.shareModal.handlePublicShare) {
                     // Get current workout ID
-                    const workoutId = window.ghostGym?.workoutBuilder?.selectedWorkoutId ||
-                                    window.ghostGym?.workoutBuilder?.currentWorkout?.id;
+                    const workoutId = window.ffn?.workoutBuilder?.selectedWorkoutId ||
+                                    window.ffn?.workoutBuilder?.currentWorkout?.id;
                     
                     if (workoutId) {
                         // Set current workout in share modal and open modal dialog
                         window.shareModal.currentWorkoutId = workoutId;
-                        const workouts = window.ghostGym?.workouts || [];
+                        const workouts = window.ffn?.workouts || [];
                         window.shareModal.currentWorkout = workouts.find(w => w.id === workoutId);
                         window.shareModal.openModal(workoutId);
                     } else {
@@ -1101,13 +1101,13 @@ function setupWorkoutEditorListeners() {
             setTimeout(() => {
                 if (window.shareModal && window.shareModal.handlePrivateShare) {
                     // Get current workout ID
-                    const workoutId = window.ghostGym?.workoutBuilder?.selectedWorkoutId ||
-                                    window.ghostGym?.workoutBuilder?.currentWorkout?.id;
+                    const workoutId = window.ffn?.workoutBuilder?.selectedWorkoutId ||
+                                    window.ffn?.workoutBuilder?.currentWorkout?.id;
                     
                     if (workoutId) {
                         // Set current workout in share modal and open modal dialog
                         window.shareModal.currentWorkoutId = workoutId;
-                        const workouts = window.ghostGym?.workouts || [];
+                        const workouts = window.ffn?.workouts || [];
                         window.shareModal.currentWorkout = workouts.find(w => w.id === workoutId);
                         window.shareModal.openModal(workoutId);
                     } else {
@@ -1165,7 +1165,7 @@ function setupWorkoutEditorListeners() {
 
     // Warn on navigation if dirty, and clean up localStorage on intentional navigation
     window.addEventListener('beforeunload', (e) => {
-        if (window.ghostGym.workoutBuilder.isDirty) {
+        if (window.ffn.workoutBuilder.isDirty) {
             e.preventDefault();
             e.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
         }
@@ -1319,14 +1319,14 @@ window.handleAddTemplateNote = async function() {
     console.log('📝 Add template note clicked');
 
     // Ensure workout is being edited
-    if (!window.ghostGym?.workoutBuilder?.isEditing) {
+    if (!window.ffn?.workoutBuilder?.isEditing) {
         console.warn('⚠️ No workout being edited');
         return;
     }
 
     // Initialize template_notes array if not exists
-    if (!window.ghostGym.workoutBuilder.currentWorkout.template_notes) {
-        window.ghostGym.workoutBuilder.currentWorkout.template_notes = [];
+    if (!window.ffn.workoutBuilder.currentWorkout.template_notes) {
+        window.ffn.workoutBuilder.currentWorkout.template_notes = [];
     }
 
     try {
@@ -1378,7 +1378,7 @@ function getTemplateItemsForPositionPicker() {
             });
         } else if (card.classList.contains('template-note-card')) {
             const noteId = card.getAttribute('data-note-id');
-            const notes = window.ghostGym.workoutBuilder.currentWorkout.template_notes || [];
+            const notes = window.ffn.workoutBuilder.currentWorkout.template_notes || [];
             const note = notes.find(n => n.id === noteId);
             const preview = note?.content ?
                 (note.content.length > 30 ? note.content.substring(0, 30) + '...' : note.content) :
@@ -1415,10 +1415,10 @@ function createTemplateNoteAtPosition(position) {
     };
 
     // Add to state
-    if (!window.ghostGym.workoutBuilder.currentWorkout.template_notes) {
-        window.ghostGym.workoutBuilder.currentWorkout.template_notes = [];
+    if (!window.ffn.workoutBuilder.currentWorkout.template_notes) {
+        window.ffn.workoutBuilder.currentWorkout.template_notes = [];
     }
-    window.ghostGym.workoutBuilder.currentWorkout.template_notes.push(note);
+    window.ffn.workoutBuilder.currentWorkout.template_notes.push(note);
 
     // Render note card
     if (window.templateNoteCardRenderer) {
@@ -1455,7 +1455,7 @@ function createTemplateNoteAtPosition(position) {
 window.handleEditTemplateNote = function(noteId) {
     console.log('📝 Edit template note:', noteId);
 
-    const notes = window.ghostGym.workoutBuilder.currentWorkout.template_notes || [];
+    const notes = window.ffn.workoutBuilder.currentWorkout.template_notes || [];
     const note = notes.find(n => n.id === noteId);
 
     if (!note) {
@@ -1491,7 +1491,7 @@ window.handleEditTemplateNote = function(noteId) {
 function saveTemplateNoteContent(noteId, content) {
     console.log('💾 Saving template note:', noteId);
 
-    const notes = window.ghostGym.workoutBuilder.currentWorkout.template_notes || [];
+    const notes = window.ffn.workoutBuilder.currentWorkout.template_notes || [];
     const noteIndex = notes.findIndex(n => n.id === noteId);
 
     if (noteIndex === -1) {
@@ -1526,7 +1526,7 @@ window.handleDeleteTemplateNote = function(noteId) {
     }
 
     // Remove from state
-    const notes = window.ghostGym.workoutBuilder.currentWorkout.template_notes || [];
+    const notes = window.ffn.workoutBuilder.currentWorkout.template_notes || [];
     const noteIndex = notes.findIndex(n => n.id === noteId);
 
     if (noteIndex !== -1) {
@@ -1593,7 +1593,7 @@ function renderTemplateNotes(templateNotes) {
  * @returns {Array} Array of template note objects
  */
 function collectTemplateNotes() {
-    const notes = window.ghostGym.workoutBuilder.currentWorkout?.template_notes || [];
+    const notes = window.ffn.workoutBuilder.currentWorkout?.template_notes || [];
     if (notes.length === 0) {
         return [];
     }

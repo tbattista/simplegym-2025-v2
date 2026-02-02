@@ -43,7 +43,7 @@ pip install -r requirements.txt
 
 ## Architecture Overview
 
-Ghost Gym V2 is a workout log generator with:
+Fitness Field Notes is a workout log generator with:
 - **Backend**: FastAPI (Python) serving REST API and static files
 - **Frontend**: Vanilla JavaScript with Bootstrap 5 (Sneat template)
 - **Database**: Firebase Firestore (cloud) with localStorage fallback

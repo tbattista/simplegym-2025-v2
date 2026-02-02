@@ -190,7 +190,7 @@
         
         renderFunction: (container, options) => {
             const maxItems = options.maxItems || 10;
-            const workouts = window.ghostGym?.workouts || [];
+            const workouts = window.ffn?.workouts || [];
             const displayWorkouts = workouts.slice(0, maxItems);
             
             if (displayWorkouts.length === 0) {

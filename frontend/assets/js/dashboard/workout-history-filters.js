@@ -13,7 +13,7 @@
  * Unified toolbar (full controls in All Mode, simple in single workout mode)
  */
 function renderSessionFilterBar() {
-  const state = window.ghostGym.workoutHistory;
+  const state = window.ffn.workoutHistory;
   const isAllMode = state.isAllMode;
   const activeWorkout = state.workoutTypeFilter;
   const activeSort = state.sessionSort;
@@ -97,7 +97,7 @@ function renderSessionFilterBar() {
  * Apply session filters (workout type and date)
  */
 function applySessionFilters(sessions) {
-  const state = window.ghostGym.workoutHistory;
+  const state = window.ffn.workoutHistory;
   const workoutFilter = state.workoutTypeFilter;
   const dateFilter = state.dateFilter;
 
@@ -133,7 +133,7 @@ function applySessionFilters(sessions) {
  * Sort sessions by current sort mode
  */
 function sortSessions(sessions) {
-  const sortMode = window.ghostGym.workoutHistory.sessionSort;
+  const sortMode = window.ffn.workoutHistory.sessionSort;
   const sorted = [...sessions];
 
   switch (sortMode) {
@@ -158,8 +158,8 @@ function sortSessions(sessions) {
  * Set workout type filter and re-render
  */
 function setWorkoutTypeFilter(workoutName) {
-  window.ghostGym.workoutHistory.workoutTypeFilter = workoutName;
-  window.ghostGym.workoutHistory.currentPage = 1; // Reset page
+  window.ffn.workoutHistory.workoutTypeFilter = workoutName;
+  window.ffn.workoutHistory.currentPage = 1; // Reset page
   renderSessionHistory();
 }
 
@@ -168,12 +168,12 @@ function setWorkoutTypeFilter(workoutName) {
  */
 function cycleSessionSort() {
   const sortOrder = ['date-desc', 'date-asc'];
-  const currentSort = window.ghostGym.workoutHistory.sessionSort;
+  const currentSort = window.ffn.workoutHistory.sessionSort;
   const currentIndex = sortOrder.indexOf(currentSort);
   const nextIndex = (currentIndex + 1) % sortOrder.length;
 
-  window.ghostGym.workoutHistory.sessionSort = sortOrder[nextIndex];
-  window.ghostGym.workoutHistory.currentPage = 1; // Reset page
+  window.ffn.workoutHistory.sessionSort = sortOrder[nextIndex];
+  window.ffn.workoutHistory.currentPage = 1; // Reset page
   renderSessionHistory();
 }
 
@@ -181,12 +181,12 @@ function cycleSessionSort() {
  * Reset all session filters to defaults
  */
 function resetSessionFilters() {
-  window.ghostGym.workoutHistory.sessionFilter = 'all';
-  window.ghostGym.workoutHistory.workoutTypeFilter = 'all';
-  window.ghostGym.workoutHistory.sessionSort = 'date-desc';
-  window.ghostGym.workoutHistory.currentPage = 1;
-  window.ghostGym.workoutHistory.pageSize = 20;
-  window.ghostGym.workoutHistory.dateFilter = null;
+  window.ffn.workoutHistory.sessionFilter = 'all';
+  window.ffn.workoutHistory.workoutTypeFilter = 'all';
+  window.ffn.workoutHistory.sessionSort = 'date-desc';
+  window.ffn.workoutHistory.currentPage = 1;
+  window.ffn.workoutHistory.pageSize = 20;
+  window.ffn.workoutHistory.dateFilter = null;
 
   // Hide date filter indicator
   const indicator = document.getElementById('dateFilterIndicator');
@@ -205,8 +205,8 @@ function resetSessionFilters() {
  * Set page size and re-render
  */
 function setPageSize(size) {
-  window.ghostGym.workoutHistory.pageSize = size;
-  window.ghostGym.workoutHistory.currentPage = 1; // Reset to page 1
+  window.ffn.workoutHistory.pageSize = size;
+  window.ffn.workoutHistory.currentPage = 1; // Reset to page 1
   renderSessionHistory();
 }
 
@@ -214,7 +214,7 @@ function setPageSize(size) {
  * Navigate to a specific page
  */
 function goToPage(page) {
-  const state = window.ghostGym.workoutHistory;
+  const state = window.ffn.workoutHistory;
 
   if (state.pageSize === 'all') return;
 
@@ -236,7 +236,7 @@ function goToPage(page) {
  * Render pagination controls
  */
 function renderPaginationControls(currentPage, totalPages, totalItems) {
-  const state = window.ghostGym.workoutHistory;
+  const state = window.ffn.workoutHistory;
   const pageSize = parseInt(state.pageSize);
   const start = (currentPage - 1) * pageSize + 1;
   const end = Math.min(currentPage * pageSize, totalItems);

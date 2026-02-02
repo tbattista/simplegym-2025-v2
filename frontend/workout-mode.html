@@ -11,7 +11,7 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
     
-    <title>Session - Ghost Gym</title>
+    <title>Session - Fitness Field Notes</title>
 
     <meta name="description" content="Execute your workout with rest timers and exercise tracking" />
 
@@ -34,8 +34,8 @@
     <!-- Vendors CSS -->
     <link rel="stylesheet" href="/static/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css" />
 
-    <!-- Custom Ghost Gym CSS -->
-    <link rel="stylesheet" href="/static/assets/css/ghost-gym-custom.css" />
+    <!-- Custom FFN CSS -->
+    <link rel="stylesheet" href="/static/assets/css/ffn-custom.css" />
     
     <!-- Navbar CSS -->
     <link rel="stylesheet" href="/static/assets/css/navbar-custom.css" />
@@ -74,7 +74,7 @@
     <!-- Theme Manager (must load early to prevent flash) -->
     <script src="/static/assets/js/services/theme-manager.js"></script>
 
-    <!-- Ghost Gym Centralized Configuration -->
+    <!-- FFN Centralized Configuration -->
     <script src="/static/assets/js/app-config.js"></script>
     
     <!-- Firebase SDK Loader (Centralized) -->
@@ -358,8 +358,8 @@
     <!-- Initialize Workout Mode -->
     <script>
         // Initialize global state for workout mode
-        window.ghostGym = window.ghostGym || {};
-        window.ghostGym.workoutMode = {
+        window.ffn = window.ffn || {};
+        window.ffn.workoutMode = {
             currentWorkout: null,
             currentExerciseIndex: 0,
             expandedCardIndex: null,
@@ -387,7 +387,7 @@
             if (window.workoutSessionService && window.UnifiedNotesController) {
                 const unifiedNotesController = new window.UnifiedNotesController(window.workoutSessionService);
                 unifiedNotesController.initialize();
-                window.ghostGym.unifiedNotesController = unifiedNotesController;
+                window.ffn.unifiedNotesController = unifiedNotesController;
             }
         });
         

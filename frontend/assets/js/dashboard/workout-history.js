@@ -18,8 +18,8 @@
    GLOBAL STATE INITIALIZATION
    ============================================ */
 
-window.ghostGym = window.ghostGym || {};
-window.ghostGym.workoutHistory = {
+window.ffn = window.ffn || {};
+window.ffn.workoutHistory = {
   // Core identifiers
   workoutId: null,
   workoutInfo: null,

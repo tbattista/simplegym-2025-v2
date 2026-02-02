@@ -7,7 +7,7 @@
 
 class PlateCalculatorService {
     constructor() {
-        this.storageKey = 'ghostGym_plateConfig';
+        this.storageKey = 'ffn_plateConfig';
         this.defaultConfig = {
             barWeight: 45,
             barUnit: 'lbs',

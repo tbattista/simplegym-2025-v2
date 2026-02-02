@@ -138,11 +138,11 @@
             if (window.currentFilters && window.applyFiltersAndRender) {
                 window.currentFilters.search = '';
                 window.applyFiltersAndRender(window.currentFilters);
-            } else if (window.ghostGym?.workoutDatabase && window.filterWorkouts) {
-                window.ghostGym.workoutDatabase.filters.search = '';
+            } else if (window.ffn?.workoutDatabase && window.filterWorkouts) {
+                window.ffn.workoutDatabase.filters.search = '';
                 window.filterWorkouts();
-            } else if (window.ghostGym?.programsPage && window.renderProgramsGrid) {
-                window.ghostGym.programsPage.filters.search = '';
+            } else if (window.ffn?.programsPage && window.renderProgramsGrid) {
+                window.ffn.programsPage.filters.search = '';
                 window.renderProgramsGrid();
             }
         }
@@ -266,13 +266,13 @@
                     // Exercise database page
                     window.currentFilters.search = searchTerm;
                     window.applyFiltersAndRender(window.currentFilters);
-                } else if (window.ghostGym?.workoutDatabase && window.filterWorkouts) {
+                } else if (window.ffn?.workoutDatabase && window.filterWorkouts) {
                     // Workout database page
-                    window.ghostGym.workoutDatabase.filters.search = searchTerm;
+                    window.ffn.workoutDatabase.filters.search = searchTerm;
                     window.filterWorkouts();
-                } else if (window.ghostGym?.programsPage && window.renderProgramsGrid) {
+                } else if (window.ffn?.programsPage && window.renderProgramsGrid) {
                     // Programs page
-                    window.ghostGym.programsPage.filters.search = searchTerm;
+                    window.ffn.programsPage.filters.search = searchTerm;
                     window.renderProgramsGrid();
                 }
             }, 300);
@@ -338,8 +338,8 @@
                     if (window.applyFiltersAndRender) {
                         window.applyFiltersAndRender(window.currentFilters);
                     }
-                } else if (type === 'workout' && window.ghostGym?.workoutDatabase) {
-                    window.ghostGym.workoutDatabase.filters.search = searchTerm;
+                } else if (type === 'workout' && window.ffn?.workoutDatabase) {
+                    window.ffn.workoutDatabase.filters.search = searchTerm;
                     if (window.filterWorkouts) {
                         window.filterWorkouts();
                     }
@@ -669,8 +669,8 @@
                     title: 'Start workout',
                     action: function() {
                         // Get current workout ID - check selectedWorkoutId first (more reliable)
-                        const workoutId = window.ghostGym?.workoutBuilder?.selectedWorkoutId ||
-                                        window.ghostGym?.workoutBuilder?.currentWorkout?.id;
+                        const workoutId = window.ffn?.workoutBuilder?.selectedWorkoutId ||
+                                        window.ffn?.workoutBuilder?.currentWorkout?.id;
                         
                         if (workoutId) {
                             console.log('🏃 Starting workout mode with ID:', workoutId);
@@ -729,8 +729,8 @@
                                         description: 'Share publicly or create private link',
                                         onClick: () => {
                                             // Get current workout ID
-                                            const workoutId = window.ghostGym?.workoutBuilder?.selectedWorkoutId ||
-                                                            window.ghostGym?.workoutBuilder?.currentWorkout?.id;
+                                            const workoutId = window.ffn?.workoutBuilder?.selectedWorkoutId ||
+                                                            window.ffn?.workoutBuilder?.currentWorkout?.id;
 
                                             if (workoutId && window.shareModal) {
                                                 window.shareModal.open(workoutId);
@@ -888,7 +888,7 @@
                                     }
                                 };
                                 
-                                window.filterBar = new window.GhostGymFilterBar('offcanvasFilterBarContainer', filterBarConfig);
+                                window.filterBar = new window.FFNFilterBar('offcanvasFilterBarContainer', filterBarConfig);
                                 
                                 // Set current filter values (excluding favoritesOnly which isn't in FilterBar)
                                 if (window.currentFilters) {
@@ -973,7 +973,7 @@
                                     }
                                 };
                                 
-                                window.sortBar = new window.GhostGymFilterBar('offcanvasSortBarContainer', sortBarConfig);
+                                window.sortBar = new window.FFNFilterBar('offcanvasSortBarContainer', sortBarConfig);
                                 
                                 // Set current values for all sort filters
                                 if (window.currentFilters) {

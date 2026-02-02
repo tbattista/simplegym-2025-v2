@@ -253,7 +253,7 @@ function getAuthModalsHTML() {
                             <h6 class="mb-3">About</h6>
                             <div class="card bg-light">
                                 <div class="card-body">
-                                    <p class="mb-2"><strong>Ghost Gym V0.4.1</strong></p>
+                                    <p class="mb-2"><strong>Fitness Field Notes</strong></p>
                                     <p class="mb-2 small text-muted">Professional workout program management</p>
                                     <p class="mb-0 small">
                                         <i class="bx bx-code-alt me-1"></i>

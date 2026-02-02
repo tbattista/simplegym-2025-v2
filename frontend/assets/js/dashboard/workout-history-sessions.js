@@ -13,9 +13,9 @@
  * Uses filter/pagination functions from workout-history-filters.js
  */
 function renderSessionHistory() {
-  const sessions = window.ghostGym.workoutHistory.sessions;
+  const sessions = window.ffn.workoutHistory.sessions;
   const container = document.getElementById('sessionHistoryContainer');
-  const isAllMode = window.ghostGym.workoutHistory.isAllMode;
+  const isAllMode = window.ffn.workoutHistory.isAllMode;
 
   if (sessions.length === 0) {
     container.innerHTML = `
@@ -55,7 +55,7 @@ function renderSessionHistory() {
   }
 
   // Apply pagination (All Mode only)
-  const state = window.ghostGym.workoutHistory;
+  const state = window.ffn.workoutHistory;
   let paginatedSessions = filteredSessions;
   let totalPages = 1;
   const pageSize = state.pageSize;
@@ -185,7 +185,7 @@ function renderSessionGroup(title, sessions) {
  */
 function createSessionEntry(session) {
   const collapseId = `session-${session.id}`;
-  const state = window.ghostGym.workoutHistory;
+  const state = window.ffn.workoutHistory;
   const isExpanded = state.expandedSessions.has(session.id);
   const isAllMode = state.isAllMode;
   const deleteMode = state.deleteMode;

@@ -547,7 +547,7 @@ class WorkoutLifecycleManager {
      * @returns {Object} Modal manager or fallback
      */
     getModalManager() {
-        if (!window.ghostGymModalManager) {
+        if (!window.ffnModalManager) {
             console.warn('⚠️ Modal manager not available, using fallback');
             return {
                 confirm: (title, message, onConfirm, onCancel) => {
@@ -566,7 +566,7 @@ class WorkoutLifecycleManager {
                 }
             };
         }
-        return window.ghostGymModalManager;
+        return window.ffnModalManager;
     }
     
     /**

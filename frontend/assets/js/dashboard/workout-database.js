@@ -68,7 +68,7 @@ function getWorkoutSessionState(workoutId) {
 async function loadSessionStates() {
     try {
         // Check for active session in localStorage
-        const persistedSession = localStorage.getItem('ghost_gym_active_workout_session');
+        const persistedSession = localStorage.getItem('ffn_active_workout_session');
         if (persistedSession) {
             const session = JSON.parse(persistedSession);
             if (session.workoutId && session.status === 'in_progress') {
@@ -126,7 +126,7 @@ async function toggleWorkoutFavorite(event, workoutId, currentState) {
         await window.dataManager.toggleWorkoutFavorite(workoutId, newState);
 
         // Update local state
-        const workout = window.ghostGym.workoutDatabase.all.find(w => w.id === workoutId);
+        const workout = window.ffn.workoutDatabase.all.find(w => w.id === workoutId);
         if (workout) {
             workout.is_favorite = newState;
             workout.favorited_at = newState ? new Date().toISOString() : null;
@@ -160,12 +160,12 @@ function renderFavoritesSection() {
     if (!section || !container) return;
 
     // Hide section if favorites filter is active (redundant cards)
-    if (window.ghostGym.workoutDatabase.filters.favoritesOnly) {
+    if (window.ffn.workoutDatabase.filters.favoritesOnly) {
         section.style.display = 'none';
         return;
     }
 
-    const favorites = window.ghostGym.workoutDatabase.all
+    const favorites = window.ffn.workoutDatabase.all
         .filter(w => w.is_favorite)
         .sort((a, b) => new Date(b.favorited_at) - new Date(a.favorited_at));
 
@@ -224,7 +224,7 @@ function filterFavoritesOnly(enabled = true) {
     console.log('⭐ Favorites filter:', enabled ? 'enabled' : 'disabled');
 
     // Update filter state
-    window.ghostGym.workoutDatabase.filters.favoritesOnly = enabled;
+    window.ffn.workoutDatabase.filters.favoritesOnly = enabled;
 
     // Sync the toggle in offcanvas
     const toggle = document.getElementById('favoritesFilterToggle');
@@ -294,15 +294,15 @@ async function loadWorkouts() {
         console.log(`✅ Loaded ${workouts.length} workouts from data manager`);
         
         // Update both global state and local state
-        window.ghostGym = window.ghostGym || {};
-        window.ghostGym.workouts = workouts;
-        window.ghostGym.workoutDatabase.all = workouts;
-        window.ghostGym.workoutDatabase.stats.total = workouts.length;
+        window.ffn = window.ffn || {};
+        window.ffn.workouts = workouts;
+        window.ffn.workoutDatabase.all = workouts;
+        window.ffn.workoutDatabase.stats.total = workouts.length;
         
         // Update total count display
         const totalCountEl = document.getElementById('totalWorkoutsCount');
         if (totalCountEl) {
-            totalCountEl.textContent = window.ghostGym.workoutDatabase.stats.total;
+            totalCountEl.textContent = window.ffn.workoutDatabase.stats.total;
         }
         
         // Load tag options
@@ -334,7 +334,7 @@ async function loadWorkouts() {
 function loadTagOptions() {
     // Get all unique tags
     const tagSet = new Set();
-    window.ghostGym.workoutDatabase.all.forEach(workout => {
+    window.ffn.workoutDatabase.all.forEach(workout => {
         (workout.tags || []).forEach(tag => tagSet.add(tag));
     });
     
@@ -365,7 +365,7 @@ function renderTagFilterCheckboxes(tags) {
     let html = '<div class="tags-list" style="max-height: 200px; overflow-y: auto;">';
     
     tags.forEach(tag => {
-        const isChecked = window.ghostGym.workoutDatabase.filters.tags.includes(tag);
+        const isChecked = window.ffn.workoutDatabase.filters.tags.includes(tag);
         html += `
             <div class="form-check mb-2">
                 <input class="form-check-input tag-filter-checkbox"
@@ -400,16 +400,16 @@ function handleTagFilterChange(e) {
     
     if (isChecked) {
         // Add tag to filters
-        if (!window.ghostGym.workoutDatabase.filters.tags.includes(tag)) {
-            window.ghostGym.workoutDatabase.filters.tags.push(tag);
+        if (!window.ffn.workoutDatabase.filters.tags.includes(tag)) {
+            window.ffn.workoutDatabase.filters.tags.push(tag);
         }
     } else {
         // Remove tag from filters
-        window.ghostGym.workoutDatabase.filters.tags =
-            window.ghostGym.workoutDatabase.filters.tags.filter(t => t !== tag);
+        window.ffn.workoutDatabase.filters.tags =
+            window.ffn.workoutDatabase.filters.tags.filter(t => t !== tag);
     }
     
-    console.log('🏷️ Tag filters updated:', window.ghostGym.workoutDatabase.filters.tags);
+    console.log('🏷️ Tag filters updated:', window.ffn.workoutDatabase.filters.tags);
     
     // Apply filters in real-time
     filterWorkouts();
@@ -426,14 +426,14 @@ function updateStatsDisplay() {
     const showingCountEl = document.getElementById('showingCount');
     
     if (totalCountEl) {
-        totalCountEl.textContent = window.ghostGym.workoutDatabase.stats.total;
+        totalCountEl.textContent = window.ffn.workoutDatabase.stats.total;
     }
     
     if (showingCountEl) {
-        const showingCount = window.ghostGym.workoutDatabase.filtered?.length ||
-                            window.ghostGym.workoutDatabase.all.length;
+        const showingCount = window.ffn.workoutDatabase.filtered?.length ||
+                            window.ffn.workoutDatabase.all.length;
         showingCountEl.textContent = showingCount;
-        window.ghostGym.workoutDatabase.stats.showing = showingCount;
+        window.ffn.workoutDatabase.stats.showing = showingCount;
     }
 }
 
@@ -441,7 +441,7 @@ function updateStatsDisplay() {
  * Update filter button badge to show active filters
  */
 function updateFilterBadge() {
-    const selectedTags = window.ghostGym.workoutDatabase.filters.tags || [];
+    const selectedTags = window.ffn.workoutDatabase.filters.tags || [];
     const activeFilterCount = selectedTags.length;
     
     // Update filter button in bottom action bar if it exists
@@ -501,7 +501,7 @@ function initializeSortByPopover() {
                 document.getElementById('sortByText').textContent = label;
                 
                 // Update filter and apply
-                window.ghostGym.workoutDatabase.filters.sortBy = value;
+                window.ffn.workoutDatabase.filters.sortBy = value;
                 filterWorkouts();
                 
                 // Hide popover
@@ -550,7 +550,7 @@ function initializeTagsPopover(tags) {
                 document.getElementById('tagsText').textContent = label;
                 
                 // Update filter and apply
-                window.ghostGym.workoutDatabase.filters.tags = value ? [value] : [];
+                window.ffn.workoutDatabase.filters.tags = value ? [value] : [];
                 filterWorkouts();
                 
                 // Hide popover
@@ -570,13 +570,13 @@ function initializeTagsPopover(tags) {
  * Apply all filters and sort
  */
 function filterWorkouts() {
-    let filtered = [...window.ghostGym.workoutDatabase.all];
+    let filtered = [...window.ffn.workoutDatabase.all];
 
     // Get filter values from state
-    const searchTerm = window.ghostGym.workoutDatabase.filters.search || '';
-    const selectedTags = window.ghostGym.workoutDatabase.filters.tags || [];
-    const sortBy = window.ghostGym.workoutDatabase.filters.sortBy || 'modified_date';
-    const favoritesOnly = window.ghostGym.workoutDatabase.filters.favoritesOnly || false;
+    const searchTerm = window.ffn.workoutDatabase.filters.search || '';
+    const selectedTags = window.ffn.workoutDatabase.filters.tags || [];
+    const sortBy = window.ffn.workoutDatabase.filters.sortBy || 'modified_date';
+    const favoritesOnly = window.ffn.workoutDatabase.filters.favoritesOnly || false;
 
     console.log('🔍 Applying filters:', { searchTerm, selectedTags, sortBy, favoritesOnly });
 
@@ -607,10 +607,10 @@ function filterWorkouts() {
     filtered = sortWorkouts(filtered, sortBy);
 
     // Update filtered array
-    window.ghostGym.workoutDatabase.filtered = filtered;
+    window.ffn.workoutDatabase.filtered = filtered;
 
     // Reset to page 1
-    window.ghostGym.workoutDatabase.currentPage = 1;
+    window.ffn.workoutDatabase.currentPage = 1;
 
     // Update grid with filtered data
     if (workoutGrid) {
@@ -623,7 +623,7 @@ function filterWorkouts() {
     // Update filter badge
     updateFilterBadge();
 
-    console.log('📊 Filter results:', filtered.length, 'of', window.ghostGym.workoutDatabase.all.length);
+    console.log('📊 Filter results:', filtered.length, 'of', window.ffn.workoutDatabase.all.length);
 }
 
 /**
@@ -682,10 +682,10 @@ function clearFilters() {
     }
 
     // Reset filter state (including search and favorites)
-    window.ghostGym.workoutDatabase.filters.search = '';
-    window.ghostGym.workoutDatabase.filters.tags = [];
-    window.ghostGym.workoutDatabase.filters.sortBy = 'modified_date';
-    window.ghostGym.workoutDatabase.filters.favoritesOnly = false;
+    window.ffn.workoutDatabase.filters.search = '';
+    window.ffn.workoutDatabase.filters.tags = [];
+    window.ffn.workoutDatabase.filters.sortBy = 'modified_date';
+    window.ffn.workoutDatabase.filters.favoritesOnly = false;
 
     // Reset favorites filter toggle immediately after state change
     const favoritesToggle = document.getElementById('favoritesFilterToggle');
@@ -856,7 +856,7 @@ function initializeComponents() {
             onSelectionChange: handleSelectionChange
         },
         onPageChange: (page) => {
-            window.ghostGym.workoutDatabase.currentPage = page;
+            window.ffn.workoutDatabase.currentPage = page;
             // Scroll to top of container
             document.getElementById('workoutTableContainer')?.scrollIntoView({
                 behavior: 'smooth',
@@ -909,7 +909,7 @@ function truncateText(text, maxLength) {
  * Update stats display
  */
 function updateStats(showingCount) {
-    document.getElementById('totalCount').textContent = window.ghostGym.workoutDatabase.stats.total;
+    document.getElementById('totalCount').textContent = window.ffn.workoutDatabase.stats.total;
     document.getElementById('showingCount').textContent = showingCount;
 }
 
@@ -945,7 +945,7 @@ async function viewWorkoutDetails(workoutId) {
         console.log('👁️ Viewing workout details:', workoutId);
         
         // Find workout in local data first
-        let workout = window.ghostGym.workoutDatabase.all.find(w => w.id === workoutId);
+        let workout = window.ffn.workoutDatabase.all.find(w => w.id === workoutId);
         
         // If not found locally, fetch from API
         if (!workout) {
@@ -997,7 +997,7 @@ async function duplicateWorkout(workoutId) {
 
     try {
         // Find the original workout
-        const originalWorkout = window.ghostGym.workoutDatabase.all.find(w => w.id === workoutId);
+        const originalWorkout = window.ffn.workoutDatabase.all.find(w => w.id === workoutId);
         if (!originalWorkout) {
             throw new Error('Workout not found');
         }
@@ -1087,14 +1087,14 @@ let searchOverlay = null;
  * Initialize search overlay using shared component
  */
 function initSearchOverlay() {
-    searchOverlay = new GhostGymSearchOverlay({
+    searchOverlay = new FFNSearchOverlay({
         placeholder: 'Search workouts by name, description, or tags...',
         onSearch: (searchTerm) => {
             console.log('🔍 Search callback triggered with term:', searchTerm);
             
             // Update global state
-            window.ghostGym.workoutDatabase.filters.search = searchTerm;
-            console.log('📊 Updated filter state:', window.ghostGym.workoutDatabase.filters);
+            window.ffn.workoutDatabase.filters.search = searchTerm;
+            console.log('📊 Updated filter state:', window.ffn.workoutDatabase.filters);
             
             // Use existing filter function
             filterWorkouts();
@@ -1108,7 +1108,7 @@ function initSearchOverlay() {
             
             // Calculate matching workouts
             const searchLower = searchTerm.toLowerCase();
-            const filtered = window.ghostGym.workoutDatabase.all.filter(workout => {
+            const filtered = window.ffn.workoutDatabase.all.filter(workout => {
                 return workout.name.toLowerCase().includes(searchLower) ||
                        (workout.description || '').toLowerCase().includes(searchLower) ||
                        (workout.tags || []).some(tag => tag.toLowerCase().includes(searchLower));
@@ -1116,7 +1116,7 @@ function initSearchOverlay() {
             
             return {
                 count: filtered.length,
-                total: window.ghostGym.workoutDatabase.all.length
+                total: window.ffn.workoutDatabase.all.length
             };
         }
     });
@@ -1175,14 +1175,14 @@ function hideSearchOverlay() {
  */
 function toggleDeleteMode() {
     const toggle = document.getElementById('deleteModeToggle');
-    const isActive = toggle ? toggle.checked : !window.ghostGym.workoutDatabase.deleteMode;
+    const isActive = toggle ? toggle.checked : !window.ffn.workoutDatabase.deleteMode;
 
     // Sync toggle state
     if (toggle) toggle.checked = isActive;
-    window.ghostGym.workoutDatabase.deleteMode = isActive;
+    window.ffn.workoutDatabase.deleteMode = isActive;
 
     // Clear selection when entering/exiting
-    window.ghostGym.workoutDatabase.selectedWorkoutIds.clear();
+    window.ffn.workoutDatabase.selectedWorkoutIds.clear();
 
     console.log(`🗑️ Delete mode ${isActive ? 'activated' : 'deactivated'}`);
 
@@ -1209,7 +1209,7 @@ function toggleDeleteMode() {
  * @param {boolean} isSelected - Whether it's selected
  */
 function handleSelectionChange(workoutId, isSelected) {
-    const selected = window.ghostGym.workoutDatabase.selectedWorkoutIds;
+    const selected = window.ffn.workoutDatabase.selectedWorkoutIds;
     if (isSelected) {
         selected.add(workoutId);
     } else {
@@ -1259,7 +1259,7 @@ function hideSelectionActionBar() {
  * Update the selection count display
  */
 function updateSelectionCount() {
-    const count = window.ghostGym.workoutDatabase.selectedWorkoutIds.size;
+    const count = window.ffn.workoutDatabase.selectedWorkoutIds.size;
     const countEl = document.querySelector('.selection-count');
     const deleteBtn = document.querySelector('.btn-batch-delete');
 
@@ -1277,8 +1277,8 @@ function exitDeleteMode() {
         toggle.dispatchEvent(new Event('change'));
     } else {
         // Direct toggle if checkbox not available
-        window.ghostGym.workoutDatabase.deleteMode = false;
-        window.ghostGym.workoutDatabase.selectedWorkoutIds.clear();
+        window.ffn.workoutDatabase.deleteMode = false;
+        window.ffn.workoutDatabase.selectedWorkoutIds.clear();
         if (workoutGrid) {
             workoutGrid.setDeleteMode(false);
             workoutGrid.clearSelection();
@@ -1292,13 +1292,13 @@ function exitDeleteMode() {
  * Confirm batch delete of selected workouts
  */
 async function confirmBatchDelete() {
-    const selected = window.ghostGym.workoutDatabase.selectedWorkoutIds;
+    const selected = window.ffn.workoutDatabase.selectedWorkoutIds;
     const count = selected.size;
     if (count === 0) return;
 
     // Get workout names for confirmation
     const workoutNames = [...selected].map(id => {
-        const workout = window.ghostGym.workoutDatabase.all.find(w => w.id === id);
+        const workout = window.ffn.workoutDatabase.all.find(w => w.id === id);
         return workout?.name || 'Unknown workout';
     }).slice(0, 3); // Show max 3 names
 
@@ -1343,20 +1343,20 @@ async function batchDeleteWorkouts(workoutIds) {
         }
 
         // Update local state
-        window.ghostGym.workoutDatabase.all = window.ghostGym.workoutDatabase.all.filter(
+        window.ffn.workoutDatabase.all = window.ffn.workoutDatabase.all.filter(
             w => !workoutIds.includes(w.id)
         );
-        window.ghostGym.workouts = window.ghostGym.workouts.filter(
+        window.ffn.workouts = window.ffn.workouts.filter(
             w => !workoutIds.includes(w.id)
         );
 
         // Update stats
-        window.ghostGym.workoutDatabase.stats.total = window.ghostGym.workoutDatabase.all.length;
+        window.ffn.workoutDatabase.stats.total = window.ffn.workoutDatabase.all.length;
 
         // Update total count display
         const totalCountEl = document.getElementById('totalWorkoutsCount');
         if (totalCountEl) {
-            totalCountEl.textContent = window.ghostGym.workoutDatabase.stats.total;
+            totalCountEl.textContent = window.ffn.workoutDatabase.stats.total;
         }
 
         // Show success message
@@ -1408,16 +1408,16 @@ async function deleteWorkoutFromDatabase(workoutId, workoutName) {
         await window.dataManager.deleteWorkout(workoutId);
         
         // Remove from local state
-        window.ghostGym.workoutDatabase.all = window.ghostGym.workoutDatabase.all.filter(w => w.id !== workoutId);
-        window.ghostGym.workouts = window.ghostGym.workouts.filter(w => w.id !== workoutId);
+        window.ffn.workoutDatabase.all = window.ffn.workoutDatabase.all.filter(w => w.id !== workoutId);
+        window.ffn.workouts = window.ffn.workouts.filter(w => w.id !== workoutId);
         
         // Update stats
-        window.ghostGym.workoutDatabase.stats.total = window.ghostGym.workoutDatabase.all.length;
+        window.ffn.workoutDatabase.stats.total = window.ffn.workoutDatabase.all.length;
         
         // Update total count display
         const totalCountEl = document.getElementById('totalWorkoutsCount');
         if (totalCountEl) {
-            totalCountEl.textContent = window.ghostGym.workoutDatabase.stats.total;
+            totalCountEl.textContent = window.ffn.workoutDatabase.stats.total;
         }
         
         // Re-apply filters and render
@@ -1482,7 +1482,7 @@ function cycleWorkoutSort() {
     const sortOption = SORT_OPTIONS[currentSortIndex];
 
     // Update filter state (reuse existing)
-    window.ghostGym.workoutDatabase.filters.sortBy = sortOption.value;
+    window.ffn.workoutDatabase.filters.sortBy = sortOption.value;
 
     // Update button UI
     const btn = document.getElementById('sortCycleBtn');
@@ -1513,7 +1513,7 @@ function initToolbarSearch() {
 
         searchTimeout = setTimeout(() => {
             // Reuse existing filter state & function
-            window.ghostGym.workoutDatabase.filters.search = query;
+            window.ffn.workoutDatabase.filters.search = query;
             filterWorkouts();
         }, 300);
     });
@@ -1521,7 +1521,7 @@ function initToolbarSearch() {
     clearBtn?.addEventListener('click', () => {
         searchInput.value = '';
         clearBtn.style.display = 'none';
-        window.ghostGym.workoutDatabase.filters.search = '';
+        window.ffn.workoutDatabase.filters.search = '';
         filterWorkouts();
     });
 
@@ -1535,10 +1535,10 @@ function updateFilterBadge() {
     const badge = document.getElementById('filterBadge');
     if (!badge) return;
 
-    let count = window.ghostGym.workoutDatabase.filters.tags.length;
+    let count = window.ffn.workoutDatabase.filters.tags.length;
 
     // Include favorites filter in count
-    if (window.ghostGym.workoutDatabase.filters.favoritesOnly) {
+    if (window.ffn.workoutDatabase.filters.favoritesOnly) {
         count += 1;
     }
 

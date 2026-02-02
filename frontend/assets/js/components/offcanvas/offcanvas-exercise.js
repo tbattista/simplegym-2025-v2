@@ -308,14 +308,14 @@ export function createBonusExercise(data, onAddExercise) {
         // Load user favorites from API
         const loadUserFavorites = async () => {
             // Initialize favorites Set if it doesn't exist
-            if (!window.ghostGym) {
-                window.ghostGym = {};
+            if (!window.ffn) {
+                window.ffn = {};
             }
-            if (!window.ghostGym.exercises) {
-                window.ghostGym.exercises = {};
+            if (!window.ffn.exercises) {
+                window.ffn.exercises = {};
             }
-            if (!window.ghostGym.exercises.favorites) {
-                window.ghostGym.exercises.favorites = new Set();
+            if (!window.ffn.exercises.favorites) {
+                window.ffn.exercises.favorites = new Set();
             }
             
             // Only load if user is authenticated
@@ -332,8 +332,8 @@ export function createBonusExercise(data, onAddExercise) {
                 
                 if (response.ok) {
                     const data = await response.json();
-                    window.ghostGym.exercises.favorites = new Set(data.favorites.map(f => f.exerciseId));
-                    console.log(`✅ Loaded ${window.ghostGym.exercises.favorites.size} favorites for filtering`);
+                    window.ffn.exercises.favorites = new Set(data.favorites.map(f => f.exerciseId));
+                    console.log(`✅ Loaded ${window.ffn.exercises.favorites.size} favorites for filtering`);
                 } else {
                     console.warn('⚠️ Failed to load favorites:', response.status);
                 }
@@ -394,10 +394,10 @@ export function createBonusExercise(data, onAddExercise) {
             // 6. Favorites filter
             if (state.favoritesOnly) {
                 // Check if favorites are available
-                if (window.ghostGym?.exercises?.favorites) {
+                if (window.ffn?.exercises?.favorites) {
                     filtered = filtered.filter(ex => {
                         // Check if exercise ID exists in favorites Set
-                        return window.ghostGym.exercises.favorites.has(ex.id);
+                        return window.ffn.exercises.favorites.has(ex.id);
                     });
                 } else {
                     console.warn('⚠️ Favorites filter enabled but favorites data not available');

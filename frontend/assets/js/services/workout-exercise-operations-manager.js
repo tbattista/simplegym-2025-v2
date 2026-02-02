@@ -533,7 +533,7 @@ class WorkoutExerciseOperationsManager {
      * @returns {Object} Modal manager or fallback
      */
     getModalManager() {
-        if (!window.ghostGymModalManager) {
+        if (!window.ffnModalManager) {
             console.warn('⚠️ Modal manager not available, using fallback');
             return {
                 confirm: (title, message, onConfirm, onCancel) => {
@@ -552,7 +552,7 @@ class WorkoutExerciseOperationsManager {
                 }
             };
         }
-        return window.ghostGymModalManager;
+        return window.ffnModalManager;
     }
     
     /**

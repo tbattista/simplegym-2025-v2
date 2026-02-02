@@ -13,11 +13,11 @@
  * Shows only sessions for the selected workout
  */
 function initHistoryCalendar() {
-  const sessions = window.ghostGym.workoutHistory.sessions;
+  const sessions = window.ffn.workoutHistory.sessions;
 
   // Create calendar instance if it doesn't exist
-  if (!window.ghostGym.workoutHistory.calendarView) {
-    window.ghostGym.workoutHistory.calendarView = new CalendarView('historyCalendarGrid', {
+  if (!window.ffn.workoutHistory.calendarView) {
+    window.ffn.workoutHistory.calendarView = new CalendarView('historyCalendarGrid', {
       monthLabelId: 'historyCurrentMonth',
       prevButtonId: 'historyPrevMonth',
       nextButtonId: 'historyNextMonth',
@@ -25,11 +25,11 @@ function initHistoryCalendar() {
     });
 
     // CalendarView uses window.calendarView for onclick handlers
-    window.calendarView = window.ghostGym.workoutHistory.calendarView;
+    window.calendarView = window.ffn.workoutHistory.calendarView;
   }
 
   // Set the session data (already filtered by workout)
-  window.ghostGym.workoutHistory.calendarView.setSessionData(sessions);
+  window.ffn.workoutHistory.calendarView.setSessionData(sessions);
   console.log(`📅 History calendar initialized with ${sessions.length} sessions`);
 }
 
@@ -43,7 +43,7 @@ function initHistoryCalendar() {
  * In Single Workout Mode: scrolls to session
  */
 function handleCalendarDayClick(dateKey, daySessions) {
-  const isAllMode = window.ghostGym.workoutHistory.isAllMode;
+  const isAllMode = window.ffn.workoutHistory.isAllMode;
 
   // In All Mode, filter to show only that day's sessions
   if (isAllMode) {
@@ -67,7 +67,7 @@ function handleCalendarDayClick(dateKey, daySessions) {
  * @param {string} dateKey - Date in 'YYYY-MM-DD' format
  */
 function setDateFilter(dateKey) {
-  const state = window.ghostGym.workoutHistory;
+  const state = window.ffn.workoutHistory;
   state.dateFilter = dateKey;
   state.currentPage = 1; // Reset pagination
 
@@ -84,7 +84,7 @@ function setDateFilter(dateKey) {
  * Clear date filter and show all sessions
  */
 function clearDateFilter() {
-  const state = window.ghostGym.workoutHistory;
+  const state = window.ffn.workoutHistory;
   state.dateFilter = null;
   state.currentPage = 1;
 
