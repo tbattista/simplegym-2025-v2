@@ -300,7 +300,7 @@ class FirebaseDataManager {
         });
         
         try {
-            if (this.currentUser && this.isOnline) {
+            if (this.getFirebaseUser() && this.isOnline) {
                 console.log('📡 Fetching programs from Firestore...');
                 const programs = await this.getFirestorePrograms({ page, pageSize, search });
                 console.log('✅ Got programs from Firestore:', programs.length, programs);
@@ -384,7 +384,7 @@ class FirebaseDataManager {
     
     async createProgram(programData) {
         try {
-            if (this.currentUser && this.isOnline) {
+            if (this.getFirebaseUser() && this.isOnline) {
                 return await this.createFirestoreProgram(programData);
             } else {
                 return this.createLocalStorageProgram(programData);
@@ -453,7 +453,7 @@ class FirebaseDataManager {
 
     async updateProgram(programId, programData) {
         try {
-            if (this.currentUser && this.isOnline) {
+            if (this.getFirebaseUser() && this.isOnline) {
                 return await this.updateFirestoreProgram(programId, programData);
             } else {
                 return this.updateLocalStorageProgram(programId, programData);
@@ -528,7 +528,7 @@ class FirebaseDataManager {
 
     async deleteProgram(programId) {
         try {
-            if (this.currentUser && this.isOnline) {
+            if (this.getFirebaseUser() && this.isOnline) {
                 return await this.deleteFirestoreProgram(programId);
             } else {
                 return this.deleteLocalStorageProgram(programId);
@@ -597,7 +597,7 @@ class FirebaseDataManager {
         console.log('🔍 DEBUG: getWorkouts called with:', { hasUser: !!this.currentUser, isOnline: this.isOnline, options });
         
         try {
-            if (this.currentUser && this.isOnline) {
+            if (this.getFirebaseUser() && this.isOnline) {
                 const workouts = await this.getFirestoreWorkouts({ page, pageSize, search, tags });
                 console.log('🔍 DEBUG: Got workouts from Firestore:', workouts.length);
                 return workouts;
@@ -722,7 +722,7 @@ class FirebaseDataManager {
     
     async createWorkout(workoutData) {
         try {
-            if (this.currentUser && this.isOnline) {
+            if (this.getFirebaseUser() && this.isOnline) {
                 return await this.createFirestoreWorkout(workoutData);
             } else {
                 return this.createLocalStorageWorkout(workoutData);
@@ -791,7 +791,7 @@ class FirebaseDataManager {
     
     async updateWorkout(workoutId, workoutData) {
         try {
-            if (this.currentUser && this.isOnline) {
+            if (this.getFirebaseUser() && this.isOnline) {
                 return await this.updateFirestoreWorkout(workoutId, workoutData);
             } else {
                 return this.updateLocalStorageWorkout(workoutId, workoutData);
@@ -901,7 +901,7 @@ class FirebaseDataManager {
     
     async deleteWorkout(workoutId) {
         try {
-            if (this.currentUser && this.isOnline) {
+            if (this.getFirebaseUser() && this.isOnline) {
                 return await this.deleteFirestoreWorkout(workoutId);
             } else {
                 return this.deleteLocalStorageWorkout(workoutId);
@@ -1095,12 +1095,14 @@ class FirebaseDataManager {
     // Utility Methods
     
     async getAuthToken() {
-        if (!this.currentUser) {
+        // Use getFirebaseUser() to get the source of truth, avoiding mobile race conditions
+        const user = this.getFirebaseUser();
+        if (!user) {
             throw new Error('User not authenticated');
         }
-        
+
         try {
-            return await this.currentUser.getIdToken();
+            return await user.getIdToken();
         } catch (error) {
             console.error('❌ Error getting auth token:', error);
             throw error;
@@ -1162,6 +1164,14 @@ class FirebaseDataManager {
     
     getCurrentUser() {
         return this.currentUser;
+    }
+
+    /**
+     * Get the Firebase user directly from Firebase Auth (source of truth)
+     * This avoids race conditions where this.currentUser may be stale on mobile
+     */
+    getFirebaseUser() {
+        return window.firebaseAuth?.currentUser || this.currentUser;
     }
     
     getServiceStatus() {
