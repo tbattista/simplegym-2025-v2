@@ -404,23 +404,35 @@
                 debugPanel.innerHTML = '<b>🔍 DEBUG PANEL</b><br>';
                 document.body.appendChild(debugPanel);
 
-                const debugLog = (msg) => {
+                window.mobileDebugLog = (msg) => {
                     const time = new Date().toLocaleTimeString();
                     debugPanel.innerHTML += `${time}: ${msg}<br>`;
                     debugPanel.scrollTop = debugPanel.scrollHeight;
+                    console.log('[MOBILE DEBUG]', msg);
                 };
 
-                debugLog('firebaseReady: ' + window.firebaseReady);
-                debugLog('firebaseAuth exists: ' + (!!window.firebaseAuth));
-                debugLog('currentUser: ' + (window.firebaseAuth?.currentUser?.email || 'NULL'));
-                debugLog('dataManager exists: ' + (!!window.dataManager));
-                debugLog('getFirebaseUser: ' + (window.dataManager?.getFirebaseUser()?.email || 'NULL'));
-                debugLog('hasLoaded: ' + hasLoaded);
+                window.mobileDebugLog('firebaseReady: ' + window.firebaseReady);
+                window.mobileDebugLog('firebaseAuth exists: ' + (!!window.firebaseAuth));
+                window.mobileDebugLog('currentUser: ' + (window.firebaseAuth?.currentUser?.email || 'NULL'));
+                window.mobileDebugLog('dataManager.currentUser: ' + (window.dataManager?.currentUser?.email || 'NULL'));
+                window.mobileDebugLog('getFirebaseUser: ' + (window.dataManager?.getFirebaseUser()?.email || 'NULL'));
+                window.mobileDebugLog('isOnline: ' + window.dataManager?.isOnline);
+                window.mobileDebugLog('hasLoaded: ' + hasLoaded);
 
-                // Update every 2 seconds
+                // Show workout count when state updates
+                const checkWorkouts = () => {
+                    const count = window.ghostGym?.workoutDatabase?.all?.length || 0;
+                    window.mobileDebugLog('📊 Workouts loaded: ' + count);
+                };
+
+                // Check after 5 seconds
+                setTimeout(checkWorkouts, 5000);
+
+                // Update every 3 seconds
                 setInterval(() => {
-                    debugLog('-- POLL: user=' + (window.firebaseAuth?.currentUser?.email || 'NULL') + ' loaded=' + hasLoaded);
-                }, 2000);
+                    const count = window.ghostGym?.workoutDatabase?.all?.length || 0;
+                    window.mobileDebugLog('-- POLL: user=' + (window.firebaseAuth?.currentUser?.email || 'NULL') + ' workouts=' + count);
+                }, 3000);
             }
         });
 

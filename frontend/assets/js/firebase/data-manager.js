@@ -593,24 +593,40 @@ class FirebaseDataManager {
     
     async getWorkouts(options = {}) {
         const { page = 1, pageSize = 50, search = null, tags = null } = options;
-        
-        console.log('🔍 DEBUG: getWorkouts called with:', { hasUser: !!this.currentUser, isOnline: this.isOnline, options });
-        
+
+        const fbUser = this.getFirebaseUser();
+        console.log('🔍 DEBUG: getWorkouts called with:', {
+            hasCurrentUser: !!this.currentUser,
+            hasFirebaseUser: !!fbUser,
+            firebaseUserEmail: fbUser?.email || 'null',
+            isOnline: this.isOnline,
+            options
+        });
+
         try {
-            if (this.getFirebaseUser() && this.isOnline) {
+            if (fbUser && this.isOnline) {
+                console.log('🔍 DEBUG: Will fetch from Firestore');
+                if (window.mobileDebugLog) window.mobileDebugLog('API: Fetching from Firestore...');
                 const workouts = await this.getFirestoreWorkouts({ page, pageSize, search, tags });
                 console.log('🔍 DEBUG: Got workouts from Firestore:', workouts.length);
+                if (window.mobileDebugLog) window.mobileDebugLog('API: Got ' + workouts.length + ' from Firestore');
                 return workouts;
             } else {
+                console.log('🔍 DEBUG: Will fetch from localStorage (fbUser:', !!fbUser, 'isOnline:', this.isOnline, ')');
+                if (window.mobileDebugLog) window.mobileDebugLog('API: Using localStorage (no user or offline)');
                 const workouts = this.getLocalStorageWorkouts({ page, pageSize, search, tags });
                 console.log('🔍 DEBUG: Got workouts from localStorage:', workouts.length);
+                if (window.mobileDebugLog) window.mobileDebugLog('API: Got ' + workouts.length + ' from localStorage');
                 return workouts;
             }
         } catch (error) {
-            console.error('❌ Error getting workouts:', error);
+            console.error('❌ ERROR in getWorkouts:', error.message);
+            console.error('❌ Error stack:', error.stack);
+            if (window.mobileDebugLog) window.mobileDebugLog('❌ API ERROR: ' + error.message);
             // Fallback to localStorage
             const workouts = this.getLocalStorageWorkouts({ page, pageSize, search, tags });
-            console.log('🔍 DEBUG: Fallback to localStorage workouts:', workouts.length);
+            console.log('🔍 DEBUG: FALLBACK to localStorage workouts:', workouts.length);
+            if (window.mobileDebugLog) window.mobileDebugLog('❌ FALLBACK: Got ' + workouts.length + ' from localStorage');
             return workouts;
         }
     }
