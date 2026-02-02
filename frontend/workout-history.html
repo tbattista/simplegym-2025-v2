@@ -334,6 +334,41 @@
             }, 3000);
 
             console.log('✅ Workout History page ready!');
+
+            // MOBILE DEBUG: Show visible status panel (remove after debugging)
+            if (window.location.search.includes('debug=1')) {
+                const debugPanel = document.createElement('div');
+                debugPanel.id = 'mobileDebugPanel';
+                debugPanel.style.cssText = 'position:fixed;bottom:60px;left:10px;right:10px;background:#222;color:#0f0;padding:10px;font-family:monospace;font-size:11px;z-index:9999;max-height:200px;overflow-y:auto;border-radius:8px;border:1px solid #0f0;';
+                debugPanel.innerHTML = '<b>🔍 HISTORY DEBUG</b><br>';
+                document.body.appendChild(debugPanel);
+
+                window.mobileDebugLog = (msg) => {
+                    const time = new Date().toLocaleTimeString();
+                    debugPanel.innerHTML += `${time}: ${msg}<br>`;
+                    debugPanel.scrollTop = debugPanel.scrollHeight;
+                    console.log('[MOBILE DEBUG]', msg);
+                };
+
+                window.mobileDebugLog('firebaseReady: ' + window.firebaseReady);
+                window.mobileDebugLog('firebaseAuth exists: ' + (!!window.firebaseAuth));
+                window.mobileDebugLog('currentUser: ' + (window.firebaseAuth?.currentUser?.email || 'NULL'));
+                window.mobileDebugLog('UID: ' + (window.firebaseAuth?.currentUser?.uid || 'NULL'));
+                window.mobileDebugLog('hasLoaded: ' + hasLoaded);
+
+                // Log when auth state changes
+                if (window.firebaseAuth) {
+                    window.firebaseAuth.onAuthStateChanged((user) => {
+                        window.mobileDebugLog('🔄 AUTH: ' + (user?.email || 'null') + ' UID:' + (user?.uid?.substring(0,8) || 'null'));
+                    });
+                }
+
+                // Check session count after 5 seconds
+                setTimeout(() => {
+                    const count = window.ghostGym?.workoutHistory?.sessions?.length || 0;
+                    window.mobileDebugLog('📊 Sessions loaded: ' + count);
+                }, 5000);
+            }
         });
     </script>
   </body>

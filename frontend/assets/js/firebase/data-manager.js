@@ -655,8 +655,15 @@ class FirebaseDataManager {
             console.log('🔍 DEBUG: Fetching workouts from:', url);
             console.log('🔍 DEBUG: Current protocol:', window.location.protocol);
             console.log('🔍 DEBUG: Current origin:', window.location.origin);
-            
+
             try {
+                // Log UID at API call time (critical for mobile debugging)
+                const fbUser = this.getFirebaseUser();
+                const uid = fbUser?.uid || 'NULL';
+                const email = fbUser?.email || 'NULL';
+                console.log('🔍 DEBUG: API call user - UID:', uid, 'Email:', email);
+                if (window.mobileDebugLog) window.mobileDebugLog('📱 API USER: ' + email + ' UID:' + uid.substring(0, 8));
+
                 const token = await this.getAuthToken();
                 const tokenPreview = token ? token.substring(0, 20) + '...' : 'NO TOKEN';
                 console.log('🔍 DEBUG: Token preview:', tokenPreview);

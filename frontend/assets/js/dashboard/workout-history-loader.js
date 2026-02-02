@@ -111,16 +111,31 @@ async function loadAllSessions(scrollToSessionId = null) {
       throw new Error('Data manager not available');
     }
 
+    // Debug: Log user at API call time
+    const fbUser = window.dataManager.getFirebaseUser();
+    const uid = fbUser?.uid || 'NULL';
+    const email = fbUser?.email || 'NULL';
+    console.log('🔍 [HISTORY] API call user - UID:', uid, 'Email:', email);
+    if (window.mobileDebugLog) window.mobileDebugLog('📱 HISTORY USER: ' + email + ' UID:' + uid.substring(0, 8));
+
     const token = await window.dataManager.getAuthToken();
+    if (window.mobileDebugLog) window.mobileDebugLog('Token: ' + (token ? token.substring(0, 20) + '...' : 'NO TOKEN'));
+
     const response = await fetch('/api/v3/workout-sessions/?page_size=100&sort=desc', {
       headers: { 'Authorization': `Bearer ${token}` }
     });
+
+    console.log('🔍 [HISTORY] Response status:', response.status);
+    if (window.mobileDebugLog) window.mobileDebugLog('Response: ' + response.status);
 
     if (!response.ok) {
       throw new Error('Failed to fetch workout sessions');
     }
 
     const data = await response.json();
+    console.log('🔍 [HISTORY] Got sessions:', data.sessions?.length || 0);
+    if (window.mobileDebugLog) window.mobileDebugLog('Sessions: ' + (data.sessions?.length || 0));
+
     window.ghostGym.workoutHistory.sessions = data.sessions || [];
 
     // No exercise history in all mode (API requires workout_id)
