@@ -294,15 +294,13 @@ class FirebaseDataManager {
         const { page = 1, pageSize = 20, search = null } = options;
         
         console.log('🔍 DEBUG: getPrograms called with:', {
-            storageMode: this.storageMode,
-            isAuthenticated: this.isAuthenticated,
+            hasUser: !!this.currentUser,
             isOnline: this.isOnline,
-            currentUser: this.currentUser?.email,
             options
         });
         
         try {
-            if (this.storageMode === 'firestore' && this.isOnline) {
+            if (this.currentUser && this.isOnline) {
                 console.log('📡 Fetching programs from Firestore...');
                 const programs = await this.getFirestorePrograms({ page, pageSize, search });
                 console.log('✅ Got programs from Firestore:', programs.length, programs);
@@ -386,7 +384,7 @@ class FirebaseDataManager {
     
     async createProgram(programData) {
         try {
-            if (this.storageMode === 'firestore' && this.isOnline) {
+            if (this.currentUser && this.isOnline) {
                 return await this.createFirestoreProgram(programData);
             } else {
                 return this.createLocalStorageProgram(programData);
@@ -455,7 +453,7 @@ class FirebaseDataManager {
 
     async updateProgram(programId, programData) {
         try {
-            if (this.storageMode === 'firestore' && this.isOnline) {
+            if (this.currentUser && this.isOnline) {
                 return await this.updateFirestoreProgram(programId, programData);
             } else {
                 return this.updateLocalStorageProgram(programId, programData);
@@ -530,7 +528,7 @@ class FirebaseDataManager {
 
     async deleteProgram(programId) {
         try {
-            if (this.storageMode === 'firestore' && this.isOnline) {
+            if (this.currentUser && this.isOnline) {
                 return await this.deleteFirestoreProgram(programId);
             } else {
                 return this.deleteLocalStorageProgram(programId);
@@ -596,10 +594,10 @@ class FirebaseDataManager {
     async getWorkouts(options = {}) {
         const { page = 1, pageSize = 50, search = null, tags = null } = options;
         
-        console.log('🔍 DEBUG: getWorkouts called with:', { storageMode: this.storageMode, isOnline: this.isOnline, options });
+        console.log('🔍 DEBUG: getWorkouts called with:', { hasUser: !!this.currentUser, isOnline: this.isOnline, options });
         
         try {
-            if (this.storageMode === 'firestore' && this.isOnline) {
+            if (this.currentUser && this.isOnline) {
                 const workouts = await this.getFirestoreWorkouts({ page, pageSize, search, tags });
                 console.log('🔍 DEBUG: Got workouts from Firestore:', workouts.length);
                 return workouts;
@@ -724,7 +722,7 @@ class FirebaseDataManager {
     
     async createWorkout(workoutData) {
         try {
-            if (this.storageMode === 'firestore' && this.isOnline) {
+            if (this.currentUser && this.isOnline) {
                 return await this.createFirestoreWorkout(workoutData);
             } else {
                 return this.createLocalStorageWorkout(workoutData);
@@ -793,7 +791,7 @@ class FirebaseDataManager {
     
     async updateWorkout(workoutId, workoutData) {
         try {
-            if (this.storageMode === 'firestore' && this.isOnline) {
+            if (this.currentUser && this.isOnline) {
                 return await this.updateFirestoreWorkout(workoutId, workoutData);
             } else {
                 return this.updateLocalStorageWorkout(workoutId, workoutData);
@@ -903,7 +901,7 @@ class FirebaseDataManager {
     
     async deleteWorkout(workoutId) {
         try {
-            if (this.storageMode === 'firestore' && this.isOnline) {
+            if (this.currentUser && this.isOnline) {
                 return await this.deleteFirestoreWorkout(workoutId);
             } else {
                 return this.deleteLocalStorageWorkout(workoutId);
