@@ -657,12 +657,20 @@ class FirebaseDataManager {
             console.log('🔍 DEBUG: Current origin:', window.location.origin);
             
             try {
+                const token = await this.getAuthToken();
+                const tokenPreview = token ? token.substring(0, 20) + '...' : 'NO TOKEN';
+                console.log('🔍 DEBUG: Token preview:', tokenPreview);
+                if (window.mobileDebugLog) window.mobileDebugLog('Token: ' + tokenPreview);
+
                 const response = await fetch(url, {
                     headers: {
-                        'Authorization': `Bearer ${await this.getAuthToken()}`
+                        'Authorization': `Bearer ${token}`
                     }
                 });
-                
+
+                console.log('🔍 DEBUG: Response status:', response.status);
+                if (window.mobileDebugLog) window.mobileDebugLog('Response status: ' + response.status);
+
                 if (!response.ok) {
                     const errorText = await response.text().catch(() => 'No error details');
                     console.error('❌ API Error Response:', {
@@ -671,11 +679,14 @@ class FirebaseDataManager {
                         url: url,
                         errorText: errorText
                     });
+                    if (window.mobileDebugLog) window.mobileDebugLog('❌ API Error: ' + response.status + ' ' + errorText.substring(0, 50));
                     throw new Error(`Failed to fetch workouts: ${response.status} ${response.statusText}`);
                 }
-                
+
                 const data = await response.json();
                 console.log('✅ Successfully fetched workouts:', data.workouts?.length || 0);
+                console.log('🔍 DEBUG: Full response:', JSON.stringify(data).substring(0, 200));
+                if (window.mobileDebugLog) window.mobileDebugLog('API returned: ' + (data.workouts?.length || 0) + ' workouts');
                 return data.workouts || [];
                 
             } catch (error) {
