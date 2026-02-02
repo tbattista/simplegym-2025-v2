@@ -326,13 +326,19 @@
         // Initialize page - uses same pattern as index.html which works on mobile
         document.addEventListener('DOMContentLoaded', async function() {
             console.log('📄 Workout Database Page - DOM Ready');
+            console.log('📄 [DEBUG] firebaseReady:', window.firebaseReady);
+            console.log('📄 [DEBUG] firebaseAuth exists:', !!window.firebaseAuth);
 
             // 1. Wait for Firebase SDK to be ready
             if (!window.firebaseReady) {
+                console.log('📄 [DEBUG] Waiting for firebaseReady...');
                 await new Promise(resolve => {
                     window.addEventListener('firebaseReady', resolve, { once: true });
                 });
+                console.log('📄 [DEBUG] firebaseReady received');
             }
+
+            console.log('📄 [DEBUG] After firebaseReady - firebaseAuth.currentUser:', window.firebaseAuth?.currentUser?.email || 'null');
 
             // 2. Wait for data manager to exist
             if (!window.dataManager) {
@@ -341,15 +347,17 @@
             }
 
             // 3. Check auth and load - same pattern as index.html (which works on mobile)
+            let hasLoaded = false;
             const checkAuthAndLoad = async () => {
                 // Check Firebase directly - this is the source of truth
                 const user = window.firebaseAuth?.currentUser;
-                console.log('📄 Auth check, user:', user ? user.email : 'null');
+                console.log('📄 [DEBUG] checkAuthAndLoad - user:', user?.email || 'null', 'hasLoaded:', hasLoaded);
 
-                if (user) {
+                if (user && !hasLoaded) {
+                    hasLoaded = true;
                     console.log('✅ User authenticated, loading workout database');
                     await initWorkoutDatabase();
-                } else {
+                } else if (!user) {
                     console.log('⏭️ User not authenticated, waiting for auth state change');
                 }
             };
@@ -359,15 +367,61 @@
 
             // Listen for auth state changes (handles delayed auth on mobile)
             if (window.firebaseAuth) {
+                console.log('📄 [DEBUG] Setting up onAuthStateChanged listener');
                 window.firebaseAuth.onAuthStateChanged(async (user) => {
-                    console.log('🔄 Auth state changed:', user ? 'authenticated' : 'not authenticated');
+                    console.log('🔄 [DEBUG] onAuthStateChanged fired - user:', user?.email || 'null');
                     if (user) {
                         await checkAuthAndLoad();
                     }
                 });
+            } else {
+                console.error('❌ [DEBUG] firebaseAuth not available!');
             }
 
+            // MOBILE FALLBACK: If no data loaded after 3 seconds, try again with dataManager
+            setTimeout(async () => {
+                if (!hasLoaded) {
+                    console.log('📄 [DEBUG] Mobile fallback triggered - checking dataManager');
+                    const fbUser = window.dataManager?.getFirebaseUser();
+                    console.log('📄 [DEBUG] dataManager.getFirebaseUser():', fbUser?.email || 'null');
+                    if (fbUser) {
+                        hasLoaded = true;
+                        console.log('✅ [DEBUG] Mobile fallback - user found, loading');
+                        await initWorkoutDatabase();
+                    } else {
+                        console.log('⚠️ [DEBUG] Mobile fallback - still no user after 3s');
+                    }
+                }
+            }, 3000);
+
             console.log('✅ Workout Database page ready!');
+
+            // MOBILE DEBUG: Show visible status panel (remove after debugging)
+            if (window.location.search.includes('debug=1')) {
+                const debugPanel = document.createElement('div');
+                debugPanel.id = 'mobileDebugPanel';
+                debugPanel.style.cssText = 'position:fixed;bottom:60px;left:10px;right:10px;background:#222;color:#0f0;padding:10px;font-family:monospace;font-size:11px;z-index:9999;max-height:200px;overflow-y:auto;border-radius:8px;border:1px solid #0f0;';
+                debugPanel.innerHTML = '<b>🔍 DEBUG PANEL</b><br>';
+                document.body.appendChild(debugPanel);
+
+                const debugLog = (msg) => {
+                    const time = new Date().toLocaleTimeString();
+                    debugPanel.innerHTML += `${time}: ${msg}<br>`;
+                    debugPanel.scrollTop = debugPanel.scrollHeight;
+                };
+
+                debugLog('firebaseReady: ' + window.firebaseReady);
+                debugLog('firebaseAuth exists: ' + (!!window.firebaseAuth));
+                debugLog('currentUser: ' + (window.firebaseAuth?.currentUser?.email || 'NULL'));
+                debugLog('dataManager exists: ' + (!!window.dataManager));
+                debugLog('getFirebaseUser: ' + (window.dataManager?.getFirebaseUser()?.email || 'NULL'));
+                debugLog('hasLoaded: ' + hasLoaded);
+
+                // Update every 2 seconds
+                setInterval(() => {
+                    debugLog('-- POLL: user=' + (window.firebaseAuth?.currentUser?.email || 'NULL') + ' loaded=' + hasLoaded);
+                }, 2000);
+            }
         });
 
         async function initWorkoutDatabase() {
