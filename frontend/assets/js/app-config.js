@@ -61,9 +61,29 @@
                 path = '/' + path;
             }
             
-            // Remove trailing slash to prevent 404 errors
-            if (path.endsWith('/') && path.length > 1) {
-                path = path.slice(0, -1);
+            // Add trailing slash to API paths to prevent 307 redirect auth loss
+            // FastAPI redirects /api/v3/foo to /api/v3/foo/ which drops Authorization header on mobile
+            // Exception: paths ending with an ID like /api/v3/foo/{id} should NOT have trailing slash
+            if (path.startsWith('/api/')) {
+                // Separate path from query string
+                const [pathPart, queryPart] = path.split('?');
+
+                // Only process if path doesn't already have trailing slash
+                if (!pathPart.endsWith('/')) {
+                    // Don't add trailing slash if path ends with a dynamic segment (ID)
+                    const segments = pathPart.split('/').filter(s => s);
+                    const lastSegment = segments[segments.length - 1];
+
+                    // Check if last segment looks like an ID (UUID, Firestore ID, numeric, or alphanumeric ID)
+                    // Firestore IDs are exactly 20 alphanumeric chars, UUIDs are 36 chars with dashes
+                    // Use 20+ to avoid matching endpoint names like "workout-sessions" (16 chars)
+                    const looksLikeId = /^[a-zA-Z0-9_-]{20,}$/.test(lastSegment) || /^\d+$/.test(lastSegment);
+
+                    // If it's a collection endpoint (not an ID), add trailing slash
+                    if (!looksLikeId) {
+                        path = pathPart + '/' + (queryPart ? '?' + queryPart : '');
+                    }
+                }
             }
             
             // Construct URL using current origin (preserves protocol)
