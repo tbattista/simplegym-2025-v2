@@ -58,7 +58,7 @@ class RecentWorkoutsManager {
       const idToken = await user.getIdToken();
       console.log('🔑 Got auth token');
       
-      const url = `/api/v3/workout-sessions?status=completed&page_size=${this.maxWorkouts}`;
+      const url = `/api/v3/workout-sessions/?status=completed&page_size=${this.maxWorkouts}`;
       console.log('🌐 Fetching from:', url);
       
       const response = await fetch(url, {
