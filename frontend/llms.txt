@@ -1,0 +1,55 @@
+# Fitness Field Notes
+
+> A minimalist workout tracking web application for intermediate lifters who value simplicity.
+
+## Overview
+
+Fitness Field Notes is a gym journal and workout log application that helps users:
+- Create custom workout templates with exercises, sets, reps, and rest times
+- Track workout sessions and log progress over time
+- Build multi-workout training programs
+- Share workouts publicly or privately with friends
+- Export workouts to PDF for printing
+
+## Target Audience
+
+Intermediate lifters who prefer simplicity and minimalism over complex features. Users who want a digital replacement for a paper gym journal.
+
+## Key Features
+
+### Workout Builder
+Create workout templates with exercise groups. Add exercises with sets, reps, weight, and rest times. Organize exercises into supersets or circuits.
+
+### Workout Mode
+Active session tracking with rest timers, set completion tracking, and exercise logging. Record actual weights and reps during your workout.
+
+### Programs
+Combine multiple workouts into complete training programs. Schedule workouts across weeks.
+
+### Public Workouts
+Browse community-shared workout templates. Find push/pull/legs splits, strength programs, HIIT workouts, and more. Save workouts to your personal library.
+
+### Workout Sharing
+Generate shareable links for your workouts. Share privately with training partners or publicly with the community.
+
+## Public Content
+
+- `/` - Home page with app overview
+- `/launch` - Marketing landing page
+- `/public-workouts` - Browse all shared workout templates
+- `/share/{token}` - View individual shared workouts
+
+## Keywords
+
+gym log, workout journal, workout planner, workout builder, fitness tracker, workout tracker, training log, exercise log, gym journal, strength training log, workout templates
+
+## Technical Details
+
+- Web application accessible at https://fitnessfieldnotes.com
+- Works on desktop and mobile browsers
+- Free tier with local storage, premium tier with cloud sync
+- No app download required - works in browser
+
+## Contact
+
+Website: https://fitnessfieldnotes.com

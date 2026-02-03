@@ -80,10 +80,13 @@
                 showStats: true,        // Show view/save counts
                 showDates: true,        // Show creation date
                 showTags: true,         // Show tags
-                showExercisePreview: false, // Don't show exercise preview for public
-                dropdownActions: [],    // No dropdown menu for public workouts (no edit/delete)
-                actions: [],            // No action buttons (users click card to view details)
-                onSave: (workout) => saveWorkout(workout)  // Save/copy button in top-right corner
+                showExercisePreview: true, // Show exercise preview
+                dropdownActions: ['view', 'save', 'save-and-edit'],  // View, Save, Copy and Edit
+                actions: [],            // No action buttons at bottom
+                onCardClick: (workout) => openWorkoutDetail(workout.id),  // Click card to view details
+                onViewDetails: (workout) => openWorkoutDetail(workout.id),
+                onSave: (workout) => saveWorkout(workout),
+                onSaveAndEdit: (workout) => saveAndEditWorkout(workout)
             },
             onPageChange: (page) => {
                 currentPage = page;
@@ -185,6 +188,68 @@
             if (saveButton) {
                 saveButton.disabled = false;
                 saveButton.innerHTML = '<i class="bx bx-bookmark me-1"></i>Save to My Workouts';
+            }
+        }
+    }
+
+    /**
+     * Save workout to user's library and open in editor
+     */
+    async function saveAndEditWorkout(workout) {
+        console.log('💾 Saving and editing workout:', workout);
+
+        try {
+            // Check if user is authenticated
+            if (!window.dataManager || !window.dataManager.isUserAuthenticated()) {
+                if (window.toastNotifications) {
+                    window.toastNotifications.warning('Please sign in to save and edit workouts');
+                }
+                // Show login modal
+                const loginModal = document.getElementById('authModal');
+                if (loginModal) {
+                    const modal = new bootstrap.Modal(loginModal);
+                    modal.show();
+                }
+                return;
+            }
+
+            // Get auth token
+            const authToken = await window.dataManager.getAuthToken();
+
+            // Call API to save workout
+            const url = window.config.api.getUrl(`/api/v3/sharing/public-workouts/${workout.id}/save`);
+            console.log('📡 Saving workout to:', url);
+
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${authToken}`
+                },
+                body: JSON.stringify({
+                    custom_name: null
+                })
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.detail || `Failed to save workout (${response.status})`);
+            }
+
+            const savedWorkout = await response.json();
+            console.log('✅ Workout saved, opening editor:', savedWorkout);
+
+            // Redirect to workout builder with the saved workout ID
+            window.location.href = `/workout-builder.html?id=${savedWorkout.id}`;
+
+        } catch (error) {
+            console.error('❌ Error saving workout:', error);
+
+            if (window.toastNotifications) {
+                window.toastNotifications.error(
+                    error.message || 'Failed to save workout. Please try again.',
+                    'Save Failed'
+                );
             }
         }
     }

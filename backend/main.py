@@ -5,7 +5,7 @@ Slim FastAPI application with modular router architecture
 
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, PlainTextResponse, Response
 from fastapi.middleware.cors import CORSMiddleware
 from pathlib import Path
 import os
@@ -17,6 +17,9 @@ load_dotenv()
 
 # Import routers
 from .api import health, documents, workouts, programs, exercises, favorites, auth, data, migration, workout_sessions, sharing, user_profile, export
+from .services.sharing_service import sharing_service
+import re
+import html
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -56,6 +59,43 @@ app.include_router(user_profile.router)  # User profile management
 app.include_router(export.router)  # Export endpoints (text, image, print)
 
 logger.info("✅ All routers included successfully (15 routers total)")
+
+# ============================================
+# SEO Routes (robots.txt, sitemap.xml, llms.txt)
+# ============================================
+
+@app.get("/robots.txt", response_class=PlainTextResponse)
+async def serve_robots():
+    """Serve robots.txt for search engine crawlers"""
+    try:
+        with open("frontend/robots.txt", "r", encoding="utf-8") as f:
+            return PlainTextResponse(content=f.read())
+    except FileNotFoundError:
+        # Fallback robots.txt
+        return PlainTextResponse(content="User-agent: *\nAllow: /\n")
+
+@app.get("/sitemap.xml")
+async def serve_sitemap():
+    """Serve sitemap.xml for search engine indexing"""
+    try:
+        with open("frontend/sitemap.xml", "r", encoding="utf-8") as f:
+            return Response(content=f.read(), media_type="application/xml")
+    except FileNotFoundError:
+        return Response(
+            content='<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"></urlset>',
+            media_type="application/xml"
+        )
+
+@app.get("/llms.txt", response_class=PlainTextResponse)
+async def serve_llms_txt():
+    """Serve llms.txt for AI/LLM crawlers (ChatGPT, Claude, etc.)"""
+    try:
+        with open("frontend/llms.txt", "r", encoding="utf-8") as f:
+            return PlainTextResponse(content=f.read())
+    except FileNotFoundError:
+        return PlainTextResponse(content="# Fitness Field Notes\nA minimalist workout tracking application.\n")
+
+logger.info("✅ SEO routes registered (robots.txt, sitemap.xml, llms.txt)")
 
 # Create necessary directories
 os.makedirs("backend/uploads", exist_ok=True)
@@ -293,6 +333,89 @@ async def serve_launch_page():
     except FileNotFoundError:
         return HTMLResponse(
             content="<h1>Launch page not found</h1><p>Please ensure frontend/launch.html exists</p>",
+            status_code=404
+        )
+
+@app.get("/share/{token}", response_class=HTMLResponse)
+async def serve_share_page(token: str):
+    """Serve share.html with dynamic meta tags for SEO and social sharing"""
+    try:
+        with open("frontend/share.html", "r", encoding="utf-8") as f:
+            html_content = f.read()
+
+        # Try to fetch workout data for dynamic meta tags
+        try:
+            share_data = await sharing_service.get_private_share(token)
+            if share_data:
+                workout_data = share_data.get("workout_data", {}) if isinstance(share_data, dict) else share_data.workout_data
+                workout_name = html.escape(workout_data.get("name", "Shared Workout"))
+                creator_name = html.escape(share_data.get("creator_name", "") if isinstance(share_data, dict) else (share_data.creator_name or ""))
+
+                # Count exercises
+                exercise_groups = workout_data.get("exercise_groups", [])
+                exercise_count = sum(len(g.get("exercises", [])) for g in exercise_groups)
+
+                # Build dynamic meta content
+                if creator_name:
+                    meta_description = f"{workout_name} - {exercise_count} exercises. Created by {creator_name}. View and save this workout template."
+                else:
+                    meta_description = f"{workout_name} - {exercise_count} exercises. View and save this workout template."
+
+                og_title = f"{workout_name} - Shared Workout | Fitness Field Notes"
+
+                # Replace default meta tags with dynamic content
+                html_content = re.sub(
+                    r'<title>.*?</title>',
+                    f'<title>{html.escape(og_title)}</title>',
+                    html_content
+                )
+                html_content = re.sub(
+                    r'<meta name="description" content="[^"]*"',
+                    f'<meta name="description" content="{meta_description}"',
+                    html_content
+                )
+                html_content = re.sub(
+                    r'<meta property="og:title" content="[^"]*"',
+                    f'<meta property="og:title" content="{html.escape(og_title)}"',
+                    html_content
+                )
+                html_content = re.sub(
+                    r'<meta property="og:description" content="[^"]*"',
+                    f'<meta property="og:description" content="{meta_description}"',
+                    html_content
+                )
+                html_content = re.sub(
+                    r'<meta name="twitter:title" content="[^"]*"',
+                    f'<meta name="twitter:title" content="{html.escape(og_title)}"',
+                    html_content
+                )
+                html_content = re.sub(
+                    r'<meta name="twitter:description" content="[^"]*"',
+                    f'<meta name="twitter:description" content="{meta_description}"',
+                    html_content
+                )
+
+                logger.info(f"Served share page with dynamic SEO for workout: {workout_name}")
+        except Exception as e:
+            # If we can't fetch workout data, serve with default meta tags
+            logger.warning(f"Could not fetch workout data for share/{token}: {e}")
+
+        return HTMLResponse(content=html_content)
+    except FileNotFoundError:
+        return HTMLResponse(
+            content="<h1>Share page not found</h1><p>Please ensure frontend/share.html exists</p>",
+            status_code=404
+        )
+
+@app.get("/share.html", response_class=HTMLResponse)
+async def serve_share_page_html():
+    """Serve share.html for direct access (token will be read from query params by JS)"""
+    try:
+        with open("frontend/share.html", "r", encoding="utf-8") as f:
+            return HTMLResponse(content=f.read())
+    except FileNotFoundError:
+        return HTMLResponse(
+            content="<h1>Share page not found</h1><p>Please ensure frontend/share.html exists</p>",
             status_code=404
         )
 

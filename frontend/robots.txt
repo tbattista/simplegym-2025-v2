@@ -1,0 +1,24 @@
+# Fitness Field Notes - robots.txt
+# https://fitnessfieldnotes.com
+
+User-agent: *
+Allow: /
+Allow: /launch
+Allow: /public-workouts
+Allow: /share/
+
+# Block authenticated app pages from indexing
+Disallow: /workout-builder
+Disallow: /workout-mode
+Disallow: /workout-database
+Disallow: /workout-history
+Disallow: /exercise-database
+Disallow: /programs
+Disallow: /profile
+Disallow: /dashboard
+Disallow: /feedback-voting
+Disallow: /feedback-admin
+Disallow: /api/
+
+# Sitemap location
+Sitemap: https://fitnessfieldnotes.com/sitemap.xml
