@@ -45,8 +45,8 @@ class WorkoutSessionService {
                 throw new Error('Authentication required. Please log in to track your workout.');
             }
 
-            // Use centralized API config (trailing slash required for collection endpoint)
-            const url = window.config.api.getUrl('/api/v3/workout-sessions/');
+            // Use centralized API config
+            const url = window.config.api.getUrl('/api/v3/workout-sessions');
 
             const response = await fetch(url, {
                 method: 'POST',
@@ -297,8 +297,8 @@ class WorkoutSessionService {
     async _createAndCompleteSession(exercisesPerformed, durationMinutes, token) {
         console.log('🔄 Creating new session to preserve workout data...');
 
-        // Step 1: Create a new session (trailing slash required for collection endpoint)
-        const createUrl = window.config.api.getUrl('/api/v3/workout-sessions/');
+        // Step 1: Create a new session
+        const createUrl = window.config.api.getUrl('/api/v3/workout-sessions');
         const createResponse = await fetch(createUrl, {
             method: 'POST',
             headers: {

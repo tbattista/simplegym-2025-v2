@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 # Session Management Endpoints
 # ============================================================================
 
-@router.post("/", response_model=WorkoutSession)
+@router.post("", response_model=WorkoutSession)
 async def create_session(
     session_request: CreateSessionRequest,
     current_user: Optional[dict] = Depends(get_current_user_optional)
@@ -205,7 +205,7 @@ async def complete_session(
         raise HTTPException(status_code=500, detail=f"Error completing session: {str(e)}")
 
 
-@router.get("/", response_model=SessionListResponse)
+@router.get("", response_model=SessionListResponse)
 async def list_sessions(
     workout_id: Optional[str] = Query(None, description="Filter by workout ID"),
     status: Optional[str] = Query(None, description="Filter by status (in_progress, completed, abandoned)"),
