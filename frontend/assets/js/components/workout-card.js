@@ -34,6 +34,10 @@ class WorkoutCard {
             onCardClick: null,
             onViewDetails: null, // Optional view details callback for dropdown
 
+            // Favorite/Save button options
+            showFavorite: true,  // Show favorite heart (default true)
+            onSave: null,        // Save callback for public workouts (shows copy icon instead of favorite)
+
             ...config
         };
 
@@ -169,12 +173,28 @@ class WorkoutCard {
     }
 
     /**
-     * Render favorite heart toggle button
-     * Positioned to the left of the dropdown menu
+     * Render favorite heart toggle button or save button
+     * Positioned to the left of the dropdown menu (or at right edge if no dropdown)
      */
     _renderFavoriteButton() {
         // Don't show for starter template or in delete mode
         if (this.workout.isStarterTemplate || this.config.deleteMode) return '';
+
+        // If onSave callback is provided, show save/copy button instead of favorite
+        if (this.config.onSave) {
+            // Position at right: 8px since there's no dropdown menu for public workouts
+            return `
+                <button class="btn btn-icon btn-card-menu save-workout-btn"
+                        data-workout-id="${this.workout.id}"
+                        title="Save to My Workouts"
+                        style="position: absolute; top: 8px; right: 8px; z-index: 1050;">
+                    <i class="bx bx-copy"></i>
+                </button>
+            `;
+        }
+
+        // Don't show favorite if explicitly disabled
+        if (!this.config.showFavorite) return '';
 
         const workoutData = this.workout.workout_data || this.workout;
         const isFavorite = workoutData.is_favorite || false;
@@ -548,6 +568,15 @@ class WorkoutCard {
                 if (window.toggleWorkoutFavorite) {
                     window.toggleWorkoutFavorite(e, workoutId, currentState);
                 }
+            });
+        }
+
+        // Save button handler (for public workouts)
+        const saveBtn = this.element.querySelector('.save-workout-btn');
+        if (saveBtn && this.config.onSave) {
+            saveBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.config.onSave(this.workout);
             });
         }
 

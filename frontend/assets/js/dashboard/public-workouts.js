@@ -81,15 +81,9 @@
                 showDates: true,        // Show creation date
                 showTags: true,         // Show tags
                 showExercisePreview: false, // Don't show exercise preview for public
-                actions: [
-                    {
-                        id: 'view',
-                        label: 'View Details',
-                        icon: 'bx-show',
-                        variant: 'primary',
-                        onClick: (workout) => openWorkoutDetail(workout.id)
-                    }
-                ]
+                dropdownActions: [],    // No dropdown menu for public workouts (no edit/delete)
+                actions: [],            // No action buttons (users click card to view details)
+                onSave: (workout) => saveWorkout(workout)  // Save/copy button in top-right corner
             },
             onPageChange: (page) => {
                 currentPage = page;

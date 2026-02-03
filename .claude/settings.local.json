@@ -54,7 +54,8 @@
       "Bash(for f in workout-history*.js)",
       "WebFetch(domain:firebase.google.com)",
       "Bash(git fetch:*)",
-      "Bash(firebase --version:*)"
+      "Bash(firebase --version:*)",
+      "Bash(grep:*)"
     ]
   }
 }
