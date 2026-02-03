@@ -3,12 +3,16 @@
  * Matches existing card-based design system
  */
 
+/* Pull landing page up to counteract container padding */
+#unauthenticatedWelcome {
+  margin-top: -1rem;
+}
+
 /* Hero Card */
 .landing-hero-card {
   background: var(--bs-card-bg);
   border: 1px solid var(--bs-border-color);
   box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
-  margin-top: 1.5rem !important; /* Push entire card down to avoid menu button overlap */
 }
 
 .landing-hero-card h1 {

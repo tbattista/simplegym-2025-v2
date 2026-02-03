@@ -109,7 +109,7 @@ class WorkoutWeightManager {
      */
     updateWeightDirectionButtons(exerciseName, direction) {
         // Find the card for this exercise
-        const card = document.querySelector(`.exercise-card[data-exercise-name="${exerciseName}"]`);
+        const card = document.querySelector(`.workout-card[data-exercise-name="${exerciseName}"]`);
         if (!card) return;
 
         // Find ALL direction buttons and remove active class from all first
@@ -186,7 +186,7 @@ class WorkoutWeightManager {
      */
     updateQuickNoteTrigger(exerciseName, value) {
         // Find the card for this exercise
-        const card = document.querySelector(`.exercise-card[data-exercise-name="${exerciseName}"]`);
+        const card = document.querySelector(`.workout-card[data-exercise-name="${exerciseName}"]`);
         if (!card) return;
         
         // Find trigger button
@@ -237,7 +237,7 @@ class WorkoutWeightManager {
      * @private
      */
     _updateCollapsedBadge(exerciseName, direction) {
-        const card = document.querySelector(`.exercise-card[data-exercise-name="${exerciseName}"]`);
+        const card = document.querySelector(`.workout-card[data-exercise-name="${exerciseName}"]`);
         if (!card) return;
         
         const badge = card.querySelector('.weight-badge');
@@ -394,7 +394,7 @@ class WorkoutWeightManager {
      */
     _updateWeightDirectionButtonsUI(exerciseName, direction) {
         // Find the exercise card
-        const card = document.querySelector(`.exercise-card[data-exercise-name="${exerciseName}"]`);
+        const card = document.querySelector(`.workout-card[data-exercise-name="${exerciseName}"]`);
         if (!card) return;
 
         // Find ALL direction buttons and remove active class from all first

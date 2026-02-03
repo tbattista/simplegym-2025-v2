@@ -66,9 +66,7 @@ class WorkoutCard {
                 ${this._renderExercisePreview()}
                 ${this._renderStats()}
                 ${this._renderTags()}
-                <div class="card-footer-content mt-auto">
-                    ${this._renderActions()}
-                </div>
+                ${this._renderFooter()}
             </div>
         `;
         
@@ -316,20 +314,16 @@ class WorkoutCard {
         const workoutData = this.workout.workout_data || this.workout;
         const tags = workoutData.tags || this.workout.tags || [];
 
-        if (tags.length === 0) {
-            return `
-                <div class="mb-2">
-                    <small class="text-muted"><i class="bx bx-purchase-tag me-1"></i>No tags</small>
-                </div>
-            `;
-        }
+        // Don't show anything if no tags (cleaner look)
+        if (tags.length === 0) return '';
 
+        // Show max 2 tags to keep it clean (matching program-card style)
         return `
-            <div class="mb-2">
-                ${tags.slice(0, 3).map(tag =>
-                    `<span class="badge bg-label-secondary me-1 small">${this._escapeHtml(tag)}</span>`
+            <div class="d-flex gap-1 flex-wrap mb-2">
+                ${tags.slice(0, 2).map(tag =>
+                    `<span class="badge bg-label-primary badge-sm">${this._escapeHtml(tag)}</span>`
                 ).join('')}
-                ${tags.length > 3 ? `<span class="badge bg-label-secondary small">+${tags.length - 3}</span>` : ''}
+                ${tags.length > 2 ? `<span class="badge bg-label-secondary badge-sm">+${tags.length - 2}</span>` : ''}
             </div>
         `;
     }
@@ -410,6 +404,20 @@ class WorkoutCard {
         `;
     }
     
+    /**
+     * Render footer - only renders container if there are actions to show
+     */
+    _renderFooter() {
+        const actionsHtml = this._renderActions();
+        if (!actionsHtml) return '';
+
+        return `
+            <div class="card-footer-content mt-auto">
+                ${actionsHtml}
+            </div>
+        `;
+    }
+
     /**
      * Render action buttons - simplified to show only primary CTA
      * Secondary actions (edit, view, history) moved to dropdown menu

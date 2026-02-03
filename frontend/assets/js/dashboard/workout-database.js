@@ -786,7 +786,7 @@ function initializeComponents() {
             showCreator: false,
             showStats: false,
             showDates: false,
-            showTags: false, // Tags moved to detail view for cleaner card
+            showTags: true, // Show tags on cards
             showExercisePreview: true,
             // Session state callback for smart button labels
             getSessionState: getWorkoutSessionState,
