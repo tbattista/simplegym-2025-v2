@@ -1,7 +1,14 @@
 /**
- * Ghost Gym Dashboard - Exercise Database Module (Refactored)
- * Uses new component architecture for cleaner, more maintainable code
- * @version 2.0.0
+ * Exercise Database - Main Controller
+ * Orchestrates initialization and coordinates between modules
+ *
+ * @module exercises
+ * @version 3.0.0
+ *
+ * Dependencies (load in order before this file):
+ * - exercise-rendering.js
+ * - exercise-filters.js
+ * - exercise-toolbar.js
  */
 
 // Initialize page with BasePage component
@@ -52,11 +59,22 @@ async function initializeExerciseDatabase(page) {
     try {
         // Load all exercise data
         await loadAllExerciseData(page);
-        
-        // Initialize FilterBar state (will be created in offcanvas when opened)
-        // Store filter configuration for later use
+
+        // Initialize filter state
+        window.currentFilters = {
+            sortBy: 'name',
+            exerciseTier: '1',
+            muscleGroup: '',
+            equipment: [],
+            difficulty: '',
+            customOnly: false,
+            favoritesOnly: false,
+            search: ''
+        };
+
+        // Store filter configuration for offcanvas
         window.filterBarConfig = {
-            showSearch: false, // Don't show search in offcanvas, use main search instead
+            showSearch: false,
             filters: [
                 {
                     key: 'sortBy',
@@ -79,21 +97,20 @@ async function initializeExerciseDatabase(page) {
                         { value: '3', label: '◦ Specialized - Advanced variations' }
                     ],
                     placeholder: 'All Tiers',
-                    defaultValue: '1',
-                    helpText: 'Standard exercises are recommended for most training programs'
+                    defaultValue: '1'
                 },
                 {
                     key: 'muscleGroup',
                     label: 'Muscle Group',
                     type: 'select',
-                    options: getUniqueMuscleGroups(),
+                    options: window.getUniqueMuscleGroups ? window.getUniqueMuscleGroups() : [],
                     placeholder: 'All Muscle Groups'
                 },
                 {
                     key: 'equipment',
                     label: 'Equipment',
                     type: 'multiselect',
-                    options: getUniqueEquipment(),
+                    options: window.getUniqueEquipment ? window.getUniqueEquipment() : [],
                     placeholder: 'All Equipment'
                 },
                 {
@@ -111,80 +128,20 @@ async function initializeExerciseDatabase(page) {
             ],
             onFilterChange: (filters) => {
                 console.log('🔍 Filters changed:', filters);
-                applyFiltersAndRender(filters);
+                if (window.applyFiltersAndRender) {
+                    window.applyFiltersAndRender(filters);
+                }
             }
         };
-        
-        // Initialize filter state
-        window.currentFilters = {
-            sortBy: 'name',
-            exerciseTier: '1',
-            muscleGroup: '',
-            equipment: [],
-            difficulty: '',
-            customOnly: false,
-            favoritesOnly: false,
-            search: ''
-        };
-        
-        // Navbar search is now integrated - the navbar-template.js handles search input
-        // and calls window.applyFiltersAndRender when search changes
-        
-        // Initialize DataTable component with compact single-line cards
+
+        // Initialize DataTable component
         exerciseTable = new FFNDataTable('exerciseTableContainer', {
             columns: [
                 {
                     key: 'card',
                     label: '',
                     sortable: false,
-                    render: (value, row) => {
-                        const isCustom = !row.isGlobal;
-                        const tierBadge = getTierBadgeCompact(row);
-                        const isFavorited = window.ffn.exercises.favorites.has(row.id);
-                        const difficultyBadge = row.difficultyLevel ? getDifficultyBadgeWithPopover(row.difficultyLevel) : '';
-                        
-                        return `
-                            <div class="card mb-0" style="margin-bottom: 0.375rem !important;">
-                                <div class="card-body p-3">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <div class="flex-grow-1">
-                                            <div class="fw-semibold mb-2">
-                                                ${isCustom ? '<i class="bx bx-user text-primary me-1" style="font-size: 0.875rem;"></i>' : ''}
-                                                ${exercisePage.escapeHtml(row.name)}
-                                            </div>
-                                            <div class="d-flex gap-2 flex-wrap align-items-center">
-                                                ${tierBadge}
-                                                ${difficultyBadge}
-                                                ${row.targetMuscleGroup ? `<span class="text-muted small">${exercisePage.escapeHtml(row.targetMuscleGroup)}</span>` : ''}
-                                                ${row.primaryEquipment ? `<span class="text-muted small">• ${exercisePage.escapeHtml(row.primaryEquipment)}</span>` : ''}
-                                            </div>
-                                        </div>
-                                        <div class="d-flex gap-2 align-items-center flex-shrink-0 ms-3">
-                                            <button class="btn btn-sm btn-icon favorite-btn ${isFavorited ? 'text-danger' : ''}"
-                                                    data-exercise-id="${row.id}"
-                                                    title="${isFavorited ? 'Remove from favorites' : 'Add to favorites'}">
-                                                <i class="bx ${isFavorited ? 'bxs-heart' : 'bx-heart'}"></i>
-                                            </button>
-                                            <div class="dropdown">
-                                                <button type="button" class="btn btn-sm btn-icon dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
-                                                    <i class="bx bx-dots-vertical-rounded"></i>
-                                                </button>
-                                                <div class="dropdown-menu dropdown-menu-end">
-                                                    <a class="dropdown-item view-details-link" href="javascript:void(0);" data-exercise-id="${row.id}">
-                                                        <i class="bx bx-info-circle me-2"></i>View Details
-                                                    </a>
-                                                    <a class="dropdown-item add-to-workout-link" href="javascript:void(0);"
-                                                       data-exercise-id="${row.id}" data-exercise-name="${exercisePage.escapeHtml(row.name)}">
-                                                        <i class="bx bx-plus me-2"></i>Add to Workout
-                                                    </a>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        `;
-                    }
+                    render: (value, row) => renderExerciseCard(row)
                 }
             ],
             data: [],
@@ -197,52 +154,126 @@ async function initializeExerciseDatabase(page) {
                 console.log(`📄 Page ${page}: showing ${info.startIndex}-${info.endIndex} of ${info.totalItems}`);
             }
         });
-        
+
+        // Make exerciseTable globally available
+        window.exerciseTable = exerciseTable;
+
         // Initialize popovers after table renders
-        setTimeout(() => initializePopovers(), 100);
-        
-        // Add event delegation for favorite buttons and action links
-        document.getElementById('exerciseTableContainer').addEventListener('click', async (e) => {
-            const favoriteBtn = e.target.closest('.favorite-btn');
-            if (favoriteBtn) {
-                e.stopPropagation();
-                const exerciseId = favoriteBtn.dataset.exerciseId;
-                await toggleExerciseFavorite(exerciseId);
-                return;
+        setTimeout(() => {
+            if (window.initializePopovers) {
+                window.initializePopovers();
             }
-            
-            const viewDetailsLink = e.target.closest('.view-details-link');
-            if (viewDetailsLink) {
-                e.preventDefault();
-                const exerciseId = viewDetailsLink.dataset.exerciseId;
-                showExerciseDetails(exerciseId);
-                return;
-            }
-            
-            const addToWorkoutLink = e.target.closest('.add-to-workout-link');
-            if (addToWorkoutLink) {
-                e.preventDefault();
-                const exerciseId = addToWorkoutLink.dataset.exerciseId;
-                const exerciseName = addToWorkoutLink.dataset.exerciseName;
-                addExerciseToWorkout({ id: exerciseId, name: exerciseName });
-                return;
-            }
-        });
-        
+        }, 100);
+
+        // Add event delegation for buttons
+        document.getElementById('exerciseTableContainer').addEventListener('click', handleTableClick);
+
+        // Initialize toolbar components
+        if (window.initExerciseToolbar) {
+            window.initExerciseToolbar();
+        }
+
         // Set initial data with default filters
-        applyFiltersAndRender(window.currentFilters);
-        
-        // Update stats
-        updateStats();
-        
-        // Initialize favorites button state
-        initializeFavoritesButtonState();
-        
+        if (window.applyFiltersAndRender) {
+            window.applyFiltersAndRender(window.currentFilters);
+        }
+
         console.log('✅ Exercise Database initialized with components');
-        
+
     } catch (error) {
         console.error('❌ Error initializing exercise database:', error);
-        showAlert('Failed to initialize exercise database. Please refresh the page.', 'danger');
+        if (window.showAlert) {
+            window.showAlert('Failed to initialize exercise database. Please refresh the page.', 'danger');
+        }
+    }
+}
+
+/**
+ * Render exercise card HTML
+ */
+function renderExerciseCard(row) {
+    const isCustom = !row.isGlobal;
+    const tierBadge = window.getTierBadgeCompact ? window.getTierBadgeCompact(row) : '';
+    const isFavorited = window.ffn.exercises.favorites.has(row.id);
+    const difficultyBadge = row.difficultyLevel && window.getDifficultyBadgeWithPopover
+        ? window.getDifficultyBadgeWithPopover(row.difficultyLevel) : '';
+
+    return `
+        <div class="card mb-0" style="margin-bottom: 0.375rem !important;">
+            <div class="card-body p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="flex-grow-1">
+                        <div class="fw-semibold mb-2">
+                            ${isCustom ? '<i class="bx bx-user text-primary me-1" style="font-size: 0.875rem;"></i>' : ''}
+                            ${exercisePage.escapeHtml(row.name)}
+                        </div>
+                        <div class="d-flex gap-2 flex-wrap align-items-center">
+                            ${tierBadge}
+                            ${difficultyBadge}
+                            ${row.targetMuscleGroup ? `<span class="text-muted small">${exercisePage.escapeHtml(row.targetMuscleGroup)}</span>` : ''}
+                            ${row.primaryEquipment ? `<span class="text-muted small">• ${exercisePage.escapeHtml(row.primaryEquipment)}</span>` : ''}
+                        </div>
+                    </div>
+                    <div class="d-flex gap-2 align-items-center flex-shrink-0 ms-3">
+                        <button class="btn btn-sm btn-icon favorite-btn ${isFavorited ? 'text-danger' : ''}"
+                                data-exercise-id="${row.id}"
+                                title="${isFavorited ? 'Remove from favorites' : 'Add to favorites'}">
+                            <i class="bx ${isFavorited ? 'bxs-heart' : 'bx-heart'}"></i>
+                        </button>
+                        <div class="dropdown">
+                            <button type="button" class="btn btn-sm btn-icon dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
+                                <i class="bx bx-dots-vertical-rounded"></i>
+                            </button>
+                            <div class="dropdown-menu dropdown-menu-end">
+                                <a class="dropdown-item view-details-link" href="javascript:void(0);" data-exercise-id="${row.id}">
+                                    <i class="bx bx-info-circle me-2"></i>View Details
+                                </a>
+                                <a class="dropdown-item add-to-workout-link" href="javascript:void(0);"
+                                   data-exercise-id="${row.id}" data-exercise-name="${exercisePage.escapeHtml(row.name)}">
+                                    <i class="bx bx-plus me-2"></i>Add to Workout
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+/**
+ * Handle click events on exercise table
+ */
+async function handleTableClick(e) {
+    const favoriteBtn = e.target.closest('.favorite-btn');
+    if (favoriteBtn) {
+        e.stopPropagation();
+        const exerciseId = favoriteBtn.dataset.exerciseId;
+        if (window.toggleExerciseFavorite) {
+            await window.toggleExerciseFavorite(exerciseId);
+        }
+        return;
+    }
+
+    const viewDetailsLink = e.target.closest('.view-details-link');
+    if (viewDetailsLink) {
+        e.preventDefault();
+        const exerciseId = viewDetailsLink.dataset.exerciseId;
+        if (window.showExerciseDetails) {
+            window.showExerciseDetails(exerciseId);
+        }
+        return;
+    }
+
+    const addToWorkoutLink = e.target.closest('.add-to-workout-link');
+    if (addToWorkoutLink) {
+        e.preventDefault();
+        const exerciseId = addToWorkoutLink.dataset.exerciseId;
+        const exerciseName = addToWorkoutLink.dataset.exerciseName;
+        if (window.addExerciseToWorkout) {
+            window.addExerciseToWorkout({ id: exerciseId, name: exerciseName });
+        }
+        return;
     }
 }
 
@@ -251,8 +282,10 @@ async function initializeExerciseDatabase(page) {
  */
 async function loadAllExerciseData(page) {
     // Load global exercises with caching
-    const cached = getExerciseCache();
-    if (cached && isExerciseCacheValid(cached)) {
+    const cached = window.getExerciseCache ? window.getExerciseCache() : null;
+    const isValid = cached && window.isExerciseCacheValid && window.isExerciseCacheValid(cached);
+
+    if (isValid) {
         window.ffn.exercises.all = cached.exercises;
         console.log(`✅ Loaded ${window.ffn.exercises.all.length} exercises from cache`);
     } else {
@@ -261,29 +294,31 @@ async function loadAllExerciseData(page) {
         let allExercises = [];
         let pageNum = 1;
         let hasMore = true;
-        
+
         while (hasMore) {
             const response = await fetch(page.getApiUrl(`/api/v3/exercises?page=${pageNum}&page_size=${PAGE_SIZE}`));
             if (!response.ok) throw new Error(`Failed to load exercises (page ${pageNum})`);
-            
+
             const data = await response.json();
             const exercises = data.exercises || [];
             allExercises = [...allExercises, ...exercises];
             console.log(`📦 Loaded page ${pageNum}: ${exercises.length} exercises (total: ${allExercises.length})`);
-            
+
             hasMore = exercises.length === PAGE_SIZE;
             pageNum++;
         }
-        
+
         window.ffn.exercises.all = allExercises;
-        setExerciseCache(allExercises);
-        
+        if (window.setExerciseCache) {
+            window.setExerciseCache(allExercises);
+        }
+
         // Update total count
         const totalCount = document.getElementById('totalExercisesCount');
         if (totalCount) totalCount.textContent = allExercises.length.toLocaleString();
     }
-    
-    // Load user-specific data (must complete before rendering)
+
+    // Load user-specific data
     await loadUserExerciseData();
 }
 
@@ -296,12 +331,13 @@ async function loadUserExerciseData() {
         window.ffn.exercises.custom = [];
         return;
     }
-    
+
     try {
         const token = await window.firebaseAuth.currentUser.getIdToken();
-        
+        const baseUrl = exercisePage.getApiUrl('');
+
         // Load favorites
-        const favResponse = await fetch(exercisePage.getApiUrl('/api/v3/users/me/favorites'), {
+        const favResponse = await fetch(`${baseUrl}/api/v3/users/me/favorites`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
         if (favResponse.ok) {
@@ -309,9 +345,9 @@ async function loadUserExerciseData() {
             window.ffn.exercises.favorites = new Set(favData.favorites.map(f => f.exerciseId));
             console.log(`✅ Loaded ${window.ffn.exercises.favorites.size} favorites`);
         }
-        
+
         // Load custom exercises
-        const customResponse = await fetch(exercisePage.getApiUrl('/api/v3/users/me/exercises'), {
+        const customResponse = await fetch(`${baseUrl}/api/v3/users/me/exercises`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
         if (customResponse.ok) {
@@ -319,659 +355,21 @@ async function loadUserExerciseData() {
             window.ffn.exercises.custom = customData.exercises || [];
             console.log(`✅ Loaded ${window.ffn.exercises.custom.length} custom exercises`);
         }
-        
-        updateStats();
-        
-        // Refresh table if it exists to update favorite states
+
+        // Refresh table if it exists
         if (window.exerciseTable) {
             console.log('🔄 Refreshing table with updated favorites');
             window.exerciseTable.refresh();
         }
-        
+
     } catch (error) {
         console.error('❌ Error loading user exercise data:', error);
     }
 }
 
-/**
- * Apply filters and render table
- */
-function applyFiltersAndRender(filters) {
-    // Combine global and custom exercises
-    let allExercises = [...window.ffn.exercises.all, ...window.ffn.exercises.custom];
-    
-    // Apply search filter
-    if (filters.search) {
-        const searchTerms = filters.search.toLowerCase().split(/\s+/).filter(t => t.length > 0);
-        allExercises = allExercises.filter(exercise => {
-            const searchableText = `${exercise.name} ${exercise.targetMuscleGroup || ''} ${exercise.primaryEquipment || ''}`.toLowerCase();
-            return searchTerms.every(term => searchableText.includes(term));
-        });
-    }
-    
-    // Apply muscle group filter
-    if (filters.muscleGroup) {
-        allExercises = allExercises.filter(e => e.targetMuscleGroup === filters.muscleGroup);
-    }
-    
-    // Apply equipment filter (supports multi-select with OR logic)
-    if (filters.equipment && filters.equipment.length > 0) {
-        console.log('🔧 Equipment filter active:', filters.equipment);
-        const beforeCount = allExercises.length;
-        
-        allExercises = allExercises.filter(e => {
-            // Ensure primaryEquipment exists and matches any selected equipment
-            const hasEquipment = e.primaryEquipment && filters.equipment.includes(e.primaryEquipment);
-            return hasEquipment;
-        });
-        
-        console.log(`📊 Equipment filter: ${beforeCount} → ${allExercises.length} exercises`);
-    }
-    
-    // Apply difficulty filter
-    if (filters.difficulty) {
-        allExercises = allExercises.filter(e => e.difficultyLevel === filters.difficulty);
-    }
-    
-    // Apply exercise tier filter
-    if (filters.exerciseTier) {
-        const tierValue = parseInt(filters.exerciseTier);
-        allExercises = allExercises.filter(e => {
-            // Custom exercises (isGlobal === false) should always pass tier filter
-            if (!e.isGlobal) {
-                return true;
-            }
-            
-            const exerciseTier = e.exerciseTier || 2;
-            const isFoundational = e.isFoundational || false;
-            // Tier 1 includes both exerciseTier === 1 and isFoundational === true
-            if (tierValue === 1) {
-                return exerciseTier === 1 || isFoundational;
-            }
-            return exerciseTier === tierValue;
-        });
-    }
-    
-    // Apply favorites only filter
-    if (filters.favoritesOnly) {
-        allExercises = allExercises.filter(e => window.ffn.exercises.favorites.has(e.id));
-    }
-    
-    // Apply custom only filter
-    if (filters.customOnly) {
-        allExercises = allExercises.filter(e => !e.isGlobal);
-    }
-    
-    // Apply sorting
-    allExercises = sortExercises(allExercises, filters.sortBy || 'name');
-    
-    // Update table
-    exerciseTable.setData(allExercises);
-    
-    // Update stats
-    updateStats();
-    
-    // Update filter feedback
-    updateFilterFeedback(filters);
-    
-    // Update favorites button state
-    updateFavoritesButtonState(filters.favoritesOnly);
-}
-
-/**
- * Update filter feedback display
- */
-function updateFilterFeedback(filters) {
-    const feedbackContainer = document.getElementById('filterFeedback');
-    const feedbackText = document.getElementById('filterFeedbackText');
-    
-    if (!feedbackContainer || !feedbackText) return;
-    
-    const activeFilters = [];
-    
-    // Check each filter and add to active list
-    if (filters.search) {
-        activeFilters.push(`<strong>Search:</strong> "${filters.search}"`);
-    }
-    
-    if (filters.muscleGroup) {
-        activeFilters.push(`<strong>Muscle:</strong> ${filters.muscleGroup}`);
-    }
-    
-    // Show individual equipment selections
-    if (filters.equipment && filters.equipment.length > 0) {
-        const equipmentItems = filters.equipment.map(eq =>
-            `<span class="badge bg-primary me-1 mb-1">${eq}</span>`
-        ).join('');
-        activeFilters.push(`<strong>Equipment:</strong><br>${equipmentItems}`);
-    }
-    
-    if (filters.difficulty) {
-        activeFilters.push(`<strong>Difficulty:</strong> ${filters.difficulty}`);
-    }
-    
-    if (filters.exerciseTier) {
-        const tierLabels = {
-            '1': 'Standard (Tier 1)',
-            '2': 'Standard (Tier 2)',
-            '3': 'Specialized'
-        };
-        activeFilters.push(`<strong>Tier:</strong> ${tierLabels[filters.exerciseTier] || filters.exerciseTier}`);
-    }
-    
-    if (filters.favoritesOnly) {
-        activeFilters.push('<strong>Favorites only</strong>');
-    }
-    
-    if (filters.customOnly) {
-        activeFilters.push('<strong>Custom only</strong>');
-    }
-    
-    // Show/hide feedback based on active filters
-    if (activeFilters.length > 0) {
-        feedbackText.innerHTML = `<div style="line-height: 1.8;">Active filters:<br>${activeFilters.join('<br>')}</div>`;
-        feedbackContainer.style.display = 'block';
-    } else {
-        feedbackContainer.style.display = 'none';
-    }
-}
-
-/**
- * Sort exercises
- */
-function sortExercises(exercises, sortBy) {
-    const sorted = [...exercises];
-    
-    switch (sortBy) {
-        case 'name':
-            sorted.sort((a, b) => a.name.localeCompare(b.name));
-            break;
-        case 'popularity':
-            sorted.sort((a, b) => (b.popularityScore || 50) - (a.popularityScore || 50));
-            break;
-        case 'favorites':
-            sorted.sort((a, b) => {
-                const aFav = window.ffn.exercises.favorites.has(a.id) ? 1 : 0;
-                const bFav = window.ffn.exercises.favorites.has(b.id) ? 1 : 0;
-                if (aFav !== bFav) return bFav - aFav;
-                return a.name.localeCompare(b.name);
-            });
-            break;
-    }
-    
-    return sorted;
-}
-
-/**
- * Get difficulty badge with popover
- */
-function getDifficultyBadgeWithPopover(difficulty) {
-    if (!difficulty) return '';
-    
-    const difficultyInfo = {
-        'Beginner': {
-            color: 'success',
-            icon: 'bx-trending-up',
-            description: 'Perfect for those new to training. Focuses on learning proper form and building foundational strength.'
-        },
-        'Intermediate': {
-            color: 'warning',
-            icon: 'bx-bar-chart',
-            description: 'For those with training experience. Requires good form and moderate strength levels.'
-        },
-        'Advanced': {
-            color: 'danger',
-            icon: 'bx-trophy',
-            description: 'For experienced lifters. Demands excellent technique, strength, and body control.'
-        }
-    };
-    
-    const info = difficultyInfo[difficulty] || { color: 'secondary', icon: 'bx-info-circle', description: 'Difficulty level' };
-    
-    return `
-        <span class="badge badge-outline-${info.color} difficulty-badge"
-              style="font-size: 0.75rem; padding: 0.3rem 0.6rem; cursor: help; background: transparent;"
-              data-bs-toggle="popover"
-              data-bs-trigger="click hover focus"
-              data-bs-placement="top"
-              data-bs-custom-class="difficulty-popover"
-              data-bs-html="true"
-              data-bs-content="<div class='d-flex align-items-start gap-2'><i class='bx ${info.icon} mt-1'></i><div>${info.description}</div></div>"
-              title="${difficulty}">
-            ${difficulty}
-        </span>
-    `;
-}
-
-/**
- * Get tier badge HTML (compact version)
- */
-function getTierBadgeCompact(exercise) {
-    const exerciseTier = exercise.exerciseTier || 2;
-    const isFoundational = exercise.isFoundational || false;
-    
-    if (isFoundational || exerciseTier === 1) {
-        return '<span class="badge" style="font-size: 0.75rem; padding: 0.25rem 0.5rem; background: rgba(100, 116, 139, 0.1); color: #64748B; border: 1px solid rgba(100, 116, 139, 0.25);"><i class="bx bxs-star" style="font-size: 0.75rem;"></i> Standard</span>';
-    } else if (exerciseTier === 3) {
-        return '<span class="badge bg-secondary" style="font-size: 0.75rem; padding: 0.25rem 0.5rem; opacity: 0.7;"><i class="bx bx-dots-horizontal-rounded" style="font-size: 0.75rem;"></i></span>';
-    }
-    return '';
-}
-
-/**
- * Initialize popovers for difficulty badges
- */
-function initializePopovers() {
-    const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]');
-    popoverTriggerList.forEach(popoverTriggerEl => {
-        // Dispose existing popover if any
-        const existingPopover = bootstrap.Popover.getInstance(popoverTriggerEl);
-        if (existingPopover) {
-            existingPopover.dispose();
-        }
-        
-        // Create new popover
-        new bootstrap.Popover(popoverTriggerEl, {
-            container: 'body',
-            html: true
-        });
-    });
-}
-
-/**
- * Get tier badge HTML (original for modal)
- */
-function getTierBadge(exercise) {
-    const exerciseTier = exercise.exerciseTier || 2;
-    const isFoundational = exercise.isFoundational || false;
-    
-    if (isFoundational || exerciseTier === 1) {
-        return '<span class="badge bg-warning ms-1"><i class="bx bxs-star"></i> Foundation</span>';
-    } else if (exerciseTier === 2) {
-        return '<span class="badge bg-info ms-1"><i class="bx bx-star"></i> Standard</span>';
-    } else if (exerciseTier === 3) {
-        return '<span class="badge bg-secondary ms-1" style="opacity: 0.7;"><i class="bx bx-dots-horizontal-rounded"></i> Specialized</span>';
-    }
-    return '';
-}
-
-/**
- * Get unique muscle groups
- */
-function getUniqueMuscleGroups() {
-    return [...new Set(window.ffn.exercises.all
-        .map(e => e.targetMuscleGroup)
-        .filter(m => m))]
-        .sort();
-}
-
-/**
- * Get unique equipment
- */
-function getUniqueEquipment() {
-    return [...new Set(window.ffn.exercises.all
-        .map(e => e.primaryEquipment)
-        .filter(e => e))]
-        .sort();
-}
-
-/**
- * Update stats display
- */
-function updateStats() {
-    // Stats display removed from UI - keeping function for compatibility
-    // Can be removed in future refactoring
-}
-
-/**
- * Toggle exercise favorite
- */
-async function toggleExerciseFavorite(exerciseId) {
-    if (!window.firebaseAuth?.currentUser) {
-        showAlert('Please sign in to favorite exercises. Use the menu to log in.', 'warning');
-        // Auth modal removed - users can sign in via menu
-        return;
-    }
-    
-    const isFavorited = window.ffn.exercises.favorites.has(exerciseId);
-    
-    // Find the button that was clicked
-    const button = document.querySelector(`.favorite-btn[data-exercise-id="${exerciseId}"]`);
-    const icon = button?.querySelector('i');
-    
-    // Optimistic UI update
-    if (button && icon) {
-        if (isFavorited) {
-            icon.className = 'bx bx-heart';
-            button.classList.remove('text-danger');
-            button.title = 'Add to favorites';
-        } else {
-            icon.className = 'bx bxs-heart';
-            button.classList.add('text-danger');
-            button.title = 'Remove from favorites';
-        }
-    }
-    
-    try {
-        const token = await window.firebaseAuth.currentUser.getIdToken();
-        
-        if (isFavorited) {
-            const response = await fetch(exercisePage.getApiUrl(`/api/v3/users/me/favorites/${exerciseId}`), {
-                method: 'DELETE',
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            if (response.ok) {
-                window.ffn.exercises.favorites.delete(exerciseId);
-                console.log('✅ Removed from favorites');
-                
-                // If favorites filter is active, refresh the table to remove the exercise
-                if (filterBar) {
-                    const currentFilters = filterBar.getFilters();
-                    if (currentFilters.favoritesOnly) {
-                        console.log('🔄 Favorites filter active, refreshing table');
-                        applyFiltersAndRender(currentFilters);
-                    }
-                }
-            } else {
-                console.error('❌ Failed to remove favorite:', response.status, response.statusText);
-                const errorData = await response.json().catch(() => ({}));
-                console.error('Error details:', errorData);
-                showAlert(`Failed to remove favorite: ${errorData.detail || response.statusText}`, 'danger');
-                
-                // Revert optimistic update on failure
-                if (button && icon) {
-                    icon.className = 'bx bxs-heart';
-                    button.classList.add('text-danger');
-                    button.title = 'Remove from favorites';
-                }
-            }
-        } else {
-            // Construct URL and ensure no trailing slash
-            const url = new URL(exercisePage.getApiUrl('/api/v3/users/me/favorites'));
-            const response = await fetch(url.href, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ exerciseId })
-            });
-            if (response.ok) {
-                window.ffn.exercises.favorites.add(exerciseId);
-                console.log('✅ Added to favorites');
-            } else {
-                console.error('❌ Failed to add favorite:', response.status, response.statusText);
-                const errorData = await response.json().catch(() => ({}));
-                console.error('Error details:', errorData);
-                showAlert(`Failed to add favorite: ${errorData.detail || response.statusText}`, 'danger');
-                
-                // Revert optimistic update on failure
-                if (button && icon) {
-                    icon.className = 'bx bx-heart';
-                    button.classList.remove('text-danger');
-                    button.title = 'Add to favorites';
-                }
-            }
-        }
-        
-        // Update stats
-        updateStats();
-        
-    } catch (error) {
-        console.error('❌ Error toggling favorite:', error);
-        showAlert('Failed to update favorite. Please try again.', 'danger');
-        
-        // Revert optimistic update on error
-        if (button && icon) {
-            if (isFavorited) {
-                icon.className = 'bx bxs-heart';
-                button.classList.add('text-danger');
-                button.title = 'Remove from favorites';
-            } else {
-                icon.className = 'bx bx-heart';
-                button.classList.remove('text-danger');
-                button.title = 'Add to favorites';
-            }
-        }
-    }
-}
-
-/**
- * Show exercise details modal
- */
-function showExerciseDetails(exerciseId) {
-    const exercise = [...window.ffn.exercises.all, ...window.ffn.exercises.custom]
-        .find(e => e.id === exerciseId);
-
-    if (!exercise) return;
-
-    const modal = new bootstrap.Modal(document.getElementById('exerciseDetailModal'));
-    document.getElementById('exerciseDetailTitle').textContent = exercise.name;
-
-    // Helper to render field if value exists
-    const field = (label, value) => value ? `
-        <div class="col-md-6 mb-2">
-            <small class="text-muted">${label}</small><br>
-            <span>${value}</span>
-        </div>` : '';
-
-    // Build equipment display with count
-    const equipmentDisplay = (equipment, count) => {
-        if (!equipment) return null;
-        return equipment + (count ? ` (${count})` : '');
-    };
-
-    const detailsHtml = `
-        <!-- Video Links Section -->
-        ${(exercise.shortVideoUrl || exercise.detailedVideoUrl) ? `
-        <div class="mb-3">
-            <h6 class="mb-2"><i class="bx bx-video me-1"></i>Video Tutorials</h6>
-            <div class="d-flex gap-2 flex-wrap">
-                ${exercise.shortVideoUrl ? `
-                <a href="${exercise.shortVideoUrl}" target="_blank" class="btn btn-outline-primary btn-sm">
-                    <i class="bx bx-play-circle me-1"></i>Quick Demo
-                </a>` : ''}
-                ${exercise.detailedVideoUrl ? `
-                <a href="${exercise.detailedVideoUrl}" target="_blank" class="btn btn-outline-secondary btn-sm">
-                    <i class="bx bx-video me-1"></i>In-Depth Tutorial
-                </a>` : ''}
-            </div>
-        </div>
-        <hr>
-        ` : ''}
-
-        <!-- Basic Info Section -->
-        <div class="row mb-3">
-            ${field('Difficulty', exercise.difficultyLevel)}
-            ${field('Mechanics', exercise.mechanics)}
-            ${field('Body Region', exercise.bodyRegion)}
-            ${field('Force Type', exercise.forceType)}
-            ${field('Classification', exercise.classification)}
-            ${field('Laterality', exercise.laterality)}
-        </div>
-
-        <!-- Muscles Section -->
-        <div class="mb-3">
-            <h6 class="mb-2"><i class="bx bx-body me-1"></i>Muscles Worked</h6>
-            <div class="row">
-                ${field('Target Muscle Group', exercise.targetMuscleGroup)}
-                ${field('Prime Mover', exercise.primeMoverMuscle)}
-                ${field('Secondary Muscle', exercise.secondaryMuscle)}
-                ${field('Tertiary Muscle', exercise.tertiaryMuscle)}
-            </div>
-        </div>
-
-        <!-- Equipment Section -->
-        <div class="mb-3">
-            <h6 class="mb-2"><i class="bx bx-dumbbell me-1"></i>Equipment</h6>
-            <div class="row">
-                ${field('Primary Equipment', equipmentDisplay(exercise.primaryEquipment, exercise.primaryEquipmentCount))}
-                ${field('Secondary Equipment', equipmentDisplay(exercise.secondaryEquipment, exercise.secondaryEquipmentCount))}
-            </div>
-        </div>
-
-        <!-- Movement Details (Collapsible) -->
-        ${(exercise.posture || exercise.armType || exercise.grip || exercise.loadPosition) ? `
-        <div class="mb-3">
-            <h6 class="mb-2" data-bs-toggle="collapse" data-bs-target="#movementDetails"
-                style="cursor: pointer;">
-                <i class="bx bx-move me-1"></i>Movement Details
-                <i class="bx bx-chevron-down float-end"></i>
-            </h6>
-            <div class="collapse show" id="movementDetails">
-                <div class="row">
-                    ${field('Posture', exercise.posture)}
-                    ${field('Arm Type', exercise.armType)}
-                    ${field('Arm Pattern', exercise.armPattern)}
-                    ${field('Grip', exercise.grip)}
-                    ${field('Load Position', exercise.loadPosition)}
-                    ${field('Foot Elevation', exercise.footElevation)}
-                </div>
-            </div>
-        </div>
-        ` : ''}
-
-        <!-- Movement Patterns (Collapsible) -->
-        ${(exercise.movementPattern1 || exercise.planeOfMotion1) ? `
-        <div class="mb-3">
-            <h6 class="mb-2" data-bs-toggle="collapse" data-bs-target="#movementPatterns"
-                style="cursor: pointer;">
-                <i class="bx bx-rotate-right me-1"></i>Movement Patterns
-                <i class="bx bx-chevron-down float-end"></i>
-            </h6>
-            <div class="collapse" id="movementPatterns">
-                <div class="row">
-                    ${field('Pattern 1', exercise.movementPattern1)}
-                    ${field('Pattern 2', exercise.movementPattern2)}
-                    ${field('Pattern 3', exercise.movementPattern3)}
-                    ${field('Plane 1', exercise.planeOfMotion1)}
-                    ${field('Plane 2', exercise.planeOfMotion2)}
-                    ${field('Plane 3', exercise.planeOfMotion3)}
-                    ${field('Combination', exercise.combinationExercise)}
-                </div>
-            </div>
-        </div>
-        ` : ''}
-
-        <!-- Custom Exercise Badge -->
-        ${!exercise.isGlobal ? `
-        <div class="mt-3">
-            <span class="badge bg-label-primary">
-                <i class="bx bx-user me-1"></i>Custom Exercise
-            </span>
-        </div>
-        ` : ''}
-    `;
-
-    document.getElementById('exerciseDetailBody').innerHTML = detailsHtml;
-    modal.show();
-}
-
-/**
- * Add exercise to workout
- */
-function addExerciseToWorkout(exercise) {
-    showAlert(`Adding "${exercise.name}" to workout - This feature will be integrated with the workout builder!`, 'info');
-}
-
-/**
- * Exercise cache management
- */
-function getExerciseCache() {
-    try {
-        const cached = localStorage.getItem('exercise_cache');
-        return cached ? JSON.parse(cached) : null;
-    } catch (error) {
-        console.error('Error reading exercise cache:', error);
-        return null;
-    }
-}
-
-function setExerciseCache(exercises) {
-    try {
-        const cacheData = {
-            exercises: exercises,
-            timestamp: Date.now(),
-            version: '1.1'
-        };
-        localStorage.setItem('exercise_cache', JSON.stringify(cacheData));
-    } catch (error) {
-        console.error('Error setting exercise cache:', error);
-    }
-}
-
-function isExerciseCacheValid(cached) {
-    if (cached.version !== '1.1') return false;
-    const CACHE_DURATION = 7 * 24 * 60 * 60 * 1000; // 7 days
-    return (Date.now() - cached.timestamp) < CACHE_DURATION;
-}
-
-/**
- * Initialize favorites button state on page load
- */
-function initializeFavoritesButtonState() {
-    // Wait for bottom action bar to be ready
-    const checkComponents = setInterval(() => {
-        if (window.bottomActionBar) {
-            clearInterval(checkComponents);
-            
-            // Get current filter state from global state
-            const isActive = window.currentFilters?.favoritesOnly || false;
-            updateFavoritesButtonState(isActive);
-            
-            console.log('✅ Favorites button state initialized:', isActive ? 'active' : 'inactive');
-        }
-    }, 100);
-    
-    // Clear interval after 5 seconds if not found
-    setTimeout(() => clearInterval(checkComponents), 5000);
-}
-
-/**
- * Update favorites button visual state
- * @param {boolean} isActive - Whether favorites filter is active
- */
-function updateFavoritesButtonState(isActive) {
-    if (!window.bottomActionBar) {
-        console.warn('⚠️ Bottom action bar not available for state update');
-        return;
-    }
-    
-    console.log('🔄 Updating favorites button state:', isActive ? 'active' : 'inactive');
-    
-    // Update button icon and title (btn-0 is now the Favorites button)
-    window.bottomActionBar.updateButton('btn-0', {
-        icon: isActive ? 'bxs-heart' : 'bx-heart',
-        title: isActive ? 'Show all exercises' : 'Show only favorites'
-    });
-    
-    // Add/remove active class for color change
-    const btn = document.querySelector('[data-action="btn-0"]');
-    if (btn) {
-        btn.classList.toggle('active', isActive);
-        console.log('✅ Button class updated:', btn.classList.contains('active') ? 'active' : 'inactive');
-    }
-}
-
 // Export for global access
+window.exercisePage = exercisePage;
 window.exerciseTable = exerciseTable;
 window.filterBar = filterBar;
-window.applyFiltersAndRender = applyFiltersAndRender;
-window.toggleExerciseFavorite = toggleExerciseFavorite;
-window.showExerciseDetails = showExerciseDetails;
-window.addExerciseToWorkout = addExerciseToWorkout;
-window.initializeFavoritesButtonState = initializeFavoritesButtonState;
-window.updateFavoritesButtonState = updateFavoritesButtonState;
 
-// Make filterBar available globally after initialization
-window.addEventListener('DOMContentLoaded', () => {
-    // Re-export after a short delay to ensure it's initialized
-    setTimeout(() => {
-        if (filterBar) {
-            window.filterBar = filterBar;
-            console.log('✅ FilterBar exported globally');
-        }
-    }, 500);
-});
-
-console.log('📦 Exercise Database module (refactored) loaded');
+console.log('📦 Exercise Database controller loaded');

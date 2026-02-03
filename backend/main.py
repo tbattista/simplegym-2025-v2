@@ -29,7 +29,8 @@ logger = logging.getLogger(__name__)
 app = FastAPI(
     title="Fitness Field Notes API",
     description="API for generating customized gym log documents. Modular architecture with Firebase integration.",
-    version="2.0.0"
+    version="2.0.0",
+    redirect_slashes=False  # Prevent 307 redirects that strip Authorization headers
 )
 
 # Add CORS middleware for development

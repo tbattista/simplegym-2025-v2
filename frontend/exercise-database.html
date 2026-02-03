@@ -46,9 +46,6 @@
     <!-- Exercise Database CSS -->
     <link rel="stylesheet" href="/static/assets/css/exercise-database.css?v=2.0.2" />
     
-    <!-- Bottom Action Bar CSS -->
-    <link rel="stylesheet" href="/static/assets/css/bottom-action-bar.css?v=3.0.2" />
-    
     <!-- Unified Offcanvas CSS -->
     <link rel="stylesheet" href="/static/assets/css/components/unified-offcanvas.css" />
 
@@ -107,7 +104,39 @@
                   Exercise List
                 </h6>
                 <p class="text-muted small mb-3">Browse and favorite from <span id="totalExercisesCount">2,583</span> exercises</p>
-                
+
+                <!-- Exercise Toolbar -->
+                <div class="exercise-toolbar mb-3" id="exerciseToolbar">
+                  <!-- Search Input -->
+                  <div class="exercise-toolbar-search">
+                    <i class="bx bx-search"></i>
+                    <input type="text" id="exerciseSearchInput" placeholder="Search exercises..." autocomplete="off">
+                    <button class="exercise-toolbar-clear" id="clearSearchBtn" style="display: none;" type="button">
+                      <i class="bx bx-x"></i>
+                    </button>
+                  </div>
+
+                  <!-- Sort Cycle Button -->
+                  <button class="btn btn-outline-secondary exercise-toolbar-btn" id="sortCycleBtn" type="button">
+                    <i class="bx bx-sort-a-z"></i>
+                    <span class="sort-label">A-Z</span>
+                  </button>
+
+                  <!-- Filter Button -->
+                  <button class="btn btn-outline-secondary exercise-toolbar-btn" id="filterBtn" type="button">
+                    <i class="bx bx-filter"></i>
+                    <span class="filter-label">Filter</span>
+                    <span class="filter-badge badge bg-primary ms-1" id="filterBadge" style="display: none;">0</span>
+                  </button>
+
+                  <!-- Custom Exercise Button -->
+                  <button class="btn btn-primary exercise-toolbar-btn" id="customExerciseBtn" type="button"
+                          data-bs-toggle="modal" data-bs-target="#customExerciseModal">
+                    <i class="bx bx-plus"></i>
+                    <span class="create-label">Custom</span>
+                  </button>
+                </div>
+
                 <!-- Filter Feedback (shows active filters) -->
                 <div id="filterFeedback" class="alert alert-info mb-3" style="display: none;">
                   <div id="filterFeedbackText"></div>
@@ -235,10 +264,6 @@
 
     <!-- Main JS -->
     <script src="/static/assets/js/main.js"></script>
-    
-    <!-- Bottom Action Bar (load after main.js) -->
-    <script src="/static/assets/js/config/bottom-action-bar-config.js?v=2.0.6"></script>
-    <script src="/static/assets/js/services/bottom-action-bar-service.js?v=3.0.3"></script>
 
     <!-- Firebase Services -->
     <script src="/static/assets/js/firebase/firebase-init.js?v=20251020-03"></script>
@@ -262,8 +287,11 @@
     <!-- Unified Offcanvas Factory (Modular v3.0.0) -->
     <script type="module" src="/static/assets/js/components/offcanvas/index.js?v=20251220-02"></script>
 
-    <!-- Exercise Database JS (Refactored) -->
-    <script src="/static/assets/js/dashboard/exercises.js?v=2.0.4"></script>
+    <!-- Exercise Database JS (Modular v3.0.0) -->
+    <script src="/static/assets/js/dashboard/exercise-rendering.js?v=3.0.0"></script>
+    <script src="/static/assets/js/dashboard/exercise-filters.js?v=3.0.0"></script>
+    <script src="/static/assets/js/dashboard/exercise-toolbar.js?v=3.0.0"></script>
+    <script src="/static/assets/js/dashboard/exercises.js?v=3.0.0"></script>
     
     <!-- UI Helpers -->
     <script src="/static/assets/js/dashboard/ui-helpers.js?v=20251020-04"></script>
