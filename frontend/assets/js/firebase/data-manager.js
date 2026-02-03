@@ -342,8 +342,8 @@ class FirebaseDataManager {
         }
         
         // Use centralized API config
-        // IMPORTANT: Include trailing slash to avoid 307 redirect which strips Authorization header
-        const url = window.config.api.getUrl(`/api/v3/firebase/programs/?${params}`);
+        // Note: No trailing slash needed - FastAPI has redirect_slashes=False
+        const url = window.config.api.getUrl(`/api/v3/firebase/programs?${params}`);
         
         // Use deduplicated fetch
         return this.deduplicatedFetch(url, async () => {
@@ -658,8 +658,8 @@ class FirebaseDataManager {
         }
         
         // Use centralized API config
-        // IMPORTANT: Include trailing slash to avoid 307 redirect which strips Authorization header
-        const url = window.config.api.getUrl(`/api/v3/firebase/workouts/?${params}`);
+        // Note: No trailing slash needed - FastAPI has redirect_slashes=False
+        const url = window.config.api.getUrl(`/api/v3/firebase/workouts?${params}`);
         
         // Use deduplicated fetch
         return this.deduplicatedFetch(url, async () => {

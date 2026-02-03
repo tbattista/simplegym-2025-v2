@@ -240,16 +240,3 @@ input.navbar-search-input::-webkit-search-decoration {
 .exercise-slot .input-group .btn.btn {
     border-radius: var(--bs-border-radius);
 }
-
-/* Remove highlight from exercise search input in search offcanvas
-   ID selector provides sufficient specificity (100) */
-#exerciseSearchInput:focus {
-    box-shadow: none;
-    border-color: var(--bs-border-color);
-    background-color: var(--bs-body-bg);
-}
-
-/* Ensure rounded corners on search input - ID provides specificity */
-#exerciseSearchInput {
-    border-radius: var(--bs-border-radius);
-}
