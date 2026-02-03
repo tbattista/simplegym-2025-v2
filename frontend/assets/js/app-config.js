@@ -16,7 +16,8 @@
         { old: 'ghost_gym_active_workout_session', new: 'ffn_active_workout_session' },
         { old: 'ghostGym_plateConfig', new: 'ffn_plateConfig' },
         { old: 'ghostgym_feedback_draft', new: 'ffn_feedback_draft' },
-        { old: 'ghostgym_feedback_submissions', new: 'ffn_feedback_submissions' }
+        { old: 'ghostgym_feedback_submissions', new: 'ffn_feedback_submissions' },
+        { old: 'ghost-gym-theme-preference', new: 'ffn-theme-preference' }
     ];
 
     migrations.forEach(({ old, new: newKey }) => {

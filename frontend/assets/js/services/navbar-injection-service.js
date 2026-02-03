@@ -72,7 +72,7 @@
         
         // Fallback for unknown pages
         'default': {
-            title: 'Ghost Gym',
+            title: 'Fitness Field Notes',
             icon: 'bx-home',
             showSearch: false
         }

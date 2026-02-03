@@ -414,7 +414,7 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
             
             // Update page title and header
             document.getElementById('workoutName').textContent = this.currentWorkout.name;
-            document.title = `${this.currentWorkout.name} - Session - Ghost Gym`;
+            document.title = `${this.currentWorkout.name} - Session - Fitness Field Notes`;
             
             // Show workout info header
             const workoutInfoHeader = document.getElementById('workoutInfoHeader');
@@ -2024,7 +2024,7 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
             if (!this.currentWorkout) return;
             
             const shareData = {
-                title: `${this.currentWorkout.name} - Ghost Gym Workout`,
+                title: `${this.currentWorkout.name} - Fitness Field Notes`,
                 text: this.generateShareText(this.currentWorkout),
                 url: window.location.href
             };
@@ -2059,7 +2059,7 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
             });
         }
         
-        text += `\n👻 Created with Ghost Gym`;
+        text += `\n📓 Created with Fitness Field Notes`;
         return text;
     }
     

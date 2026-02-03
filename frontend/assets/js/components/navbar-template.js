@@ -13,7 +13,7 @@
  * @param {string} options.searchPlaceholder - Placeholder text for search input
  * @returns {string} Complete navbar HTML
  */
-function getNavbarHTML(pageTitle = 'Ghost Gym', pageIcon = 'bx-home', options = {}) {
+function getNavbarHTML(pageTitle = 'Fitness Field Notes', pageIcon = 'bx-home', options = {}) {
     const showSearch = options.showSearch || false;
     const searchPlaceholder = options.searchPlaceholder || 'Search...';
     return `

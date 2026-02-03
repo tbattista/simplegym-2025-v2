@@ -113,7 +113,7 @@ class MenuNavigation {
             }
             
             // Update page title
-            document.title = `${config.title} - Ghost Gym`;
+            document.title = `${config.title} - Fitness Field Notes`;
             
             // Log navigation for debugging
             console.log(`📍 Navigated to: ${section} (${config.title})`);

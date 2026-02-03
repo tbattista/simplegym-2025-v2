@@ -1,16 +1,16 @@
 /**
  * Theme Manager Service
- * Centralized theme management for Ghost Gym V0.4.1
- * 
+ * Centralized theme management for Fitness Field Notes
+ *
  * Supports 3 theme modes:
  * - 'auto': Follow system preference (prefers-color-scheme)
  * - 'dark': Force dark mode
  * - 'light': Force light mode
- * 
+ *
  * Usage:
  *   window.themeManager.setPreference('dark');
  *   window.themeManager.getActiveTheme(); // Returns 'dark' or 'light'
- * 
+ *
  * Events:
  *   'themeChanged' - Fired when theme changes
  */
@@ -23,7 +23,7 @@
             this.preference = 'auto'; // 'auto', 'dark', 'light'
             this.systemPreference = 'light';
             this.mediaQuery = null;
-            this.storageKey = 'ghost-gym-theme-preference';
+            this.storageKey = 'ffn-theme-preference';
         }
 
         /**
