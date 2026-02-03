@@ -64,8 +64,8 @@ class WorkoutCard {
                 ${this._renderMetadata()}
                 ${this._renderDescription()}
                 ${this._renderExercisePreview()}
-                ${this._renderStats()}
                 ${this._renderTags()}
+                ${this._renderStats()}
                 ${this._renderFooter()}
             </div>
         `;
@@ -330,7 +330,7 @@ class WorkoutCard {
         return `
             <div class="workout-card-tags d-flex gap-1 flex-wrap mb-2">
                 ${visibleTags.map(tag =>
-                    `<span class="badge bg-label-primary badge-sm" title="${this._escapeHtml(tag)}">${this._escapeHtml(truncateTag(tag))}</span>`
+                    `<span class="badge bg-label-secondary badge-sm" title="${this._escapeHtml(tag)}">${this._escapeHtml(truncateTag(tag))}</span>`
                 ).join('')}
                 ${remainingCount > 0 ? `<span class="badge bg-label-secondary badge-sm">+${remainingCount}</span>` : ''}
             </div>
@@ -394,21 +394,21 @@ class WorkoutCard {
      */
     _renderStats() {
         if (!this.config.showStats) return '';
-        
+
         const stats = this.workout.stats || {};
         const viewCount = stats.view_count || 0;
         const saveCount = stats.save_count || 0;
-        
+
         return `
-            <div class="d-flex gap-3 mb-2">
-                <small class="text-muted">
-                    <i class="bx bx-show me-1"></i>
-                    ${viewCount}
-                </small>
-                <small class="text-muted">
-                    <i class="bx bx-bookmark me-1"></i>
-                    ${saveCount}
-                </small>
+            <div class="workout-card-status-row mt-auto pt-2">
+                <div class="status-item">
+                    <i class="bx bx-show"></i>
+                    <span>${viewCount}</span>
+                </div>
+                <div class="status-item">
+                    <i class="bx bx-bookmark"></i>
+                    <span>${saveCount}</span>
+                </div>
             </div>
         `;
     }

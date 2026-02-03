@@ -314,6 +314,28 @@
     flex-direction: column;
 }
 
+/* Status Row - sticky bottom of card (views, saves, etc.) */
+.workout-card-status-row {
+    margin-top: auto;
+    padding-top: var(--gs-space-2);          /* 0.5rem */
+    border-top: 1px solid var(--gs-gray-200);
+    display: flex;
+    gap: var(--gs-space-4);                  /* 1rem */
+    align-items: center;
+}
+
+.workout-card-status-row .status-item {
+    display: flex;
+    align-items: center;
+    gap: var(--gs-space-1);                  /* 0.25rem */
+    font-size: var(--gs-text-sm);            /* 0.75rem */
+    color: var(--gs-secondary);
+}
+
+.workout-card-status-row .status-item i {
+    font-size: var(--gs-text-base);          /* 0.875rem */
+}
+
 /* Card actions container */
 .workout-list-card .card-actions {
     padding-top: 0.5rem;
