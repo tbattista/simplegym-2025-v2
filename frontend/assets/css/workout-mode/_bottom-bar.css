@@ -128,3 +128,14 @@
    CONTENT PADDING
    Now handled globally by .has-bottom-action-bar in bottom-action-bar.css
    ============================================ */
+
+/* Additional bottom padding for exercise cards to clear floating FABs
+   Height breakdown: action bar (56px) + gap (12px) + floating buttons (44px) + breathing room (28px) = 140px */
+#exerciseCardsContainer {
+    padding-bottom: 140px;
+}
+
+/* Also add to landing page for consistency */
+#workoutLandingPage {
+    padding-bottom: 140px;
+}
