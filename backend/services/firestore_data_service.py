@@ -809,8 +809,15 @@ class FirestoreDataService:
             session_data['created_at'] = firestore.SERVER_TIMESTAMP
             
             session_ref.set(session_data)
-            
-            logger.info(f"Created workout session {session.id} for user {user_id}")
+
+            # Verify the write by reading back immediately
+            verify_doc = session_ref.get()
+            if verify_doc.exists:
+                logger.info(f"✅ Created and verified workout session {session.id} for user {user_id}")
+                logger.info(f"   Document path: users/{user_id}/workout_sessions/{session.id}")
+            else:
+                logger.error(f"❌ Write verification failed! Session {session.id} not found after set()")
+
             return session
             
         except Exception as e:
@@ -893,9 +900,11 @@ class FirestoreDataService:
                           .document(session_id))
             
             # Check if session exists
+            logger.info(f"🔍 Looking for session at: users/{user_id}/workout_sessions/{session_id}")
             current_doc = session_ref.get()
             if not current_doc.exists:
-                logger.warning(f"Workout session {session_id} not found for completion")
+                logger.warning(f"❌ Workout session {session_id} not found for user {user_id}")
+                logger.warning(f"   Expected path: users/{user_id}/workout_sessions/{session_id}")
                 return None
             
             current_data = current_doc.to_dict()

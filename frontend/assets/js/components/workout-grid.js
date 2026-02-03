@@ -335,6 +335,23 @@ class WorkoutGrid {
     }
 
     /**
+     * Set selection state for a specific card
+     * @param {string} workoutId - The workout ID
+     * @param {boolean} isSelected - Whether to select or deselect
+     */
+    setSelection(workoutId, isSelected) {
+        const card = this.cards.find(c => c.workout.id === workoutId);
+        if (card) {
+            card.config.isSelected = isSelected;
+            if (card.element) {
+                card.element.classList.toggle('selected', isSelected);
+                const checkbox = card.element.querySelector('.workout-select-checkbox');
+                if (checkbox) checkbox.checked = isSelected;
+            }
+        }
+    }
+
+    /**
      * Get IDs of all selected cards
      * @returns {Array<string>}
      */

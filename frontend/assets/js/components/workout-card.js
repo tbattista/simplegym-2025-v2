@@ -167,19 +167,6 @@ class WorkoutCard {
                     </li>`;
         }
 
-        if (dropdownActions.includes('multi-delete')) {
-            // Add divider if not already after delete
-            if (!dropdownActions.includes('delete') && menuItems) {
-                menuItems += `<li><hr class="dropdown-divider"></li>`;
-            }
-            menuItems += `
-                    <li>
-                        <a class="dropdown-item text-secondary" href="javascript:void(0);" data-action="multi-delete">
-                            <i class="bx bx-select-multiple me-2"></i>Multi Delete
-                        </a>
-                    </li>`;
-        }
-
         return `
             <div class="dropdown position-absolute" style="top: 8px; right: 8px; z-index: 1050;">
                 <button class="btn btn-icon btn-card-menu" type="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -559,10 +546,16 @@ class WorkoutCard {
                 e.stopPropagation();
                 const actionId = element.dataset.action;
 
-                if (actionId === 'delete' && this.config.onDelete) {
-                    const workoutData = this.workout.workout_data || this.workout;
-                    const name = workoutData.name || this.workout.name || 'Untitled Workout';
-                    this.config.onDelete(this.workout.id, name);
+                if (actionId === 'delete') {
+                    // Enter delete mode with this card pre-selected
+                    if (window.enterDeleteModeWithSelection) {
+                        window.enterDeleteModeWithSelection(this.workout.id);
+                    } else if (this.config.onDelete) {
+                        // Fallback to legacy delete behavior
+                        const workoutData = this.workout.workout_data || this.workout;
+                        const name = workoutData.name || this.workout.name || 'Untitled Workout';
+                        this.config.onDelete(this.workout.id, name);
+                    }
                 } else if (actionId === 'view-details' && this.config.onViewDetails) {
                     // View Details from dropdown menu
                     this.config.onViewDetails(this.workout);
@@ -596,12 +589,6 @@ class WorkoutCard {
                 } else if (actionId === 'save-and-edit' && this.config.onSaveAndEdit) {
                     // Copy and edit (public workouts)
                     this.config.onSaveAndEdit(this.workout);
-                } else if (actionId === 'multi-delete') {
-                    // Multi-delete action from dropdown - triggers delete mode
-                    const multiDeleteAction = this.config.actions.find(a => a.id === 'multi-delete');
-                    if (multiDeleteAction && multiDeleteAction.onClick) {
-                        multiDeleteAction.onClick();
-                    }
                 } else {
                     // Other actions (like 'start')
                     const action = this.config.actions.find(a => a.id === actionId);
