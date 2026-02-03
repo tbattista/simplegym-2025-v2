@@ -49,41 +49,6 @@ function getDifficultyBadgeWithPopover(difficulty) {
     `;
 }
 
-/**
- * Get tier badge HTML (compact version)
- * @param {Object} exercise - Exercise object
- * @returns {string} HTML for badge
- */
-function getTierBadgeCompact(exercise) {
-    const exerciseTier = exercise.exerciseTier || 2;
-    const isFoundational = exercise.isFoundational || false;
-
-    if (isFoundational || exerciseTier === 1) {
-        return '<span class="badge" style="font-size: 0.75rem; padding: 0.25rem 0.5rem; background: rgba(100, 116, 139, 0.1); color: #64748B; border: 1px solid rgba(100, 116, 139, 0.25);"><i class="bx bxs-star" style="font-size: 0.75rem;"></i> Standard</span>';
-    } else if (exerciseTier === 3) {
-        return '<span class="badge bg-secondary" style="font-size: 0.75rem; padding: 0.25rem 0.5rem; opacity: 0.7;"><i class="bx bx-dots-horizontal-rounded" style="font-size: 0.75rem;"></i></span>';
-    }
-    return '';
-}
-
-/**
- * Get tier badge HTML (full version for modal)
- * @param {Object} exercise - Exercise object
- * @returns {string} HTML for badge
- */
-function getTierBadge(exercise) {
-    const exerciseTier = exercise.exerciseTier || 2;
-    const isFoundational = exercise.isFoundational || false;
-
-    if (isFoundational || exerciseTier === 1) {
-        return '<span class="badge bg-warning ms-1"><i class="bx bxs-star"></i> Foundation</span>';
-    } else if (exerciseTier === 2) {
-        return '<span class="badge bg-info ms-1"><i class="bx bx-star"></i> Standard</span>';
-    } else if (exerciseTier === 3) {
-        return '<span class="badge bg-secondary ms-1" style="opacity: 0.7;"><i class="bx bx-dots-horizontal-rounded"></i> Specialized</span>';
-    }
-    return '';
-}
 
 /**
  * Initialize popovers for difficulty badges
@@ -387,8 +352,6 @@ function isExerciseCacheValid(cached) {
 
 // Export for global access
 window.getDifficultyBadgeWithPopover = getDifficultyBadgeWithPopover;
-window.getTierBadgeCompact = getTierBadgeCompact;
-window.getTierBadge = getTierBadge;
 window.initializePopovers = initializePopovers;
 window.showExerciseDetails = showExerciseDetails;
 window.toggleExerciseFavorite = toggleExerciseFavorite;

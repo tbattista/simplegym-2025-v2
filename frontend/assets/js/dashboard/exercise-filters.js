@@ -47,25 +47,6 @@ function applyFiltersAndRender(filters) {
         allExercises = allExercises.filter(e => e.difficultyLevel === filters.difficulty);
     }
 
-    // Apply exercise tier filter
-    if (filters.exerciseTier) {
-        const tierValue = parseInt(filters.exerciseTier);
-        allExercises = allExercises.filter(e => {
-            // Custom exercises (isGlobal === false) should always pass tier filter
-            if (!e.isGlobal) {
-                return true;
-            }
-
-            const exerciseTier = e.exerciseTier || 2;
-            const isFoundational = e.isFoundational || false;
-            // Tier 1 includes both exerciseTier === 1 and isFoundational === true
-            if (tierValue === 1) {
-                return exerciseTier === 1 || isFoundational;
-            }
-            return exerciseTier === tierValue;
-        });
-    }
-
     // Apply favorites only filter
     if (filters.favoritesOnly) {
         allExercises = allExercises.filter(e => window.ffn.exercises.favorites.has(e.id));
@@ -153,15 +134,6 @@ function updateFilterFeedback(filters) {
 
     if (filters.difficulty) {
         activeFilters.push(`<strong>Difficulty:</strong> ${filters.difficulty}`);
-    }
-
-    if (filters.exerciseTier) {
-        const tierLabels = {
-            '1': 'Standard (Tier 1)',
-            '2': 'Standard (Tier 2)',
-            '3': 'Specialized'
-        };
-        activeFilters.push(`<strong>Tier:</strong> ${tierLabels[filters.exerciseTier] || filters.exerciseTier}`);
     }
 
     if (filters.favoritesOnly) {

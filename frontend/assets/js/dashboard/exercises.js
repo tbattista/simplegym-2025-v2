@@ -63,7 +63,6 @@ async function initializeExerciseDatabase(page) {
         // Initialize filter state
         window.currentFilters = {
             sortBy: 'name',
-            exerciseTier: '1',
             muscleGroup: '',
             equipment: [],
             difficulty: '',
@@ -86,18 +85,6 @@ async function initializeExerciseDatabase(page) {
                         { value: 'favorites', label: 'My Favorites First' }
                     ],
                     defaultValue: 'name'
-                },
-                {
-                    key: 'exerciseTier',
-                    label: 'Exercise Tier',
-                    type: 'select',
-                    options: [
-                        { value: '1', label: '⭐ Standard - Core foundational exercises' },
-                        { value: '2', label: '⭐ Standard - Common effective exercises' },
-                        { value: '3', label: '◦ Specialized - Advanced variations' }
-                    ],
-                    placeholder: 'All Tiers',
-                    defaultValue: '1'
                 },
                 {
                     key: 'muscleGroup',
@@ -193,7 +180,6 @@ async function initializeExerciseDatabase(page) {
  */
 function renderExerciseCard(row) {
     const isCustom = !row.isGlobal;
-    const tierBadge = window.getTierBadgeCompact ? window.getTierBadgeCompact(row) : '';
     const isFavorited = window.ffn.exercises.favorites.has(row.id);
     const difficultyBadge = row.difficultyLevel && window.getDifficultyBadgeWithPopover
         ? window.getDifficultyBadgeWithPopover(row.difficultyLevel) : '';
@@ -208,7 +194,6 @@ function renderExerciseCard(row) {
                             ${exercisePage.escapeHtml(row.name)}
                         </div>
                         <div class="d-flex gap-2 flex-wrap align-items-center">
-                            ${tierBadge}
                             ${difficultyBadge}
                             ${row.targetMuscleGroup ? `<span class="text-muted small">${exercisePage.escapeHtml(row.targetMuscleGroup)}</span>` : ''}
                             ${row.primaryEquipment ? `<span class="text-muted small">• ${exercisePage.escapeHtml(row.primaryEquipment)}</span>` : ''}

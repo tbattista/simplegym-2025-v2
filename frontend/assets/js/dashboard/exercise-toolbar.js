@@ -103,7 +103,6 @@ function updateFilterBadge() {
     if (filters.muscleGroup) filterCount++;
     if (filters.equipment && filters.equipment.length > 0) filterCount++;
     if (filters.difficulty) filterCount++;
-    if (filters.exerciseTier && filters.exerciseTier !== '1') filterCount++; // '1' is default
     if (filters.favoritesOnly) filterCount++;
     if (filters.customOnly) filterCount++;
 
