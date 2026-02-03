@@ -15,7 +15,7 @@ Example: "You asked me to add a logout button to the navbar. I added a logout bu
 After completing any task that modifies code, always provide a ready-to-use git commit command that the user can copy and paste. Use conventional commit format:
 
 ```bash
-git commit -m "type: brief description of changes"
+git add . && git commit -m "type: brief description of changes"
 ```
 
 **Commit types:**

@@ -306,7 +306,7 @@ class WorkoutCard {
     }
     
     /**
-     * Render tags
+     * Render tags - truncated text, max 2 lines
      */
     _renderTags() {
         if (!this.config.showTags) return '';
@@ -317,13 +317,22 @@ class WorkoutCard {
         // Don't show anything if no tags (cleaner look)
         if (tags.length === 0) return '';
 
-        // Show max 2 tags to keep it clean (matching program-card style)
+        // Truncate tag text to 10 chars
+        const truncateTag = (tag) => {
+            return tag.length > 10 ? tag.substring(0, 10) + '…' : tag;
+        };
+
+        // Show up to 6 tags (typically fits 2 lines), then +N for rest
+        const maxVisible = 6;
+        const visibleTags = tags.slice(0, maxVisible);
+        const remainingCount = tags.length - maxVisible;
+
         return `
-            <div class="d-flex gap-1 flex-wrap mb-2">
-                ${tags.slice(0, 2).map(tag =>
-                    `<span class="badge bg-label-primary badge-sm">${this._escapeHtml(tag)}</span>`
+            <div class="workout-card-tags d-flex gap-1 flex-wrap mb-2">
+                ${visibleTags.map(tag =>
+                    `<span class="badge bg-label-primary badge-sm" title="${this._escapeHtml(tag)}">${this._escapeHtml(truncateTag(tag))}</span>`
                 ).join('')}
-                ${tags.length > 2 ? `<span class="badge bg-label-secondary badge-sm">+${tags.length - 2}</span>` : ''}
+                ${remainingCount > 0 ? `<span class="badge bg-label-secondary badge-sm">+${remainingCount}</span>` : ''}
             </div>
         `;
     }
