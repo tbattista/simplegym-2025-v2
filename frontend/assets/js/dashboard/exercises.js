@@ -20,9 +20,9 @@ const exercisePage = new FFNBasePage({
         await initializeExerciseDatabase(page);
     },
     onAuthStateChange: async (user) => {
-        console.log('🔄 Auth state changed, reloading user data');
+        console.log('🔄 Auth state changed, user:', user?.email || 'null');
         if (user) {
-            await loadUserExerciseData();
+            await loadUserExerciseData(user);
             if (window.exerciseTable) {
                 window.exerciseTable.refresh();
             }
@@ -309,16 +309,21 @@ async function loadAllExerciseData(page) {
 
 /**
  * Load user-specific exercise data (favorites and custom)
+ * @param {Object} userOverride - Optional user object to use instead of checking firebaseAuth
  */
-async function loadUserExerciseData() {
-    if (!window.firebaseAuth?.currentUser) {
+async function loadUserExerciseData(userOverride = null) {
+    const user = userOverride || window.firebaseAuth?.currentUser;
+    console.log('📥 loadUserExerciseData called, user:', user?.email || 'null');
+
+    if (!user) {
         window.ffn.exercises.favorites.clear();
         window.ffn.exercises.custom = [];
+        console.log('⏭️ No user, clearing custom exercises');
         return;
     }
 
     try {
-        const token = await window.firebaseAuth.currentUser.getIdToken();
+        const token = await user.getIdToken();
         const baseUrl = exercisePage.getApiUrl('');
 
         // Load favorites
@@ -339,6 +344,8 @@ async function loadUserExerciseData() {
             const customData = await customResponse.json();
             window.ffn.exercises.custom = customData.exercises || [];
             console.log(`✅ Loaded ${window.ffn.exercises.custom.length} custom exercises`);
+        } else {
+            console.warn(`⚠️ Failed to load custom exercises: ${customResponse.status} ${customResponse.statusText}`);
         }
 
         // Refresh table if it exists
