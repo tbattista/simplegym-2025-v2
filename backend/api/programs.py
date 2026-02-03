@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 
 # Local Storage Endpoints
 
-@router.post("/", response_model=Program)
+@router.post("", response_model=Program)
 async def create_program(
     program_request: CreateProgramRequest,
     data_service: DataService = Depends(get_data_service)
@@ -38,7 +38,7 @@ async def create_program(
         raise HTTPException(status_code=500, detail=f"Error creating program: {str(e)}")
 
 
-@router.get("/", response_model=ProgramListResponse)
+@router.get("", response_model=ProgramListResponse)
 async def get_programs(
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=100),
@@ -289,7 +289,7 @@ async def preview_program_html(
 # Create a separate router for firebase endpoints to avoid path conflicts
 firebase_router = APIRouter(prefix="/api/v3/firebase/programs", tags=["Programs"])
 
-@firebase_router.post("/", response_model=Program)
+@firebase_router.post("", response_model=Program)
 async def create_program_firebase(
     program_request: CreateProgramRequest,
     current_user: Optional[dict] = Depends(get_current_user_optional)
