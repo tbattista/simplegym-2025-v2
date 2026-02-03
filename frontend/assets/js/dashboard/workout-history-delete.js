@@ -37,6 +37,31 @@ function toggleSessionDeleteMode() {
 }
 
 /**
+ * Enter delete mode with a session pre-selected
+ * Called from the 3-dot menu on session cards
+ * @param {string} sessionId - Session ID to pre-select
+ */
+function enterDeleteModeWithSelection(sessionId) {
+  const state = window.ffn.workoutHistory;
+
+  // Enter delete mode
+  state.deleteMode = true;
+  state.selectedSessionIds.clear();
+  state.selectedSessionIds.add(sessionId);
+
+  console.log(`🗑️ Delete mode activated with session pre-selected: ${sessionId}`);
+
+  // Show action bar with 1 selected
+  showSessionSelectionActionBar();
+  document.body.classList.add('session-delete-mode-active');
+
+  // Re-render sessions
+  if (typeof renderSessionHistory === 'function') {
+    renderSessionHistory();
+  }
+}
+
+/**
  * Exit session delete mode
  */
 function exitSessionDeleteMode() {
@@ -268,6 +293,7 @@ async function batchDeleteSessions(sessionIds) {
 
 // Export to window for backwards compatibility
 window.toggleSessionDeleteMode = toggleSessionDeleteMode;
+window.enterDeleteModeWithSelection = enterDeleteModeWithSelection;
 window.exitSessionDeleteMode = exitSessionDeleteMode;
 window.toggleSessionSelection = toggleSessionSelection;
 window.updateSessionSelectionCount = updateSessionSelectionCount;

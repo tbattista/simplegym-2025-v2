@@ -252,7 +252,7 @@ function createSessionEntry(session) {
         <ul class="dropdown-menu dropdown-menu-end">
           <li>
             <a class="dropdown-item text-danger" href="javascript:void(0);"
-               onclick="deleteSession('${session.id}', '${escapedWorkoutName}');">
+               onclick="enterDeleteModeWithSelection('${session.id}');">
               <i class="bx bx-trash me-2"></i>Delete
             </a>
           </li>

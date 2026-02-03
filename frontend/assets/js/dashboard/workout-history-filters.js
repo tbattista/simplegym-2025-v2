@@ -34,16 +34,6 @@ function renderSessionFilterBar() {
     </option>`
   ).join('');
 
-  // Delete mode toggle button (both modes)
-  const deleteBtn = `
-    <button class="btn btn-sm ${deleteMode ? 'btn-danger' : 'btn-outline-danger'} session-toolbar-btn"
-            type="button"
-            onclick="toggleSessionDeleteMode()"
-            title="${deleteMode ? 'Exit delete mode' : 'Delete multiple sessions'}">
-      <i class="bx ${deleteMode ? 'bx-x' : 'bx-trash'}"></i>
-      <span class="ms-1">${deleteMode ? 'Cancel' : 'Delete'}</span>
-    </button>`;
-
   // All Mode: full toolbar
   if (isAllMode) {
     return `
@@ -74,19 +64,12 @@ function renderSessionFilterBar() {
           <i class="bx bx-sort-alt-2"></i>
           <span class="ms-1">${sortLabels[activeSort]}</span>
         </button>
-
-        <!-- Delete Button -->
-        ${deleteBtn}
       </div>
     `;
   }
 
-  // Single workout mode: just delete button
-  return `
-    <div class="session-toolbar mb-3">
-      ${deleteBtn}
-    </div>
-  `;
+  // Single workout mode: no toolbar needed (delete via 3-dot menu)
+  return '';
 }
 
 /* ============================================
