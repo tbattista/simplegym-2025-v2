@@ -45,6 +45,16 @@
     height: 56px;
     height: calc(56px + env(safe-area-inset-bottom));
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    /* Fix for Chrome mobile dynamic viewport - forces repaint on viewport change */
+    transform: translate3d(0, 0, 0);
+}
+
+/* Chrome mobile dynamic viewport fix - use dvh when available */
+@supports (height: 100dvh) {
+    .bottom-action-bar {
+        /* Anchor to dynamic viewport bottom */
+        bottom: env(safe-area-inset-bottom, 0px);
+    }
 }
 
 /* Gradient fade at top of nav bar (alternative layout) */

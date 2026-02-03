@@ -318,7 +318,7 @@ async def create_program_firebase(
         raise HTTPException(status_code=500, detail=f"Error creating program: {str(e)}")
 
 
-@firebase_router.get("/", response_model=ProgramListResponse)
+@firebase_router.get("", response_model=ProgramListResponse)
 async def get_programs_firebase(
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=100),

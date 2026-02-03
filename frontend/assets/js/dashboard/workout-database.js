@@ -827,24 +827,10 @@ function initializeComponents() {
                     icon: 'bx-share-alt',
                     variant: 'outline-secondary',
                     onClick: (workout) => shareWorkout(workout.id)
-                },
-                {
-                    id: 'multi-delete',
-                    label: 'Multi Delete',
-                    icon: 'bx-select-multiple',
-                    variant: 'outline-danger',
-                    onClick: () => {
-                        // Toggle checkbox to activate delete mode
-                        const toggle = document.getElementById('deleteModeToggle');
-                        if (toggle) {
-                            toggle.checked = true;
-                            toggle.dispatchEvent(new Event('change'));
-                        }
-                    }
                 }
             ],
-            // Configure which actions appear in dropdown menu (all actions)
-            dropdownActions: ['start', 'history', 'edit', 'duplicate', 'share', 'delete', 'multi-delete'],
+            // Configure which actions appear in dropdown menu
+            dropdownActions: ['start', 'history', 'edit', 'duplicate', 'share', 'delete'],
             // View details callback for dropdown
             onViewDetails: (workout) => viewWorkoutDetails(workout.id),
             // Card tap also opens detail view
@@ -1200,6 +1186,33 @@ function toggleDeleteMode() {
 
     // Body class for global styling
     document.body.classList.toggle('delete-mode-active', isActive);
+}
+
+/**
+ * Enter delete mode with a workout pre-selected
+ * Called from the 3-dot menu on workout cards
+ * @param {string} workoutId - Workout ID to pre-select
+ */
+function enterDeleteModeWithSelection(workoutId) {
+    const toggle = document.getElementById('deleteModeToggle');
+
+    // Enter delete mode
+    if (toggle) toggle.checked = true;
+    window.ffn.workoutDatabase.deleteMode = true;
+    window.ffn.workoutDatabase.selectedWorkoutIds.clear();
+    window.ffn.workoutDatabase.selectedWorkoutIds.add(workoutId);
+
+    console.log(`🗑️ Delete mode activated with workout pre-selected: ${workoutId}`);
+
+    // Update grid delete mode and set selection
+    if (workoutGrid) {
+        workoutGrid.setDeleteMode(true);
+        workoutGrid.setSelection(workoutId, true);
+    }
+
+    // Show action bar with 1 selected
+    showSelectionActionBar();
+    document.body.classList.add('delete-mode-active');
 }
 
 /**
@@ -1559,6 +1572,7 @@ window.initSearchOverlay = initSearchOverlay;
 window.showSearchOverlay = showSearchOverlay;
 window.hideSearchOverlay = hideSearchOverlay;
 window.toggleDeleteMode = toggleDeleteMode;
+window.enterDeleteModeWithSelection = enterDeleteModeWithSelection;
 window.deleteWorkoutFromDatabase = deleteWorkoutFromDatabase;
 window.initDeleteModeToggle = initDeleteModeToggle;
 window.exitDeleteMode = exitDeleteMode;

@@ -56,8 +56,44 @@
                 this.enableAutoHide();
             }
 
+            // Fix for Chrome mobile dynamic viewport (address bar hide/show)
+            this.setupMobileViewportFix();
+
             console.log('✅ Bottom Action Bar initialized');
             return true;
+        }
+
+        /**
+         * Setup fix for Chrome mobile dynamic viewport
+         * When Chrome's UI hides/shows, the viewport changes and fixed elements need to reposition
+         */
+        setupMobileViewportFix() {
+            if (!window.visualViewport) {
+                return; // Not supported, use CSS fallback only
+            }
+
+            const updatePosition = () => {
+                const bar = this.container;
+                if (!bar) return;
+
+                // Force browser to recalculate position by triggering reflow
+                // This fixes Chrome Android issue where fixed elements don't reposition
+                // when the browser UI hides/shows
+                bar.style.display = 'none';
+                void bar.offsetHeight; // Force reflow
+                bar.style.display = '';
+            };
+
+            // Debounce the update to prevent jank
+            let rafId = null;
+            const debouncedUpdate = () => {
+                if (rafId) {
+                    cancelAnimationFrame(rafId);
+                }
+                rafId = requestAnimationFrame(updatePosition);
+            };
+
+            window.visualViewport.addEventListener('resize', debouncedUpdate);
         }
 
         /**
