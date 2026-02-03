@@ -157,12 +157,44 @@ function initSortButton() {
 }
 
 /**
+ * Initialize custom filter toggle button
+ */
+function initCustomToggle() {
+    const btn = document.getElementById('customToggleBtn');
+    if (!btn) return;
+
+    btn.addEventListener('click', () => {
+        // Toggle custom only filter
+        window.currentFilters.customOnly = !window.currentFilters.customOnly;
+
+        // Update button visual state
+        btn.classList.toggle('active', window.currentFilters.customOnly);
+
+        // Update icon (filled when active)
+        const icon = btn.querySelector('i');
+        if (icon) {
+            icon.className = window.currentFilters.customOnly ? 'bx bxs-user' : 'bx bx-user';
+        }
+
+        // Apply filters
+        if (window.applyFiltersAndRender) {
+            window.applyFiltersAndRender(window.currentFilters);
+        }
+
+        console.log('🔄 Custom filter toggled:', window.currentFilters.customOnly ? 'ON' : 'OFF');
+    });
+
+    console.log('✅ Custom toggle initialized');
+}
+
+/**
  * Initialize all toolbar components
  */
 function initExerciseToolbar() {
     initToolbarSearch();
     initSortButton();
     initFilterButton();
+    initCustomToggle();
     console.log('✅ Exercise toolbar initialized');
 }
 
@@ -172,6 +204,7 @@ window.cycleExerciseSort = cycleExerciseSort;
 window.updateFilterBadge = updateFilterBadge;
 window.initFilterButton = initFilterButton;
 window.initSortButton = initSortButton;
+window.initCustomToggle = initCustomToggle;
 window.initExerciseToolbar = initExerciseToolbar;
 window.SORT_OPTIONS = SORT_OPTIONS;
 

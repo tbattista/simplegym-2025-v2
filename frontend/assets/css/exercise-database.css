@@ -345,9 +345,10 @@
 @media (max-width: 575.98px) {
     .exercise-toolbar {
         gap: 0.375rem;
+        width: 100%;
     }
 
-    /* Search takes full width on mobile */
+    /* Search takes full width on mobile - row 1 */
     .exercise-toolbar-search {
         flex: 1 1 100%;
         max-width: none;
@@ -359,9 +360,10 @@
         height: 2.25rem;
     }
 
-    /* Buttons take equal width on mobile */
+    /* Buttons take equal width on mobile - row 2 */
     .exercise-toolbar-btn {
-        flex: 1;
+        flex: 1 1 0;
+        min-width: 0;
         height: 2.25rem;
         padding: 0 0.5rem;
         justify-content: center;
@@ -370,9 +372,23 @@
     /* Show text labels on mobile */
     .exercise-toolbar-btn .sort-label,
     .exercise-toolbar-btn .filter-label,
+    .exercise-toolbar-btn .custom-label,
     .exercise-toolbar-btn .create-label {
         display: inline;
     }
+}
+
+/* Active state for toggle buttons */
+.exercise-toolbar-btn.active {
+    background-color: var(--bs-primary);
+    border-color: var(--bs-primary);
+    color: white;
+}
+
+.exercise-toolbar-btn.active:hover {
+    background-color: var(--bs-primary);
+    border-color: var(--bs-primary);
+    opacity: 0.9;
 }
 
 /* ============================================
