@@ -118,12 +118,49 @@
             <div class="container-xxl flex-grow-1 container-p-y">
               
               <!-- Header -->
-              <div class="mb-4">
-                <h4 class="mb-1">
-                  <i class="bx bx-globe me-2"></i>
+              <div class="mb-3">
+                <h6 class="mb-2">
+                  <i class="bx bx-globe me-1"></i>
                   Discover Shared Workouts
-                </h4>
-                <p class="text-muted">Browse and save workouts shared by the community</p>
+                </h6>
+                <p class="text-muted small mb-0">Browse and save workouts shared by the community</p>
+              </div>
+
+              <!-- Workout Toolbar -->
+              <div class="workout-toolbar mb-3" id="workoutToolbar">
+                <!-- Search Input -->
+                <div class="workout-toolbar-search">
+                  <i class="bx bx-search"></i>
+                  <input type="text"
+                         id="workoutSearchInput"
+                         placeholder="Search workouts..."
+                         autocomplete="off">
+                  <button class="workout-toolbar-clear"
+                          id="clearSearchBtn"
+                          style="display: none;"
+                          type="button">
+                    <i class="bx bx-x"></i>
+                  </button>
+                </div>
+
+                <!-- Sort Cycle Button -->
+                <button class="btn btn-outline-secondary workout-toolbar-btn"
+                        id="sortCycleBtn"
+                        type="button">
+                  <i class="bx bx-sort-alt-2"></i>
+                  <span class="sort-label">Newest</span>
+                </button>
+
+                <!-- Filter Button -->
+                <button class="btn btn-outline-secondary workout-toolbar-btn"
+                        id="filterBtn"
+                        type="button"
+                        data-bs-toggle="offcanvas"
+                        data-bs-target="#filtersOffcanvas">
+                  <i class="bx bx-filter"></i>
+                  <span class="filter-label">Filter</span>
+                  <span class="filter-badge badge bg-primary ms-1" id="filterBadge" style="display: none;">0</span>
+                </button>
               </div>
 
               <!-- Workouts Grid Container (managed by WorkoutGrid component) -->

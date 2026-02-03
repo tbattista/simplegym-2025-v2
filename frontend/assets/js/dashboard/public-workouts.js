@@ -21,6 +21,14 @@
         sortBy: 'created_at'
     };
 
+    // Sort options for cycle button
+    const SORT_OPTIONS = [
+        { value: 'created_at', label: 'Newest', icon: 'bx-sort-alt-2' },
+        { value: 'view_count', label: 'Most Viewed', icon: 'bx-show' },
+        { value: 'save_count', label: 'Most Saved', icon: 'bx-bookmark' }
+    ];
+    let currentSortIndex = 0;
+
     /**
      * Initialize the public workouts page
      */
@@ -258,14 +266,32 @@
      * Set up event listeners
      */
     function setupEventListeners() {
-        // Sort select
+        // Sort select in offcanvas - sync with toolbar button
         const sortSelect = document.getElementById('sortBySelect');
         if (sortSelect) {
             sortSelect.addEventListener('change', () => {
                 currentFilters.sortBy = sortSelect.value;
+
+                // Sync cycle button with select
+                const sortOption = SORT_OPTIONS.find(o => o.value === sortSelect.value);
+                if (sortOption) {
+                    currentSortIndex = SORT_OPTIONS.indexOf(sortOption);
+                    const btn = document.getElementById('sortCycleBtn');
+                    if (btn) {
+                        btn.querySelector('.sort-label').textContent = sortOption.label;
+                        btn.querySelector('i').className = `bx ${sortOption.icon}`;
+                    }
+                }
+
                 currentPage = 1;
                 loadPublicWorkouts();
             });
+        }
+
+        // Sort cycle button in toolbar
+        const sortCycleBtn = document.getElementById('sortCycleBtn');
+        if (sortCycleBtn) {
+            sortCycleBtn.addEventListener('click', cycleSort);
         }
 
         // Apply filters button
@@ -296,6 +322,75 @@
                 }
             });
         }
+
+        // Initialize toolbar search
+        initToolbarSearch();
+    }
+
+    /**
+     * Initialize toolbar search with debounce
+     */
+    function initToolbarSearch() {
+        const searchInput = document.getElementById('workoutSearchInput');
+        const clearBtn = document.getElementById('clearSearchBtn');
+        if (!searchInput) return;
+
+        let searchTimeout;
+        searchInput.addEventListener('input', (e) => {
+            clearTimeout(searchTimeout);
+            const query = e.target.value.trim();
+            clearBtn.style.display = query ? 'block' : 'none';
+
+            searchTimeout = setTimeout(() => {
+                currentFilters.search = query;
+                currentPage = 1;
+                loadPublicWorkouts();
+            }, 300);
+        });
+
+        clearBtn?.addEventListener('click', () => {
+            searchInput.value = '';
+            clearBtn.style.display = 'none';
+            currentFilters.search = '';
+            currentPage = 1;
+            loadPublicWorkouts();
+        });
+    }
+
+    /**
+     * Cycle through sort options
+     */
+    function cycleSort() {
+        currentSortIndex = (currentSortIndex + 1) % SORT_OPTIONS.length;
+        const sortOption = SORT_OPTIONS[currentSortIndex];
+
+        currentFilters.sortBy = sortOption.value;
+
+        // Update toolbar button
+        const btn = document.getElementById('sortCycleBtn');
+        if (btn) {
+            btn.querySelector('.sort-label').textContent = sortOption.label;
+            btn.querySelector('i').className = `bx ${sortOption.icon}`;
+        }
+
+        // Sync offcanvas select
+        const sortSelect = document.getElementById('sortBySelect');
+        if (sortSelect) sortSelect.value = sortOption.value;
+
+        currentPage = 1;
+        loadPublicWorkouts();
+    }
+
+    /**
+     * Update filter badge count
+     */
+    function updateFilterBadge() {
+        const badge = document.getElementById('filterBadge');
+        if (!badge) return;
+
+        const count = currentFilters.tags.length;
+        badge.textContent = count;
+        badge.style.display = count > 0 ? 'inline-block' : 'none';
     }
 
     /**
@@ -324,6 +419,11 @@
                 });
             }
 
+            // Add search if present
+            if (currentFilters.search) {
+                params.append('search', currentFilters.search);
+            }
+
             // Call API
             const response = await fetch(`/api/v3/sharing/public-workouts?${params.toString()}`);
 
@@ -343,7 +443,8 @@
 
             // Update UI
             updateStats(data.total_count, data.workouts.length);
-            
+            updateFilterBadge();
+
             // Use WorkoutGrid component to render
             if (workoutGrid) {
                 workoutGrid.setData(data.workouts);
@@ -418,9 +519,21 @@
     function clearFilters() {
         const tagsInput = document.getElementById('tagsInput');
         const sortSelect = document.getElementById('sortBySelect');
+        const searchInput = document.getElementById('workoutSearchInput');
+        const clearSearchBtn = document.getElementById('clearSearchBtn');
 
         if (tagsInput) tagsInput.value = '';
         if (sortSelect) sortSelect.value = 'created_at';
+        if (searchInput) searchInput.value = '';
+        if (clearSearchBtn) clearSearchBtn.style.display = 'none';
+
+        // Reset sort cycle button
+        currentSortIndex = 0;
+        const sortBtn = document.getElementById('sortCycleBtn');
+        if (sortBtn) {
+            sortBtn.querySelector('.sort-label').textContent = 'Newest';
+            sortBtn.querySelector('i').className = 'bx bx-sort-alt-2';
+        }
 
         currentFilters = {
             search: '',

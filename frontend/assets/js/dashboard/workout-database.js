@@ -843,9 +843,8 @@ function initializeComponents() {
                     }
                 }
             ],
-            // Configure which actions appear in dropdown menu
-            // Only 'start' remains as the primary button
-            dropdownActions: ['history', 'edit', 'duplicate', 'share', 'delete', 'multi-delete'],
+            // Configure which actions appear in dropdown menu (all actions)
+            dropdownActions: ['start', 'history', 'edit', 'duplicate', 'share', 'delete', 'multi-delete'],
             // View details callback for dropdown
             onViewDetails: (workout) => viewWorkoutDetails(workout.id),
             // Card tap also opens detail view
