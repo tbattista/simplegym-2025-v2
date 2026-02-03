@@ -203,18 +203,18 @@ class WorkoutSessionService {
             if (!this.currentSession || !this.currentSession.id) {
                 throw new Error('No active session to complete');
             }
-            
+
             console.log('🏁 Completing workout session:', this.currentSession.id);
-            
+
             // Get auth token
             const token = await window.authService.getIdToken();
             if (!token) {
                 throw new Error('Authentication required');
             }
-            
+
             // Use centralized API config
             const url = window.config.api.getUrl(`/api/v3/workout-sessions/${this.currentSession.id}/complete`);
-            
+
             // Prepare request body
             const requestBody = {
                 completed_at: new Date().toISOString(),
@@ -253,31 +253,126 @@ class WorkoutSessionService {
                 },
                 body: JSON.stringify(requestBody)
             });
-            
+
+            // Handle session not found - create new session and complete it
+            if (response.status === 404) {
+                console.warn('⚠️ Session not found in database, creating new session to save workout data...');
+                return await this._createAndCompleteSession(exercisesPerformed, durationMinutes, token);
+            }
+
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}));
                 throw new Error(errorData.detail || `Failed to complete session: ${response.statusText}`);
             }
-            
+
             const completedSession = await response.json();
-            
+
             // Update session status
             this.currentSession.status = 'completed';
             this.currentSession.completedAt = new Date(completedSession.completed_at);
-            
+
             console.log('✅ Workout session completed:', this.currentSession.id);
             this.notifyListeners('sessionCompleted', completedSession);
             window.dispatchEvent(new CustomEvent('sessionStateChanged', { detail: { type: 'completed' } }));
 
             // Clear persisted session after completion
             this.clearPersistedSession();
-            
+
             return completedSession;
-            
+
         } catch (error) {
             console.error('❌ Error completing workout session:', error);
             throw error;
         }
+    }
+
+    /**
+     * Create a new session and immediately complete it (fallback for orphaned localStorage sessions)
+     * @param {Array} exercisesPerformed - Array of exercise data
+     * @param {number|null} durationMinutes - Optional manual duration
+     * @param {string} token - Auth token
+     * @returns {Promise<Object>} Completed session object
+     * @private
+     */
+    async _createAndCompleteSession(exercisesPerformed, durationMinutes, token) {
+        console.log('🔄 Creating new session to preserve workout data...');
+
+        // Step 1: Create a new session
+        const createUrl = window.config.api.getUrl('/api/v3/workout-sessions');
+        const createResponse = await fetch(createUrl, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                workout_id: this.currentSession.workoutId,
+                workout_name: this.currentSession.workoutName,
+                started_at: this.currentSession.startedAt.toISOString(),
+                session_mode: this.currentSession.sessionMode || 'timed'
+            })
+        });
+
+        if (!createResponse.ok) {
+            const errorData = await createResponse.json().catch(() => ({}));
+            throw new Error(errorData.detail || 'Failed to create recovery session');
+        }
+
+        const newSession = await createResponse.json();
+        console.log('✅ Recovery session created:', newSession.id);
+
+        // Step 2: Complete the new session with all the workout data
+        const completeUrl = window.config.api.getUrl(`/api/v3/workout-sessions/${newSession.id}/complete`);
+        const requestBody = {
+            completed_at: new Date().toISOString(),
+            exercises_performed: exercisesPerformed,
+            notes: '',
+            session_notes: (this.sessionNotes || []).map(note => ({
+                id: note.id,
+                content: note.content,
+                order_index: note.order_index,
+                created_at: note.created_at,
+                modified_at: note.modified_at || null
+            }))
+        };
+
+        if (this.preSessionOrder && this.preSessionOrder.length > 0) {
+            requestBody.exercise_order = this.preSessionOrder;
+        }
+
+        if (durationMinutes !== null && durationMinutes > 0) {
+            requestBody.duration_minutes = durationMinutes;
+        }
+
+        const completeResponse = await fetch(completeUrl, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(requestBody)
+        });
+
+        if (!completeResponse.ok) {
+            const errorData = await completeResponse.json().catch(() => ({}));
+            throw new Error(errorData.detail || 'Failed to complete recovery session');
+        }
+
+        const completedSession = await completeResponse.json();
+
+        // Update local session state
+        this.currentSession.id = newSession.id;
+        this.currentSession.status = 'completed';
+        this.currentSession.completedAt = new Date(completedSession.completed_at);
+
+        console.log('✅ Recovery session completed successfully:', newSession.id);
+        this.notifyListeners('sessionCompleted', completedSession);
+        window.dispatchEvent(new CustomEvent('sessionStateChanged', { detail: { type: 'completed' } }));
+
+        // Clear persisted session
+        this.clearPersistedSession();
+
+        return completedSession;
     }
     
     /**
