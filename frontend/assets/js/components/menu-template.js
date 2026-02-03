@@ -13,12 +13,7 @@ function getMenuHTML(activePage = 'home') {
     return `
         <div class="app-brand demo">
             <a href="index.html" class="app-brand-link">
-                <span class="app-brand-logo demo">
-                    <span class="text-primary">
-                        📓
-                    </span>
-                </span>
-                <span class="app-brand-text demo menu-text fw-bold ms-2">Fitness Field Notes</span>
+                <span class="app-brand-text demo menu-text fw-bold">Fitness Field Notes</span>
             </a>
         </div>
 

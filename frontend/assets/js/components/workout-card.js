@@ -436,17 +436,7 @@ class WorkoutCard {
             `;
         }
 
-        // If no actions but card is clickable, show a hint
-        if (this.config.actions.length === 0) {
-            if (this.config.onCardClick) {
-                return `
-                    <div class="text-center text-muted small py-2">
-                        <i class="bx bx-pointer me-1"></i>Tap to view details
-                    </div>
-                `;
-            }
-            return '';
-        }
+        if (this.config.actions.length === 0) return '';
 
         // Filter to get only primary actions (not edit, view, history which go to dropdown)
         const dropdownActionIds = this.config.dropdownActions || ['edit', 'delete'];
@@ -454,17 +444,7 @@ class WorkoutCard {
             !dropdownActionIds.includes(action.id) && action.id !== 'edit'
         );
 
-        // If no primary actions but card is clickable, show a hint
-        if (primaryActions.length === 0) {
-            if (this.config.onCardClick) {
-                return `
-                    <div class="text-center text-muted small py-2">
-                        <i class="bx bx-pointer me-1"></i>Tap to view details
-                    </div>
-                `;
-            }
-            return '';
-        }
+        if (primaryActions.length === 0) return '';
 
         // Get session state if callback provided
         let sessionState = 'never_started';
