@@ -11,16 +11,14 @@
  */
 function getMenuHTML(activePage = 'home') {
     return `
-        <div class="app-brand demo">
-            <a href="index.html" class="app-brand-link">
-                <span class="app-brand-text demo menu-text fw-bold">Fitness Field Notes</span>
-            </a>
-        </div>
-
-        <div class="menu-divider mt-0"></div>
         <div class="menu-inner-shadow"></div>
 
         <ul class="menu-inner py-1">
+            <!-- Navigation -->
+            <li class="menu-header small text-uppercase">
+                <span class="menu-header-text">Navigation</span>
+            </li>
+
             <!-- Session - Only visible when active session exists -->
             <li class="menu-item ${activePage === 'workout-mode' ? 'active' : ''}" id="sessionMenuItem" style="display: none;">
                 <a href="workout-mode.html" class="menu-link">
