@@ -753,6 +753,13 @@ function initializeComponents() {
                 onClick: (workout) => editWorkout(workout.id)
             },
             {
+                id: 'history',
+                label: 'History',
+                icon: 'bx-history',
+                variant: 'outline-secondary',
+                onClick: (workout) => viewWorkoutHistory(workout.id)
+            },
+            {
                 id: 'share',
                 label: 'Share',
                 icon: 'bx-share-alt',

@@ -14,6 +14,7 @@ class WorkoutCard {
             showTags: true,
             showDescription: false,
             showExercisePreview: false,
+            showMuscleGroups: true, // Show auto-generated muscle group summary
 
             // Action buttons (only primary CTA shown as button)
             actions: [],
@@ -63,6 +64,7 @@ class WorkoutCard {
                 ${this._renderFavoriteButton()}
                 ${this._renderHeader()}
                 ${this._renderMetadata()}
+                ${this._renderMuscleGroups()}
                 ${this._renderDescription()}
                 ${this._renderExercisePreview()}
                 ${this._renderTags()}
@@ -283,6 +285,37 @@ class WorkoutCard {
         }
 
         return html;
+    }
+
+    /**
+     * Render muscle group summary (auto-generated from exercises)
+     * Shows top 3 muscle groups with counts for cards
+     */
+    _renderMuscleGroups() {
+        if (!this.config.showMuscleGroups) return '';
+
+        // Check if muscle summary service is available
+        if (!window.muscleGroupSummaryService) return '';
+
+        const workoutData = this.workout.workout_data || this.workout;
+        const exerciseGroups = workoutData.exercise_groups || [];
+
+        // Use card-specific formatting (top 3, no unknown count)
+        const summary = window.muscleGroupSummaryService.forCard(exerciseGroups);
+
+        // Don't show if no exercises or no identifiable muscle groups
+        if (summary.totalExercises === 0 || !summary.displayText) {
+            return '';
+        }
+
+        return `
+            <div class="muscle-group-summary mb-2">
+                <small class="text-muted">
+                    <i class="bx bx-target-lock me-1"></i>
+                    ${this._escapeHtml(summary.displayText)}
+                </small>
+            </div>
+        `;
     }
 
     /**

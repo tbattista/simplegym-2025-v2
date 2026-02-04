@@ -154,7 +154,10 @@ function loadWorkoutIntoEditor(workoutId) {
     if (window.updateMetadataButtonStates) {
         setTimeout(() => window.updateMetadataButtonStates(), 250);
     }
-    
+
+    // Update muscle group summary
+    setTimeout(() => updateMuscleSummary(), 300);
+
     console.log('✅ Workout loaded into editor');
 }
 
@@ -291,9 +294,12 @@ async function createNewWorkoutInEditor() {
         if (window.updateMetadataButtonStates) {
             setTimeout(() => window.updateMetadataButtonStates(), 250);
         }
-        
+
+        // Update muscle group summary
+        setTimeout(() => updateMuscleSummary(), 300);
+
         console.log('✅ New workout created and ready for editing');
-        
+
     } catch (error) {
         console.error('❌ Failed to create new workout:', error);
         if (window.showAlert) {
@@ -788,14 +794,66 @@ function applyReorderedExercises(reorderedExercises) {
 function markEditorDirty() {
     if (!window.ffn.workoutBuilder.isEditing) return;
     if (!window.ffn.workoutBuilder.selectedWorkoutId) return; // Don't autosave new workouts
-    
+
     window.ffn.workoutBuilder.isDirty = true;
     updateSaveStatus('unsaved');
-    
+
     // Trigger autosave if available
     if (window.scheduleAutosave) {
         window.scheduleAutosave();
     }
+
+    // Update muscle group summary with debounce
+    scheduleMuscleSummaryUpdate();
+}
+
+// Debounce timer for muscle summary updates
+let muscleSummaryTimeout = null;
+
+/**
+ * Schedule a debounced muscle summary update
+ * Prevents excessive updates while user is typing
+ */
+function scheduleMuscleSummaryUpdate() {
+    if (muscleSummaryTimeout) {
+        clearTimeout(muscleSummaryTimeout);
+    }
+    muscleSummaryTimeout = setTimeout(updateMuscleSummary, 300);
+}
+
+/**
+ * Update the muscle group summary display
+ * Computes muscle breakdown from current exercise groups
+ */
+function updateMuscleSummary() {
+    const container = document.getElementById('muscleSummaryContainer');
+    const textEl = document.getElementById('muscleSummaryText');
+
+    if (!container || !textEl) return;
+
+    // Check if muscle summary service is available
+    if (!window.muscleGroupSummaryService) {
+        console.warn('[MuscleSummary] Service not available');
+        container.style.display = 'none';
+        return;
+    }
+
+    // Get exercise groups from current data
+    const exerciseGroups = window.collectExerciseGroups ? window.collectExerciseGroups() : [];
+
+    // Compute summary for editor (full detail with unknown count)
+    const summary = window.muscleGroupSummaryService.forEditor(exerciseGroups);
+
+    // Update display
+    if (summary.totalExercises === 0 || !summary.displayText) {
+        container.style.display = 'none';
+        return;
+    }
+
+    textEl.textContent = summary.displayText;
+    container.style.display = 'block';
+
+    console.log('[MuscleSummary] Updated:', summary.displayText);
 }
 
 /**
@@ -1217,6 +1275,7 @@ window.openReorderOffcanvas = openReorderOffcanvas;
 window.applyReorderedExercises = applyReorderedExercises;
 window.expandWorkoutLibrary = expandWorkoutLibrary;
 window.autoCreateExercisesInGroups = autoCreateExercisesInGroups;
+window.updateMuscleSummary = updateMuscleSummary;
 
 /**
  * Initialize exercise autocompletes with auto-creation support

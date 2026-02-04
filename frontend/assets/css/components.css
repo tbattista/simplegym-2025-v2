@@ -66,6 +66,38 @@
 @import url('components/edit-mode.css');
 
 /* ============================================================================
+   MUSCLE GROUP SUMMARY
+   Auto-generated summary showing targeted muscles on workout cards
+   ============================================================================ */
+
+.muscle-group-summary {
+    font-size: 0.8125rem;
+}
+
+.muscle-group-summary i {
+    color: var(--bs-primary);
+    opacity: 0.8;
+}
+
+/* Muscle summary in workout builder/editor */
+.muscle-summary-container {
+    padding: 0.5rem 0.75rem;
+    background-color: var(--bs-light);
+    border-radius: var(--bs-border-radius);
+    border-left: 3px solid var(--bs-primary);
+    transition: opacity 0.2s ease;
+}
+
+[data-bs-theme="dark"] .muscle-summary-container {
+    background-color: rgba(var(--bs-primary-rgb), 0.1);
+}
+
+.muscle-summary-container i {
+    color: var(--bs-primary);
+    font-size: 1rem;
+}
+
+/* ============================================================================
    COMPONENT UTILITIES
    ============================================================================ */
 
