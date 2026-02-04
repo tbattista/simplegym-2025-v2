@@ -58,6 +58,7 @@ class WorkoutCard {
         
         card.innerHTML = `
             <div class="card-body position-relative">
+                ${this._renderDeleteModeCheckbox()}
                 ${this._renderDropdownMenu()}
                 ${this._renderFavoriteButton()}
                 ${this._renderHeader()}
@@ -218,14 +219,37 @@ class WorkoutCard {
     }
 
     /**
+     * Render delete mode checkbox on the left side of the card
+     */
+    _renderDeleteModeCheckbox() {
+        if (!this.config.deleteMode) return '';
+
+        const isSelected = this.config.isSelected || false;
+        const checkedAttr = isSelected ? 'checked' : '';
+
+        return `
+            <div class="delete-mode-checkbox position-absolute" style="top: 12px; left: 12px; z-index: 1050;">
+                <input type="checkbox"
+                       class="form-check-input workout-select-checkbox"
+                       id="select-${this.workout.id}"
+                       ${checkedAttr}
+                       style="width: 1.25rem; height: 1.25rem; cursor: pointer;">
+            </div>
+        `;
+    }
+
+    /**
      * Render card header (title)
      */
     _renderHeader() {
         const workoutData = this.workout.workout_data || this.workout;
         const name = workoutData.name || this.workout.name || 'Untitled Workout';
-        
+
+        // Add left padding when in delete mode to accommodate checkbox
+        const paddingLeft = this.config.deleteMode ? 'padding-left: 32px;' : '';
+
         return `
-            <h5 class="card-title mb-2" style="padding-right: 30px;">${this._escapeHtml(name)}</h5>
+            <h5 class="card-title mb-2" style="padding-right: 30px; ${paddingLeft}">${this._escapeHtml(name)}</h5>
         `;
     }
     
@@ -420,24 +444,9 @@ class WorkoutCard {
      * Supports smart button states: never_started, in_progress, completed
      */
     _renderActions() {
-        // Checkbox selection mode for batch delete (Gmail-style)
+        // In delete mode, checkbox is rendered in header area, not footer
         if (this.config.deleteMode) {
-            const isSelected = this.config.isSelected || false;
-            const checkedAttr = isSelected ? 'checked' : '';
-            return `
-                <div class="delete-mode-actions d-flex align-items-center gap-3">
-                    <div class="form-check form-check-lg mb-0 flex-grow-1">
-                        <input type="checkbox"
-                               class="form-check-input workout-select-checkbox"
-                               id="select-${this.workout.id}"
-                               ${checkedAttr}>
-                        <label class="form-check-label text-muted"
-                               for="select-${this.workout.id}">
-                            Select for deletion
-                        </label>
-                    </div>
-                </div>
-            `;
+            return '';
         }
 
         if (this.config.actions.length === 0) return '';
@@ -638,8 +647,8 @@ class WorkoutCard {
         // Make entire card clickable in delete mode to toggle checkbox
         if (this.config.deleteMode) {
             this.element.addEventListener('click', (e) => {
-                // Don't toggle if clicking checkbox itself or its label
-                if (!e.target.closest('.form-check')) {
+                // Don't toggle if clicking checkbox itself
+                if (!e.target.closest('.delete-mode-checkbox') && !e.target.classList.contains('workout-select-checkbox')) {
                     const cb = this.element.querySelector('.workout-select-checkbox');
                     if (cb) {
                         cb.checked = !cb.checked;
