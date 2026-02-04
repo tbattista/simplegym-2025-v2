@@ -838,6 +838,19 @@ function updateMuscleSummary() {
         return;
     }
 
+    // Wait for exercise cache to be ready before computing summary
+    const cache = window.exerciseCacheService;
+    if (!cache || (cache.exercises?.length === 0 && !cache.seedDataUsed)) {
+        // Subscribe to cache load event and retry
+        if (cache && !cache._muscleSummarySubscribed) {
+            cache._muscleSummarySubscribed = true;
+            cache.on('fullDataLoaded', () => updateMuscleSummary());
+            cache.on('customLoaded', () => updateMuscleSummary()); // Also refresh when custom exercises load
+        }
+        container.style.display = 'none';
+        return;
+    }
+
     // Get exercise groups from current data
     const exerciseGroups = window.collectExerciseGroups ? window.collectExerciseGroups() : [];
 
