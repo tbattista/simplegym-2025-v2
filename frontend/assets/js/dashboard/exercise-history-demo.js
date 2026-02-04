@@ -81,7 +81,7 @@ async function loadRealHistory() {
     
     // Fetch sessions for this workout
     const response = await fetch(
-      `/api/v3/workout-sessions/?workout_id=${workoutId}&page_size=5&sort=desc`,
+      `/api/v3/workout-sessions?workout_id=${workoutId}&page_size=5&sort=desc`,
       { headers: { 'Authorization': `Bearer ${token}` } }
     );
     

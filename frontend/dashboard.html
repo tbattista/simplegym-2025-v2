@@ -319,7 +319,7 @@
                 console.log('📅 User is authenticated, fetching sessions...');
 
                 const token = await window.dataManager.getAuthToken();
-                const response = await fetch('/api/v3/workout-sessions/?page_size=100', {
+                const response = await fetch('/api/v3/workout-sessions?page_size=100', {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
 

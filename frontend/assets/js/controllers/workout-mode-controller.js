@@ -271,7 +271,7 @@ class WorkoutModeController {
             const idToken = await user.getIdToken();
 
             // Fetch recent completed sessions
-            const response = await fetch('/api/v3/workout-sessions/?status=completed&page_size=50', {
+            const response = await fetch('/api/v3/workout-sessions?status=completed&page_size=50', {
                 headers: {
                     'Authorization': `Bearer ${idToken}`,
                     'Content-Type': 'application/json'

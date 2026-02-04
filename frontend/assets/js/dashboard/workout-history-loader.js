@@ -121,7 +121,7 @@ async function loadAllSessions(scrollToSessionId = null) {
     const token = await window.dataManager.getAuthToken();
     if (window.mobileDebugLog) window.mobileDebugLog('Token: ' + (token ? token.substring(0, 20) + '...' : 'NO TOKEN'));
 
-    const response = await fetch('/api/v3/workout-sessions/?page_size=100&sort=desc', {
+    const response = await fetch('/api/v3/workout-sessions?page_size=100&sort=desc', {
       headers: { 'Authorization': `Bearer ${token}` }
     });
 
@@ -201,7 +201,7 @@ async function fetchWorkoutSessions(workoutId) {
 
     const token = await window.dataManager.getAuthToken();
     const response = await fetch(
-      `/api/v3/workout-sessions/?workout_id=${workoutId}&page_size=50`,
+      `/api/v3/workout-sessions?workout_id=${workoutId}&page_size=50`,
       {
         headers: {
           'Authorization': `Bearer ${token}`

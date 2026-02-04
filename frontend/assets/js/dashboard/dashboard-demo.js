@@ -88,7 +88,7 @@ async function loadRealData() {
     // Load recent sessions (if API available)
     try {
       const token = await window.dataManager.getAuthToken();
-      const response = await fetch('/api/v3/workout-sessions/?page_size=100&sort=desc', {
+      const response = await fetch('/api/v3/workout-sessions?page_size=100&sort=desc', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       
