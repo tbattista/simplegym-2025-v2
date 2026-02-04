@@ -1206,8 +1206,12 @@ function enterDeleteModeWithSelection(workoutId) {
 
     // Update grid delete mode and set selection
     if (workoutGrid) {
+        // Set isSelected BEFORE re-render so checkbox renders as checked
+        const card = workoutGrid.cards.find(c => c.workout.id === workoutId);
+        if (card) {
+            card.config.isSelected = true;
+        }
         workoutGrid.setDeleteMode(true);
-        workoutGrid.setSelection(workoutId, true);
     }
 
     // Show action bar with 1 selected

@@ -672,10 +672,12 @@ class WorkoutCard {
         }
 
         if (this.element) {
+            // Save reference to OLD element before render() updates this.element
+            const oldElement = this.element;
             // Full re-render to properly show/hide dropdown, favorite, checkbox
-            // and set up click handlers correctly
             const newElement = this.render();
-            this.element.replaceWith(newElement);
+            // Replace OLD element with NEW element in DOM
+            oldElement.replaceWith(newElement);
         }
     }
     
@@ -685,10 +687,11 @@ class WorkoutCard {
      */
     update(workout) {
         this.workout = workout;
-        
+
         if (this.element) {
+            const oldElement = this.element;
             const newElement = this.render();
-            this.element.replaceWith(newElement);
+            oldElement.replaceWith(newElement);
         }
     }
     
