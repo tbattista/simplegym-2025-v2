@@ -247,10 +247,10 @@ async function toggleExerciseFavorite(exerciseId) {
 
     try {
         const token = await window.firebaseAuth.currentUser.getIdToken();
-        const baseUrl = window.exercisePage?.getApiUrl ? window.exercisePage.getApiUrl('') : '';
 
         if (isFavorited) {
-            const response = await fetch(`${baseUrl}/api/v3/users/me/favorites/${exerciseId}`, {
+            const url = window.config.api.getUrl(`/api/v3/users/me/favorites/${exerciseId}`);
+            const response = await fetch(url, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -268,7 +268,7 @@ async function toggleExerciseFavorite(exerciseId) {
                 revertFavoriteUI(button, icon, true);
             }
         } else {
-            const url = `${baseUrl}/api/v3/users/me/favorites`;
+            const url = window.config.api.getUrl('/api/v3/users/me/favorites');
             const response = await fetch(url, {
                 method: 'POST',
                 headers: {

@@ -324,10 +324,10 @@ async function loadUserExerciseData(userOverride = null) {
 
     try {
         const token = await user.getIdToken();
-        const baseUrl = exercisePage.getApiUrl('');
 
         // Load favorites
-        const favResponse = await fetch(`${baseUrl}/api/v3/users/me/favorites`, {
+        const favUrl = exercisePage.getApiUrl('/api/v3/users/me/favorites');
+        const favResponse = await fetch(favUrl, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
         if (favResponse.ok) {
@@ -337,7 +337,7 @@ async function loadUserExerciseData(userOverride = null) {
         }
 
         // Load custom exercises
-        const customExercisesUrl = `${baseUrl}/api/v3/users/me/exercises`;
+        const customExercisesUrl = exercisePage.getApiUrl('/api/v3/users/me/exercises');
         console.log('📡 Fetching custom exercises from:', customExercisesUrl);
         const customResponse = await fetch(customExercisesUrl, {
             headers: { 'Authorization': `Bearer ${token}` }
