@@ -663,21 +663,10 @@ class WorkoutCard {
         }
 
         if (this.element) {
-            const cardBody = this.element.querySelector('.card-body');
-            const footerContent = cardBody?.querySelector('.card-footer-content');
-
-            if (enabled) {
-                this.element.classList.add('delete-mode');
-            } else {
-                this.element.classList.remove('delete-mode');
-                this.element.classList.remove('selected');
-            }
-
-            // Replace footer content with updated actions
-            if (footerContent) {
-                footerContent.innerHTML = this._renderActions();
-                this._attachEventListeners();
-            }
+            // Full re-render to properly show/hide dropdown, favorite, checkbox
+            // and set up click handlers correctly
+            const newElement = this.render();
+            this.element.replaceWith(newElement);
         }
     }
     
