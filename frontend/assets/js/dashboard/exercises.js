@@ -337,7 +337,9 @@ async function loadUserExerciseData(userOverride = null) {
         }
 
         // Load custom exercises
-        const customResponse = await fetch(`${baseUrl}/api/v3/users/me/exercises`, {
+        const customExercisesUrl = `${baseUrl}/api/v3/users/me/exercises`;
+        console.log('📡 Fetching custom exercises from:', customExercisesUrl);
+        const customResponse = await fetch(customExercisesUrl, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
         if (customResponse.ok) {

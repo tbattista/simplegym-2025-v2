@@ -200,6 +200,7 @@ async def create_custom_exercise(
 
 
 @router.get("/users/me/exercises")
+@router.get("/users/me/exercises/")
 async def get_user_custom_exercises(
     user_id: str = Depends(require_auth),
     limit: int = Query(100, ge=1, le=500),
