@@ -33,7 +33,7 @@ class NoteCardRenderer {
                  data-card-type="note"
                  data-note-id="${this._escapeHtml(noteId)}"
                  data-card-index="${displayIndex}"
-                 onclick="if(!event.target.closest('.workout-more-btn, .note-edit-btn, .workout-menu, .note-editor')) this.classList.toggle('expanded')">
+                 onclick="if(!event.target.closest('.workout-more-btn, .note-edit-btn, .workout-menu, .note-editor')) { this.classList.toggle('expanded'); if(this.classList.contains('expanded')) setTimeout(() => this.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100); }">
                 <!-- Collapsed Header -->
                 <div class="workout-card-header note-card-header">
                     <div class="workout-exercise-name-row">

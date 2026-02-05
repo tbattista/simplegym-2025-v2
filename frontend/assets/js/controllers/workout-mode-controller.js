@@ -1398,6 +1398,9 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
                 // Remove animation class after animation completes
                 setTimeout(() => noteCard.classList.remove('just-added'), 300);
 
+                // Scroll the card into view - centered
+                noteCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
                 // Trigger edit mode
                 this.handleEditNote(note.id);
             }

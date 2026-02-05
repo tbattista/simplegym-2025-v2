@@ -89,7 +89,36 @@ class MuscleGroupSummaryService {
     }
 
     /**
+     * Check if the exercise cache is ready (has exercises loaded)
+     * @returns {boolean}
+     */
+    isCacheReady() {
+        const cache = this.getExerciseCache();
+        if (!cache) return false;
+
+        // Cache is ready if we have exercises OR seed data is available
+        return (cache.exercises?.length > 0) ||
+               (window.EXERCISE_SEED_DATA?.length > 0);
+    }
+
+    /**
+     * Ensure cache has exercises loaded (trigger load if needed)
+     * Uses seed data for instant results
+     */
+    ensureCacheLoaded() {
+        const cache = this.getExerciseCache();
+        if (!cache) return;
+
+        // If cache is empty but seed data exists, use it directly
+        if ((!cache.exercises || cache.exercises.length === 0) && window.EXERCISE_SEED_DATA?.length > 0) {
+            cache.exercises = window.EXERCISE_SEED_DATA;
+            cache.seedDataUsed = true;
+        }
+    }
+
+    /**
      * Look up muscle group for an exercise name
+     * Uses tiered matching: exact > contains > partial words
      * @param {string} exerciseName - Name of the exercise
      * @returns {string|null} - Muscle group name or null if not found
      */
@@ -97,7 +126,10 @@ class MuscleGroupSummaryService {
         const cache = this.getExerciseCache();
         if (!cache) return null;
 
-        const lowerName = exerciseName.toLowerCase();
+        // Ensure cache is loaded before looking up
+        this.ensureCacheLoaded();
+
+        const lowerName = exerciseName.toLowerCase().trim();
 
         // Search both global and custom exercises
         const allExercises = [
@@ -105,11 +137,49 @@ class MuscleGroupSummaryService {
             ...(cache.customExercises || [])
         ];
 
-        const match = allExercises.find(ex =>
+        // Tier 1: Exact match
+        const exactMatch = allExercises.find(ex =>
             ex.name?.toLowerCase() === lowerName
         );
+        if (exactMatch) {
+            return exactMatch.targetMuscleGroup;
+        }
 
-        return match?.targetMuscleGroup || null;
+        // Tier 2: User's exercise name is contained in database name
+        // e.g., "Back Squat" matches "Barbell Back Squat"
+        const containsMatch = allExercises.find(ex =>
+            ex.name?.toLowerCase().includes(lowerName)
+        );
+        if (containsMatch) {
+            return containsMatch.targetMuscleGroup;
+        }
+
+        // Tier 3: Database name is contained in user's exercise name
+        // e.g., "Bench Press with pause" matches "Bench Press"
+        const reverseMatch = allExercises.find(ex => {
+            const dbName = ex.name?.toLowerCase();
+            return dbName && lowerName.includes(dbName);
+        });
+        if (reverseMatch) {
+            return reverseMatch.targetMuscleGroup;
+        }
+
+        // Tier 4: Key word matching (for compound names)
+        // e.g., "DB Bench" matches "Dumbbell Bench Press"
+        const searchWords = lowerName.split(/\s+/).filter(w => w.length > 2);
+        if (searchWords.length >= 2) {
+            const wordMatch = allExercises.find(ex => {
+                const dbName = ex.name?.toLowerCase() || '';
+                // Must match at least 2 significant words
+                const matchCount = searchWords.filter(word => dbName.includes(word)).length;
+                return matchCount >= 2;
+            });
+            if (wordMatch) {
+                return wordMatch.targetMuscleGroup;
+            }
+        }
+
+        return null;
     }
 
     // ==========================================

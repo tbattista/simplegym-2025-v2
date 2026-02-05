@@ -292,10 +292,14 @@ class WorkoutCard {
      * Shows top 3 muscle groups with counts for cards
      */
     _renderMuscleGroups() {
-        if (!this.config.showMuscleGroups) return '';
+        if (!this.config.showMuscleGroups) {
+            return '';
+        }
 
         // Check if muscle summary service is available
-        if (!window.muscleGroupSummaryService) return '';
+        if (!window.muscleGroupSummaryService) {
+            return '';
+        }
 
         const workoutData = this.workout.workout_data || this.workout;
         const exerciseGroups = workoutData.exercise_groups || [];

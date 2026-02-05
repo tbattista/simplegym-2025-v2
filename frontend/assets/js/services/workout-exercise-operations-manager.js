@@ -430,7 +430,20 @@ class WorkoutExerciseOperationsManager {
                     }
                     
                     this.onRenderWorkout();
-                    
+
+                    // Scroll to newly added exercise after render
+                    setTimeout(() => {
+                        const newCard = document.querySelector(`[data-exercise-name="${newExerciseName}"]`);
+                        if (newCard) {
+                            // Expand the new card
+                            newCard.classList.add('expanded');
+                            const body = newCard.querySelector('.workout-card-body, .exercise-card-body');
+                            if (body) body.style.display = 'block';
+                            // Scroll to center
+                            newCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }
+                    }, 150);
+
                     const message = !isSessionActive
                         ? `${newExerciseName} added! It will be included when you start the workout. 💪`
                         : `${newExerciseName} added to your workout! 💪`;
