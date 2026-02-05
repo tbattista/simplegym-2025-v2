@@ -64,11 +64,10 @@ class WorkoutCard {
                 ${this._renderFavoriteButton()}
                 ${this._renderHeader()}
                 ${this._renderMetadata()}
-                ${this._renderMuscleGroups()}
                 ${this._renderDescription()}
                 ${this._renderExercisePreview()}
                 ${this._renderTags()}
-                ${this._renderStats()}
+                ${this._renderStatsBar()}
                 ${this._renderFooter()}
             </div>
         `;
@@ -288,38 +287,14 @@ class WorkoutCard {
     }
 
     /**
-     * Render muscle group summary (auto-generated from exercises)
-     * Shows top 3 muscle groups with counts for cards
+     * Render muscle group summary - DEPRECATED
+     * Now integrated into _renderStatsBar() via _getMuscleGroupsHtml()
+     * Kept for backwards compatibility if needed
      */
     _renderMuscleGroups() {
-        if (!this.config.showMuscleGroups) {
-            return '';
-        }
-
-        // Check if muscle summary service is available
-        if (!window.muscleGroupSummaryService) {
-            return '';
-        }
-
-        const workoutData = this.workout.workout_data || this.workout;
-        const exerciseGroups = workoutData.exercise_groups || [];
-
-        // Use card-specific formatting (top 3, no unknown count)
-        const summary = window.muscleGroupSummaryService.forCard(exerciseGroups);
-
-        // Don't show if no exercises or no identifiable muscle groups
-        if (summary.totalExercises === 0 || !summary.displayText) {
-            return '';
-        }
-
-        return `
-            <div class="muscle-group-summary mb-2">
-                <small class="text-muted">
-                    <i class="bx bx-target-lock me-1"></i>
-                    ${this._escapeHtml(summary.displayText)}
-                </small>
-            </div>
-        `;
+        const html = this._getMuscleGroupsHtml();
+        if (!html) return '';
+        return `<div class="muscle-group-summary mb-2">${html}</div>`;
     }
 
     /**
@@ -438,7 +413,64 @@ class WorkoutCard {
     }
     
     /**
-     * Render stats (views, saves)
+     * Render combined stats bar (muscle groups + view/save stats)
+     * Fixed to bottom of card, above action button
+     */
+    _renderStatsBar() {
+        const muscleGroupsHtml = this._getMuscleGroupsHtml();
+        const statsHtml = this._getStatsHtml();
+
+        // If nothing to show, return empty
+        if (!muscleGroupsHtml && !statsHtml) return '';
+
+        return `
+            <div class="workout-card-stats-bar mt-auto pt-2">
+                ${muscleGroupsHtml ? `<div class="stats-bar-muscles">${muscleGroupsHtml}</div>` : ''}
+                ${statsHtml ? `<div class="stats-bar-counts">${statsHtml}</div>` : ''}
+            </div>
+        `;
+    }
+
+    /**
+     * Get muscle groups HTML for stats bar
+     */
+    _getMuscleGroupsHtml() {
+        if (!this.config.showMuscleGroups) return '';
+        if (!window.muscleGroupSummaryService) return '';
+
+        const workoutData = this.workout.workout_data || this.workout;
+        const exerciseGroups = workoutData.exercise_groups || [];
+        const summary = window.muscleGroupSummaryService.forCard(exerciseGroups);
+
+        if (summary.totalExercises === 0 || !summary.displayText) return '';
+
+        return `<small class="text-muted"><i class="bx bx-target-lock me-1"></i>${this._escapeHtml(summary.displayText)}</small>`;
+    }
+
+    /**
+     * Get view/save stats HTML for stats bar
+     */
+    _getStatsHtml() {
+        if (!this.config.showStats) return '';
+
+        const stats = this.workout.stats || {};
+        const viewCount = stats.view_count || 0;
+        const saveCount = stats.save_count || 0;
+
+        return `
+            <div class="status-item">
+                <i class="bx bx-show"></i>
+                <span>${viewCount}</span>
+            </div>
+            <div class="status-item">
+                <i class="bx bx-bookmark"></i>
+                <span>${saveCount}</span>
+            </div>
+        `;
+    }
+
+    /**
+     * Render stats (views, saves) - DEPRECATED, use _renderStatsBar()
      */
     _renderStats() {
         if (!this.config.showStats) return '';

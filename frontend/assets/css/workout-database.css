@@ -336,6 +336,54 @@
     font-size: var(--gs-text-base);          /* 0.875rem */
 }
 
+/* Stats Bar - combined muscle groups + view/save stats */
+.workout-card-stats-bar {
+    margin-top: auto;
+    padding-top: var(--gs-space-2);          /* 0.5rem */
+    border-top: 1px solid var(--gs-gray-200);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--gs-space-2);
+    flex-wrap: wrap;
+}
+
+.workout-card-stats-bar .stats-bar-muscles {
+    flex: 1;
+    min-width: 0;                            /* Allow text truncation */
+}
+
+.workout-card-stats-bar .stats-bar-muscles small {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: var(--gs-text-sm);            /* 0.75rem */
+}
+
+.workout-card-stats-bar .stats-bar-muscles i {
+    color: var(--bs-primary);
+    opacity: 0.8;
+}
+
+.workout-card-stats-bar .stats-bar-counts {
+    display: flex;
+    gap: var(--gs-space-3);                  /* 0.75rem */
+    flex-shrink: 0;
+}
+
+.workout-card-stats-bar .status-item {
+    display: flex;
+    align-items: center;
+    gap: var(--gs-space-1);                  /* 0.25rem */
+    font-size: var(--gs-text-sm);            /* 0.75rem */
+    color: var(--gs-secondary);
+}
+
+.workout-card-stats-bar .status-item i {
+    font-size: var(--gs-text-base);          /* 0.875rem */
+}
+
 /* Card actions container */
 .workout-list-card .card-actions {
     padding-top: 0.5rem;
