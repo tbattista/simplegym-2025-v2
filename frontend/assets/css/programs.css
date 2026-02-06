@@ -833,6 +833,16 @@
     flex-shrink: 0;
 }
 
+/* Search input with icon - override offcanvas form-control padding */
+.workout-picker-search .form-control {
+    padding-left: 2.5rem !important;
+}
+
+.workout-picker-search .bx-search {
+    left: 0.875rem;
+    font-size: 1.125rem;
+}
+
 .workout-picker-list {
     flex: 1;
     overflow-y: auto;
