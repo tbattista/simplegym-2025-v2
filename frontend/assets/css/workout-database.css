@@ -159,11 +159,11 @@
    WORKOUT CARD STYLES - Mobile First
    ============================================ */
 
-/* Ensure grid row stretches columns to equal height for bottom-anchored buttons */
+/* Grid row - allow variable height cards (industry best practice) */
 #workoutCardsGrid.row {
     display: flex;
     flex-wrap: wrap;
-    align-items: stretch;
+    align-items: flex-start;  /* Cards size to content, not row height */
 }
 
 #workoutCardsGrid > .col {
@@ -172,7 +172,7 @@
 }
 
 #workoutCardsGrid > .col > .workout-list-card {
-    flex: 1 1 auto;
+    flex: 0 1 auto;  /* Don't expand to fill column */
     width: 100%;
 }
 
@@ -182,7 +182,6 @@
     box-shadow: var(--wdb-card-shadow);
     transition: var(--wdb-card-transition);
     cursor: pointer;
-    height: 100%;
     display: flex;
     flex-direction: column;
     position: relative;
@@ -198,13 +197,11 @@
     transform: translateY(-2px);
 }
 
-/* Card body with consistent padding and flex layout for bottom-justified button */
+/* Card body with consistent padding - sizes to content */
 #workoutCardsGrid .workout-list-card .card-body {
     padding: var(--wdb-card-padding);
     display: flex;
     flex-direction: column;
-    flex: 1;
-    min-height: 160px;
 }
 
 /* Card title styling */
@@ -306,17 +303,17 @@
     white-space: nowrap;
 }
 
-/* Card footer content wrapper - contains tags + button, pushed to bottom */
+/* Card footer content wrapper - consistent spacing from content above */
 #workoutCardsGrid .workout-list-card .card-footer-content {
-    margin-top: auto;
+    margin-top: 0.75rem;
     flex-shrink: 0;
     display: flex;
     flex-direction: column;
 }
 
-/* Status Row - sticky bottom of card (views, saves, etc.) */
+/* Status Row - DEPRECATED, use .workout-card-stats-bar instead */
 .workout-card-status-row {
-    margin-top: auto;
+    margin-top: 0.75rem;
     padding-top: var(--gs-space-2);          /* 0.5rem */
     border-top: 1px solid var(--gs-gray-200);
     display: flex;
@@ -338,7 +335,7 @@
 
 /* Stats Bar - combined muscle groups + view/save stats */
 .workout-card-stats-bar {
-    margin-top: auto;
+    margin-top: 0.75rem;
     padding-top: var(--gs-space-2);          /* 0.5rem */
     border-top: 1px solid var(--gs-gray-200);
     display: flex;
