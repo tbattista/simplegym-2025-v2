@@ -114,6 +114,7 @@
 [data-bs-theme="dark"] .home-weekly-card {
   background: var(--bs-gray-800);
   border-color: var(--bs-gray-700);
+  color: var(--bs-body-color);
 }
 
 [data-bs-theme="dark"] .home-progress-bar {
@@ -123,6 +124,7 @@
 [data-bs-theme="dark"] #favoritesSection .favorite-card {
   border-color: var(--bs-gray-700);
   background: var(--bs-card-bg);
+  color: var(--bs-body-color);
 }
 
 [data-bs-theme="dark"] #favoritesSection .favorite-card:hover {
@@ -132,6 +134,7 @@
 [data-bs-theme="dark"] .recent-activity-card {
   border-color: var(--bs-gray-700);
   background: var(--bs-card-bg);
+  color: var(--bs-body-color);
 }
 
 [data-bs-theme="dark"] .recent-activity-card:hover {
