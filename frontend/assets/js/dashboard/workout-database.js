@@ -1030,6 +1030,11 @@ async function duplicateWorkout(workoutId) {
 function shareWorkout(workoutId) {
     console.log('🔗 Sharing workout:', workoutId);
 
+    // Close the workout detail offcanvas first to prevent backdrop stacking
+    if (workoutDetailOffcanvas) {
+        workoutDetailOffcanvas.hide();
+    }
+
     if (window.openShareModal) {
         window.openShareModal(workoutId);
     } else {
