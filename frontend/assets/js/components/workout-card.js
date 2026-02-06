@@ -444,7 +444,7 @@ class WorkoutCard {
 
         if (summary.totalExercises === 0 || !summary.displayText) return '';
 
-        return `<small class="text-muted"><i class="bx bx-target-lock me-1"></i>${this._escapeHtml(summary.displayText)}</small>`;
+        return `<small class="text-muted"><span class="stats-bar-label">Targets:</span> ${this._escapeHtml(summary.displayText)}</small>`;
     }
 
     /**

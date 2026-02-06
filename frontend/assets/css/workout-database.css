@@ -361,9 +361,9 @@
     font-size: var(--gs-text-sm);            /* 0.75rem */
 }
 
-.workout-card-stats-bar .stats-bar-muscles i {
-    color: var(--bs-primary);
-    opacity: 0.8;
+.workout-card-stats-bar .stats-bar-label {
+    font-weight: 600;
+    color: var(--gs-secondary);
 }
 
 .workout-card-stats-bar .stats-bar-counts {
