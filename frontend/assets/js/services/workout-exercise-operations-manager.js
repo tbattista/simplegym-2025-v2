@@ -318,7 +318,14 @@ class WorkoutExerciseOperationsManager {
             console.warn('⚠️ Cannot complete exercise - no active session');
             return;
         }
-        
+
+        // Save any pending unified edit changes before completing
+        const exerciseCard = document.querySelector(`.workout-card[data-exercise-name="${exerciseName}"]`);
+        if (exerciseCard?.unifiedEditController?.isActive()) {
+            console.log('💾 Saving pending edit changes before completing exercise');
+            exerciseCard.unifiedEditController.saveUnifiedChanges();
+        }
+
         // Clear auto-complete timer since user manually completed
         this.sessionService.clearAutoCompleteTimer(exerciseName);
         
