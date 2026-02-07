@@ -459,12 +459,17 @@ class WorkoutLifecycleManager {
             const modeIcon = sessionMode === 'quick_log' ? '📝' : '🔄';
             console.log(`${modeIcon} Resuming ${sessionMode} workout session...`);
 
+            // Verify session exists in Firestore before resuming
+            // If not found, recreate it to avoid 404 on completion
+            const verifiedSessionId = await this._verifyOrRecreateSession(sessionData);
+
             // Load the workout first (this will also hide loading state)
             await this.onLoadWorkout(sessionData.workoutId);
 
             // Restore session to service (including sessionMode)
+            // Use verified session ID (may be different if recreated)
             this.sessionService.currentSession = {
-                id: sessionData.sessionId,
+                id: verifiedSessionId,
                 workoutId: sessionData.workoutId,
                 workoutName: sessionData.workoutName,
                 startedAt: new Date(sessionData.startedAt),
@@ -541,7 +546,105 @@ class WorkoutLifecycleManager {
             this.timerManager.stopSessionTimer();
         }
     }
-    
+
+    /**
+     * Verify session exists in Firestore, recreate if missing
+     * Prevents 404 errors when completing resumed sessions
+     * @param {Object} sessionData - Session data from localStorage
+     * @returns {Promise<string>} Verified or new session ID
+     * @private
+     */
+    async _verifyOrRecreateSession(sessionData) {
+        try {
+            const token = await window.authService?.getIdToken();
+            if (!token) {
+                console.warn('⚠️ No auth token, skipping session verification');
+                return sessionData.sessionId;
+            }
+
+            const exists = await this._verifySessionExists(sessionData.sessionId, token);
+
+            if (exists) {
+                console.log('✅ Session verified in Firestore:', sessionData.sessionId);
+                return sessionData.sessionId;
+            }
+
+            // Session not found - recreate it
+            console.warn('⚠️ Session not found in Firestore, recreating...');
+            const newSessionId = await this._recreateSessionInFirestore(sessionData, token);
+            return newSessionId;
+
+        } catch (error) {
+            console.warn('⚠️ Session verification failed:', error.message);
+            // Return original ID and let completion handle recovery
+            return sessionData.sessionId;
+        }
+    }
+
+    /**
+     * Check if session exists in Firestore
+     * @param {string} sessionId - Session ID to verify
+     * @param {string} token - Auth token
+     * @returns {Promise<boolean>} True if session exists
+     * @private
+     */
+    async _verifySessionExists(sessionId, token) {
+        try {
+            const url = window.config.api.getUrl(`/api/v3/workout-sessions/${sessionId}`);
+            const response = await fetch(url, {
+                method: 'GET',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (response.status === 404) {
+                return false;
+            }
+
+            return response.ok;
+        } catch (error) {
+            console.warn('⚠️ Session verification request failed:', error.message);
+            return true; // Assume exists on network error, let completion handle it
+        }
+    }
+
+    /**
+     * Recreate session in Firestore from localStorage data
+     * @param {Object} sessionData - Session data from localStorage
+     * @param {string} token - Auth token
+     * @returns {Promise<string>} New session ID
+     * @private
+     */
+    async _recreateSessionInFirestore(sessionData, token) {
+        const url = window.config.api.getUrl('/api/v3/workout-sessions');
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                workout_id: sessionData.workoutId,
+                workout_name: sessionData.workoutName,
+                started_at: sessionData.startedAt,
+                session_mode: sessionData.sessionMode || 'timed'
+            })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.detail || 'Failed to recreate session');
+        }
+
+        const newSession = await response.json();
+        console.log('✅ Session recreated in Firestore:', newSession.id);
+
+        // Update localStorage with new session ID
+        sessionData.sessionId = newSession.id;
+        this.sessionService.persistSession();
+
+        return newSession.id;
+    }
+
     /**
      * Get modal manager (lazy load to ensure it's available)
      * @returns {Object} Modal manager or fallback

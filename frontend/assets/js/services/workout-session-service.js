@@ -288,6 +288,7 @@ class WorkoutSessionService {
 
     /**
      * Create a new session and immediately complete it (fallback for orphaned localStorage sessions)
+     * Uses atomic endpoint first, then falls back to two-step with retry logic.
      * @param {Array} exercisesPerformed - Array of exercise data
      * @param {number|null} durationMinutes - Optional manual duration
      * @param {string} token - Auth token
@@ -297,7 +298,97 @@ class WorkoutSessionService {
     async _createAndCompleteSession(exercisesPerformed, durationMinutes, token) {
         console.log('🔄 Creating new session to preserve workout data...');
 
-        // Step 1: Create a new session
+        // Strategy 1: Try atomic create-and-complete endpoint (preferred)
+        try {
+            const atomicResult = await this._tryAtomicCreateAndComplete(
+                exercisesPerformed,
+                durationMinutes,
+                token
+            );
+            if (atomicResult) {
+                return atomicResult;
+            }
+        } catch (error) {
+            console.warn('⚠️ Atomic create-and-complete failed, falling back to two-step:', error.message);
+        }
+
+        // Strategy 2: Two-step with retry and exponential backoff
+        return await this._createThenCompleteWithRetry(exercisesPerformed, durationMinutes, token);
+    }
+
+    /**
+     * Try atomic create-and-complete endpoint (single API call)
+     * @private
+     */
+    async _tryAtomicCreateAndComplete(exercisesPerformed, durationMinutes, token) {
+        const url = window.config.api.getUrl('/api/v3/workout-sessions/create-and-complete');
+
+        const requestBody = {
+            workout_id: this.currentSession.workoutId,
+            workout_name: this.currentSession.workoutName,
+            started_at: this.currentSession.startedAt.toISOString(),
+            completed_at: new Date().toISOString(),
+            exercises_performed: exercisesPerformed,
+            session_mode: this.currentSession.sessionMode || 'timed',
+            notes: '',
+            session_notes: (this.sessionNotes || []).map(note => ({
+                id: note.id,
+                content: note.content,
+                order_index: note.order_index,
+                created_at: note.created_at,
+                modified_at: note.modified_at || null
+            }))
+        };
+
+        if (this.preSessionOrder && this.preSessionOrder.length > 0) {
+            requestBody.exercise_order = this.preSessionOrder;
+        }
+
+        if (durationMinutes !== null && durationMinutes > 0) {
+            requestBody.duration_minutes = durationMinutes;
+        }
+
+        console.log('🚀 Trying atomic create-and-complete endpoint...');
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(requestBody)
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.detail || `Atomic endpoint failed: ${response.status}`);
+        }
+
+        const completedSession = await response.json();
+
+        // Update local session state
+        this.currentSession.id = completedSession.id;
+        this.currentSession.status = 'completed';
+        this.currentSession.completedAt = new Date(completedSession.completed_at);
+
+        console.log('✅ Atomic create-and-complete succeeded:', completedSession.id);
+        this.notifyListeners('sessionCompleted', completedSession);
+        window.dispatchEvent(new CustomEvent('sessionStateChanged', { detail: { type: 'completed' } }));
+        this.clearPersistedSession();
+
+        return completedSession;
+    }
+
+    /**
+     * Two-step create then complete with retry and exponential backoff
+     * Fallback for when atomic endpoint is unavailable
+     * @private
+     */
+    async _createThenCompleteWithRetry(exercisesPerformed, durationMinutes, token) {
+        const MAX_RETRIES = 3;
+        const BASE_DELAY_MS = 150;
+
+        // Step 1: Create session
+        console.log('📝 Creating recovery session (two-step fallback)...');
         const createUrl = window.config.api.getUrl('/api/v3/workout-sessions');
         const createResponse = await fetch(createUrl, {
             method: 'POST',
@@ -321,8 +412,7 @@ class WorkoutSessionService {
         const newSession = await createResponse.json();
         console.log('✅ Recovery session created:', newSession.id);
 
-        // Step 2: Complete the new session with all the workout data
-        const completeUrl = window.config.api.getUrl(`/api/v3/workout-sessions/${newSession.id}/complete`);
+        // Step 2: Complete with retry and exponential backoff
         const requestBody = {
             completed_at: new Date().toISOString(),
             exercises_performed: exercisesPerformed,
@@ -344,35 +434,66 @@ class WorkoutSessionService {
             requestBody.duration_minutes = durationMinutes;
         }
 
-        const completeResponse = await fetch(completeUrl, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(requestBody)
-        });
+        for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+            // Exponential backoff delay before attempt
+            const delay = BASE_DELAY_MS * Math.pow(2, attempt);
+            console.log(`⏱️ Waiting ${delay}ms before complete attempt ${attempt + 1}/${MAX_RETRIES}`);
+            await this._sleep(delay);
 
-        if (!completeResponse.ok) {
-            const errorData = await completeResponse.json().catch(() => ({}));
-            throw new Error(errorData.detail || 'Failed to complete recovery session');
+            try {
+                const completeUrl = window.config.api.getUrl(`/api/v3/workout-sessions/${newSession.id}/complete`);
+                const completeResponse = await fetch(completeUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+
+                if (completeResponse.ok) {
+                    const completedSession = await completeResponse.json();
+
+                    // Update local session state
+                    this.currentSession.id = newSession.id;
+                    this.currentSession.status = 'completed';
+                    this.currentSession.completedAt = new Date(completedSession.completed_at);
+
+                    console.log('✅ Recovery session completed successfully:', newSession.id);
+                    this.notifyListeners('sessionCompleted', completedSession);
+                    window.dispatchEvent(new CustomEvent('sessionStateChanged', { detail: { type: 'completed' } }));
+                    this.clearPersistedSession();
+
+                    return completedSession;
+                }
+
+                // If not 404, don't retry - it's a different error
+                if (completeResponse.status !== 404) {
+                    const errorData = await completeResponse.json().catch(() => ({}));
+                    throw new Error(errorData.detail || 'Failed to complete recovery session');
+                }
+
+                console.warn(`⚠️ Complete attempt ${attempt + 1} got 404, retrying...`);
+
+            } catch (error) {
+                if (attempt === MAX_RETRIES - 1) {
+                    throw error;
+                }
+                console.warn(`⚠️ Complete attempt ${attempt + 1} failed:`, error.message);
+            }
         }
 
-        const completedSession = await completeResponse.json();
+        throw new Error('Failed to complete recovery session after all retries');
+    }
 
-        // Update local session state
-        this.currentSession.id = newSession.id;
-        this.currentSession.status = 'completed';
-        this.currentSession.completedAt = new Date(completedSession.completed_at);
-
-        console.log('✅ Recovery session completed successfully:', newSession.id);
-        this.notifyListeners('sessionCompleted', completedSession);
-        window.dispatchEvent(new CustomEvent('sessionStateChanged', { detail: { type: 'completed' } }));
-
-        // Clear persisted session
-        this.clearPersistedSession();
-
-        return completedSession;
+    /**
+     * Sleep helper for async delays
+     * @param {number} ms - Milliseconds to sleep
+     * @returns {Promise<void>}
+     * @private
+     */
+    _sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
     }
     
     /**

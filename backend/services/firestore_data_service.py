@@ -971,11 +971,85 @@ class FirestoreDataService:
             
             logger.info(f"Completed workout session {session_id} for user {user_id}")
             return completed_session
-            
+
         except Exception as e:
             logger.error(f"Failed to complete workout session: {str(e)}")
             return None
-    
+
+    async def create_and_complete_workout_session(self, user_id: str, request) -> Optional[Any]:
+        """
+        Atomically create and complete a workout session in a single write.
+        Used for recovery scenarios where the original session was lost.
+        Avoids race condition between separate create and complete API calls.
+        """
+        if not self.is_available():
+            return None
+
+        try:
+            from ..models import WorkoutSession
+
+            # Calculate duration
+            if request.duration_minutes is not None:
+                # Use manually provided duration (for quick_log sessions)
+                duration_minutes = request.duration_minutes
+                logger.info(f"Using manual duration: {duration_minutes} minutes")
+            else:
+                # Auto-calculate from timestamps
+                started_at = request.started_at
+                completed_at = request.completed_at or datetime.now()
+
+                # Ensure both datetimes are timezone-naive for comparison
+                if hasattr(started_at, 'replace') and started_at.tzinfo is not None:
+                    started_at = started_at.replace(tzinfo=None)
+                if hasattr(completed_at, 'replace') and completed_at.tzinfo is not None:
+                    completed_at = completed_at.replace(tzinfo=None)
+
+                duration = completed_at - started_at
+                duration_minutes = int(duration.total_seconds() / 60)
+                logger.info(f"Auto-calculated duration: {duration_minutes} minutes")
+
+            # Create session with completed status directly
+            session = WorkoutSession(
+                workout_id=request.workout_id,
+                workout_name=request.workout_name,
+                started_at=request.started_at,
+                completed_at=request.completed_at or datetime.now(),
+                status="completed",
+                session_mode=request.session_mode,
+                exercises_performed=[
+                    ex.model_dump() if hasattr(ex, 'model_dump') else ex
+                    for ex in request.exercises_performed
+                ],
+                notes=request.notes,
+                session_notes=[
+                    note.model_dump() if hasattr(note, 'model_dump') else note
+                    for note in (request.session_notes or [])
+                ],
+                exercise_order=request.exercise_order,
+                duration_minutes=duration_minutes
+            )
+
+            # Single write with completed state
+            session_ref = (self.db.collection('users')
+                          .document(user_id)
+                          .collection('workout_sessions')
+                          .document(session.id))
+
+            session_data = session.model_dump()
+            session_data['created_at'] = firestore.SERVER_TIMESTAMP
+            session_ref.set(session_data)
+
+            logger.info(f"✅ Atomically created and completed session {session.id} for user {user_id}")
+
+            # Update exercise histories
+            await self._update_exercise_histories_batch(user_id, session)
+
+            return session
+
+        except Exception as e:
+            logger.error(f"Failed to create-and-complete workout session: {str(e)}")
+            return None
+
     async def get_user_sessions(
         self,
         user_id: str,

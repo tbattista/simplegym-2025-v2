@@ -13,6 +13,7 @@ from ..models import (
     CreateSessionRequest,
     UpdateSessionRequest,
     CompleteSessionRequest,
+    CreateAndCompleteSessionRequest,
     SessionListResponse,
     ExerciseHistory,
     ExerciseHistoryResponse
@@ -66,12 +67,65 @@ async def create_session(
         
         logger.info(f"✅ Workout session created: {session.id}")
         return session
-        
+
     except HTTPException:
         raise
     except Exception as e:
         logger.error(f"Error creating workout session: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error creating session: {str(e)}")
+
+
+@router.post("/create-and-complete", response_model=WorkoutSession)
+async def create_and_complete_session(
+    request: CreateAndCompleteSessionRequest,
+    current_user: Optional[dict] = Depends(get_current_user_optional)
+):
+    """
+    Atomically create and complete a workout session in one operation.
+
+    Used for recovery scenarios where the original session was lost due to:
+    - Network issues during session creation
+    - Page refresh/crash during workout
+    - localStorage session with no corresponding Firestore document
+
+    This endpoint avoids the race condition that can occur when making
+    separate create and complete API calls.
+
+    **Premium Feature**: Requires authentication
+    """
+    try:
+        user_id = extract_user_id(current_user)
+
+        if not user_id:
+            raise HTTPException(
+                status_code=401,
+                detail="Authentication required for workout logging"
+            )
+
+        if not firebase_service.is_available():
+            raise HTTPException(
+                status_code=503,
+                detail="Workout logging service temporarily unavailable"
+            )
+
+        logger.info(f"🔄 Atomic create-and-complete for user {user_id}: {request.workout_name}")
+
+        session = await firestore_data_service.create_and_complete_workout_session(user_id, request)
+
+        if not session:
+            raise HTTPException(
+                status_code=500,
+                detail="Failed to create and complete workout session"
+            )
+
+        logger.info(f"✅ Atomic session completed: {session.id}")
+        return session
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error in atomic create-and-complete: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error completing session: {str(e)}")
 
 
 @router.get("/{session_id}", response_model=WorkoutSession)

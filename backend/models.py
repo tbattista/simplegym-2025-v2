@@ -1100,6 +1100,56 @@ class CompleteSessionRequest(BaseModel):
             raise ValueError("Exercise order must contain unique exercise names")
         return v
 
+
+class CreateAndCompleteSessionRequest(BaseModel):
+    """
+    Request to atomically create and complete a workout session in one operation.
+    Used for recovery scenarios where the original session was lost.
+    Avoids race condition between create and complete API calls.
+    """
+
+    workout_id: str = Field(..., description="ID of the workout template")
+    workout_name: str = Field(..., description="Name of the workout")
+    started_at: datetime = Field(..., description="When the workout started")
+    completed_at: Optional[datetime] = Field(
+        default_factory=datetime.now,
+        description="Completion time (defaults to now)"
+    )
+    exercises_performed: List[ExercisePerformance] = Field(
+        ...,
+        description="Final list of all exercises performed"
+    )
+    session_mode: str = Field(
+        default="timed",
+        description="Session mode: 'timed' or 'quick_log'"
+    )
+    notes: Optional[str] = Field(None, max_length=500, description="Session notes")
+    session_notes: List[SessionNote] = Field(
+        default_factory=list,
+        description="Inline notes within the session"
+    )
+    exercise_order: Optional[List[str]] = Field(
+        None,
+        description="Custom order of exercises (list of exercise names)"
+    )
+    duration_minutes: Optional[int] = Field(
+        None,
+        ge=1,
+        le=600,
+        description="Manual duration for quick_log sessions (in minutes)"
+    )
+
+    @field_validator('exercise_order', mode='before')
+    @classmethod
+    def validate_exercise_order_unique(cls, v):
+        """Ensure exercise order contains unique exercise names."""
+        if v is None:
+            return v
+        if len(v) != len(set(v)):
+            raise ValueError("Exercise order must contain unique exercise names")
+        return v
+
+
 # Response Models for Workout Sessions
 
 class SessionListResponse(BaseModel):
