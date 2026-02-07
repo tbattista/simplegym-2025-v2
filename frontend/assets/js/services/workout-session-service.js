@@ -34,7 +34,9 @@ class WorkoutSessionService {
         this.sessionPersistenceService = new SessionPersistenceService({
             onGetCurrentSession: () => this.currentSession,
             onGetSessionNotes: () => this.sessionNotes,
-            onSetSessionNotes: (notes) => { this.sessionNotes = notes; }
+            onSetSessionNotes: (notes) => { this.sessionNotes = notes; },
+            onGetExerciseOrder: () => this.preSessionOrder,
+            onSetExerciseOrder: (order) => { this.preSessionOrder = order; }
         });
 
         // Initialize Auto Save Service

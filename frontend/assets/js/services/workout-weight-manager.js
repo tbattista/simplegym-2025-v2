@@ -83,9 +83,12 @@ class WorkoutWeightManager {
             navigator.vibrate(15);
         }
         
-        // Auto-save (fire and forget)
+        // Auto-save (fire and forget with user feedback on error)
         this.onAutoSave().catch(error => {
             console.error('❌ Failed to auto-save after direction change:', error);
+            if (window.showAlert) {
+                window.showAlert('Changes saved locally but sync failed. Will retry on next save.', 'warning');
+            }
         });
         
         // UPDATE UI DIRECTLY - Don't re-render entire workout (prevents card from closing)
@@ -174,8 +177,13 @@ class WorkoutWeightManager {
                 window.showAlert(messages[newDirection], 'success');
             }
             
-            // Auto-save
-            this.onAutoSave();
+            // Auto-save with user feedback on error
+            this.onAutoSave().catch(error => {
+                console.error('❌ Failed to auto-save after quick note:', error);
+                if (window.showAlert) {
+                    window.showAlert('Changes saved locally but sync failed. Will retry on next save.', 'warning');
+                }
+            });
         }
     }
     
@@ -380,9 +388,12 @@ class WorkoutWeightManager {
             window.showAlert(messages[newDirection], 'success');
         }
 
-        // Auto-save
+        // Auto-save with user feedback on error
         this.onAutoSave().catch(error => {
             console.error('❌ Failed to auto-save weight direction:', error);
+            if (window.showAlert) {
+                window.showAlert('Changes saved locally but sync failed. Will retry on next save.', 'warning');
+            }
         });
     }
     

@@ -247,28 +247,44 @@ class WorkoutLifecycleManager {
             totalExercises,
             isQuickLog  // Pass Quick Log flag for mode-aware UI
         }, async (durationMinutes) => {
-            // Collect exercise data
-            const exercisesPerformed = this.onCollectExerciseData();
+            try {
+                // Collect exercise data
+                const exercisesPerformed = this.onCollectExerciseData();
 
-            // Complete session (pass durationMinutes for Quick Log mode)
-            const completedSession = await this.sessionService.completeSession(
-                exercisesPerformed,
-                durationMinutes  // null for timed sessions, number for Quick Log
-            );
+                // Complete session (pass durationMinutes for Quick Log mode)
+                const completedSession = await this.sessionService.completeSession(
+                    exercisesPerformed,
+                    durationMinutes  // null for timed sessions, number for Quick Log
+                );
 
-            // Update template weights
-            await this.onUpdateTemplateWeights(exercisesPerformed);
+                // Update template weights
+                await this.onUpdateTemplateWeights(exercisesPerformed);
 
-            // NOW hide floating controls after workout is actually completed
-            this.showFloatingControls(false);
+                // NOW hide floating controls after workout is actually completed
+                this.showFloatingControls(false);
 
-            // Hide Quick Log banner if it was showing
-            if (window.bottomActionBar) {
-                window.bottomActionBar.showQuickLogBanner(false);
+                // Hide Quick Log banner if it was showing
+                if (window.bottomActionBar) {
+                    window.bottomActionBar.showQuickLogBanner(false);
+                }
+
+                // Show completion summary
+                this.showCompletionSummary(completedSession);
+            } catch (error) {
+                console.error('❌ Error completing workout:', error);
+
+                // Show error to user
+                const modalManager = this.getModalManager();
+                modalManager.alert(
+                    'Save Failed',
+                    `Failed to save your workout: ${error.message}. Your data has been preserved locally - please try again.`,
+                    'danger'
+                );
+
+                // Re-show floating controls so user can try again
+                const sessionMode = this.sessionService.getSessionMode();
+                this.showFloatingControls(true, sessionMode);
             }
-
-            // Show completion summary
-            this.showCompletionSummary(completedSession);
         });
     }
     

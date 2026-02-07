@@ -15,6 +15,8 @@ class SessionPersistenceService {
         this.onGetCurrentSession = options.onGetCurrentSession || (() => null);
         this.onGetSessionNotes = options.onGetSessionNotes || (() => []);
         this.onSetSessionNotes = options.onSetSessionNotes || (() => {});
+        this.onGetExerciseOrder = options.onGetExerciseOrder || (() => []);
+        this.onSetExerciseOrder = options.onSetExerciseOrder || (() => {});
 
         console.log('💾 Session Persistence Service initialized');
     }
@@ -32,6 +34,7 @@ class SessionPersistenceService {
 
         const now = new Date().toISOString();
         const sessionNotes = this.onGetSessionNotes();
+        const exerciseOrder = this.onGetExerciseOrder();
 
         const sessionData = {
             sessionId: currentSession.id,
@@ -42,15 +45,16 @@ class SessionPersistenceService {
             sessionMode: currentSession.sessionMode || 'timed',
             exercises: currentSession.exercises || {},
             sessionNotes: sessionNotes || [],
+            exerciseOrder: exerciseOrder || [],
             lastUpdated: now,
             lastPageActive: now,
-            version: '2.3',
+            version: '2.4',
             schemaVersion: 2
         };
 
         try {
             localStorage.setItem(this.STORAGE_KEY, JSON.stringify(sessionData));
-            console.log('💾 Session persisted (v2.3):', sessionData.sessionId);
+            console.log('💾 Session persisted (v2.4):', sessionData.sessionId);
         } catch (error) {
             console.error('❌ Failed to persist session:', error);
         }
@@ -92,8 +96,19 @@ class SessionPersistenceService {
                 sessionData = this._migrateSessionV2_2toV2_3(sessionData);
             }
 
+            if (sessionData.version === '2.3') {
+                console.log('🔄 Migrating session from v2.3 to v2.4...');
+                sessionData = this._migrateSessionV2_3toV2_4(sessionData);
+            }
+
             // Restore session notes from persisted data
             this.onSetSessionNotes(sessionData.sessionNotes || []);
+
+            // Restore exercise order from persisted data
+            if (sessionData.exerciseOrder && sessionData.exerciseOrder.length > 0) {
+                this.onSetExerciseOrder(sessionData.exerciseOrder);
+                console.log('📋 Exercise order restored:', sessionData.exerciseOrder.length, 'exercises');
+            }
 
             // Validate required fields
             if (!sessionData.sessionId || !sessionData.workoutId || !sessionData.startedAt) {
@@ -191,6 +206,17 @@ class SessionPersistenceService {
         sessionData.version = '2.3';
         sessionData.sessionMode = sessionData.sessionMode || 'timed';
         console.log('✅ Session migrated to v2.3 (sessionMode added)');
+        return sessionData;
+    }
+
+    /**
+     * Migrate session from v2.3 to v2.4
+     * @private
+     */
+    _migrateSessionV2_3toV2_4(sessionData) {
+        sessionData.version = '2.4';
+        sessionData.exerciseOrder = sessionData.exerciseOrder || [];
+        console.log('✅ Session migrated to v2.4 (exerciseOrder added)');
         return sessionData;
     }
 }
