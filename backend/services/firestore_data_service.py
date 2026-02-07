@@ -902,9 +902,10 @@ class FirestoreDataService:
             # Check if session exists
             logger.info(f"🔍 Looking for session at: users/{user_id}/workout_sessions/{session_id}")
             current_doc = session_ref.get()
+            logger.info(f"📋 Document exists: {current_doc.exists}")
             if not current_doc.exists:
-                logger.warning(f"❌ Workout session {session_id} not found for user {user_id}")
-                logger.warning(f"   Expected path: users/{user_id}/workout_sessions/{session_id}")
+                logger.info(f"❌ Session {session_id} not found for user {user_id}")
+                logger.info(f"   Expected path: users/{user_id}/workout_sessions/{session_id}")
                 return None
             
             current_data = current_doc.to_dict()
