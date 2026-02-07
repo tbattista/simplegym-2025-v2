@@ -1383,9 +1383,22 @@
             ],
             // Floating timer + end button combo (replaces FAB for active workout)
             floatingCombo: true,
-            // Handle end workout action
+            // Handle end workout action (debounced to prevent multiple offcanvas instances)
+            _endWorkoutDebounceTimer: null,
             endWorkoutAction: function() {
                 console.log('⏹️ End workout button clicked from floating combo');
+
+                // Debounce: Ignore clicks within 500ms of last click
+                if (this._endWorkoutDebounceTimer) {
+                    console.log('🚫 End workout click debounced');
+                    return;
+                }
+
+                // Set debounce timer
+                this._endWorkoutDebounceTimer = setTimeout(() => {
+                    this._endWorkoutDebounceTimer = null;
+                }, 500);
+
                 if (window.workoutModeController && window.workoutModeController.handleCompleteWorkout) {
                     window.workoutModeController.handleCompleteWorkout();
                 } else {
@@ -1487,9 +1500,22 @@
             ],
             // Quick Log badge + save button combo (replaces timer for Quick Log mode)
             quickLogCombo: true,
-            // Handle save quick log action
+            // Handle save quick log action (debounced to prevent multiple offcanvas instances)
+            _saveQuickLogDebounceTimer: null,
             saveQuickLogAction: function() {
                 console.log('💾 Save Quick Log button clicked');
+
+                // Debounce: Ignore clicks within 500ms of last click
+                if (this._saveQuickLogDebounceTimer) {
+                    console.log('🚫 Save Quick Log click debounced');
+                    return;
+                }
+
+                // Set debounce timer
+                this._saveQuickLogDebounceTimer = setTimeout(() => {
+                    this._saveQuickLogDebounceTimer = null;
+                }, 500);
+
                 if (window.workoutModeController?.handleSaveQuickLog) {
                     window.workoutModeController.handleSaveQuickLog();
                 } else {
