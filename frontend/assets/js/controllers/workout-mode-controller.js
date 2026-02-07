@@ -80,12 +80,36 @@ class WorkoutModeController {
             onGetCurrentWorkout: () => this.currentWorkout,
             onUpdateExerciseInTemplate: (exerciseName, exerciseData) => this._updateExerciseInTemplate(exerciseName, exerciseData)
         });
-        
+
+        // Phase 8: Initialize Exercise Menu Manager
+        this.menuManager = new WorkoutExerciseMenuManager();
+
+        // Phase 9: Initialize Settings Manager
+        this.settingsManager = new WorkoutSettingsManager({
+            onGetCurrentWorkout: () => this.currentWorkout
+        });
+
+        // Phase 10: Initialize Reorder Manager
+        this.reorderManager = new WorkoutReorderManager({
+            sessionService: this.sessionService,
+            onRenderWorkout: () => this.renderWorkout(true),
+            onAutoSave: () => this.autoSave(null),
+            onGetCurrentWorkout: () => this.currentWorkout,
+            onToggleExerciseMenu: (btn, name, idx) => this.menuManager.toggleExerciseMenu(btn, name, idx)
+        });
+
+        // Phase 11: Initialize Session Notes Manager
+        this.notesManager = new WorkoutSessionNotesManager({
+            sessionService: this.sessionService,
+            onRenderWorkout: () => this.renderWorkout(true),
+            onGetCurrentWorkout: () => this.currentWorkout,
+            onGetModalManager: () => this.getModalManager()
+        });
+
         // State
         this.currentWorkout = null;
         this.timers = {}; // Kept for backward compatibility, delegated to timerManager
         this.globalRestTimer = null; // Kept for backward compatibility, delegated to timerManager
-        this.soundEnabled = localStorage.getItem('workoutSoundEnabled') !== 'false';
         this.autoSaveTimer = null;
         this.workoutListComponent = null;
         
@@ -214,9 +238,7 @@ class WorkoutModeController {
             
             // Setup UI
             this.setupEventListeners();
-            this.initializeSoundToggle();
-            this.initializeRestTimerSetting();
-            this.initializeShareButton();
+            this.settingsManager.initialize();
             
             console.log('✅ Workout Mode Controller ready');
             
@@ -1258,332 +1280,71 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
     }
 
     /* ============================================
-       SESSION NOTE METHODS
-       Handlers for inline notes in workout sessions
+       SESSION NOTE METHODS (FACADES - delegate to notesManager)
+       Phase 11: Session Notes Management
        ============================================ */
 
     /**
-     * Handle "Add Note" button click from action bar
-     * Shows position picker and creates a new note
+     * Handle add note (FACADE)
      */
     async handleAddNote() {
-        try {
-            console.log('📝 Add Note clicked');
-
-            // Build current item list for position picker
-            const items = this._getAllItemsForPositionPicker();
-
-            // If no items, just add at position 0
-            if (items.length === 0) {
-                this._createNoteAtPosition(0);
-                return;
-            }
-
-            // Dynamically import the position picker
-            const module = await import('/static/assets/js/components/offcanvas/offcanvas-workout.js');
-            if (module.createNotePositionPicker) {
-                module.createNotePositionPicker(items, (position) => {
-                    this._createNoteAtPosition(position);
-                });
-            } else {
-                console.error('❌ createNotePositionPicker not found in module');
-                // Fallback: add at end
-                this._createNoteAtPosition(items.length);
-            }
-        } catch (error) {
-            console.error('❌ Error handling add note:', error);
-            window.showAlert?.('Failed to open note picker', 'error');
-        }
+        return this.notesManager.handleAddNote();
     }
 
     /**
-     * Build list of items for position picker
-     * @returns {Array} Array of { name, displayName, type }
-     * @private
+     * Get all items for position picker (FACADE)
      */
     _getAllItemsForPositionPicker() {
-        const items = [];
-
-        // Add regular exercises
-        if (this.currentWorkout?.exercise_groups) {
-            this.currentWorkout.exercise_groups.forEach((group) => {
-                const name = group.exercises?.a;
-                if (name) {
-                    items.push({
-                        name: name,
-                        displayName: name,
-                        type: 'exercise'
-                    });
-                }
-            });
-        }
-
-        // Add bonus exercises
-        const bonusExercises = this.sessionService.getBonusExercises();
-        if (bonusExercises?.length > 0) {
-            bonusExercises.forEach((bonus) => {
-                items.push({
-                    name: bonus.name,
-                    displayName: bonus.name,
-                    type: 'exercise'
-                });
-            });
-        }
-
-        // Add session notes
-        const sessionNotes = this.sessionService.getSessionNotes();
-        if (sessionNotes?.length > 0) {
-            sessionNotes.forEach((note) => {
-                const truncated = note.content?.substring(0, 25) || 'Empty note';
-                items.push({
-                    name: `note-${note.id}`,
-                    displayName: truncated + (note.content?.length > 25 ? '...' : ''),
-                    type: 'note'
-                });
-            });
-        }
-
-        // Apply custom order if exists
-        const customOrder = this.sessionService.getExerciseOrder();
-        if (customOrder.length > 0) {
-            const orderedItems = [];
-            customOrder.forEach(name => {
-                const item = items.find(i => i.name === name);
-                if (item) {
-                    orderedItems.push(item);
-                }
-            });
-            // Add any items not in custom order
-            items.forEach(item => {
-                if (!customOrder.includes(item.name)) {
-                    orderedItems.push(item);
-                }
-            });
-            return orderedItems;
-        }
-
-        return items;
+        return this.notesManager._getAllItemsForPositionPicker();
     }
 
     /**
-     * Create a note at the specified position
-     * @param {number} position - Position to insert note
-     * @private
+     * Create note at position (FACADE)
      */
     _createNoteAtPosition(position) {
-        console.log('📝 Creating note at position:', position);
-
-        // Create the note
-        const note = this.sessionService.addSessionNote(position, '');
-
-        // Update exercise order to include new note
-        const currentItems = this._getAllItemsForPositionPicker();
-        // Filter out the note we just added (it's already in the list from getSessionNotes)
-        const itemNames = currentItems
-            .filter(item => item.name !== `note-${note.id}`)
-            .map(item => item.name);
-
-        // Insert note ID at the correct position
-        itemNames.splice(position, 0, `note-${note.id}`);
-        this.sessionService.setExerciseOrder(itemNames);
-
-        // Re-render and auto-expand the new note for editing
-        this.renderWorkout(true);
-
-        // Find and expand the new note card, then trigger edit mode
-        setTimeout(() => {
-            const noteCard = document.querySelector(`[data-note-id="${note.id}"]`);
-            if (noteCard) {
-                noteCard.classList.add('expanded', 'just-added');
-                // Remove animation class after animation completes
-                setTimeout(() => noteCard.classList.remove('just-added'), 300);
-
-                // Scroll the card into view - centered
-                noteCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-
-                // Trigger edit mode
-                this.handleEditNote(note.id);
-            }
-        }, 100);
+        this.notesManager._createNoteAtPosition(position);
     }
 
     /**
-     * Handle edit note button click
-     * Switches note card to edit mode
-     * @param {string} noteId - Note ID
+     * Handle edit note (FACADE)
      */
     handleEditNote(noteId) {
-        const noteCard = document.querySelector(`[data-note-id="${noteId}"]`);
-        if (!noteCard) {
-            console.warn('⚠️ Note card not found:', noteId);
-            return;
-        }
-
-        // Expand card if not already expanded
-        if (!noteCard.classList.contains('expanded')) {
-            noteCard.classList.add('expanded');
-        }
-
-        // Switch to edit mode
-        noteCard.classList.add('editing');
-        const noteDisplay = noteCard.querySelector('.note-display');
-        const noteEditor = noteCard.querySelector('.note-editor');
-
-        if (noteDisplay) noteDisplay.style.display = 'none';
-        if (noteEditor) {
-            noteEditor.style.display = 'flex';
-            // Focus the textarea
-            const textarea = noteEditor.querySelector('.note-textarea');
-            if (textarea) {
-                textarea.focus();
-                // Move cursor to end
-                textarea.selectionStart = textarea.selectionEnd = textarea.value.length;
-
-                // Setup character counter updates
-                this._setupNoteCharCounter(textarea, noteCard);
-            }
-        }
-
-        console.log('📝 Edit mode activated for note:', noteId);
+        this.notesManager.handleEditNote(noteId);
     }
 
     /**
-     * Setup character counter for note textarea
-     * @param {HTMLTextAreaElement} textarea
-     * @param {HTMLElement} noteCard
-     * @private
+     * Setup note char counter (FACADE)
      */
     _setupNoteCharCounter(textarea, noteCard) {
-        const charCount = noteCard.querySelector('.note-char-count');
-        const charCurrent = noteCard.querySelector('.note-char-current');
-
-        if (!charCurrent) return;
-
-        const updateCounter = () => {
-            const count = textarea.value.length;
-            charCurrent.textContent = count;
-
-            // Update warning/error classes
-            charCount?.classList.remove('warning', 'error');
-            if (count >= 500) {
-                charCount?.classList.add('error');
-            } else if (count >= 450) {
-                charCount?.classList.add('warning');
-            }
-        };
-
-        textarea.addEventListener('input', updateCounter);
-        updateCounter(); // Initial update
+        this.notesManager._setupNoteCharCounter(textarea, noteCard);
     }
 
     /**
-     * Handle save note button click
-     * @param {string} noteId - Note ID
+     * Handle save note (FACADE)
      */
     handleSaveNote(noteId) {
-        const noteCard = document.querySelector(`[data-note-id="${noteId}"]`);
-        if (!noteCard) {
-            console.warn('⚠️ Note card not found:', noteId);
-            return;
-        }
-
-        const textarea = noteCard.querySelector('.note-textarea');
-        const content = textarea?.value || '';
-
-        // Save to session service
-        this.sessionService.updateSessionNote(noteId, content);
-
-        // Exit edit mode
-        noteCard.classList.remove('editing');
-        const noteDisplay = noteCard.querySelector('.note-display');
-        const noteEditor = noteCard.querySelector('.note-editor');
-
-        if (noteEditor) noteEditor.style.display = 'none';
-        if (noteDisplay) noteDisplay.style.display = 'block';
-
-        // Re-render to update preview text
-        this.renderWorkout(true);
-
-        console.log('💾 Note saved:', noteId);
+        this.notesManager.handleSaveNote(noteId);
     }
 
     /**
-     * Handle cancel note edit button click
-     * @param {string} noteId - Note ID
+     * Handle cancel note edit (FACADE)
      */
     handleCancelNoteEdit(noteId) {
-        const noteCard = document.querySelector(`[data-note-id="${noteId}"]`);
-        if (!noteCard) return;
-
-        // Get original content from session service
-        const note = this.sessionService.getSessionNote(noteId);
-        const textarea = noteCard.querySelector('.note-textarea');
-        if (textarea && note) {
-            textarea.value = note.content || '';
-        }
-
-        // Exit edit mode
-        noteCard.classList.remove('editing');
-        const noteDisplay = noteCard.querySelector('.note-display');
-        const noteEditor = noteCard.querySelector('.note-editor');
-
-        if (noteEditor) noteEditor.style.display = 'none';
-        if (noteDisplay) noteDisplay.style.display = 'block';
-
-        console.log('❌ Note edit cancelled:', noteId);
+        this.notesManager.handleCancelNoteEdit(noteId);
     }
 
     /**
-     * Handle delete note button click
-     * @param {string} noteId - Note ID
+     * Handle delete note (FACADE)
      */
     handleDeleteNote(noteId) {
-        this.getModalManager().confirm(
-            'Delete Note',
-            'Are you sure you want to delete this note?',
-            () => {
-                // Delete from session service
-                this.sessionService.deleteSessionNote(noteId);
-
-                // Remove from exercise order
-                const currentOrder = this.sessionService.getExerciseOrder();
-                const filteredOrder = currentOrder.filter(name => name !== `note-${noteId}`);
-                this.sessionService.setExerciseOrder(filteredOrder);
-
-                // Re-render
-                this.renderWorkout(true);
-
-                console.log('🗑️ Note deleted:', noteId);
-            }
-        );
+        this.notesManager.handleDeleteNote(noteId);
     }
 
     /**
-     * Toggle note menu visibility
-     * @param {HTMLElement} btn - Menu button element
-     * @param {string} noteId - Note ID
-     * @param {number} index - Card index
+     * Toggle note menu (FACADE)
      */
     toggleNoteMenu(btn, noteId, index) {
-        // Close any other open menus first
-        document.querySelectorAll('.workout-menu.show').forEach(menu => {
-            menu.classList.remove('show');
-        });
-
-        // Toggle this menu
-        const menu = btn.parentElement?.querySelector('.workout-menu');
-        if (menu) {
-            menu.classList.toggle('show');
-
-            // Close menu when clicking outside
-            const closeMenu = (e) => {
-                if (!menu.contains(e.target) && !btn.contains(e.target)) {
-                    menu.classList.remove('show');
-                    document.removeEventListener('click', closeMenu);
-                }
-            };
-            setTimeout(() => document.addEventListener('click', closeMenu), 10);
-        }
+        this.notesManager.toggleNoteMenu(btn, noteId, index);
     }
 
     /**
@@ -1611,309 +1372,71 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
     }
     
     /**
-     * EXERCISE REORDER METHODS
-     * Phase 7: Handle exercise reordering via offcanvas
+     * EXERCISE REORDER METHODS (FACADES - delegate to reorderManager)
+     * Phase 10: Reorder Management
      */
-    
+
     /**
-     * Show reorder exercise offcanvas
-     * Allows user to reorder exercises (regular + bonus) via drag-and-drop
+     * Show reorder offcanvas (FACADE)
      */
     showReorderOffcanvas() {
-        try {
-            console.log('📋 Building exercise list for reorder...');
-            
-            // Build exercise list with current order
-            const exerciseList = this.buildExerciseList();
-            
-            if (exerciseList.length === 0) {
-                window.showAlert('No exercises to reorder', 'warning');
-                return;
-            }
-            
-            console.log('📋 Exercise list built:', exerciseList);
-            
-            // Create reorder offcanvas using UnifiedOffcanvasFactory
-            if (!window.UnifiedOffcanvasFactory) {
-                console.error('❌ UnifiedOffcanvasFactory not available');
-                window.showAlert('Reorder feature not available', 'error');
-                return;
-            }
-            
-            // Create offcanvas with correct argument format
-            // Note: createReorderOffcanvas() already calls show() internally with proper timing
-            const result = window.UnifiedOffcanvasFactory.createReorderOffcanvas(
-                exerciseList,
-                (reorderedExercises) => {
-                    console.log('💾 Saving new exercise order:', reorderedExercises);
-                    // Extract exercise names from reordered exercise objects
-                    const newOrder = reorderedExercises.map(ex => ex.name);
-                    this.applyExerciseOrder(newOrder);
-                }
-            );
-            
-            // Verify offcanvas was created successfully
-            // Don't call show() here - createOffcanvas already handles that with proper timing
-            if (!result) {
-                console.error('❌ Failed to create reorder offcanvas');
-                window.showAlert('Failed to open reorder panel', 'error');
-            }
-            
-        } catch (error) {
-            console.error('❌ Error showing reorder offcanvas:', error);
-            window.showAlert('Failed to open reorder panel', 'error');
-        }
+        this.reorderManager.showReorderOffcanvas();
     }
-    
+
     /**
-     * Build item list for reorder offcanvas
-     * Combines regular exercises, bonus exercises, and session notes with current custom order applied
-     * @returns {Array} Array of item objects with name, isBonus, isNote, displayName properties
+     * Build exercise list (FACADE)
      */
     buildExerciseList() {
-        const itemList = [];
-
-        // Gather regular exercises from workout template
-        if (this.currentWorkout?.exercise_groups && this.currentWorkout.exercise_groups.length > 0) {
-            this.currentWorkout.exercise_groups.forEach((group) => {
-                const exerciseName = group.exercises?.a;
-                if (exerciseName) {
-                    itemList.push({
-                        name: exerciseName,
-                        displayName: exerciseName,
-                        isBonus: false,
-                        isNote: false
-                    });
-                }
-            });
-        }
-
-        // Gather bonus exercises from session
-        const bonusExercises = this.sessionService.getBonusExercises();
-        if (bonusExercises && bonusExercises.length > 0) {
-            bonusExercises.forEach((bonus) => {
-                itemList.push({
-                    name: bonus.name,
-                    displayName: bonus.name,
-                    isBonus: true,
-                    isNote: false
-                });
-            });
-        }
-
-        // Gather session notes
-        const sessionNotes = this.sessionService.getSessionNotes();
-        if (sessionNotes && sessionNotes.length > 0) {
-            sessionNotes.forEach((note) => {
-                const truncatedContent = note.content?.substring(0, 30) || 'Empty note';
-                itemList.push({
-                    name: `note-${note.id}`,
-                    displayName: truncatedContent + (note.content?.length > 30 ? '...' : ''),
-                    isBonus: false,
-                    isNote: true,
-                    noteId: note.id
-                });
-            });
-        }
-
-        // Apply current custom order if exists
-        const customOrder = this.sessionService.getExerciseOrder();
-        if (customOrder.length > 0) {
-            console.log('📋 Applying current custom order:', customOrder);
-
-            // Reorder based on current custom order
-            const orderedList = [];
-            customOrder.forEach(name => {
-                const item = itemList.find(ex => ex.name === name);
-                if (item) {
-                    orderedList.push(item);
-                }
-            });
-
-            // Add any items not in custom order (safety check)
-            itemList.forEach(ex => {
-                if (!customOrder.includes(ex.name)) {
-                    orderedList.push(ex);
-                }
-            });
-
-            return orderedList;
-        }
-
-        return itemList;
+        return this.reorderManager.buildExerciseList();
     }
-    
+
     /**
-     * Apply new exercise order
-     * Saves order to session and re-renders workout
-     * @param {Array} newOrder - Array of exercise names in new order
+     * Apply exercise order (FACADE)
      */
     applyExerciseOrder(newOrder) {
-        try {
-            // Validate input
-            if (!Array.isArray(newOrder) || newOrder.length === 0) {
-                console.error('❌ Invalid order array:', newOrder);
-                window.showAlert('Invalid exercise order', 'error');
-                return;
-            }
-            
-            console.log('✅ Applying new exercise order:', newOrder);
-            
-            // TIMER FIX: Preserve timer state before re-render
-            // The timer display can be reset during DOM manipulation in renderWorkout()
-            const timerDisplay = document.getElementById('floatingTimer');
-            const preservedTime = timerDisplay ? timerDisplay.textContent : null;
-            const isSessionActive = this.sessionService.isSessionActive();
-            
-            if (isSessionActive && preservedTime) {
-                console.log('🕐 Preserving timer state before reorder:', preservedTime);
-            }
-            
-            // Save to session service
-            this.sessionService.setExerciseOrder(newOrder);
-            
-            // Re-render workout with new order
-            this.renderWorkout(true); // Force render
-            
-            // TIMER FIX: Restore timer state if it was inadvertently cleared
-            if (isSessionActive && preservedTime && timerDisplay) {
-                const currentTime = timerDisplay.textContent;
-                if (currentTime === '00:00' && preservedTime !== '00:00') {
-                    timerDisplay.textContent = preservedTime;
-                    console.log('🔄 Timer restored after reorder:', preservedTime);
-                }
-            }
-            
-            // Show success feedback
-            window.showAlert('Exercise order updated successfully', 'success');
-            
-            // Auto-save if session is active
-            if (this.sessionService.isSessionActive()) {
-                console.log('💾 Auto-saving session with new order...');
-                this.autoSave(null);
-            }
-            
-            console.log('✅ Exercise order applied successfully');
-
-        } catch (error) {
-            console.error('❌ Error applying exercise order:', error);
-            window.showAlert('Failed to update exercise order', 'error');
-        }
+        this.reorderManager.applyExerciseOrder(newOrder);
     }
 
     /**
-     * Move exercise up one position
-     * @param {number} index - Current exercise index
-     */
-    handleMoveUp(index) {
-        if (index <= 0) return;
-        this.moveExercise(index, index - 1);
-    }
-
-    /**
-     * Move exercise down one position
-     * @param {number} index - Current exercise index
-     */
-    handleMoveDown(index) {
-        const currentOrder = this.getCurrentExerciseOrder();
-        if (index >= currentOrder.length - 1) return;
-        this.moveExercise(index, index + 1);
-    }
-
-    /**
-     * Move exercise from one position to another
-     * Keeps menu open on the moved card for quick repeated moves
-     * @param {number} fromIndex - Original position
-     * @param {number} toIndex - Target position
-     */
-    moveExercise(fromIndex, toIndex) {
-        try {
-            // Get current exercise order
-            const currentOrder = this.getCurrentExerciseOrder();
-
-            // Swap positions
-            const [movedItem] = currentOrder.splice(fromIndex, 1);
-            currentOrder.splice(toIndex, 0, movedItem);
-
-            // Apply new order without showing toast (for quick repeated moves)
-            this.applyExerciseOrderSilent(currentOrder);
-
-            // Reopen menu at the new position
-            setTimeout(() => {
-                this.reopenMenuAtIndex(toIndex);
-            }, 50);
-
-        } catch (error) {
-            console.error('❌ Error moving exercise:', error);
-        }
-    }
-
-    /**
-     * Get current exercise order as array of names
-     * @returns {string[]} Exercise names in current order
-     */
-    getCurrentExerciseOrder() {
-        const exerciseList = this.buildExerciseList();
-        return exerciseList.map(ex => ex.name);
-    }
-
-    /**
-     * Apply exercise order without showing success toast
-     * Used for quick repeated moves where toast would be annoying
-     * @param {string[]} newOrder - Array of exercise names in new order
+     * Apply exercise order silently (FACADE)
      */
     applyExerciseOrderSilent(newOrder) {
-        try {
-            if (!Array.isArray(newOrder) || newOrder.length === 0) {
-                console.error('❌ Invalid order array:', newOrder);
-                return;
-            }
-
-            // Preserve timer state before re-render
-            const timerDisplay = document.getElementById('floatingTimer');
-            const preservedTime = timerDisplay ? timerDisplay.textContent : null;
-            const isSessionActive = this.sessionService.isSessionActive();
-
-            // Save to session service
-            this.sessionService.setExerciseOrder(newOrder);
-
-            // Re-render workout with new order
-            this.renderWorkout(true);
-
-            // Restore timer state if needed
-            if (isSessionActive && preservedTime && timerDisplay) {
-                const currentTime = timerDisplay.textContent;
-                if (currentTime === '00:00' && preservedTime !== '00:00') {
-                    timerDisplay.textContent = preservedTime;
-                }
-            }
-
-            // Auto-save if session is active
-            if (this.sessionService.isSessionActive()) {
-                this.autoSave(null);
-            }
-
-        } catch (error) {
-            console.error('❌ Error applying exercise order silently:', error);
-        }
+        this.reorderManager.applyExerciseOrderSilent(newOrder);
     }
 
     /**
-     * Reopen the exercise menu at a specific index
-     * Used after moving an exercise to keep the menu open for quick repeated moves
-     * @param {number} index - Exercise index to open menu for
+     * Handle move up (FACADE)
+     */
+    handleMoveUp(index) {
+        this.reorderManager.handleMoveUp(index);
+    }
+
+    /**
+     * Handle move down (FACADE)
+     */
+    handleMoveDown(index) {
+        this.reorderManager.handleMoveDown(index);
+    }
+
+    /**
+     * Move exercise (FACADE)
+     */
+    moveExercise(fromIndex, toIndex) {
+        this.reorderManager.moveExercise(fromIndex, toIndex);
+    }
+
+    /**
+     * Get current exercise order (FACADE)
+     */
+    getCurrentExerciseOrder() {
+        return this.reorderManager.getCurrentExerciseOrder();
+    }
+
+    /**
+     * Reopen menu at index (FACADE)
      */
     reopenMenuAtIndex(index) {
-        const container = document.getElementById('exerciseCardsContainer');
-        const card = container?.querySelector(`[data-exercise-index="${index}"]`);
-        if (!card) return;
-
-        const moreBtn = card.querySelector('.workout-more-btn');
-        if (moreBtn) {
-            // Get exercise name from card
-            const exerciseName = card.dataset.exerciseName || '';
-            this.toggleExerciseMenu(moreBtn, exerciseName, index);
-        }
+        this.reorderManager.reopenMenuAtIndex(index);
     }
 
     /**
@@ -1952,130 +1475,58 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
     }
     
     /**
-     * Initialize sound toggle
+     * Initialize sound toggle (FACADE - delegates to settingsManager)
      */
     initializeSoundToggle() {
-        const soundBtn = document.getElementById('soundToggleBtn');
-        const soundBtnBottom = document.getElementById('soundToggleBtnBottom');
-        const soundIcon = document.getElementById('soundIcon');
-        const soundStatus = document.getElementById('soundStatus');
-        
-        if (!soundBtn && !soundBtnBottom) return;
-        
-        this.updateSoundUI();
-        
-        // Main sound toggle button
-        if (soundBtn) {
-            soundBtn.addEventListener('click', () => {
-                this.soundEnabled = !this.soundEnabled;
-                localStorage.setItem('workoutSoundEnabled', this.soundEnabled);
-                this.updateSoundUI();
-            });
-        }
-        
-        // Bottom bar sound toggle button
-        if (soundBtnBottom) {
-            soundBtnBottom.addEventListener('click', () => {
-                this.soundEnabled = !this.soundEnabled;
-                localStorage.setItem('workoutSoundEnabled', this.soundEnabled);
-                this.updateSoundUI();
-            });
-        }
+        this.settingsManager.initializeSoundToggle();
     }
-    
+
     /**
-     * Initialize rest timer setting
-     * Ensures rest timer respects enabled/disabled state on page load
+     * Initialize rest timer setting (FACADE - delegates to settingsManager)
      */
     initializeRestTimerSetting() {
-        // Rest timer will be initialized by timerManager.initializeGlobalTimer()
-        // during renderWorkout(), but we ensure the setting is ready
-        const enabled = localStorage.getItem('workoutRestTimerEnabled') !== 'false';
-        console.log(`🕐 Rest timer setting initialized: ${enabled ? 'enabled' : 'disabled'}`);
-        
-        // The actual timer initialization happens in timerManager during renderWorkout()
-        // This method just ensures the setting is logged and ready
+        this.settingsManager.initializeRestTimerSetting();
     }
-    
-    updateSoundUI() {
-        const soundIcon = document.getElementById('soundIcon');
-        const soundStatus = document.getElementById('soundStatus');
-        const soundBtn = document.getElementById('soundToggleBtn');
-        const soundBtnBottom = document.getElementById('soundToggleBtnBottom');
-        
-        if (soundStatus) soundStatus.textContent = this.soundEnabled ? 'On' : 'Off';
-        if (soundIcon) soundIcon.className = this.soundEnabled ? 'bx bx-volume-full me-1' : 'bx bx-volume-mute me-1';
-        if (soundBtn) soundBtn.className = this.soundEnabled ? 'btn btn-outline-secondary' : 'btn btn-outline-danger';
-        
-        // Update bottom bar button icon
-        if (soundBtnBottom) {
-            const icon = soundBtnBottom.querySelector('i');
-            if (icon) {
-                icon.className = this.soundEnabled ? 'bx bx-volume-full' : 'bx bx-volume-mute';
-            }
-        }
-    }
-    
+
     /**
-     * Initialize share button
+     * Update sound UI (FACADE - delegates to settingsManager)
+     */
+    updateSoundUI() {
+        this.settingsManager.updateSoundUI();
+    }
+
+    /**
+     * Initialize share button (FACADE - delegates to settingsManager)
      */
     initializeShareButton() {
-        const shareBtn = document.getElementById('shareWorkoutBtn');
-        if (!shareBtn) return;
-        
-        shareBtn.addEventListener('click', async () => {
-            if (!this.currentWorkout) return;
-            
-            const shareData = {
-                title: `${this.currentWorkout.name} - Fitness Field Notes`,
-                text: this.generateShareText(this.currentWorkout),
-                url: window.location.href
-            };
-            
-            if (navigator.share) {
-                try {
-                    await navigator.share(shareData);
-                } catch (error) {
-                    if (error.name !== 'AbortError') {
-                        this.fallbackShare(shareData);
-                    }
-                }
-            } else {
-                this.fallbackShare(shareData);
-            }
-        });
+        this.settingsManager.initializeShareButton();
     }
-    
+
+    /**
+     * Generate share text (FACADE - delegates to settingsManager)
+     */
     generateShareText(workout) {
-        let text = `💪 ${workout.name}\n\n`;
-        
-        if (workout.description) {
-            text += `${workout.description}\n\n`;
-        }
-        
-        text += `📋 Exercises:\n`;
-        
-        if (workout.exercise_groups) {
-            workout.exercise_groups.forEach((group, index) => {
-                const mainEx = group.exercises?.a || 'Exercise';
-                text += `${index + 1}. ${mainEx} - ${group.sets}×${group.reps}\n`;
-            });
-        }
-        
-        text += `\n📓 Created with Fitness Field Notes`;
-        return text;
+        return this.settingsManager.generateShareText(workout);
     }
-    
+
+    /**
+     * Fallback share (FACADE - delegates to settingsManager)
+     */
     fallbackShare(shareData) {
-        const textToCopy = `${shareData.title}\n\n${shareData.text}\n\n${shareData.url}`;
-        
-        navigator.clipboard.writeText(textToCopy).then(() => {
-            if (window.showAlert) {
-                window.showAlert('Workout details copied to clipboard!', 'success');
-            }
-        }).catch(error => {
-            console.error('❌ Error copying to clipboard:', error);
-        });
+        this.settingsManager.fallbackShare(shareData);
+    }
+
+    /**
+     * Get sound enabled state (for backward compatibility)
+     */
+    get soundEnabled() {
+        return this.settingsManager ? this.settingsManager.soundEnabled : true;
+    }
+
+    set soundEnabled(value) {
+        if (this.settingsManager) {
+            this.settingsManager.soundEnabled = value;
+        }
     }
     
     /**
@@ -2447,95 +1898,29 @@ Authenticated: ${this.authService?.isUserAuthenticated() ? 'Yes' : 'No'}`;
     }
     
     /**
-     * Toggle exercise more menu (⋯ menu)
-     * Phase 8: Three-dot menu for exercise management actions
+     * Toggle exercise more menu (FACADE - delegates to menuManager)
      * @param {HTMLElement} button - The more button that was clicked
      * @param {string} exerciseName - Exercise name
      * @param {number} index - Exercise index
      */
     toggleExerciseMenu(button, exerciseName, index) {
-        if (!button || !button.classList.contains('workout-more-btn')) {
-            console.warn('⚠️ Invalid button element for menu toggle');
-            return;
-        }
-        
-        // Find the menu element (sibling of the button)
-        const menu = button.parentElement.querySelector('.workout-menu');
-        if (!menu) {
-            console.warn('⚠️ Menu element not found');
-            return;
-        }
-        
-        const isOpen = menu.classList.contains('show');
-        
-        // Close all other open menus first
-        document.querySelectorAll('.workout-menu.show').forEach(m => {
-            if (m !== menu) {
-                m.classList.remove('show');
-            }
-        });
-        
-        // Toggle this menu
-        if (isOpen) {
-            menu.classList.remove('show');
-            menu.classList.remove('dropup');
-            this.removeClickOutsideListener();
-        } else {
-            // Reset dropup class before showing
-            menu.classList.remove('dropup');
-            menu.classList.add('show');
-
-            // Check if menu overflows viewport and flip to dropup if needed
-            const menuRect = menu.getBoundingClientRect();
-            const viewportHeight = window.innerHeight;
-            const bottomBarHeight = 100; // Account for bottom action bar
-            const safeBottom = viewportHeight - bottomBarHeight;
-
-            if (menuRect.bottom > safeBottom) {
-                // Not enough space below, flip to dropup
-                menu.classList.add('dropup');
-            }
-
-            this.addClickOutsideListener();
-        }
-
-        console.log(`📋 Menu toggled for ${exerciseName} (index ${index}): ${isOpen ? 'closed' : 'opened'}`);
+        this.menuManager.toggleExerciseMenu(button, exerciseName, index);
     }
-    
+
     /**
-     * Add click-outside listener to close menus
+     * Add click-outside listener (FACADE - delegates to menuManager)
      * @private
      */
     addClickOutsideListener() {
-        // Remove existing listener first to prevent duplicates
-        this.removeClickOutsideListener();
-        
-        // Create new listener
-        this._clickOutsideHandler = (event) => {
-            // Check if click is outside all menus
-            if (!event.target.closest('.workout-menu') && !event.target.closest('.workout-more-btn')) {
-                document.querySelectorAll('.workout-menu.show').forEach(menu => {
-                    menu.classList.remove('show');
-                });
-                this.removeClickOutsideListener();
-            }
-        };
-        
-        // Add listener with slight delay to prevent immediate triggering
-        setTimeout(() => {
-            document.addEventListener('click', this._clickOutsideHandler);
-        }, 10);
+        this.menuManager.addClickOutsideListener();
     }
-    
+
     /**
-     * Remove click-outside listener
+     * Remove click-outside listener (FACADE - delegates to menuManager)
      * @private
      */
     removeClickOutsideListener() {
-        if (this._clickOutsideHandler) {
-            document.removeEventListener('click', this._clickOutsideHandler);
-            this._clickOutsideHandler = null;
-        }
+        this.menuManager.removeClickOutsideListener();
     }
     
     /**

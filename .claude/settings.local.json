@@ -57,7 +57,8 @@
       "Bash(firebase --version:*)",
       "Bash(grep:*)",
       "mcp__playwright__browser_take_screenshot",
-      "Bash(git -C \"c:\\\\Users\\\\user\\\\iCloudDrive\\\\PARA\\\\1 - Projects\\\\_Websites\\\\simple gym log\\\\simplegym_v2\" log --all --oneline --grep=\"secret\\\\|key\\\\|credential\")"
+      "Bash(git -C \"c:\\\\Users\\\\user\\\\iCloudDrive\\\\PARA\\\\1 - Projects\\\\_Websites\\\\simple gym log\\\\simplegym_v2\" log --all --oneline --grep=\"secret\\\\|key\\\\|credential\")",
+      "Bash(for file in \"c:/Users/user/iCloudDrive/PARA/1 - Projects/_Websites/simple gym log/simplegym_v2/frontend/assets/js/services/workout-\"*.js)"
     ]
   }
 }

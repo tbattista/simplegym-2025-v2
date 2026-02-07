@@ -8,22 +8,151 @@
 class WorkoutSessionService {
     constructor() {
         this.currentSession = null;
-        this.exerciseHistory = {};
-        this.autoSaveTimer = null;
         this.listeners = new Set();
         this.preWorkoutBonusExercises = []; // Store bonus exercises before session starts
         this.exerciseStartTimes = {}; // Track when each exercise was expanded
         this.autoCompleteTimers = {}; // Store auto-complete timers
 
-        // PHASE 1: Pre-session editing storage
-        this.preSessionEdits = {}; // Store exercise edits before session starts
-        this.preSessionOrder = []; // Store custom exercise order before session starts
-        this.preSessionSkips = {}; // Store skipped exercises before session starts
+        // Initialize Weight History Service
+        this.weightHistoryService = new WeightHistoryService({
+            onHistoryLoaded: (history) => this.notifyListeners('historyLoaded', history),
+            onExerciseOrderFromHistory: (order) => this.setExerciseOrder(order)
+        });
 
-        // Session notes (inline notes interspersed with exercises)
-        this.sessionNotes = []; // Array of note objects
+        // Initialize Session Notes Service
+        this.sessionNotesService = new SessionNotesService({
+            onNotify: (event, data) => this.notifyListeners(event, data),
+            onPersist: () => this.persistSession()
+        });
+
+        // Initialize Pre-Session Editing Service
+        this.preSessionEditingService = new PreSessionEditingService({
+            onNotify: (event, data) => this.notifyListeners(event, data)
+        });
+
+        // Initialize Session Persistence Service
+        this.sessionPersistenceService = new SessionPersistenceService({
+            onGetCurrentSession: () => this.currentSession,
+            onGetSessionNotes: () => this.sessionNotes,
+            onSetSessionNotes: (notes) => { this.sessionNotes = notes; }
+        });
+
+        // Initialize Auto Save Service
+        this.autoSaveService = new AutoSaveService({
+            onGetCurrentSession: () => this.currentSession,
+            onNotify: (event, data) => this.notifyListeners(event, data),
+            onPersist: () => this.persistSession()
+        });
 
         console.log('📦 Workout Session Service initialized');
+    }
+
+    /**
+     * Get autoSaveTimer (backward compatibility getter)
+     * @returns {number|null} Timer ID or null
+     */
+    get autoSaveTimer() {
+        return this.autoSaveService?.autoSaveTimer || null;
+    }
+
+    /**
+     * Set autoSaveTimer (backward compatibility setter)
+     * @param {number|null} value - Timer ID or null
+     */
+    set autoSaveTimer(value) {
+        if (this.autoSaveService) {
+            this.autoSaveService.autoSaveTimer = value;
+        }
+    }
+
+    /**
+     * Get exercise history (backward compatibility getter)
+     * @returns {Object} Exercise history object
+     */
+    get exerciseHistory() {
+        return this.weightHistoryService?.exerciseHistory || {};
+    }
+
+    /**
+     * Set exercise history (backward compatibility setter)
+     * @param {Object} value - Exercise history object
+     */
+    set exerciseHistory(value) {
+        if (this.weightHistoryService) {
+            this.weightHistoryService.exerciseHistory = value;
+        }
+    }
+
+    /**
+     * Get session notes (backward compatibility getter)
+     * @returns {Array} Session notes array
+     */
+    get sessionNotes() {
+        return this.sessionNotesService?.sessionNotes || [];
+    }
+
+    /**
+     * Set session notes (backward compatibility setter)
+     * @param {Array} value - Session notes array
+     */
+    set sessionNotes(value) {
+        if (this.sessionNotesService) {
+            this.sessionNotesService.sessionNotes = value;
+        }
+    }
+
+    /**
+     * Get pre-session edits (backward compatibility getter)
+     * @returns {Object} Pre-session edits object
+     */
+    get preSessionEdits() {
+        return this.preSessionEditingService?.preSessionEdits || {};
+    }
+
+    /**
+     * Set pre-session edits (backward compatibility setter)
+     * @param {Object} value - Pre-session edits object
+     */
+    set preSessionEdits(value) {
+        if (this.preSessionEditingService) {
+            this.preSessionEditingService.preSessionEdits = value;
+        }
+    }
+
+    /**
+     * Get pre-session order (backward compatibility getter)
+     * @returns {Array} Pre-session order array
+     */
+    get preSessionOrder() {
+        return this.preSessionEditingService?.preSessionOrder || [];
+    }
+
+    /**
+     * Set pre-session order (backward compatibility setter)
+     * @param {Array} value - Pre-session order array
+     */
+    set preSessionOrder(value) {
+        if (this.preSessionEditingService) {
+            this.preSessionEditingService.preSessionOrder = value;
+        }
+    }
+
+    /**
+     * Get pre-session skips (backward compatibility getter)
+     * @returns {Object} Pre-session skips object
+     */
+    get preSessionSkips() {
+        return this.preSessionEditingService?.preSessionSkips || {};
+    }
+
+    /**
+     * Set pre-session skips (backward compatibility setter)
+     * @param {Object} value - Pre-session skips object
+     */
+    set preSessionSkips(value) {
+        if (this.preSessionEditingService) {
+            this.preSessionEditingService.preSessionSkips = value;
+        }
     }
     
     /**
@@ -86,16 +215,10 @@ class WorkoutSessionService {
                 console.log('✅ Pre-populated', Object.keys(this.currentSession.exercises).length, 'exercises from template');
             }
             
-            // PHASE 1: Apply pre-session edits to new session
-            if (Object.keys(this.preSessionEdits).length > 0) {
-                console.log('🔄 Applying pre-session edits to new session...');
-                this._applyPreSessionEdits();
-            }
-            
-            // Apply pre-session skips to new session
-            if (Object.keys(this.preSessionSkips).length > 0) {
-                console.log('🔄 Applying pre-session skips to new session...');
-                this._applyPreSessionSkips();
+            // Apply all pre-session modifications to new session
+            if (this.preSessionEditingService.hasEdits() || this.preSessionEditingService.hasSkips()) {
+                console.log('🔄 Applying pre-session modifications to new session...');
+                this.preSessionEditingService.applyAllToSession(this.currentSession);
             }
             
             //  FIX: Transfer pre-workout bonuses IMMEDIATELY after session creation
@@ -497,123 +620,21 @@ class WorkoutSessionService {
     }
     
     /**
-     * Auto-save session progress
+     * Auto-save session progress (facade to AutoSaveService)
      * @param {Array} exercisesPerformed - Array of exercise data
      * @returns {Promise<void>}
      */
     async autoSaveSession(exercisesPerformed) {
-        try {
-            if (!this.currentSession || !this.currentSession.id || this.currentSession.status !== 'in_progress') {
-                console.warn('No active session to save');
-                return;
-            }
-            
-            console.log('💾 Auto-saving session...');
-            
-            // Get auth token
-            const token = await window.authService.getIdToken();
-            if (!token) {
-                throw new Error('Authentication required');
-            }
-            
-            // Use centralized API config
-            const url = window.config.api.getUrl(`/api/v3/workout-sessions/${this.currentSession.id}`);
-            
-            const response = await fetch(url, {
-                method: 'PUT',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    exercises_performed: exercisesPerformed
-                })
-            });
-            
-            if (!response.ok) {
-                throw new Error(`Failed to save: ${response.statusText}`);
-            }
-            
-            console.log('✅ Session auto-saved');
-            this.notifyListeners('sessionSaved', { sessionId: this.currentSession.id });
-            
-            // Persist after auto-save
-            this.persistSession();
-            
-        } catch (error) {
-            console.error('❌ Error auto-saving session:', error);
-            this.notifyListeners('sessionSaveError', { error: error.message });
-            throw error;
-        }
+        return this.autoSaveService.autoSaveSession(exercisesPerformed);
     }
     
     /**
-     * Fetch exercise history for a workout
+     * Fetch exercise history for a workout (facade to WeightHistoryService)
      * @param {string} workoutId - Workout ID
      * @returns {Promise<Object>} Exercise history object
      */
     async fetchExerciseHistory(workoutId) {
-        try {
-            console.log('📊 Fetching exercise history for workout:', workoutId);
-            
-            // Get auth token
-            const token = await window.authService.getIdToken();
-            if (!token) {
-                console.warn('No auth token, skipping history fetch');
-                this.exerciseHistory = {};
-                return this.exerciseHistory;
-            }
-            
-            // Use centralized API config - CORRECT endpoint path
-            const url = window.config.api.getUrl(`/api/v3/workout-sessions/history/workout/${workoutId}`);
-            
-            const response = await fetch(url, {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-            
-            if (!response.ok) {
-                throw new Error(`Failed to fetch history: ${response.statusText}`);
-            }
-            
-            const historyData = await response.json();
-            
-            // Cache exercise history
-            this.exerciseHistory = historyData.exercises || {};
-            
-            console.log('✅ Exercise history loaded:', Object.keys(this.exerciseHistory).length, 'exercises');
-            
-            // 🔍 DEBUG: Log each exercise history with direction data
-            console.group('🔍 DEBUG: Exercise History Details');
-            Object.entries(this.exerciseHistory).forEach(([exerciseName, history]) => {
-                console.log(`📋 ${exerciseName}:`, {
-                    last_weight: history.last_weight,
-                    last_weight_unit: history.last_weight_unit,
-                    last_weight_direction: history.last_weight_direction,
-                    last_session_date: history.last_session_date
-                });
-            });
-            console.groupEnd();
-            
-            // PHASE 3: Check for last session's custom exercise order
-            if (historyData.last_exercise_order && Array.isArray(historyData.last_exercise_order)) {
-                console.log('📋 Last session had custom order:', historyData.last_exercise_order.length, 'exercises');
-                // Store as pre-session order so it will be applied when workout loads
-                this.setExerciseOrder(historyData.last_exercise_order);
-                console.log('✅ Custom order from last session applied');
-            }
-            
-            this.notifyListeners('historyLoaded', this.exerciseHistory);
-            
-            return this.exerciseHistory;
-            
-        } catch (error) {
-            console.error('❌ Error fetching exercise history:', error);
-            // Non-fatal error - continue without history
-            this.exerciseHistory = {};
-            return this.exerciseHistory;
-        }
+        return this.weightHistoryService.fetchExerciseHistory(workoutId);
     }
     
     /**
@@ -707,209 +728,68 @@ class WorkoutSessionService {
     }
     
     /**
-     * PHASE 1: Update exercise details BEFORE session starts (pre-session editing)
-     * @param {string} exerciseName - Exercise name
-     * @param {Object} details - Updated details
-     * @param {string} details.sets - Target sets
-     * @param {string} details.reps - Target reps
-     * @param {string} details.rest - Rest time
-     * @param {string} details.weight - Weight value
-     * @param {string} details.weightUnit - Weight unit
+     * PRE-SESSION EDITING FACADE METHODS
+     * Delegated to PreSessionEditingService
      */
+
+    /** Update exercise details BEFORE session starts (facade) */
     updatePreSessionExercise(exerciseName, details) {
-        console.log('📝 Storing pre-session edit for:', exerciseName, details);
-        
-        // Store in pre-session edits
-        this.preSessionEdits[exerciseName] = {
-            target_sets: details.sets || '3',
-            target_reps: details.reps || '8-12',
-            rest: details.rest || '60s',
-            weight: details.weight || '',
-            weight_unit: details.weightUnit || 'lbs',
-            edited_at: new Date().toISOString()
-        };
-        
-        console.log('✅ Pre-session edit stored. Total edits:', Object.keys(this.preSessionEdits).length);
-        this.notifyListeners('preSessionExerciseUpdated', { exerciseName, details });
+        return this.preSessionEditingService.updatePreSessionExercise(exerciseName, details);
     }
-    
-    /**
-     * PHASE 1: Get pre-session edits for an exercise
-     * @param {string} exerciseName - Exercise name
-     * @returns {Object|null} Pre-session edit data or null
-     */
+
+    /** Get pre-session edits for an exercise (facade) */
     getPreSessionEdits(exerciseName) {
-        return this.preSessionEdits[exerciseName] || null;
+        return this.preSessionEditingService.getPreSessionEdits(exerciseName);
     }
-    
-    /**
-     * PHASE 1: Apply all pre-session edits to the active session
-     * Called internally by startSession()
-     * @private
-     */
-    _applyPreSessionEdits() {
-        if (!this.currentSession?.exercises) {
-            console.warn('⚠️ No session exercises to apply edits to');
-            return;
-        }
-        
-        let appliedCount = 0;
-        
-        Object.keys(this.preSessionEdits).forEach(exerciseName => {
-            const edits = this.preSessionEdits[exerciseName];
-            
-            // Only apply if exercise exists in session
-            if (this.currentSession.exercises[exerciseName]) {
-                this.currentSession.exercises[exerciseName] = {
-                    ...this.currentSession.exercises[exerciseName],
-                    ...edits,
-                    is_modified: true,
-                    modified_at: edits.edited_at
-                };
-                appliedCount++;
-                console.log(`  ✅ Applied pre-session edit to: ${exerciseName}`);
-            } else {
-                console.warn(`  ⚠️ Exercise not found in session: ${exerciseName}`);
-            }
-        });
-        
-        console.log(`✅ Applied ${appliedCount} pre-session edits to session`);
-        
-        // Clear pre-session edits after applying
-        this.preSessionEdits = {};
-    }
-    
-    /**
-     * PHASE 1: Clear all pre-session edits
-     */
+
+    /** Clear all pre-session edits (facade) */
     clearPreSessionEdits() {
-        this.preSessionEdits = {};
-        console.log('🧹 Pre-session edits cleared');
+        return this.preSessionEditingService.clearPreSessionEdits();
     }
-    
-    /**
-     * Mark exercise as skipped BEFORE session starts (pre-session skip)
-     * @param {string} exerciseName - Exercise name
-     * @param {string} reason - Optional reason for skipping
-     */
+
+    /** Mark exercise as skipped BEFORE session starts (facade) */
     skipPreSessionExercise(exerciseName, reason = '') {
-        console.log('⏭️ Marking exercise as pre-session skipped:', exerciseName);
-        this.preSessionSkips[exerciseName] = {
-            is_skipped: true,
-            skip_reason: reason || 'Skipped before workout',
-            skipped_at: new Date().toISOString()
-        };
-        console.log('✅ Pre-session skip stored. Total skips:', Object.keys(this.preSessionSkips).length);
-        this.notifyListeners('preSessionExerciseSkipped', { exerciseName, reason });
+        return this.preSessionEditingService.skipPreSessionExercise(exerciseName, reason);
     }
-    
-    /**
-     * Remove pre-session skip for an exercise
-     * @param {string} exerciseName - Exercise name
-     */
+
+    /** Remove pre-session skip for an exercise (facade) */
     unskipPreSessionExercise(exerciseName) {
-        console.log('↩️ Removing pre-session skip for:', exerciseName);
-        delete this.preSessionSkips[exerciseName];
-        this.notifyListeners('preSessionExerciseUnskipped', { exerciseName });
+        return this.preSessionEditingService.unskipPreSessionExercise(exerciseName);
     }
-    
-    /**
-     * Check if exercise is pre-session skipped
-     * @param {string} exerciseName - Exercise name
-     * @returns {boolean} True if exercise is marked for skip
-     */
+
+    /** Check if exercise is pre-session skipped (facade) */
     isPreSessionSkipped(exerciseName) {
-        return !!this.preSessionSkips[exerciseName]?.is_skipped;
+        return this.preSessionEditingService.isPreSessionSkipped(exerciseName);
     }
-    
-    /**
-     * Get all pre-session skips
-     * @returns {Object} Pre-session skip data
-     */
+
+    /** Get all pre-session skips (facade) */
     getPreSessionSkips() {
-        return { ...this.preSessionSkips };
+        return this.preSessionEditingService.getPreSessionSkips();
     }
-    
-    /**
-     * Apply all pre-session skips to the active session
-     * Called internally by startSession()
-     * @private
-     */
-    _applyPreSessionSkips() {
-        if (!this.currentSession?.exercises) {
-            console.warn('⚠️ No session exercises to apply skips to');
-            return;
-        }
-        
-        let appliedCount = 0;
-        
-        Object.keys(this.preSessionSkips).forEach(exerciseName => {
-            const skipData = this.preSessionSkips[exerciseName];
-            
-            // Only apply if exercise exists in session
-            if (this.currentSession.exercises[exerciseName]) {
-                this.currentSession.exercises[exerciseName].is_skipped = true;
-                this.currentSession.exercises[exerciseName].skip_reason = skipData.skip_reason;
-                this.currentSession.exercises[exerciseName].skipped_at = skipData.skipped_at;
-                appliedCount++;
-                console.log(`  ✅ Applied pre-session skip to: ${exerciseName}`);
-            } else {
-                console.warn(`  ⚠️ Exercise not found in session: ${exerciseName}`);
-            }
-        });
-        
-        console.log(`✅ Applied ${appliedCount} pre-session skips to session`);
-        
-        // Clear pre-session skips after applying
-        this.preSessionSkips = {};
-    }
-    
-    /**
-     * Clear all pre-session skips
-     */
+
+    /** Clear all pre-session skips (facade) */
     clearPreSessionSkips() {
-        this.preSessionSkips = {};
-        console.log('🧹 Pre-session skips cleared');
+        return this.preSessionEditingService.clearPreSessionSkips();
     }
-    
-    /**
-     * PHASE 2: Set custom exercise order for reordering
-     * Stores the exercise order for drag-and-drop reordering before session starts
-     * @param {string[]} exerciseNames - Ordered array of exercise names
-     * @fires exerciseOrderUpdated - Notifies listeners when order changes
-     */
+
+    /** Set custom exercise order (facade) */
     setExerciseOrder(exerciseNames) {
-        console.log('📋 Setting custom exercise order:', exerciseNames);
-        this.preSessionOrder = [...exerciseNames];
-        this.notifyListeners('exerciseOrderUpdated', { order: this.preSessionOrder });
+        return this.preSessionEditingService.setExerciseOrder(exerciseNames);
     }
-    
-    /**
-     * PHASE 2: Get current exercise order
-     * Returns the custom exercise order if set, or empty array
-     * @returns {string[]} Array of exercise names in custom order
-     */
+
+    /** Get current exercise order (facade) */
     getExerciseOrder() {
-        return this.preSessionOrder;
+        return this.preSessionEditingService.getExerciseOrder();
     }
-    
-    /**
-     * PHASE 2: Clear exercise order
-     * Resets the custom order back to empty (template order will be used)
-     * @fires exerciseOrderCleared - Notifies listeners when order is cleared
-     */
+
+    /** Clear exercise order (facade) */
     clearExerciseOrder() {
-        this.preSessionOrder = [];
-        console.log('🧹 Custom exercise order cleared');
-        this.notifyListeners('exerciseOrderCleared', {});
+        return this.preSessionEditingService.clearExerciseOrder();
     }
-    
-    /**
-     * PHASE 2: Check if custom exercise order is set
-     * @returns {boolean} True if exercises have been reordered from template order
-     */
+
+    /** Check if custom exercise order is set (facade) */
     hasCustomOrder() {
-        return this.preSessionOrder.length > 0;
+        return this.preSessionEditingService.hasCustomOrder();
     }
     
     /**
@@ -1589,317 +1469,69 @@ class WorkoutSessionService {
      */
     
     /**
-     * Persist current session to localStorage
-     * Automatically called after session changes to ensure data is never lost
+     * SESSION PERSISTENCE FACADE METHODS
+     * Delegated to SessionPersistenceService
      */
+
+    /** Persist current session to localStorage (facade) */
     persistSession() {
-        if (!this.currentSession) {
-            console.warn('⚠️ No active session to persist');
-            return;
-        }
-        
-        const now = new Date().toISOString();
-        const sessionData = {
-            sessionId: this.currentSession.id,
-            workoutId: this.currentSession.workoutId,
-            workoutName: this.currentSession.workoutName,
-            startedAt: this.currentSession.startedAt.toISOString(),
-            status: this.currentSession.status,
-            sessionMode: this.currentSession.sessionMode || 'timed',  // Quick Log feature
-            exercises: this.currentSession.exercises || {},
-            sessionNotes: this.sessionNotes || [],  // Session notes for inline notes
-            lastUpdated: now,  // When session data was last changed
-            lastPageActive: now,  // When page was last visible (will be updated by page events)
-            version: '2.3',  // Bump version for sessionMode
-            schemaVersion: 2  // PHASE 1: Explicit schema version
-        };
-        
-        try {
-            localStorage.setItem('ffn_active_workout_session', JSON.stringify(sessionData));
-            console.log('💾 Session persisted (v2.1):', sessionData.sessionId);
-        } catch (error) {
-            console.error('❌ Failed to persist session:', error);
-            // Non-fatal - continue without persistence
-            // This can happen in private browsing mode or if storage is full
-        }
+        return this.sessionPersistenceService.persistSession();
     }
-    
-    /**
-     * Restore session from localStorage
-     * Called on page load to check for interrupted sessions
-     * @returns {Object|null} Restored session data or null
-     */
+
+    /** Restore session from localStorage (facade) */
     restoreSession() {
-        try {
-            const stored = localStorage.getItem('ffn_active_workout_session');
-            if (!stored) {
-                console.log('ℹ️ No persisted session found');
-                return null;
-            }
-            
-            let sessionData = JSON.parse(stored);
-            
-            // Handle version migrations
-            if (!sessionData.version || sessionData.version === '1.0') {
-                console.log('🔄 Migrating session from v1.0 to v2.0...');
-                sessionData = this._migrateSessionV1toV2(sessionData);
-            }
-            
-            if (sessionData.version === '2.0') {
-                console.log('🔄 Migrating session from v2.0 to v2.1...');
-                sessionData = this._migrateSessionV2toV2_1(sessionData);
-            }
-
-            if (sessionData.version === '2.1') {
-                console.log('🔄 Migrating session from v2.1 to v2.2...');
-                sessionData = this._migrateSessionV2_1toV2_2(sessionData);
-            }
-
-            if (sessionData.version === '2.2') {
-                console.log('🔄 Migrating session from v2.2 to v2.3...');
-                sessionData = this._migrateSessionV2_2toV2_3(sessionData);
-            }
-
-            // Restore session notes from persisted data
-            this.sessionNotes = sessionData.sessionNotes || [];
-            
-            // Validate required fields
-            if (!sessionData.sessionId || !sessionData.workoutId || !sessionData.startedAt) {
-                console.warn('⚠️ Invalid session data, clearing...');
-                this.clearPersistedSession();
-                return null;
-            }
-            
-            // ✅ REMOVED: 24-hour expiration check
-            // Users should be able to resume workouts even days later
-            // The resume offcanvas will show for extended absences (>2 min) but won't auto-clear
-            
-            console.log('✅ Session restored (v' + sessionData.version + '):', sessionData.sessionId);
-            return sessionData;
-            
-        } catch (error) {
-            console.error('❌ Error restoring session:', error);
-            this.clearPersistedSession();
-            return null;
-        }
-    }
-    
-    /**
-     * PHASE 1: Migrate session from v1.0 to v2.0
-     * Adds new fields to existing exercises
-     * @param {Object} sessionData - Old session data
-     * @returns {Object} Migrated session data
-     * @private
-     */
-    _migrateSessionV1toV2(sessionData) {
-        sessionData.version = '2.0';
-        sessionData.schemaVersion = 2;
-        sessionData.exercises = sessionData.exercises || {};
-        
-        // Add new fields to existing exercises
-        Object.keys(sessionData.exercises).forEach(exerciseName => {
-            const exercise = sessionData.exercises[exerciseName];
-            sessionData.exercises[exerciseName] = {
-                ...exercise,
-                is_modified: true,  // Assume modified if it exists in v1.0
-                modified_at: sessionData.lastUpdated || new Date().toISOString(),
-                is_skipped: false,
-                notes: exercise.notes || ''
-            };
-        });
-        
-        console.log('✅ Session migrated to v2.0');
-        return sessionData;
-    }
-    
-    /**
-     * Migrate session from v2.0 to v2.1
-     * Adds lastPageActive field for accurate auto-resume threshold
-     * @param {Object} sessionData - Old session data
-     * @returns {Object} Migrated session data
-     * @private
-     */
-    _migrateSessionV2toV2_1(sessionData) {
-        sessionData.version = '2.1';
-        // Initialize lastPageActive with lastUpdated as fallback
-        // This means old sessions will use lastUpdated for threshold (same as before)
-        sessionData.lastPageActive = sessionData.lastPageActive || sessionData.lastUpdated;
-        console.log('✅ Session migrated to v2.1 (lastPageActive added)');
-        return sessionData;
+        return this.sessionPersistenceService.restoreSession();
     }
 
-    /**
-     * Migrate session from v2.1 to v2.2
-     * Adds sessionNotes array for inline notes
-     * @param {Object} sessionData - Old session data
-     * @returns {Object} Migrated session data
-     * @private
-     */
-    _migrateSessionV2_1toV2_2(sessionData) {
-        sessionData.version = '2.2';
-        // Initialize sessionNotes as empty array
-        sessionData.sessionNotes = sessionData.sessionNotes || [];
-        console.log('✅ Session migrated to v2.2 (sessionNotes added)');
-        return sessionData;
-    }
-
-    /**
-     * Migrate session from v2.2 to v2.3
-     * Adds sessionMode field for Quick Log feature
-     * @param {Object} sessionData - Old session data
-     * @returns {Object} Migrated session data
-     * @private
-     */
-    _migrateSessionV2_2toV2_3(sessionData) {
-        sessionData.version = '2.3';
-        // Default to 'timed' for existing sessions (backward compatible)
-        sessionData.sessionMode = sessionData.sessionMode || 'timed';
-        console.log('✅ Session migrated to v2.3 (sessionMode added)');
-        return sessionData;
-    }
-
-    /**
-     * Clear persisted session from localStorage
-     * Called when session is completed or explicitly abandoned
-     */
+    /** Clear persisted session from localStorage (facade) */
     clearPersistedSession() {
-        try {
-            localStorage.removeItem('ffn_active_workout_session');
-            console.log('🧹 Persisted session cleared');
-        } catch (error) {
-            console.error('❌ Error clearing persisted session:', error);
-        }
+        return this.sessionPersistenceService.clearPersistedSession();
     }
-    
-    /**
-     * Check if a persisted session exists
-     * @returns {boolean} True if persisted session exists
-     */
+
+    /** Check if a persisted session exists (facade) */
     hasPersistedSession() {
-        return !!localStorage.getItem('ffn_active_workout_session');
+        return this.sessionPersistenceService.hasPersistedSession();
     }
     
     /**
      * SESSION NOTES METHODS
-     * Methods for managing inline notes within workout sessions
+     * Session Notes Facade Methods (delegated to SessionNotesService)
      * Notes are session-only and not saved to workout templates
      */
 
-    /**
-     * Add a new session note
-     * @param {number} position - Index to insert at (in the combined card list)
-     * @param {string} content - Note text content (optional, can be empty initially)
-     * @returns {Object} Created note object
-     */
+    /** Add a new session note (facade) */
     addSessionNote(position, content = '') {
-        const note = {
-            id: `note-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`,
-            type: 'note',
-            content: content.substring(0, 500), // Enforce max length
-            created_at: new Date().toISOString(),
-            order_index: position
-        };
-
-        this.sessionNotes.push(note);
-
-        console.log('📝 Session note added:', note.id, 'at position', position);
-        this.notifyListeners('sessionNoteAdded', { note });
-        this.persistSession();
-
-        return note;
+        return this.sessionNotesService.addSessionNote(position, content);
     }
 
-    /**
-     * Update session note content
-     * @param {string} noteId - Note ID
-     * @param {string} content - New content
-     * @returns {boolean} True if note was found and updated
-     */
+    /** Update session note content (facade) */
     updateSessionNote(noteId, content) {
-        const note = this.sessionNotes.find(n => n.id === noteId);
-        if (!note) {
-            console.warn('⚠️ Note not found:', noteId);
-            return false;
-        }
-
-        note.content = content.substring(0, 500); // Enforce max length
-        note.modified_at = new Date().toISOString();
-
-        console.log('📝 Session note updated:', noteId);
-        this.notifyListeners('sessionNoteUpdated', { note });
-        this.persistSession();
-
-        return true;
+        return this.sessionNotesService.updateSessionNote(noteId, content);
     }
 
-    /**
-     * Delete a session note
-     * @param {string} noteId - Note ID
-     * @returns {boolean} True if note was found and deleted
-     */
+    /** Delete a session note (facade) */
     deleteSessionNote(noteId) {
-        const index = this.sessionNotes.findIndex(n => n.id === noteId);
-        if (index === -1) {
-            console.warn('⚠️ Note not found:', noteId);
-            return false;
-        }
-
-        const note = this.sessionNotes.splice(index, 1)[0];
-
-        console.log('🗑️ Session note deleted:', noteId);
-        this.notifyListeners('sessionNoteDeleted', { noteId, note });
-        this.persistSession();
-
-        return true;
+        return this.sessionNotesService.deleteSessionNote(noteId);
     }
 
-    /**
-     * Get all session notes
-     * @returns {Array} Array of note objects
-     */
+    /** Get all session notes (facade) */
     getSessionNotes() {
-        return [...this.sessionNotes];
+        return this.sessionNotesService.getSessionNotes();
     }
 
-    /**
-     * Get a specific session note by ID
-     * @param {string} noteId - Note ID
-     * @returns {Object|null} Note object or null if not found
-     */
+    /** Get a specific session note by ID (facade) */
     getSessionNote(noteId) {
-        return this.sessionNotes.find(n => n.id === noteId) || null;
+        return this.sessionNotesService.getSessionNote(noteId);
     }
 
-    /**
-     * Clear all session notes
-     * Called when session ends or is cleared
-     */
+    /** Clear all session notes (facade) */
     clearSessionNotes() {
-        const count = this.sessionNotes.length;
-        this.sessionNotes = [];
-        console.log('🧹 Session notes cleared:', count, 'notes removed');
-        this.notifyListeners('sessionNotesCleared', { count });
+        return this.sessionNotesService.clearSessionNotes();
     }
 
-    /**
-     * Update note order index (for reordering)
-     * @param {string} noteId - Note ID
-     * @param {number} newOrderIndex - New order index
-     * @returns {boolean} True if note was found and updated
-     */
+    /** Update note order index (facade) */
     updateSessionNoteOrder(noteId, newOrderIndex) {
-        const note = this.sessionNotes.find(n => n.id === noteId);
-        if (!note) {
-            console.warn('⚠️ Note not found for reorder:', noteId);
-            return false;
-        }
-
-        note.order_index = newOrderIndex;
-        console.log('📋 Session note reordered:', noteId, 'to position', newOrderIndex);
-        this.notifyListeners('sessionNoteReordered', { noteId, newOrderIndex });
-        this.persistSession();
-
-        return true;
+        return this.sessionNotesService.updateSessionNoteOrder(noteId, newOrderIndex);
     }
 
     /**
