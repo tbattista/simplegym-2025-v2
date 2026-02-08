@@ -1,0 +1,446 @@
+/**
+ * Desktop Builder CSS
+ * Styles for the desktop-only workout builder view
+ * Only applies when .desktop-view is set on <html>
+ * @version 1.0.0
+ */
+
+/* ============================================
+   VIEW TOGGLE
+   ============================================ */
+.desktop-view [data-view="mobile"] {
+  display: none !important;
+  content-visibility: hidden;
+}
+
+.mobile-view [data-view="desktop"] {
+  display: none !important;
+  content-visibility: hidden;
+}
+
+/* Hide mobile bottom action bar on desktop */
+.desktop-view .bottom-action-bar {
+  display: none !important;
+}
+
+/* ============================================
+   DESKTOP TOOLBAR
+   ============================================ */
+.desktop-builder-toolbar {
+  background: var(--bs-card-bg, #fff);
+  border: 1px solid var(--bs-border-color);
+  border-radius: var(--bs-border-radius-lg);
+  padding: 0.625rem 1.25rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.desktop-builder-toolbar .workout-name-input {
+  font-size: 1.35rem;
+  font-weight: 600;
+  border: none;
+  background: transparent;
+  padding: 0.25rem 0;
+  color: var(--bs-heading-color, var(--bs-body-color));
+  outline: none;
+  width: 100%;
+}
+
+.desktop-builder-toolbar .workout-name-input::placeholder {
+  color: var(--bs-secondary-color);
+  font-weight: 400;
+}
+
+.desktop-builder-toolbar .workout-name-input:focus {
+  border-bottom: 2px solid var(--bs-primary);
+  padding-bottom: calc(0.25rem - 2px);
+}
+
+.desktop-builder-toolbar .save-status {
+  font-size: 0.8125rem;
+  white-space: nowrap;
+}
+
+/* ============================================
+   2-PANEL LAYOUT
+   ============================================ */
+.desktop-builder-layout {
+  min-height: calc(100vh - 240px);
+}
+
+/* ============================================
+   SIDEBAR (Exercise Library)
+   ============================================ */
+.desktop-sidebar {
+  width: 320px;
+  min-width: 320px;
+  max-width: 320px;
+  flex-shrink: 0;
+  transition: opacity 0.2s ease;
+}
+
+.desktop-sidebar > .card {
+  position: sticky;
+  top: 80px;
+  max-height: calc(100vh - 100px);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-exercise-list {
+  overflow-y: auto;
+  flex: 1;
+}
+
+.sidebar-exercise-item {
+  padding: 0.5rem 1rem;
+  border-bottom: 1px solid var(--bs-border-color);
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.sidebar-exercise-item:hover {
+  background: rgba(var(--bs-primary-rgb), 0.06);
+}
+
+.sidebar-exercise-item:last-child {
+  border-bottom: none;
+}
+
+.sidebar-exercise-item .exercise-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.sidebar-exercise-item .exercise-name {
+  font-weight: 500;
+  font-size: 0.875rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sidebar-exercise-item .exercise-muscle {
+  font-size: 0.75rem;
+  color: var(--bs-secondary-color);
+}
+
+.sidebar-exercise-item .add-exercise-btn {
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  flex-shrink: 0;
+}
+
+.sidebar-exercise-item:hover .add-exercise-btn {
+  opacity: 1;
+}
+
+/* Sidebar loading/empty states */
+.sidebar-loading,
+.sidebar-empty {
+  padding: 2rem 1rem;
+  text-align: center;
+  color: var(--bs-secondary-color);
+}
+
+/* ============================================
+   EXERCISE GROUPS (DESKTOP TABLE-ROW LAYOUT)
+   ============================================ */
+.desktop-exercise-groups {
+  min-height: 80px;
+}
+
+/* Column header row */
+.desktop-exercise-header {
+  display: grid;
+  grid-template-columns: 32px 1fr 72px 90px 72px 100px 40px;
+  gap: 8px;
+  padding: 0.5rem 1rem;
+  border-bottom: 2px solid var(--bs-border-color);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--bs-secondary-color);
+  user-select: none;
+}
+
+/* Exercise group row */
+.desktop-exercise-row {
+  display: grid;
+  grid-template-columns: 32px 1fr 72px 90px 72px 100px 40px;
+  align-items: center;
+  gap: 8px;
+  padding: 0.625rem 1rem;
+  border-bottom: 1px solid var(--bs-border-color);
+  transition: background-color 0.15s ease;
+  min-height: 52px;
+}
+
+.desktop-exercise-row:hover {
+  background: rgba(var(--bs-primary-rgb), 0.025);
+}
+
+.desktop-exercise-row:last-child {
+  border-bottom: none;
+}
+
+/* Drag handle - visible on hover */
+.desktop-exercise-row .drag-handle {
+  cursor: grab;
+  color: var(--bs-secondary-color);
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.125rem;
+}
+
+.desktop-exercise-row:hover .drag-handle {
+  opacity: 0.6;
+}
+
+.desktop-exercise-row .drag-handle:hover {
+  opacity: 1;
+}
+
+/* Exercise name column */
+.desktop-exercise-row .exercise-name-col {
+  min-width: 0;
+  overflow: hidden;
+}
+
+.desktop-exercise-row .primary-exercise-name {
+  font-weight: 600;
+  font-size: 0.9375rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--bs-heading-color, var(--bs-body-color));
+}
+
+.desktop-exercise-row .primary-exercise-name.empty-exercise {
+  color: var(--bs-secondary-color);
+  font-weight: 400;
+  font-style: italic;
+}
+
+.desktop-exercise-row .alternate-exercises {
+  font-size: 0.8125rem;
+  color: var(--bs-secondary-color);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 1px;
+}
+
+/* ============================================
+   INLINE EDITING
+   ============================================ */
+.inline-editable {
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 4px;
+  border: 1px solid transparent;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+  font-size: 0.875rem;
+  min-height: 32px;
+  display: flex;
+  align-items: center;
+}
+
+.inline-editable:hover {
+  border-color: var(--bs-border-color);
+  background: rgba(var(--bs-primary-rgb), 0.025);
+}
+
+.inline-editable.editing {
+  border-color: var(--bs-primary);
+  background: var(--bs-body-bg);
+  box-shadow: 0 0 0 2px rgba(var(--bs-primary-rgb), 0.15);
+  padding: 0;
+}
+
+.inline-editable .display-value {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.inline-editable .display-value.empty-value {
+  color: var(--bs-secondary-color);
+  font-style: italic;
+}
+
+.inline-editable .inline-edit-input {
+  border: none;
+  background: transparent;
+  outline: none;
+  width: 100%;
+  font-size: 0.875rem;
+  padding: 4px 6px;
+  color: var(--bs-body-color);
+  min-height: 30px;
+}
+
+/* Exercise name inline edit (wider, with autocomplete support) */
+.inline-editable.exercise-name-editable {
+  flex: 1;
+}
+
+.inline-editable.exercise-name-editable .inline-edit-input {
+  font-weight: 600;
+  font-size: 0.9375rem;
+}
+
+/* Row dropdown menu button - visible on hover */
+.desktop-exercise-row .row-menu-btn {
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  border: none;
+  background: transparent;
+  color: var(--bs-secondary-color);
+  padding: 4px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.desktop-exercise-row:hover .row-menu-btn {
+  opacity: 0.6;
+}
+
+.desktop-exercise-row .row-menu-btn:hover {
+  opacity: 1;
+  background: rgba(var(--bs-primary-rgb), 0.06);
+}
+
+/* ============================================
+   SORTABLE STATES (DESKTOP)
+   ============================================ */
+.desktop-exercise-row.sortable-ghost {
+  opacity: 0.3;
+  background: rgba(var(--bs-primary-rgb), 0.06);
+}
+
+.desktop-exercise-row.sortable-drag {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  background: var(--bs-card-bg, #fff);
+  z-index: 100;
+  border-radius: var(--bs-border-radius);
+}
+
+.desktop-exercise-row.sortable-chosen {
+  cursor: grabbing;
+}
+
+/* ============================================
+   DESKTOP EDITOR AREA
+   ============================================ */
+.desktop-editor {
+  flex: 1;
+  min-width: 0;
+}
+
+.desktop-editor .card {
+  border-radius: var(--bs-border-radius-lg);
+}
+
+/* Desktop empty state for exercise groups */
+.desktop-exercise-groups-empty {
+  padding: 2.5rem 1rem;
+  text-align: center;
+  color: var(--bs-secondary-color);
+}
+
+.desktop-exercise-groups-empty i {
+  font-size: 2.5rem;
+  margin-bottom: 0.75rem;
+  display: block;
+}
+
+/* ============================================
+   TEMPLATE NOTES (DESKTOP)
+   Desktop rows for template notes interspersed
+   with exercise group rows
+   ============================================ */
+.desktop-exercise-groups .template-note-card {
+  padding: 0.5rem 1rem;
+  border-bottom: 1px solid var(--bs-border-color);
+}
+
+/* ============================================
+   DESKTOP LOADING/EMPTY STATES
+   ============================================ */
+[data-view="desktop"] .loading-state,
+[data-view="desktop"] .empty-state {
+  min-height: 300px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ============================================
+   RESPONSIVE ADJUSTMENTS
+   For smaller desktop screens (992px-1200px)
+   ============================================ */
+@media (min-width: 992px) and (max-width: 1199.98px) {
+  .desktop-exercise-header,
+  .desktop-exercise-row {
+    grid-template-columns: 28px 1fr 60px 80px 60px 88px 36px;
+    gap: 6px;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8125rem;
+  }
+
+  .desktop-sidebar {
+    width: 280px;
+    min-width: 280px;
+    max-width: 280px;
+  }
+}
+
+/* For larger screens (1400px+) */
+@media (min-width: 1400px) {
+  .desktop-exercise-header,
+  .desktop-exercise-row {
+    grid-template-columns: 36px 1fr 80px 100px 80px 120px 44px;
+    gap: 10px;
+  }
+}
+
+/* ============================================
+   DARK MODE
+   ============================================ */
+[data-bs-theme="dark"] .desktop-builder-toolbar {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+[data-bs-theme="dark"] .desktop-exercise-row:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+[data-bs-theme="dark"] .inline-editable:hover {
+  border-color: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+[data-bs-theme="dark"] .inline-editable.editing {
+  background: var(--bs-body-bg);
+}
+
+[data-bs-theme="dark"] .sidebar-exercise-item:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+[data-bs-theme="dark"] .desktop-exercise-row.sortable-drag {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}

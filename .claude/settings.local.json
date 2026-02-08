@@ -63,7 +63,10 @@
       "Bash(git ls-tree:*)",
       "WebFetch(domain:www.exercise.com)",
       "WebFetch(domain:workoutlabs.com)",
-      "WebFetch(domain:medium.com)"
+      "WebFetch(domain:medium.com)",
+      "mcp__playwright__browser_resize",
+      "mcp__playwright__browser_evaluate",
+      "mcp__playwright__browser_run_code"
     ]
   }
 }

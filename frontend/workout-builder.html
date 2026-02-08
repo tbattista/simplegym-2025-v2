@@ -61,12 +61,23 @@
     <!-- Note Card CSS (Session Notes Feature) -->
     <link rel="stylesheet" href="/static/assets/css/components/note-card.css?v=1.0.0" />
 
+    <!-- Desktop Builder CSS -->
+    <link rel="stylesheet" href="/static/assets/css/desktop-builder.css?v=20260208-01" />
+
     <!-- Helpers -->
     <script src="/static/assets/vendor/js/helpers.js"></script>
     <script src="/static/assets/js/config.js"></script>
 
     <!-- Theme Manager (must load early to prevent flash) -->
     <script src="/static/assets/js/services/theme-manager.js"></script>
+
+    <!-- Desktop View Detection (must load early to prevent FOUC) -->
+    <script>
+      (function() {
+        if (window.innerWidth >= 992) document.documentElement.classList.add('desktop-view');
+        else document.documentElement.classList.add('mobile-view');
+      })();
+    </script>
 
     <!-- FFN Centralized Configuration -->
     <script src="/static/assets/js/app-config.js"></script>
@@ -108,97 +119,250 @@
           <div class="content-wrapper">
             <!-- Content -->
             <div class="container-xxl flex-grow-1 container-p-y">
-              
-              <!-- Workout Editor Section -->
-              <!-- Loading State (shown while loading workout) -->
-              <div id="workoutEditorLoadingState" class="text-center py-5">
-                <div class="spinner-border text-primary mb-3" role="status" style="width: 3rem; height: 3rem;">
-                  <span class="visually-hidden">Loading...</span>
+
+              <!-- ============================================ -->
+              <!-- MOBILE VIEW (hidden on desktop via CSS)      -->
+              <!-- ============================================ -->
+              <div data-view="mobile">
+
+                <!-- Workout Editor Section -->
+                <!-- Loading State (shown while loading workout) -->
+                <div id="workoutEditorLoadingState" class="text-center py-5">
+                  <div class="spinner-border text-primary mb-3" role="status" style="width: 3rem; height: 3rem;">
+                    <span class="visually-hidden">Loading...</span>
+                  </div>
+                  <h5 class="mt-3">Loading workout...</h5>
+                  <p class="text-muted">Please wait while we fetch your workout</p>
                 </div>
-                <h5 class="mt-3">Loading workout...</h5>
-                <p class="text-muted">Please wait while we fetch your workout</p>
-              </div>
 
-              <!-- Empty State (shown when no workout selected) -->
-              <div id="workoutEditorEmptyState" class="text-center py-5" style="display: none;">
-                <i class="bx bx-dumbbell display-1 text-muted"></i>
-                <h5 class="mt-3">No workout loaded</h5>
-                <p class="text-muted">Navigate from the <a href="workout-database.html">Workout Database</a> to edit a workout</p>
-              </div>
+                <!-- Empty State (shown when no workout selected) -->
+                <div id="workoutEditorEmptyState" class="text-center py-5" style="display: none;">
+                  <i class="bx bx-dumbbell display-1 text-muted"></i>
+                  <h5 class="mt-3">No workout loaded</h5>
+                  <p class="text-muted">Navigate from the <a href="workout-database.html">Workout Database</a> to edit a workout</p>
+                </div>
 
-              <!-- Editor Form (hidden initially) -->
-              <div id="workoutEditorForm" style="display: none;">
-                    <form id="workoutForm">
-                      
-                      <!-- Workout Info Section -->
-                      <div class="mb-3">
-                        <h6 class="mb-2">
-                          <i class="bx bx-edit me-1"></i>
-                          Workout Info
-                        </h6>
-                        <div class="card">
-                          <div class="card-body" style="padding: 1rem 1.25rem;">
-                            <div class="mb-3">
-                              <label for="workoutName" class="form-label">Workout Name *</label>
-                              <input type="text" class="form-control" id="workoutName" required maxlength="100" placeholder="e.g., Push Day - Upper Body">
-                            </div>
-                          
-                          <!-- Compact Tags and Description Buttons -->
-                          <div class="d-flex gap-2">
-                            <!-- Tags Button with Popover -->
-                            <button type="button" class="btn btn-sm btn-outline-secondary" id="tagsPopoverBtn"
-                                    data-bs-toggle="popover" data-bs-placement="bottom" data-bs-html="true"
-                                    data-bs-trigger="click" data-bs-custom-class="tags-popover">
-                              <i class="bx bx-purchase-tag me-1"></i>
-                              <span id="tagsButtonText">Add Tags</span>
-                            </button>
-                            
-                            <!-- Description Button with Popover -->
-                            <button type="button" class="btn btn-sm btn-outline-secondary" id="descriptionPopoverBtn"
-                                    data-bs-toggle="popover" data-bs-placement="bottom" data-bs-html="true"
-                                    data-bs-trigger="click" data-bs-custom-class="description-popover">
-                              <i class="bx bx-note me-1"></i>
-                              <span id="descriptionButtonText">Add Description</span>
-                            </button>
-                          </div>
-                          
-                            <!-- Hidden inputs to store actual values -->
-                            <input type="hidden" id="workoutTags">
-                            <textarea style="display: none;" id="workoutDescription" maxlength="500"></textarea>
-                          </div>
-                        </div>
-                      </div>
+                <!-- Editor Form (hidden initially) -->
+                <div id="workoutEditorForm" style="display: none;">
+                      <form id="workoutForm">
 
-                      <!-- Muscle Group Summary (auto-generated from exercises) -->
-                      <div id="muscleSummaryContainer" class="muscle-summary-container mb-3" style="display: none;">
-                        <div class="d-flex align-items-center">
-                          <i class="bx bx-target-lock text-primary me-2"></i>
-                          <span id="muscleSummaryText" class="text-muted small"></span>
-                        </div>
-                      </div>
-
-                      <!-- Exercise Groups Section -->
-                      <div class="mb-3">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                          <h6 class="mb-0">
-                            <i class="bx bx-list-ul me-1"></i>
-                            Exercise Groups
+                        <!-- Workout Info Section -->
+                        <div class="mb-3">
+                          <h6 class="mb-2">
+                            <i class="bx bx-edit me-1"></i>
+                            Workout Info
                           </h6>
-                          <button type="button" class="btn btn-sm btn-outline-secondary" id="reorderExercisesBtn">
+                          <div class="card">
+                            <div class="card-body" style="padding: 1rem 1.25rem;">
+                              <div class="mb-3">
+                                <label for="workoutName" class="form-label">Workout Name *</label>
+                                <input type="text" class="form-control" id="workoutName" required maxlength="100" placeholder="e.g., Push Day - Upper Body">
+                              </div>
+
+                            <!-- Compact Tags and Description Buttons -->
+                            <div class="d-flex gap-2">
+                              <!-- Tags Button with Popover -->
+                              <button type="button" class="btn btn-sm btn-outline-secondary" id="tagsPopoverBtn"
+                                      data-bs-toggle="popover" data-bs-placement="bottom" data-bs-html="true"
+                                      data-bs-trigger="click" data-bs-custom-class="tags-popover">
+                                <i class="bx bx-purchase-tag me-1"></i>
+                                <span id="tagsButtonText">Add Tags</span>
+                              </button>
+
+                              <!-- Description Button with Popover -->
+                              <button type="button" class="btn btn-sm btn-outline-secondary" id="descriptionPopoverBtn"
+                                      data-bs-toggle="popover" data-bs-placement="bottom" data-bs-html="true"
+                                      data-bs-trigger="click" data-bs-custom-class="description-popover">
+                                <i class="bx bx-note me-1"></i>
+                                <span id="descriptionButtonText">Add Description</span>
+                              </button>
+                            </div>
+
+                              <!-- Hidden inputs to store actual values -->
+                              <input type="hidden" id="workoutTags">
+                              <textarea style="display: none;" id="workoutDescription" maxlength="500"></textarea>
+                            </div>
+                          </div>
+                        </div>
+
+                        <!-- Muscle Group Summary (auto-generated from exercises) -->
+                        <div id="muscleSummaryContainer" class="muscle-summary-container mb-3" style="display: none;">
+                          <div class="d-flex align-items-center">
+                            <i class="bx bx-target-lock text-primary me-2"></i>
+                            <span id="muscleSummaryText" class="text-muted small"></span>
+                          </div>
+                        </div>
+
+                        <!-- Exercise Groups Section -->
+                        <div class="mb-3">
+                          <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h6 class="mb-0">
+                              <i class="bx bx-list-ul me-1"></i>
+                              Exercise Groups
+                            </h6>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" id="reorderExercisesBtn">
+                              <i class="bx bx-sort me-1"></i>Reorder
+                            </button>
+                          </div>
+                          <div id="exerciseGroups" class="accordion accordion-workout-groups mb-2">
+                            <!-- Exercise groups will be added here as accordion items -->
+                          </div>
+                          <!-- Add Exercises Button -->
+                          <button type="button" class="btn btn-outline-primary w-100" id="addExerciseGroupBtnVisible">
+                            <i class="bx bx-plus me-1"></i>
+                            Add Exercises
+                          </button>
+                        </div>
+                      </form>
+                    </div>
+
+              </div>
+              <!-- / MOBILE VIEW -->
+
+              <!-- ============================================ -->
+              <!-- DESKTOP VIEW (hidden on mobile via CSS)      -->
+              <!-- ============================================ -->
+              <div data-view="desktop">
+
+                <!-- Desktop Loading State -->
+                <div id="desktopLoadingState" class="text-center py-5">
+                  <div class="spinner-border text-primary mb-3" role="status" style="width: 3rem; height: 3rem;">
+                    <span class="visually-hidden">Loading...</span>
+                  </div>
+                  <h5 class="mt-3">Loading workout...</h5>
+                  <p class="text-muted">Please wait while we fetch your workout</p>
+                </div>
+
+                <!-- Desktop Empty State -->
+                <div id="desktopEmptyState" class="text-center py-5" style="display: none;">
+                  <i class="bx bx-dumbbell display-1 text-muted"></i>
+                  <h5 class="mt-3">No workout loaded</h5>
+                  <p class="text-muted">Navigate from the <a href="workout-database.html">Workout Database</a> to edit a workout</p>
+                </div>
+
+                <!-- Desktop Editor Form -->
+                <div id="desktopEditorForm" style="display: none;">
+
+                  <!-- Desktop Top Toolbar -->
+                  <div class="desktop-builder-toolbar d-flex align-items-center gap-3 mb-3">
+                    <div class="flex-grow-1">
+                      <input type="text" class="workout-name-input" id="desktopWorkoutName"
+                             placeholder="Workout Name" maxlength="100" required>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                      <button type="button" class="btn btn-sm btn-outline-secondary" id="desktopTagsBtn">
+                        <i class="bx bx-purchase-tag me-1"></i>
+                        <span id="desktopTagsText">Tags</span>
+                      </button>
+                      <button type="button" class="btn btn-sm btn-outline-secondary" id="desktopDescBtn">
+                        <i class="bx bx-note me-1"></i>
+                        <span id="desktopDescText">Description</span>
+                      </button>
+                      <span id="desktopSaveStatus" class="save-status text-muted small"></span>
+                      <button type="button" class="btn btn-primary" id="desktopSaveBtn">
+                        <i class="bx bx-save me-1"></i>Save
+                      </button>
+                      <div class="dropdown">
+                        <button class="btn btn-outline-secondary" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                          <i class="bx bx-dots-vertical"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                          <li><a class="dropdown-item" href="#" id="desktopShareBtn"><i class="bx bx-share-alt me-2"></i>Share</a></li>
+                          <li><hr class="dropdown-divider"></li>
+                          <li><a class="dropdown-item" href="#" id="desktopCancelBtn"><i class="bx bx-x me-2"></i>Cancel</a></li>
+                          <li><a class="dropdown-item text-danger" href="#" id="desktopDeleteBtn"><i class="bx bx-trash me-2"></i>Delete</a></li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Hidden fields for data storage -->
+                  <input type="hidden" id="desktopWorkoutTags">
+                  <textarea style="display: none;" id="desktopWorkoutDescription" maxlength="500"></textarea>
+
+                  <!-- Muscle Group Summary -->
+                  <div id="desktopMuscleSummary" class="muscle-summary-container mb-3" style="display: none;">
+                    <div class="d-flex align-items-center">
+                      <i class="bx bx-target-lock text-primary me-2"></i>
+                      <span id="desktopMuscleSummaryText" class="text-muted small"></span>
+                    </div>
+                  </div>
+
+                  <!-- 2-Panel Layout (Sidebar + Editor) -->
+                  <div class="desktop-builder-layout d-flex gap-3">
+
+                    <!-- LEFT: Exercise Library Sidebar (hidden by default) -->
+                    <div id="desktopSidebar" class="desktop-sidebar" style="display: none;">
+                      <div class="card h-100">
+                        <div class="card-header d-flex justify-content-between align-items-center py-2">
+                          <h6 class="mb-0"><i class="bx bx-library me-1"></i>Exercise Library</h6>
+                          <button type="button" class="btn btn-sm btn-ghost-secondary p-1" id="closeSidebarBtn" title="Close">
+                            <i class="bx bx-x"></i>
+                          </button>
+                        </div>
+                        <div class="card-body p-0 d-flex flex-column" style="overflow: hidden;">
+                          <div class="p-2 border-bottom">
+                            <input type="text" class="form-control form-control-sm" id="sidebarSearch" placeholder="Search exercises...">
+                          </div>
+                          <div class="px-2 py-1 border-bottom">
+                            <select class="form-select form-select-sm" id="sidebarMuscleFilter">
+                              <option value="">All Muscle Groups</option>
+                            </select>
+                          </div>
+                          <div id="sidebarExerciseList" class="sidebar-exercise-list">
+                            <!-- Populated by desktop-sidebar.js on first open -->
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- RIGHT: Workout Editor -->
+                    <div class="desktop-editor">
+                      <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center py-2">
+                          <h6 class="mb-0"><i class="bx bx-list-ul me-1"></i>Exercise Groups</h6>
+                          <button type="button" class="btn btn-sm btn-outline-secondary" id="desktopReorderBtn">
                             <i class="bx bx-sort me-1"></i>Reorder
                           </button>
                         </div>
-                        <div id="exerciseGroups" class="accordion accordion-workout-groups mb-2">
-                          <!-- Exercise groups will be added here as accordion items -->
+                        <div class="card-body p-0">
+                          <!-- Column Headers -->
+                          <div class="desktop-exercise-header">
+                            <div></div>
+                            <div>Exercise</div>
+                            <div>Sets</div>
+                            <div>Reps</div>
+                            <div>Rest</div>
+                            <div>Weight</div>
+                            <div></div>
+                          </div>
+                          <!-- Exercise Group Rows -->
+                          <div id="desktopExerciseGroups" class="desktop-exercise-groups">
+                            <!-- Rendered by desktop-card-renderer.js -->
+                          </div>
                         </div>
-                        <!-- Add Exercises Button -->
-                        <button type="button" class="btn btn-outline-primary w-100" id="addExerciseGroupBtnVisible">
-                          <i class="bx bx-plus me-1"></i>
-                          Add Exercises
+                      </div>
+
+                      <!-- Action Buttons -->
+                      <div class="d-flex gap-2 mt-3">
+                        <button type="button" class="btn btn-outline-primary" id="desktopAddGroupBtn">
+                          <i class="bx bx-plus me-1"></i>Add Exercise Group
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" id="desktopToggleSidebarBtn">
+                          <i class="bx bx-library me-1"></i>Exercise Library
                         </button>
                       </div>
-                    </form>
+                    </div>
+
                   </div>
+                  <!-- / 2-Panel Layout -->
+
+                </div>
+                <!-- / Desktop Editor Form -->
+
+              </div>
+              <!-- / DESKTOP VIEW -->
+
             </div>
             <!-- / Content -->
 
@@ -381,6 +545,36 @@
     
     <!-- More Menu and Share Menu will be created dynamically by UnifiedOffcanvasFactory -->
 
+    <!-- Desktop ID Swap (must run BEFORE any JS modules) -->
+    <!-- On desktop: renames mobile IDs to mobile_* and gives desktop elements the canonical IDs -->
+    <script>
+      if (document.documentElement.classList.contains('desktop-view')) {
+        var _swaps = [
+          ['workoutEditorLoadingState', 'desktopLoadingState'],
+          ['workoutEditorEmptyState', 'desktopEmptyState'],
+          ['workoutEditorForm', 'desktopEditorForm'],
+          ['workoutName', 'desktopWorkoutName'],
+          ['workoutDescription', 'desktopWorkoutDescription'],
+          ['workoutTags', 'desktopWorkoutTags'],
+          ['exerciseGroups', 'desktopExerciseGroups'],
+          ['muscleSummaryContainer', 'desktopMuscleSummary'],
+          ['muscleSummaryText', 'desktopMuscleSummaryText'],
+          ['addExerciseGroupBtnVisible', 'desktopAddGroupBtn'],
+          ['reorderExercisesBtn', 'desktopReorderBtn'],
+          ['saveWorkoutBtn', 'desktopSaveBtn'],
+          ['deleteWorkoutBtn', 'desktopDeleteBtn'],
+          ['cancelEditBtn', 'desktopCancelBtn']
+        ];
+        _swaps.forEach(function(pair) {
+          var mobileEl = document.getElementById(pair[0]);
+          var desktopEl = document.getElementById(pair[1]);
+          if (mobileEl) mobileEl.id = 'mobile_' + pair[0];
+          if (desktopEl) desktopEl.id = pair[0];
+        });
+        console.log('🖥️ Desktop ID swap complete (' + _swaps.length + ' elements)');
+      }
+    </script>
+
     <!-- Core JS -->
     <script src="/static/assets/vendor/libs/jquery/jquery.js"></script>
     <script src="/static/assets/vendor/libs/popper/popper.js"></script>
@@ -455,6 +649,11 @@
 
     <!-- UI Helpers -->
     <script src="/static/assets/js/dashboard/ui-helpers.js?v=20251020-04"></script>
+
+    <!-- Desktop Builder Modules (load after card-renderer, exercise-autocomplete, before managers) -->
+    <script src="/static/assets/js/modules/desktop-card-renderer.js?v=20260208-01"></script>
+    <script src="/static/assets/js/modules/desktop-sidebar.js?v=20260208-01"></script>
+    <script src="/static/assets/js/modules/desktop-view-adapter.js?v=20260208-01"></script>
 
     <!-- Exercise group & bonus management -->
     <script src="/static/assets/js/dashboard/exercise-group-manager.js?v=20260208-01"></script>
