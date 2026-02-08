@@ -239,6 +239,7 @@ class MenuInjectionService {
         if (filename.includes('workout-builder')) return 'workouts';
         if (filename.includes('public-workouts')) return 'public-workouts';
         if (filename.includes('exercise-database')) return 'exercises';
+        if (filename.includes('settings')) return 'settings';
         if (filename.includes('index') || filename === '') return 'home';
 
         // Default to home

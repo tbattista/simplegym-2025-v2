@@ -221,6 +221,19 @@ async def serve_feedback_voting():
         )
 
 @app.get("/profile", response_class=HTMLResponse)
+@app.get("/settings", response_class=HTMLResponse)
+@app.get("/settings.html", response_class=HTMLResponse)
+async def serve_settings():
+    """Serve the Settings page"""
+    try:
+        with open("frontend/settings.html", "r", encoding="utf-8") as f:
+            return HTMLResponse(content=f.read())
+    except FileNotFoundError:
+        return HTMLResponse(
+            content="<h1>Settings page not found</h1><p>Please ensure frontend/settings.html exists</p>",
+            status_code=404
+        )
+
 @app.get("/profile.html", response_class=HTMLResponse)
 async def serve_profile():
     """Serve the User Profile page"""
