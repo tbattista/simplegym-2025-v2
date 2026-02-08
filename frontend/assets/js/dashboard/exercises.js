@@ -217,6 +217,18 @@ function renderExerciseCard(row) {
                                    data-exercise-id="${row.id}" data-exercise-name="${exercisePage.escapeHtml(row.name)}">
                                     <i class="bx bx-plus me-2"></i>Add to Workout
                                 </a>
+                                ${isCustom ? `
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item edit-exercise-link" href="javascript:void(0);" data-exercise-id="${row.id}">
+                                    <i class="bx bx-edit me-2"></i>Edit Exercise
+                                </a>
+                                <a class="dropdown-item link-exercise-link" href="javascript:void(0);" data-exercise-id="${row.id}">
+                                    <i class="bx bx-link me-2"></i>Link to Exercise
+                                </a>
+                                <a class="dropdown-item text-danger delete-exercise-link" href="javascript:void(0);" data-exercise-id="${row.id}">
+                                    <i class="bx bx-trash me-2"></i>Delete Exercise
+                                </a>
+                                ` : ''}
                             </div>
                         </div>
                     </div>
@@ -257,6 +269,36 @@ async function handleTableClick(e) {
         const exerciseName = addToWorkoutLink.dataset.exerciseName;
         if (window.addExerciseToWorkout) {
             window.addExerciseToWorkout({ id: exerciseId, name: exerciseName });
+        }
+        return;
+    }
+
+    const editLink = e.target.closest('.edit-exercise-link');
+    if (editLink) {
+        e.preventDefault();
+        const exerciseId = editLink.dataset.exerciseId;
+        if (window.openEditExerciseModal) {
+            window.openEditExerciseModal(exerciseId);
+        }
+        return;
+    }
+
+    const linkLink = e.target.closest('.link-exercise-link');
+    if (linkLink) {
+        e.preventDefault();
+        const exerciseId = linkLink.dataset.exerciseId;
+        if (window.openEditExerciseModal) {
+            window.openEditExerciseModal(exerciseId, { focusLink: true });
+        }
+        return;
+    }
+
+    const deleteLink = e.target.closest('.delete-exercise-link');
+    if (deleteLink) {
+        e.preventDefault();
+        const exerciseId = deleteLink.dataset.exerciseId;
+        if (window.deleteExercise) {
+            window.deleteExercise(exerciseId);
         }
         return;
     }

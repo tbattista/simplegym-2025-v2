@@ -410,6 +410,112 @@ class ExerciseService:
             logger.error(f"Failed to get user custom exercises: {str(e)}")
             return []
     
+    def update_custom_exercise(
+        self,
+        user_id: str,
+        exercise_id: str,
+        exercise_request: CreateExerciseRequest
+    ) -> Optional[Exercise]:
+        """
+        Update an existing custom exercise for a user
+
+        Args:
+            user_id: ID of the user
+            exercise_id: ID of the exercise to update
+            exercise_request: Updated exercise data
+
+        Returns:
+            Updated Exercise object or None if not found
+        """
+        if not self.is_available():
+            logger.warning("Firestore not available - cannot update custom exercise")
+            return None
+
+        try:
+            exercise_ref = (self.db.collection('users')
+                          .document(user_id)
+                          .collection('custom_exercises')
+                          .document(exercise_id))
+
+            doc = exercise_ref.get()
+            if not doc.exists:
+                logger.warning(f"Custom exercise {exercise_id} not found for user {user_id}")
+                return None
+
+            # Build update dict from request fields
+            update_data = {}
+            update_data['name'] = exercise_request.name
+            update_data['nameSearchTokens'] = self._generate_search_tokens(exercise_request.name)
+
+            if exercise_request.difficultyLevel is not None:
+                update_data['difficultyLevel'] = exercise_request.difficultyLevel
+            if exercise_request.targetMuscleGroup is not None:
+                update_data['targetMuscleGroup'] = exercise_request.targetMuscleGroup
+            if exercise_request.primaryEquipment is not None:
+                update_data['primaryEquipment'] = exercise_request.primaryEquipment
+            if exercise_request.movementPattern1 is not None:
+                update_data['movementPattern1'] = exercise_request.movementPattern1
+            if exercise_request.bodyRegion is not None:
+                update_data['bodyRegion'] = exercise_request.bodyRegion
+            if exercise_request.mechanics is not None:
+                update_data['mechanics'] = exercise_request.mechanics
+
+            # linkedExerciseId can be set or cleared (None means unlink)
+            update_data['linkedExerciseId'] = exercise_request.linkedExerciseId
+
+            update_data['updatedAt'] = firestore.SERVER_TIMESTAMP
+
+            exercise_ref.update(update_data)
+
+            # Read back the updated document
+            updated_doc = exercise_ref.get()
+            exercise = Exercise(**updated_doc.to_dict())
+
+            logger.info(f"Updated custom exercise {exercise_id} for user {user_id}")
+            return exercise
+
+        except Exception as e:
+            logger.error(f"Failed to update custom exercise: {str(e)}")
+            return None
+
+    def delete_custom_exercise(
+        self,
+        user_id: str,
+        exercise_id: str
+    ) -> bool:
+        """
+        Delete a custom exercise for a user
+
+        Args:
+            user_id: ID of the user
+            exercise_id: ID of the exercise to delete
+
+        Returns:
+            True if deleted, False if not found
+        """
+        if not self.is_available():
+            logger.warning("Firestore not available - cannot delete custom exercise")
+            return False
+
+        try:
+            exercise_ref = (self.db.collection('users')
+                          .document(user_id)
+                          .collection('custom_exercises')
+                          .document(exercise_id))
+
+            doc = exercise_ref.get()
+            if not doc.exists:
+                logger.warning(f"Custom exercise {exercise_id} not found for user {user_id}")
+                return False
+
+            exercise_ref.delete()
+            logger.info(f"Deleted custom exercise {exercise_id} for user {user_id}")
+            return True
+
+        except Exception as e:
+            logger.error(f"Failed to delete custom exercise: {str(e)}")
+            return False
+
     def _find_existing_exercise(
         self,
         exercise_name: str,

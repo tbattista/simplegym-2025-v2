@@ -190,19 +190,20 @@
       </div>
     </div>
 
-    <!-- Custom Exercise Modal -->
+    <!-- Custom Exercise Modal (Create + Edit) -->
     <div class="modal fade" id="customExerciseModal" tabindex="-1">
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title">
-              <i class="bx bx-plus-circle me-2"></i>
-              Add Custom Exercise
+            <h5 class="modal-title" id="customExerciseModalTitle">
+              <i class="bx bx-plus-circle me-2" id="customExerciseModalIcon"></i>
+              <span id="customExerciseModalTitleText">Add Custom Exercise</span>
             </h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
           </div>
           <div class="modal-body">
             <form id="customExerciseForm">
+              <input type="hidden" id="editExerciseId" value="">
               <div class="mb-3">
                 <label for="customExerciseName" class="form-label">Exercise Name *</label>
                 <input type="text" class="form-control" id="customExerciseName" required maxlength="200">
@@ -234,6 +235,27 @@
                     <option value="Compound">Compound</option>
                     <option value="Isolation">Isolation</option>
                   </select>
+                </div>
+              </div>
+
+              <!-- Link to Exercise Section -->
+              <div class="mb-3 border-top pt-3" id="linkExerciseSection">
+                <label class="form-label">
+                  <i class="bx bx-link me-1"></i>Link to Database Exercise
+                </label>
+                <p class="text-muted small mb-2">Link to an exercise from our database to inherit its detailed data (muscles, equipment, videos, etc.)</p>
+                <div class="position-relative">
+                  <input type="text" class="form-control" id="linkExerciseSearch"
+                         placeholder="Search exercises to link..." autocomplete="off">
+                  <input type="hidden" id="linkedExerciseId" value="">
+                  <div id="linkSearchResults" class="list-group position-absolute w-100 shadow-sm" style="z-index: 1050; max-height: 200px; overflow-y: auto; display: none;"></div>
+                </div>
+                <div id="linkedExerciseDisplay" class="mt-2" style="display: none;">
+                  <span class="badge bg-label-primary d-inline-flex align-items-center gap-1 py-2 px-3">
+                    <i class="bx bx-link"></i>
+                    <span id="linkedExerciseName"></span>
+                    <button type="button" class="btn-close btn-close-sm ms-1" id="unlinkExerciseBtn" style="font-size: 0.5rem;"></button>
+                  </span>
                 </div>
               </div>
             </form>

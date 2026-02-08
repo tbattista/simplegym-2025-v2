@@ -700,6 +700,11 @@ class Exercise(BaseModel):
         default=True,
         description="Whether this is a global exercise or user-specific"
     )
+
+    linkedExerciseId: Optional[str] = Field(
+        default=None,
+        description="ID of a global exercise this custom exercise is linked to, for inheriting rich data"
+    )
     
     # NEW: Popularity and Favorites tracking
     popularityScore: Optional[int] = Field(
@@ -771,8 +776,8 @@ class ExerciseReference(BaseModel):
 # Request/Response Models for Exercise API
 
 class CreateExerciseRequest(BaseModel):
-    """Request model for creating a custom exercise"""
-    
+    """Request model for creating or updating a custom exercise"""
+
     name: str = Field(..., min_length=1, max_length=200)
     difficultyLevel: Optional[str] = Field(None)
     targetMuscleGroup: Optional[str] = Field(None)
@@ -780,6 +785,7 @@ class CreateExerciseRequest(BaseModel):
     movementPattern1: Optional[str] = Field(None)
     bodyRegion: Optional[str] = Field(None)
     mechanics: Optional[str] = Field(None)
+    linkedExerciseId: Optional[str] = Field(None)
 
 class ExerciseListResponse(BaseModel):
     """Response model for exercise list"""

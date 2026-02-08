@@ -222,6 +222,49 @@ async def get_user_custom_exercises(
         raise HTTPException(status_code=500, detail=f"Error retrieving custom exercises: {str(e)}")
 
 
+@router.put("/users/me/exercises/{exercise_id}", response_model=Exercise)
+async def update_custom_exercise(
+    exercise_id: str,
+    exercise_request: CreateExerciseRequest,
+    user_id: str = Depends(require_auth),
+    exercise_service = Depends(get_exercise_service)
+):
+    """Update a custom exercise for the authenticated user"""
+    try:
+        exercise = exercise_service.update_custom_exercise(user_id, exercise_id, exercise_request)
+        if not exercise:
+            raise HTTPException(status_code=404, detail="Custom exercise not found")
+
+        return exercise
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating custom exercise: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error updating custom exercise: {str(e)}")
+
+
+@router.delete("/users/me/exercises/{exercise_id}")
+async def delete_custom_exercise(
+    exercise_id: str,
+    user_id: str = Depends(require_auth),
+    exercise_service = Depends(get_exercise_service)
+):
+    """Delete a custom exercise for the authenticated user"""
+    try:
+        deleted = exercise_service.delete_custom_exercise(user_id, exercise_id)
+        if not deleted:
+            raise HTTPException(status_code=404, detail="Custom exercise not found")
+
+        return {"status": "deleted", "exercise_id": exercise_id}
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error deleting custom exercise: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error deleting custom exercise: {str(e)}")
+
+
 @router.post("/exercises/auto-create", response_model=Exercise)
 async def auto_create_custom_exercise(
     exercise_name: str,
