@@ -348,6 +348,15 @@
                 }
             }, 3000);
 
+            // Activate calendar tab if ?view=calendar is in URL
+            const viewParam = new URLSearchParams(window.location.search).get('view');
+            if (viewParam === 'calendar') {
+                const calendarTab = document.getElementById('calendar-tab');
+                if (calendarTab) {
+                    new bootstrap.Tab(calendarTab).show();
+                }
+            }
+
             console.log('✅ Workout History page ready!');
 
             // MOBILE DEBUG: Show visible status panel (remove after debugging)
