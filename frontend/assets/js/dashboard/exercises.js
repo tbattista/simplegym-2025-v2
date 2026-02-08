@@ -277,9 +277,7 @@ async function handleTableClick(e) {
     if (editLink) {
         e.preventDefault();
         const exerciseId = editLink.dataset.exerciseId;
-        if (window.openEditExerciseModal) {
-            window.openEditExerciseModal(exerciseId);
-        }
+        window.location.href = `exercise-edit.html?id=${exerciseId}`;
         return;
     }
 
@@ -287,9 +285,7 @@ async function handleTableClick(e) {
     if (linkLink) {
         e.preventDefault();
         const exerciseId = linkLink.dataset.exerciseId;
-        if (window.openEditExerciseModal) {
-            window.openEditExerciseModal(exerciseId, { focusLink: true });
-        }
+        window.location.href = `exercise-edit.html?id=${exerciseId}&focus=link`;
         return;
     }
 
