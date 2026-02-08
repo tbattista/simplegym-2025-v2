@@ -1,25 +1,23 @@
-/* Activity Block Chart - 30 day heatmap */
+/* Activity Block Chart - 30 day dot heatmap */
 
 .activity-block-grid {
-    display: grid;
-    grid-template-columns: repeat(6, 1fr);
-    gap: 3px;
-}
-
-.activity-block {
-    aspect-ratio: 1;
-    border-radius: 4px;
-    background-color: var(--bs-gray-200);
-    cursor: pointer;
-    transition: transform 0.15s ease;
-    position: relative;
     display: flex;
-    align-items: center;
+    flex-wrap: wrap;
+    gap: 4px;
     justify-content: center;
 }
 
+.activity-block {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: var(--bs-gray-300);
+    cursor: pointer;
+    transition: transform 0.15s ease;
+}
+
 .activity-block:hover {
-    transform: scale(1.1);
+    transform: scale(1.4);
     z-index: 1;
 }
 
@@ -29,29 +27,10 @@
 
 .activity-block.today {
     outline: 2px solid var(--bs-primary);
-    outline-offset: -1px;
-}
-
-.block-day {
-    font-size: 0.6rem;
-    font-weight: 500;
-    color: var(--bs-gray-600);
-    pointer-events: none;
-}
-
-.activity-block.has-workout .block-day {
-    color: #fff;
+    outline-offset: 1px;
 }
 
 /* Dark mode */
 [data-bs-theme="dark"] .activity-block {
     background-color: var(--bs-gray-700);
-}
-
-[data-bs-theme="dark"] .block-day {
-    color: var(--bs-gray-400);
-}
-
-[data-bs-theme="dark"] .activity-block.has-workout .block-day {
-    color: #fff;
 }

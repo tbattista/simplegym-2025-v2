@@ -98,7 +98,7 @@
                 if (hasWorkout) classes.push('has-workout');
                 if (isToday) classes.push('today');
 
-                return `<div class="${classes.join(' ')}" data-date="${day.dateKey}" title="${tooltip}"><span class="block-day">${dayNum}</span></div>`;
+                return `<div class="${classes.join(' ')}" data-date="${day.dateKey}" title="${tooltip}"></div>`;
             }).join('');
 
             this.container.innerHTML = `<div class="activity-block-grid">${blocks}</div>`;
