@@ -94,16 +94,6 @@ function getMenuHTML(activePage = 'home') {
                 </a>
             </li>
 
-            <!-- Account -->
-            <li class="menu-header small text-uppercase">
-                <span class="menu-header-text">Account</span>
-            </li>
-            <li class="menu-item ${activePage === 'settings' ? 'active' : ''}">
-                <a href="settings.html" class="menu-link">
-                    <i class="menu-icon tf-icons bx bx-cog"></i>
-                    <div class="text-truncate">Settings</div>
-                </a>
-            </li>
         </ul>
     `;
 }

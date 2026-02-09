@@ -160,6 +160,12 @@ function getNavbarHTML(pageTitle = 'Fitness Field Notes', pageIcon = 'bx-home', 
                                 <span>My Profile</span>
                             </a>
                         </li>
+                        <li>
+                            <a class="dropdown-item" href="/settings.html">
+                                <i class="bx bx-cog me-2"></i>
+                                <span>Settings</span>
+                            </a>
+                        </li>
                         
                         <li><div class="dropdown-divider"></div></li>
                         

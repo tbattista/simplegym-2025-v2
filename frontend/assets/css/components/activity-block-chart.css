@@ -1,9 +1,10 @@
-/* Activity Block Chart - 90 day grid heatmap */
+/* Activity Block Chart - grid heatmap */
 
 .activity-block-grid {
     display: grid;
-    grid-template-columns: repeat(9, 1fr);
     gap: 3px;
+    max-width: 320px;
+    margin: 0 auto;
 }
 
 .activity-block {
