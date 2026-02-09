@@ -168,6 +168,19 @@ async def serve_exercise_database():
             status_code=404
         )
 
+@app.get("/exercise-edit", response_class=HTMLResponse)
+@app.get("/exercise-edit.html", response_class=HTMLResponse)
+async def serve_exercise_edit():
+    """Serve the Exercise Edit page - Edit custom exercises and link to database"""
+    try:
+        with open("frontend/exercise-edit.html", "r", encoding="utf-8") as f:
+            return HTMLResponse(content=f.read())
+    except FileNotFoundError:
+        return HTMLResponse(
+            content="<h1>Exercise Edit not found</h1><p>Please ensure frontend/exercise-edit.html exists</p>",
+            status_code=404
+        )
+
 @app.get("/workout-database", response_class=HTMLResponse)
 @app.get("/workout-database.html", response_class=HTMLResponse)
 async def serve_workout_database():
