@@ -189,8 +189,13 @@
   border-bottom: none;
 }
 
-/* Drag handle - visible on hover */
-.desktop-exercise-row .drag-handle {
+/* Drag handle - visible on hover
+   Override position:absolute from .exercise-group-card .drag-handle */
+.desktop-exercise-row.exercise-group-card .drag-handle {
+  position: static;
+  top: auto;
+  right: auto;
+  z-index: auto;
   cursor: grab;
   color: var(--bs-secondary-color);
   opacity: 0;
@@ -199,6 +204,9 @@
   align-items: center;
   justify-content: center;
   font-size: 1.125rem;
+  padding: 0;
+  width: auto;
+  height: auto;
 }
 
 .desktop-exercise-row:hover .drag-handle {
@@ -335,6 +343,7 @@
   background: var(--bs-card-bg, #fff);
   z-index: 100;
   border-radius: var(--bs-border-radius);
+  transform: none;
 }
 
 .desktop-exercise-row.sortable-chosen {
