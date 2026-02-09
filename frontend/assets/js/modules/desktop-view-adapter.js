@@ -115,8 +115,10 @@
         // Wire desktop toolbar buttons
         wireDesktopToolbar();
 
-        // Wire sidebar toggle
-        wireSidebarToggle();
+        // Initialize sidebar (always visible on desktop)
+        if (window.desktopSidebar && window.desktopSidebar.init) {
+            window.desktopSidebar.init();
+        }
 
         // Wire desktop tags/description popovers
         wireDesktopMetadataPopovers();
@@ -167,18 +169,6 @@
         if (nameInput) {
             nameInput.addEventListener('input', () => {
                 if (window.markEditorDirty) window.markEditorDirty();
-            });
-        }
-    }
-
-    /**
-     * Wire sidebar toggle button
-     */
-    function wireSidebarToggle() {
-        const toggleBtn = document.getElementById('desktopToggleSidebarBtn');
-        if (toggleBtn && window.desktopSidebar) {
-            toggleBtn.addEventListener('click', () => {
-                window.desktopSidebar.toggle();
             });
         }
     }

@@ -62,7 +62,10 @@
     <link rel="stylesheet" href="/static/assets/css/components/note-card.css?v=1.0.0" />
 
     <!-- Desktop Builder CSS -->
-    <link rel="stylesheet" href="/static/assets/css/desktop-builder.css?v=20260208-01" />
+    <link rel="stylesheet" href="/static/assets/css/desktop-builder.css?v=20260209-01" />
+
+    <!-- Exercise Database CSS (shared card styles for sidebar) -->
+    <link rel="stylesheet" href="/static/assets/css/exercise-database.css?v=2.0.2" />
 
     <!-- Helpers -->
     <script src="/static/assets/vendor/js/helpers.js"></script>
@@ -291,26 +294,41 @@
                   <!-- 2-Panel Layout (Sidebar + Editor) -->
                   <div class="desktop-builder-layout d-flex gap-3">
 
-                    <!-- LEFT: Exercise Library Sidebar (hidden by default) -->
-                    <div id="desktopSidebar" class="desktop-sidebar" style="display: none;">
+                    <!-- LEFT: Exercise Library Sidebar (always visible on desktop) -->
+                    <div id="desktopSidebar" class="desktop-sidebar">
                       <div class="card h-100">
-                        <div class="card-header d-flex justify-content-between align-items-center py-2">
+                        <div class="card-header py-2">
                           <h6 class="mb-0"><i class="bx bx-library me-1"></i>Exercise Library</h6>
-                          <button type="button" class="btn btn-sm btn-ghost-secondary p-1" id="closeSidebarBtn" title="Close">
-                            <i class="bx bx-x"></i>
-                          </button>
                         </div>
                         <div class="card-body p-0 d-flex flex-column" style="overflow: hidden;">
-                          <div class="p-2 border-bottom">
-                            <input type="text" class="form-control form-control-sm" id="sidebarSearch" placeholder="Search exercises...">
+                          <!-- Toolbar: search + sort + filter + custom -->
+                          <div class="sidebar-toolbar p-2 border-bottom">
+                            <div class="exercise-toolbar" id="sidebarToolbar">
+                              <div class="exercise-toolbar-search">
+                                <i class="bx bx-search"></i>
+                                <input type="text" id="sidebarSearch" placeholder="Search exercises..." autocomplete="off">
+                                <button class="exercise-toolbar-clear" id="sidebarClearSearchBtn" style="display: none;" type="button">
+                                  <i class="bx bx-x"></i>
+                                </button>
+                              </div>
+                              <button class="btn btn-outline-secondary exercise-toolbar-btn" id="sidebarSortBtn" type="button">
+                                <i class="bx bx-sort-a-z"></i>
+                                <span class="sort-label">A-Z</span>
+                              </button>
+                              <button class="btn btn-outline-secondary exercise-toolbar-btn" id="sidebarFilterBtn" type="button">
+                                <i class="bx bx-filter"></i>
+                                <span class="filter-label">Filter</span>
+                                <span class="filter-badge badge bg-primary ms-1" id="sidebarFilterBadge" style="display: none;">0</span>
+                              </button>
+                              <button class="btn btn-outline-secondary exercise-toolbar-btn" id="sidebarCustomToggleBtn" type="button">
+                                <i class="bx bx-user"></i>
+                                <span class="custom-label">Custom</span>
+                              </button>
+                            </div>
                           </div>
-                          <div class="px-2 py-1 border-bottom">
-                            <select class="form-select form-select-sm" id="sidebarMuscleFilter">
-                              <option value="">All Muscle Groups</option>
-                            </select>
-                          </div>
+                          <!-- Exercise list (scrollable) -->
                           <div id="sidebarExerciseList" class="sidebar-exercise-list">
-                            <!-- Populated by desktop-sidebar.js on first open -->
+                            <!-- Populated by desktop-sidebar.js -->
                           </div>
                         </div>
                       </div>
@@ -330,8 +348,7 @@
                           <div class="desktop-exercise-header">
                             <div></div>
                             <div>Exercise</div>
-                            <div>Sets</div>
-                            <div>Reps</div>
+                            <div>Protocol</div>
                             <div>Rest</div>
                             <div>Weight</div>
                             <div></div>
@@ -348,8 +365,9 @@
                         <button type="button" class="btn btn-outline-primary" id="desktopAddGroupBtn">
                           <i class="bx bx-plus me-1"></i>Add Exercise Group
                         </button>
-                        <button type="button" class="btn btn-outline-secondary" id="desktopToggleSidebarBtn">
-                          <i class="bx bx-library me-1"></i>Exercise Library
+                        <button type="button" class="btn btn-outline-secondary" id="desktopCustomExerciseBtn"
+                                data-bs-toggle="modal" data-bs-target="#customExerciseModal">
+                          <i class="bx bx-plus-circle me-1"></i>Create Custom Exercise
                         </button>
                       </div>
                     </div>
@@ -620,7 +638,7 @@
     <script src="/static/assets/js/modules/autosave-manager.js"></script>
     
     <!-- Card Renderer Module (MUST load before workouts.js) -->
-    <script src="/static/assets/js/modules/card-renderer.js"></script>
+    <script src="/static/assets/js/modules/card-renderer.js?v=20260209-01"></script>
 
     <!-- Exercise Search Dependencies (load in order) -->
     <script src="/static/assets/js/data/exercise-seed-data.js"></script>
@@ -628,6 +646,9 @@
     
     <!-- Core Services -->
     <script src="/static/assets/js/services/exercise-cache-service.js?v=20251214-01"></script>
+
+    <!-- Exercise Rendering (difficulty badges, details modal, favorites) -->
+    <script src="/static/assets/js/dashboard/exercise-rendering.js?v=3.0.0"></script>
 
     <!-- Muscle Group Summary Service (computes muscle breakdown from exercises) -->
     <script src="/static/assets/js/services/muscle-summary-service.js?v=1.1.0"></script>
@@ -645,15 +666,15 @@
     <script src="/static/assets/js/components/offcanvas/offcanvas-manager.js?v=20251220-01"></script>
     
     <!-- Unified Offcanvas Factory (Modular v3.0.0) -->
-    <script type="module" src="/static/assets/js/components/offcanvas/index.js?v=20251220-02"></script>
+    <script type="module" src="/static/assets/js/components/offcanvas/index.js?v=20260209-01"></script>
 
     <!-- UI Helpers -->
     <script src="/static/assets/js/dashboard/ui-helpers.js?v=20251020-04"></script>
 
     <!-- Desktop Builder Modules (load after card-renderer, exercise-autocomplete, before managers) -->
     <script src="/static/assets/js/modules/desktop-card-renderer.js?v=20260208-01"></script>
-    <script src="/static/assets/js/modules/desktop-sidebar.js?v=20260208-01"></script>
-    <script src="/static/assets/js/modules/desktop-view-adapter.js?v=20260208-01"></script>
+    <script src="/static/assets/js/modules/desktop-sidebar.js?v=20260209-01"></script>
+    <script src="/static/assets/js/modules/desktop-view-adapter.js?v=20260209-01"></script>
 
     <!-- Exercise group & bonus management -->
     <script src="/static/assets/js/dashboard/exercise-group-manager.js?v=20260208-01"></script>
