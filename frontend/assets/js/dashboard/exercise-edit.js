@@ -6,22 +6,28 @@
  * @version 1.0.0
  */
 
-const editPage = new FFNBasePage({
-    requireAuth: true,
-    autoLoad: true,
-    onDataLoad: async (page) => {
-        await initExerciseEdit(page);
-    }
-});
-
 // Page state
 const editState = {
     exerciseId: null,
     exercise: null,
     linkedExerciseId: null,
     linkedExerciseName: null,
-    isDirty: false
+    isDirty: false,
+    initialized: false
 };
+
+const editPage = new FFNBasePage({
+    requireAuth: false,
+    autoLoad: false,
+    onAuthStateChange: async (user) => {
+        if (user && !editState.initialized) {
+            editState.initialized = true;
+            await initExerciseEdit(editPage);
+        } else if (!user) {
+            showError('Please sign in to edit exercises. Use the menu to log in.');
+        }
+    }
+});
 
 /**
  * Initialize the exercise edit page
