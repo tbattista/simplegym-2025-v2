@@ -61,7 +61,8 @@ class CardRenderer {
         // Build meta text (plain text, not badges)
         let metaText = '';
         if (hasData) {
-            const parts = [`${data.sets} sets`, `${data.reps} reps`, `${data.rest} rest`];
+            const protocol = data.sets && data.reps ? `${data.sets}×${data.reps}` : (data.sets || data.reps || '');
+            const parts = [protocol, `${data.rest} rest`].filter(Boolean);
             if (data.default_weight) {
                 const unitDisplay = data.default_weight_unit !== 'other' ? ` ${data.default_weight_unit}` : '';
                 parts.push(`${data.default_weight}${unitDisplay}`);
@@ -154,7 +155,8 @@ class CardRenderer {
         // Build meta text (plain text, not badges)
         let metaText = '';
         if (hasData) {
-            const parts = [`${groupData.sets} sets`, `${groupData.reps} reps`, `${groupData.rest} rest`];
+            const protocol = groupData.sets && groupData.reps ? `${groupData.sets}×${groupData.reps}` : (groupData.sets || groupData.reps || '');
+            const parts = [protocol, `${groupData.rest} rest`].filter(Boolean);
             if (groupData.default_weight) {
                 const unitDisplay = groupData.default_weight_unit !== 'other' ? ` ${groupData.default_weight_unit}` : '';
                 parts.push(`${groupData.default_weight}${unitDisplay}`);
@@ -253,7 +255,8 @@ class CardRenderer {
         // Build meta text (plain text, not badges)
         let metaText = '';
         if (hasData) {
-            metaText = `${data.sets} sets • ${data.reps} reps • ${data.rest} rest`;
+            const bonusProtocol = data.sets && data.reps ? `${data.sets}×${data.reps}` : (data.sets || data.reps || '');
+            metaText = [bonusProtocol, `${data.rest} rest`].filter(Boolean).join(' • ');
         } else {
             metaText = 'Click edit to add exercise';
         }
@@ -294,7 +297,8 @@ class CardRenderer {
         // Build meta text (plain text, not badges)
         let metaText = '';
         if (hasData) {
-            metaText = `${bonusData.sets} sets • ${bonusData.reps} reps • ${bonusData.rest} rest`;
+            const bonusProtocol2 = bonusData.sets && bonusData.reps ? `${bonusData.sets}×${bonusData.reps}` : (bonusData.sets || bonusData.reps || '');
+            metaText = [bonusProtocol2, `${bonusData.rest} rest`].filter(Boolean).join(' • ');
         } else {
             metaText = 'Click edit to add exercise';
         }

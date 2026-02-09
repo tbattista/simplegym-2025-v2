@@ -48,7 +48,7 @@ import {
     createExerciseGroupEditor,
     renderAlternateSlot,
     createExerciseDetailsEditor
-} from './offcanvas-forms.js';
+} from './offcanvas-forms.js?v=20260209-01';
 
 // Import note components
 import {

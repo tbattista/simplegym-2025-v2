@@ -52,6 +52,8 @@ class DesktopCardRenderer {
               ).join(' &middot; ')}</div>`
             : '';
 
+        const protocolDisplay = data.sets && data.reps ? `${data.sets}×${data.reps}` : (data.sets || data.reps || '');
+
         return `
             <div class="desktop-exercise-row exercise-group-card" data-group-id="${groupId}" data-index="${index}">
                 <div class="drag-handle" title="Drag to reorder">
@@ -63,11 +65,8 @@ class DesktopCardRenderer {
                     </div>
                     ${alternatesHtml}
                 </div>
-                <div class="inline-editable" data-field="sets" data-group-id="${groupId}">
-                    <span class="display-value${!data.sets ? ' empty-value' : ''}">${data.sets || '-'}</span>
-                </div>
-                <div class="inline-editable" data-field="reps" data-group-id="${groupId}">
-                    <span class="display-value${!data.reps ? ' empty-value' : ''}">${data.reps || '-'}</span>
+                <div class="inline-editable" data-field="protocol" data-group-id="${groupId}">
+                    <span class="display-value${!protocolDisplay ? ' empty-value' : ''}">${protocolDisplay || '-'}</span>
                 </div>
                 <div class="inline-editable" data-field="rest" data-group-id="${groupId}">
                     <span class="display-value${!data.rest ? ' empty-value' : ''}">${data.rest || '-'}</span>
@@ -148,8 +147,9 @@ class DesktopCardRenderer {
         }
 
         // Update simple fields
-        this.updateFieldDisplay(row, 'sets', groupData.sets);
-        this.updateFieldDisplay(row, 'reps', groupData.reps);
+        const protocolDisplay = groupData.sets && groupData.reps
+            ? `${groupData.sets}×${groupData.reps}` : (groupData.sets || groupData.reps || '');
+        this.updateFieldDisplay(row, 'protocol', protocolDisplay);
         this.updateFieldDisplay(row, 'rest', groupData.rest);
 
         // Update weight
@@ -393,8 +393,12 @@ class DesktopCardRenderer {
             case 'exercise-a': return data.exercises.a || '';
             case 'exercise-b': return data.exercises.b || '';
             case 'exercise-c': return data.exercises.c || '';
-            case 'sets': return data.sets || '';
-            case 'reps': return data.reps || '';
+            case 'protocol': {
+                const s = data.sets || '';
+                const r = data.reps || '';
+                if (s && r) return `${s}×${r}`;
+                return s || r || '';
+            }
             case 'rest': return data.rest || '';
             case 'weight': return data.default_weight || '';
             default: return '';
@@ -412,8 +416,26 @@ class DesktopCardRenderer {
             case 'exercise-a': data.exercises.a = value; break;
             case 'exercise-b': data.exercises.b = value; break;
             case 'exercise-c': data.exercises.c = value; break;
-            case 'sets': data.sets = value; break;
-            case 'reps': data.reps = value; break;
+            case 'protocol': {
+                // Parse protocol back into sets and reps
+                const xPattern = /(\d+)\s*[x×]\s*(.+)/i;
+                const setsPattern = /(\d+)\s*set/i;
+                const xMatch = value.match(xPattern);
+                if (xMatch) {
+                    data.sets = xMatch[1];
+                    data.reps = xMatch[2];
+                } else {
+                    const setsMatch = value.match(setsPattern);
+                    if (setsMatch) {
+                        data.sets = setsMatch[1];
+                        data.reps = 'varies';
+                    } else {
+                        data.sets = '1';
+                        data.reps = value;
+                    }
+                }
+                break;
+            }
             case 'rest': data.rest = value; break;
             case 'weight':
                 data.default_weight = value;
@@ -430,8 +452,7 @@ class DesktopCardRenderer {
      */
     getPlaceholder(field) {
         switch (field) {
-            case 'sets': return '3';
-            case 'reps': return '8-12';
+            case 'protocol': return '3×10';
             case 'rest': return '60s';
             case 'weight': return 'lbs';
             default: return '';

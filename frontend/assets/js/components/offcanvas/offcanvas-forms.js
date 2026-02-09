@@ -266,6 +266,25 @@ export function createSkipExercise(data, onConfirm) {
 }
 
 /* ============================================
+   PROTOCOL PARSER (shared by both editors)
+   ============================================ */
+
+/**
+ * Parse protocol string into sets and reps for backward compatibility
+ * @param {string} protocol - e.g., "3×10", "AMRAP", "3 sets to failure"
+ * @returns {{sets: string, reps: string}}
+ */
+function parseProtocol(protocol) {
+    const xPattern = /(\d+)\s*[x×]\s*(.+)/i;
+    const setsPattern = /(\d+)\s*set/i;
+    const xMatch = protocol.match(xPattern);
+    if (xMatch) return { sets: xMatch[1], reps: xMatch[2] };
+    const setsMatch = protocol.match(setsPattern);
+    if (setsMatch) return { sets: setsMatch[1], reps: 'varies' };
+    return { sets: '1', reps: protocol };
+}
+
+/* ============================================
    EXERCISE GROUP EDITOR (for Workout Builder)
    Button-based exercise selection with search integration
    ============================================ */
@@ -313,11 +332,13 @@ export function createExerciseGroupEditor(config, onSave, onDelete, onSearchClic
         'kettlebell 35lbs'
     ];
     
+    // Combine sets+reps into protocol for display
+    const protocol = sets && reps ? `${sets}×${reps}` : (sets || reps || '3×10');
+
     // Track selected exercises in state
     const state = {
         exercises: { ...exercises },
-        sets,
-        reps,
+        protocol,
         rest,
         weight,
         weightUnit,
@@ -376,19 +397,16 @@ export function createExerciseGroupEditor(config, onSave, onDelete, onSearchClic
                     </button>
                 </div>
                 
-                <!-- Sets, Reps, Rest -->
+                <!-- Protocol, Rest -->
                 <div class="row g-2 mb-3">
-                    <div class="col-4">
-                        <label class="form-label">Sets</label>
-                        <input type="text" class="form-control sets-input text-center"
-                               id="editorSets" value="${escapeHtml(sets)}" placeholder="3">
+                    <div class="col-7">
+                        <label class="form-label"><i class="bx bx-list-ol me-1"></i>Protocol</label>
+                        <input type="text" class="form-control text-center"
+                               id="editorProtocol" value="${escapeHtml(protocol)}"
+                               placeholder="e.g., 3×10, AMRAP, 3 sets to failure">
+                        <small class="text-muted">Sets and reps in any format</small>
                     </div>
-                    <div class="col-4">
-                        <label class="form-label">Reps</label>
-                        <input type="text" class="form-control reps-input text-center"
-                               id="editorReps" value="${escapeHtml(reps)}" placeholder="8-12">
-                    </div>
-                    <div class="col-4">
+                    <div class="col-5">
                         <label class="form-label">Rest</label>
                         <input type="text" class="form-control rest-input text-center"
                                id="editorRest" value="${escapeHtml(rest)}" placeholder="60s">
@@ -450,8 +468,7 @@ export function createExerciseGroupEditor(config, onSave, onDelete, onSearchClic
         const alternateContainer = element.querySelector('#alternateExercisesContainer');
         const addAltBtn = element.querySelector('#addAlternateSlotBtn');
         const addAltContainer = element.querySelector('#addAltButtonContainer');
-        const setsInput = element.querySelector('#editorSets');
-        const repsInput = element.querySelector('#editorReps');
+        const protocolInput = element.querySelector('#editorProtocol');
         const restInput = element.querySelector('#editorRest');
         const weightInput = element.querySelector('#editorWeight');
         const weightUnitBtns = element.querySelectorAll('.weight-unit-btn');
@@ -659,11 +676,14 @@ export function createExerciseGroupEditor(config, onSave, onDelete, onSearchClic
                     }
                 }
                 
+                const protocolValue = protocolInput.value.trim() || '3×10';
+                const { sets: parsedSets, reps: parsedReps } = parseProtocol(protocolValue);
+
                 const groupData = {
                     groupId,
                     exercises: cleanExercises,
-                    sets: setsInput.value || '3',
-                    reps: repsInput.value || '8-12',
+                    sets: parsedSets,
+                    reps: parsedReps,
                     rest: restInput.value || '60s',
                     default_weight: weightInput.value || '',
                     default_weight_unit: state.weightUnit
@@ -911,30 +931,8 @@ export function createExerciseDetailsEditor(data, onSave) {
             updateTemplateToggle.addEventListener('change', updateInfoMessage);
         }
         
-        /**
-         * Parse protocol string into sets and reps
-         * @param {string} protocol - e.g., "3×10", "AMRAP", "3 sets to failure"
-         * @returns {{sets: string, reps: string}}
-         */
-        const parseProtocol = (protocol) => {
-            // Try to match common patterns
-            const xPattern = /(\d+)\s*[x×]\s*(.+)/i;
-            const setsPattern = /(\d+)\s*set/i;
-            
-            const xMatch = protocol.match(xPattern);
-            if (xMatch) {
-                return { sets: xMatch[1], reps: xMatch[2] };
-            }
-            
-            const setsMatch = protocol.match(setsPattern);
-            if (setsMatch) {
-                return { sets: setsMatch[1], reps: 'varies' };
-            }
-            
-            // Default fallback
-            return { sets: '1', reps: protocol };
-        };
-        
+        // parseProtocol is now a module-level function (shared with createExerciseGroupEditor)
+
         if (saveBtn) {
             saveBtn.addEventListener('click', async () => {
                 // Validate rest time input
