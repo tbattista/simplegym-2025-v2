@@ -96,77 +96,25 @@
     }
 
     /**
-     * Wire up desktop toolbar buttons to existing functions
+     * Wire up desktop-only toolbar buttons.
+     * NOTE: Save, Cancel, Delete, Add Group, and Reorder buttons are already
+     * wired by workout-editor.js via canonical IDs (after ID swap).
+     * Only wire buttons that are unique to the desktop view.
      */
     function wireDesktopToolbar() {
-        // Save button
-        const saveBtn = document.getElementById('saveWorkoutBtn');
-        if (saveBtn) {
-            saveBtn.addEventListener('click', () => {
-                if (window.saveWorkoutFromEditor) {
-                    window.saveWorkoutFromEditor();
-                }
-            });
-        }
-
-        // Cancel button (in dropdown)
-        const cancelBtn = document.getElementById('cancelEditBtn');
-        if (cancelBtn) {
-            cancelBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                if (window.cancelEditWorkout) {
-                    window.cancelEditWorkout();
-                }
-            });
-        }
-
-        // Delete button (in dropdown)
-        const deleteBtn = document.getElementById('deleteWorkoutBtn');
-        if (deleteBtn) {
-            deleteBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                if (window.deleteWorkoutFromEditor) {
-                    window.deleteWorkoutFromEditor();
-                }
-            });
-        }
-
-        // Share button (in dropdown)
+        // Share button (desktop-only, not handled by existing code)
         const shareBtn = document.getElementById('desktopShareBtn');
         if (shareBtn) {
             shareBtn.addEventListener('click', (e) => {
                 e.preventDefault();
-                // Trigger share via the existing share menu offcanvas
                 if (window.UnifiedOffcanvasFactory && window.UnifiedOffcanvasFactory.createShareMenu) {
                     window.UnifiedOffcanvasFactory.createShareMenu();
                 }
             });
         }
 
-        // Add exercise group button
-        const addGroupBtn = document.getElementById('addExerciseGroupBtnVisible');
-        if (addGroupBtn) {
-            addGroupBtn.addEventListener('click', () => {
-                if (window.ExerciseGroupManager && window.ExerciseGroupManager.add) {
-                    window.ExerciseGroupManager.add();
-                } else if (window.addExerciseGroup) {
-                    window.addExerciseGroup();
-                }
-                if (window.markEditorDirty) window.markEditorDirty();
-            });
-        }
-
-        // Reorder button
-        const reorderBtn = document.getElementById('reorderExercisesBtn');
-        if (reorderBtn) {
-            reorderBtn.addEventListener('click', () => {
-                if (window.openReorderOffcanvas) {
-                    window.openReorderOffcanvas();
-                }
-            });
-        }
-
         // Workout name input - trigger dirty state on change
+        // (not tracked by existing code)
         const nameInput = document.getElementById('workoutName');
         if (nameInput) {
             nameInput.addEventListener('input', () => {
