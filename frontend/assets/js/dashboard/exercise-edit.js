@@ -16,15 +16,28 @@ const editState = {
     initialized: false
 };
 
+let authTimeoutId = null;
+
 const editPage = new FFNBasePage({
     requireAuth: false,
     autoLoad: false,
     onAuthStateChange: async (user) => {
         if (user && !editState.initialized) {
             editState.initialized = true;
+            if (authTimeoutId) {
+                clearTimeout(authTimeoutId);
+                authTimeoutId = null;
+            }
             await initExerciseEdit(editPage);
-        } else if (!user) {
-            showError('Please sign in to edit exercises. Use the menu to log in.');
+        } else if (!user && !editState.initialized) {
+            // Delay error - auth may still be resolving from Firebase
+            if (!authTimeoutId) {
+                authTimeoutId = setTimeout(() => {
+                    if (!editState.initialized) {
+                        showError('Please sign in to edit exercises. Use the menu to log in.');
+                    }
+                }, 2000);
+            }
         }
     }
 });
@@ -33,6 +46,10 @@ const editPage = new FFNBasePage({
  * Initialize the exercise edit page
  */
 async function initExerciseEdit(page) {
+    // Reset UI state in case error was shown while waiting for auth
+    document.getElementById('errorState').style.display = 'none';
+    document.getElementById('loadingState').style.display = '';
+
     const urlParams = new URLSearchParams(window.location.search);
     const exerciseId = urlParams.get('id');
     const focusLink = urlParams.get('focus') === 'link';
