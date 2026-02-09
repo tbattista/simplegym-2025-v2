@@ -4,9 +4,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Task Completion Summary
 
-After completing any action or task, provide a brief 2-3 sentence summary that includes:
+At the END of your final message for any task, provide a brief 2-3 sentence summary that includes:
 1. What the user asked for
 2. What was done to fulfill the request
+
+This summary must be the LAST section of your response, after all code changes and explanations.
 
 Example: "You asked me to add a logout button to the navbar. I added a logout button in `navbar.html` that calls `authService.logout()` and redirects to the login page."
 
