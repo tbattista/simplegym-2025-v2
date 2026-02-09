@@ -49,11 +49,59 @@
     };
 
     // =========================================
+    // Suppress auto-open offcanvas on Add Exercise Group
+    // Desktop uses inline editing, so auto-open is unnecessary.
+    // Explicit "Full Edit" from dropdown menu still works.
+    // =========================================
+
+    let _suppressNextEditorOpen = false;
+
+    /**
+     * Override addExerciseGroup and openExerciseGroupEditor.
+     * Called from initDesktopView() after all scripts have loaded.
+     */
+    function overrideEditorAutoOpen() {
+        // Wrap openExerciseGroupEditor to check suppress flag
+        const _origOpen = window.openExerciseGroupEditor;
+        if (_origOpen) {
+            window.openExerciseGroupEditor = function(groupId) {
+                if (_suppressNextEditorOpen) {
+                    _suppressNextEditorOpen = false;
+                    console.log('🖥️ Desktop: Skipped auto-open editor (use inline editing)');
+                    return;
+                }
+                _origOpen(groupId);
+            };
+        }
+
+        // Wrap addExerciseGroup to set suppress flag before add
+        const _origAdd = window.addExerciseGroup;
+        if (_origAdd) {
+            window.addExerciseGroup = function() {
+                _suppressNextEditorOpen = true;
+                _origAdd();
+            };
+        }
+
+        // Also wrap ExerciseGroupManager.add
+        if (window.ExerciseGroupManager && window.ExerciseGroupManager.add) {
+            const _origManagerAdd = window.ExerciseGroupManager.add.bind(window.ExerciseGroupManager);
+            window.ExerciseGroupManager.add = function() {
+                _suppressNextEditorOpen = true;
+                _origManagerAdd();
+            };
+        }
+    }
+
+    // =========================================
     // Initialize desktop components after DOM ready
     // =========================================
 
     function initDesktopView() {
         console.log('🖥️ Initializing desktop view components...');
+
+        // Override add/open to suppress auto-open offcanvas on desktop
+        overrideEditorAutoOpen();
 
         // Initialize inline editing on exercise groups container
         const exerciseGroupsContainer = document.getElementById('exerciseGroups');
