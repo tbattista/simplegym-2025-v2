@@ -1,14 +1,19 @@
 /**
  * Settings Page Controller
- * Manages toggle state for all app preferences
+ * Manages toggle and select state for all app preferences
  */
 
 (function() {
     'use strict';
 
-    // Map of toggle element IDs to setting keys
+    // Toggle element IDs → setting keys
     const TOGGLES = {
         showActivityChart: 'ffn_show_activity_chart'
+    };
+
+    // Select element IDs → setting keys + defaults
+    const SELECTS = {
+        activityChartDays: { key: 'ffn_activity_chart_days', defaultValue: 45 }
     };
 
     function initSettingsPage() {
@@ -17,21 +22,37 @@
             return;
         }
 
-        // Initialize each toggle from stored values
+        // Initialize toggles
         Object.entries(TOGGLES).forEach(([elementId, settingKey]) => {
             const el = document.getElementById(elementId);
             if (!el) return;
-
-            // Set initial state
             el.checked = window.settingsManager.get(settingKey, true);
-
-            // Listen for changes — instant save
             el.addEventListener('change', () => {
                 window.settingsManager.set(settingKey, el.checked);
+                updateDaysRowVisibility();
             });
         });
 
+        // Initialize selects
+        Object.entries(SELECTS).forEach(([elementId, { key, defaultValue }]) => {
+            const el = document.getElementById(elementId);
+            if (!el) return;
+            el.value = String(window.settingsManager.get(key, defaultValue));
+            el.addEventListener('change', () => {
+                window.settingsManager.set(key, Number(el.value));
+            });
+        });
+
+        updateDaysRowVisibility();
         console.log('✅ Settings page initialized');
+    }
+
+    function updateDaysRowVisibility() {
+        const chartEnabled = window.settingsManager.get('ffn_show_activity_chart', true);
+        const daysRow = document.getElementById('activityChartDaysRow');
+        if (daysRow) {
+            daysRow.style.display = chartEnabled ? 'flex' : 'none';
+        }
     }
 
     document.addEventListener('DOMContentLoaded', initSettingsPage);

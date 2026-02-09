@@ -102,16 +102,30 @@
                   <div class="card mb-4">
                     <h5 class="card-header">Home Page</h5>
                     <div class="card-body">
-                      <div class="d-flex justify-content-between align-items-center">
+                      <div class="d-flex justify-content-between align-items-center mb-3">
                         <div>
                           <label class="form-check-label fw-medium" for="showActivityChart">
-                            90-Day Activity Chart
+                            Activity Chart
                           </label>
                           <div class="form-text">Show a workout heatmap on the home page</div>
                         </div>
                         <div class="form-check form-switch">
                           <input class="form-check-input" type="checkbox" id="showActivityChart" />
                         </div>
+                      </div>
+                      <div class="d-flex justify-content-between align-items-center" id="activityChartDaysRow">
+                        <div>
+                          <label class="form-check-label fw-medium" for="activityChartDays">
+                            Chart Range
+                          </label>
+                          <div class="form-text">Number of days to display</div>
+                        </div>
+                        <select class="form-select form-select-sm w-auto" id="activityChartDays">
+                          <option value="30">30 days</option>
+                          <option value="45">45 days</option>
+                          <option value="60">60 days</option>
+                          <option value="90">90 days</option>
+                        </select>
                       </div>
                     </div>
                   </div>

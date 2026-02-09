@@ -14,7 +14,8 @@
     'use strict';
 
     const DEFAULTS = {
-        ffn_show_activity_chart: true
+        ffn_show_activity_chart: true,
+        ffn_activity_chart_days: 45
     };
 
     class SettingsManager {

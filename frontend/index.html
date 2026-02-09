@@ -160,12 +160,12 @@
                   </div>
                 </div>
 
-                <!-- Section 3.5: 90-Day Activity Chart (Conditional) -->
+                <!-- Section 3.5: Activity Chart (Conditional) -->
                 <div id="activityChartSection" class="mb-4" style="display: none;">
                   <div class="card">
                     <div class="card-body py-3 px-3">
                       <div class="d-flex justify-content-between align-items-center mb-2">
-                        <span class="fw-semibold small">Last 90 Days</span>
+                        <span class="fw-semibold small" id="activityChartLabel">Last 45 Days</span>
                         <a href="workout-history.html?view=calendar" class="text-muted text-decoration-none"><i class="bx bx-calendar"></i></a>
                       </div>
                       <div id="activityBlockChart"></div>
@@ -699,10 +699,20 @@
             }
 
             section.style.display = 'block';
+            const days = window.settingsManager?.get('ffn_activity_chart_days', 45);
+
+            // Update label
+            const label = document.getElementById('activityChartLabel');
+            if (label) label.textContent = `Last ${days} Days`;
+
+            // Recreate chart if day count changed
+            if (activityBlockChart && activityBlockChart.daysToShow !== days) {
+                activityBlockChart = null;
+            }
 
             if (!activityBlockChart && window.ActivityBlockChart) {
                 activityBlockChart = new ActivityBlockChart('activityBlockChart', {
-                    daysToShow: 90,
+                    daysToShow: days,
                     onDayClick: (dateKey) => {
                         window.location.href = `workout-history.html?view=calendar`;
                     }
