@@ -57,10 +57,36 @@
   min-width: 0;
 }
 
-/* Workout dropdown - slightly wider */
-.session-toolbar-select#workoutTypeFilter {
-  flex: 1;
-  max-width: 180px;
+/* Workout filter button */
+.workout-filter-btn {
+  position: relative;
+  border: 1px solid var(--bs-border-color);
+  background: var(--bs-body-bg);
+  color: var(--bs-body-color);
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.workout-filter-btn:hover {
+  border-color: var(--bs-primary);
+  color: var(--bs-primary);
+}
+
+.workout-filter-btn.active-filter {
+  border-color: var(--bs-primary);
+  color: var(--bs-primary);
+  background: rgba(var(--bs-primary-rgb), 0.08);
+}
+
+.filter-badge {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--bs-primary);
+  margin-left: 0.25rem;
+  vertical-align: middle;
 }
 
 /* Page size - compact */
@@ -214,11 +240,12 @@
     flex-wrap: wrap;
   }
 
-  /* Line 1: Workout filter takes full width */
-  .session-toolbar-select#workoutTypeFilter {
+  /* Line 1: Workout filter button takes full width */
+  .workout-filter-btn {
     flex: 1 1 100%;
     max-width: none;
     order: 1;
+    justify-content: flex-start;
   }
 
   /* Line 2: Page size (left), Sort, Delete (right) */
@@ -318,6 +345,94 @@
 [data-bs-theme="dark"] .date-filter-indicator {
   background: rgba(var(--bs-primary-rgb), 0.15);
   border-color: rgba(var(--bs-primary-rgb), 0.3);
+}
+
+[data-bs-theme="dark"] .workout-filter-btn {
+  background: var(--bs-gray-900);
+  border-color: var(--bs-gray-600);
+  color: var(--bs-gray-300);
+}
+
+[data-bs-theme="dark"] .workout-filter-btn:hover {
+  border-color: var(--bs-primary);
+  color: var(--bs-primary);
+}
+
+[data-bs-theme="dark"] .workout-filter-btn.active-filter {
+  border-color: var(--bs-primary);
+  color: var(--bs-primary);
+  background: rgba(var(--bs-primary-rgb), 0.15);
+}
+
+/* ============================================
+   WORKOUT FILTER OFFCANVAS
+   ============================================ */
+
+.workout-filter-list {
+  padding: 0;
+}
+
+.workout-filter-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  border-bottom: 1px solid var(--bs-border-color);
+  transition: background-color 0.1s ease;
+  user-select: none;
+}
+
+.workout-filter-item:last-child {
+  border-bottom: none;
+}
+
+.workout-filter-item:hover {
+  background-color: rgba(var(--bs-primary-rgb), 0.05);
+}
+
+.workout-filter-item:active {
+  background-color: rgba(var(--bs-primary-rgb), 0.1);
+}
+
+.workout-filter-item .form-check-input {
+  flex-shrink: 0;
+  margin: 0;
+  cursor: pointer;
+}
+
+.workout-filter-item-name {
+  flex: 1;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--bs-body-color);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.workout-filter-item-count {
+  flex-shrink: 0;
+  font-size: 0.75rem;
+  color: var(--bs-secondary-color);
+  background: var(--bs-tertiary-bg);
+  padding: 0.125rem 0.5rem;
+  border-radius: 1rem;
+  font-weight: 500;
+}
+
+/* Dark mode - offcanvas list */
+[data-bs-theme="dark"] .workout-filter-item {
+  border-bottom-color: var(--bs-gray-700);
+}
+
+[data-bs-theme="dark"] .workout-filter-item:hover {
+  background-color: rgba(var(--bs-primary-rgb), 0.1);
+}
+
+[data-bs-theme="dark"] .workout-filter-item-count {
+  background: var(--bs-gray-800);
+  color: var(--bs-gray-400);
 }
 
 /* ============================================

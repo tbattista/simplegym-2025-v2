@@ -1,12 +1,22 @@
 /**
  * Ghost Gym - Workout History Filters
  * Session filtering, sorting, and pagination
- * @version 1.0.0
+ * @version 2.0.0
  */
 
 /* ============================================
    FILTER BAR
    ============================================ */
+
+/**
+ * Get the display label for the current workout filter state
+ */
+function getWorkoutFilterLabel() {
+  const filters = window.ffn.workoutHistory.workoutTypeFilters || [];
+  if (filters.length === 0) return 'All Workouts';
+  if (filters.length === 1) return filters[0];
+  return `${filters.length} Workouts`;
+}
 
 /**
  * Render session toolbar
@@ -15,11 +25,11 @@
 function renderSessionFilterBar() {
   const state = window.ffn.workoutHistory;
   const isAllMode = state.isAllMode;
-  const activeWorkout = state.workoutTypeFilter;
   const activeSort = state.sessionSort;
   const activePageSize = state.pageSize;
-  const uniqueWorkouts = state.uniqueWorkouts || [];
   const deleteMode = state.deleteMode;
+  const filters = state.workoutTypeFilters || [];
+  const hasActiveFilter = filters.length > 0;
 
   // Sort label mapping
   const sortLabels = {
@@ -27,25 +37,18 @@ function renderSessionFilterBar() {
     'date-asc': 'Oldest'
   };
 
-  // Build workout dropdown options (All Mode only)
-  const workoutOptions = uniqueWorkouts.map(w =>
-    `<option value="${escapeHtml(w.name)}" ${activeWorkout === w.name ? 'selected' : ''}>
-      ${escapeHtml(w.name)} (${w.count})
-    </option>`
-  ).join('');
-
   // All Mode: full toolbar
   if (isAllMode) {
     return `
       <div class="session-toolbar mb-3">
-        <!-- Workout Type Dropdown (Line 1 on mobile) -->
-        <select class="form-select form-select-sm session-toolbar-select"
-                id="workoutTypeFilter"
-                onchange="setWorkoutTypeFilter(this.value)"
+        <!-- Workout Filter Button (Line 1 on mobile) -->
+        <button class="btn btn-sm session-toolbar-btn workout-filter-btn ${hasActiveFilter ? 'active-filter' : ''}"
+                onclick="openWorkoutFilterOffcanvas()"
                 ${deleteMode ? 'disabled' : ''}>
-          <option value="all" ${activeWorkout === 'all' ? 'selected' : ''}>All Workouts</option>
-          ${workoutOptions}
-        </select>
+          <i class="bx bx-filter-alt"></i>
+          <span class="ms-1" id="workoutFilterLabel">${escapeHtml(getWorkoutFilterLabel())}</span>
+          ${hasActiveFilter ? '<span class="filter-badge"></span>' : ''}
+        </button>
 
         <!-- Page Size Selector (Line 2, left on mobile) -->
         <select class="form-select form-select-sm session-toolbar-select session-pagesize"
@@ -81,16 +84,16 @@ function renderSessionFilterBar() {
  */
 function applySessionFilters(sessions) {
   const state = window.ffn.workoutHistory;
-  const workoutFilter = state.workoutTypeFilter;
+  const workoutFilters = state.workoutTypeFilters || [];
   const dateFilter = state.dateFilter;
 
   let filtered = sessions;
 
-  // Filter by workout type
-  if (workoutFilter !== 'all') {
+  // Filter by workout type (multi-select)
+  if (workoutFilters.length > 0) {
     filtered = filtered.filter(session => {
       const workoutName = session.workout_name || 'Unknown Workout';
-      return workoutName === workoutFilter;
+      return workoutFilters.includes(workoutName);
     });
   }
 
@@ -138,10 +141,11 @@ function sortSessions(sessions) {
 }
 
 /**
- * Set workout type filter and re-render
+ * Set workout type filters and re-render
+ * @param {Array<string>} names - Array of workout names (empty = all)
  */
-function setWorkoutTypeFilter(workoutName) {
-  window.ffn.workoutHistory.workoutTypeFilter = workoutName;
+function setWorkoutTypeFilters(names) {
+  window.ffn.workoutHistory.workoutTypeFilters = names;
   window.ffn.workoutHistory.currentPage = 1; // Reset page
   renderSessionHistory();
 }
@@ -165,7 +169,7 @@ function cycleSessionSort() {
  */
 function resetSessionFilters() {
   window.ffn.workoutHistory.sessionFilter = 'all';
-  window.ffn.workoutHistory.workoutTypeFilter = 'all';
+  window.ffn.workoutHistory.workoutTypeFilters = [];
   window.ffn.workoutHistory.sessionSort = 'date-desc';
   window.ffn.workoutHistory.currentPage = 1;
   window.ffn.workoutHistory.pageSize = 20;
@@ -279,11 +283,12 @@ function renderPaginationControls(currentPage, totalPages, totalItems) {
 window.renderSessionFilterBar = renderSessionFilterBar;
 window.applySessionFilters = applySessionFilters;
 window.sortSessions = sortSessions;
-window.setWorkoutTypeFilter = setWorkoutTypeFilter;
+window.setWorkoutTypeFilters = setWorkoutTypeFilters;
+window.getWorkoutFilterLabel = getWorkoutFilterLabel;
 window.cycleSessionSort = cycleSessionSort;
 window.resetSessionFilters = resetSessionFilters;
 window.setPageSize = setPageSize;
 window.goToPage = goToPage;
 window.renderPaginationControls = renderPaginationControls;
 
-console.log('📦 Workout History Filters module loaded (v1.0.0)');
+console.log('📦 Workout History Filters module loaded (v2.0.0)');

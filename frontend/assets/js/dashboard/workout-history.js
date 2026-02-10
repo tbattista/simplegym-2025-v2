@@ -45,7 +45,7 @@ window.ffn.workoutHistory = {
 
   // Session filters (All Mode)
   sessionFilter: 'all', // 'all', 'completed', 'partial', 'abandoned'
-  workoutTypeFilter: 'all', // 'all' or specific workout_name
+  workoutTypeFilters: [], // [] = all workouts, or array of selected workout names
   sessionSort: 'date-desc', // 'date-desc', 'date-asc', 'duration-desc', 'duration-asc'
 
   // Pagination
