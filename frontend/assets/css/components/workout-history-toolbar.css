@@ -57,13 +57,6 @@
   min-width: 0;
 }
 
-/* Filter row: chip + page size side by side */
-.session-filter-row {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
 /* Workout filter chip */
 .workout-filter-chip {
   display: inline-flex;
@@ -110,12 +103,6 @@
 .workout-filter-chip:disabled {
   opacity: 0.5;
   cursor: not-allowed;
-}
-
-/* Page size - compact */
-.session-toolbar-select:last-child {
-  width: auto;
-  min-width: 60px;
 }
 
 /* ============================================
@@ -261,20 +248,6 @@
   .session-toolbar {
     gap: 0.5rem;
     flex-wrap: wrap;
-  }
-
-  .session-filter-row {
-    gap: 0.375rem;
-  }
-
-  .session-toolbar-select.session-pagesize {
-    height: 2rem;
-    padding: 0 1.75rem 0 0.5rem;
-    font-size: 0.8125rem;
-    width: auto;
-    min-width: 85px;
-    background-position: right 0.375rem center;
-    background-size: 14px 10px;
   }
 
   .session-toolbar-btn {

@@ -26,7 +26,6 @@ function renderSessionFilterBar() {
   const state = window.ffn.workoutHistory;
   const isAllMode = state.isAllMode;
   const activeSort = state.sessionSort;
-  const activePageSize = state.pageSize;
   const deleteMode = state.deleteMode;
   const filters = state.workoutTypeFilters || [];
   const hasActiveFilter = filters.length > 0;
@@ -40,18 +39,8 @@ function renderSessionFilterBar() {
   // All Mode: full toolbar
   if (isAllMode) {
     return `
-      <div class="session-toolbar mb-2">
-        <!-- Sort Cycle Button -->
-        <button class="btn btn-sm btn-outline-secondary session-toolbar-btn"
-                onclick="cycleSessionSort()"
-                ${deleteMode ? 'disabled' : ''}>
-          <i class="bx bx-sort-alt-2"></i>
-          <span class="ms-1">${sortLabels[activeSort]}</span>
-        </button>
-      </div>
-
-      <!-- Filter Chip + Page Size row -->
-      <div class="session-filter-row mb-3">
+      <div class="session-toolbar mb-3">
+        <!-- Workout Filter Chip -->
         <button class="workout-filter-chip ${hasActiveFilter ? 'active-filter' : ''}"
                 onclick="openWorkoutFilterOffcanvas()"
                 ${deleteMode ? 'disabled' : ''}>
@@ -60,14 +49,13 @@ function renderSessionFilterBar() {
           ${hasActiveFilter ? '<i class="bx bx-x workout-filter-chip-clear" onclick="event.stopPropagation(); setWorkoutTypeFilters([]); return false;"></i>' : ''}
         </button>
 
-        <select class="form-select form-select-sm session-toolbar-select session-pagesize"
-                onchange="setPageSize(this.value)"
+        <!-- Sort Cycle Button -->
+        <button class="btn btn-sm btn-outline-secondary session-toolbar-btn"
+                onclick="cycleSessionSort()"
                 ${deleteMode ? 'disabled' : ''}>
-          <option value="10" ${activePageSize == 10 ? 'selected' : ''}>10 / page</option>
-          <option value="20" ${activePageSize == 20 ? 'selected' : ''}>20 / page</option>
-          <option value="50" ${activePageSize == 50 ? 'selected' : ''}>50 / page</option>
-          <option value="all" ${activePageSize === 'all' ? 'selected' : ''}>Show all</option>
-        </select>
+          <i class="bx bx-sort-alt-2"></i>
+          <span class="ms-1">${sortLabels[activeSort]}</span>
+        </button>
       </div>
     `;
   }
@@ -254,6 +242,8 @@ function renderPaginationControls(currentPage, totalPages, totalItems) {
     pageNumbers += `<button class="pagination-btn" onclick="goToPage(${totalPages})">${totalPages}</button>`;
   }
 
+  const activePageSize = state.pageSize;
+
   return `
     <div class="session-pagination">
       <div class="pagination-info">
@@ -272,6 +262,13 @@ function renderPaginationControls(currentPage, totalPages, totalItems) {
           <i class="bx bx-chevron-right"></i>
         </button>
       </div>
+      <select class="form-select form-select-sm session-pagesize-select"
+              onchange="setPageSize(this.value)">
+        <option value="10" ${activePageSize == 10 ? 'selected' : ''}>10 / page</option>
+        <option value="20" ${activePageSize == 20 ? 'selected' : ''}>20 / page</option>
+        <option value="50" ${activePageSize == 50 ? 'selected' : ''}>50 / page</option>
+        <option value="all" ${activePageSize === 'all' ? 'selected' : ''}>Show all</option>
+      </select>
     </div>
   `;
 }
