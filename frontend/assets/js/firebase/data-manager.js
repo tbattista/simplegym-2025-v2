@@ -843,8 +843,11 @@ class FirebaseDataManager {
             }
         } catch (error) {
             console.error('❌ Error updating workout:', error);
-            // Fallback to localStorage
-            return this.updateLocalStorageWorkout(workoutId, workoutData);
+            // Only fall back to localStorage for anonymous users
+            if (!this.getFirebaseUser()) {
+                return this.updateLocalStorageWorkout(workoutId, workoutData);
+            }
+            throw error;
         }
     }
     

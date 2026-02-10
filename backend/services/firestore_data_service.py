@@ -238,39 +238,39 @@ class FirestoreDataService:
             return None
     
     async def update_workout(self, user_id: str, workout_id: str, update_request: UpdateWorkoutRequest) -> Optional[WorkoutTemplate]:
-        """Update a workout"""
+        """Update a workout. Returns None if not found. Raises on transient errors."""
         if not self.is_available():
-            return None
-        
+            raise RuntimeError("Firestore service is not available")
+
         try:
             workout_ref = (self.db.collection('users')
                           .document(user_id)
                           .collection('workouts')
                           .document(workout_id))
-            
+
             # Get current workout for version checking
             current_doc = workout_ref.get()
             if not current_doc.exists:
                 logger.warning(f"Workout {workout_id} not found for update")
                 return None
-            
+
             current_data = current_doc.to_dict()
             current_version = current_data.get('version', 1)
-            
+
             # Prepare update data
             update_data = update_request.model_dump(exclude_unset=True)
             update_data['modified_date'] = firestore.SERVER_TIMESTAMP
             update_data['version'] = current_version + 1
             update_data['sync_status'] = 'synced'
-            
+
             workout_ref.update(update_data)
-            
+
             # Get updated workout
             return await self.get_workout(user_id, workout_id)
-            
+
         except Exception as e:
             logger.error(f"Failed to update workout: {str(e)}")
-            return None
+            raise
     
     async def delete_workout(self, user_id: str, workout_id: str) -> bool:
         """Delete a workout"""

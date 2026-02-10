@@ -229,8 +229,9 @@ async def update_workout_firebase(
                 logger.info(f"✅ Workout updated in Firestore: {workout.name} with ID: {workout.id}")
                 return workout
             else:
-                logger.warning("Firebase workout update failed, falling back to local storage")
-        
+                # Workout not found in Firestore - don't fall back to localStorage
+                raise HTTPException(status_code=404, detail="Workout not found")
+
         # Anonymous user or Firebase unavailable - use local storage
         logger.info("Using local storage for workout update")
         data_service = DataService()
