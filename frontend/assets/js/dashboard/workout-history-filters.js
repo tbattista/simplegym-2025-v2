@@ -40,17 +40,8 @@ function renderSessionFilterBar() {
   // All Mode: full toolbar
   if (isAllMode) {
     return `
-      <div class="session-toolbar mb-3">
-        <!-- Workout Filter Button (Line 1 on mobile) -->
-        <button class="btn btn-sm session-toolbar-btn workout-filter-btn ${hasActiveFilter ? 'active-filter' : ''}"
-                onclick="openWorkoutFilterOffcanvas()"
-                ${deleteMode ? 'disabled' : ''}>
-          <i class="bx bx-filter-alt"></i>
-          <span class="ms-1" id="workoutFilterLabel">${escapeHtml(getWorkoutFilterLabel())}</span>
-          ${hasActiveFilter ? '<span class="filter-badge"></span>' : ''}
-        </button>
-
-        <!-- Page Size Selector (Line 2, left on mobile) -->
+      <div class="session-toolbar mb-2">
+        <!-- Page Size Selector -->
         <select class="form-select form-select-sm session-toolbar-select session-pagesize"
                 onchange="setPageSize(this.value)"
                 ${deleteMode ? 'disabled' : ''}>
@@ -68,6 +59,15 @@ function renderSessionFilterBar() {
           <span class="ms-1">${sortLabels[activeSort]}</span>
         </button>
       </div>
+
+      <!-- Workout Filter Chip (standalone below toolbar) -->
+      <button class="workout-filter-chip mb-3 ${hasActiveFilter ? 'active-filter' : ''}"
+              onclick="openWorkoutFilterOffcanvas()"
+              ${deleteMode ? 'disabled' : ''}>
+        <i class="bx bx-filter-alt"></i>
+        <span id="workoutFilterLabel">${escapeHtml(getWorkoutFilterLabel())}</span>
+        ${hasActiveFilter ? '<i class="bx bx-x workout-filter-chip-clear" onclick="event.stopPropagation(); setWorkoutTypeFilters([]); return false;"></i>' : ''}
+      </button>
     `;
   }
 

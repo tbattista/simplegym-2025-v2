@@ -57,36 +57,52 @@
   min-width: 0;
 }
 
-/* Workout filter button */
-.workout-filter-btn {
-  position: relative;
-  border: 1px solid var(--bs-border-color);
+/* Workout filter chip (standalone below toolbar) */
+.workout-filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.75rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--bs-secondary-color);
   background: var(--bs-body-bg);
-  color: var(--bs-body-color);
-  max-width: 200px;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  border: 1px solid var(--bs-border-color);
+  border-radius: 2rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
 }
 
-.workout-filter-btn:hover {
+.workout-filter-chip:hover {
   border-color: var(--bs-primary);
   color: var(--bs-primary);
 }
 
-.workout-filter-btn.active-filter {
+.workout-filter-chip.active-filter {
   border-color: var(--bs-primary);
   color: var(--bs-primary);
   background: rgba(var(--bs-primary-rgb), 0.08);
 }
 
-.filter-badge {
-  display: inline-block;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--bs-primary);
-  margin-left: 0.25rem;
-  vertical-align: middle;
+.workout-filter-chip i {
+  font-size: 1rem;
+}
+
+.workout-filter-chip-clear {
+  margin-left: 0.125rem;
+  font-size: 0.875rem !important;
+  opacity: 0.6;
+  transition: opacity 0.1s ease;
+}
+
+.workout-filter-chip-clear:hover {
+  opacity: 1;
+}
+
+.workout-filter-chip:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 /* Page size - compact */
@@ -240,14 +256,6 @@
     flex-wrap: wrap;
   }
 
-  /* Line 1: Workout filter button takes full width */
-  .workout-filter-btn {
-    flex: 1 1 100%;
-    max-width: none;
-    order: 1;
-    justify-content: flex-start;
-  }
-
   /* Line 2: Page size (left), Sort, Delete (right) */
   .session-toolbar-select.session-pagesize {
     height: 2rem;
@@ -347,18 +355,18 @@
   border-color: rgba(var(--bs-primary-rgb), 0.3);
 }
 
-[data-bs-theme="dark"] .workout-filter-btn {
+[data-bs-theme="dark"] .workout-filter-chip {
   background: var(--bs-gray-900);
   border-color: var(--bs-gray-600);
   color: var(--bs-gray-300);
 }
 
-[data-bs-theme="dark"] .workout-filter-btn:hover {
+[data-bs-theme="dark"] .workout-filter-chip:hover {
   border-color: var(--bs-primary);
   color: var(--bs-primary);
 }
 
-[data-bs-theme="dark"] .workout-filter-btn.active-filter {
+[data-bs-theme="dark"] .workout-filter-chip.active-filter {
   border-color: var(--bs-primary);
   color: var(--bs-primary);
   background: rgba(var(--bs-primary-rgb), 0.15);
