@@ -1,7 +1,7 @@
 /**
  * Ghost Gym - Workout History Workout Filter Offcanvas
  * Searchable multi-select workout filter using offcanvas pattern
- * @version 1.0.0
+ * @version 1.1.0
  */
 
 /**
@@ -20,19 +20,21 @@ function openWorkoutFilterOffcanvas() {
   const workoutListHtml = uniqueWorkouts.map(w => {
     const checked = selected.has(w.name) ? 'checked' : '';
     return `
-      <label class="workout-filter-item" data-workout-name="${escapeHtml(w.name)}">
+      <div class="workout-filter-item" data-workout-name="${escapeHtml(w.name)}">
         <input type="checkbox" class="form-check-input workout-filter-checkbox"
-               value="${escapeHtml(w.name)}" ${checked}>
-        <span class="workout-filter-item-name">${escapeHtml(w.name)}</span>
+               value="${escapeHtml(w.name)}" ${checked} id="wf_${escapeHtml(w.name).replace(/\s+/g, '_')}">
+        <div class="workout-filter-item-info">
+          <span class="workout-filter-item-name">${escapeHtml(w.name)}</span>
+        </div>
         <span class="workout-filter-item-count">${w.count}</span>
-      </label>
+      </div>
     `;
   }).join('');
 
   const offcanvasHtml = `
     <div class="offcanvas offcanvas-bottom offcanvas-bottom-base" tabindex="-1"
          id="workoutFilterOffcanvas" aria-labelledby="workoutFilterOffcanvasLabel"
-         data-bs-scroll="false" style="height: auto; max-height: 80vh;">
+         data-bs-scroll="false" style="height: 85vh;">
 
       <!-- Header -->
       <div class="offcanvas-header border-bottom">
@@ -43,40 +45,48 @@ function openWorkoutFilterOffcanvas() {
       </div>
 
       <!-- Body -->
-      <div class="offcanvas-body p-0" style="overflow-y: auto;">
-        <!-- Search -->
-        <div class="workout-filter-search p-3 border-bottom">
-          <div class="input-group input-group-sm">
-            <span class="input-group-text"><i class="bx bx-search"></i></span>
+      <div class="offcanvas-body p-0 d-flex flex-column">
+
+        <!-- Search Section -->
+        <div class="p-3 border-bottom">
+          <div class="input-group" style="gap: 0.25rem;">
             <input type="text" class="form-control" id="workoutFilterSearchInput"
-                   placeholder="Search workouts..." autocomplete="off">
+                   placeholder="Search workouts..." autocomplete="off"
+                   style="padding-right: 0.75rem;">
             <button class="btn btn-outline-secondary" type="button" id="workoutFilterSearchClear"
-                    style="display: none;">
+                    style="display: none;" title="Clear search">
               <i class="bx bx-x"></i>
             </button>
           </div>
         </div>
 
-        <!-- Select All / Clear All -->
-        <div class="workout-filter-actions px-3 py-2 border-bottom d-flex justify-content-between align-items-center">
-          <span class="text-muted small" id="workoutFilterSelectionCount">
-            ${selected.size > 0 ? selected.size + ' selected' : 'No filter active'}
-          </span>
+        <!-- Section Header -->
+        <div class="p-3 pb-2 border-bottom bg-light d-flex justify-content-between align-items-center">
+          <h6 class="mb-0 text-muted small fw-semibold">
+            <i class="bx bx-dumbbell me-1"></i>Your Workouts
+            <span class="ms-1" id="workoutFilterSelectionCount">${selected.size > 0 ? '(' + selected.size + ' selected)' : ''}</span>
+          </h6>
           <div>
-            <button class="btn btn-sm btn-link p-0 me-3" id="workoutFilterSelectAllBtn">Select All</button>
-            <button class="btn btn-sm btn-link p-0 text-danger" id="workoutFilterClearAllBtn">Clear All</button>
+            <button class="btn btn-sm btn-link p-0 me-2 text-decoration-none" id="workoutFilterSelectAllBtn">
+              Select All
+            </button>
+            <button class="btn btn-sm btn-link p-0 text-danger text-decoration-none" id="workoutFilterClearAllBtn">
+              Clear
+            </button>
           </div>
         </div>
 
-        <!-- Workout List -->
-        <div class="workout-filter-list" id="workoutFilterList">
-          ${workoutListHtml}
-        </div>
+        <!-- Scrollable Workout List -->
+        <div class="flex-grow-1" style="overflow-y: auto;">
+          <div class="workout-filter-list" id="workoutFilterList">
+            ${workoutListHtml}
+          </div>
 
-        <!-- Empty search state -->
-        <div class="workout-filter-empty text-center py-4" id="workoutFilterEmpty" style="display: none;">
-          <i class="bx bx-search-alt text-muted" style="font-size: 2rem;"></i>
-          <p class="text-muted mt-2 mb-0">No workouts match your search</p>
+          <!-- Empty search state -->
+          <div class="text-center py-5" id="workoutFilterEmpty" style="display: none;">
+            <i class="bx bx-search-alt display-1 text-muted"></i>
+            <p class="text-muted mt-3 mb-0">No workouts match your search</p>
+          </div>
         </div>
       </div>
 
@@ -108,9 +118,9 @@ function openWorkoutFilterOffcanvas() {
     // Update selection count display
     const updateSelectionCount = () => {
       if (selected.size === 0) {
-        selectionCount.textContent = 'No filter active';
+        selectionCount.textContent = '';
       } else {
-        selectionCount.textContent = `${selected.size} selected`;
+        selectionCount.textContent = `(${selected.size} selected)`;
       }
     };
 
@@ -132,10 +142,16 @@ function openWorkoutFilterOffcanvas() {
       emptyState.style.display = visibleCount === 0 ? '' : 'none';
     };
 
-    // Checkbox change handler (event delegation)
-    filterList.addEventListener('change', (e) => {
-      const checkbox = e.target.closest('.workout-filter-checkbox');
-      if (!checkbox) return;
+    // Click on item row toggles checkbox
+    filterList.addEventListener('click', (e) => {
+      const item = e.target.closest('.workout-filter-item');
+      if (!item) return;
+
+      // Don't double-toggle if clicking directly on checkbox
+      const checkbox = item.querySelector('.workout-filter-checkbox');
+      if (e.target !== checkbox) {
+        checkbox.checked = !checkbox.checked;
+      }
 
       const name = checkbox.value;
       if (checkbox.checked) {
@@ -202,4 +218,4 @@ function openWorkoutFilterOffcanvas() {
 
 window.openWorkoutFilterOffcanvas = openWorkoutFilterOffcanvas;
 
-console.log('📦 Workout History Workout Filter module loaded (v1.0.0)');
+console.log('📦 Workout History Workout Filter module loaded (v1.1.0)');
