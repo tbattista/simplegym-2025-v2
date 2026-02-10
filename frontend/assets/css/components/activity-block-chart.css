@@ -1,23 +1,14 @@
-/* Activity Block Chart - grid heatmap */
+/* Activity Block Chart - compact visual-only grid */
 
 .activity-block-grid {
     display: grid;
-    gap: 3px;
-    max-width: 320px;
-    margin: 0 auto;
+    gap: 2px;
 }
 
 .activity-block {
     aspect-ratio: 1;
-    border-radius: 3px;
+    border-radius: 2px;
     background-color: var(--bs-gray-300);
-    cursor: pointer;
-    transition: transform 0.15s ease;
-}
-
-.activity-block:hover {
-    transform: scale(1.3);
-    z-index: 1;
 }
 
 .activity-block.has-workout {
@@ -25,7 +16,7 @@
 }
 
 .activity-block.today {
-    outline: 2px solid var(--bs-primary);
+    outline: 1.5px solid var(--bs-primary);
     outline-offset: -1px;
 }
 
