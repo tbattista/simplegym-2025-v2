@@ -51,7 +51,7 @@
         const chartEnabled = window.settingsManager.get('ffn_show_activity_chart', true);
         const daysRow = document.getElementById('activityChartDaysRow');
         if (daysRow) {
-            daysRow.style.display = chartEnabled ? 'flex' : 'none';
+            daysRow.style.display = chartEnabled ? '' : 'none';
         }
     }
 
