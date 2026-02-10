@@ -729,11 +729,16 @@ class ExerciseCardRenderer {
             return '';
         }
         
-        // Helper to format date consistently
+        // Helper to format date - relative within 2 weeks, absolute otherwise
         const formatDate = (dateStr) => {
             if (!dateStr) return '';
             const date = new Date(dateStr);
-            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            const now = new Date();
+            const diffDays = Math.floor((now - date) / (1000 * 60 * 60 * 24));
+            if (diffDays === 0) return 'today';
+            if (diffDays === 1) return 'yesterday';
+            if (diffDays < 14) return `${diffDays} days ago`;
+            return 'on ' + date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
         };
         
         // Show up to 3 additional sessions (4 total including primary)
@@ -744,7 +749,7 @@ class ExerciseCardRenderer {
                 <div class="workout-history-primary">
                     <span class="history-label">Last:</span>
                     <span class="history-weight">${lastWeight}${lastWeightUnit !== 'other' ? ` ${lastWeightUnit}` : ''}</span>
-                    <span class="history-date">on ${formatDate(lastSessionDate)}</span>
+                    <span class="history-date">${formatDate(lastSessionDate)}</span>
                 </div>
                 ${sessionsToShow.length > 0 ? `
                     <div class="workout-history-tree">
@@ -757,7 +762,7 @@ class ExerciseCardRenderer {
                                 <div class="workout-history-tree-item">
                                     <span class="tree-branch">${connector}</span>
                                     <span class="history-weight">${weight}${unit !== 'other' ? ` ${unit}` : ''}</span>
-                                    <span>on ${formatDate(session.date)}</span>
+                                    <span>${formatDate(session.date)}</span>
                                 </div>
                             `;
                         }).join('')}
