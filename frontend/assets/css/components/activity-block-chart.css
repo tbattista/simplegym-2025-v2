@@ -6,7 +6,7 @@
 }
 
 .activity-block {
-    aspect-ratio: 1;
+    aspect-ratio: 2 / 1;
     border-radius: 2px;
     background-color: var(--bs-gray-300);
 }
