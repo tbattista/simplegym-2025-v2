@@ -1,12 +1,15 @@
 /* Activity Block Chart - compact visual-only grid */
 
 .activity-block-grid {
-    display: grid;
+    display: flex;
+    flex-wrap: wrap;
     gap: 2px;
+    max-width: 350px;
 }
 
 .activity-block {
-    aspect-ratio: 2 / 1;
+    width: 10px;
+    height: 10px;
     border-radius: 2px;
     background-color: var(--bs-gray-300);
 }

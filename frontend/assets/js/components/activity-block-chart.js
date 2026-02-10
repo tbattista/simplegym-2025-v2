@@ -74,8 +74,7 @@
                 return `<div class="${classes.join(' ')}"></div>`;
             }).join('');
 
-            const cols = Math.ceil(this.daysToShow / 5);
-            this.container.innerHTML = `<div class="activity-block-grid" style="grid-template-columns:repeat(${cols},1fr)">${blocks}</div>`;
+            this.container.innerHTML = `<div class="activity-block-grid">${blocks}</div>`;
         }
 
         formatDateKey(date) {

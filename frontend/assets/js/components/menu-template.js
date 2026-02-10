@@ -28,7 +28,7 @@ function getMenuHTML(activePage = 'home') {
             </li>
 
             <!-- Home -->
-            <li class="menu-item ${activePage === 'home' ? 'active' : ''}" data-section="home">
+            <li class="menu-item ${activePage === 'home' ? 'active' : ''}">
                 <a href="index.html" class="menu-link">
                     <i class="menu-icon tf-icons bx bx-home"></i>
                     <div class="text-truncate">Home</div>
