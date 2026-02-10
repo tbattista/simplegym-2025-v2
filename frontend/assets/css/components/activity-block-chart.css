@@ -1,24 +1,19 @@
 /* Activity Block Chart - compact visual-only grid */
 
-.activity-block-chart {
+.activity-block-grid {
     display: flex;
-    align-items: flex-start;
-    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 2px;
+    max-width: 350px;
 }
 
 .activity-block-label {
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     color: var(--bs-secondary-color);
     white-space: nowrap;
     line-height: 10px;
-}
-
-.activity-block-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, 10px);
-    gap: 2px;
-    max-width: 350px;
-    flex: 1;
+    margin-right: 2px;
 }
 
 .activity-block {

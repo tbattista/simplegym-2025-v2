@@ -74,7 +74,7 @@
                 return `<div class="${classes.join(' ')}"></div>`;
             }).join('');
 
-            this.container.innerHTML = `<div class="activity-block-chart"><span class="activity-block-label">Last ${this.daysToShow}:</span><div class="activity-block-grid">${blocks}</div></div>`;
+            this.container.innerHTML = `<div class="activity-block-grid"><span class="activity-block-label">Last ${this.daysToShow}:</span>${blocks}</div>`;
         }
 
         formatDateKey(date) {
