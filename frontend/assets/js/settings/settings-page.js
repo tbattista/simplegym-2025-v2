@@ -1,6 +1,6 @@
 /**
  * Settings Page Controller
- * Manages toggle and select state for all app preferences
+ * Manages toggle and button group state for all app preferences
  */
 
 (function() {
@@ -11,8 +11,8 @@
         showActivityChart: 'ffn_show_activity_chart'
     };
 
-    // Select element IDs → setting keys + defaults
-    const SELECTS = {
+    // Button group element IDs → setting keys + defaults
+    const BUTTON_GROUPS = {
         activityChartDays: { key: 'ffn_activity_chart_days', defaultValue: 45 }
     };
 
@@ -33,13 +33,28 @@
             });
         });
 
-        // Initialize selects
-        Object.entries(SELECTS).forEach(([elementId, { key, defaultValue }]) => {
-            const el = document.getElementById(elementId);
-            if (!el) return;
-            el.value = String(window.settingsManager.get(key, defaultValue));
-            el.addEventListener('change', () => {
-                window.settingsManager.set(key, Number(el.value));
+        // Initialize button groups
+        Object.entries(BUTTON_GROUPS).forEach(([elementId, { key, defaultValue }]) => {
+            const group = document.getElementById(elementId);
+            if (!group) return;
+            const currentValue = String(window.settingsManager.get(key, defaultValue));
+            const buttons = group.querySelectorAll('[data-value]');
+
+            // Set initial active state
+            buttons.forEach(btn => {
+                if (btn.dataset.value === currentValue) {
+                    btn.classList.remove('btn-outline-primary');
+                    btn.classList.add('btn-primary');
+                }
+                btn.addEventListener('click', () => {
+                    buttons.forEach(b => {
+                        b.classList.remove('btn-primary');
+                        b.classList.add('btn-outline-primary');
+                    });
+                    btn.classList.remove('btn-outline-primary');
+                    btn.classList.add('btn-primary');
+                    window.settingsManager.set(key, Number(btn.dataset.value));
+                });
             });
         });
 
