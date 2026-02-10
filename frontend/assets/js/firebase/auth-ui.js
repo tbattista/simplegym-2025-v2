@@ -31,7 +31,8 @@ class AuthUI {
             
             this.setupEventListeners();
             this.setupAuthStateListener();
-            
+            this.setupOverlayCoordination();
+
             console.log('✅ Auth UI initialized');
             
         } catch (error) {
@@ -107,6 +108,33 @@ class AuthUI {
         }
     }
     
+    /**
+     * Dismiss all open offcanvas when a modal is about to show.
+     * Prevents modals from appearing behind offcanvas overlays.
+     */
+    setupOverlayCoordination() {
+        document.addEventListener('show.bs.modal', () => {
+            this._dismissAllOffcanvas();
+        });
+    }
+
+    _dismissAllOffcanvas() {
+        if (window.offcanvasManager) {
+            window.offcanvasManager.destroyAll();
+        }
+
+        document.querySelectorAll('.offcanvas.show, .offcanvas.showing').forEach(el => {
+            const instance = bootstrap.Offcanvas.getInstance(el);
+            if (instance) {
+                instance.hide();
+            }
+        });
+
+        setTimeout(() => {
+            document.querySelectorAll('.offcanvas-backdrop').forEach(b => b.remove());
+        }, 350);
+    }
+
     setupAuthStateListener() {
         // Listen for auth state changes
         window.addEventListener('authStateChanged', (event) => {
