@@ -283,7 +283,10 @@
 
     <!-- Common Utilities (MUST load before other dashboard scripts) -->
     <script src="/static/assets/js/utils/common-utils.js"></script>
-    
+
+    <!-- Toast Notifications -->
+    <script src="/static/assets/js/utils/toast-notifications.js"></script>
+
     <!-- Dropdown Z-Index Fix (for workout cards) -->
     <script src="/static/assets/js/utils/dropdown-z-index-fix.js"></script>
 
@@ -347,6 +350,23 @@
         // Initialize page - uses same pattern as index.html which works on mobile
         document.addEventListener('DOMContentLoaded', async function() {
             console.log('📄 Workout Database Page - DOM Ready');
+
+            // Check for pending toast from redirect (e.g., from workout-mode page)
+            const pendingToast = sessionStorage.getItem('ffn_pending_toast');
+            if (pendingToast) {
+                sessionStorage.removeItem('ffn_pending_toast');
+                try {
+                    const toastConfig = JSON.parse(pendingToast);
+                    setTimeout(() => {
+                        if (window.showToast) {
+                            window.showToast(toastConfig);
+                        }
+                    }, 500);
+                } catch (e) {
+                    console.warn('Failed to parse pending toast:', e);
+                }
+            }
+
             console.log('📄 [DEBUG] firebaseReady:', window.firebaseReady);
             console.log('📄 [DEBUG] firebaseAuth exists:', !!window.firebaseAuth);
 

@@ -220,9 +220,13 @@ class WorkoutModeController {
             // Get workout ID from URL
             const workoutId = this.getWorkoutIdFromUrl();
             if (!workoutId) {
-                // Show landing page instead of redirecting
-                console.log('📄 No workout ID provided, showing landing page...');
-                await this.showLandingPage(authState.isAuthenticated);
+                // Redirect to workout library with info toast
+                console.log('📄 No workout ID provided, redirecting to library...');
+                sessionStorage.setItem('ffn_pending_toast', JSON.stringify({
+                    message: 'No workout in progress. Choose a workout from your library to get started.',
+                    type: 'info'
+                }));
+                window.location.href = 'workout-database.html';
                 return;
             }
             
