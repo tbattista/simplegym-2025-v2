@@ -9,6 +9,18 @@
  */
 
 /* ============================================
+   SCROLL LOCK (iOS Safari fix)
+   position:fixed prevents touch scrolling the
+   background when an offcanvas is open
+   ============================================ */
+
+body.offcanvas-scroll-locked {
+    position: fixed;
+    width: 100%;
+    overflow: hidden !important;
+}
+
+/* ============================================
    BASE OFFCANVAS STYLES (Bottom Slide-Up)
    Foundation from workout-mode
    ============================================ */

@@ -181,7 +181,7 @@ const WorkoutEditorOffcanvas = {
             };
         }
 
-        const offcanvas = new bootstrap.Offcanvas(document.getElementById('bonusExerciseEditOffcanvas'));
+        const offcanvas = new bootstrap.Offcanvas(document.getElementById('bonusExerciseEditOffcanvas'), { scroll: false });
         offcanvas.show();
 
         console.log('✅ Opened bonus exercise editor:', bonusId);

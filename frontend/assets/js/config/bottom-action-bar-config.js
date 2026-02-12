@@ -461,10 +461,11 @@
                     title: 'Open filters',
                     action: function() {
                         const offcanvas = new bootstrap.Offcanvas(
-                            document.getElementById('filtersOffcanvas')
+                            document.getElementById('filtersOffcanvas'),
+                            { scroll: false }
                         );
                         offcanvas.show();
-                        
+
                         // Activate the Filters tab
                         const filtersTab = document.getElementById('filters-tab');
                         if (filtersTab) {
@@ -479,10 +480,11 @@
                     title: 'Sort workouts',
                     action: function() {
                         const offcanvas = new bootstrap.Offcanvas(
-                            document.getElementById('filtersOffcanvas')
+                            document.getElementById('filtersOffcanvas'),
+                            { scroll: false }
                         );
                         offcanvas.show();
-                        
+
                         // Activate the Sort tab
                         const sortTab = document.getElementById('sort-tab');
                         if (sortTab) {
@@ -1551,7 +1553,8 @@
                     action: function() {
                         // Open the filters offcanvas
                         const offcanvas = new bootstrap.Offcanvas(
-                            document.getElementById('filtersOffcanvas')
+                            document.getElementById('filtersOffcanvas'),
+                            { scroll: false }
                         );
                         offcanvas.show();
                     }

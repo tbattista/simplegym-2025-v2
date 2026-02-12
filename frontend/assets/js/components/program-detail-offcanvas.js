@@ -113,7 +113,7 @@ class ProgramDetailOffcanvas {
 
         // Initialize and show offcanvas
         if (!this.bsOffcanvas) {
-            this.bsOffcanvas = new bootstrap.Offcanvas(this.offcanvasElement);
+            this.bsOffcanvas = new bootstrap.Offcanvas(this.offcanvasElement, { scroll: false });
         }
         this.bsOffcanvas.show();
 

@@ -187,4 +187,20 @@ window.offcanvasManager = offcanvasManager;
 // Expose cleanup utility for debugging
 window.cleanupOffcanvasBackdrops = () => offcanvasManager.cleanupBackdrops();
 
+// Global scroll lock for iOS Safari
+// Prevents background page scrolling when any offcanvas is open
+(function() {
+    let scrollY = 0;
+    document.addEventListener('show.bs.offcanvas', () => {
+        scrollY = window.scrollY;
+        document.body.style.top = `-${scrollY}px`;
+        document.body.classList.add('offcanvas-scroll-locked');
+    });
+    document.addEventListener('hidden.bs.offcanvas', () => {
+        document.body.classList.remove('offcanvas-scroll-locked');
+        document.body.style.top = '';
+        window.scrollTo(0, scrollY);
+    });
+})();
+
 console.log('📦 OffcanvasManager loaded');

@@ -380,7 +380,7 @@
                 this.resetModal();
 
                 // Show offcanvas
-                const offcanvas = new bootstrap.Offcanvas(document.getElementById(this.modalId));
+                const offcanvas = new bootstrap.Offcanvas(document.getElementById(this.modalId), { scroll: false });
                 offcanvas.show();
 
             } catch (error) {
