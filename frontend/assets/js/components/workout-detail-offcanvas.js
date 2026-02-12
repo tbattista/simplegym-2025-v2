@@ -46,7 +46,7 @@ class WorkoutDetailOffcanvas {
         }
         
         const offcanvasHTML = `
-            <div class="offcanvas offcanvas-bottom offcanvas-bottom-base" tabindex="-1" id="${this.offcanvasId}" aria-labelledby="${this.offcanvasId}Label">
+            <div class="offcanvas offcanvas-bottom offcanvas-bottom-base" tabindex="-1" id="${this.offcanvasId}" aria-labelledby="${this.offcanvasId}Label" data-bs-scroll="false">
                 <div class="offcanvas-header border-bottom">
                     <h5 class="offcanvas-title" id="${this.offcanvasId}Label">
                         <i class="bx bx-dumbbell me-2"></i>
