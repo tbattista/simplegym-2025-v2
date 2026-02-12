@@ -270,9 +270,13 @@ function createSessionEntry(session) {
 
 /**
  * Render session details (exercise table with change indicators)
+ * Finds the previous session for the same workout to enable session-over-session diffs
  */
 function renderSessionDetails(session) {
   const exercises = session.exercises_performed || [];
+
+  // Find previous session for the same workout (for session-over-session comparison)
+  const prevExerciseMap = buildPreviousExerciseMap(session);
 
   return `
     <div class="session-details">
@@ -294,7 +298,7 @@ function renderSessionDetails(session) {
             </tr>
           </thead>
           <tbody>
-            ${exercises.map(ex => renderExerciseTableRow(ex)).join('')}
+            ${exercises.map(ex => renderExerciseTableRow(ex, prevExerciseMap[ex.exercise_name])).join('')}
           </tbody>
         </table>
       </div>
@@ -303,10 +307,41 @@ function renderSessionDetails(session) {
 }
 
 /**
- * Render a single exercise row in session details table
- * Shows strikethrough for modified values
+ * Build a map of exercise_name → exercise data from the previous session for the same workout
  */
-function renderExerciseTableRow(ex) {
+function buildPreviousExerciseMap(currentSession) {
+  const allSessions = window.ffn.workoutHistory.sessions || [];
+  const currentDate = new Date(currentSession.completed_at).getTime();
+  const workoutId = currentSession.workout_id;
+
+  // Find the most recent session for the same workout that is older than the current one
+  let prevSession = null;
+  for (const s of allSessions) {
+    if (s.id === currentSession.id) continue;
+    if (s.workout_id !== workoutId) continue;
+    const sDate = new Date(s.completed_at).getTime();
+    if (sDate >= currentDate) continue;
+    if (!prevSession || sDate > new Date(prevSession.completed_at).getTime()) {
+      prevSession = s;
+    }
+  }
+
+  const map = {};
+  if (prevSession && prevSession.exercises_performed) {
+    for (const ex of prevSession.exercises_performed) {
+      map[ex.exercise_name] = ex;
+    }
+  }
+  return map;
+}
+
+/**
+ * Render a single exercise row in session details table
+ * Shows session-over-session diffs (strikethrough old + colored new)
+ * @param {Object} ex - Current exercise performance data
+ * @param {Object} [prev] - Same exercise from the previous session (for diff)
+ */
+function renderExerciseTableRow(ex, prev) {
   // Determine status badge
   let statusBadge = '';
   let rowClass = '';
@@ -353,39 +388,38 @@ function renderExerciseTableRow(ex) {
     </span>`;
   }
 
-  // Build weight display with strikethrough for modified values
+  // Build weight display with session-over-session diff
   let weightDisplay = '—';
   if (!ex.is_skipped) {
-    const weightChanged = ex.is_modified && ex.original_weight !== undefined &&
-                          ex.original_weight !== null && String(ex.original_weight) !== String(ex.weight);
+    const prevWeight = prev && !prev.is_skipped ? String(prev.weight ?? '') : null;
+    const curWeight = String(ex.weight ?? '');
+    const weightChanged = prevWeight !== null && prevWeight !== curWeight && prevWeight !== '';
+
     if (weightChanged) {
-      weightDisplay = `<span class="exercise-original-value">${ex.original_weight}</span><span class="exercise-modified-value">${ex.weight || '—'}</span> ${ex.weight_unit || ''}`;
+      weightDisplay = `<span class="exercise-original-value">${prevWeight}</span><span class="exercise-modified-value">${ex.weight || '—'}</span> ${ex.weight_unit || ''}`;
     } else {
       weightDisplay = `${ex.weight || '—'} ${ex.weight_unit || ''}`;
     }
   }
 
-  // Build sets/reps display with strikethrough for modified values
+  // Build sets/reps display with session-over-session diff
   let setsRepsDisplay = '—';
   if (!ex.is_skipped) {
-    const setsChanged = ex.is_modified && ex.original_sets !== undefined &&
-                        ex.original_sets !== null && String(ex.original_sets) !== String(ex.target_sets);
-    const repsChanged = ex.is_modified && ex.original_reps !== undefined &&
-                        ex.original_reps !== null && String(ex.original_reps) !== String(ex.target_reps);
+    const prevSets = prev && !prev.is_skipped ? String(prev.target_sets ?? '') : null;
+    const prevReps = prev && !prev.is_skipped ? String(prev.target_reps ?? '') : null;
+    const curSets = String(ex.target_sets ?? '');
+    const curReps = String(ex.target_reps ?? '');
 
-    let setsStr = '';
-    if (setsChanged) {
-      setsStr = `<span class="exercise-original-value">${ex.original_sets}</span><span class="exercise-modified-value">${ex.target_sets}</span>`;
-    } else {
-      setsStr = ex.target_sets || '—';
-    }
+    const setsChanged = prevSets !== null && prevSets !== curSets && prevSets !== '';
+    const repsChanged = prevReps !== null && prevReps !== curReps && prevReps !== '';
 
-    let repsStr = '';
-    if (repsChanged) {
-      repsStr = `<span class="exercise-original-value">${ex.original_reps}</span><span class="exercise-modified-value">${ex.target_reps}</span>`;
-    } else {
-      repsStr = ex.target_reps || '—';
-    }
+    let setsStr = setsChanged
+      ? `<span class="exercise-original-value">${prevSets}</span><span class="exercise-modified-value">${curSets || '—'}</span>`
+      : (ex.target_sets || '—');
+
+    let repsStr = repsChanged
+      ? `<span class="exercise-original-value">${prevReps}</span><span class="exercise-modified-value">${curReps || '—'}</span>`
+      : (ex.target_reps || '—');
 
     setsRepsDisplay = `${setsStr} × ${repsStr}`;
   }

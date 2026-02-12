@@ -860,10 +860,25 @@ body.offcanvas-scroll-locked {
     justify-content: center;
 }
 
-.filter-category .bg-light {
-    position: sticky;
-    top: 0;
-    z-index: 1;
+/* Collapsible filter section headers */
+.filter-category-header {
+    cursor: pointer;
+    user-select: none;
+}
+
+.filter-category-header .filter-chevron {
+    transition: transform 0.3s ease;
+}
+
+.filter-category-header[aria-expanded="true"] .filter-chevron {
+    transform: rotate(180deg);
+}
+
+.filter-active-badge {
+    font-size: 0.65rem;
+    min-width: 18px;
+    line-height: 1;
+    padding: 0.2em 0.45em;
 }
 
 /* Dark theme support */

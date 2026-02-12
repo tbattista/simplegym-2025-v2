@@ -1252,84 +1252,116 @@ export function createExerciseFilterOffcanvas(config, onApply) {
             <div class="offcanvas-body p-0 pb-0" style="overflow-y: auto;">
                 <!-- Muscle Group Section (Multi-select) -->
                 <div class="filter-category border-bottom">
-                    <div class="p-3 bg-light">
-                        <h6 class="mb-0 fw-semibold">Muscle Group</h6>
+                    <div class="filter-category-header p-3 bg-light d-flex align-items-center"
+                         role="button" data-bs-toggle="collapse"
+                         data-bs-target="#filterCollapse_muscleGroup"
+                         aria-expanded="false" aria-controls="filterCollapse_muscleGroup">
+                        <h6 class="mb-0 fw-semibold flex-grow-1">Muscle Group</h6>
+                        <span class="filter-active-badge badge bg-primary rounded-pill ms-2"
+                              style="display:none" id="filterBadge_muscleGroup"></span>
+                        <i class="bx bx-chevron-down filter-chevron ms-1" style="font-size:1.25rem;"></i>
                     </div>
-                    <div class="filter-options">
-                        <div class="filter-option p-3 border-bottom" data-filter="muscleGroup" data-value="">
-                            <div class="d-flex align-items-center">
-                                <span class="checkmark me-3">${renderCheckmark(!Array.isArray(filterState.muscleGroup) || filterState.muscleGroup.length === 0)}</span>
-                                <span class="flex-grow-1 fw-semibold">All Muscle Groups</span>
-                            </div>
-                        </div>
-                        ${muscleGroups.map(mg => `
-                            <div class="filter-option p-3 border-bottom" data-filter="muscleGroup" data-value="${escapeHtml(mg)}">
+                    <div class="collapse" id="filterCollapse_muscleGroup">
+                        <div class="filter-options">
+                            <div class="filter-option p-3 border-bottom" data-filter="muscleGroup" data-value="">
                                 <div class="d-flex align-items-center">
-                                    <span class="checkmark me-3">${renderCheckmark(Array.isArray(filterState.muscleGroup) ? filterState.muscleGroup.includes(mg) : filterState.muscleGroup === mg)}</span>
-                                    <span class="flex-grow-1">${escapeHtml(mg)}</span>
+                                    <span class="checkmark me-3">${renderCheckmark(!Array.isArray(filterState.muscleGroup) || filterState.muscleGroup.length === 0)}</span>
+                                    <span class="flex-grow-1 fw-semibold">All Muscle Groups</span>
                                 </div>
                             </div>
-                        `).join('')}
+                            ${muscleGroups.map(mg => `
+                                <div class="filter-option p-3 border-bottom" data-filter="muscleGroup" data-value="${escapeHtml(mg)}">
+                                    <div class="d-flex align-items-center">
+                                        <span class="checkmark me-3">${renderCheckmark(Array.isArray(filterState.muscleGroup) ? filterState.muscleGroup.includes(mg) : filterState.muscleGroup === mg)}</span>
+                                        <span class="flex-grow-1">${escapeHtml(mg)}</span>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
                     </div>
                 </div>
                 
                 <!-- Difficulty Section -->
                 <div class="filter-category border-bottom">
-                    <div class="p-3 bg-light">
-                        <h6 class="mb-0 fw-semibold">Difficulty</h6>
+                    <div class="filter-category-header p-3 bg-light d-flex align-items-center"
+                         role="button" data-bs-toggle="collapse"
+                         data-bs-target="#filterCollapse_difficulty"
+                         aria-expanded="false" aria-controls="filterCollapse_difficulty">
+                        <h6 class="mb-0 fw-semibold flex-grow-1">Difficulty</h6>
+                        <span class="filter-active-badge badge bg-primary rounded-pill ms-2"
+                              style="display:none" id="filterBadge_difficulty"></span>
+                        <i class="bx bx-chevron-down filter-chevron ms-1" style="font-size:1.25rem;"></i>
                     </div>
-                    <div class="filter-options">
-                        <div class="filter-option p-3 border-bottom" data-filter="difficulty" data-value="">
-                            <div class="d-flex align-items-center">
-                                <span class="checkmark me-3">${renderCheckmark(!filterState.difficulty)}</span>
-                                <span class="flex-grow-1">All Levels</span>
-                            </div>
-                        </div>
-                        ${difficulties.map(diff => `
-                            <div class="filter-option p-3 border-bottom" data-filter="difficulty" data-value="${diff}">
+                    <div class="collapse" id="filterCollapse_difficulty">
+                        <div class="filter-options">
+                            <div class="filter-option p-3 border-bottom" data-filter="difficulty" data-value="">
                                 <div class="d-flex align-items-center">
-                                    <span class="checkmark me-3">${renderCheckmark(filterState.difficulty === diff)}</span>
-                                    <span class="flex-grow-1">${diff}</span>
+                                    <span class="checkmark me-3">${renderCheckmark(!filterState.difficulty)}</span>
+                                    <span class="flex-grow-1">All Levels</span>
                                 </div>
                             </div>
-                        `).join('')}
+                            ${difficulties.map(diff => `
+                                <div class="filter-option p-3 border-bottom" data-filter="difficulty" data-value="${diff}">
+                                    <div class="d-flex align-items-center">
+                                        <span class="checkmark me-3">${renderCheckmark(filterState.difficulty === diff)}</span>
+                                        <span class="flex-grow-1">${diff}</span>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
                     </div>
                 </div>
                 
                 <!-- Equipment Section (Multi-select) -->
                 <div class="filter-category border-bottom">
-                    <div class="p-3 bg-light">
-                        <h6 class="mb-0 fw-semibold">Equipment</h6>
+                    <div class="filter-category-header p-3 bg-light d-flex align-items-center"
+                         role="button" data-bs-toggle="collapse"
+                         data-bs-target="#filterCollapse_equipment"
+                         aria-expanded="false" aria-controls="filterCollapse_equipment">
+                        <h6 class="mb-0 fw-semibold flex-grow-1">Equipment</h6>
+                        <span class="filter-active-badge badge bg-primary rounded-pill ms-2"
+                              style="display:none" id="filterBadge_equipment"></span>
+                        <i class="bx bx-chevron-down filter-chevron ms-1" style="font-size:1.25rem;"></i>
                     </div>
-                    <div class="filter-options">
-                        ${equipment.map(eq => `
-                            <div class="filter-option p-3 border-bottom" data-filter="equipment" data-value="${escapeHtml(eq)}">
-                                <div class="d-flex align-items-center">
-                                    <span class="checkmark me-3">${renderCheckmark(filterState.equipment.includes(eq))}</span>
-                                    <span class="flex-grow-1">${escapeHtml(eq)}</span>
+                    <div class="collapse" id="filterCollapse_equipment">
+                        <div class="filter-options">
+                            ${equipment.map(eq => `
+                                <div class="filter-option p-3 border-bottom" data-filter="equipment" data-value="${escapeHtml(eq)}">
+                                    <div class="d-flex align-items-center">
+                                        <span class="checkmark me-3">${renderCheckmark(filterState.equipment.includes(eq))}</span>
+                                        <span class="flex-grow-1">${escapeHtml(eq)}</span>
+                                    </div>
                                 </div>
-                            </div>
-                        `).join('')}
+                            `).join('')}
+                        </div>
                     </div>
                 </div>
                 
                 <!-- Sort By Section -->
                 <div class="filter-category border-bottom">
-                    <div class="p-3 bg-light">
-                        <h6 class="mb-0 fw-semibold">Sort By</h6>
+                    <div class="filter-category-header p-3 bg-light d-flex align-items-center"
+                         role="button" data-bs-toggle="collapse"
+                         data-bs-target="#filterCollapse_sort"
+                         aria-expanded="false" aria-controls="filterCollapse_sort">
+                        <h6 class="mb-0 fw-semibold flex-grow-1">Sort By</h6>
+                        <span class="filter-active-badge badge bg-primary rounded-pill ms-2"
+                              style="display:none" id="filterBadge_sort"></span>
+                        <i class="bx bx-chevron-down filter-chevron ms-1" style="font-size:1.25rem;"></i>
                     </div>
-                    <div class="filter-options">
-                        ${sortOptions.map(opt => {
-                            const currentSort = `${filterState.sortBy}-${filterState.sortOrder}`;
-                            return `
-                                <div class="filter-option p-3 border-bottom" data-filter="sort" data-value="${opt.value}">
-                                    <div class="d-flex align-items-center">
-                                        <span class="checkmark me-3">${renderCheckmark(currentSort === opt.value)}</span>
-                                        <span class="flex-grow-1">${opt.label}</span>
+                    <div class="collapse" id="filterCollapse_sort">
+                        <div class="filter-options">
+                            ${sortOptions.map(opt => {
+                                const currentSort = `${filterState.sortBy}-${filterState.sortOrder}`;
+                                return `
+                                    <div class="filter-option p-3 border-bottom" data-filter="sort" data-value="${opt.value}">
+                                        <div class="d-flex align-items-center">
+                                            <span class="checkmark me-3">${renderCheckmark(currentSort === opt.value)}</span>
+                                            <span class="flex-grow-1">${opt.label}</span>
+                                        </div>
                                     </div>
-                                </div>
-                            `;
-                        }).join('')}
+                                `;
+                            }).join('')}
+                        </div>
                     </div>
                 </div>
                 
@@ -1366,6 +1398,49 @@ export function createExerciseFilterOffcanvas(config, onApply) {
             }
         };
         
+        // Update active filter badges on section headers
+        const updateFilterBadges = () => {
+            const mgBadge = element.querySelector('#filterBadge_muscleGroup');
+            if (mgBadge) {
+                const mgCount = Array.isArray(filterState.muscleGroup) ? filterState.muscleGroup.length : (filterState.muscleGroup ? 1 : 0);
+                if (mgCount > 0) {
+                    mgBadge.textContent = mgCount;
+                    mgBadge.style.display = '';
+                } else {
+                    mgBadge.style.display = 'none';
+                }
+            }
+            const diffBadge = element.querySelector('#filterBadge_difficulty');
+            if (diffBadge) {
+                if (filterState.difficulty) {
+                    diffBadge.textContent = filterState.difficulty;
+                    diffBadge.style.display = '';
+                } else {
+                    diffBadge.style.display = 'none';
+                }
+            }
+            const eqBadge = element.querySelector('#filterBadge_equipment');
+            if (eqBadge) {
+                if (filterState.equipment.length > 0) {
+                    eqBadge.textContent = filterState.equipment.length;
+                    eqBadge.style.display = '';
+                } else {
+                    eqBadge.style.display = 'none';
+                }
+            }
+            const sortBadge = element.querySelector('#filterBadge_sort');
+            if (sortBadge) {
+                const currentSort = `${filterState.sortBy}-${filterState.sortOrder}`;
+                if (currentSort !== 'name-asc') {
+                    const sortOpt = sortOptions.find(o => o.value === currentSort);
+                    sortBadge.textContent = sortOpt ? sortOpt.label : 'Custom';
+                    sortBadge.style.display = '';
+                } else {
+                    sortBadge.style.display = 'none';
+                }
+            }
+        };
+
         // Get all filter options
         const filterOptions = element.querySelectorAll('.filter-option');
         
@@ -1446,13 +1521,15 @@ export function createExerciseFilterOffcanvas(config, onApply) {
                     updateCheckmark(option, filterState.favoritesOnly);
                 }
                 
-                // Update preview count after any filter change
+                // Update preview count and badges after any filter change
                 updatePreviewCount();
+                updateFilterBadges();
             });
         });
-        
-        // Initialize preview count
+
+        // Initialize preview count and badges
         updatePreviewCount();
+        updateFilterBadges();
         
         // Apply button
         element.querySelector('#applyFiltersBtn')?.addEventListener('click', () => {

@@ -938,6 +938,10 @@
     color: var(--gs-gray-800);
 }
 
+[data-bs-theme="dark"] .filter-category-header:hover {
+    background-color: rgba(255, 255, 255, 0.03);
+}
+
 /* Reorder Exercises Offcanvas */
 [data-bs-theme="dark"] #reorderExercisesOffcanvas .badge.bg-label-secondary {
     background-color: rgba(148, 163, 184, 0.15);
