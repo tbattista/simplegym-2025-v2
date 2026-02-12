@@ -903,6 +903,11 @@ class ExercisePerformance(BaseModel):
         description="User intent for next session: 'up', 'down', or null"
     )
     
+    # Original Template Values (for modification diff display)
+    original_weight: Optional[str] = Field(None, description="Original template weight before modification")
+    original_sets: Optional[str] = Field(None, description="Original template sets before modification")
+    original_reps: Optional[str] = Field(None, description="Original template reps before modification")
+
     # Metadata
     order_index: int = Field(..., ge=0, description="Position in workout (0-based)")
     is_bonus: bool = Field(default=False, description="Whether this is a bonus exercise")

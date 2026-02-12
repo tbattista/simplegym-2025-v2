@@ -359,7 +359,7 @@ function renderExerciseTableRow(ex) {
     const weightChanged = ex.is_modified && ex.original_weight !== undefined &&
                           ex.original_weight !== null && String(ex.original_weight) !== String(ex.weight);
     if (weightChanged) {
-      weightDisplay = `<span class="exercise-original-value">${ex.original_weight}</span>${ex.weight || '—'} ${ex.weight_unit || ''}`;
+      weightDisplay = `<span class="exercise-original-value">${ex.original_weight}</span><span class="exercise-modified-value">${ex.weight || '—'}</span> ${ex.weight_unit || ''}`;
     } else {
       weightDisplay = `${ex.weight || '—'} ${ex.weight_unit || ''}`;
     }
@@ -375,14 +375,14 @@ function renderExerciseTableRow(ex) {
 
     let setsStr = '';
     if (setsChanged) {
-      setsStr = `<span class="exercise-original-value">${ex.original_sets}</span>${ex.target_sets}`;
+      setsStr = `<span class="exercise-original-value">${ex.original_sets}</span><span class="exercise-modified-value">${ex.target_sets}</span>`;
     } else {
       setsStr = ex.target_sets || '—';
     }
 
     let repsStr = '';
     if (repsChanged) {
-      repsStr = `<span class="exercise-original-value">${ex.original_reps}</span>${ex.target_reps}`;
+      repsStr = `<span class="exercise-original-value">${ex.original_reps}</span><span class="exercise-modified-value">${ex.target_reps}</span>`;
     } else {
       repsStr = ex.target_reps || '—';
     }

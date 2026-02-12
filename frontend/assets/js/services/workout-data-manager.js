@@ -236,7 +236,10 @@ class WorkoutDataManager {
                 is_modified: exerciseData?.is_modified || false,
                 is_skipped: exerciseData?.is_skipped || false,
                 skip_reason: exerciseData?.skip_reason || null,
-                next_weight_direction: directionToSave  // Weight Progression Indicator
+                next_weight_direction: directionToSave,  // Weight Progression Indicator
+                original_weight: exerciseData?.original_weight ?? null,
+                original_sets: exerciseData?.original_sets ?? null,
+                original_reps: exerciseData?.original_reps ?? null
             });
         });
         

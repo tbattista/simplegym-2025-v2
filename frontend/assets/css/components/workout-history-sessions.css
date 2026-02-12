@@ -267,6 +267,11 @@
   font-size: 0.9em;
 }
 
+.exercise-modified-value {
+  color: var(--bs-primary);
+  font-weight: 600;
+}
+
 /* ============================================
    RESPONSIVE - TABLET
    ============================================ */
