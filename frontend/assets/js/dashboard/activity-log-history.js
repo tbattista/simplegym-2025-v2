@@ -264,14 +264,7 @@ function formatDuration(minutes) {
     return mins > 0 ? `${hrs}h ${mins}m` : `${hrs}h`;
 }
 
-/**
- * Escape HTML to prevent XSS
- */
-function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-}
+// escapeHtml is provided by common-utils.js (window.escapeHtml)
 
 /**
  * Set up click handlers for session expand/collapse and delete

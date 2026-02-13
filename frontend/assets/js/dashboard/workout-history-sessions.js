@@ -525,7 +525,7 @@ function renderCardioHistoryEntry(session) {
          ${hasDetails ? `data-bs-toggle="collapse" data-bs-target="#${collapseId}" role="button" aria-expanded="false"` : ''}
          data-session-id="${session.id}">
       <div class="session-status">
-        <span class="session-status-icon cardio-icon" style="background-color: rgba(var(--bs-primary-rgb), 0.12); color: var(--bs-primary); width: 1.5rem; height: 1.5rem; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 0.875rem;">
+        <span class="session-status-icon cardio-icon">
           <i class="bx ${icon}"></i>
         </span>
       </div>

@@ -131,27 +131,40 @@
     opacity: 0.5;
 }
 
-/* Dark mode adjustments */
+/* Dark mode adjustments
+   Uses --gs-gray-* (design system) vars which correctly remap in dark mode,
+   matching the pattern used across dark-mode.css for all components. */
 [data-bs-theme="dark"] .activity-type-btn {
-    border-color: var(--bs-gray-700);
-    background: var(--bs-gray-800);
+    background: var(--gs-gray-50);
+    color: var(--gs-gray-800);
+    border-color: var(--gs-gray-200);
 }
 
 [data-bs-theme="dark"] .activity-type-btn:hover {
     border-color: var(--bs-primary);
+    color: var(--bs-primary);
+    background: rgba(var(--bs-primary-rgb), 0.08);
 }
 
 [data-bs-theme="dark"] .activity-type-btn.active {
     background: var(--bs-primary);
     border-color: var(--bs-primary);
+    color: #fff;
 }
 
 [data-bs-theme="dark"] .rpe-btn {
-    border-color: var(--bs-gray-700);
-    background: var(--bs-gray-800);
+    background: var(--gs-gray-50);
+    color: var(--gs-gray-800);
+    border-color: var(--gs-gray-200);
+}
+
+[data-bs-theme="dark"] .rpe-btn:hover {
+    border-color: var(--bs-primary);
+    color: var(--bs-primary);
 }
 
 [data-bs-theme="dark"] .rpe-btn.active {
     background: var(--bs-primary);
     border-color: var(--bs-primary);
+    color: #fff;
 }
