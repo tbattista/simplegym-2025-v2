@@ -415,6 +415,66 @@ class WorkoutDataManager {
             return false;
         }
     }
+    /**
+     * Fetch last completed date for a workout
+     * Finds the most recent session date across all exercises
+     * @param {Object} workout - Current workout object
+     * @param {Object} authService - Auth service instance
+     * @returns {Promise<Date|null>} Most recent completion date or null
+     */
+    async fetchLastCompleted(workout, authService) {
+        try {
+            if (!workout || !authService.isUserAuthenticated()) {
+                console.log('ℹ️ No workout or not authenticated, skipping last completed fetch');
+                return null;
+            }
+
+            const token = await authService.getIdToken();
+            if (!token) {
+                console.log('ℹ️ No auth token, skipping last completed fetch');
+                return null;
+            }
+
+            const url = window.config.api.getUrl(`/api/v3/workout-sessions/history/workout/${workout.id}`);
+            console.log('📡 Fetching workout history from:', url);
+
+            const response = await fetch(url, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (!response.ok) {
+                console.warn('⚠️ Could not fetch last completed date, status:', response.status);
+                return null;
+            }
+
+            const historyData = await response.json();
+            console.log('📊 History data received:', historyData);
+
+            if (historyData.exercises && Object.keys(historyData.exercises).length > 0) {
+                let mostRecentDate = null;
+                for (const exerciseName in historyData.exercises) {
+                    const exerciseHistory = historyData.exercises[exerciseName];
+                    if (exerciseHistory.last_session_date) {
+                        const sessionDate = new Date(exerciseHistory.last_session_date);
+                        if (!mostRecentDate || sessionDate > mostRecentDate) {
+                            mostRecentDate = sessionDate;
+                        }
+                    }
+                }
+
+                if (mostRecentDate) {
+                    console.log('✅ Found most recent session date:', mostRecentDate);
+                    return mostRecentDate;
+                }
+            }
+
+            console.log('ℹ️ No session history found for this workout');
+            return null;
+        } catch (error) {
+            console.error('❌ Error fetching last completed:', error);
+            return null;
+        }
+    }
 }
 
 // Export for module use
