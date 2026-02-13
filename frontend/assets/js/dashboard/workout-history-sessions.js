@@ -473,24 +473,15 @@ function scrollToSession(sessionId) {
    CARDIO SESSION RENDERER (Unified History)
    ============================================ */
 
-// Activity type icons and names for cardio entries
-const CARDIO_ICONS = {
-  running: 'bx-run', cycling: 'bx-cycling', rowing: 'bx-water', swimming: 'bx-swim',
-  elliptical: 'bx-pulse', stair_climber: 'bx-trending-up', walking: 'bx-walk',
-  hiking: 'bx-landscape', other: 'bx-dots-horizontal-rounded'
-};
-const CARDIO_NAMES = {
-  running: 'Running', cycling: 'Cycling', rowing: 'Rowing', swimming: 'Swimming',
-  elliptical: 'Elliptical', stair_climber: 'Stair Climber', walking: 'Walking',
-  hiking: 'Hiking', other: 'Other'
-};
+// Activity type metadata comes from ActivityTypeRegistry (activity-type-registry.js)
 
 /**
  * Render a cardio session entry in the unified history timeline
  */
 function renderCardioHistoryEntry(session) {
-  const icon = CARDIO_ICONS[session.activity_type] || 'bx-dots-horizontal-rounded';
-  const name = session.activity_name || CARDIO_NAMES[session.activity_type] || session.activity_type;
+  const registry = window.ActivityTypeRegistry;
+  const icon = registry ? registry.getIcon(session.activity_type) : 'bx-dots-horizontal-rounded';
+  const name = session.activity_name || (registry ? registry.getName(session.activity_type) : session.activity_type);
   const dateStr = formatDate(session.started_at || session.created_at, { short: true });
 
   // Format duration

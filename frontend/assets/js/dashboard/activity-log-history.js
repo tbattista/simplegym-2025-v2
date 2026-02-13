@@ -64,7 +64,7 @@ function buildFilterChips(sessions) {
         <button type="button" class="btn btn-sm btn-primary activity-filter-chip active" data-filter="all">All</button>
         ${types.map(type => `
             <button type="button" class="btn btn-sm btn-outline-secondary activity-filter-chip" data-filter="${type}">
-                <i class="bx ${window.ACTIVITY_ICONS?.[type] || 'bx-dots-horizontal-rounded'} me-1"></i>${window.ACTIVITY_NAMES?.[type] || type}
+                <i class="bx ${window.ActivityTypeRegistry ? window.ActivityTypeRegistry.getIcon(type) : 'bx-dots-horizontal-rounded'} me-1"></i>${window.ActivityTypeRegistry ? window.ActivityTypeRegistry.getName(type) : type}
             </button>
         `).join('')}
     `;
@@ -171,8 +171,9 @@ function getTimePeriodLabel(date, now) {
  * Render a single cardio session entry
  */
 function renderCardioSessionEntry(session) {
-    const icon = window.ACTIVITY_ICONS?.[session.activity_type] || 'bx-dots-horizontal-rounded';
-    const name = session.activity_name || window.ACTIVITY_NAMES?.[session.activity_type] || session.activity_type;
+    const registry = window.ActivityTypeRegistry;
+    const icon = registry ? registry.getIcon(session.activity_type) : 'bx-dots-horizontal-rounded';
+    const name = session.activity_name || (registry ? registry.getName(session.activity_type) : session.activity_type);
     const date = formatSessionDate(session.started_at);
     const duration = formatDuration(session.duration_minutes);
 

@@ -1,7 +1,8 @@
 /**
  * Activity Log - Core Controller
- * Handles activity type selection, form management, and session creation
- * @version 1.0.0
+ * Handles activity type selection, form management, and session creation.
+ * Uses ActivityTypeRegistry for type metadata and favorites.
+ * @version 1.1.0
  */
 
 // Global state
@@ -13,44 +14,7 @@ window.ffn.activityLog = {
     selectedRpe: null
 };
 
-// Activity type configuration - defines which fields are visible per activity
-const ACTIVITY_FIELD_CONFIG = {
-    running:       { distance: true, pace: true, elevation: true, cadence: false, strokeRate: false, laps: false, incline: false },
-    cycling:       { distance: true, pace: true, elevation: true, cadence: true,  strokeRate: false, laps: false, incline: false },
-    rowing:        { distance: true, pace: true, elevation: false, cadence: false, strokeRate: true,  laps: false, incline: false },
-    swimming:      { distance: true, pace: true, elevation: false, cadence: false, strokeRate: false, laps: true,  incline: false },
-    elliptical:    { distance: false, pace: false, elevation: false, cadence: false, strokeRate: false, laps: false, incline: true },
-    stair_climber: { distance: false, pace: false, elevation: true,  cadence: false, strokeRate: false, laps: false, incline: true },
-    walking:       { distance: true, pace: true, elevation: true,  cadence: false, strokeRate: false, laps: false, incline: false },
-    hiking:        { distance: true, pace: true, elevation: true,  cadence: false, strokeRate: false, laps: false, incline: false },
-    other:         { distance: true, pace: true, elevation: true,  cadence: false, strokeRate: false, laps: false, incline: false }
-};
-
-// Icon mapping for activity types
-const ACTIVITY_ICONS = {
-    running: 'bx-run',
-    cycling: 'bx-cycling',
-    rowing: 'bx-water',
-    swimming: 'bx-swim',
-    elliptical: 'bx-pulse',
-    stair_climber: 'bx-trending-up',
-    walking: 'bx-walk',
-    hiking: 'bx-landscape',
-    other: 'bx-dots-horizontal-rounded'
-};
-
-// Display names for activity types
-const ACTIVITY_NAMES = {
-    running: 'Running',
-    cycling: 'Cycling',
-    rowing: 'Rowing',
-    swimming: 'Swimming',
-    elliptical: 'Elliptical',
-    stair_climber: 'Stair Climber',
-    walking: 'Walking',
-    hiking: 'Hiking',
-    other: 'Other'
-};
+// --- INITIALIZATION ---
 
 /**
  * Initialize the activity log page
@@ -58,6 +22,7 @@ const ACTIVITY_NAMES = {
 async function initActivityLog() {
     console.log('🏃 Initializing Activity Log');
 
+    renderActivityGrid();
     setupActivityTypeSelector();
     setupRpeSelector();
     setupFormListeners();
@@ -71,8 +36,161 @@ async function initActivityLog() {
     console.log('✅ Activity Log initialized');
 }
 
+// --- ACTIVITY GRID RENDERING ---
+
 /**
- * Set up activity type button click handlers
+ * Render the favorites grid + "More" button dynamically from registry
+ */
+function renderActivityGrid() {
+    const grid = document.getElementById('activityTypeGrid');
+    if (!grid) return;
+
+    const registry = window.ActivityTypeRegistry;
+    const favorites = registry.getFavorites();
+    const state = window.ffn.activityLog;
+
+    let html = favorites.map(id => {
+        const type = registry.getById(id);
+        const isActive = state.selectedActivity === id ? ' active' : '';
+        return `<button type="button" class="activity-type-btn${isActive}" data-type="${id}" title="${type.name}">
+            <i class="bx ${type.icon}"></i>
+            <span>${type.shortName}</span>
+        </button>`;
+    }).join('');
+
+    // "More" button as last slot
+    html += `<button type="button" class="activity-type-btn activity-type-more-btn" id="moreActivitiesBtn" title="More activities">
+        <i class="bx bx-plus"></i>
+        <span>More</span>
+    </button>`;
+
+    grid.innerHTML = html;
+}
+
+/**
+ * Highlight the selected activity in the grid.
+ * If it's not a favorite, temporarily show it in place of the "More" button label.
+ */
+function highlightSelectedActivity(type) {
+    const state = window.ffn.activityLog;
+    const registry = window.ActivityTypeRegistry;
+    const favorites = registry.getFavorites();
+
+    // Clear all active states
+    document.querySelectorAll('.activity-type-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+
+    // If it's a favorite, highlight the matching grid button
+    const matchingBtn = document.querySelector(`.activity-type-btn[data-type="${type}"]`);
+    if (matchingBtn) {
+        matchingBtn.classList.add('active');
+        return;
+    }
+
+    // Not a favorite — show it on the "More" button temporarily
+    const moreBtn = document.getElementById('moreActivitiesBtn');
+    if (moreBtn) {
+        const typeInfo = registry.getById(type);
+        moreBtn.classList.add('active');
+        moreBtn.innerHTML = `<i class="bx ${typeInfo.icon}"></i><span>${typeInfo.shortName}</span>`;
+    }
+}
+
+// --- ACTIVITY PICKER OFFCANVAS ---
+
+/**
+ * Open the full activity type picker offcanvas
+ */
+function openActivityPicker() {
+    const registry = window.ActivityTypeRegistry;
+    const favorites = registry.getFavorites();
+    const categories = registry.getCategories();
+
+    let bodyHtml = categories.map(cat => {
+        const types = registry.getByCategory(cat.id);
+        return `
+            <div class="mb-3">
+                <h6 class="text-uppercase text-muted small fw-semibold mb-2">
+                    <i class="bx ${cat.icon} me-1"></i>${cat.name}
+                </h6>
+                <div class="activity-picker-list">
+                    ${types.map(t => {
+                        const isFav = favorites.includes(t.id);
+                        return `
+                        <div class="activity-picker-item" data-type="${t.id}">
+                            <i class="bx ${t.icon} me-2"></i>
+                            <span class="flex-grow-1">${t.name}</span>
+                            <button class="btn btn-sm btn-icon favorite-toggle ${isFav ? 'active' : ''}"
+                                    data-favorite="${t.id}" title="${isFav ? 'Remove from favorites' : 'Add to favorites'}">
+                                <i class="bx ${isFav ? 'bxs-star' : 'bx-star'}"></i>
+                            </button>
+                        </div>`;
+                    }).join('')}
+                </div>
+            </div>`;
+    }).join('');
+
+    const offcanvasHtml = `
+        <div class="offcanvas offcanvas-bottom offcanvas-bottom-base" tabindex="-1"
+             id="activityPickerOffcanvas" data-bs-scroll="false"
+             style="height: 75vh;">
+            <div class="offcanvas-header border-bottom">
+                <h5 class="offcanvas-title">
+                    <i class="bx bx-category me-2"></i>All Activities
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+            </div>
+            <div class="offcanvas-body">
+                <p class="text-muted small mb-3">Tap an activity to log it. Star your favorites to pin them to the grid.</p>
+                ${bodyHtml}
+            </div>
+        </div>`;
+
+    window.offcanvasManager.create('activityPickerOffcanvas', offcanvasHtml, (offcanvas, el) => {
+        // Click on activity item → select it and close
+        el.querySelectorAll('.activity-picker-item').forEach(item => {
+            item.addEventListener('click', (e) => {
+                if (e.target.closest('.favorite-toggle')) return;
+                const type = item.dataset.type;
+                selectActivity(type);
+                highlightSelectedActivity(type);
+                offcanvas.hide();
+            });
+        });
+
+        // Star toggle → add/remove from favorites
+        el.querySelectorAll('.favorite-toggle').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const id = btn.dataset.favorite;
+                const currentFavs = registry.getFavorites();
+
+                if (currentFavs.includes(id)) {
+                    registry.removeFavorite(id);
+                    btn.classList.remove('active');
+                    btn.querySelector('i').className = 'bx bx-star';
+                    btn.title = 'Add to favorites';
+                } else {
+                    if (currentFavs.length >= 8) {
+                        window.toastNotifications?.warning('Maximum 8 favorites. Remove one first.');
+                        return;
+                    }
+                    registry.addFavorite(id);
+                    btn.classList.add('active');
+                    btn.querySelector('i').className = 'bx bxs-star';
+                    btn.title = 'Remove from favorites';
+                }
+                renderActivityGrid();
+            });
+        });
+    });
+}
+
+// --- ACTIVITY TYPE SELECTION ---
+
+/**
+ * Set up activity type button click handlers (event delegation)
  */
 function setupActivityTypeSelector() {
     const grid = document.getElementById('activityTypeGrid');
@@ -82,8 +200,14 @@ function setupActivityTypeSelector() {
         const btn = e.target.closest('.activity-type-btn');
         if (!btn) return;
 
+        // "More" button opens the picker
+        if (btn.id === 'moreActivitiesBtn') {
+            openActivityPicker();
+            return;
+        }
+
         const type = btn.dataset.type;
-        selectActivity(type);
+        if (type) selectActivity(type);
     });
 }
 
@@ -95,9 +219,7 @@ function selectActivity(type) {
     state.selectedActivity = type;
 
     // Update button states
-    document.querySelectorAll('.activity-type-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.type === type);
-    });
+    highlightSelectedActivity(type);
 
     // Show/hide conditional fields based on activity
     updateConditionalFields(type);
@@ -110,9 +232,8 @@ function selectActivity(type) {
  * Show/hide fields based on selected activity type
  */
 function updateConditionalFields(type) {
-    const config = ACTIVITY_FIELD_CONFIG[type] || ACTIVITY_FIELD_CONFIG.other;
+    const config = window.ActivityTypeRegistry.getFieldConfig(type);
 
-    // Map config keys to DOM row IDs
     const fieldMap = {
         distance: 'distanceRow',
         pace: 'paceRow',
@@ -131,9 +252,8 @@ function updateConditionalFields(type) {
     });
 }
 
-/**
- * Set up RPE button selector
- */
+// --- RPE SELECTOR ---
+
 function setupRpeSelector() {
     const selector = document.getElementById('rpeSelector');
     if (!selector) return;
@@ -145,7 +265,6 @@ function setupRpeSelector() {
         const rpe = parseInt(btn.dataset.rpe);
         const state = window.ffn.activityLog;
 
-        // Toggle - clicking same RPE deselects
         if (state.selectedRpe === rpe) {
             state.selectedRpe = null;
             btn.classList.remove('active');
@@ -157,38 +276,25 @@ function setupRpeSelector() {
     });
 }
 
-/**
- * Set up form input listeners for auto-calculation
- */
+// --- FORM LISTENERS & PACE CALCULATION ---
+
 function setupFormListeners() {
-    // Auto-calculate pace when distance or duration changes
     const distanceInput = document.getElementById('distance');
     const hoursInput = document.getElementById('durationHours');
     const minutesInput = document.getElementById('durationMinutes');
 
     [distanceInput, hoursInput, minutesInput].forEach(input => {
-        if (input) {
-            input.addEventListener('input', calculateAndDisplayPace);
-        }
+        if (input) input.addEventListener('input', calculateAndDisplayPace);
     });
 
-    // Log button
     const logBtn = document.getElementById('logSessionBtn');
-    if (logBtn) {
-        logBtn.addEventListener('click', saveCardioSession);
-    }
+    if (logBtn) logBtn.addEventListener('click', saveCardioSession);
 
-    // Duration inputs affect log button state
     [hoursInput, minutesInput].forEach(input => {
-        if (input) {
-            input.addEventListener('input', updateLogButtonState);
-        }
+        if (input) input.addEventListener('input', updateLogButtonState);
     });
 }
 
-/**
- * Set up the details toggle button text/icon
- */
 function setupDetailsToggle() {
     const collapseEl = document.getElementById('detailedFields');
     if (!collapseEl) return;
@@ -208,9 +314,6 @@ function setupDetailsToggle() {
     });
 }
 
-/**
- * Calculate and display pace based on distance and duration
- */
 function calculateAndDisplayPace() {
     const distance = parseFloat(document.getElementById('distance')?.value) || 0;
     const hours = parseInt(document.getElementById('durationHours')?.value) || 0;
@@ -231,9 +334,6 @@ function calculateAndDisplayPace() {
     }
 }
 
-/**
- * Enable/disable the log button based on form state
- */
 function updateLogButtonState() {
     const btn = document.getElementById('logSessionBtn');
     if (!btn) return;
@@ -246,9 +346,8 @@ function updateLogButtonState() {
     btn.disabled = !state.selectedActivity || totalMinutes < 1;
 }
 
-/**
- * Collect form data and save cardio session via API
- */
+// --- SAVE SESSION ---
+
 async function saveCardioSession() {
     const state = window.ffn.activityLog;
     const btn = document.getElementById('logSessionBtn');
@@ -261,7 +360,6 @@ async function saveCardioSession() {
 
     if (totalMinutes < 1) return;
 
-    // Collect form data
     const dateTimeValue = document.getElementById('sessionDateTime')?.value;
     const startedAt = dateTimeValue ? new Date(dateTimeValue).toISOString() : new Date().toISOString();
 
@@ -278,26 +376,19 @@ async function saveCardioSession() {
         data.distance_unit = document.getElementById('distanceUnit')?.value || 'mi';
     }
 
-    // Pace
     const paceValue = document.getElementById('pace')?.value;
-    if (paceValue && paceValue !== '--:--') {
-        data.pace_per_unit = paceValue;
-    }
+    if (paceValue && paceValue !== '--:--') data.pace_per_unit = paceValue;
 
-    // Heart rate
     const avgHr = parseInt(document.getElementById('avgHeartRate')?.value);
     if (avgHr > 0) data.avg_heart_rate = avgHr;
     const maxHr = parseInt(document.getElementById('maxHeartRate')?.value);
     if (maxHr > 0) data.max_heart_rate = maxHr;
 
-    // Calories
     const calories = parseInt(document.getElementById('calories')?.value);
     if (calories > 0) data.calories = calories;
 
-    // RPE
     if (state.selectedRpe) data.rpe = state.selectedRpe;
 
-    // Elevation
     const elevation = parseInt(document.getElementById('elevationGain')?.value);
     if (elevation > 0) {
         data.elevation_gain = elevation;
@@ -305,23 +396,17 @@ async function saveCardioSession() {
     }
 
     // Activity-specific details
+    const detailFields = [
+        ['cadence', 'cadence_rpm'], ['strokeRate', 'stroke_rate'], ['laps', 'laps'],
+        ['poolLength', 'pool_length_m'], ['incline', 'incline_percent']
+    ];
     const activityDetails = {};
-    const cadence = parseInt(document.getElementById('cadence')?.value);
-    if (cadence > 0) activityDetails.cadence_rpm = cadence;
-    const strokeRate = parseInt(document.getElementById('strokeRate')?.value);
-    if (strokeRate > 0) activityDetails.stroke_rate = strokeRate;
-    const laps = parseInt(document.getElementById('laps')?.value);
-    if (laps > 0) activityDetails.laps = laps;
-    const poolLength = parseInt(document.getElementById('poolLength')?.value);
-    if (poolLength > 0) activityDetails.pool_length_m = poolLength;
-    const incline = parseInt(document.getElementById('incline')?.value);
-    if (incline > 0) activityDetails.incline_percent = incline;
+    detailFields.forEach(([elId, key]) => {
+        const val = parseInt(document.getElementById(elId)?.value);
+        if (val > 0) activityDetails[key] = val;
+    });
+    if (Object.keys(activityDetails).length > 0) data.activity_details = activityDetails;
 
-    if (Object.keys(activityDetails).length > 0) {
-        data.activity_details = activityDetails;
-    }
-
-    // Notes
     const notes = document.getElementById('sessionNotes')?.value?.trim();
     if (notes) data.notes = notes;
 
@@ -348,24 +433,14 @@ async function saveCardioSession() {
         const session = await response.json();
         console.log('✅ Cardio session saved:', session.id);
 
-        // Show success toast
-        if (window.toastNotifications) {
-            window.toastNotifications.success('Session logged!');
-        }
-
-        // Reset form
+        if (window.toastNotifications) window.toastNotifications.success('Session logged!');
         resetForm();
 
-        // Reload recent sessions
-        if (window.loadRecentCardioSessions) {
-            await window.loadRecentCardioSessions();
-        }
+        if (window.loadRecentCardioSessions) await window.loadRecentCardioSessions();
 
     } catch (error) {
         console.error('Failed to save cardio session:', error);
-        if (window.toastNotifications) {
-            window.toastNotifications.error('Failed to save session');
-        }
+        if (window.toastNotifications) window.toastNotifications.error('Failed to save session');
     } finally {
         btn.disabled = false;
         btn.innerHTML = '<i class="bx bx-check me-1"></i>Log Session';
@@ -373,17 +448,14 @@ async function saveCardioSession() {
     }
 }
 
-/**
- * Reset the form after successful save
- */
+// --- FORM RESET ---
+
 function resetForm() {
     const state = window.ffn.activityLog;
 
-    // Keep the selected activity type but clear everything else
     document.getElementById('durationHours').value = '0';
     document.getElementById('durationMinutes').value = '30';
 
-    // Reset date/time to now
     const now = new Date();
     const localIso = now.getFullYear() + '-' +
         String(now.getMonth() + 1).padStart(2, '0') + '-' +
@@ -392,7 +464,6 @@ function resetForm() {
         String(now.getMinutes()).padStart(2, '0');
     document.getElementById('sessionDateTime').value = localIso;
 
-    // Clear detailed fields
     ['distance', 'pace', 'avgHeartRate', 'maxHeartRate', 'calories',
      'elevationGain', 'cadence', 'strokeRate', 'laps', 'poolLength', 'incline',
      'sessionNotes'].forEach(id => {
@@ -400,11 +471,9 @@ function resetForm() {
         if (el) el.value = '';
     });
 
-    // Clear RPE
     state.selectedRpe = null;
     document.querySelectorAll('.rpe-btn').forEach(b => b.classList.remove('active'));
 
-    // Collapse details if open
     const detailedFields = document.getElementById('detailedFields');
     if (detailedFields?.classList.contains('show')) {
         const collapse = bootstrap.Collapse.getInstance(detailedFields);
@@ -414,8 +483,5 @@ function resetForm() {
     updateLogButtonState();
 }
 
-// Make functions available globally
+// --- EXPORTS ---
 window.initActivityLog = initActivityLog;
-window.ACTIVITY_ICONS = ACTIVITY_ICONS;
-window.ACTIVITY_NAMES = ACTIVITY_NAMES;
-window.ACTIVITY_FIELD_CONFIG = ACTIVITY_FIELD_CONFIG;

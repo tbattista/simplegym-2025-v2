@@ -168,3 +168,80 @@
     border-color: var(--bs-primary);
     color: #fff;
 }
+
+/* ============================================================================
+   Activity Picker Offcanvas
+   ============================================================================ */
+
+/* Ensure picker offcanvas renders above sidebar (z-index: 1100) */
+#activityPickerOffcanvas {
+    z-index: 1101;
+}
+
+body:has(#activityPickerOffcanvas.show) > .offcanvas-backdrop {
+    z-index: 1100;
+}
+
+.activity-picker-item {
+    display: flex;
+    align-items: center;
+    padding: 0.625rem 0.75rem;
+    border-radius: 0.375rem;
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+
+.activity-picker-item:hover {
+    background: rgba(var(--bs-primary-rgb), 0.06);
+}
+
+.activity-picker-item i:first-child {
+    font-size: 1.25rem;
+    width: 1.75rem;
+    text-align: center;
+}
+
+/* Favorite star toggle */
+.favorite-toggle {
+    background: none;
+    border: none;
+    color: var(--bs-secondary-color);
+    padding: 0.25rem;
+    font-size: 1.125rem;
+    line-height: 1;
+    cursor: pointer;
+    transition: color 0.15s ease;
+}
+
+.favorite-toggle.active {
+    color: #f59e0b;
+}
+
+.favorite-toggle:hover {
+    color: #f59e0b;
+}
+
+/* "More" button - dashed border to distinguish from activity buttons */
+.activity-type-more-btn {
+    border-style: dashed;
+    opacity: 0.7;
+}
+
+.activity-type-more-btn:hover {
+    opacity: 1;
+    border-style: solid;
+}
+
+/* Dark mode - picker offcanvas */
+[data-bs-theme="dark"] .activity-picker-item:hover {
+    background: rgba(var(--bs-primary-rgb), 0.1);
+}
+
+[data-bs-theme="dark"] .favorite-toggle {
+    color: var(--gs-gray-400);
+}
+
+[data-bs-theme="dark"] .favorite-toggle.active,
+[data-bs-theme="dark"] .favorite-toggle:hover {
+    color: #f59e0b;
+}

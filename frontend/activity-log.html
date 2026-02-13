@@ -119,46 +119,9 @@
                 <div class="card mb-4">
                   <div class="card-body">
 
-                    <!-- Activity Type Selector -->
+                    <!-- Activity Type Selector (rendered dynamically by activity-log.js) -->
                     <label class="form-label fw-semibold mb-2">Activity Type</label>
-                    <div class="activity-type-grid mb-3" id="activityTypeGrid">
-                      <button type="button" class="activity-type-btn" data-type="running" title="Running">
-                        <i class="bx bx-run"></i>
-                        <span>Run</span>
-                      </button>
-                      <button type="button" class="activity-type-btn" data-type="cycling" title="Cycling">
-                        <i class="bx bx-cycling"></i>
-                        <span>Bike</span>
-                      </button>
-                      <button type="button" class="activity-type-btn" data-type="rowing" title="Rowing">
-                        <i class="bx bx-water"></i>
-                        <span>Row</span>
-                      </button>
-                      <button type="button" class="activity-type-btn" data-type="swimming" title="Swimming">
-                        <i class="bx bx-swim"></i>
-                        <span>Swim</span>
-                      </button>
-                      <button type="button" class="activity-type-btn" data-type="elliptical" title="Elliptical">
-                        <i class="bx bx-pulse"></i>
-                        <span>Elliptical</span>
-                      </button>
-                      <button type="button" class="activity-type-btn" data-type="stair_climber" title="Stair Climber">
-                        <i class="bx bx-trending-up"></i>
-                        <span>Stairs</span>
-                      </button>
-                      <button type="button" class="activity-type-btn" data-type="walking" title="Walking">
-                        <i class="bx bx-walk"></i>
-                        <span>Walk</span>
-                      </button>
-                      <button type="button" class="activity-type-btn" data-type="hiking" title="Hiking">
-                        <i class="bx bx-landscape"></i>
-                        <span>Hike</span>
-                      </button>
-                      <button type="button" class="activity-type-btn" data-type="other" title="Other">
-                        <i class="bx bx-dots-horizontal-rounded"></i>
-                        <span>Other</span>
-                      </button>
-                    </div>
+                    <div class="activity-type-grid mb-3" id="activityTypeGrid"></div>
 
                     <!-- Quick Log Fields -->
                     <div class="row">
@@ -426,9 +389,16 @@
     <!-- Toast Notifications -->
     <script src="/static/assets/js/utils/toast-notifications.js"></script>
 
+    <!-- Settings & Registry -->
+    <script src="/static/assets/js/services/settings-manager.js"></script>
+    <script src="/static/assets/js/services/activity-type-registry.js?v=1.0.0"></script>
+
+    <!-- Offcanvas Manager -->
+    <script src="/static/assets/js/components/offcanvas/offcanvas-manager.js?v=20251220-01"></script>
+
     <!-- Activity Log Scripts -->
-    <script src="/static/assets/js/dashboard/activity-log.js?v=1.0.0"></script>
-    <script src="/static/assets/js/dashboard/activity-log-history.js?v=1.0.0"></script>
+    <script src="/static/assets/js/dashboard/activity-log.js?v=1.1.0"></script>
+    <script src="/static/assets/js/dashboard/activity-log-history.js?v=1.1.0"></script>
 
     <!-- Menu Navigation System -->
     <script src="/static/assets/js/menu-navigation.js?v=20251020-04"></script>
