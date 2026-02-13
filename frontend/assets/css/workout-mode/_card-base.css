@@ -62,6 +62,18 @@
     background: var(--workout-status-logged);
 }
 
+/* Completed (logged) card - disable in-card click-to-edit */
+.workout-card.logged .click-to-edit {
+    cursor: default;
+    pointer-events: none;
+}
+
+/* Edit button locked state on completed cards */
+.workout-edit-btn.edit-locked {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+
 /* Skipped state - distinct but not alarming */
 .workout-card.skipped {
     border-left: 3px solid var(--workout-warning);

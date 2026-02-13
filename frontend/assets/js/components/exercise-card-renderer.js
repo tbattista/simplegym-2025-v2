@@ -88,14 +88,14 @@ class ExerciseCardRenderer {
                             ${isBonus ? '<span class="additional-exercise-badge" title="Additional exercise">+</span>' : ''}
                         </div>
                         <div class="workout-header-actions">
-                            <button class="workout-edit-btn" onclick="window.workoutModeController?.handleEditExercise?.('${this._escapeHtml(mainExercise)}', ${index}); event.stopPropagation();" aria-label="Modify exercise" title="Modify exercise">
-                                <i class="bx bx-edit-alt"></i>
+                            <button class="workout-edit-btn${isCompleted ? ' edit-locked' : ''}" onclick="window.workoutModeController?.handleEditExercise?.('${this._escapeHtml(mainExercise)}', ${index}); event.stopPropagation();" aria-label="${isCompleted ? 'Editing locked - uncomplete to edit' : 'Modify exercise'}" title="${isCompleted ? 'Uncomplete to edit' : 'Modify exercise'}">
+                                <i class="bx ${isCompleted ? 'bx-lock-alt' : 'bx-edit-alt'}"></i>
                             </button>
                             <button class="workout-more-btn" onclick="window.workoutModeController?.toggleExerciseMenu?.(this, '${this._escapeHtml(mainExercise)}', ${index}); event.stopPropagation();" title="More options">
                                 <i class="bx bx-dots-vertical"></i>
                             </button>
                             <i class="bx bx-chevron-down workout-chevron"></i>
-                            ${this._renderMoreMenu(mainExercise, index, isSkipped, totalCards)}
+                            ${this._renderMoreMenu(mainExercise, index, isSkipped, isCompleted, totalCards)}
                         </div>
                     </div>
                     <!-- Row 2: Meta info (sets/reps/rest, weight, direction) -->
@@ -569,10 +569,11 @@ class ExerciseCardRenderer {
      * @param {string} exerciseName - Name of the exercise
      * @param {number} index - Card index
      * @param {boolean} isSkipped - Whether exercise is skipped
+     * @param {boolean} isCompleted - Whether exercise is completed
      * @param {number} totalCards - Total number of cards (for move up/down boundaries)
      * @private
      */
-    _renderMoreMenu(exerciseName, index, isSkipped, totalCards) {
+    _renderMoreMenu(exerciseName, index, isSkipped, isCompleted, totalCards) {
         return `
             <div class="workout-menu" onclick="event.stopPropagation()">
                 ${!isSkipped ? `
@@ -587,9 +588,9 @@ class ExerciseCardRenderer {
                         Unskip exercise
                     </button>
                 ` : ''}
-                <button class="workout-menu-item" onclick="window.workoutModeController?.handleEditExercise?.('${this._escapeHtml(exerciseName)}', ${index}); event.stopPropagation();">
-                    <i class="bx bx-edit-alt"></i>
-                    Modify exercise
+                <button class="workout-menu-item${isCompleted ? ' disabled' : ''}" onclick="window.workoutModeController?.handleEditExercise?.('${this._escapeHtml(exerciseName)}', ${index}); event.stopPropagation();"${isCompleted ? ' disabled' : ''}>
+                    <i class="bx ${isCompleted ? 'bx-lock-alt' : 'bx-edit-alt'}"></i>
+                    ${isCompleted ? 'Modify (uncomplete first)' : 'Modify exercise'}
                 </button>
                 <button class="workout-menu-item" onclick="window.workoutModeController?.handleReplaceExercise?.('${this._escapeHtml(exerciseName)}', ${index}); event.stopPropagation();">
                     <i class="bx bx-transfer-alt"></i>

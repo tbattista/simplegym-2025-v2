@@ -704,23 +704,39 @@ class WorkoutSessionService {
         // Get previous weight for change calculation
         const history = this.exerciseHistory[exerciseName];
         const previousWeight = history?.last_weight || 0;
-        const weightValue = parseFloat(details.weight) || 0;
-        const weightChange = weightValue - previousWeight;
-        
+
         // Merge with existing data to preserve flags like is_bonus
         const existingData = this.currentSession.exercises[exerciseName] || {};
-        this.currentSession.exercises[exerciseName] = {
+
+        // Build update - only include weight fields if explicitly provided
+        // This prevents RepsSetsFieldController from wiping weight when saving protocol only
+        const updateData = {
             ...existingData,
             target_sets: details.sets || existingData.target_sets || '3',
             target_reps: details.reps || existingData.target_reps || '8-12',
             rest: details.rest || existingData.rest || '60s',
-            weight: details.weight,
-            weight_unit: details.weightUnit || 'lbs',
-            previous_weight: previousWeight,
-            weight_change: weightChange,
             is_modified: true,
             modified_at: new Date().toISOString()
         };
+
+        // Preserve target_sets_reps if provided (new single-field format)
+        if (details.target_sets_reps !== undefined) {
+            updateData.target_sets_reps = details.target_sets_reps;
+        }
+
+        // Only overwrite weight if explicitly provided
+        if (details.weight !== undefined) {
+            const weightValue = parseFloat(details.weight) || 0;
+            const weightChange = weightValue - previousWeight;
+            updateData.weight = details.weight;
+            updateData.weight_unit = details.weightUnit || existingData.weight_unit || 'lbs';
+            updateData.previous_weight = previousWeight;
+            updateData.weight_change = weightChange;
+        } else if (details.weightUnit !== undefined) {
+            updateData.weight_unit = details.weightUnit;
+        }
+
+        this.currentSession.exercises[exerciseName] = updateData;
         
         console.log('📝 Updated exercise details:', exerciseName, details);
         this.notifyListeners('exerciseDetailsUpdated', { exerciseName, details });

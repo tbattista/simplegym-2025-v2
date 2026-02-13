@@ -93,6 +93,15 @@ class UnifiedEditController {
             return;
         }
 
+        // Block editing if exercise is completed (user must uncomplete first)
+        if (this.cardElement.classList.contains('logged')) {
+            console.log('🔒 Edit blocked - exercise is completed:', this.cardElement.dataset.exerciseName);
+            if (window.showAlert) {
+                window.showAlert('Uncomplete this exercise first to make changes', 'warning');
+            }
+            return;
+        }
+
         console.log('🟢 Entering unified edit mode');
 
         // First, expand the card if it's collapsed

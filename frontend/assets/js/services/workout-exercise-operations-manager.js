@@ -223,6 +223,18 @@ class WorkoutExerciseOperationsManager {
      * @param {number} index - Exercise index
      */
     handleEditExercise(exerciseName, index) {
+        // Block editing if exercise is completed during active session
+        if (this.sessionService.isSessionActive()) {
+            const exerciseData = this.sessionService.getExerciseWeight(exerciseName);
+            if (exerciseData?.is_completed) {
+                console.log('🔒 Edit blocked - exercise is completed:', exerciseName);
+                if (window.showAlert) {
+                    window.showAlert('Uncomplete this exercise first to make changes', 'warning');
+                }
+                return;
+            }
+        }
+
         // Get current exercise data from appropriate source
         const currentData = this.onGetCurrentExerciseData(exerciseName, index);
         
