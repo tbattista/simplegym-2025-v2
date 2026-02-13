@@ -184,6 +184,11 @@ function renderSessionGroup(title, sessions) {
  * Supports delete mode with checkbox selection
  */
 function createSessionEntry(session) {
+  // Route to cardio renderer if this is a cardio session
+  if (session._sessionType === 'cardio' && window.renderCardioHistoryEntry) {
+    return window.renderCardioHistoryEntry(session);
+  }
+
   const collapseId = `session-${session.id}`;
   const state = window.ffn.workoutHistory;
   const isExpanded = state.expandedSessions.has(session.id);
@@ -465,6 +470,83 @@ function scrollToSession(sessionId) {
 }
 
 /* ============================================
+   CARDIO SESSION RENDERER (Unified History)
+   ============================================ */
+
+// Activity type icons and names for cardio entries
+const CARDIO_ICONS = {
+  running: 'bx-run', cycling: 'bx-cycling', rowing: 'bx-water', swimming: 'bx-swim',
+  elliptical: 'bx-pulse', stair_climber: 'bx-trending-up', walking: 'bx-walk',
+  hiking: 'bx-landscape', other: 'bx-dots-horizontal-rounded'
+};
+const CARDIO_NAMES = {
+  running: 'Running', cycling: 'Cycling', rowing: 'Rowing', swimming: 'Swimming',
+  elliptical: 'Elliptical', stair_climber: 'Stair Climber', walking: 'Walking',
+  hiking: 'Hiking', other: 'Other'
+};
+
+/**
+ * Render a cardio session entry in the unified history timeline
+ */
+function renderCardioHistoryEntry(session) {
+  const icon = CARDIO_ICONS[session.activity_type] || 'bx-dots-horizontal-rounded';
+  const name = session.activity_name || CARDIO_NAMES[session.activity_type] || session.activity_type;
+  const dateStr = formatDate(session.started_at || session.created_at, { short: true });
+
+  // Format duration
+  const mins = session.duration_minutes || 0;
+  const duration = mins < 60 ? `${mins} min` : `${Math.floor(mins / 60)}h ${mins % 60 > 0 ? (mins % 60) + 'm' : ''}`;
+
+  // Build meta parts
+  const metaParts = [duration.trim()];
+  if (session.distance) {
+    metaParts.push(`${session.distance} ${session.distance_unit || 'mi'}`);
+  }
+  if (session.pace_per_unit) {
+    metaParts.push(session.pace_per_unit);
+  }
+  if (session.avg_heart_rate) {
+    metaParts.push(`${session.avg_heart_rate} bpm`);
+  }
+
+  // Build detail rows
+  const detailRows = [];
+  if (session.calories) detailRows.push(`<div><i class="bx bx-flame me-1"></i>${session.calories} kcal</div>`);
+  if (session.rpe) detailRows.push(`<div><i class="bx bx-bar-chart me-1"></i>RPE: ${session.rpe}/10</div>`);
+  if (session.elevation_gain) detailRows.push(`<div><i class="bx bx-trending-up me-1"></i>${session.elevation_gain} ${session.elevation_unit || 'ft'} gain</div>`);
+  if (session.max_heart_rate) detailRows.push(`<div><i class="bx bx-heart me-1"></i>Max HR: ${session.max_heart_rate} bpm</div>`);
+  if (session.notes) detailRows.push(`<div class="mt-2 fst-italic text-muted">"${escapeHtml(session.notes)}"</div>`);
+
+  const hasDetails = detailRows.length > 0;
+  const collapseId = `cardio-hist-${session.id}`;
+
+  return `
+    <div class="session-entry" id="session-entry-${session.id}"
+         ${hasDetails ? `data-bs-toggle="collapse" data-bs-target="#${collapseId}" role="button" aria-expanded="false"` : ''}
+         data-session-id="${session.id}">
+      <div class="session-status">
+        <span class="session-status-icon cardio-icon" style="background-color: rgba(var(--bs-primary-rgb), 0.12); color: var(--bs-primary); width: 1.5rem; height: 1.5rem; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 0.875rem;">
+          <i class="bx ${icon}"></i>
+        </span>
+      </div>
+      <div class="session-info">
+        <span class="session-workout-name">${escapeHtml(name)}</span>
+        <span class="session-date">${dateStr}</span>
+        <span class="session-meta">${metaParts.join(' · ')}</span>
+      </div>
+      ${hasDetails ? `<span class="session-chevron"><i class="bx bx-chevron-down"></i></span>` : ''}
+    </div>
+    ${hasDetails ? `
+      <div class="collapse session-details-collapse" id="${collapseId}">
+        <div class="session-details-wrapper p-3">
+          ${detailRows.join('')}
+        </div>
+      </div>
+    ` : ''}
+  `;
+}
+
+/* ============================================
    EXPORTS
    ============================================ */
 
@@ -476,5 +558,6 @@ window.createSessionEntry = createSessionEntry;
 window.renderSessionDetails = renderSessionDetails;
 window.renderExerciseTableRow = renderExerciseTableRow;
 window.scrollToSession = scrollToSession;
+window.renderCardioHistoryEntry = renderCardioHistoryEntry;
 
 console.log('📦 Workout History Sessions module loaded (v1.1.0)');

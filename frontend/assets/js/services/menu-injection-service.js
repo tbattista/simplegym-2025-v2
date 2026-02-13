@@ -234,6 +234,7 @@ class MenuInjectionService {
         if (filename.includes('dashboard')) return 'dashboard';
         if (filename.includes('programs')) return 'programs';
         if (filename.includes('workout-mode')) return 'workout-mode';
+        if (filename.includes('activity-log')) return 'activity-log';
         if (filename.includes('workout-history')) return 'workout-history';
         if (filename.includes('workout-database')) return 'workout-database';
         if (filename.includes('workout-builder')) return 'workouts';

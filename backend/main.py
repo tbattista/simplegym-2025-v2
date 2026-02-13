@@ -16,7 +16,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Import routers
-from .api import health, documents, workouts, programs, exercises, favorites, auth, data, migration, workout_sessions, sharing, user_profile, export
+from .api import health, documents, workouts, programs, exercises, favorites, auth, data, migration, workout_sessions, sharing, user_profile, export, cardio_sessions
 from .services.sharing_service import sharing_service
 import re
 import html
@@ -58,8 +58,9 @@ app.include_router(workout_sessions.router)  # Workout session logging (premium 
 app.include_router(sharing.router)  # Workout sharing endpoints
 app.include_router(user_profile.router)  # User profile management
 app.include_router(export.router)  # Export endpoints (text, image, print)
+app.include_router(cardio_sessions.router)  # Cardio session logging
 
-logger.info("✅ All routers included successfully (15 routers total)")
+logger.info("✅ All routers included successfully (16 routers total)")
 
 # ============================================
 # SEO Routes (robots.txt, sitemap.xml, llms.txt)
@@ -269,6 +270,19 @@ async def serve_workout_history():
     except FileNotFoundError:
         return HTMLResponse(
             content="<h1>Workout History not found</h1><p>Please ensure frontend/workout-history.html exists</p>",
+            status_code=404
+        )
+
+@app.get("/activity-log", response_class=HTMLResponse)
+@app.get("/activity-log.html", response_class=HTMLResponse)
+async def serve_activity_log():
+    """Serve the Activity Log page"""
+    try:
+        with open("frontend/activity-log.html", "r", encoding="utf-8") as f:
+            return HTMLResponse(content=f.read())
+    except FileNotFoundError:
+        return HTMLResponse(
+            content="<h1>Activity Log not found</h1><p>Please ensure frontend/activity-log.html exists</p>",
             status_code=404
         )
 

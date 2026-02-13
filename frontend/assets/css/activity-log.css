@@ -1,0 +1,157 @@
+/* ============================================================================
+   Activity Log Page Styles
+   ============================================================================ */
+
+/* Activity Type Selector Grid */
+.activity-type-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+}
+
+@media (min-width: 576px) {
+    .activity-type-grid {
+        grid-template-columns: repeat(5, 1fr);
+    }
+}
+
+@media (min-width: 768px) {
+    .activity-type-grid {
+        grid-template-columns: repeat(9, 1fr);
+    }
+}
+
+.activity-type-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+    padding: 0.625rem 0.25rem;
+    border: 1px solid var(--bs-border-color);
+    border-radius: 0.375rem;
+    background: var(--bs-card-bg);
+    color: var(--bs-body-color);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    font-size: 0.75rem;
+    min-height: 3.5rem;
+}
+
+.activity-type-btn i {
+    font-size: 1.25rem;
+}
+
+.activity-type-btn span {
+    line-height: 1;
+    white-space: nowrap;
+}
+
+.activity-type-btn:hover {
+    border-color: var(--bs-primary);
+    color: var(--bs-primary);
+    background: rgba(var(--bs-primary-rgb), 0.04);
+}
+
+.activity-type-btn.active {
+    border-color: var(--bs-primary);
+    background: var(--bs-primary);
+    color: #fff;
+}
+
+/* RPE Selector */
+.rpe-selector {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.rpe-btn {
+    flex: 1;
+    padding: 0.375rem 0;
+    border: 1px solid var(--bs-border-color);
+    border-radius: 0.25rem;
+    background: var(--bs-card-bg);
+    color: var(--bs-body-color);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    text-align: center;
+    min-width: 0;
+}
+
+.rpe-btn:hover {
+    border-color: var(--bs-primary);
+    color: var(--bs-primary);
+}
+
+.rpe-btn.active {
+    border-color: var(--bs-primary);
+    background: var(--bs-primary);
+    color: #fff;
+}
+
+/* Activity Filter Chips */
+.activity-filter-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.375rem;
+}
+
+.activity-filter-chip {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.625rem;
+    border-radius: 1rem;
+}
+
+/* Cardio session icon in history */
+.session-status-icon.cardio-icon {
+    background-color: rgba(var(--bs-primary-rgb), 0.12);
+    color: var(--bs-primary);
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+}
+
+/* Session entry without details (no chevron, not clickable) */
+.session-entry.no-details {
+    cursor: default;
+}
+
+/* Session meta with dot separators */
+.session-meta span {
+    font-size: 0.8125rem;
+}
+
+.session-meta .mx-1 {
+    opacity: 0.5;
+}
+
+/* Dark mode adjustments */
+[data-bs-theme="dark"] .activity-type-btn {
+    border-color: var(--bs-gray-700);
+    background: var(--bs-gray-800);
+}
+
+[data-bs-theme="dark"] .activity-type-btn:hover {
+    border-color: var(--bs-primary);
+}
+
+[data-bs-theme="dark"] .activity-type-btn.active {
+    background: var(--bs-primary);
+    border-color: var(--bs-primary);
+}
+
+[data-bs-theme="dark"] .rpe-btn {
+    border-color: var(--bs-gray-700);
+    background: var(--bs-gray-800);
+}
+
+[data-bs-theme="dark"] .rpe-btn.active {
+    background: var(--bs-primary);
+    border-color: var(--bs-primary);
+}

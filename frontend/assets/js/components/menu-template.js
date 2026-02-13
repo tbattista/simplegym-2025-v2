@@ -60,6 +60,14 @@ function getMenuHTML(activePage = 'home') {
                 </a>
             </li>
 
+            <!-- Log -->
+            <li class="menu-item ${activePage === 'activity-log' ? 'active' : ''}">
+                <a href="activity-log.html" class="menu-link">
+                    <i class="menu-icon tf-icons bx bx-edit-alt"></i>
+                    <div class="text-truncate">Log</div>
+                </a>
+            </li>
+
             <!-- Workout Management -->
             <li class="menu-header small text-uppercase">
                 <span class="menu-header-text">Workout Management</span>

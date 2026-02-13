@@ -121,22 +121,45 @@ async function loadAllSessions(scrollToSessionId = null) {
     const token = await window.dataManager.getAuthToken();
     if (window.mobileDebugLog) window.mobileDebugLog('Token: ' + (token ? token.substring(0, 20) + '...' : 'NO TOKEN'));
 
-    const response = await fetch('/api/v3/workout-sessions?page_size=100&sort=desc', {
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
+    // Fetch workout sessions and cardio sessions in parallel
+    const [workoutResponse, cardioResponse] = await Promise.all([
+      fetch('/api/v3/workout-sessions?page_size=100&sort=desc', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      }),
+      fetch('/api/v3/cardio-sessions?page_size=100', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      }).catch(() => null) // Don't fail if cardio endpoint errors
+    ]);
 
-    console.log('🔍 [HISTORY] Response status:', response.status);
-    if (window.mobileDebugLog) window.mobileDebugLog('Response: ' + response.status);
+    console.log('🔍 [HISTORY] Workout response status:', workoutResponse.status);
+    if (window.mobileDebugLog) window.mobileDebugLog('Response: ' + workoutResponse.status);
 
-    if (!response.ok) {
+    if (!workoutResponse.ok) {
       throw new Error('Failed to fetch workout sessions');
     }
 
-    const data = await response.json();
-    console.log('🔍 [HISTORY] Got sessions:', data.sessions?.length || 0);
-    if (window.mobileDebugLog) window.mobileDebugLog('Sessions: ' + (data.sessions?.length || 0));
+    const workoutData = await workoutResponse.json();
+    const workoutSessions = (workoutData.sessions || []).map(s => ({ ...s, _sessionType: 'strength' }));
+    console.log('🔍 [HISTORY] Got workout sessions:', workoutSessions.length);
 
-    window.ffn.workoutHistory.sessions = data.sessions || [];
+    // Parse cardio sessions if available
+    let cardioSessions = [];
+    if (cardioResponse && cardioResponse.ok) {
+      const cardioData = await cardioResponse.json();
+      cardioSessions = (cardioData.sessions || []).map(s => ({ ...s, _sessionType: 'cardio' }));
+      console.log('🔍 [HISTORY] Got cardio sessions:', cardioSessions.length);
+    }
+
+    // Merge and sort by started_at descending
+    const allSessions = [...workoutSessions, ...cardioSessions].sort((a, b) => {
+      const dateA = new Date(a.started_at || a.created_at);
+      const dateB = new Date(b.started_at || b.created_at);
+      return dateB - dateA;
+    });
+
+    if (window.mobileDebugLog) window.mobileDebugLog('Total sessions: ' + allSessions.length);
+
+    window.ffn.workoutHistory.sessions = allSessions;
 
     // No exercise history in all mode (API requires workout_id)
     window.ffn.workoutHistory.exerciseHistories = {};
