@@ -2,6 +2,16 @@
    Activity Log Page Styles
    ============================================================================ */
 
+/* Focus Cards (Start Workout / Log Activity) */
+.card-hover-border {
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.card-hover-border:hover {
+    border-color: var(--bs-primary) !important;
+    box-shadow: 0 2px 8px rgba(var(--bs-primary-rgb), 0.15);
+}
+
 /* Activity Type Selector Grid */
 .activity-type-grid {
     display: grid;
