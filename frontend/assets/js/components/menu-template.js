@@ -35,14 +35,13 @@ function getMenuHTML(activePage = 'home') {
                 </a>
             </li>
 
-            <!-- Log - Hidden for now
-            <li class="menu-item ${activePage === 'dashboard' ? 'active' : ''}">
-                <a href="dashboard.html" class="menu-link">
-                    <i class="menu-icon tf-icons bx bx-calendar"></i>
+            <!-- Log -->
+            <li class="menu-item ${activePage === 'activity-log' ? 'active' : ''}">
+                <a href="activity-log.html" class="menu-link">
+                    <i class="menu-icon tf-icons bx bx-edit-alt"></i>
                     <div class="text-truncate">Log</div>
                 </a>
             </li>
-            -->
 
             <!-- Library (was Workout Database) -->
             <li class="menu-item ${activePage === 'workout-database' ? 'active' : ''}">
@@ -57,14 +56,6 @@ function getMenuHTML(activePage = 'home') {
                 <a href="workout-history.html?all=true" class="menu-link">
                     <i class="menu-icon tf-icons bx bx-history"></i>
                     <div class="text-truncate">History</div>
-                </a>
-            </li>
-
-            <!-- Log -->
-            <li class="menu-item ${activePage === 'activity-log' ? 'active' : ''}">
-                <a href="activity-log.html" class="menu-link">
-                    <i class="menu-icon tf-icons bx bx-edit-alt"></i>
-                    <div class="text-truncate">Log</div>
                 </a>
             </li>
 
