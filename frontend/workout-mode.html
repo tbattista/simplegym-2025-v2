@@ -327,15 +327,20 @@
     <script src="/static/assets/js/components/quick-notes/quick-notes-config.js"></script>
     <script src="/static/assets/js/components/quick-notes/quick-notes-popover.js"></script>
     
-    <!-- Session Service Dependencies -->
+    <!-- Session Service Dependencies (Phase 1: standalone sub-services) -->
     <script src="/static/assets/js/services/weight-history-service.js?v=1.0.0"></script>
     <script src="/static/assets/js/services/session-notes-service.js?v=1.0.0"></script>
     <script src="/static/assets/js/services/pre-session-editing-service.js?v=1.0.0"></script>
     <script src="/static/assets/js/services/session-persistence-service.js?v=1.0.0"></script>
     <script src="/static/assets/js/services/auto-save-service.js?v=1.0.0"></script>
 
-    <!-- Workout Mode JS (Refactored) -->
-    <script src="/static/assets/js/services/workout-session-service.js?v=2.7.0"></script>
+    <!-- Session Service Dependencies (Phase 2: extracted sub-services) -->
+    <script src="/static/assets/js/services/session-exercise-state-service.js?v=1.0.0"></script>
+    <script src="/static/assets/js/services/session-bonus-exercise-service.js?v=1.0.0"></script>
+    <script src="/static/assets/js/services/session-lifecycle-api-service.js?v=1.0.0"></script>
+
+    <!-- Session Service Orchestrator (last) -->
+    <script src="/static/assets/js/services/workout-session-service.js?v=3.0.0"></script>
     <script src="/static/assets/js/workout-mode-refactored.js?v=20251109-01"></script>
     
     <!-- Phase 4 Refactoring: Data Management -->

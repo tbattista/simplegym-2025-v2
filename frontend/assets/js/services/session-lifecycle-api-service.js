@@ -1,0 +1,472 @@
+/**
+ * Ghost Gym - Session Lifecycle API Service
+ * Handles session start, complete, and recovery API calls
+ * Extracted from WorkoutSessionService for single responsibility
+ * @version 1.0.0
+ * @date 2026-02-14
+ */
+
+class SessionLifecycleApiService {
+    constructor(options = {}) {
+        // Callbacks for session service coordination
+        this.onGetCurrentSession = options.onGetCurrentSession || (() => null);
+        this.onSetCurrentSession = options.onSetCurrentSession || (() => {});
+        this.onGetSessionNotes = options.onGetSessionNotes || (() => []);
+        this.onGetPreSessionOrder = options.onGetPreSessionOrder || (() => []);
+        this.onGetPreSessionEditingService = options.onGetPreSessionEditingService || (() => null);
+        this.onNotify = options.onNotify || (() => {});
+        this.onPersist = options.onPersist || (() => {});
+        this.onClearPersistedSession = options.onClearPersistedSession || (() => {});
+
+        console.log('\ud83d\ude80 Session Lifecycle API Service initialized');
+    }
+
+    /**
+     * Start a new workout session
+     * @param {string} workoutId - Workout ID
+     * @param {string} workoutName - Workout name
+     * @param {Object|null} workoutData - Optional workout template data
+     * @param {string} sessionMode - Session mode: 'timed' (default) or 'quick_log'
+     * @returns {Promise<Object>} Session object
+     */
+    async startSession(workoutId, workoutName, workoutData = null, sessionMode = 'timed') {
+        try {
+            const modeIcon = sessionMode === 'quick_log' ? '\ud83d\udcdd' : '\ud83c\udfcb\ufe0f';
+            console.log(`${modeIcon} Starting ${sessionMode} workout session:`, workoutName);
+
+            const token = await window.authService.getIdToken();
+            if (!token) {
+                throw new Error('Authentication required. Please log in to track your workout.');
+            }
+
+            const url = window.config.api.getUrl('/api/v3/workout-sessions');
+
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    workout_id: workoutId,
+                    workout_name: workoutName,
+                    started_at: new Date().toISOString(),
+                    session_mode: sessionMode
+                })
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.detail || `Failed to create session: ${response.statusText}`);
+            }
+
+            const session = await response.json();
+
+            // Build the session object
+            const newSession = {
+                id: session.id,
+                workoutId: workoutId,
+                workoutName: workoutName,
+                startedAt: new Date(session.started_at),
+                status: 'in_progress',
+                sessionMode: sessionMode,
+                exercises: {}
+            };
+
+            // Pre-populate exercises from template
+            if (workoutData) {
+                newSession.exercises = this._initializeExercisesFromTemplate(workoutData);
+                console.log('\u2705 Pre-populated', Object.keys(newSession.exercises).length, 'exercises from template');
+            }
+
+            // Set the session on the parent
+            this.onSetCurrentSession(newSession);
+
+            // Apply pre-session modifications
+            const preSessionEditingService = this.onGetPreSessionEditingService();
+            if (preSessionEditingService && (preSessionEditingService.hasEdits() || preSessionEditingService.hasSkips())) {
+                console.log('\ud83d\udd04 Applying pre-session modifications to new session...');
+                preSessionEditingService.applyAllToSession(newSession);
+            }
+
+            console.log('\u2705 Workout session started:', session.id);
+            this.onNotify('sessionStarted', newSession);
+            window.dispatchEvent(new CustomEvent('sessionStateChanged', { detail: { type: 'started' } }));
+
+            // Persist session immediately after start
+            this.onPersist();
+
+            return newSession;
+
+        } catch (error) {
+            console.error('\u274c Error starting workout session:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Initialize exercises from workout template
+     * @param {Object} workout - Workout template data
+     * @returns {Object} Initialized exercises object
+     * @private
+     */
+    _initializeExercisesFromTemplate(workout) {
+        const exercises = {};
+
+        if (workout.exercise_groups) {
+            workout.exercise_groups.forEach((group, index) => {
+                const exerciseName = group.exercises?.a;
+                if (exerciseName) {
+                    const templateWeight = group.default_weight || null;
+                    const templateSets = group.sets || '3';
+                    const templateReps = group.reps || '8-12';
+
+                    exercises[exerciseName] = {
+                        weight: templateWeight,
+                        weight_unit: group.default_weight_unit || 'lbs',
+                        target_sets: templateSets,
+                        target_reps: templateReps,
+                        rest: group.rest || '60s',
+                        previous_weight: null,
+                        weight_change: 0,
+                        order_index: index,
+                        is_bonus: false,
+                        is_modified: false,
+                        is_skipped: false,
+                        notes: '',
+                        original_weight: templateWeight,
+                        original_sets: templateSets,
+                        original_reps: templateReps
+                    };
+                }
+            });
+        }
+
+        if (workout.bonus_exercises) {
+            const baseIndex = workout.exercise_groups?.length || 0;
+            workout.bonus_exercises.forEach((bonus, index) => {
+                const templateWeight = bonus.default_weight || null;
+                const templateSets = bonus.sets || '3';
+                const templateReps = bonus.reps || '12';
+
+                exercises[bonus.name] = {
+                    weight: templateWeight,
+                    weight_unit: bonus.default_weight_unit || 'lbs',
+                    target_sets: templateSets,
+                    target_reps: templateReps,
+                    rest: bonus.rest || '30s',
+                    previous_weight: null,
+                    weight_change: 0,
+                    order_index: baseIndex + index,
+                    is_bonus: true,
+                    is_modified: false,
+                    is_skipped: false,
+                    notes: '',
+                    original_weight: templateWeight,
+                    original_sets: templateSets,
+                    original_reps: templateReps
+                };
+            });
+        }
+
+        return exercises;
+    }
+
+    /**
+     * Complete the current workout session
+     * @param {Array} exercisesPerformed - Array of exercise data
+     * @param {number|null} durationMinutes - Optional manual duration for Quick Log mode
+     * @returns {Promise<Object>} Completed session object
+     */
+    async completeSession(exercisesPerformed, durationMinutes = null) {
+        const currentSession = this.onGetCurrentSession();
+        try {
+            if (!currentSession || !currentSession.id) {
+                throw new Error('No active session to complete');
+            }
+
+            console.log('\ud83c\udfc1 Completing workout session:', currentSession.id);
+
+            const token = await window.authService.getIdToken();
+            if (!token) {
+                throw new Error('Authentication required');
+            }
+
+            const url = window.config.api.getUrl(`/api/v3/workout-sessions/${currentSession.id}/complete`);
+
+            const sessionNotes = this.onGetSessionNotes();
+            const preSessionOrder = this.onGetPreSessionOrder();
+
+            const requestBody = {
+                completed_at: new Date().toISOString(),
+                exercises_performed: exercisesPerformed,
+                notes: '',
+                session_notes: (sessionNotes || []).map(note => ({
+                    id: note.id,
+                    content: note.content,
+                    order_index: note.order_index,
+                    created_at: note.created_at,
+                    modified_at: note.modified_at || null
+                }))
+            };
+
+            if (requestBody.session_notes.length > 0) {
+                console.log('\ud83d\udcdd Including', requestBody.session_notes.length, 'session notes in completion');
+            }
+
+            if (preSessionOrder && preSessionOrder.length > 0) {
+                requestBody.exercise_order = preSessionOrder;
+                console.log('\ud83d\udccb Including custom exercise order in completion:', preSessionOrder.length, 'exercises');
+            }
+
+            if (durationMinutes !== null && durationMinutes > 0) {
+                requestBody.duration_minutes = durationMinutes;
+                console.log('\u23f1\ufe0f Including manual duration for Quick Log:', durationMinutes, 'minutes');
+            }
+
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(requestBody)
+            });
+
+            // Handle session not found - create new session and complete it
+            if (response.status === 404) {
+                console.warn('\u26a0\ufe0f Session not found in database, creating new session to save workout data...');
+                return await this._createAndCompleteSession(exercisesPerformed, durationMinutes, token);
+            }
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.detail || `Failed to complete session: ${response.statusText}`);
+            }
+
+            const completedSession = await response.json();
+
+            currentSession.status = 'completed';
+            currentSession.completedAt = new Date(completedSession.completed_at);
+
+            console.log('\u2705 Workout session completed:', currentSession.id);
+            this.onNotify('sessionCompleted', completedSession);
+            window.dispatchEvent(new CustomEvent('sessionStateChanged', { detail: { type: 'completed' } }));
+
+            this.onClearPersistedSession();
+
+            return completedSession;
+
+        } catch (error) {
+            console.error('\u274c Error completing workout session:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Create a new session and immediately complete it (fallback for orphaned localStorage sessions)
+     * @private
+     */
+    async _createAndCompleteSession(exercisesPerformed, durationMinutes, token) {
+        console.log('\ud83d\udd04 Creating new session to preserve workout data...');
+
+        // Strategy 1: Try atomic create-and-complete endpoint
+        try {
+            const atomicResult = await this._tryAtomicCreateAndComplete(
+                exercisesPerformed, durationMinutes, token
+            );
+            if (atomicResult) return atomicResult;
+        } catch (error) {
+            console.warn('\u26a0\ufe0f Atomic create-and-complete failed, falling back to two-step:', error.message);
+        }
+
+        // Strategy 2: Two-step with retry
+        return await this._createThenCompleteWithRetry(exercisesPerformed, durationMinutes, token);
+    }
+
+    /**
+     * Try atomic create-and-complete endpoint (single API call)
+     * @private
+     */
+    async _tryAtomicCreateAndComplete(exercisesPerformed, durationMinutes, token) {
+        const currentSession = this.onGetCurrentSession();
+        const sessionNotes = this.onGetSessionNotes();
+        const preSessionOrder = this.onGetPreSessionOrder();
+        const url = window.config.api.getUrl('/api/v3/workout-sessions/create-and-complete');
+
+        const requestBody = {
+            workout_id: currentSession.workoutId,
+            workout_name: currentSession.workoutName,
+            started_at: currentSession.startedAt.toISOString(),
+            completed_at: new Date().toISOString(),
+            exercises_performed: exercisesPerformed,
+            session_mode: currentSession.sessionMode || 'timed',
+            notes: '',
+            session_notes: (sessionNotes || []).map(note => ({
+                id: note.id,
+                content: note.content,
+                order_index: note.order_index,
+                created_at: note.created_at,
+                modified_at: note.modified_at || null
+            }))
+        };
+
+        if (preSessionOrder && preSessionOrder.length > 0) {
+            requestBody.exercise_order = preSessionOrder;
+        }
+
+        if (durationMinutes !== null && durationMinutes > 0) {
+            requestBody.duration_minutes = durationMinutes;
+        }
+
+        console.log('\ud83d\ude80 Trying atomic create-and-complete endpoint...');
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(requestBody)
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.detail || `Atomic endpoint failed: ${response.status}`);
+        }
+
+        const completedSession = await response.json();
+
+        currentSession.id = completedSession.id;
+        currentSession.status = 'completed';
+        currentSession.completedAt = new Date(completedSession.completed_at);
+
+        console.log('\u2705 Atomic create-and-complete succeeded:', completedSession.id);
+        this.onNotify('sessionCompleted', completedSession);
+        window.dispatchEvent(new CustomEvent('sessionStateChanged', { detail: { type: 'completed' } }));
+        this.onClearPersistedSession();
+
+        return completedSession;
+    }
+
+    /**
+     * Two-step create then complete with retry and exponential backoff
+     * @private
+     */
+    async _createThenCompleteWithRetry(exercisesPerformed, durationMinutes, token) {
+        const MAX_RETRIES = 3;
+        const BASE_DELAY_MS = 150;
+        const currentSession = this.onGetCurrentSession();
+        const sessionNotes = this.onGetSessionNotes();
+        const preSessionOrder = this.onGetPreSessionOrder();
+
+        // Step 1: Create session
+        console.log('\ud83d\udcdd Creating recovery session (two-step fallback)...');
+        const createUrl = window.config.api.getUrl('/api/v3/workout-sessions');
+        const createResponse = await fetch(createUrl, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                workout_id: currentSession.workoutId,
+                workout_name: currentSession.workoutName,
+                started_at: currentSession.startedAt.toISOString(),
+                session_mode: currentSession.sessionMode || 'timed'
+            })
+        });
+
+        if (!createResponse.ok) {
+            const errorData = await createResponse.json().catch(() => ({}));
+            throw new Error(errorData.detail || 'Failed to create recovery session');
+        }
+
+        const newSession = await createResponse.json();
+        console.log('\u2705 Recovery session created:', newSession.id);
+
+        // Step 2: Complete with retry
+        const requestBody = {
+            completed_at: new Date().toISOString(),
+            exercises_performed: exercisesPerformed,
+            notes: '',
+            session_notes: (sessionNotes || []).map(note => ({
+                id: note.id,
+                content: note.content,
+                order_index: note.order_index,
+                created_at: note.created_at,
+                modified_at: note.modified_at || null
+            }))
+        };
+
+        if (preSessionOrder && preSessionOrder.length > 0) {
+            requestBody.exercise_order = preSessionOrder;
+        }
+
+        if (durationMinutes !== null && durationMinutes > 0) {
+            requestBody.duration_minutes = durationMinutes;
+        }
+
+        for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+            const delay = BASE_DELAY_MS * Math.pow(2, attempt);
+            console.log(`\u23f1\ufe0f Waiting ${delay}ms before complete attempt ${attempt + 1}/${MAX_RETRIES}`);
+            await this._sleep(delay);
+
+            try {
+                const completeUrl = window.config.api.getUrl(`/api/v3/workout-sessions/${newSession.id}/complete`);
+                const completeResponse = await fetch(completeUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+
+                if (completeResponse.ok) {
+                    const completedSession = await completeResponse.json();
+
+                    currentSession.id = newSession.id;
+                    currentSession.status = 'completed';
+                    currentSession.completedAt = new Date(completedSession.completed_at);
+
+                    console.log('\u2705 Recovery session completed successfully:', newSession.id);
+                    this.onNotify('sessionCompleted', completedSession);
+                    window.dispatchEvent(new CustomEvent('sessionStateChanged', { detail: { type: 'completed' } }));
+                    this.onClearPersistedSession();
+
+                    return completedSession;
+                }
+
+                if (completeResponse.status !== 404) {
+                    const errorData = await completeResponse.json().catch(() => ({}));
+                    throw new Error(errorData.detail || 'Failed to complete recovery session');
+                }
+
+                console.warn(`\u26a0\ufe0f Complete attempt ${attempt + 1} got 404, retrying...`);
+
+            } catch (error) {
+                if (attempt === MAX_RETRIES - 1) {
+                    throw error;
+                }
+                console.warn(`\u26a0\ufe0f Complete attempt ${attempt + 1} failed:`, error.message);
+            }
+        }
+
+        throw new Error('Failed to complete recovery session after all retries');
+    }
+
+    /**
+     * Sleep helper for async delays
+     * @private
+     */
+    _sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+}
+
+// Export for module use
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = SessionLifecycleApiService;
+}
+
+console.log('\ud83d\udce6 Session Lifecycle API Service loaded');
