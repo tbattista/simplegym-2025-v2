@@ -316,8 +316,12 @@
     <script src="/static/assets/js/components/starter-workout.js"></script>
     <script src="/static/assets/js/components/share-modal.js"></script>
 
-    <!-- Workout Database JS (Refactored) -->
-    <script src="/static/assets/js/dashboard/workout-database.js?v=3.0.0"></script>
+    <!-- Workout Database Modules (load before orchestrator) -->
+    <script src="/static/assets/js/dashboard/workout-database-favorites.js?v=1.0.0"></script>
+    <script src="/static/assets/js/dashboard/workout-database-delete-manager.js?v=1.0.0"></script>
+    <script src="/static/assets/js/dashboard/workout-database-filter-manager.js?v=1.0.0"></script>
+    <!-- Workout Database Orchestrator (last) -->
+    <script src="/static/assets/js/dashboard/workout-database.js?v=4.0.0"></script>
 
     <!-- UI Helpers -->
     <script src="/static/assets/js/dashboard/ui-helpers.js?v=20251020-04"></script>
