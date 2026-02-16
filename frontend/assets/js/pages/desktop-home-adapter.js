@@ -63,7 +63,9 @@
 
         // Completion badge
         let badge = '';
-        if (total > 0) {
+        if (!session.completed_at) {
+            badge = '<span class="badge bg-label-secondary">In Progress</span>';
+        } else if (total > 0) {
             if (completed === total) {
                 badge = '<span class="badge bg-success">Complete</span>';
             } else if (completed > 0) {

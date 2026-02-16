@@ -139,7 +139,8 @@
             else if (hour < 18) greeting = 'Good Afternoon';
 
             const user = window.dataManager?.getCurrentUser();
-            const userName = user?.displayName || user?.email?.split('@')[0] || '';
+            const fbUser = window.firebaseAuth?.currentUser;
+            const userName = user?.displayName || fbUser?.displayName || user?.email?.split('@')[0] || fbUser?.email?.split('@')[0] || '';
             greetingEl.textContent = userName ? `${greeting}, ${userName}!` : `${greeting}!`;
         }
     }
@@ -333,7 +334,8 @@
         }
 
         if (emptyState) emptyState.style.display = 'none';
-        container.innerHTML = favorites.map(workout => renderFavoriteCard(workout)).join('');
+        const cardRenderer = window.renderFavoriteCard || renderFavoriteCard;
+        container.innerHTML = favorites.map(workout => cardRenderer(workout)).join('');
     }
 
     function renderFavoriteCard(workout) {
@@ -379,7 +381,8 @@
         }
 
         const recentSessions = sessions.slice(0, window._homeConfig.maxRecentSessions);
-        container.innerHTML = recentSessions.map(session => renderActivityCard(session)).join('');
+        const cardRenderer = window.renderActivityCard || renderActivityCard;
+        container.innerHTML = recentSessions.map(session => cardRenderer(session)).join('');
     }
 
     function renderActivityCard(session) {
@@ -388,7 +391,9 @@
         const total = exercises.length;
 
         let badge = '';
-        if (total > 0) {
+        if (!session.completed_at) {
+            badge = '<span class="badge bg-label-secondary">In Progress</span>';
+        } else if (total > 0) {
             if (completed === total) {
                 badge = '<span class="badge bg-success">Complete</span>';
             } else if (completed > 0) {
@@ -438,7 +443,7 @@
 
     // --- Utility Functions ---
     function formatRelativeDate(dateString) {
-        if (!dateString) return 'N/A';
+        if (!dateString) return 'In progress';
         const date = new Date(dateString);
         const now = new Date();
         const diffDays = Math.floor((now - date) / (1000 * 60 * 60 * 24));
@@ -453,9 +458,9 @@
         const exercises = session.exercises_performed || [];
         const totalVolume = exercises.reduce((sum, ex) => {
             if (ex.is_skipped) return sum;
-            const weight = ex.weight || 0;
-            const sets = ex.sets_completed || ex.target_sets || 0;
-            const reps = ex.target_reps || 0;
+            const weight = parseFloat(ex.weight) || 0;
+            const sets = parseInt(ex.sets_completed || ex.target_sets) || 0;
+            const reps = parseInt(ex.target_reps) || 0;
             return sum + (weight * sets * reps);
         }, 0);
 
