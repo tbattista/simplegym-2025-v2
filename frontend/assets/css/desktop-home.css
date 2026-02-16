@@ -1,0 +1,265 @@
+/**
+ * Desktop Home CSS
+ * Desktop-only styles for the home page (index.html)
+ * Only active when .desktop-view is set on <html>
+ * @version 1.0.0
+ */
+
+/* ============================================
+   VIEW TOGGLE
+   Same pattern as desktop-builder.css
+   ============================================ */
+.desktop-view [data-view="mobile"] {
+    display: none !important;
+    content-visibility: hidden;
+}
+
+.mobile-view [data-view="desktop"] {
+    display: none !important;
+    content-visibility: hidden;
+}
+
+/* Hide mobile bottom action bar on desktop */
+.desktop-view .bottom-action-bar {
+    display: none !important;
+}
+
+/* ============================================
+   DESKTOP TOP BAR
+   ============================================ */
+.desktop-home-topbar {
+    padding: 0.5rem 0;
+}
+
+.desktop-home-topbar h3 {
+    font-size: 1.5rem;
+    line-height: 1.3;
+}
+
+.desktop-primary-cta {
+    font-weight: 600;
+    padding: 0.5rem 1.5rem;
+    font-size: 0.9375rem;
+}
+
+/* ============================================
+   WEEKLY PROGRESS CARD (ENHANCED)
+   ============================================ */
+.desktop-weekly-card .progress.home-progress-bar {
+    height: 10px;
+    border-radius: 5px;
+}
+
+/* Wider activity chart blocks on desktop */
+.desktop-weekly-card .activity-block-grid {
+    gap: 3px;
+}
+
+.desktop-weekly-card .activity-block {
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+}
+
+/* ============================================
+   FAVORITES LIST (DESKTOP)
+   ============================================ */
+.desktop-favorites-list {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.desktop-favorites-list .desktop-favorite-item {
+    transition: background-color 0.15s ease;
+}
+
+.desktop-favorites-list .desktop-favorite-item:hover {
+    background: rgba(var(--bs-primary-rgb), 0.04);
+}
+
+.desktop-favorites-list .desktop-favorite-item:last-child {
+    border-bottom: none !important;
+}
+
+/* ============================================
+   RECENT ACTIVITY LIST (DESKTOP)
+   ============================================ */
+.desktop-recent-activity-list .desktop-activity-item {
+    transition: background-color 0.15s ease;
+}
+
+.desktop-recent-activity-list .desktop-activity-item:hover {
+    background: rgba(var(--bs-primary-rgb), 0.04);
+}
+
+.desktop-recent-activity-list .desktop-activity-item:last-child {
+    border-bottom: none !important;
+}
+
+/* Empty state inside list container */
+.desktop-recent-activity-list .text-center {
+    padding: 2rem 1rem;
+}
+
+/* ============================================
+   QUICK ACTIONS CARD (DESKTOP)
+   ============================================ */
+.desktop-quick-actions .desktop-quick-action-item {
+    text-decoration: none;
+    color: var(--bs-body-color);
+    border-bottom: 1px solid var(--bs-border-color);
+    transition: background-color 0.15s ease;
+    border-radius: 0;
+}
+
+.desktop-quick-actions .desktop-quick-action-item:last-child {
+    border-bottom: none;
+}
+
+.desktop-quick-actions .desktop-quick-action-item:hover {
+    background: rgba(var(--bs-primary-rgb), 0.04);
+    border-radius: var(--bs-border-radius);
+}
+
+.desktop-quick-actions .desktop-quick-action-item .bg-label-primary,
+.desktop-quick-actions .desktop-quick-action-item .bg-label-info,
+.desktop-quick-actions .desktop-quick-action-item .bg-label-success,
+.desktop-quick-actions .desktop-quick-action-item .bg-label-warning {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 1.1rem;
+}
+
+/* ============================================
+   DESKTOP LANDING (UNAUTHENTICATED)
+   ============================================ */
+.desktop-hero {
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.desktop-hero h1 {
+    font-size: 2.25rem;
+}
+
+.desktop-hero .fs-5 {
+    font-size: 1.125rem !important;
+}
+
+/* Feature cards: centered layout on desktop */
+[data-view="desktop"] .landing-feature-card .card-body {
+    min-height: 200px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+[data-view="desktop"] .landing-feature-card .landing-feature-icon {
+    width: 64px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    border-radius: 50%;
+    background: rgba(var(--bs-primary-rgb), 0.08);
+    color: var(--bs-primary);
+}
+
+/* ============================================
+   RESPONSIVE: SMALLER DESKTOP (992-1199px)
+   ============================================ */
+@media (min-width: 992px) and (max-width: 1199.98px) {
+    .desktop-home-topbar h3 {
+        font-size: 1.25rem;
+    }
+
+    .desktop-primary-cta {
+        padding: 0.4rem 1rem;
+        font-size: 0.875rem;
+    }
+
+    .desktop-weekly-card .activity-block {
+        width: 10px;
+        height: 10px;
+    }
+
+    .desktop-favorites-list {
+        max-height: 320px;
+    }
+}
+
+/* ============================================
+   RESPONSIVE: LARGE DESKTOP (1400px+)
+   ============================================ */
+@media (min-width: 1400px) {
+    .desktop-home-topbar h3 {
+        font-size: 1.75rem;
+    }
+
+    .desktop-weekly-card .activity-block {
+        width: 14px;
+        height: 14px;
+        border-radius: 3px;
+    }
+
+    .desktop-weekly-card .activity-block-grid {
+        gap: 4px;
+    }
+
+    .desktop-favorites-list {
+        max-height: 480px;
+    }
+}
+
+/* ============================================
+   DARK MODE
+   ============================================ */
+[data-bs-theme="dark"] .desktop-favorites-list .desktop-favorite-item:hover,
+[data-bs-theme="dark"] .desktop-recent-activity-list .desktop-activity-item:hover,
+[data-bs-theme="dark"] .desktop-quick-actions .desktop-quick-action-item:hover {
+    background: rgba(255, 255, 255, 0.04);
+}
+
+[data-bs-theme="dark"] [data-view="desktop"] .landing-feature-card .landing-feature-icon {
+    background: rgba(var(--bs-primary-rgb), 0.15);
+}
+
+/* ============================================
+   OFFCANVAS -> CENTERED MODAL ON DESKTOP
+   Same pattern as desktop-builder.css
+   ============================================ */
+.desktop-view .offcanvas.offcanvas-bottom {
+    right: auto;
+    left: 50%;
+    bottom: auto;
+    top: 50%;
+    transform: translate(-50%, -50%) scale(0.95);
+    opacity: 0;
+    width: 580px;
+    max-width: 90vw;
+    max-height: 85vh;
+    height: auto;
+    border: none;
+    border-top: none;
+    border-radius: var(--bs-border-radius-lg);
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.18);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.desktop-view .offcanvas.offcanvas-bottom.show:not(.hiding),
+.desktop-view .offcanvas.offcanvas-bottom.showing {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+}
+
+.desktop-view .offcanvas.offcanvas-bottom.hiding {
+    transform: translate(-50%, -50%) scale(0.95);
+    opacity: 0;
+}

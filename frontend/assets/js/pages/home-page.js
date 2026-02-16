@@ -1,0 +1,493 @@
+/**
+ * Home Page Logic
+ * Extracted from index.html inline script
+ * Handles: auth routing, greeting, weekly progress, favorites, recent activity, activity chart
+ * @version 1.0.0
+ */
+(function() {
+    'use strict';
+
+    // --- Configuration (overridable by desktop adapter) ---
+    window._homeConfig = {
+        maxRecentSessions: 3,
+        activityChartDays: null  // null = use settings default
+    };
+
+    // --- Module State ---
+    let homeWorkouts = [];
+    let activeSession = null;
+    let workoutDetailOffcanvas = null;
+    let activityBlockChart = null;
+
+    // --- Initialization ---
+    async function initHomePage() {
+        console.log('Initializing Home Page...');
+
+        const authenticatedDashboard = document.getElementById('authenticatedDashboard');
+        const unauthenticatedWelcome = document.getElementById('unauthenticatedWelcome');
+
+        // Wait for Firebase to be ready
+        if (!window.firebaseReady) {
+            await new Promise(resolve => {
+                window.addEventListener('firebaseReady', resolve, { once: true });
+            });
+        }
+
+        // Wait for data manager
+        if (!window.dataManager) {
+            console.error('Data manager not available');
+            return;
+        }
+
+        // Check auth state
+        const checkAuthAndRender = async () => {
+            const user = window.firebaseAuth.currentUser;
+
+            if (user) {
+                authenticatedDashboard.style.display = 'block';
+                unauthenticatedWelcome.style.display = 'none';
+                await loadHomeSections();
+            } else {
+                authenticatedDashboard.style.display = 'none';
+                unauthenticatedWelcome.style.display = 'block';
+            }
+        };
+
+        await checkAuthAndRender();
+
+        // Listen for auth state changes
+        window.firebaseAuth.onAuthStateChanged(async (user) => {
+            await checkAuthAndRender();
+        });
+    }
+
+    // --- Load All Sections ---
+    async function loadHomeSections() {
+        try {
+            // Initialize workout detail offcanvas (once)
+            if (!workoutDetailOffcanvas && window.WorkoutDetailOffcanvas) {
+                workoutDetailOffcanvas = new WorkoutDetailOffcanvas({
+                    showCreator: false,
+                    showStats: false,
+                    showDates: true,
+                    actions: [
+                        {
+                            id: 'edit',
+                            label: 'Edit',
+                            icon: 'bx-edit',
+                            variant: 'outline-primary',
+                            onClick: (workout) => viewWorkoutDetails(workout.id)
+                        },
+                        {
+                            id: 'share',
+                            label: 'Share',
+                            icon: 'bx-share-alt',
+                            variant: 'outline-secondary',
+                            onClick: (workout) => {
+                                const url = `${window.location.origin}/workout-builder.html?id=${workout.id}`;
+                                navigator.clipboard.writeText(url);
+                                alert('Link copied to clipboard!');
+                            }
+                        },
+                        {
+                            id: 'start',
+                            label: 'Start Workout',
+                            icon: 'bx-play',
+                            variant: 'primary',
+                            primary: true,
+                            onClick: (workout) => startWorkout(workout.id)
+                        }
+                    ]
+                });
+            }
+
+            // Render greeting with date and user name
+            renderGreeting();
+
+            // Check for active session (for Resume button)
+            checkActiveSession();
+
+            // Load workouts for favorites
+            const workouts = await loadWorkouts();
+            renderFavoritesSection(workouts);
+
+            // Load sessions for weekly progress and recent activity
+            const sessions = await loadSessions();
+            renderWeeklyProgress(sessions);
+            renderActivityChart(sessions);
+            renderRecentActivity(sessions);
+        } catch (error) {
+            console.error('Error loading home sections:', error);
+        }
+    }
+
+    // --- Greeting ---
+    function renderGreeting() {
+        const dateEl = document.getElementById('homeDate');
+        const greetingEl = document.getElementById('homeGreeting');
+
+        if (dateEl) {
+            const today = new Date();
+            const options = { weekday: 'long', month: 'long', day: 'numeric' };
+            dateEl.textContent = today.toLocaleDateString('en-US', options);
+        }
+
+        if (greetingEl) {
+            const hour = new Date().getHours();
+            let greeting = 'Good Evening';
+            if (hour < 12) greeting = 'Good Morning';
+            else if (hour < 18) greeting = 'Good Afternoon';
+
+            const user = window.dataManager?.getCurrentUser();
+            const userName = user?.displayName || user?.email?.split('@')[0] || '';
+            greetingEl.textContent = userName ? `${greeting}, ${userName}!` : `${greeting}!`;
+        }
+    }
+
+    // --- Active Session & CTA ---
+    function checkActiveSession() {
+        try {
+            const persistedSession = localStorage.getItem('ffn_active_workout_session');
+            if (persistedSession) {
+                const session = JSON.parse(persistedSession);
+                if (session.workoutId && session.status === 'in_progress') {
+                    activeSession = session;
+
+                    // Update CTA button to "Resume"
+                    const ctaBtn = document.getElementById('homePrimaryCTA');
+                    if (ctaBtn) {
+                        ctaBtn.textContent = 'Resume Workout';
+                        ctaBtn.classList.add('btn-warning');
+                        ctaBtn.classList.remove('btn-primary');
+                    }
+                }
+            }
+        } catch (e) {
+            console.warn('Could not load session state:', e);
+        }
+    }
+
+    function handlePrimaryCTA() {
+        if (activeSession && activeSession.workoutId) {
+            window.location.href = `workout-mode.html?id=${activeSession.workoutId}`;
+        } else {
+            window.location.href = 'workout-database.html';
+        }
+    }
+
+    // --- Weekly Progress ---
+    async function loadSessions() {
+        try {
+            const token = await window.dataManager.getAuthToken();
+            const response = await fetch('/api/v3/workout-sessions?page_size=100&sort=desc', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (!response.ok) {
+                console.warn('Could not load sessions');
+                return [];
+            }
+
+            const data = await response.json();
+            return data.sessions || [];
+        } catch (err) {
+            console.warn('Error loading sessions:', err);
+            return [];
+        }
+    }
+
+    function renderWeeklyProgress(sessions) {
+        const now = new Date();
+        const weekStart = new Date(now);
+        weekStart.setDate(now.getDate() - now.getDay());
+        weekStart.setHours(0, 0, 0, 0);
+
+        const weekSessions = sessions.filter(s => new Date(s.completed_at) >= weekStart);
+        const completed = weekSessions.length;
+        const goal = 7;
+        const percentage = Math.min(Math.round((completed / goal) * 100), 100);
+        const streak = calculateStreak(sessions);
+
+        const statEl = document.getElementById('weeklyStatText');
+        if (statEl) {
+            statEl.textContent = `This Week: ${completed}/${goal} Workouts`;
+        }
+
+        const streakBadge = document.getElementById('weeklyStreakBadge');
+        if (streakBadge) {
+            if (streak > 0) {
+                streakBadge.textContent = `\uD83D\uDD25 ${streak} day streak`;
+                streakBadge.style.display = 'inline';
+            } else {
+                streakBadge.style.display = 'none';
+            }
+        }
+
+        const progressFill = document.getElementById('weeklyProgressFill');
+        if (progressFill) {
+            setTimeout(() => {
+                progressFill.style.width = `${percentage}%`;
+            }, 100);
+        }
+
+        const progressText = document.getElementById('weeklyProgressText');
+        if (progressText) {
+            let motivationalText = "Let's get started!";
+            if (percentage >= 100) motivationalText = '100% complete \uD83C\uDF89 Goal achieved!';
+            else if (percentage >= 80) motivationalText = `${percentage}% complete \uD83D\uDCAA Almost there!`;
+            else if (percentage >= 50) motivationalText = `${percentage}% complete \uD83D\uDC4D Halfway there!`;
+            else if (completed > 0) motivationalText = `${percentage}% complete \u2728 Great start!`;
+            progressText.textContent = motivationalText;
+        }
+    }
+
+    function calculateStreak(sessions) {
+        if (sessions.length === 0) return 0;
+
+        const workoutDays = new Set();
+        sessions.forEach(s => {
+            const date = new Date(s.completed_at);
+            date.setHours(0, 0, 0, 0);
+            workoutDays.add(date.getTime());
+        });
+
+        const sortedDays = [...workoutDays].sort((a, b) => b - a);
+
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const oneDayMs = 1000 * 60 * 60 * 24;
+
+        const daysSinceLast = Math.round((today.getTime() - sortedDays[0]) / oneDayMs);
+        if (daysSinceLast > 1) return 0;
+
+        let streak = 1;
+        for (let i = 1; i < sortedDays.length; i++) {
+            const diff = Math.round((sortedDays[i - 1] - sortedDays[i]) / oneDayMs);
+            if (diff === 1) {
+                streak++;
+            } else {
+                break;
+            }
+        }
+
+        return streak;
+    }
+
+    // --- Activity Block Chart ---
+    function renderActivityChart(sessions) {
+        const enabled = window.settingsManager?.get('ffn_show_activity_chart', true);
+        const section = document.getElementById('activityChartSection');
+        if (!section) return;
+
+        if (!enabled) {
+            section.style.display = 'none';
+            return;
+        }
+
+        section.style.display = 'block';
+        const days = window._homeConfig.activityChartDays
+            || window.settingsManager?.get('ffn_activity_chart_days', 45);
+
+        // Recreate chart if day count changed
+        if (activityBlockChart && activityBlockChart.daysToShow !== days) {
+            activityBlockChart = null;
+        }
+
+        if (!activityBlockChart && window.ActivityBlockChart) {
+            activityBlockChart = new ActivityBlockChart('activityBlockChart', {
+                daysToShow: days
+            });
+        }
+
+        if (activityBlockChart) {
+            activityBlockChart.setSessionData(sessions);
+        }
+    }
+
+    // --- Favorites ---
+    async function loadWorkouts() {
+        try {
+            const workouts = await window.dataManager.getWorkouts({ pageSize: 100 });
+            homeWorkouts = Array.isArray(workouts) ? workouts : [];
+            return homeWorkouts;
+        } catch (err) {
+            console.warn('Error loading workouts:', err);
+            return [];
+        }
+    }
+
+    function renderFavoritesSection(workouts) {
+        const container = document.getElementById('favoritesContent');
+        const emptyState = document.getElementById('favoritesEmpty');
+
+        if (!container) return;
+
+        const favorites = workouts
+            .filter(w => w.is_favorite)
+            .sort((a, b) => new Date(b.favorited_at) - new Date(a.favorited_at));
+
+        if (favorites.length === 0) {
+            container.innerHTML = '';
+            if (emptyState) emptyState.style.display = 'block';
+            return;
+        }
+
+        if (emptyState) emptyState.style.display = 'none';
+        container.innerHTML = favorites.map(workout => renderFavoriteCard(workout)).join('');
+    }
+
+    function renderFavoriteCard(workout) {
+        const exerciseCount = workout.exercise_groups?.length || 0;
+        return `
+            <div class="card favorite-card" onclick="showWorkoutDetail('${workout.id}')">
+                <div class="card-body py-3 px-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bx bxs-heart text-danger"></i>
+                        <div>
+                            <div class="fw-medium">${escapeHtml(workout.name)}</div>
+                            <small class="text-muted">${exerciseCount} exercises</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    function showWorkoutDetail(workoutId) {
+        const workout = homeWorkouts.find(w => w.id === workoutId);
+        if (workout && workoutDetailOffcanvas) {
+            workoutDetailOffcanvas.show(workout);
+        } else {
+            console.warn('Could not show workout detail:', workoutId);
+        }
+    }
+
+    // --- Recent Activity ---
+    function renderRecentActivity(sessions) {
+        const container = document.getElementById('recentActivityContent');
+
+        if (!container) return;
+
+        if (sessions.length === 0) {
+            container.innerHTML = `
+                <div class="text-center text-muted py-4">
+                    <i class="bx bx-history mb-2" style="font-size: 2rem;"></i>
+                    <p class="mb-0 small">No recent activity yet</p>
+                </div>
+            `;
+            return;
+        }
+
+        const recentSessions = sessions.slice(0, window._homeConfig.maxRecentSessions);
+        container.innerHTML = recentSessions.map(session => renderActivityCard(session)).join('');
+    }
+
+    function renderActivityCard(session) {
+        const exercises = session.exercises_performed || [];
+        const completed = exercises.filter(ex => !ex.is_skipped).length;
+        const total = exercises.length;
+
+        let badge = '';
+        if (total > 0) {
+            if (completed === total) {
+                badge = '<span class="badge bg-success">Complete</span>';
+            } else if (completed > 0) {
+                badge = '<span class="badge bg-warning">Partial</span>';
+            }
+        }
+
+        const date = formatRelativeDate(session.completed_at);
+        const duration = session.duration_minutes ? `${session.duration_minutes} min` : '';
+        const volume = calculateSessionVolume(session);
+
+        return `
+            <div class="card recent-activity-card" onclick="viewSessionDetails('${session.id}')">
+                <div class="card-body py-3 px-3">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="bg-label-primary rounded p-2">
+                                <i class="bx bx-dumbbell"></i>
+                            </div>
+                            <span class="fw-medium">${escapeHtml(session.workout_name || 'Workout')}</span>
+                        </div>
+                        ${badge}
+                    </div>
+                    <div class="d-flex gap-3 text-muted small mb-1">
+                        <span><i class="bx bx-calendar me-1"></i>${date}</span>
+                        ${duration ? `<span><i class="bx bx-time me-1"></i>${duration}</span>` : ''}
+                        ${volume ? `<span><i class="bx bx-trending-up me-1"></i>${volume}</span>` : ''}
+                    </div>
+                    ${total > 0 ? `<small class="text-muted"><i class="bx bx-check-circle me-1"></i>${completed}/${total} exercises completed</small>` : ''}
+                </div>
+            </div>
+        `;
+    }
+
+    // --- Navigation Helpers ---
+    function viewWorkoutDetails(workoutId) {
+        window.location.href = `workout-builder.html?id=${workoutId}`;
+    }
+
+    function startWorkout(workoutId) {
+        window.location.href = `workout-mode.html?id=${workoutId}`;
+    }
+
+    function viewSessionDetails(sessionId) {
+        window.location.href = `workout-history.html?session=${sessionId}`;
+    }
+
+    // --- Utility Functions ---
+    function formatRelativeDate(dateString) {
+        if (!dateString) return 'N/A';
+        const date = new Date(dateString);
+        const now = new Date();
+        const diffDays = Math.floor((now - date) / (1000 * 60 * 60 * 24));
+
+        if (diffDays === 0) return 'Today';
+        if (diffDays === 1) return 'Yesterday';
+        if (diffDays < 7) return `${diffDays} days ago`;
+        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    }
+
+    function calculateSessionVolume(session) {
+        const exercises = session.exercises_performed || [];
+        const totalVolume = exercises.reduce((sum, ex) => {
+            if (ex.is_skipped) return sum;
+            const weight = ex.weight || 0;
+            const sets = ex.sets_completed || ex.target_sets || 0;
+            const reps = ex.target_reps || 0;
+            return sum + (weight * sets * reps);
+        }, 0);
+
+        if (totalVolume === 0) return '';
+        return totalVolume >= 1000 ? `${(totalVolume / 1000).toFixed(1)}K lbs` : `${totalVolume} lbs`;
+    }
+
+    function escapeHtml(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    // --- Initialize & Expose ---
+    document.addEventListener('DOMContentLoaded', initHomePage);
+
+    // Expose on window for cross-module access and onclick handlers
+    window.initHomePage = initHomePage;
+    window.loadHomeSections = loadHomeSections;
+    window.handlePrimaryCTA = handlePrimaryCTA;
+    window.viewWorkoutDetails = viewWorkoutDetails;
+    window.startWorkout = startWorkout;
+    window.viewSessionDetails = viewSessionDetails;
+    window.showWorkoutDetail = showWorkoutDetail;
+    window.checkActiveSession = checkActiveSession;
+
+    // Expose rendering functions for desktop adapter overrides
+    window.renderFavoriteCard = renderFavoriteCard;
+    window.renderActivityCard = renderActivityCard;
+    window.escapeHtml = escapeHtml;
+    window.formatRelativeDate = formatRelativeDate;
+    window.calculateSessionVolume = calculateSessionVolume;
+
+})();
