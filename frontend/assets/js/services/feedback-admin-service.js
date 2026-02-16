@@ -262,6 +262,51 @@
         }
 
         /**
+         * Get user statistics (total, recent signups)
+         */
+        async getUserStatistics() {
+            try {
+                console.log('👥 Loading user statistics...');
+
+                if (!window.firebaseDb) {
+                    throw new Error('Firestore not available');
+                }
+
+                const usersCollection = window.firestoreFunctions.collection(window.firebaseDb, 'users');
+                const snapshot = await window.firestoreFunctions.getDocs(usersCollection);
+
+                const now = Date.now();
+                const sevenDaysAgo = now - (7 * 24 * 60 * 60 * 1000);
+                const thirtyDaysAgo = now - (30 * 24 * 60 * 60 * 1000);
+
+                const stats = {
+                    total: 0,
+                    last7Days: 0,
+                    last30Days: 0
+                };
+
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    stats.total++;
+
+                    const createdAt = data.created_at?.toDate?.();
+                    if (createdAt) {
+                        const createdTime = createdAt.getTime();
+                        if (createdTime >= sevenDaysAgo) stats.last7Days++;
+                        if (createdTime >= thirtyDaysAgo) stats.last30Days++;
+                    }
+                });
+
+                console.log('✅ User statistics loaded:', stats);
+                return stats;
+
+            } catch (error) {
+                console.error('❌ Error loading user statistics:', error);
+                return { total: 0, last7Days: 0, last30Days: 0 };
+            }
+        }
+
+        /**
          * Mark feedback as done (resolved)
          */
         async markAsDone(feedbackId) {
