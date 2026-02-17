@@ -1076,10 +1076,10 @@ export function createBlockEditor(config, onSave, onDelete, onSearchClick) {
     // Combine sets+reps into protocol for display
     const protocol = sets && reps ? `${sets}×${reps}` : (sets || reps || '3×10');
 
-    // Slot letters (a through e, max 5 exercises)
-    const SLOT_LETTERS = ['a', 'b', 'c', 'd', 'e'];
+    // Slot letters (a through z, no practical limit)
+    const SLOT_LETTERS = 'abcdefghijklmnopqrstuvwxyz'.split('');
     const MIN_SLOTS = 2;
-    const MAX_SLOTS = 5;
+    const MAX_SLOTS = 26;
 
     // Determine initial slot count (at least MIN_SLOTS, based on existing exercises)
     const existingSlotCount = SLOT_LETTERS.filter(k => exercises[k]).length;

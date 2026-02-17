@@ -116,8 +116,8 @@ class DesktopCardRenderer {
     createBlockRow(groupId, groupData, index) {
         const data = groupData;
 
-        // Build numbered exercise list from exercises dict (keys a-e)
-        const exerciseKeys = ['a', 'b', 'c', 'd', 'e'];
+        // Build numbered exercise list from exercises dict (sorted keys)
+        const exerciseKeys = Object.keys(data.exercises || {}).sort();
         const exerciseList = [];
         exerciseKeys.forEach((key, i) => {
             if (data.exercises[key]) {
@@ -258,7 +258,7 @@ class DesktopCardRenderer {
         // Update exercise list
         const exerciseListEl = row.querySelector('.block-exercise-list');
         if (exerciseListEl) {
-            const exerciseKeys = ['a', 'b', 'c', 'd', 'e'];
+            const exerciseKeys = Object.keys(groupData.exercises || {}).sort();
             const exerciseList = [];
             exerciseKeys.forEach((key, i) => {
                 if (groupData.exercises[key]) {
