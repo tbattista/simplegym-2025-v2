@@ -43,6 +43,13 @@
 }
 
 /* ============================================
+   CARD HEADER SEPARATOR
+   ============================================ */
+#desktopAuthDashboard .card-header {
+    border-bottom: 1px solid var(--bs-border-color);
+}
+
+/* ============================================
    WEEKLY PROGRESS CARD (ENHANCED)
    ============================================ */
 .desktop-weekly-card .progress.home-progress-bar {
