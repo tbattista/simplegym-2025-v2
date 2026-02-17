@@ -1,13 +1,13 @@
 /**
  * Import Service - Handles workout import parsing and builder population.
  * Sends raw content to backend parsers and populates the workout builder form.
- * @version 1.0.0
+ * @version 2.0.0
  */
 
 window.importService = {
 
     /**
-     * Parse raw text content via the backend API.
+     * Parse raw text content via the backend API (regex parsers).
      * @param {string} content - Raw workout text (plain text, CSV, JSON)
      * @param {string} [formatHint] - Optional hint: 'text', 'csv', 'json'
      * @returns {Promise<Object>} ImportParseResponse
@@ -31,8 +31,8 @@ window.importService = {
     },
 
     /**
-     * Parse an uploaded file via the backend API.
-     * @param {File} file - The file to parse
+     * Parse an uploaded text file via the backend API (regex parsers).
+     * @param {File} file - The file to parse (.txt, .csv, .json)
      * @returns {Promise<Object>} ImportParseResponse
      */
     async parseFile(file) {
@@ -51,6 +51,180 @@ window.importService = {
 
         return response.json();
     },
+
+    // ── AI-powered methods ──────────────────────────────────────────
+
+    /**
+     * Parse text content using AI (Gemini).
+     * @param {string} content - Text content to parse with AI
+     * @returns {Promise<Object>} ImportParseResponse
+     */
+    async parseTextAI(content) {
+        const body = { content };
+        if (!window.authService?.currentUser) {
+            body.anonymous_id = this._getAnonymousId();
+        }
+
+        const headers = { 'Content-Type': 'application/json' };
+        await this._addAuthHeader(headers);
+
+        const response = await fetch('/api/v3/import/parse-ai', {
+            method: 'POST',
+            headers,
+            body: JSON.stringify(body),
+        });
+
+        if (!response.ok) {
+            const error = await response.json().catch(() => ({ detail: 'AI parse failed' }));
+            throw new Error(error.detail || `Server error: ${response.status}`);
+        }
+
+        return response.json();
+    },
+
+    /**
+     * Parse workout from a URL (extracts page content, then uses AI).
+     * @param {string} url - URL to extract workout from
+     * @returns {Promise<Object>} ImportParseResponse
+     */
+    async parseURL(url) {
+        const body = { url };
+        if (!window.authService?.currentUser) {
+            body.anonymous_id = this._getAnonymousId();
+        }
+
+        const headers = { 'Content-Type': 'application/json' };
+        await this._addAuthHeader(headers);
+
+        const response = await fetch('/api/v3/import/parse-url', {
+            method: 'POST',
+            headers,
+            body: JSON.stringify(body),
+        });
+
+        if (!response.ok) {
+            const error = await response.json().catch(() => ({ detail: 'URL parse failed' }));
+            throw new Error(error.detail || `Server error: ${response.status}`);
+        }
+
+        return response.json();
+    },
+
+    /**
+     * Parse workout from an uploaded image or PDF using AI.
+     * @param {File} file - Image or PDF file
+     * @returns {Promise<Object>} ImportParseResponse
+     */
+    async parseMedia(file) {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        if (!window.authService?.currentUser) {
+            formData.append('anonymous_id', this._getAnonymousId());
+        }
+
+        const headers = {};
+        await this._addAuthHeader(headers);
+
+        const response = await fetch('/api/v3/import/parse-media', {
+            method: 'POST',
+            headers,
+            body: formData,
+        });
+
+        if (!response.ok) {
+            const error = await response.json().catch(() => ({ detail: 'Media parse failed' }));
+            throw new Error(error.detail || `Server error: ${response.status}`);
+        }
+
+        return response.json();
+    },
+
+    // ── Client-side helpers ─────────────────────────────────────────
+
+    /**
+     * Client-side image compression before upload.
+     * @param {File} file - Original image file
+     * @param {number} [maxSizeMB=4] - Max size in MB
+     * @returns {Promise<File>} Compressed file (or original if already small enough)
+     */
+    async compressImage(file, maxSizeMB = 4) {
+        const maxBytes = maxSizeMB * 1024 * 1024;
+        if (file.size <= maxBytes) return file;
+
+        return new Promise((resolve) => {
+            const img = new Image();
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+
+            img.onload = () => {
+                let { width, height } = img;
+                const maxDim = 2048;
+                if (width > maxDim || height > maxDim) {
+                    const ratio = Math.min(maxDim / width, maxDim / height);
+                    width = Math.round(width * ratio);
+                    height = Math.round(height * ratio);
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+                ctx.drawImage(img, 0, 0, width, height);
+
+                canvas.toBlob(
+                    (blob) => {
+                        const compressed = new File([blob], file.name, {
+                            type: 'image/jpeg',
+                            lastModified: Date.now(),
+                        });
+                        resolve(compressed);
+                    },
+                    'image/jpeg',
+                    0.85
+                );
+
+                URL.revokeObjectURL(img.src);
+            };
+
+            img.onerror = () => {
+                URL.revokeObjectURL(img.src);
+                resolve(file); // Fall back to original
+            };
+
+            img.src = URL.createObjectURL(file);
+        });
+    },
+
+    /**
+     * Add auth header if user is authenticated.
+     * @param {Object} headers - Headers object to augment
+     */
+    async _addAuthHeader(headers) {
+        try {
+            if (window.authService?.currentUser) {
+                const token = await window.authService.getIdToken();
+                if (token) {
+                    headers['Authorization'] = `Bearer ${token}`;
+                }
+            }
+        } catch (e) {
+            // Not authenticated, proceed without auth
+        }
+    },
+
+    /**
+     * Get or create anonymous ID for rate limiting.
+     * @returns {string} Anonymous user identifier
+     */
+    _getAnonymousId() {
+        let id = localStorage.getItem('ffn_anonymous_id');
+        if (!id) {
+            id = 'anon-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+            localStorage.setItem('ffn_anonymous_id', id);
+        }
+        return id;
+    },
+
+    // ── Builder population ──────────────────────────────────────────
 
     /**
      * Populate the workout builder form with parsed workout data.
@@ -178,4 +352,4 @@ window.importService = {
     },
 };
 
-console.log('📦 ImportService v1.0.0 loaded');
+console.log('📦 ImportService v2.0.0 loaded');

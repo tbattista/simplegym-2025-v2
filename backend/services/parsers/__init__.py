@@ -20,13 +20,14 @@ class ImportService:
         # Order: most structured → least structured
         self.parsers = [JSONParser(), CSVParser(), PlainTextParser()]
 
-    def parse(self, content: str, format_hint: str = None) -> ParseResult:
+    def parse(self, content: str, format_hint: str = None, use_ai_fallback: bool = False) -> ParseResult:
         """
         Parse workout content using the best matching parser.
 
         Args:
             content: Raw workout content (text, CSV, or JSON)
             format_hint: Optional hint ("json", "csv", "text")
+            use_ai_fallback: If True, try AI parser when all regex parsers fail
 
         Returns:
             ParseResult with parsed workout data
@@ -54,6 +55,18 @@ class ImportService:
 
         if best_result.success:
             return self.validate_and_normalize(best_result)
+
+        # If all regex parsers failed and AI fallback is requested
+        if use_ai_fallback:
+            from .ai_parser import get_ai_parser
+            ai = get_ai_parser()
+            if ai.is_available():
+                try:
+                    ai_result = ai.parse_text(content)
+                    if ai_result.success:
+                        return self.validate_and_normalize(ai_result)
+                except Exception:
+                    pass  # Fall through to standard error
 
         # All parsers failed
         errors = best_result.errors if best_result.errors else ["Could not parse the provided content"]

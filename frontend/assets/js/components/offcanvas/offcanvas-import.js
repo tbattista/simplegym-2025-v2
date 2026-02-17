@@ -1,12 +1,31 @@
 /**
  * Ghost Gym - Import Wizard Offcanvas
  * Multi-step import wizard: Source Input → Preview → Load into Builder
+ * Supports: Text, File (txt/csv/json/image/pdf), URL, Camera
  *
  * @module offcanvas-import
- * @version 1.0.0
+ * @version 2.0.0
  */
 
 import { createOffcanvas, escapeHtml } from './offcanvas-helpers.js';
+
+// MIME types for routing file uploads
+const IMAGE_TYPES = new Set([
+    'image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'
+]);
+const PDF_TYPES = new Set(['application/pdf']);
+
+/**
+ * Check if a file is an image or PDF (needs AI parsing) vs a text file (regex parsing).
+ */
+function isMediaFile(file) {
+    const mime = (file.type || '').toLowerCase();
+    const name = (file.name || '').toLowerCase();
+    if (IMAGE_TYPES.has(mime) || PDF_TYPES.has(mime)) return true;
+    if (name.endsWith('.pdf')) return true;
+    if (/\.(jpe?g|png|webp|gif)$/.test(name)) return true;
+    return false;
+}
 
 /**
  * Create and show the import wizard offcanvas.
@@ -28,13 +47,19 @@ export function createImportWizard(onImportComplete) {
         <div class="offcanvas-body p-0">
             <!-- STEP 1: Source Input -->
             <div id="importStep1" class="import-step p-3">
-                <!-- Tab selector -->
-                <div class="btn-group w-100 mb-3" role="group">
-                    <button type="button" class="btn btn-outline-primary active" id="importTabPaste">
-                        <i class="bx bx-clipboard me-1"></i>Paste Text
+                <!-- Tab selector (4 tabs) -->
+                <div class="btn-group w-100 mb-3" role="group" style="gap: 1px;">
+                    <button type="button" class="btn btn-outline-primary btn-sm active" id="importTabPaste">
+                        <i class="bx bx-clipboard me-1"></i>Text
                     </button>
-                    <button type="button" class="btn btn-outline-primary" id="importTabFile">
-                        <i class="bx bx-file me-1"></i>Upload File
+                    <button type="button" class="btn btn-outline-primary btn-sm" id="importTabFile">
+                        <i class="bx bx-file me-1"></i>File
+                    </button>
+                    <button type="button" class="btn btn-outline-primary btn-sm" id="importTabURL">
+                        <i class="bx bx-link me-1"></i>URL
+                    </button>
+                    <button type="button" class="btn btn-outline-primary btn-sm" id="importTabCamera">
+                        <i class="bx bx-camera me-1"></i>Photo
                     </button>
                 </div>
 
@@ -44,7 +69,7 @@ export function createImportWizard(onImportComplete) {
                         id="importTextArea"
                         class="form-control mb-2"
                         rows="10"
-                        placeholder="Paste your workout here...&#10;&#10;Supports:&#10;• Plain text (e.g., Bench Press 3x10)&#10;• FFN export format&#10;• CSV data&#10;• JSON data"
+                        placeholder="Paste your workout here...&#10;&#10;Supports:&#10;• Plain text (e.g., Bench Press 3x10)&#10;• FFN export format&#10;• CSV data&#10;• JSON data&#10;• Any text - AI will extract exercises"
                         style="font-size: 14px; line-height: 1.5;"
                     ></textarea>
                     <small class="text-muted d-block mb-3">
@@ -59,12 +84,38 @@ export function createImportWizard(onImportComplete) {
                          style="cursor: pointer; min-height: 120px; display: flex; flex-direction: column; align-items: center; justify-content: center;">
                         <i class="bx bx-cloud-upload text-primary" style="font-size: 2rem;"></i>
                         <p class="mb-1 mt-2">Tap to choose file</p>
-                        <small class="text-muted">.txt &nbsp; .csv &nbsp; .json</small>
-                        <input type="file" id="importFileInput" accept=".txt,.csv,.json,.tsv"
+                        <small class="text-muted">.txt .csv .json .pdf .jpg .png</small>
+                        <input type="file" id="importFileInput"
+                               accept=".txt,.csv,.json,.tsv,.pdf,.jpg,.jpeg,.png,.webp,.gif"
                                class="d-none" />
                     </div>
                     <div id="importFileName" class="text-muted small mb-3 d-none">
                         <i class="bx bx-file me-1"></i><span></span>
+                    </div>
+                </div>
+
+                <!-- URL tab content (hidden by default) -->
+                <div id="importURLContent" class="d-none">
+                    <input type="url" id="importURLInput" class="form-control mb-2"
+                           placeholder="https://example.com/workout-plan"
+                           style="font-size: 14px;" />
+                    <small class="text-muted d-block mb-3">
+                        <i class="bx bx-info-circle me-1"></i>
+                        Paste a link to a workout page, blog post, or social media post
+                    </small>
+                </div>
+
+                <!-- Camera tab content (hidden by default) -->
+                <div id="importCameraContent" class="d-none">
+                    <div id="importCameraZone" class="border border-2 border-dashed rounded p-4 text-center mb-2"
+                         style="cursor: pointer; min-height: 120px; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                        <i class="bx bx-camera text-primary" style="font-size: 2rem;"></i>
+                        <p class="mb-1 mt-2">Tap to take a photo</p>
+                        <small class="text-muted">Whiteboard, printed workout, screenshot</small>
+                        <input type="file" id="importCameraInput" accept="image/*" capture="environment" class="d-none" />
+                    </div>
+                    <div id="importCameraPreview" class="d-none mb-2 text-center">
+                        <img id="importCameraImg" class="img-fluid rounded" style="max-height: 200px;" alt="Preview" />
                     </div>
                 </div>
 
@@ -77,6 +128,19 @@ export function createImportWizard(onImportComplete) {
                 <div id="importError" class="alert alert-danger mt-3 d-none" role="alert">
                     <i class="bx bx-error-circle me-1"></i>
                     <span id="importErrorText"></span>
+                </div>
+
+                <!-- AI fallback (shown when standard text parse fails or has low confidence) -->
+                <div id="importAIFallback" class="d-none mt-2">
+                    <div class="alert alert-info py-2 mb-0">
+                        <small>
+                            <i class="bx bx-bot me-1"></i>
+                            Standard parsing had low confidence. Want to try AI-powered parsing?
+                        </small>
+                        <button type="button" class="btn btn-sm btn-info mt-1 w-100" id="importTryAIBtn">
+                            <i class="bx bx-bot me-1"></i>Parse with AI
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -121,14 +185,19 @@ export function createImportWizard(onImportComplete) {
                 <div class="spinner-border text-primary mb-3" role="status">
                     <span class="visually-hidden">Parsing...</span>
                 </div>
-                <p class="text-muted">Parsing workout data...</p>
+                <p id="importLoadingText" class="text-muted">Parsing workout data...</p>
+                <small id="importLoadingAI" class="text-info d-none">
+                    <i class="bx bx-bot me-1"></i>Using AI to extract exercises...
+                </small>
             </div>
         </div>
     </div>`;
 
     let parsedResult = null;
     let selectedFile = null;
-    let activeTab = 'paste'; // 'paste' or 'file'
+    let cameraFile = null;
+    let activeTab = 'paste'; // 'paste', 'file', 'url', 'camera'
+    let lastTextContent = ''; // Store text for AI fallback retry
 
     return createOffcanvas(id, html, (offcanvas, offcanvasElement) => {
 
@@ -136,41 +205,85 @@ export function createImportWizard(onImportComplete) {
         const step1 = offcanvasElement.querySelector('#importStep1');
         const step2 = offcanvasElement.querySelector('#importStep2');
         const loading = offcanvasElement.querySelector('#importLoading');
+        const loadingText = offcanvasElement.querySelector('#importLoadingText');
+        const loadingAI = offcanvasElement.querySelector('#importLoadingAI');
         const textArea = offcanvasElement.querySelector('#importTextArea');
         const parseBtn = offcanvasElement.querySelector('#importParseBtn');
         const backBtn = offcanvasElement.querySelector('#importBackBtn');
         const loadBtn = offcanvasElement.querySelector('#importLoadBtn');
         const errorDiv = offcanvasElement.querySelector('#importError');
         const errorText = offcanvasElement.querySelector('#importErrorText');
+        const aiFallbackDiv = offcanvasElement.querySelector('#importAIFallback');
+        const tryAIBtn = offcanvasElement.querySelector('#importTryAIBtn');
+
+        // Tab buttons
         const tabPaste = offcanvasElement.querySelector('#importTabPaste');
         const tabFile = offcanvasElement.querySelector('#importTabFile');
+        const tabURL = offcanvasElement.querySelector('#importTabURL');
+        const tabCamera = offcanvasElement.querySelector('#importTabCamera');
+
+        // Tab content
         const pasteContent = offcanvasElement.querySelector('#importPasteContent');
         const fileContent = offcanvasElement.querySelector('#importFileContent');
+        const urlContent = offcanvasElement.querySelector('#importURLContent');
+        const cameraContent = offcanvasElement.querySelector('#importCameraContent');
+
+        // File elements
         const dropZone = offcanvasElement.querySelector('#importDropZone');
         const fileInput = offcanvasElement.querySelector('#importFileInput');
         const fileNameDiv = offcanvasElement.querySelector('#importFileName');
 
-        // ── Tab switching ─────────────────────────────────────
-        tabPaste.addEventListener('click', () => {
-            activeTab = 'paste';
-            tabPaste.classList.add('active');
-            tabFile.classList.remove('active');
-            pasteContent.classList.remove('d-none');
-            fileContent.classList.add('d-none');
-            updateParseBtn();
-        });
+        // URL elements
+        const urlInput = offcanvasElement.querySelector('#importURLInput');
 
-        tabFile.addEventListener('click', () => {
-            activeTab = 'file';
-            tabFile.classList.add('active');
-            tabPaste.classList.remove('active');
-            fileContent.classList.remove('d-none');
-            pasteContent.classList.add('d-none');
+        // Camera elements
+        const cameraZone = offcanvasElement.querySelector('#importCameraZone');
+        const cameraInput = offcanvasElement.querySelector('#importCameraInput');
+        const cameraPreview = offcanvasElement.querySelector('#importCameraPreview');
+        const cameraImg = offcanvasElement.querySelector('#importCameraImg');
+
+        const allTabs = [tabPaste, tabFile, tabURL, tabCamera];
+        const allContent = [pasteContent, fileContent, urlContent, cameraContent];
+
+        // ── Tab switching ─────────────────────────────────────
+        function switchTab(tab) {
+            activeTab = tab;
+            allTabs.forEach(t => t.classList.remove('active'));
+            allContent.forEach(c => c.classList.add('d-none'));
+
+            switch (tab) {
+                case 'paste':
+                    tabPaste.classList.add('active');
+                    pasteContent.classList.remove('d-none');
+                    break;
+                case 'file':
+                    tabFile.classList.add('active');
+                    fileContent.classList.remove('d-none');
+                    break;
+                case 'url':
+                    tabURL.classList.add('active');
+                    urlContent.classList.remove('d-none');
+                    break;
+                case 'camera':
+                    tabCamera.classList.add('active');
+                    cameraContent.classList.remove('d-none');
+                    break;
+            }
             updateParseBtn();
-        });
+            hideError();
+            hideAIFallback();
+        }
+
+        tabPaste.addEventListener('click', () => switchTab('paste'));
+        tabFile.addEventListener('click', () => switchTab('file'));
+        tabURL.addEventListener('click', () => switchTab('url'));
+        tabCamera.addEventListener('click', () => switchTab('camera'));
 
         // ── Text input ────────────────────────────────────────
         textArea.addEventListener('input', updateParseBtn);
+
+        // ── URL input ─────────────────────────────────────────
+        urlInput.addEventListener('input', updateParseBtn);
 
         // ── File upload ───────────────────────────────────────
         dropZone.addEventListener('click', () => fileInput.click());
@@ -206,27 +319,114 @@ export function createImportWizard(onImportComplete) {
             }
         });
 
+        // ── Camera capture ────────────────────────────────────
+        cameraZone.addEventListener('click', () => cameraInput.click());
+
+        cameraInput.addEventListener('change', () => {
+            if (cameraInput.files.length > 0) {
+                cameraFile = cameraInput.files[0];
+                // Show preview
+                const url = URL.createObjectURL(cameraFile);
+                cameraImg.src = url;
+                cameraImg.onload = () => URL.revokeObjectURL(url);
+                cameraPreview.classList.remove('d-none');
+                cameraZone.classList.add('border-primary');
+                updateParseBtn();
+            }
+        });
+
         // ── Parse button enable/disable ───────────────────────
         function updateParseBtn() {
-            if (activeTab === 'paste') {
-                parseBtn.disabled = !textArea.value.trim();
-            } else {
-                parseBtn.disabled = !selectedFile;
+            switch (activeTab) {
+                case 'paste':
+                    parseBtn.disabled = !textArea.value.trim();
+                    break;
+                case 'file':
+                    parseBtn.disabled = !selectedFile;
+                    break;
+                case 'url':
+                    parseBtn.disabled = !urlInput.value.trim();
+                    break;
+                case 'camera':
+                    parseBtn.disabled = !cameraFile;
+                    break;
             }
             hideError();
+            hideAIFallback();
+        }
+
+        // ── Determine if current action uses AI ──────────────
+        function isAIAction() {
+            if (activeTab === 'url' || activeTab === 'camera') return true;
+            if (activeTab === 'file' && selectedFile && isMediaFile(selectedFile)) return true;
+            return false;
         }
 
         // ── Parse action ──────────────────────────────────────
         parseBtn.addEventListener('click', async () => {
             hideError();
-            showStep('loading');
+            hideAIFallback();
+
+            const useAI = isAIAction();
+            showLoading(useAI);
 
             try {
                 let result;
-                if (activeTab === 'paste') {
-                    result = await window.importService.parseText(textArea.value.trim());
-                } else {
-                    result = await window.importService.parseFile(selectedFile);
+
+                switch (activeTab) {
+                    case 'paste': {
+                        lastTextContent = textArea.value.trim();
+                        result = await window.importService.parseText(lastTextContent);
+
+                        // If standard parse failed, show AI fallback
+                        if (!result.success) {
+                            showStep('step1');
+                            showError(result.errors?.join('. ') || 'Failed to parse workout');
+                            showAIFallback();
+                            return;
+                        }
+
+                        // If low confidence, still show preview but offer AI fallback
+                        if (result.confidence < 0.5) {
+                            parsedResult = result;
+                            renderPreview(result);
+                            showStep('step2');
+                            return;
+                        }
+                        break;
+                    }
+
+                    case 'file': {
+                        if (isMediaFile(selectedFile)) {
+                            // Image or PDF → AI media endpoint
+                            let fileToSend = selectedFile;
+                            if (IMAGE_TYPES.has(selectedFile.type?.toLowerCase())) {
+                                fileToSend = await window.importService.compressImage(selectedFile);
+                            }
+                            result = await window.importService.parseMedia(fileToSend);
+                        } else {
+                            // Text file → regex endpoint
+                            result = await window.importService.parseFile(selectedFile);
+                        }
+                        break;
+                    }
+
+                    case 'url': {
+                        const url = urlInput.value.trim();
+                        if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                            showStep('step1');
+                            showError('Please enter a valid URL starting with http:// or https://');
+                            return;
+                        }
+                        result = await window.importService.parseURL(url);
+                        break;
+                    }
+
+                    case 'camera': {
+                        let fileToSend = await window.importService.compressImage(cameraFile);
+                        result = await window.importService.parseMedia(fileToSend);
+                        break;
+                    }
                 }
 
                 if (result.success) {
@@ -236,10 +436,45 @@ export function createImportWizard(onImportComplete) {
                 } else {
                     showStep('step1');
                     showError(result.errors?.join('. ') || 'Failed to parse workout');
+                    // Show AI fallback for text tab failures
+                    if (activeTab === 'paste') {
+                        showAIFallback();
+                    }
                 }
             } catch (err) {
                 showStep('step1');
-                showError(err.message || 'Failed to parse workout');
+                if (err.message && (err.message.includes('limit reached') || err.message.includes('429'))) {
+                    showError(err.message + ' Standard text import is still available.');
+                } else if (err.message && (err.message.includes('not available') || err.message.includes('503'))) {
+                    showError('AI import is temporarily unavailable. Please paste your workout text directly.');
+                } else {
+                    showError(err.message || 'Failed to parse workout');
+                }
+            }
+        });
+
+        // ── AI fallback button ────────────────────────────────
+        tryAIBtn.addEventListener('click', async () => {
+            if (!lastTextContent) return;
+
+            hideError();
+            hideAIFallback();
+            showLoading(true);
+
+            try {
+                const result = await window.importService.parseTextAI(lastTextContent);
+
+                if (result.success) {
+                    parsedResult = result;
+                    renderPreview(result);
+                    showStep('step2');
+                } else {
+                    showStep('step1');
+                    showError(result.errors?.join('. ') || 'AI could not parse the workout');
+                }
+            } catch (err) {
+                showStep('step1');
+                showError(err.message || 'AI parsing failed');
             }
         });
 
@@ -269,6 +504,18 @@ export function createImportWizard(onImportComplete) {
             else if (step === 'loading') loading.classList.remove('d-none');
         }
 
+        function showLoading(isAI = false) {
+            showStep('loading');
+            loadingText.textContent = isAI
+                ? 'Analyzing content with AI...'
+                : 'Parsing workout data...';
+            if (isAI) {
+                loadingAI.classList.remove('d-none');
+            } else {
+                loadingAI.classList.add('d-none');
+            }
+        }
+
         // ── Error handling ────────────────────────────────────
         function showError(msg) {
             errorText.textContent = msg;
@@ -279,15 +526,34 @@ export function createImportWizard(onImportComplete) {
             errorDiv.classList.add('d-none');
         }
 
+        function showAIFallback() {
+            if (lastTextContent && window.importService.parseTextAI) {
+                aiFallbackDiv.classList.remove('d-none');
+            }
+        }
+
+        function hideAIFallback() {
+            aiFallbackDiv.classList.add('d-none');
+        }
+
         // ── Preview renderer ──────────────────────────────────
         function renderPreview(result) {
             const data = result.workout_data;
 
             // Name & format
             offcanvasElement.querySelector('#importPreviewName').textContent = data.name || 'Imported Workout';
+
             const confidencePercent = Math.round(result.confidence * 100);
-            offcanvasElement.querySelector('#importPreviewFormat').textContent =
-                `Parsed as: ${result.source_format} (${confidencePercent}% confidence)`;
+            const formatEl = offcanvasElement.querySelector('#importPreviewFormat');
+
+            if (result.source_format && result.source_format.startsWith('ai')) {
+                formatEl.innerHTML =
+                    `<span class="badge bg-info me-1"><i class="bx bx-bot"></i> AI</span> ` +
+                    `Parsed as: ${escapeHtml(result.source_format)} (${confidencePercent}% confidence)`;
+            } else {
+                formatEl.textContent =
+                    `Parsed as: ${result.source_format} (${confidencePercent}% confidence)`;
+            }
 
             // Exercise groups
             const groupsContainer = offcanvasElement.querySelector('#importPreviewGroups');

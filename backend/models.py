@@ -1385,3 +1385,13 @@ class ImportParseResponse(BaseModel):
     errors: List[str] = Field(default_factory=list, description="Fatal parsing errors")
     confidence: float = Field(default=0.0, ge=0.0, le=1.0, description="Parser confidence score")
     source_format: str = Field(default="unknown", description="Detected source format")
+
+class ImportAIParseRequest(BaseModel):
+    """Request to parse workout content using AI"""
+    content: str = Field(..., min_length=1, max_length=100000, description="Content to parse with AI")
+    anonymous_id: Optional[str] = Field(None, description="Anonymous user identifier for rate limiting")
+
+class ImportURLRequest(BaseModel):
+    """Request to parse workout from a URL"""
+    url: str = Field(..., min_length=10, max_length=2000, description="URL to extract workout from")
+    anonymous_id: Optional[str] = Field(None, description="Anonymous user identifier for rate limiting")
