@@ -33,7 +33,7 @@
    LAYOUT & STRUCTURE (Phase 2)
    ============================================ */
 @import url('layout.css');
-@import url('menu-sidebar.css');
+@import url('menu-sidebar.css?v=20260216');
 @import url('utilities.css');
 
 /* ============================================

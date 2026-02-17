@@ -78,6 +78,40 @@ body.menu-open {
 }
 
 /* ============================================
+   DESKTOP VIEW: HIDE SIDEBAR (MOBILE-STYLE)
+   Force slide-in overlay behavior on all
+   desktop screens when .desktop-view is active.
+   ============================================ */
+
+@media (min-width: 1200px) {
+    .desktop-view .layout-menu {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        height: 100vh !important;
+        width: 260px !important;
+        transform: translateX(-100%) !important;
+        transition: transform 0.3s ease !important;
+        z-index: 1050 !important;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .desktop-view .layout-menu.menu-open {
+        transform: translateX(0) !important;
+    }
+
+    .desktop-view .layout-menu .layout-menu-toggle {
+        display: flex !important;
+        justify-content: flex-end;
+        padding: 1rem;
+    }
+
+    .desktop-view .layout-page {
+        padding-left: 0 !important;
+    }
+}
+
+/* ============================================
    APP BRAND STYLING
    ============================================ */
 

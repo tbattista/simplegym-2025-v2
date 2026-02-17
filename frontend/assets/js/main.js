@@ -50,20 +50,25 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   });
 
+  // Helper: use mobile-style menu on small screens OR desktop-view
+  function useMobileMenu() {
+    return window.Helpers.isSmallScreen() || document.documentElement.classList.contains('desktop-view');
+  }
+
   // Initialize menu togglers and bind click on each
   let menuToggler = document.querySelectorAll('.layout-menu-toggle, .mobile-menu-toggle');
   menuToggler.forEach(item => {
     item.addEventListener('click', event => {
       event.preventDefault();
-      
-      // On mobile, toggle menu and overlay
-      if (window.Helpers.isSmallScreen()) {
+
+      // On mobile or desktop-view, toggle slide-in menu and overlay
+      if (useMobileMenu()) {
         const layoutMenu = document.getElementById('layout-menu');
         const layoutOverlay = document.querySelector('.layout-overlay');
-        
+
         if (layoutMenu && layoutOverlay) {
           const isOpen = layoutMenu.classList.contains('menu-open');
-          
+
           if (isOpen) {
             // Close menu
             layoutMenu.classList.remove('menu-open');
@@ -77,7 +82,7 @@ document.addEventListener('DOMContentLoaded', function () {
           }
         }
       } else {
-        // Desktop behavior
+        // Desktop behavior (no desktop-view class)
         window.Helpers.toggleCollapsed();
       }
     });
@@ -88,18 +93,16 @@ document.addEventListener('DOMContentLoaded', function () {
   if (layoutOverlay) {
     layoutOverlay.addEventListener('click', event => {
       event.preventDefault();
-      
-      // Close mobile menu
-      if (window.Helpers.isSmallScreen()) {
+
+      if (useMobileMenu()) {
         const layoutMenu = document.getElementById('layout-menu');
         if (layoutMenu) {
           layoutMenu.classList.remove('menu-open');
           layoutOverlay.classList.remove('active');
           document.body.classList.remove('menu-open');
-          document.body.style.overflow = '';  // Clear overflow set by menu-injection-service
+          document.body.style.overflow = '';
         }
       } else {
-        // Desktop behavior - only close the menu if it's open
         if (!window.Helpers.isCollapsed()) {
           window.Helpers.setCollapsed(true, true);
         }
@@ -108,30 +111,26 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   // Close menu when clicking outside of it (anywhere on the page)
-  // Use capture phase to ensure this runs before other handlers
   document.addEventListener('click', event => {
-    // Only handle on mobile/small screens when menu is open
-    if (window.Helpers.isSmallScreen()) {
+    if (useMobileMenu()) {
       const layoutMenu = document.getElementById('layout-menu');
       const layoutOverlay = document.querySelector('.layout-overlay');
-      
+
       if (layoutMenu && layoutMenu.classList.contains('menu-open')) {
-        // Check if click is outside the menu and not on a menu toggle button
         const isClickInsideMenu = layoutMenu.contains(event.target);
         const isClickOnToggle = event.target.closest('.layout-menu-toggle, .mobile-menu-toggle');
-        
+
         if (!isClickInsideMenu && !isClickOnToggle) {
-          // Close menu
           layoutMenu.classList.remove('menu-open');
           if (layoutOverlay) {
             layoutOverlay.classList.remove('active');
           }
           document.body.classList.remove('menu-open');
-          document.body.style.overflow = '';  // Clear overflow set by menu-injection-service
+          document.body.style.overflow = '';
         }
       }
     }
-  }, true); // Use capture phase
+  }, true);
 
   // Display menu toggle (layout-menu-toggle) on hover with delay
   let delay = function (elem, callback) {
@@ -209,8 +208,8 @@ document.addEventListener('DOMContentLoaded', function () {
   // Manage menu expanded/collapsed with templateCustomizer & local storage
   //------------------------------------------------------------------
 
-  // On small screens (mobile), ensure menu starts collapsed
-  if (window.Helpers.isSmallScreen()) {
+  // On small screens or desktop-view, ensure menu starts collapsed
+  if (useMobileMenu()) {
     window.Helpers.setCollapsed(true, false);
   }
 })();

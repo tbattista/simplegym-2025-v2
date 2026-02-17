@@ -80,9 +80,12 @@ class MenuInjectionService {
                 // Add fresh listener with mobile support
                 newItem.addEventListener('click', event => {
                     event.preventDefault();
-                    
-                    // On mobile, toggle menu and overlay
-                    if (window.Helpers && window.Helpers.isSmallScreen && window.Helpers.isSmallScreen()) {
+
+                    // Use mobile-style menu on small screens OR desktop-view (sidebar hidden)
+                    const useMobileMenu = (window.Helpers && window.Helpers.isSmallScreen && window.Helpers.isSmallScreen())
+                        || document.documentElement.classList.contains('desktop-view');
+
+                    if (useMobileMenu) {
                         const layoutMenu = document.getElementById('layout-menu');
                         const layoutOverlay = document.querySelector('.layout-overlay');
                         
@@ -93,12 +96,12 @@ class MenuInjectionService {
                                 // Close menu
                                 layoutMenu.classList.remove('menu-open');
                                 layoutOverlay.classList.remove('active');
-                                document.body.style.overflow = '';
+                                document.body.classList.remove('menu-open');
                             } else {
                                 // Open menu
                                 layoutMenu.classList.add('menu-open');
                                 layoutOverlay.classList.add('active');
-                                document.body.style.overflow = 'hidden';
+                                document.body.classList.add('menu-open');
                             }
                         }
                     } else if (window.Helpers && window.Helpers.toggleCollapsed) {
