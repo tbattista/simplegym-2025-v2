@@ -50,19 +50,14 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   });
 
-  // Helper: use mobile-style menu on small screens OR desktop-view
-  function useMobileMenu() {
-    return window.Helpers.isSmallScreen() || document.documentElement.classList.contains('desktop-view');
-  }
-
   // Initialize menu togglers and bind click on each
   let menuToggler = document.querySelectorAll('.layout-menu-toggle, .mobile-menu-toggle');
   menuToggler.forEach(item => {
     item.addEventListener('click', event => {
       event.preventDefault();
 
-      // On mobile or desktop-view, toggle slide-in menu and overlay
-      if (useMobileMenu()) {
+      // On mobile, toggle slide-in menu and overlay
+      if (window.Helpers.isSmallScreen()) {
         const layoutMenu = document.getElementById('layout-menu');
         const layoutOverlay = document.querySelector('.layout-overlay');
 
@@ -94,7 +89,7 @@ document.addEventListener('DOMContentLoaded', function () {
     layoutOverlay.addEventListener('click', event => {
       event.preventDefault();
 
-      if (useMobileMenu()) {
+      if (window.Helpers.isSmallScreen()) {
         const layoutMenu = document.getElementById('layout-menu');
         if (layoutMenu) {
           layoutMenu.classList.remove('menu-open');
@@ -112,7 +107,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // Close menu when clicking outside of it (anywhere on the page)
   document.addEventListener('click', event => {
-    if (useMobileMenu()) {
+    if (window.Helpers.isSmallScreen()) {
       const layoutMenu = document.getElementById('layout-menu');
       const layoutOverlay = document.querySelector('.layout-overlay');
 
@@ -208,8 +203,8 @@ document.addEventListener('DOMContentLoaded', function () {
   // Manage menu expanded/collapsed with templateCustomizer & local storage
   //------------------------------------------------------------------
 
-  // On small screens or desktop-view, ensure menu starts collapsed
-  if (useMobileMenu()) {
+  // On small screens, ensure menu starts collapsed
+  if (window.Helpers.isSmallScreen()) {
     window.Helpers.setCollapsed(true, false);
   }
 })();
