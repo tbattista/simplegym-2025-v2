@@ -346,7 +346,7 @@ export function createExerciseGroupEditor(config, onSave, onDelete, onSearchClic
     };
     
     const offcanvasHtml = `
-        <div class="offcanvas offcanvas-bottom offcanvas-bottom-base" tabindex="-1"
+        <div class="offcanvas offcanvas-bottom offcanvas-bottom-base offcanvas-desktop-wide" tabindex="-1"
              id="exerciseGroupEditorOffcanvas"
              aria-labelledby="exerciseGroupEditorLabel"
              data-bs-scroll="false">

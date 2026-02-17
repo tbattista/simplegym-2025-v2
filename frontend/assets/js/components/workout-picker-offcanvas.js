@@ -48,7 +48,7 @@ class WorkoutPickerOffcanvas {
         }
 
         const offcanvasHTML = `
-            <div class="offcanvas offcanvas-bottom offcanvas-bottom-base offcanvas-bottom-tall" tabindex="-1" id="${this.offcanvasId}"
+            <div class="offcanvas offcanvas-bottom offcanvas-bottom-base offcanvas-bottom-tall offcanvas-desktop-side" tabindex="-1" id="${this.offcanvasId}"
                  aria-labelledby="${this.offcanvasId}Label">
                 <div class="offcanvas-header">
                     <h5 class="offcanvas-title" id="${this.offcanvasId}Label">

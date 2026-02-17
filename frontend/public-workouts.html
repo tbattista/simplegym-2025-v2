@@ -62,7 +62,8 @@
     
     <!-- Unified Offcanvas CSS -->
     <link rel="stylesheet" href="/static/assets/css/components/unified-offcanvas.css" />
-    
+    <link rel="stylesheet" href="/static/assets/css/components/desktop-offcanvas.css?v=20260217" />
+
     <!-- Workout Database CSS (reuse for consistency) -->
     <link rel="stylesheet" href="/static/assets/css/workout-database.css" />
     
@@ -76,9 +77,17 @@
     <!-- Theme Manager (must load early to prevent flash) -->
     <script src="/static/assets/js/services/theme-manager.js"></script>
 
+    <!-- Desktop View Detection (must load early to prevent FOUC) -->
+    <script>
+      (function() {
+        if (window.innerWidth >= 992) document.documentElement.classList.add('desktop-view');
+        else document.documentElement.classList.add('mobile-view');
+      })();
+    </script>
+
     <!-- FFN Centralized Configuration -->
     <script src="/static/assets/js/app-config.js"></script>
-    
+
     <!-- Firebase SDK Loader (Centralized) -->
     <script type="module" src="/static/assets/js/firebase-loader.js"></script>
 

@@ -97,43 +97,7 @@
     font-size: 0.875rem;
 }
 
-/* ============================================
-   OFFCANVAS -> CENTERED MODAL ON DESKTOP
-   Same pattern as desktop-home.css
-   ============================================ */
-.desktop-view .offcanvas.offcanvas-bottom {
-    right: auto;
-    left: 50%;
-    bottom: auto;
-    top: 50%;
-    transform: translate(-50%, -50%) scale(0.95);
-    opacity: 0;
-    width: 580px;
-    max-width: 90vw;
-    max-height: 85vh;
-    height: auto;
-    border: none;
-    border-top: none;
-    border-radius: var(--bs-border-radius-lg);
-    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.18);
-    transition: opacity 0.2s ease, transform 0.2s ease;
-}
-
-.desktop-view .offcanvas.offcanvas-bottom.show:not(.hiding),
-.desktop-view .offcanvas.offcanvas-bottom.showing {
-    transform: translate(-50%, -50%) scale(1);
-    opacity: 1;
-}
-
-.desktop-view .offcanvas.offcanvas-bottom.hiding {
-    transform: translate(-50%, -50%) scale(0.95);
-    opacity: 0;
-}
-
-.desktop-view .offcanvas.offcanvas-bottom .offcanvas-body {
-    overflow-y: auto;
-    max-height: calc(85vh - 140px);
-}
+/* Offcanvas desktop styles moved to shared desktop-offcanvas.css */
 
 /* ============================================
    RESPONSIVE: SMALLER DESKTOP (992-1199px)

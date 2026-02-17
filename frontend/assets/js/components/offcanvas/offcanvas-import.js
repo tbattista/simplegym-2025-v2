@@ -36,7 +36,7 @@ export function createImportWizard(onImportComplete) {
     const id = 'importWizardOffcanvas';
 
     const html = `
-    <div class="offcanvas offcanvas-bottom offcanvas-bottom-base" tabindex="-1" id="${id}" data-bs-scroll="false">
+    <div class="offcanvas offcanvas-bottom offcanvas-bottom-base offcanvas-desktop-wide" tabindex="-1" id="${id}" data-bs-scroll="false">
         <div class="offcanvas-header border-bottom">
             <h5 class="offcanvas-title" id="importWizardTitle">
                 <i class="bx bx-import me-2"></i>Import Workout

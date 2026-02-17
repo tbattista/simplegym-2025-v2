@@ -835,7 +835,7 @@ export function createReorderOffcanvas(exercises, onSave) {
     `;
 
     const offcanvasHtml = `
-        <div class="offcanvas offcanvas-bottom offcanvas-bottom-base" tabindex="-1" id="reorderExercisesOffcanvas"
+        <div class="offcanvas offcanvas-bottom offcanvas-bottom-base offcanvas-desktop-wide" tabindex="-1" id="reorderExercisesOffcanvas"
              aria-labelledby="reorderExercisesOffcanvasLabel" data-bs-scroll="false">
             <div class="offcanvas-header border-bottom">
                 <h5 class="offcanvas-title" id="reorderExercisesOffcanvasLabel">

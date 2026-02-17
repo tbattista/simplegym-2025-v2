@@ -26,7 +26,7 @@ import { createOffcanvas, escapeHtml } from './offcanvas-helpers.js';
  */
 export function createBonusExercise(data, onAddExercise) {
     const offcanvasHtml = `
-        <div class="offcanvas offcanvas-bottom offcanvas-bottom-base"
+        <div class="offcanvas offcanvas-bottom offcanvas-bottom-base offcanvas-desktop-side"
              tabindex="-1"
              id="bonusExerciseOffcanvas"
              aria-labelledby="bonusExerciseOffcanvasLabel"
@@ -863,7 +863,7 @@ export function createExerciseSearchOffcanvas(config = {}, onSelectExercise) {
     } = config;
     
     const offcanvasHtml = `
-        <div class="offcanvas offcanvas-bottom offcanvas-bottom-base"
+        <div class="offcanvas offcanvas-bottom offcanvas-bottom-base offcanvas-desktop-side"
              tabindex="-1" id="exerciseSearchOffcanvas"
              data-bs-scroll="false" style="height: 85vh;">
             <div class="offcanvas-header border-bottom">
@@ -1230,7 +1230,7 @@ export function createExerciseFilterOffcanvas(config, onApply) {
     };
     
     const offcanvasHtml = `
-        <div class="offcanvas offcanvas-bottom offcanvas-bottom-base" tabindex="-1"
+        <div class="offcanvas offcanvas-bottom offcanvas-bottom-base offcanvas-desktop-side" tabindex="-1"
              id="exerciseFilterOffcanvas" data-bs-scroll="false" style="height: 85vh;">
             
             <!-- Header with Clear/Cancel (smaller buttons, right-aligned) -->
