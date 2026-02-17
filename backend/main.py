@@ -16,7 +16,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Import routers
-from .api import health, documents, workouts, programs, exercises, favorites, auth, data, migration, workout_sessions, sharing, user_profile, export, cardio_sessions
+from .api import health, documents, workouts, programs, exercises, favorites, auth, data, migration, workout_sessions, sharing, user_profile, export, cardio_sessions, import_routes
 from .services.sharing_service import sharing_service
 import re
 import html
@@ -59,8 +59,9 @@ app.include_router(sharing.router)  # Workout sharing endpoints
 app.include_router(user_profile.router)  # User profile management
 app.include_router(export.router)  # Export endpoints (text, image, print)
 app.include_router(cardio_sessions.router)  # Cardio session logging
+app.include_router(import_routes.router)  # Workout import parsing
 
-logger.info("✅ All routers included successfully (16 routers total)")
+logger.info("✅ All routers included successfully (17 routers total)")
 
 # ============================================
 # SEO Routes (robots.txt, sitemap.xml, llms.txt)

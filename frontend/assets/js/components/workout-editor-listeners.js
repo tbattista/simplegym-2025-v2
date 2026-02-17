@@ -288,6 +288,21 @@ function setupWorkoutEditorListeners() {
         console.warn('⚠️ Delete workout menu item not found in DOM');
     }
 
+    // Import Workout Buttons - Opens import wizard offcanvas
+    // Uses class-based selector to catch all import buttons across both views
+    document.querySelectorAll('.import-workout-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            console.log('📥 Import workout button clicked');
+            if (window.UnifiedOffcanvasFactory?.createImportWizard) {
+                window.UnifiedOffcanvasFactory.createImportWizard();
+            } else {
+                console.error('❌ Import wizard not available');
+            }
+        });
+    });
+    console.log('✅ Import workout button listeners attached');
+
     // Reorder Exercises Button - Opens reorder offcanvas
     const reorderBtn = document.getElementById('reorderExercisesBtn');
     if (reorderBtn) {

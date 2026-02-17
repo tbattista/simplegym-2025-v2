@@ -1366,3 +1366,22 @@ class ShareTokenResponse(BaseModel):
     token: str
     share_url: str
     expires_at: Optional[datetime] = None
+
+
+# ============================================================================
+# Workout Import Models
+# ============================================================================
+
+class ImportParseRequest(BaseModel):
+    """Request to parse raw workout content into structured data"""
+    content: str = Field(..., min_length=1, max_length=50000, description="Raw workout content (text, CSV, or JSON)")
+    format_hint: Optional[str] = Field(None, description="Optional format hint: 'text', 'csv', 'json'")
+
+class ImportParseResponse(BaseModel):
+    """Response from parsing workout content"""
+    success: bool = Field(..., description="Whether parsing succeeded")
+    workout_data: Optional[Dict[str, Any]] = Field(None, description="Parsed workout data (WorkoutTemplate-compatible)")
+    warnings: List[str] = Field(default_factory=list, description="Non-fatal parsing issues")
+    errors: List[str] = Field(default_factory=list, description="Fatal parsing errors")
+    confidence: float = Field(default=0.0, ge=0.0, le=1.0, description="Parser confidence score")
+    source_format: str = Field(default="unknown", description="Detected source format")

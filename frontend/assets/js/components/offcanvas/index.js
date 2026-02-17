@@ -61,6 +61,11 @@ import {
     createFeedbackOffcanvas
 } from './offcanvas-feedback.js';
 
+// Import import components
+import {
+    createImportWizard
+} from './offcanvas-import.js';
+
 /**
  * UnifiedOffcanvasFactory - Facade class maintaining backward compatibility
  * All methods are static to match the original API
@@ -196,6 +201,14 @@ class UnifiedOffcanvasFactory {
     }
 
     /* ============================================
+       IMPORT OFFCANVAS
+       ============================================ */
+
+    static createImportWizard(onImportComplete) {
+        return createImportWizard(onImportComplete);
+    }
+
+    /* ============================================
        DEPRECATED METHODS (Backward Compatibility)
        ============================================ */
     
@@ -315,7 +328,10 @@ export {
     createExerciseDetailsEditor,
 
     // Feedback
-    createFeedbackOffcanvas
+    createFeedbackOffcanvas,
+
+    // Import
+    createImportWizard
 };
 
 console.log('📦 UnifiedOffcanvasFactory v3.0.0 (modular) loaded');
