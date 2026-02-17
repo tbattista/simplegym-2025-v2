@@ -52,12 +52,23 @@
     <!-- Calendar View CSS -->
     <link rel="stylesheet" href="/static/assets/css/components/calendar-view.css" />
 
+    <!-- Desktop History CSS -->
+    <link rel="stylesheet" href="/static/assets/css/desktop-history.css?v=20260216" />
+
     <!-- Helpers -->
     <script src="/static/assets/vendor/js/helpers.js"></script>
     <script src="/static/assets/js/config.js"></script>
 
     <!-- Theme Manager (must load early to prevent flash) -->
     <script src="/static/assets/js/services/theme-manager.js"></script>
+
+    <!-- Desktop View Detection (must load early to prevent FOUC) -->
+    <script>
+      (function() {
+        if (window.innerWidth >= 992) document.documentElement.classList.add('desktop-view');
+        else document.documentElement.classList.add('mobile-view');
+      })();
+    </script>
 
     <!-- FFN Centralized Configuration -->
     <script src="/static/assets/js/app-config.js"></script>
@@ -99,117 +110,267 @@
           <div class="content-wrapper">
             <!-- Content -->
             <div class="container-xxl flex-grow-1 container-p-y">
-              
-              <!-- Page Header -->
-              <div class="mb-4">
-                <h4 class="mb-2" id="workoutHistoryTitle">
-                  <span id="workoutName">Loading...</span>
-                </h4>
-                <p class="text-muted mb-0" id="workoutDescription"></p>
-              </div>
 
-              <!-- Loading State -->
-              <div id="historyLoadingState" class="text-center py-5">
-                <div class="spinner-border text-primary" role="status">
-                  <span class="visually-hidden">Loading workout history...</span>
-                </div>
-                <p class="mt-3 text-muted">Loading workout history...</p>
-              </div>
-              
-              <!-- Error State -->
-              <div id="historyErrorState" class="text-center py-5" style="display: none;">
-                <i class="bx bx-error-circle display-1 text-danger"></i>
-                <h5 class="mt-3">Error Loading History</h5>
-                <p class="text-muted" id="historyErrorMessage"></p>
-                <button class="btn btn-primary mt-2" onclick="location.reload()">
-                  <i class="bx bx-refresh me-1"></i>Retry
-                </button>
-              </div>
-              
-              <!-- Empty State -->
-              <div id="historyEmptyState" class="text-center py-5" style="display: none;">
-                <i class="bx bx-calendar-x display-1 text-muted"></i>
-                <h5 class="mt-3">No Workout History Yet</h5>
-                <p class="text-muted">Complete your first workout to see your history here</p>
-                <a href="workout-database.html" class="btn btn-primary mt-2">
-                  <i class="bx bx-dumbbell me-1"></i>Start a Workout
-                </a>
-              </div>
-              
-              <!-- History Content -->
-              <div id="historyContent" style="display: none;">
+              <!-- ========== MOBILE VIEW ========== -->
+              <div data-view="mobile">
 
-                <!-- Tab Navigation -->
-                <div class="history-tabs-wrapper">
-                  <ul class="nav nav-tabs history-tabs mb-0" id="historyTabs" role="tablist">
-                    <li class="nav-item" role="presentation">
-                      <button class="nav-link active" id="history-tab" data-bs-toggle="tab"
-                              data-bs-target="#historyTabPane" type="button" role="tab"
-                              aria-controls="historyTabPane" aria-selected="true">
-                        <i class="bx bx-history me-1"></i>History
-                      </button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                      <button class="nav-link" id="calendar-tab" data-bs-toggle="tab"
-                              data-bs-target="#calendarTabPane" type="button" role="tab"
-                              aria-controls="calendarTabPane" aria-selected="false">
-                        <i class="bx bx-calendar me-1"></i>Calendar
-                      </button>
-                    </li>
-                  </ul>
+                <!-- Page Header -->
+                <div class="mb-4">
+                  <h4 class="mb-2" id="workoutHistoryTitle">
+                    <span id="workoutName">Loading...</span>
+                  </h4>
+                  <p class="text-muted mb-0" id="workoutDescription"></p>
                 </div>
 
-                <!-- Tab Content (Calendar Panel only) -->
-                <div class="tab-content" id="historyTabContent">
-                  <!-- History Tab (empty - just hides calendar) -->
-                  <div class="tab-pane fade show active" id="historyTabPane" role="tabpanel"
-                       aria-labelledby="history-tab" tabindex="0">
+                <!-- Loading State -->
+                <div id="historyLoadingState" class="text-center py-5">
+                  <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading workout history...</span>
+                  </div>
+                  <p class="mt-3 text-muted">Loading workout history...</p>
+                </div>
+
+                <!-- Error State -->
+                <div id="historyErrorState" class="text-center py-5" style="display: none;">
+                  <i class="bx bx-error-circle display-1 text-danger"></i>
+                  <h5 class="mt-3">Error Loading History</h5>
+                  <p class="text-muted" id="historyErrorMessage"></p>
+                  <button class="btn btn-primary mt-2" onclick="location.reload()">
+                    <i class="bx bx-refresh me-1"></i>Retry
+                  </button>
+                </div>
+
+                <!-- Empty State -->
+                <div id="historyEmptyState" class="text-center py-5" style="display: none;">
+                  <i class="bx bx-calendar-x display-1 text-muted"></i>
+                  <h5 class="mt-3">No Workout History Yet</h5>
+                  <p class="text-muted">Complete your first workout to see your history here</p>
+                  <a href="workout-database.html" class="btn btn-primary mt-2">
+                    <i class="bx bx-dumbbell me-1"></i>Start a Workout
+                  </a>
+                </div>
+
+                <!-- History Content -->
+                <div id="historyContent" style="display: none;">
+
+                  <!-- Tab Navigation -->
+                  <div class="history-tabs-wrapper">
+                    <ul class="nav nav-tabs history-tabs mb-0" id="historyTabs" role="tablist">
+                      <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="history-tab" data-bs-toggle="tab"
+                                data-bs-target="#historyTabPane" type="button" role="tab"
+                                aria-controls="historyTabPane" aria-selected="true">
+                          <i class="bx bx-history me-1"></i>History
+                        </button>
+                      </li>
+                      <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="calendar-tab" data-bs-toggle="tab"
+                                data-bs-target="#calendarTabPane" type="button" role="tab"
+                                aria-controls="calendarTabPane" aria-selected="false">
+                          <i class="bx bx-calendar me-1"></i>Calendar
+                        </button>
+                      </li>
+                    </ul>
                   </div>
 
-                  <!-- Calendar Tab -->
-                  <div class="tab-pane fade" id="calendarTabPane" role="tabpanel"
-                       aria-labelledby="calendar-tab" tabindex="0">
-                    <div class="calendar-panel mb-3 mt-3" id="historyCalendarCard">
-                      <!-- Month Navigation -->
-                      <div class="calendar-panel-header">
-                        <button id="historyPrevMonth" class="btn btn-sm btn-icon btn-outline-secondary rounded-circle">
-                          <i class="bx bx-chevron-left"></i>
-                        </button>
-                        <span id="historyCurrentMonth" class="fw-medium">January 2026</span>
-                        <button id="historyNextMonth" class="btn btn-sm btn-icon btn-outline-secondary rounded-circle">
-                          <i class="bx bx-chevron-right"></i>
-                        </button>
-                      </div>
-                      <!-- Calendar Grid -->
-                      <div id="historyCalendarGrid" class="calendar-grid">
-                        <div class="text-center py-3">
-                          <div class="spinner-border spinner-border-sm text-primary" role="status">
-                            <span class="visually-hidden">Loading calendar...</span>
+                  <!-- Tab Content (Calendar Panel only) -->
+                  <div class="tab-content" id="historyTabContent">
+                    <!-- History Tab (empty - just hides calendar) -->
+                    <div class="tab-pane fade show active" id="historyTabPane" role="tabpanel"
+                         aria-labelledby="history-tab" tabindex="0">
+                    </div>
+
+                    <!-- Calendar Tab -->
+                    <div class="tab-pane fade" id="calendarTabPane" role="tabpanel"
+                         aria-labelledby="calendar-tab" tabindex="0">
+                      <div class="calendar-panel mb-3 mt-3" id="historyCalendarCard">
+                        <!-- Month Navigation -->
+                        <div class="calendar-panel-header">
+                          <button id="historyPrevMonth" class="btn btn-sm btn-icon btn-outline-secondary rounded-circle">
+                            <i class="bx bx-chevron-left"></i>
+                          </button>
+                          <span id="historyCurrentMonth" class="fw-medium">January 2026</span>
+                          <button id="historyNextMonth" class="btn btn-sm btn-icon btn-outline-secondary rounded-circle">
+                            <i class="bx bx-chevron-right"></i>
+                          </button>
+                        </div>
+                        <!-- Calendar Grid -->
+                        <div id="historyCalendarGrid" class="calendar-grid">
+                          <div class="text-center py-3">
+                            <div class="spinner-border spinner-border-sm text-primary" role="status">
+                              <span class="visually-hidden">Loading calendar...</span>
+                            </div>
                           </div>
                         </div>
                       </div>
                     </div>
                   </div>
-                </div>
 
-                <!-- Date Filter Indicator (shown when filtering by date) -->
-                <div id="dateFilterIndicator" class="date-filter-indicator mb-3" style="display: none;">
-                  <span class="date-filter-text">
-                    <i class="bx bx-calendar-check me-1"></i>
-                    Showing workouts for <strong id="dateFilterLabel"></strong>
-                  </span>
-                  <button class="btn btn-sm btn-link text-danger p-0 ms-2" onclick="clearDateFilter()">
-                    <i class="bx bx-x"></i> Clear
-                  </button>
-                </div>
+                  <!-- Date Filter Indicator (shown when filtering by date) -->
+                  <div id="dateFilterIndicator" class="date-filter-indicator mb-3" style="display: none;">
+                    <span class="date-filter-text">
+                      <i class="bx bx-calendar-check me-1"></i>
+                      Showing workouts for <strong id="dateFilterLabel"></strong>
+                    </span>
+                    <button class="btn btn-sm btn-link text-danger p-0 ms-2" onclick="clearDateFilter()">
+                      <i class="bx bx-x"></i> Clear
+                    </button>
+                  </div>
 
-                <!-- Session History (Time-Grouped) -->
-                <div id="sessionHistoryContainer">
-                  <!-- Session entries will be rendered here -->
+                  <!-- Session History (Time-Grouped) -->
+                  <div id="sessionHistoryContainer">
+                    <!-- Session entries will be rendered here -->
+                  </div>
+
                 </div>
 
               </div>
-              
+              <!-- / MOBILE VIEW -->
+
+              <!-- ========== DESKTOP VIEW ========== -->
+              <div data-view="desktop">
+
+                <!-- Desktop Loading State -->
+                <div id="desktopLoadingState" class="text-center py-5">
+                  <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading workout history...</span>
+                  </div>
+                  <p class="mt-3 text-muted">Loading workout history...</p>
+                </div>
+
+                <!-- Desktop Error State -->
+                <div id="desktopErrorState" class="text-center py-5" style="display: none;">
+                  <i class="bx bx-error-circle display-1 text-danger"></i>
+                  <h5 class="mt-3">Error Loading History</h5>
+                  <p class="text-muted" id="desktopErrorMessage"></p>
+                  <button class="btn btn-primary mt-2" onclick="location.reload()">
+                    <i class="bx bx-refresh me-1"></i>Retry
+                  </button>
+                </div>
+
+                <!-- Desktop Empty State -->
+                <div id="desktopEmptyState" class="text-center py-5" style="display: none;">
+                  <i class="bx bx-calendar-x display-1 text-muted"></i>
+                  <h5 class="mt-3">No Workout History Yet</h5>
+                  <p class="text-muted">Complete your first workout to see your history here</p>
+                  <a href="workout-database.html" class="btn btn-primary mt-2">
+                    <i class="bx bx-dumbbell me-1"></i>Start a Workout
+                  </a>
+                </div>
+
+                <!-- Desktop History Content -->
+                <div id="desktopHistoryContent" style="display: none;">
+
+                  <!-- Page Header -->
+                  <div class="mb-4">
+                    <h4 class="mb-1">
+                      <span id="desktopWorkoutName">Loading...</span>
+                    </h4>
+                    <p class="text-muted mb-0" id="desktopWorkoutDescription"></p>
+                  </div>
+
+                  <!-- Suppress mobile tabs on desktop -->
+                  <div id="desktopHistoryTabs" style="display: none;"></div>
+
+                  <!-- 2-Column Layout -->
+                  <div class="row g-4">
+
+                    <!-- LEFT COLUMN: Session History -->
+                    <div class="col-lg-8">
+
+                      <!-- Date Filter Indicator -->
+                      <div id="desktopDateFilterIndicator" class="date-filter-indicator mb-3" style="display: none;">
+                        <span class="date-filter-text">
+                          <i class="bx bx-calendar-check me-1"></i>
+                          Showing workouts for <strong id="desktopDateFilterLabel"></strong>
+                        </span>
+                        <button class="btn btn-sm btn-link text-danger p-0 ms-2" onclick="clearDateFilter()">
+                          <i class="bx bx-x"></i> Clear
+                        </button>
+                      </div>
+
+                      <!-- Session History Container -->
+                      <div id="desktopSessionHistoryContainer">
+                        <!-- Sessions rendered by JS -->
+                      </div>
+
+                    </div>
+                    <!-- / LEFT COLUMN -->
+
+                    <!-- RIGHT COLUMN: Sidebar -->
+                    <div class="col-lg-4">
+                      <div class="desktop-history-sidebar">
+
+                        <!-- Stats Summary Card -->
+                        <div class="card desktop-stats-card mb-4">
+                          <div class="card-header py-3 px-4">
+                            <h6 class="mb-0 fw-semibold">
+                              <i class="bx bx-bar-chart-alt-2 me-2"></i>Summary
+                            </h6>
+                          </div>
+                          <div class="card-body py-3 px-4">
+                            <div id="desktopStatisticsCards">
+                              <!-- Stats rendered by JS -->
+                            </div>
+                          </div>
+                        </div>
+
+                        <!-- Calendar Card (always visible on desktop) -->
+                        <div class="card desktop-calendar-card mb-4">
+                          <div class="card-header py-3 px-4">
+                            <h6 class="mb-0 fw-semibold">
+                              <i class="bx bx-calendar me-2"></i>Calendar
+                            </h6>
+                          </div>
+                          <div class="card-body py-3 px-4">
+                            <div class="calendar-panel" id="desktopHistoryCalendarCard">
+                              <div class="calendar-panel-header">
+                                <button id="desktopPrevMonth" class="btn btn-sm btn-icon btn-outline-secondary rounded-circle">
+                                  <i class="bx bx-chevron-left"></i>
+                                </button>
+                                <span id="desktopCurrentMonth" class="fw-medium">January 2026</span>
+                                <button id="desktopNextMonth" class="btn btn-sm btn-icon btn-outline-secondary rounded-circle">
+                                  <i class="bx bx-chevron-right"></i>
+                                </button>
+                              </div>
+                              <div id="desktopCalendarGrid" class="calendar-grid">
+                                <div class="text-center py-3">
+                                  <div class="spinner-border spinner-border-sm text-primary" role="status">
+                                    <span class="visually-hidden">Loading calendar...</span>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <!-- Exercise Performance Card (single workout mode only) -->
+                        <div class="card desktop-exercise-perf-card mb-4" id="desktopExercisePerfCardWrapper" style="display: none;">
+                          <div class="card-header py-3 px-4">
+                            <h6 class="mb-0 fw-semibold">
+                              <i class="bx bx-line-chart me-2"></i>Exercise Performance
+                            </h6>
+                          </div>
+                          <div class="card-body py-3 px-4 desktop-exercise-perf-body">
+                            <div id="desktopExercisePerformanceContainer">
+                              <!-- Exercise performance rendered by JS -->
+                            </div>
+                          </div>
+                        </div>
+
+                      </div>
+                    </div>
+                    <!-- / RIGHT COLUMN -->
+
+                  </div>
+                  <!-- / 2-Column Layout -->
+
+                </div>
+                <!-- / Desktop History Content -->
+
+              </div>
+              <!-- / DESKTOP VIEW -->
+
             </div>
             <!-- / Content -->
 
@@ -224,6 +385,39 @@
       <div class="layout-overlay layout-menu-toggle"></div>
     </div>
     <!-- / Layout wrapper -->
+
+    <!-- Desktop ID Swap (must run BEFORE any JS modules) -->
+    <script>
+      if (document.documentElement.classList.contains('desktop-view')) {
+        var _swaps = [
+          ['historyLoadingState',    'desktopLoadingState'],
+          ['historyErrorState',      'desktopErrorState'],
+          ['historyEmptyState',      'desktopEmptyState'],
+          ['historyErrorMessage',    'desktopErrorMessage'],
+          ['historyContent',         'desktopHistoryContent'],
+          ['workoutName',            'desktopWorkoutName'],
+          ['workoutDescription',     'desktopWorkoutDescription'],
+          ['sessionHistoryContainer','desktopSessionHistoryContainer'],
+          ['dateFilterIndicator',    'desktopDateFilterIndicator'],
+          ['dateFilterLabel',        'desktopDateFilterLabel'],
+          ['historyCalendarGrid',    'desktopCalendarGrid'],
+          ['historyCurrentMonth',    'desktopCurrentMonth'],
+          ['historyPrevMonth',       'desktopPrevMonth'],
+          ['historyNextMonth',       'desktopNextMonth'],
+          ['historyCalendarCard',    'desktopHistoryCalendarCard'],
+          ['statisticsCards',        'desktopStatisticsCards'],
+          ['exercisePerformanceContainer', 'desktopExercisePerformanceContainer'],
+          ['historyTabs',            'desktopHistoryTabs']
+        ];
+        _swaps.forEach(function(pair) {
+          var mobileEl = document.getElementById(pair[0]);
+          var desktopEl = document.getElementById(pair[1]);
+          if (mobileEl) mobileEl.id = 'mobile_' + pair[0];
+          if (desktopEl) desktopEl.id = pair[0];
+        });
+        console.log('Desktop ID swap complete (' + _swaps.length + ' elements)');
+      }
+    </script>
 
     <!-- Core JS -->
     <script src="/static/assets/vendor/libs/jquery/jquery.js"></script>
@@ -278,6 +472,9 @@
     <script src="/static/assets/js/dashboard/workout-history-workout-filter.js?v=1.0.0"></script>
     <script src="/static/assets/js/dashboard/workout-history-sessions.js?v=1.2.0"></script>
     <script src="/static/assets/js/dashboard/workout-history-loader.js?v=1.0.0"></script>
+
+    <!-- Desktop History Adapter (must load after all workout-history modules) -->
+    <script src="/static/assets/js/pages/desktop-history-adapter.js?v=20260216"></script>
 
     <!-- Initialize -->
     <script>

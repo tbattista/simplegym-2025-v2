@@ -1,0 +1,179 @@
+/**
+ * Desktop History CSS
+ * Desktop-only styles for the workout history page
+ * Only active when .desktop-view is set on <html>
+ * @version 1.0.0
+ */
+
+/* ============================================
+   VIEW TOGGLE
+   ============================================ */
+.desktop-view [data-view="mobile"] {
+    display: none !important;
+    content-visibility: hidden;
+}
+
+.mobile-view [data-view="desktop"] {
+    display: none !important;
+    content-visibility: hidden;
+}
+
+/* ============================================
+   CARD HEADER SEPARATOR
+   ============================================ */
+[data-view="desktop"] .card-header {
+    border-bottom: 1px solid var(--bs-border-color);
+}
+
+/* ============================================
+   SIDEBAR
+   ============================================ */
+.desktop-history-sidebar {
+    position: sticky;
+    top: 80px;
+    align-self: flex-start;
+}
+
+/* Stats card */
+.desktop-stats-card .stats-summary-row {
+    font-size: 0.875rem;
+    padding: 0;
+    margin: 0;
+}
+
+/* Calendar card - remove double border from inner panel */
+.desktop-calendar-card .calendar-panel {
+    border: none;
+    padding: 0;
+    background: transparent;
+}
+
+/* Exercise performance card - constrained height with scroll */
+.desktop-exercise-perf-body {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+/* Exercise list in sidebar - tighter spacing */
+.desktop-exercise-perf-body .exercise-row {
+    padding: 0.5rem 0.25rem;
+}
+
+.desktop-exercise-perf-body .exercise-filter-bar {
+    padding: 0 0 0.5rem;
+}
+
+/* ============================================
+   SESSION ENTRIES - DESKTOP ENHANCEMENTS
+   ============================================ */
+
+/* Slightly more spacious on desktop */
+.desktop-view .session-entry {
+    padding: 0.875rem 1rem;
+}
+
+/* Three-dot menu: appear on hover only */
+.desktop-view .session-menu-btn {
+    opacity: 0;
+    transition: opacity 0.15s ease;
+}
+
+.desktop-view .session-entry:hover .session-menu-btn {
+    opacity: 0.6;
+}
+
+.desktop-view .session-entry:hover .session-menu-btn:hover {
+    opacity: 1;
+}
+
+/* Session details table - benefit from wider space */
+.desktop-view .session-details .table th {
+    font-size: 0.8125rem;
+    padding: 0.625rem 0.75rem;
+}
+
+.desktop-view .session-details .table td {
+    padding: 0.625rem 0.75rem;
+    font-size: 0.875rem;
+}
+
+/* ============================================
+   OFFCANVAS -> CENTERED MODAL ON DESKTOP
+   Same pattern as desktop-home.css
+   ============================================ */
+.desktop-view .offcanvas.offcanvas-bottom {
+    right: auto;
+    left: 50%;
+    bottom: auto;
+    top: 50%;
+    transform: translate(-50%, -50%) scale(0.95);
+    opacity: 0;
+    width: 580px;
+    max-width: 90vw;
+    max-height: 85vh;
+    height: auto;
+    border: none;
+    border-top: none;
+    border-radius: var(--bs-border-radius-lg);
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.18);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.desktop-view .offcanvas.offcanvas-bottom.show:not(.hiding),
+.desktop-view .offcanvas.offcanvas-bottom.showing {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+}
+
+.desktop-view .offcanvas.offcanvas-bottom.hiding {
+    transform: translate(-50%, -50%) scale(0.95);
+    opacity: 0;
+}
+
+.desktop-view .offcanvas.offcanvas-bottom .offcanvas-body {
+    overflow-y: auto;
+    max-height: calc(85vh - 140px);
+}
+
+/* ============================================
+   RESPONSIVE: SMALLER DESKTOP (992-1199px)
+   ============================================ */
+@media (min-width: 992px) and (max-width: 1199.98px) {
+    .desktop-exercise-perf-body {
+        max-height: 320px;
+    }
+
+    .desktop-view .session-entry {
+        padding: 0.75rem 0.875rem;
+    }
+
+    .desktop-history-sidebar {
+        top: 70px;
+    }
+}
+
+/* ============================================
+   RESPONSIVE: LARGE DESKTOP (1400px+)
+   ============================================ */
+@media (min-width: 1400px) {
+    .desktop-exercise-perf-body {
+        max-height: 500px;
+    }
+
+    .desktop-view .session-details .table td {
+        padding: 0.75rem 1rem;
+    }
+}
+
+/* ============================================
+   DARK MODE
+   ============================================ */
+[data-bs-theme="dark"].desktop-view .offcanvas.offcanvas-bottom {
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
+}
+
+[data-bs-theme="dark"] .desktop-stats-card,
+[data-bs-theme="dark"] .desktop-calendar-card,
+[data-bs-theme="dark"] .desktop-exercise-perf-card {
+    border-color: var(--bs-gray-700);
+}
