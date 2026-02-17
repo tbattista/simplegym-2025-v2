@@ -198,6 +198,26 @@ class ExerciseGroup(BaseModel):
         example="lbs"
     )
 
+    group_type: str = Field(
+        default="standard",
+        description="Type of exercise group: 'standard' (single exercise with optional alternates), 'block' (grouped exercises performed sequentially), or 'cardio' (cardio activity)"
+    )
+
+    group_name: Optional[str] = Field(
+        default=None,
+        description="User-defined name for exercise blocks (e.g., 'Superset A', 'Chest Circuit', 'Warmup Block'). Auto-labeled 'Block N' if null."
+    )
+
+    cardio_config: Optional[Dict[str, Any]] = Field(
+        default=None,
+        description="Cardio-specific configuration: {activity_type, duration_minutes, distance, distance_unit, target_pace}"
+    )
+
+    interval_config: Optional[Dict[str, Any]] = Field(
+        default=None,
+        description="Interval timer configuration: {mode, work_seconds, rest_seconds, rounds}"
+    )
+
 class BonusExercise(BaseModel):
     """Model for bonus exercises"""
     

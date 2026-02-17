@@ -219,6 +219,15 @@
                             <i class="bx bx-plus me-1"></i>
                             Add Exercises
                           </button>
+                          <!-- Secondary Add Buttons (Block + Cardio) -->
+                          <div class="d-flex gap-2 mt-2" id="secondaryAddButtons">
+                            <button type="button" class="btn btn-outline-secondary btn-sm flex-fill" onclick="window.ExerciseGroupManager?.addBlock?.()">
+                              <i class="bx bx-collection me-1"></i>Add Block
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm flex-fill" onclick="/* Phase 3 - cardio */" disabled title="Coming soon">
+                              <i class="bx bx-run me-1"></i>Add Cardio
+                            </button>
+                          </div>
                           <!-- Import Workout Button -->
                           <button type="button" class="btn btn-outline-secondary w-100 mt-2 import-workout-btn" id="importWorkoutEditorBtn">
                             <i class="bx bx-import me-1"></i>
@@ -381,6 +390,15 @@
                         <button type="button" class="btn btn-outline-secondary" id="desktopCustomExerciseBtn"
                                 data-bs-toggle="modal" data-bs-target="#customExerciseModal">
                           <i class="bx bx-plus-circle me-1"></i>Create Custom Exercise
+                        </button>
+                      </div>
+                      <!-- Secondary Add Buttons (Block + Cardio) -->
+                      <div class="d-flex gap-2 mt-2" id="desktopSecondaryAddButtons">
+                        <button type="button" class="btn btn-outline-secondary btn-sm flex-fill" onclick="window.ExerciseGroupManager?.addBlock?.()">
+                          <i class="bx bx-collection me-1"></i>Add Block
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary btn-sm flex-fill" onclick="/* Phase 3 - cardio */" disabled title="Coming soon">
+                          <i class="bx bx-run me-1"></i>Add Cardio
                         </button>
                       </div>
                     </div>

@@ -25,7 +25,7 @@ const FormDataCollector = {
                 return;
             }
 
-            if (groupData && groupData.exercises.a) {
+            if (groupData && groupData.exercises) {
                 const exercises = {};
                 Object.keys(groupData.exercises).forEach(key => {
                     if (groupData.exercises[key]) {
@@ -33,16 +33,36 @@ const FormDataCollector = {
                     }
                 });
 
-                if (Object.keys(exercises).length > 0) {
-                    groups.push({
+                // For standard groups, require exercise 'a'; for blocks, require at least one exercise
+                const isBlock = groupData.group_type === 'block';
+                const hasRequiredExercises = isBlock
+                    ? Object.keys(exercises).length > 0
+                    : !!exercises.a;
+
+                if (hasRequiredExercises) {
+                    const groupEntry = {
                         group_id: groupId,
+                        group_type: groupData.group_type || 'standard',
                         exercises: exercises,
                         sets: groupData.sets || '3',
                         reps: groupData.reps || '8-12',
                         rest: groupData.rest || '60s',
                         default_weight: groupData.default_weight || null,
                         default_weight_unit: groupData.default_weight_unit || 'lbs'
-                    });
+                    };
+
+                    // Include optional fields if present
+                    if (groupData.group_name) {
+                        groupEntry.group_name = groupData.group_name;
+                    }
+                    if (groupData.cardio_config) {
+                        groupEntry.cardio_config = groupData.cardio_config;
+                    }
+                    if (groupData.interval_config) {
+                        groupEntry.interval_config = groupData.interval_config;
+                    }
+
+                    groups.push(groupEntry);
                 }
             }
         });

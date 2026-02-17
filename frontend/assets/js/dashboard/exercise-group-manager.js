@@ -52,6 +52,53 @@ const ExerciseGroupManager = {
     },
 
     /**
+     * Add exercise block to workout form (group of 2-5 exercises performed together)
+     */
+    addBlock() {
+        const container = document.getElementById('exerciseGroups');
+        if (!container) return;
+
+        const currentCardCount = container.querySelectorAll('.exercise-group-card').length;
+        const groupCount = currentCardCount + 1;
+        const groupId = `group-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
+        // Create default block data
+        const defaultData = {
+            group_type: 'block',
+            group_name: null,
+            exercises: { a: 'Exercise 1', b: 'Exercise 2' },
+            sets: '3',
+            reps: '10',
+            rest: '60s',
+            default_weight: null,
+            default_weight_unit: 'lbs'
+        };
+
+        // Create block card HTML with default data
+        const newIndex = currentCardCount;
+        const newTotalCards = currentCardCount + 1;
+        const groupHtml = createExerciseGroupCard(groupId, defaultData, groupCount, newIndex, newTotalCards);
+
+        container.insertAdjacentHTML('beforeend', groupHtml);
+
+        // Update all card menu boundaries after adding new card
+        window.builderCardMenu?.updateAllMenuBoundaries();
+
+        // Initialize Sortable if not already done
+        ExerciseGroupManager.initSorting();
+
+        // Auto-open editor for new block
+        setTimeout(() => {
+            openExerciseGroupEditor(groupId);
+        }, 100);
+
+        // Mark editor as dirty
+        if (window.markEditorDirty) window.markEditorDirty();
+
+        console.log('✅ Added new exercise block card:', groupId);
+    },
+
+    /**
      * Remove exercise group with confirmation
      */
     remove(button) {
@@ -296,6 +343,7 @@ window.ExerciseGroupManager = ExerciseGroupManager;
 
 // Backward-compat globals
 window.addExerciseGroup = ExerciseGroupManager.add;
+window.addExerciseBlock = ExerciseGroupManager.addBlock;
 window.removeExerciseGroup = ExerciseGroupManager.remove;
 window.renumberExerciseGroups = ExerciseGroupManager.renumber;
 window.updateExerciseGroupPreview = ExerciseGroupManager.updatePreview;

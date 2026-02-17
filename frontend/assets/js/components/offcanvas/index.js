@@ -47,8 +47,9 @@ import {
     createSkipExercise,
     createExerciseGroupEditor,
     renderAlternateSlot,
-    createExerciseDetailsEditor
-} from './offcanvas-forms.js?v=20260209-01';
+    createExerciseDetailsEditor,
+    createBlockEditor
+} from './offcanvas-forms.js?v=20260217-01';
 
 // Import note components
 import {
@@ -178,6 +179,10 @@ class UnifiedOffcanvasFactory {
     
     static createExerciseDetailsEditor(data, onSave) {
         return createExerciseDetailsEditor(data, onSave);
+    }
+
+    static createBlockEditor(config, onSave, onDelete, onSearchClick) {
+        return createBlockEditor(config, onSave, onDelete, onSearchClick);
     }
 
     /* ============================================
@@ -326,6 +331,7 @@ export {
     createExerciseGroupEditor,
     renderAlternateSlot,
     createExerciseDetailsEditor,
+    createBlockEditor,
 
     // Feedback
     createFeedbackOffcanvas,

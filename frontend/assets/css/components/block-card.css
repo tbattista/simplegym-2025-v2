@@ -1,0 +1,65 @@
+/* Exercise Block Card - for grouped exercises (supersets, circuits, etc.) */
+
+.block-card .card {
+    border-left: 4px solid var(--workout-block, #2dd4bf);
+}
+
+.block-card .block-icon {
+    font-size: 1.25rem;
+    color: var(--workout-block, #2dd4bf);
+    flex-shrink: 0;
+    margin-right: 8px;
+}
+
+.block-card .block-name {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--bs-secondary-color, #64748b);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    margin-bottom: 2px;
+}
+
+.block-card .block-exercise-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+
+.block-card .block-exercise-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.block-card .block-exercise-number {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--workout-block, #2dd4bf);
+    min-width: 16px;
+}
+
+.block-card .block-exercise-name {
+    font-size: 0.875rem;
+    color: var(--bs-body-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Dark mode */
+[data-bs-theme="dark"] .block-card .card {
+    border-left-color: #2dd4bf;
+}
+
+[data-bs-theme="dark"] .block-card .block-icon {
+    color: #5eead4;
+}
+
+[data-bs-theme="dark"] .block-card .block-exercise-number {
+    color: #5eead4;
+}
+
+[data-bs-theme="dark"] .block-card .block-name {
+    color: #94a3b8;
+}

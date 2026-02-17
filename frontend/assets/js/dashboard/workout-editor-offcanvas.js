@@ -25,6 +25,12 @@ const WorkoutEditorOffcanvas = {
         document.querySelectorAll('.exercise-group-card').forEach(c => c.classList.remove('editing'));
         document.querySelector(`[data-group-id="${groupId}"]`)?.classList.add('editing');
 
+        // Dispatch to block editor for block-type groups
+        if (groupData.group_type === 'block') {
+            this._openBlockEditor(groupId, groupData);
+            return;
+        }
+
         const isNew = !groupData.exercises.a;
 
         window.UnifiedOffcanvasFactory.createExerciseGroupEditor(
@@ -54,7 +60,9 @@ const WorkoutEditorOffcanvas = {
                     reps: data.reps,
                     rest: data.rest,
                     default_weight: data.default_weight,
-                    default_weight_unit: data.default_weight_unit
+                    default_weight_unit: data.default_weight_unit,
+                    group_type: groupData.group_type || 'standard',
+                    group_name: groupData.group_name || null
                 };
 
                 if (window.updateExerciseGroupCardPreview) {
@@ -125,6 +133,111 @@ const WorkoutEditorOffcanvas = {
         );
 
         console.log('✅ Opened exercise group editor (factory):', groupId);
+    },
+
+    /**
+     * Open block editor offcanvas for block-type groups
+     * @param {string} groupId - ID of group to edit
+     * @param {Object} groupData - Group data with group_type: 'block'
+     */
+    _openBlockEditor(groupId, groupData) {
+        const isNew = !groupData.exercises.a || groupData.exercises.a === 'Exercise 1';
+
+        window.UnifiedOffcanvasFactory.createBlockEditor(
+            {
+                groupId: groupId,
+                group_name: groupData.group_name || '',
+                exercises: groupData.exercises,
+                sets: groupData.sets || '3',
+                reps: groupData.reps || '10',
+                rest: groupData.rest || '60s',
+                weight: groupData.default_weight || '',
+                weightUnit: groupData.default_weight_unit || 'lbs',
+                isNew: isNew
+            },
+            // onSave callback
+            async (data) => {
+                console.log('💾 Saving exercise block from block editor:', data);
+
+                window.exerciseGroupsData[groupId] = {
+                    group_type: 'block',
+                    group_name: data.group_name || null,
+                    exercises: data.exercises,
+                    sets: data.sets,
+                    reps: data.reps,
+                    rest: data.rest,
+                    default_weight: data.default_weight,
+                    default_weight_unit: data.default_weight_unit
+                };
+
+                if (window.updateExerciseGroupCardPreview) {
+                    window.updateExerciseGroupCardPreview(groupId, window.exerciseGroupsData[groupId]);
+                }
+
+                document.querySelector(`[data-group-id="${groupId}"]`)?.classList.remove('editing');
+
+                if (window.saveWorkoutFromEditor) {
+                    try {
+                        await window.saveWorkoutFromEditor(false);
+                        console.log('✅ Full workout saved successfully');
+                    } catch (error) {
+                        console.error('❌ Failed to save workout:', error);
+                    }
+                } else if (window.markEditorDirty) {
+                    window.markEditorDirty();
+                }
+
+                console.log('✅ Exercise block saved:', groupId);
+            },
+            // onDelete callback
+            async () => {
+                console.log('🗑️ Deleting exercise block:', groupId);
+
+                delete window.exerciseGroupsData[groupId];
+
+                const card = document.querySelector(`[data-group-id="${groupId}"]`);
+                if (card) card.remove();
+
+                if (window.renumberExerciseGroups) {
+                    window.renumberExerciseGroups();
+                }
+
+                if (window.saveWorkoutFromEditor) {
+                    try {
+                        await window.saveWorkoutFromEditor(false);
+                        console.log('✅ Workout saved after block deletion');
+                    } catch (error) {
+                        console.error('❌ Failed to save after deletion:', error);
+                    }
+                } else if (window.markEditorDirty) {
+                    window.markEditorDirty();
+                }
+
+                if (window.showToast) {
+                    window.showToast('Exercise block deleted', 'success');
+                }
+            },
+            // onSearchClick callback
+            (slotKey, populateCallback, initialQuery = '') => {
+                console.log('🔍 Opening exercise search for block slot:', slotKey, 'with initial query:', initialQuery);
+
+                window.UnifiedOffcanvasFactory.createExerciseSearchOffcanvas(
+                    {
+                        title: 'Select Exercise',
+                        showFilters: true,
+                        buttonText: 'Select',
+                        buttonIcon: 'bx-check',
+                        initialQuery: initialQuery
+                    },
+                    (selectedExercise) => {
+                        console.log('✅ Exercise selected for block:', selectedExercise.name);
+                        populateCallback(selectedExercise);
+                    }
+                );
+            }
+        );
+
+        console.log('✅ Opened block editor:', groupId);
     },
 
     /**
