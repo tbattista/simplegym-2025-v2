@@ -3,7 +3,7 @@ import os
 from pathlib import Path
 from typing import List, Optional, Dict, Any
 from datetime import datetime
-from ..models import Program, WorkoutTemplate, CreateWorkoutRequest, CreateProgramRequest, UpdateWorkoutRequest, UpdateProgramRequest
+from ..models import Program, WorkoutTemplate, CreateWorkoutRequest, CreateProgramRequest, UpdateWorkoutRequest, UpdateProgramRequest, migrate_exercise_groups_to_sections
 
 class DataService:
     """JSON-based data persistence service for programs and workouts"""
@@ -49,9 +49,15 @@ class DataService:
             description=workout_request.description,
             exercise_groups=workout_request.exercise_groups,
             bonus_exercises=workout_request.bonus_exercises,
-            tags=workout_request.tags
+            tags=workout_request.tags,
+            sections=workout_request.sections if hasattr(workout_request, 'sections') else None,
+            template_notes=workout_request.template_notes if hasattr(workout_request, 'template_notes') else []
         )
-        
+
+        # Auto-migrate exercise_groups to sections if not provided
+        if not workout.sections and workout.exercise_groups:
+            workout.sections = migrate_exercise_groups_to_sections(workout.exercise_groups)
+
         # Load existing workouts
         data = self._read_json(self.workouts_file)
         workouts = data.get("workouts", [])
@@ -71,8 +77,12 @@ class DataService:
         
         for workout_data in workouts:
             if workout_data.get("id") == workout_id:
-                return WorkoutTemplate(**workout_data)
-        
+                workout = WorkoutTemplate(**workout_data)
+                # Auto-migrate to sections if missing
+                if not workout.sections and workout.exercise_groups:
+                    workout.sections = migrate_exercise_groups_to_sections(workout.exercise_groups)
+                return workout
+
         return None
     
     def get_all_workouts(self, tags: Optional[List[str]] = None, page: int = 1, page_size: int = 50) -> List[WorkoutTemplate]:
@@ -82,7 +92,12 @@ class DataService:
         
         # Convert to WorkoutTemplate objects
         workout_objects = [WorkoutTemplate(**w) for w in workouts]
-        
+
+        # Auto-migrate to sections if missing
+        for workout in workout_objects:
+            if not workout.sections and workout.exercise_groups:
+                workout.sections = migrate_exercise_groups_to_sections(workout.exercise_groups)
+
         # Filter by tags if provided
         if tags:
             workout_objects = [
@@ -153,9 +168,11 @@ class DataService:
             description=f"Copy of {original_workout.description}",
             exercise_groups=original_workout.exercise_groups,
             bonus_exercises=original_workout.bonus_exercises,
-            tags=original_workout.tags + ["duplicate"]
+            tags=original_workout.tags + ["duplicate"],
+            sections=original_workout.sections,
+            template_notes=original_workout.template_notes if original_workout.template_notes else []
         )
-        
+
         return self.create_workout(duplicate_request)
     
     # Program CRUD Operations
@@ -369,13 +386,16 @@ class DataService:
         
         for workout_data in workouts:
             workout = WorkoutTemplate(**workout_data)
-            
+            # Auto-migrate to sections if missing
+            if not workout.sections and workout.exercise_groups:
+                workout.sections = migrate_exercise_groups_to_sections(workout.exercise_groups)
+
             # Search in name, description, and tags
-            if (query_lower in workout.name.lower() or 
+            if (query_lower in workout.name.lower() or
                 query_lower in workout.description.lower() or
                 any(query_lower in tag.lower() for tag in workout.tags)):
                 matching_workouts.append(workout)
-        
+
         return matching_workouts
     
     def search_programs(self, query: str) -> List[Program]:

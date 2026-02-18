@@ -96,6 +96,9 @@ async function saveWorkoutFromEditor(silent = false) {
     // Collect template notes from state and update order indices based on DOM order
     const templateNotes = window.collectTemplateNotes();
 
+    // Check if we're in sections mode
+    const useSections = window.SectionManager && window.SectionManager.isSectionsMode();
+
     const workoutData = {
         name: document.getElementById('workoutName').value.trim(),
         description: document.getElementById('workoutDescription').value.trim(),
@@ -105,6 +108,11 @@ async function saveWorkoutFromEditor(silent = false) {
         bonus_exercises: collectBonusExercises(),
         template_notes: templateNotes
     };
+
+    // If in sections mode, also collect sections data
+    if (useSections) {
+        workoutData.sections = window.SectionManager.collectSections();
+    }
 
     console.log('📊 SAVE DEBUG: Collected workout data:', {
         name: workoutData.name,
@@ -124,7 +132,9 @@ async function saveWorkoutFromEditor(silent = false) {
 
     // Allow workouts with only notes (no exercise groups required)
     // But if there are no exercise groups AND no notes, show a warning
-    if (workoutData.exercise_groups.length === 0 && workoutData.template_notes.length === 0) {
+    const hasExercises = workoutData.exercise_groups.length > 0 ||
+        (workoutData.sections && workoutData.sections.some(s => s.exercises.length > 0));
+    if (!hasExercises && workoutData.template_notes.length === 0) {
         if (!silent) {
             showAlert('Add at least one exercise or note to save', 'warning');
         }

@@ -223,6 +223,110 @@ class ExerciseGroup(BaseModel):
         description="Shared ID linking exercises in the same block group. All ExerciseGroups with the same block_id are displayed as visually linked cards."
     )
 
+
+class SectionExercise(BaseModel):
+    """Single exercise within a section."""
+    exercise_id: str = Field(
+        default_factory=lambda: f"ex-{uuid4().hex[:8]}",
+        description="Unique identifier for the exercise"
+    )
+    name: str = Field(
+        ...,
+        description="Primary exercise name",
+        example="Bench Press"
+    )
+    alternates: List[str] = Field(
+        default_factory=list,
+        description="Alternative exercise names (replaces the old exercises dict 'b', 'c', etc.)"
+    )
+    sets: str = Field(default="3", description="Number of sets")
+    reps: str = Field(default="10", description="Rep range")
+    rest: str = Field(default="60s", description="Rest period between sets")
+    default_weight: Optional[str] = Field(
+        default=None,
+        description="Current/default weight for this exercise"
+    )
+    default_weight_unit: str = Field(
+        default="lbs",
+        description="Weight unit: 'lbs', 'kg', or 'other'"
+    )
+
+
+class WorkoutSection(BaseModel):
+    """Container for exercises. Replaces block_id-based grouping."""
+    section_id: str = Field(
+        default_factory=lambda: f"section-{uuid4().hex[:8]}",
+        description="Unique section identifier"
+    )
+    type: str = Field(
+        default="standard",
+        description="Section type: 'standard', 'superset', 'circuit', 'tabata', 'emom', 'amrap'"
+    )
+    name: Optional[str] = Field(
+        default=None,
+        description="User-defined label (null = default/unnamed)"
+    )
+    config: Optional[Dict[str, Any]] = Field(
+        default=None,
+        description="Type-specific config (tabata: {work:20, rest:10}, emom: {interval:60})"
+    )
+    exercises: List[SectionExercise] = Field(
+        default_factory=list,
+        description="Exercises in this section"
+    )
+
+
+def migrate_exercise_groups_to_sections(exercise_groups: List[ExerciseGroup]) -> List[WorkoutSection]:
+    """Convert legacy exercise_groups + block_id format to sections format.
+
+    - Standalone exercises (no block_id) -> individual "standard" sections
+    - Exercises sharing a block_id -> one "superset" section containing all of them
+    - Maintains original order (first appearance of each block determines section position)
+    """
+    sections = []
+    seen_block_ids = {}  # block_id -> index in sections list
+
+    for eg in exercise_groups:
+        # Extract primary exercise name and alternates from exercises dict
+        primary_name = eg.exercises.get('a', '')
+        alternates = [v for k, v in sorted(eg.exercises.items()) if k != 'a' and v]
+
+        section_exercise = SectionExercise(
+            exercise_id=eg.group_id,
+            name=primary_name,
+            alternates=alternates,
+            sets=eg.sets,
+            reps=eg.reps,
+            rest=eg.rest,
+            default_weight=eg.default_weight,
+            default_weight_unit=eg.default_weight_unit
+        )
+
+        if eg.block_id and eg.block_id in seen_block_ids:
+            # Add to existing section
+            sections[seen_block_ids[eg.block_id]].exercises.append(section_exercise)
+        elif eg.block_id:
+            # Create new superset section for this block
+            section = WorkoutSection(
+                section_id=f"section-{eg.block_id}",
+                type="superset",
+                name=eg.group_name,
+                exercises=[section_exercise]
+            )
+            seen_block_ids[eg.block_id] = len(sections)
+            sections.append(section)
+        else:
+            # Standalone exercise -> individual standard section
+            section = WorkoutSection(
+                section_id=f"section-{eg.group_id}",
+                type="standard",
+                exercises=[section_exercise]
+            )
+            sections.append(section)
+
+    return sections
+
+
 class BonusExercise(BaseModel):
     """Model for bonus exercises"""
     
@@ -307,7 +411,12 @@ class WorkoutTemplate(BaseModel):
         default_factory=list,
         description="List of exercise groups in this workout"
     )
-    
+
+    sections: Optional[List[WorkoutSection]] = Field(
+        default=None,
+        description="Sections-based layout (new format). If present, takes precedence over exercise_groups."
+    )
+
     bonus_exercises: List[BonusExercise] = Field(
         default_factory=list,
         description="List of bonus exercises"
@@ -437,6 +546,8 @@ class CreateWorkoutRequest(BaseModel):
     name: str = Field(..., min_length=1, max_length=100)
     description: Optional[str] = Field(default="", max_length=500)
     exercise_groups: List[ExerciseGroup] = Field(default_factory=list)
+    sections: Optional[List[WorkoutSection]] = Field(default=None)
+    template_notes: List[TemplateNote] = Field(default_factory=list)
     bonus_exercises: List[BonusExercise] = Field(default_factory=list)
     tags: List[str] = Field(default_factory=list, max_items=10)
 
@@ -446,6 +557,8 @@ class UpdateWorkoutRequest(BaseModel):
     name: Optional[str] = Field(None, min_length=1, max_length=100)
     description: Optional[str] = Field(None, max_length=500)
     exercise_groups: Optional[List[ExerciseGroup]] = Field(None)
+    sections: Optional[List[WorkoutSection]] = Field(default=None)
+    template_notes: Optional[List[TemplateNote]] = Field(default=None)
     bonus_exercises: Optional[List[BonusExercise]] = Field(None)
     tags: Optional[List[str]] = Field(None, max_items=10)
 

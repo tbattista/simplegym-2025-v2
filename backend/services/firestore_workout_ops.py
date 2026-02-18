@@ -11,7 +11,7 @@ try:
 except ImportError:
     firestore = None
 
-from ..models import WorkoutTemplate, CreateWorkoutRequest, UpdateWorkoutRequest
+from ..models import WorkoutTemplate, CreateWorkoutRequest, UpdateWorkoutRequest, migrate_exercise_groups_to_sections
 
 logger = logging.getLogger(__name__)
 
@@ -32,8 +32,14 @@ class FirestoreWorkoutOps:
                 description=workout_request.description,
                 exercise_groups=workout_request.exercise_groups,
                 bonus_exercises=workout_request.bonus_exercises,
-                tags=workout_request.tags
+                tags=workout_request.tags,
+                sections=workout_request.sections if hasattr(workout_request, 'sections') else None,
+                template_notes=workout_request.template_notes if hasattr(workout_request, 'template_notes') else []
             )
+
+            # Auto-migrate exercise_groups to sections if not provided
+            if not workout.sections and workout.exercise_groups:
+                workout.sections = migrate_exercise_groups_to_sections(workout.exercise_groups)
 
             # Save to Firestore
             workout_ref = self.db.collection('users').document(user_id).collection('workouts').document(workout.id)
@@ -80,6 +86,9 @@ class FirestoreWorkoutOps:
                 try:
                     workout_data = doc.to_dict()
                     workout = WorkoutTemplate(**workout_data)
+                    # Auto-migrate to sections if missing
+                    if not workout.sections and workout.exercise_groups:
+                        workout.sections = migrate_exercise_groups_to_sections(workout.exercise_groups)
                     workouts.append(workout)
                 except Exception as e:
                     logger.warning(f"Failed to parse workout {doc.id}: {str(e)}")
@@ -107,7 +116,11 @@ class FirestoreWorkoutOps:
 
             if doc.exists:
                 workout_data = doc.to_dict()
-                return WorkoutTemplate(**workout_data)
+                workout = WorkoutTemplate(**workout_data)
+                # Auto-migrate to sections if missing
+                if not workout.sections and workout.exercise_groups:
+                    workout.sections = migrate_exercise_groups_to_sections(workout.exercise_groups)
+                return workout
             else:
                 logger.info(f"Workout {workout_id} not found for user {user_id}")
                 return None
@@ -186,7 +199,9 @@ class FirestoreWorkoutOps:
             description=f"Copy of {original_workout.description}",
             exercise_groups=original_workout.exercise_groups,
             bonus_exercises=original_workout.bonus_exercises,
-            tags=original_workout.tags + ["duplicate"]
+            tags=original_workout.tags + ["duplicate"],
+            sections=original_workout.sections,
+            template_notes=original_workout.template_notes if original_workout.template_notes else []
         )
 
         return await self.create_workout(user_id, duplicate_request)

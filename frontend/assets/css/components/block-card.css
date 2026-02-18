@@ -1,9 +1,235 @@
 /* ============================================
-   EXERCISE BLOCK GROUPING - Linked Cards
-   Visual linking of exercises that share a block_id
+   WORKOUT SECTIONS
+   Visual styling for section containers and exercise grouping
    ============================================ */
 
-/* --- Block Group Header --- */
+/* --- Section Container --- */
+.workout-section {
+    margin-bottom: 0.5rem;
+}
+
+/* Named sections (superset, circuit, etc.) get a left border and tight spacing */
+.workout-section[data-section-type="superset"],
+.workout-section[data-section-type="circuit"],
+.workout-section[data-section-type="tabata"],
+.workout-section[data-section-type="emom"],
+.workout-section[data-section-type="amrap"] {
+    border-left: 3px solid var(--workout-block, #2dd4bf);
+    border-radius: 4px;
+    margin-bottom: 0.75rem;
+}
+
+/* Tighter spacing for exercise cards inside named sections */
+.workout-section:not([data-section-type="standard"]) .section-exercises .exercise-group-card {
+    margin-bottom: 2px !important;
+}
+.workout-section:not([data-section-type="standard"]) .section-exercises .exercise-group-card:last-child {
+    margin-bottom: 0 !important;
+}
+
+/* Cards inside named sections: remove left border (section provides it) */
+.workout-section:not([data-section-type="standard"]) .exercise-group-card > .card {
+    border-left: none !important;
+    border-top-left-radius: 0 !important;
+    border-bottom-left-radius: 0 !important;
+}
+
+/* Desktop rows inside named sections */
+.workout-section:not([data-section-type="standard"]) .desktop-exercise-row.exercise-group-card {
+    border-left: none !important;
+    margin-bottom: 1px;
+}
+
+/* --- Section Placeholder (empty named section) --- */
+.section-placeholder {
+    padding: 16px 12px;
+    font-size: 0.8rem;
+    color: var(--bs-secondary-color, #999);
+    border: 1px dashed var(--bs-border-color, #ddd);
+    border-radius: 4px;
+    margin: 4px 8px 8px;
+}
+
+/* --- Section Header --- */
+.section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 12px 4px 12px;
+}
+
+.section-header-left {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.section-drag-handle {
+    cursor: grab;
+    color: #999;
+    font-size: 1rem;
+    padding: 2px;
+    opacity: 0.5;
+    transition: opacity 0.15s;
+}
+
+.section-drag-handle:hover {
+    opacity: 1;
+}
+
+.section-name {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--workout-block, #2dd4bf);
+}
+
+.section-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.btn-add-to-section {
+    padding: 2px 10px;
+    font-size: 0.7rem;
+    color: var(--workout-block, #2dd4bf);
+    background: none;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    opacity: 0.6;
+    transition: opacity 0.15s, background 0.15s;
+}
+
+.btn-add-to-section:hover {
+    opacity: 1;
+    background: rgba(45, 212, 191, 0.08);
+}
+
+.btn-section-menu {
+    padding: 2px 6px;
+    font-size: 0.85rem;
+    color: var(--workout-block, #2dd4bf);
+    background: none;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    opacity: 0.5;
+    transition: opacity 0.15s, background 0.15s;
+}
+
+.btn-section-menu:hover {
+    opacity: 1;
+    background: rgba(45, 212, 191, 0.08);
+}
+
+/* --- Section Context Menu --- */
+.section-context-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    z-index: 1050;
+    background: var(--bs-body-bg, #fff);
+    border: 1px solid var(--bs-border-color, #ddd);
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+    padding: 4px 0;
+    min-width: 150px;
+}
+
+.section-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 8px 14px;
+    font-size: 0.8rem;
+    color: var(--bs-body-color, #333);
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: background 0.1s;
+}
+
+.section-menu-item:hover {
+    background: var(--bs-tertiary-bg, #f5f5f5);
+}
+
+.section-menu-item.section-menu-danger {
+    color: var(--bs-danger, #dc3545);
+}
+
+.section-menu-item.section-menu-danger:hover {
+    background: rgba(220, 53, 69, 0.06);
+}
+
+/* --- Dark Mode --- */
+[data-bs-theme="dark"] .workout-section[data-section-type="superset"],
+[data-bs-theme="dark"] .workout-section[data-section-type="circuit"],
+[data-bs-theme="dark"] .workout-section[data-section-type="tabata"],
+[data-bs-theme="dark"] .workout-section[data-section-type="emom"],
+[data-bs-theme="dark"] .workout-section[data-section-type="amrap"] {
+    border-left-color: #5eead4;
+}
+
+[data-bs-theme="dark"] .section-name {
+    color: #5eead4;
+}
+
+[data-bs-theme="dark"] .btn-add-to-section {
+    color: #5eead4;
+}
+
+[data-bs-theme="dark"] .btn-add-to-section:hover {
+    background: rgba(94, 234, 212, 0.1);
+}
+
+[data-bs-theme="dark"] .btn-section-menu {
+    color: #5eead4;
+}
+
+[data-bs-theme="dark"] .section-context-menu {
+    background: var(--bs-body-bg, #2b2c40);
+    border-color: var(--bs-border-color, #444);
+}
+
+/* --- Drag States --- */
+.section-ghost {
+    opacity: 0.3;
+    border: 2px dashed var(--bs-primary, #696cff);
+    border-radius: 6px;
+}
+
+.workout-section .sortable-ghost {
+    opacity: 0.3;
+}
+
+/* Drop zone indicators during section drag */
+#exerciseGroups.is-dragging .workout-section {
+    margin-bottom: 8px;
+    transition: margin 0.15s;
+}
+
+#exerciseGroups.is-dragging .workout-section::after {
+    content: '';
+    display: block;
+    height: 3px;
+    background: var(--bs-primary, #696cff);
+    border-radius: 2px;
+    margin: 4px 12px 0;
+    opacity: 0.25;
+    transition: opacity 0.15s;
+}
+
+#exerciseGroups.is-dragging .workout-section:last-child::after {
+    display: none;
+}
+
+/* ============================================
+   LEGACY BLOCK STYLES (kept for workout-mode compatibility)
+   ============================================ */
+
+/* Block Group Header (used by workout-mode applyBlockGrouping) */
 .block-group-header {
     display: flex;
     align-items: center;
@@ -55,33 +281,26 @@
     background: rgba(45, 212, 191, 0.08);
 }
 
-/* --- Linked Card Styling --- */
-
-/* Left border connector on all grouped cards */
+/* Linked card styling (workout-mode) */
 .exercise-in-block > .card,
 .exercise-in-block.desktop-exercise-row {
     border-left: 3px solid var(--workout-block, #2dd4bf) !important;
 }
 
-/* Tight spacing between grouped cards */
 .exercise-in-block.compact {
     margin-bottom: 2px !important;
 }
 
-/* First card in block: remove bottom radius for seamless join */
 .exercise-in-block.block-first > .card {
     border-bottom-left-radius: 0 !important;
     border-bottom-right-radius: 0 !important;
 }
 
-/* Middle cards: no radius at all */
 .exercise-in-block.block-middle > .card {
     border-radius: 0 !important;
-    /* Keep the left border visible */
     border-left: 3px solid var(--workout-block, #2dd4bf) !important;
 }
 
-/* Last card: no top radius, restore normal bottom margin */
 .exercise-in-block.block-last > .card {
     border-top-left-radius: 0 !important;
     border-top-right-radius: 0 !important;
@@ -91,22 +310,12 @@
     margin-bottom: 0.5rem !important;
 }
 
-/* Single card block (only 1 exercise) — keep normal radius */
 .exercise-in-block.block-first.block-last > .card {
     border-radius: 0.375rem !important;
     border-left: 3px solid var(--workout-block, #2dd4bf) !important;
 }
 
-/* --- Desktop Row Variants --- */
-.desktop-exercise-row.exercise-in-block {
-    margin-bottom: 1px;
-}
-
-.desktop-exercise-row.exercise-in-block.block-last {
-    margin-bottom: 8px;
-}
-
-/* --- Workout Mode Cards --- */
+/* Workout Mode Cards */
 .workout-card.exercise-in-block {
     border-left: 3px solid var(--workout-block, #2dd4bf);
     margin-bottom: 2px;
@@ -128,7 +337,7 @@
     margin-bottom: 12px;
 }
 
-/* --- Dark Mode --- */
+/* Dark mode for legacy blocks */
 [data-bs-theme="dark"] .exercise-in-block > .card,
 [data-bs-theme="dark"] .exercise-in-block.desktop-exercise-row,
 [data-bs-theme="dark"] .workout-card.exercise-in-block {
@@ -147,64 +356,10 @@
     background: rgba(94, 234, 212, 0.1);
 }
 
-/* --- Drag States --- */
 .exercise-in-block.sortable-ghost {
     opacity: 0.3;
 }
 
 .block-group-header.sortable-ghost {
     display: none;
-}
-
-/* ============================================
-   DROP ZONE INDICATORS DURING DRAG
-   ============================================ */
-
-/* Gap between cards expands during drag to show landing places */
-#exerciseGroups.is-dragging .exercise-group-card {
-    margin-bottom: 6px;
-    transition: margin 0.15s;
-}
-
-/* Thin colored line between cards during drag (mobile cards) */
-#exerciseGroups.is-dragging .exercise-group-card::after {
-    content: '';
-    display: block;
-    height: 3px;
-    background: var(--bs-primary, #696cff);
-    border-radius: 2px;
-    margin: 3px 12px 0;
-    opacity: 0.25;
-    transition: opacity 0.15s, height 0.15s;
-}
-
-/* Desktop rows use display:grid so ::after must be absolutely positioned */
-#exerciseGroups.is-dragging .desktop-exercise-row.exercise-group-card {
-    position: relative;
-}
-#exerciseGroups.is-dragging .desktop-exercise-row.exercise-group-card::after {
-    position: absolute;
-    bottom: -5px;
-    left: 12px;
-    right: 12px;
-    margin: 0;
-    z-index: 1;
-}
-
-/* Hide line on last card */
-#exerciseGroups.is-dragging .exercise-group-card:last-child::after {
-    display: none;
-}
-
-/* Block drop zone: teal color between block members */
-#exerciseGroups.is-dragging .exercise-in-block::after {
-    background: var(--workout-block, #2dd4bf);
-    opacity: 0.4;
-}
-
-/* Ghost item during drag */
-#exerciseGroups.is-dragging .sortable-ghost {
-    opacity: 0.3;
-    border: 2px dashed var(--bs-primary, #696cff);
-    border-radius: 6px;
 }

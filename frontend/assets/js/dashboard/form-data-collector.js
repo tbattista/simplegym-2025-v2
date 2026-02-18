@@ -99,6 +99,62 @@ const FormDataCollector = {
 
         console.log('🔍 Collected', bonusExercises.length, 'bonus exercises');
         return bonusExercises;
+    },
+
+    /**
+     * Collect sections data from DOM.
+     * Walks section containers and reads exercise data from window.exerciseGroupsData.
+     * Returns array matching the backend WorkoutSection format.
+     */
+    collectSections() {
+        const sections = [];
+
+        document.querySelectorAll('#exerciseGroups .workout-section').forEach(sectionEl => {
+            const sectionId = sectionEl.dataset.sectionId;
+            const sectionType = sectionEl.dataset.sectionType || 'standard';
+            const nameEl = sectionEl.querySelector('.section-name');
+            const name = (sectionType !== 'standard' && nameEl) ? nameEl.textContent.trim() : null;
+
+            const exercises = [];
+            sectionEl.querySelectorAll('.section-exercises .exercise-group-card').forEach(cardEl => {
+                const groupId = cardEl.dataset.groupId;
+                const data = window.exerciseGroupsData[groupId];
+                if (!data) return;
+
+                const primaryName = data.exercises?.a || '';
+                const alternates = [];
+                Object.keys(data.exercises || {}).sort().forEach(key => {
+                    if (key !== 'a' && data.exercises[key]) {
+                        alternates.push(data.exercises[key]);
+                    }
+                });
+
+                if (!primaryName && alternates.length === 0) return;
+
+                exercises.push({
+                    exercise_id: groupId,
+                    name: primaryName,
+                    alternates: alternates,
+                    sets: data.sets || '3',
+                    reps: data.reps || '8-12',
+                    rest: data.rest || '60s',
+                    default_weight: data.default_weight || null,
+                    default_weight_unit: data.default_weight_unit || 'lbs'
+                });
+            });
+
+            if (exercises.length > 0) {
+                sections.push({
+                    section_id: sectionId,
+                    type: sectionType,
+                    name: name,
+                    exercises: exercises
+                });
+            }
+        });
+
+        console.log('📦 Collected', sections.length, 'sections');
+        return sections;
     }
 };
 
@@ -108,5 +164,6 @@ window.FormDataCollector = FormDataCollector;
 // Backward-compat globals
 window.collectExerciseGroups = FormDataCollector.collectExerciseGroups;
 window.collectBonusExercises = FormDataCollector.collectBonusExercises;
+window.collectSections = FormDataCollector.collectSections.bind(FormDataCollector);
 
 console.log('📦 FormDataCollector module loaded');
