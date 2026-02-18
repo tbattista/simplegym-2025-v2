@@ -257,7 +257,7 @@ async function saveWorkout(silent = false) {
         }
         
         if (workoutData.exercise_groups.length === 0) {
-            if (!silent) showAlert('At least one exercise group is required', 'danger');
+            if (!silent) showAlert('At least one exercise is required', 'danger');
             return;
         }
         

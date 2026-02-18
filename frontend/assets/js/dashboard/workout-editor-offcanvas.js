@@ -30,7 +30,7 @@ const WorkoutEditorOffcanvas = {
         window.UnifiedOffcanvasFactory.createExerciseGroupEditor(
             {
                 groupId: groupId,
-                title: isNew ? 'Add Exercise Group' : 'Edit Exercise Group',
+                title: isNew ? 'Add Exercise' : 'Edit Exercise',
                 exercises: groupData.exercises,
                 sets: groupData.sets || '3',
                 reps: groupData.reps || '8-12',
@@ -104,7 +104,7 @@ const WorkoutEditorOffcanvas = {
                 }
 
                 if (window.showToast) {
-                    window.showToast('Exercise group deleted', 'success');
+                    window.showToast('Exercise deleted', 'success');
                 }
             },
             // onSearchClick callback

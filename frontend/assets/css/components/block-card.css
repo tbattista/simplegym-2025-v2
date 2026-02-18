@@ -155,3 +155,43 @@
 .block-group-header.sortable-ghost {
     display: none;
 }
+
+/* ============================================
+   DROP ZONE INDICATORS DURING DRAG
+   ============================================ */
+
+/* Gap between cards expands during drag to show landing places */
+#exerciseGroups.is-dragging .exercise-group-card {
+    margin-bottom: 6px;
+    transition: margin 0.15s;
+}
+
+/* Thin colored line between cards during drag */
+#exerciseGroups.is-dragging .exercise-group-card::after {
+    content: '';
+    display: block;
+    height: 3px;
+    background: var(--bs-primary, #696cff);
+    border-radius: 2px;
+    margin: 3px 12px 0;
+    opacity: 0.25;
+    transition: opacity 0.15s, height 0.15s;
+}
+
+/* Hide line on last card */
+#exerciseGroups.is-dragging .exercise-group-card:last-child::after {
+    display: none;
+}
+
+/* Block drop zone: teal color between block members */
+#exerciseGroups.is-dragging .exercise-in-block::after {
+    background: var(--workout-block, #2dd4bf);
+    opacity: 0.4;
+}
+
+/* Ghost item during drag */
+#exerciseGroups.is-dragging .sortable-ghost {
+    opacity: 0.3;
+    border: 2px dashed var(--bs-primary, #696cff);
+    border-radius: 6px;
+}

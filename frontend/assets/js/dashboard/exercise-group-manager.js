@@ -39,6 +39,7 @@ const ExerciseGroupManager = {
 
         // Initialize Sortable if not already done
         ExerciseGroupManager.initSorting();
+        ExerciseGroupManager.initBlockHeaderListeners();
 
         // Auto-open editor for new group
         setTimeout(() => {
@@ -48,7 +49,7 @@ const ExerciseGroupManager = {
         // Mark editor as dirty
         if (window.markEditorDirty) window.markEditorDirty();
 
-        console.log('✅ Added new exercise group card:', groupId);
+        console.log('✅ Added new exercise card:', groupId);
     },
 
     /**
@@ -94,6 +95,7 @@ const ExerciseGroupManager = {
             window.builderCardMenu.updateAllMenuBoundaries();
         }
         ExerciseGroupManager.initSorting();
+        ExerciseGroupManager.initBlockHeaderListeners();
 
         // Auto-open editor for first card
         setTimeout(() => {
@@ -106,7 +108,7 @@ const ExerciseGroupManager = {
     },
 
     /**
-     * Add a new exercise group to an existing block
+     * Add a new exercise to an existing block
      */
     addToBlock(blockId) {
         const container = document.getElementById('exerciseGroups');
@@ -150,6 +152,7 @@ const ExerciseGroupManager = {
         if (window.builderCardMenu?.updateAllMenuBoundaries) {
             window.builderCardMenu.updateAllMenuBoundaries();
         }
+        ExerciseGroupManager.initBlockHeaderListeners();
 
         // Open editor for new card
         setTimeout(() => {
@@ -162,7 +165,7 @@ const ExerciseGroupManager = {
     },
 
     /**
-     * Remove a single exercise group from its block.
+     * Remove a single exercise from its block.
      * If only one member remains after removal, dissolve the block entirely.
      */
     removeFromBlock(groupId) {
@@ -230,7 +233,7 @@ const ExerciseGroupManager = {
             .map(input => input.value.trim())
             .filter(name => name);
 
-        let confirmMessage = 'Are you sure you want to delete this exercise group?';
+        let confirmMessage = 'Are you sure you want to delete this exercise?';
         if (exerciseNames.length > 0) {
             confirmMessage += '\n\nExercises in this group:\n• ' + exerciseNames.join('\n• ');
         }
@@ -240,7 +243,7 @@ const ExerciseGroupManager = {
             group.remove();
             ExerciseGroupManager.renumber();
             if (window.markEditorDirty) window.markEditorDirty();
-            showAlert('Exercise group deleted', 'success');
+            showAlert('Exercise deleted', 'success');
         }
     },
 
@@ -252,11 +255,11 @@ const ExerciseGroupManager = {
         groups.forEach((group, index) => {
             const accordionTitle = group.querySelector('.group-title');
             if (accordionTitle) {
-                accordionTitle.textContent = `Exercise Group ${index + 1}`;
+                accordionTitle.textContent = `Exercise ${index + 1}`;
             } else {
                 const cardHeader = group.querySelector('.card-header h6');
                 if (cardHeader) {
-                    cardHeader.textContent = `Exercise Group ${index + 1}`;
+                    cardHeader.textContent = `Exercise ${index + 1}`;
                 }
             }
         });
@@ -348,6 +351,7 @@ const ExerciseGroupManager = {
             filter: '.block-group-header',
 
             onStart: function(evt) {
+                container.classList.add('is-dragging');
                 const accordions = container.querySelectorAll('.accordion-collapse.show');
                 accordions.forEach(acc => {
                     const currentItemCollapse = evt.item.querySelector('.accordion-collapse');
@@ -359,6 +363,7 @@ const ExerciseGroupManager = {
             },
 
             onEnd: function(evt) {
+                container.classList.remove('is-dragging');
                 // Update block membership based on new position
                 const movedCard = evt.item;
                 const movedGroupId = movedCard.dataset.groupId;
@@ -399,6 +404,29 @@ const ExerciseGroupManager = {
         });
 
         console.log('✅ Exercise group sorting initialized');
+    },
+
+    /**
+     * Initialize delegated click listener for block header "+Add" buttons.
+     * Uses event delegation on the container so it works regardless of when
+     * block headers are created/recreated by applyBlockGrouping().
+     */
+    initBlockHeaderListeners() {
+        const container = document.getElementById('exerciseGroups');
+        if (!container || container._blockHeaderListenersInit) return;
+        container._blockHeaderListenersInit = true;
+
+        container.addEventListener('click', function(e) {
+            const btn = e.target.closest('.block-group-btn');
+            if (!btn) return;
+            e.preventDefault();
+            e.stopPropagation();
+            const header = btn.closest('.block-group-header');
+            const blockId = header?.dataset?.blockId;
+            if (blockId) {
+                ExerciseGroupManager.addToBlock(blockId);
+            }
+        });
     },
 
     /**

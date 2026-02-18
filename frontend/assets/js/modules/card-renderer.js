@@ -104,7 +104,7 @@ class CardRenderer {
                         <div class="card-actions">
                             <button type="button" class="btn btn-sm btn-edit-compact"
                                     onclick="event.preventDefault(); event.stopPropagation(); openExerciseGroupEditor('${groupId}');"
-                                    title="Edit exercise group">
+                                    title="Edit exercise">
                                 <i class="bx bx-pencil"></i>
                             </button>
                             <button type="button" class="btn btn-sm btn-menu-compact"
@@ -223,7 +223,7 @@ class CardRenderer {
         if (!card) return;
 
         const groupData = this.exerciseGroupsData[groupId];
-        const exerciseName = groupData?.exercises?.a || 'this exercise group';
+        const exerciseName = groupData?.exercises?.a || 'this exercise';
 
         if (confirm(`Are you sure you want to delete "${exerciseName}"?\n\nThis action cannot be undone.`)) {
             // Remove from DOM
@@ -404,7 +404,7 @@ class CardRenderer {
                     ${this.escapeHtml(blockName)}
                 </span>
                 <div class="block-group-actions">
-                    <button class="block-group-btn" onclick="window.ExerciseGroupManager?.addToBlock?.('${blockId}')" title="Add exercise to block">
+                    <button class="block-group-btn" title="Add exercise to block">
                         <i class="bx bx-plus"></i> Add
                     </button>
                 </div>

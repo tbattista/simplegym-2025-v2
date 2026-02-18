@@ -126,7 +126,7 @@ async function saveWorkoutFromEditor(silent = false) {
     // But if there are no exercise groups AND no notes, show a warning
     if (workoutData.exercise_groups.length === 0 && workoutData.template_notes.length === 0) {
         if (!silent) {
-            showAlert('Add at least one exercise group or note to save', 'warning');
+            showAlert('Add at least one exercise or note to save', 'warning');
         }
         return;
     }

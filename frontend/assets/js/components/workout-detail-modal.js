@@ -78,7 +78,7 @@
 
                                     <!-- Exercise Groups -->
                                     <div class="mb-4">
-                                        <h6 class="mb-3">Exercise Groups</h6>
+                                        <h6 class="mb-3">Exercises</h6>
                                         <div id="detailExerciseGroups"></div>
                                     </div>
 

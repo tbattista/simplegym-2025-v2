@@ -112,6 +112,11 @@
         // Initialize Sortable.js on desktop exercise container
         initDesktopSorting(exerciseGroupsContainer);
 
+        // Initialize block header click listeners (delegated)
+        if (window.ExerciseGroupManager?.initBlockHeaderListeners) {
+            window.ExerciseGroupManager.initBlockHeaderListeners();
+        }
+
         // Wire desktop toolbar buttons
         wireDesktopToolbar();
 
@@ -131,17 +136,51 @@
      */
     function initDesktopSorting(container) {
         if (!container || !window.Sortable) return;
+        if (container.sortableInstance) return; // Prevent duplicate
 
-        new Sortable(container, {
+        container.sortableInstance = new Sortable(container, {
             animation: 150,
             handle: '.drag-handle',
             ghostClass: 'sortable-ghost',
             dragClass: 'sortable-drag',
             chosenClass: 'sortable-chosen',
             filter: '.template-note-card, .desktop-exercise-header, .block-group-header',
-            onEnd: function() {
-                if (window.markEditorDirty) window.markEditorDirty();
+            onStart: function() {
+                container.classList.add('is-dragging');
+            },
+            onEnd: function(evt) {
+                container.classList.remove('is-dragging');
+
+                // Update block membership based on new position
+                const movedCard = evt.item;
+                const movedData = window.exerciseGroupsData[movedCard.dataset.groupId];
+                if (movedData) {
+                    let prevCard = movedCard.previousElementSibling;
+                    while (prevCard && !prevCard.classList.contains('exercise-group-card')) {
+                        prevCard = prevCard.previousElementSibling;
+                    }
+                    let nextCard = movedCard.nextElementSibling;
+                    while (nextCard && !nextCard.classList.contains('exercise-group-card')) {
+                        nextCard = nextCard.nextElementSibling;
+                    }
+
+                    const prevBlockId = prevCard ? window.exerciseGroupsData[prevCard.dataset.groupId]?.block_id : null;
+                    const nextBlockId = nextCard ? window.exerciseGroupsData[nextCard.dataset.groupId]?.block_id : null;
+
+                    // Between two cards of the same block → join that block
+                    if (prevBlockId && prevBlockId === nextBlockId && movedData.block_id !== prevBlockId) {
+                        movedData.block_id = prevBlockId;
+                        movedData.group_name = window.exerciseGroupsData[prevCard.dataset.groupId]?.group_name;
+                    }
+                    // Block member now isolated from its block → leave block
+                    else if (movedData.block_id && prevBlockId !== movedData.block_id && nextBlockId !== movedData.block_id) {
+                        movedData.block_id = null;
+                        movedData.group_name = null;
+                    }
+                }
+
                 if (window.applyBlockGrouping) window.applyBlockGrouping();
+                if (window.markEditorDirty) window.markEditorDirty();
             }
         });
     }

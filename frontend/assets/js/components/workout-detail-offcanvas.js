@@ -194,7 +194,7 @@ class WorkoutDetailOffcanvas {
         // Exercise Groups
         const exerciseGroups = workoutData.exercise_groups || [];
         if (exerciseGroups.length > 0) {
-            html += '<h6 class="mb-3">Exercise Groups</h6>';
+            html += '<h6 class="mb-3">Exercises</h6>';
             
             exerciseGroups.forEach((group, index) => {
                 // Build exercise list

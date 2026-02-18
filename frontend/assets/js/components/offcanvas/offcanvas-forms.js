@@ -311,7 +311,7 @@ function parseProtocol(protocol) {
 export function createExerciseGroupEditor(config, onSave, onDelete, onSearchClick) {
     const {
         groupId = `group-${Date.now()}`,
-        title = 'Edit Exercise Group',
+        title = 'Edit Exercise',
         exercises = { a: '', b: '', c: '' },
         sets = '3',
         reps = '8-12',
@@ -701,7 +701,7 @@ export function createExerciseGroupEditor(config, onSave, onDelete, onSearchClic
         
         // Delete button
         deleteBtn?.addEventListener('click', async () => {
-            if (!confirm('Are you sure you want to delete this exercise group?')) return;
+            if (!confirm('Are you sure you want to delete this exercise?')) return;
             
             deleteBtn.disabled = true;
             deleteBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Deleting...';

@@ -841,6 +841,26 @@ export function createReorderOffcanvas(exercises, onSave) {
                 opacity: 0.4;
                 border-style: dashed;
             }
+            /* Drop zone lines during drag */
+            #reorderList.is-dragging .reorder-item {
+                margin-bottom: 4px;
+            }
+            #reorderList.is-dragging .reorder-item::after {
+                content: '';
+                display: block;
+                height: 3px;
+                background: var(--bs-primary, #696cff);
+                border-radius: 2px;
+                margin: 2px 16px 0;
+                opacity: 0.25;
+            }
+            #reorderList.is-dragging .reorder-item:last-child::after {
+                display: none;
+            }
+            #reorderList.is-dragging .reorder-item.block-member::after {
+                background: var(--workout-block, #2dd4bf);
+                opacity: 0.4;
+            }
         </style>
     ` : '';
 

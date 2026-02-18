@@ -157,7 +157,7 @@ class WorkoutBuilderCardMenu {
             // Fallback: direct delete
             const card = document.querySelector(`[data-group-id="${groupId}"]`);
             if (card) {
-                const exerciseName = window.exerciseGroupsData?.[groupId]?.exercises?.a || 'this exercise group';
+                const exerciseName = window.exerciseGroupsData?.[groupId]?.exercises?.a || 'this exercise';
 
                 if (confirm(`Are you sure you want to delete "${exerciseName}"?\n\nThis action cannot be undone.`)) {
                     card.remove();
