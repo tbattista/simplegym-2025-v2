@@ -4,7 +4,7 @@ CSV Parser - Parses workout data from CSV/TSV content.
 Supports:
 - Auto-detect delimiter (comma, tab, semicolon)
 - Auto-detect header row by matching known column names
-- Rows with same group value become supersets
+- Rows with same group value become block-linked exercises (shared block_id)
 - Falls back to positional columns if no headers detected
 """
 
@@ -12,6 +12,7 @@ import csv
 import io
 import re
 from typing import Dict, List, Optional
+from uuid import uuid4
 from .base_parser import BaseParser, ParseResult
 
 
@@ -122,10 +123,28 @@ class CSVParser(BaseParser):
                 # Each row is its own group
                 exercise_groups.append(self._make_group([exercise_data]))
 
-        # Convert grouped exercises into exercise groups
+        # Convert grouped exercises into exercise groups linked by block_id
         for group_key in sorted(group_buckets.keys()):
             exercises_in_group = group_buckets[group_key]
-            exercise_groups.append(self._make_group(exercises_in_group))
+            if len(exercises_in_group) > 1:
+                # Multiple exercises in same group = block (superset/circuit)
+                block_id = f"block-{uuid4().hex[:8]}"
+                for ex in exercises_in_group:
+                    group = {
+                        "exercises": {"a": ex["name"]},
+                        "sets": ex["sets"],
+                        "reps": ex["reps"],
+                        "rest": ex["rest"],
+                        "block_id": block_id,
+                        "group_name": group_key,
+                    }
+                    if ex.get("weight"):
+                        group["default_weight"] = ex["weight"]
+                        group["default_weight_unit"] = "lbs"
+                    exercise_groups.append(group)
+            else:
+                # Single exercise in group, no block needed
+                exercise_groups.append(self._make_group(exercises_in_group))
 
         if not exercise_groups:
             return ParseResult(errors=["No exercises found in CSV data"])

@@ -23,20 +23,38 @@ Extract all exercise information from the content and return it as a JSON object
 - Content in any language (translate exercise names to English)
 - Messy, partial, or informally written
 
+IMPORTANT — ALTERNATES vs. EXERCISE BLOCKS:
+This schema supports two different grouping concepts. Do NOT confuse them:
+
+ALTERNATES (exercises dict with multiple keys "a", "b", "c"):
+  Use this ONLY when the workout says to pick ONE exercise from a list.
+  Example: "Bench Press OR Incline Press" → {"a": "Bench Press", "b": "Incline Press"}
+  The user chooses which one to do on a given day. They do NOT do both.
+
+EXERCISE BLOCKS (shared block_id across separate exercise_groups):
+  Use this when exercises are meant to be performed TOGETHER back-to-back (supersets, circuits, tri-sets, giant sets).
+  Example: "Superset: Bench Press + Barbell Row" → TWO separate exercise_groups, each with their own sets/reps/rest/weight, both sharing the same block_id and group_name.
+  The user does ALL exercises in the block each session.
+
 RULES:
 1. Extract exercise names exactly as written, but clean up obvious formatting artifacts (emoji, bullet characters, numbering prefixes).
-2. If exercises are clearly grouped together (supersets, circuits, giant sets), put them in the SAME exercise group with keys "a", "b", "c", etc. Maximum 6 exercises per group.
-3. If sets, reps, or rest are not specified for an exercise, use these defaults: sets="3", reps="8-12", rest="60s".
-4. For rest periods, normalize to the format: number + unit. Examples: "60s", "90s", "2min". If just a number is given, assume seconds.
-5. If the content mentions a workout name or title, use it. Otherwise, infer a reasonable name from the exercises (e.g., "Upper Body Workout", "Leg Day").
-6. Detect exercises labeled as warm-up, cooldown, finisher, or bonus and place them in the bonus_exercises array.
-7. For weight values, extract the number and unit. If unit is ambiguous, default to "lbs".
-8. Tags should be inferred from the workout content. Common tags: push, pull, legs, upper, lower, full-body, chest, back, shoulders, arms, core, hiit, strength, hypertrophy, cardio.
-9. Description should summarize the workout purpose if evident, otherwise leave empty.
-10. If the content contains no recognizable exercises, return an empty exercise_groups array and set name to "Imported Workout".
-11. Maximum 20 exercise groups. Maximum 10 bonus exercises. Maximum 10 tags.
-12. Exercise names should be concise and recognizable (e.g., "Barbell Bench Press" not "Flat Barbell Bench Press on a Flat Bench").
-13. For reps, preserve the original format: "8-12", "10", "AMRAP", "30s" (for timed exercises), "to failure", etc.
+2. The exercises dict {"a", "b", "c"} within an exercise_group is ONLY for alternates (choose one). Do NOT put supersets or circuits into the same exercises dict. Maximum 6 alternates per group.
+3. When exercises are meant to be performed together (supersets, circuits, giant sets), create SEPARATE exercise_groups for each exercise, all sharing the same block_id (e.g., "block-1", "block-2") and group_name (e.g., "Superset 1", "Chest Circuit"). Each exercise in a block keeps its own sets, reps, rest, and weight.
+4. The group_name should be descriptive: "Superset 1", "Superset 2", "Tri-set", "Giant Set", "Circuit A", etc. If the source gives an explicit name (e.g., "Arm Finisher Circuit"), use that.
+5. Standalone exercises that are NOT part of a superset or circuit must have block_id: null and group_name: null.
+6. If the content says "Superset: Bench + Row", that is an exercise BLOCK (two separate exercise_groups with shared block_id), NOT alternates.
+7. If the content says "Bench Press OR Dumbbell Press", those ARE alternates (same exercise_group, exercises: {"a": "Bench Press", "b": "Dumbbell Press"}).
+8. If sets, reps, or rest are not specified for an exercise, use these defaults: sets="3", reps="8-12", rest="60s".
+9. For rest periods, normalize to the format: number + unit. Examples: "60s", "90s", "2min". If just a number is given, assume seconds.
+10. If the content mentions a workout name or title, use it. Otherwise, infer a reasonable name from the exercises (e.g., "Upper Body Workout", "Leg Day").
+11. Detect exercises labeled as warm-up, cooldown, finisher, or bonus and place them in the bonus_exercises array.
+12. For weight values, extract the number and unit. If unit is ambiguous, default to "lbs".
+13. Tags should be inferred from the workout content. Common tags: push, pull, legs, upper, lower, full-body, chest, back, shoulders, arms, core, hiit, strength, hypertrophy, cardio.
+14. Description should summarize the workout purpose if evident, otherwise leave empty.
+15. If the content contains no recognizable exercises, return an empty exercise_groups array and set name to "Imported Workout".
+16. Maximum 20 exercise groups. Maximum 10 bonus exercises. Maximum 10 tags.
+17. Exercise names should be concise and recognizable (e.g., "Barbell Bench Press" not "Flat Barbell Bench Press on a Flat Bench").
+18. For reps, preserve the original format: "8-12", "10", "AMRAP", "30s" (for timed exercises), "to failure", etc.
 
 OUTPUT SCHEMA (respond with ONLY this JSON, no other text):
 {
@@ -44,12 +62,14 @@ OUTPUT SCHEMA (respond with ONLY this JSON, no other text):
   "description": "string (0-500 chars, optional summary)",
   "exercise_groups": [
     {
-      "exercises": {"a": "Exercise Name", "b": "Optional Superset Partner"},
+      "exercises": {"a": "Exercise Name"},
       "sets": "string (e.g. '3', '4', '5')",
       "reps": "string (e.g. '8-12', '10', 'AMRAP')",
       "rest": "string (e.g. '60s', '90s', '2min')",
       "default_weight": "string or null (e.g. '135', '60', null if not specified)",
-      "default_weight_unit": "lbs|kg|other (only if default_weight is set)"
+      "default_weight_unit": "lbs|kg|other (only if default_weight is set)",
+      "block_id": "string or null (e.g. 'block-1', null for standalone exercises)",
+      "group_name": "string or null (e.g. 'Superset 1', null for standalone exercises)"
     }
   ],
   "bonus_exercises": [

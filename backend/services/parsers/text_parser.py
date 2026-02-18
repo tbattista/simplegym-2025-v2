@@ -10,6 +10,7 @@ Supported formats:
 """
 
 import re
+from uuid import uuid4
 from typing import Dict, List, Optional, Tuple
 from .base_parser import BaseParser, ParseResult
 
@@ -151,13 +152,24 @@ class PlainTextParser(BaseParser):
                     exercise_groups.append(current_group)
 
                 exercise_text = num_match.group(2).strip()
-                exercises = self._parse_exercise_names(exercise_text)
-                current_group = {
-                    "exercises": exercises,
-                    "sets": DEFAULTS["sets"],
-                    "reps": DEFAULTS["reps"],
-                    "rest": DEFAULTS["rest"],
-                }
+                exercises, is_superset, superset_parts = self._parse_exercise_names_with_blocks(exercise_text)
+                if is_superset:
+                    block_id = f"block-{uuid4().hex[:8]}"
+                    current_group = {
+                        "_is_superset": True,
+                        "_block_id": block_id,
+                        "_parts": superset_parts,
+                        "sets": DEFAULTS["sets"],
+                        "reps": DEFAULTS["reps"],
+                        "rest": DEFAULTS["rest"],
+                    }
+                else:
+                    current_group = {
+                        "exercises": exercises,
+                        "sets": DEFAULTS["sets"],
+                        "reps": DEFAULTS["reps"],
+                        "rest": DEFAULTS["rest"],
+                    }
                 confidence += 0.1
                 i += 1
                 continue
@@ -191,6 +203,9 @@ class PlainTextParser(BaseParser):
         # Don't forget the last group
         if current_group:
             exercise_groups.append(current_group)
+
+        # Expand superset groups into separate block_id-linked groups
+        exercise_groups = self._expand_all_groups(exercise_groups)
 
         # Parse BONUS section
         while i < len(lines):
@@ -290,15 +305,28 @@ class PlainTextParser(BaseParser):
                 rest = match.group(4) if match.group(4) else DEFAULTS["rest"]
                 rest = self._normalize_rest(rest)
 
-                # Handle superset notation: "Bench Press / Incline Press 3x10"
-                exercises = self._parse_exercise_names(exercise_name)
+                # Handle superset notation: "A1) Bench Press / A2) Row 3x10"
+                exercises, is_superset, superset_parts = self._parse_exercise_names_with_blocks(exercise_name)
+                if is_superset:
+                    block_id = f"block-{uuid4().hex[:8]}"
+                    exercise_groups.append({
+                        "_is_superset": True,
+                        "_block_id": block_id,
+                        "_parts": superset_parts,
+                        "sets": sets,
+                        "reps": reps,
+                        "rest": rest,
+                    })
+                else:
+                    exercise_groups.append({
+                        "exercises": exercises,
+                        "sets": sets,
+                        "reps": reps,
+                        "rest": rest,
+                    })
 
-                exercise_groups.append({
-                    "exercises": exercises,
-                    "sets": sets,
-                    "reps": reps,
-                    "rest": rest,
-                })
+        # Expand superset groups into separate block_id-linked groups
+        exercise_groups = self._expand_all_groups(exercise_groups)
 
         if not exercise_groups:
             return ParseResult(
@@ -361,28 +389,57 @@ class PlainTextParser(BaseParser):
                     exercise_text, re.IGNORECASE
                 )
                 if detail_match:
-                    exercises = self._parse_exercise_names(detail_match.group(1).strip())
-                    exercise_groups.append({
-                        "exercises": exercises,
-                        "sets": detail_match.group(2),
-                        "reps": detail_match.group(3),
-                        "rest": self._normalize_rest(detail_match.group(4)) if detail_match.group(4) else DEFAULTS["rest"],
-                    })
+                    ex_name = detail_match.group(1).strip()
+                    exercises, is_superset, superset_parts = self._parse_exercise_names_with_blocks(ex_name)
+                    sets = detail_match.group(2)
+                    reps = detail_match.group(3)
+                    rest = self._normalize_rest(detail_match.group(4)) if detail_match.group(4) else DEFAULTS["rest"]
+                    if is_superset:
+                        block_id = f"block-{uuid4().hex[:8]}"
+                        exercise_groups.append({
+                            "_is_superset": True,
+                            "_block_id": block_id,
+                            "_parts": superset_parts,
+                            "sets": sets,
+                            "reps": reps,
+                            "rest": rest,
+                        })
+                    else:
+                        exercise_groups.append({
+                            "exercises": exercises,
+                            "sets": sets,
+                            "reps": reps,
+                            "rest": rest,
+                        })
                 else:
                     # Just exercise name, use defaults
-                    exercises = self._parse_exercise_names(exercise_text)
-                    exercise_groups.append({
-                        "exercises": exercises,
-                        "sets": DEFAULTS["sets"],
-                        "reps": DEFAULTS["reps"],
-                        "rest": DEFAULTS["rest"],
-                    })
+                    exercises, is_superset, superset_parts = self._parse_exercise_names_with_blocks(exercise_text)
+                    if is_superset:
+                        block_id = f"block-{uuid4().hex[:8]}"
+                        exercise_groups.append({
+                            "_is_superset": True,
+                            "_block_id": block_id,
+                            "_parts": superset_parts,
+                            "sets": DEFAULTS["sets"],
+                            "reps": DEFAULTS["reps"],
+                            "rest": DEFAULTS["rest"],
+                        })
+                    else:
+                        exercise_groups.append({
+                            "exercises": exercises,
+                            "sets": DEFAULTS["sets"],
+                            "reps": DEFAULTS["reps"],
+                            "rest": DEFAULTS["rest"],
+                        })
                     if not warnings or "defaults" not in warnings[-1]:
                         warnings.append("Some exercises missing sets/reps — using defaults (3 sets x 8-12 reps)")
 
             elif not name and not has_numbered:
                 # First non-numbered line before any exercises = title
                 name = line
+
+        # Expand superset groups into separate block_id-linked groups
+        exercise_groups = self._expand_all_groups(exercise_groups)
 
         if not exercise_groups:
             return ParseResult(
@@ -439,13 +496,27 @@ class PlainTextParser(BaseParser):
             if len(line) < 2:
                 continue
 
-            exercises = self._parse_exercise_names(line)
-            exercise_groups.append({
-                "exercises": exercises,
-                "sets": DEFAULTS["sets"],
-                "reps": DEFAULTS["reps"],
-                "rest": DEFAULTS["rest"],
-            })
+            exercises, is_superset, superset_parts = self._parse_exercise_names_with_blocks(line)
+            if is_superset:
+                block_id = f"block-{uuid4().hex[:8]}"
+                exercise_groups.append({
+                    "_is_superset": True,
+                    "_block_id": block_id,
+                    "_parts": superset_parts,
+                    "sets": DEFAULTS["sets"],
+                    "reps": DEFAULTS["reps"],
+                    "rest": DEFAULTS["rest"],
+                })
+            else:
+                exercise_groups.append({
+                    "exercises": exercises,
+                    "sets": DEFAULTS["sets"],
+                    "reps": DEFAULTS["reps"],
+                    "rest": DEFAULTS["rest"],
+                })
+
+        # Expand superset groups into separate block_id-linked groups
+        exercise_groups = self._expand_all_groups(exercise_groups)
 
         if not exercise_groups:
             return ParseResult(errors=["No exercises found"])
@@ -467,6 +538,60 @@ class PlainTextParser(BaseParser):
         )
 
     # ── Helpers ────────────────────────────────────────────────────
+
+    def _parse_exercise_names_with_blocks(self, text: str) -> tuple:
+        """Parse exercise names, detecting supersets vs alternates.
+
+        Returns: (exercises_dict, is_superset, superset_parts_list)
+        - If is_superset is True, superset_parts contains individual exercise names
+          and exercises_dict is empty.
+        - If is_superset is False, exercises_dict has the packed alternates
+          and superset_parts is empty.
+        """
+        # Detect superset labels: A1), A2), B1), B2) etc.
+        superset_pattern = re.findall(r'[A-Z]\d+\)', text)
+        if len(superset_pattern) >= 2:
+            # This is superset notation — split into individual exercises
+            parts = re.split(r'[A-Z]\d+\)\s*', text)
+            parts = [p.strip().rstrip('/').strip() for p in parts if p.strip()]
+            if len(parts) >= 2:
+                return {}, True, parts
+
+        # No superset notation — use standard alternate parsing
+        exercises = self._parse_exercise_names(text)
+        return exercises, False, []
+
+    def _expand_group(self, group: dict) -> list:
+        """Expand a group, handling supersets with block_id.
+
+        Regular groups are returned as a single-element list.
+        Superset groups are expanded into multiple groups sharing a block_id.
+        """
+        if group.get("_is_superset"):
+            block_id = group["_block_id"]
+            result = []
+            for part_name in group["_parts"]:
+                expanded = {
+                    "exercises": {"a": part_name},
+                    "sets": group["sets"],
+                    "reps": group["reps"],
+                    "rest": group["rest"],
+                    "block_id": block_id,
+                    "group_name": "Superset",
+                }
+                if "default_weight" in group:
+                    expanded["default_weight"] = group["default_weight"]
+                    expanded["default_weight_unit"] = group.get("default_weight_unit", "lbs")
+                result.append(expanded)
+            return result
+        return [group]
+
+    def _expand_all_groups(self, exercise_groups: list) -> list:
+        """Expand all groups, handling any superset markers."""
+        expanded = []
+        for group in exercise_groups:
+            expanded.extend(self._expand_group(group))
+        return expanded
 
     def _parse_exercise_names(self, text: str) -> Dict[str, str]:
         """Parse exercise names, handling supersets separated by / or 'and'."""

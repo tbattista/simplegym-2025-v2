@@ -133,6 +133,19 @@ class ImportService:
                 group["default_weight"] = str(group["default_weight"]).strip()
                 group["default_weight_unit"] = group.get("default_weight_unit", "lbs")
 
+            # Preserve block linkage fields
+            if "block_id" in group:
+                # Keep as-is (string or null)
+                pass
+            if "group_name" in group:
+                group_name_val = group.get("group_name", "")
+                if group_name_val and len(str(group_name_val)) > 50:
+                    group["group_name"] = str(group_name_val)[:50]
+
+            # Clean up internal parser markers
+            for internal_key in ["_is_superset", "_block_id", "_parts"]:
+                group.pop(internal_key, None)
+
         data["exercise_groups"] = groups
 
         # Normalize bonus exercises
