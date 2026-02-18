@@ -1076,7 +1076,19 @@ export function createReorderOffcanvas(exercises, onSave) {
                 },
                 onEnd: () => {
                     listElement.classList.remove('is-dragging');
-                    if (hasBlocks) updateVisualGrouping();
+                    if (hasBlocks) {
+                        updateVisualGrouping();
+                        // Persist inferred block IDs to data attributes so subsequent
+                        // drags use the correct state (not stale original values)
+                        const items = Array.from(listElement.querySelectorAll('.reorder-item'));
+                        const effectiveBlockIds = computeEffectiveBlockIds();
+                        items.forEach((item, i) => {
+                            const newBlockId = effectiveBlockIds[i] || '';
+                            item.dataset.blockId = newBlockId;
+                            item.dataset.blockName = newBlockId ? getBlockName(newBlockId) : '';
+                        });
+                    }
+                    draggedElement = null;
                     updateAllBadges();
                 }
             });

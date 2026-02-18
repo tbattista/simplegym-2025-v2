@@ -359,27 +359,34 @@ const ExerciseGroupManager = {
             },
 
             onEnd: function(evt) {
-                // Check if card was dragged between two block members — auto-join
+                // Update block membership based on new position
                 const movedCard = evt.item;
                 const movedGroupId = movedCard.dataset.groupId;
                 const movedData = window.exerciseGroupsData[movedGroupId];
 
                 if (movedData) {
-                    const prevSibling = movedCard.previousElementSibling;
-                    const nextSibling = movedCard.nextElementSibling;
-
-                    // Skip block headers when checking siblings
-                    const prevCard = prevSibling?.classList.contains('exercise-group-card') ? prevSibling :
-                                     prevSibling?.previousElementSibling?.classList.contains('exercise-group-card') ? prevSibling.previousElementSibling : null;
-                    const nextCard = nextSibling?.classList.contains('exercise-group-card') ? nextSibling : null;
+                    // Walk siblings, skipping any non-card elements (block headers, etc.)
+                    let prevCard = movedCard.previousElementSibling;
+                    while (prevCard && !prevCard.classList.contains('exercise-group-card')) {
+                        prevCard = prevCard.previousElementSibling;
+                    }
+                    let nextCard = movedCard.nextElementSibling;
+                    while (nextCard && !nextCard.classList.contains('exercise-group-card')) {
+                        nextCard = nextCard.nextElementSibling;
+                    }
 
                     const prevBlockId = prevCard ? window.exerciseGroupsData[prevCard.dataset.groupId]?.block_id : null;
                     const nextBlockId = nextCard ? window.exerciseGroupsData[nextCard.dataset.groupId]?.block_id : null;
 
-                    // If dropped between two cards of the same block, join that block
+                    // Between two cards of the same block → join that block
                     if (prevBlockId && prevBlockId === nextBlockId && movedData.block_id !== prevBlockId) {
                         movedData.block_id = prevBlockId;
                         movedData.group_name = window.exerciseGroupsData[prevCard.dataset.groupId]?.group_name;
+                    }
+                    // Block member now isolated from its block → leave block
+                    else if (movedData.block_id && prevBlockId !== movedData.block_id && nextBlockId !== movedData.block_id) {
+                        movedData.block_id = null;
+                        movedData.group_name = null;
                     }
                 }
 
