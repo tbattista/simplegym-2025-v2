@@ -276,6 +276,8 @@ window.importService = {
                     rest: group.rest || '60s',
                     default_weight: group.default_weight || '',
                     default_weight_unit: group.default_weight_unit || 'lbs',
+                    block_id: group.block_id || null,
+                    group_name: group.group_name || null,
                 };
             });
         } else {
@@ -347,6 +349,13 @@ window.importService = {
                 window.updateMuscleSummary();
             }
         }, 300);
+
+        // Apply block grouping for imported exercises with block_id
+        setTimeout(() => {
+            if (window.applyBlockGrouping) {
+                window.applyBlockGrouping();
+            }
+        }, 350);
 
         console.log('✅ Import populated into builder');
     },
