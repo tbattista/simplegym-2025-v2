@@ -828,6 +828,7 @@ export function createReorderOffcanvas(exercises, onSave) {
                 border-radius: 6px;
                 margin-bottom: 8px;
                 background: rgba(45, 212, 191, 0.04);
+                transition: box-shadow 0.15s, border-color 0.15s;
             }
             .reorder-block-header {
                 display: flex;
@@ -840,8 +841,8 @@ export function createReorderOffcanvas(exercises, onSave) {
                 color: var(--workout-block, #2dd4bf);
             }
             .reorder-block-list {
-                padding: 0 4px 4px 4px;
-                min-height: 40px;
+                padding: 4px 4px 8px 4px;
+                min-height: 50px;
             }
             .reorder-block-list .reorder-item .reorder-item-inner {
                 margin-bottom: 2px;
@@ -854,12 +855,23 @@ export function createReorderOffcanvas(exercises, onSave) {
                 border-style: dashed;
                 border-color: var(--workout-block, #2dd4bf);
             }
+            /* Highlight block when an item is being dragged over it */
+            .reorder-block.drag-over {
+                box-shadow: 0 0 0 2px var(--workout-block, #2dd4bf), 0 4px 12px rgba(45, 212, 191, 0.2);
+                border-color: var(--workout-block, #2dd4bf);
+                background: rgba(45, 212, 191, 0.08);
+            }
+            .reorder-block.drag-over .reorder-block-header {
+                color: #fff;
+                background: var(--workout-block, #2dd4bf);
+                border-radius: 4px 4px 0 0;
+            }
             /* Drop zone hint for empty block lists */
             .reorder-block-list:empty::after {
                 content: 'Drop exercise here';
                 display: block;
                 text-align: center;
-                padding: 12px;
+                padding: 16px;
                 color: var(--bs-secondary);
                 font-size: 0.8rem;
                 border: 2px dashed var(--bs-border-color);
@@ -991,7 +1003,15 @@ export function createReorderOffcanvas(exercises, onSave) {
             saveBtn.disabled = false;
 
             if (hasBlocks) {
+                // Helper: clear all drag-over highlights
+                const clearDragOverHighlights = () => {
+                    listElement.querySelectorAll('.reorder-block.drag-over').forEach(b => {
+                        b.classList.remove('drag-over');
+                    });
+                };
+
                 // Nested SortableJS — root level handles blocks + standalone items
+                // invertSwap makes items prefer entering nested containers over swapping at root
                 const rootSortable = window.Sortable.create(listElement, {
                     group: { name: 'exercises', pull: true, put: true },
                     handle: '.reorder-handle',
@@ -1003,12 +1023,22 @@ export function createReorderOffcanvas(exercises, onSave) {
                     forceFallback: true,
                     fallbackClass: 'sortable-fallback',
                     fallbackOnBody: true,
-                    swapThreshold: 0.65,
+                    invertSwap: true,
+                    swapThreshold: 0.5,
+                    invertedSwapThreshold: 0.5,
                     filter: '.reorder-block-header',
                     onStart: () => listElement.classList.add('is-dragging'),
                     onEnd: () => {
                         listElement.classList.remove('is-dragging');
+                        clearDragOverHighlights();
                         updateAllBadges();
+                    },
+                    // Prevent blocks from being dropped inside other blocks
+                    onMove: (evt) => {
+                        if (evt.dragged.classList.contains('reorder-block') &&
+                            evt.to.classList.contains('reorder-block-list')) {
+                            return false;
+                        }
                     }
                 });
                 sortableInstances.push(rootSortable);
@@ -1016,16 +1046,55 @@ export function createReorderOffcanvas(exercises, onSave) {
                 // Each block's inner list — items can be dragged in/out
                 listElement.querySelectorAll('.reorder-block-list').forEach(blockList => {
                     const blockSortable = window.Sortable.create(blockList, {
-                        group: { name: 'exercises', pull: true, put: true },
+                        group: {
+                            name: 'exercises',
+                            pull: true,
+                            put: (to, from, dragEl) => {
+                                // Only accept individual items, not entire blocks
+                                return !dragEl.classList.contains('reorder-block');
+                            }
+                        },
                         handle: '.reorder-handle',
                         animation: 150,
                         ghostClass: 'sortable-ghost',
                         chosenClass: 'sortable-chosen',
                         forceFallback: true,
                         fallbackOnBody: true,
-                        emptyInsertThreshold: 20,
-                        onEnd: () => updateAllBadges()
+                        dragoverBubble: false,
+                        emptyInsertThreshold: 40,
+                        onAdd: (evt) => {
+                            // Item was dropped into this block — highlight briefly
+                            const block = evt.to.closest('.reorder-block');
+                            if (block) {
+                                block.classList.add('drag-over');
+                                setTimeout(() => block.classList.remove('drag-over'), 400);
+                            }
+                            updateAllBadges();
+                        },
+                        onRemove: () => updateAllBadges(),
+                        onEnd: () => {
+                            clearDragOverHighlights();
+                            updateAllBadges();
+                        }
                     });
+
+                    // Visual feedback: highlight block on dragenter/dragleave
+                    const parentBlock = blockList.closest('.reorder-block');
+                    if (parentBlock) {
+                        blockList.addEventListener('dragenter', () => {
+                            parentBlock.classList.add('drag-over');
+                        });
+                        blockList.addEventListener('dragleave', (e) => {
+                            // Only remove if leaving the block entirely
+                            if (!blockList.contains(e.relatedTarget)) {
+                                parentBlock.classList.remove('drag-over');
+                            }
+                        });
+                        blockList.addEventListener('drop', () => {
+                            setTimeout(() => parentBlock.classList.remove('drag-over'), 300);
+                        });
+                    }
+
                     sortableInstances.push(blockSortable);
                 });
 
