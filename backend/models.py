@@ -218,6 +218,11 @@ class ExerciseGroup(BaseModel):
         description="Interval timer configuration: {mode, work_seconds, rest_seconds, rounds}"
     )
 
+    block_id: Optional[str] = Field(
+        default=None,
+        description="Shared ID linking exercises in the same block group. All ExerciseGroups with the same block_id are displayed as visually linked cards."
+    )
+
 class BonusExercise(BaseModel):
     """Model for bonus exercises"""
     

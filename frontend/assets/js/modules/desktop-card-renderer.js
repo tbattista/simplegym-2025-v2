@@ -33,11 +33,6 @@ class DesktopCardRenderer {
         // Store in shared data object
         window.exerciseGroupsData[groupId] = data;
 
-        // Delegate to block row renderer for block groups
-        if (data.group_type === 'block') {
-            return this.createBlockRow(groupId, data, index);
-        }
-
         const primaryName = data.exercises.a || '';
         const alternates = [];
         if (data.exercises.b) alternates.push(data.exercises.b);
@@ -106,76 +101,6 @@ class DesktopCardRenderer {
     }
 
     /**
-     * Create block exercise group row HTML
-     * Renders a row for a block (superset, circuit, etc.) that groups 2-5 exercises
-     * @param {string} groupId - Unique group ID
-     * @param {object} groupData - Group data with group_type === 'block'
-     * @param {number} index - Current row index (0-based)
-     * @returns {string} HTML string
-     */
-    createBlockRow(groupId, groupData, index) {
-        const data = groupData;
-
-        // Build numbered exercise list from exercises dict (sorted keys)
-        const exerciseKeys = Object.keys(data.exercises || {}).sort();
-        const exerciseList = [];
-        exerciseKeys.forEach((key, i) => {
-            if (data.exercises[key]) {
-                exerciseList.push(`${i + 1}. ${this.escapeHtml(data.exercises[key])}`);
-            }
-        });
-        const exerciseListDisplay = exerciseList.join(' &bull; ');
-
-        const blockName = data.group_name
-            ? this.escapeHtml(data.group_name)
-            : `Block ${index + 1}`;
-
-        const protocolDisplay = data.sets && data.reps ? `${data.sets}&times;${data.reps}` : (data.sets || data.reps || '');
-
-        const weightDisplay = data.default_weight
-            ? `${data.default_weight}${data.default_weight_unit && data.default_weight_unit !== 'other' ? ' ' + data.default_weight_unit : ''}`
-            : '';
-
-        return `
-            <div class="desktop-exercise-row exercise-group-card block-card" data-group-id="${groupId}" data-index="${index}">
-                <div class="drag-handle" title="Drag to reorder">
-                    <i class="bx bx-grid-vertical"></i>
-                </div>
-                <div class="exercise-name-col">
-                    <div class="block-name">${blockName}</div>
-                    <div class="block-exercise-list">${exerciseListDisplay || '<span class="empty-exercise">No exercises added</span>'}</div>
-                </div>
-                <div class="inline-editable" data-field="protocol" data-group-id="${groupId}">
-                    <span class="display-value${!protocolDisplay ? ' empty-value' : ''}">${protocolDisplay || '-'}</span>
-                </div>
-                <div class="inline-editable" data-field="rest" data-group-id="${groupId}">
-                    <span class="display-value${!data.rest ? ' empty-value' : ''}">${data.rest || '-'}</span>
-                </div>
-                <div class="inline-editable" data-field="weight" data-group-id="${groupId}">
-                    <span class="display-value${!weightDisplay ? ' empty-value' : ''}">${weightDisplay || '-'}</span>
-                </div>
-                <div class="dropdown">
-                    <button class="row-menu-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="bx bx-dots-vertical"></i>
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-end">
-                        <li>
-                            <a class="dropdown-item" href="#" data-action="full-edit" data-group-id="${groupId}">
-                                <i class="bx bx-edit me-2"></i>Full Edit
-                            </a>
-                        </li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li>
-                            <a class="dropdown-item text-danger" href="#" data-action="delete-group" data-group-id="${groupId}">
-                                <i class="bx bx-trash me-2"></i>Delete
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-            </div>`;
-    }
-
-    /**
      * Update exercise group row preview after data changes
      * @param {string} groupId - Group ID
      * @param {object} groupData - Updated group data
@@ -183,12 +108,6 @@ class DesktopCardRenderer {
     updateExerciseGroupRowPreview(groupId, groupData) {
         const row = document.querySelector(`.desktop-exercise-row[data-group-id="${groupId}"]`);
         if (!row) return;
-
-        // Handle block row updates separately
-        if (row.classList.contains('block-card')) {
-            this.updateBlockRowPreview(row, groupId, groupData);
-            return;
-        }
 
         // Update exercise name
         const nameEditable = row.querySelector('[data-field="exercise-a"]');
@@ -230,49 +149,6 @@ class DesktopCardRenderer {
         // Update simple fields
         const protocolDisplay = groupData.sets && groupData.reps
             ? `${groupData.sets}×${groupData.reps}` : (groupData.sets || groupData.reps || '');
-        this.updateFieldDisplay(row, 'protocol', protocolDisplay);
-        this.updateFieldDisplay(row, 'rest', groupData.rest);
-
-        // Update weight
-        const weightDisplay = groupData.default_weight
-            ? `${groupData.default_weight}${groupData.default_weight_unit && groupData.default_weight_unit !== 'other' ? ' ' + groupData.default_weight_unit : ''}`
-            : '';
-        this.updateFieldDisplay(row, 'weight', weightDisplay);
-    }
-
-    /**
-     * Update block row preview after data changes
-     * @param {HTMLElement} row - The block row element
-     * @param {string} groupId - Group ID
-     * @param {object} groupData - Updated group data
-     */
-    updateBlockRowPreview(row, groupId, groupData) {
-        // Update block name
-        const blockNameEl = row.querySelector('.block-name');
-        if (blockNameEl) {
-            blockNameEl.textContent = groupData.group_name
-                ? groupData.group_name
-                : `Block ${(parseInt(row.dataset.index, 10) || 0) + 1}`;
-        }
-
-        // Update exercise list
-        const exerciseListEl = row.querySelector('.block-exercise-list');
-        if (exerciseListEl) {
-            const exerciseKeys = Object.keys(groupData.exercises || {}).sort();
-            const exerciseList = [];
-            exerciseKeys.forEach((key, i) => {
-                if (groupData.exercises[key]) {
-                    exerciseList.push(`${i + 1}. ${this.escapeHtml(groupData.exercises[key])}`);
-                }
-            });
-            exerciseListEl.innerHTML = exerciseList.length > 0
-                ? exerciseList.join(' &bull; ')
-                : '<span class="empty-exercise">No exercises added</span>';
-        }
-
-        // Update simple fields
-        const protocolDisplay = groupData.sets && groupData.reps
-            ? `${groupData.sets}\u00d7${groupData.reps}` : (groupData.sets || groupData.reps || '');
         this.updateFieldDisplay(row, 'protocol', protocolDisplay);
         this.updateFieldDisplay(row, 'rest', groupData.rest);
 
@@ -590,6 +466,73 @@ class DesktopCardRenderer {
         // Open the full editor offcanvas which supports alternate exercises
         if (window.openExerciseGroupEditor) {
             window.openExerciseGroupEditor(groupId);
+        }
+    }
+
+    /**
+     * Apply visual grouping to consecutive desktop rows sharing the same block_id.
+     */
+    applyBlockGrouping() {
+        const container = document.getElementById('exerciseGroups');
+        if (!container) return;
+
+        // Remove existing block headers and grouping classes
+        container.querySelectorAll('.block-group-header').forEach(h => h.remove());
+        container.querySelectorAll('.exercise-in-block').forEach(r => {
+            r.classList.remove('exercise-in-block', 'block-first', 'block-middle', 'block-last');
+            r.removeAttribute('data-block-id');
+        });
+
+        const rows = Array.from(container.querySelectorAll('.desktop-exercise-row'));
+        let i = 0;
+
+        while (i < rows.length) {
+            const groupId = rows[i].dataset.groupId;
+            const data = window.exerciseGroupsData?.[groupId];
+            const blockId = data?.block_id;
+
+            if (!blockId) { i++; continue; }
+
+            let j = i;
+            while (j < rows.length) {
+                const jGroupId = rows[j].dataset.groupId;
+                const jData = window.exerciseGroupsData?.[jGroupId];
+                if (jData?.block_id !== blockId) break;
+                j++;
+            }
+
+            const groupRows = rows.slice(i, j);
+            const blockName = data.group_name || 'Block';
+
+            // Insert header row before first row
+            const headerHtml = `<div class="block-group-header" data-block-id="${blockId}">
+                <span class="block-group-label">
+                    <i class="bx bx-collection"></i>
+                    ${this.escapeHtml(blockName)}
+                </span>
+                <div class="block-group-actions">
+                    <button class="block-group-btn" onclick="window.ExerciseGroupManager?.addToBlock?.('${blockId}')" title="Add exercise to block">
+                        <i class="bx bx-plus"></i> Add
+                    </button>
+                </div>
+            </div>`;
+            groupRows[0].insertAdjacentHTML('beforebegin', headerHtml);
+
+            groupRows.forEach((row, idx) => {
+                row.classList.add('exercise-in-block');
+                row.setAttribute('data-block-id', blockId);
+                if (groupRows.length === 1) {
+                    row.classList.add('block-first', 'block-last');
+                } else if (idx === 0) {
+                    row.classList.add('block-first');
+                } else if (idx === groupRows.length - 1) {
+                    row.classList.add('block-last');
+                } else {
+                    row.classList.add('block-middle');
+                }
+            });
+
+            i = j;
         }
     }
 

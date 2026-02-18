@@ -52,6 +52,9 @@ const FormDataCollector = {
                     };
 
                     // Include optional fields if present
+                    if (groupData.block_id) {
+                        groupEntry.block_id = groupData.block_id;
+                    }
                     if (groupData.group_name) {
                         groupEntry.group_name = groupData.group_name;
                     }

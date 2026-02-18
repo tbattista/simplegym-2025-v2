@@ -56,8 +56,36 @@ function loadWorkoutIntoEditor(workoutId) {
     window.exerciseGroupsData = {};
 
     if (workout.exercise_groups && workout.exercise_groups.length > 0) {
-        const totalCards = workout.exercise_groups.length;
-        workout.exercise_groups.forEach((group, index) => {
+        // Migrate Phase 1 block containers to linked individual cards
+        const migratedGroups = [];
+        (workout.exercise_groups || []).forEach(group => {
+            if (group.group_type === 'block' && group.exercises) {
+                // Old format: single group with multiple exercises in dict
+                const blockId = `block-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`;
+                const exerciseKeys = Object.keys(group.exercises).sort();
+                exerciseKeys.forEach(key => {
+                    if (!group.exercises[key]) return;
+                    migratedGroups.push({
+                        group_id: `group-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+                        exercises: { a: group.exercises[key] },
+                        sets: group.sets || '3',
+                        reps: group.reps || '10',
+                        rest: group.rest || '60s',
+                        default_weight: group.default_weight || null,
+                        default_weight_unit: group.default_weight_unit || 'lbs',
+                        block_id: blockId,
+                        group_name: group.group_name || null,
+                        group_type: 'standard'
+                    });
+                });
+            } else {
+                migratedGroups.push(group);
+            }
+        });
+
+        // Use migratedGroups instead of the original array
+        const totalCards = migratedGroups.length;
+        migratedGroups.forEach((group, index) => {
             const groupId = `group-${Date.now()}-${index}-${Math.random().toString(36).substr(2, 9)}`;
             const groupNumber = index + 1;
 
@@ -73,12 +101,22 @@ function loadWorkoutIntoEditor(workoutId) {
                 reps: group.reps || '8-12',
                 rest: group.rest || '60s',
                 default_weight: group.default_weight || '',
-                default_weight_unit: group.default_weight_unit || 'lbs'
+                default_weight_unit: group.default_weight_unit || 'lbs',
+                block_id: group.block_id || null,
+                group_name: group.group_name || null,
+                group_type: group.group_type || 'standard',
+                cardio_config: group.cardio_config || null,
+                interval_config: group.interval_config || null
             };
 
             console.log('🔍 DEBUG: Loaded exercise group card:', groupId, group);
             console.log('✅ DEBUG: Stored in exerciseGroupsData:', groupId, window.exerciseGroupsData[groupId]);
         });
+
+        // Apply visual block grouping after all cards are rendered
+        setTimeout(() => {
+            if (window.applyBlockGrouping) window.applyBlockGrouping();
+        }, 50);
     } else {
         addExerciseGroup();
     }

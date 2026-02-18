@@ -27,11 +27,6 @@ class CardRenderer {
      * @returns {string} HTML string
      */
     createExerciseGroupCard(groupId, groupData = null, groupNumber = 1, index = 0, totalCards = 1) {
-        // Delegate to block card renderer for block-type groups
-        if (groupData && groupData.group_type === 'block') {
-            return this.createBlockCard(groupId, groupData, groupNumber, index, totalCards);
-        }
-
         const data = groupData || {
             exercises: { a: '', b: '', c: '' },
             sets: '3',
@@ -81,6 +76,21 @@ class CardRenderer {
         const moveUpDisabled = isFirst ? 'disabled' : '';
         const moveDownDisabled = isLast ? 'disabled' : '';
 
+        // Block-specific menu items (only shown for cards in a block)
+        const blockMenuItems = data.block_id ? `
+                                <div class="builder-menu-divider"></div>
+                                <button class="builder-menu-item"
+                                        onclick="window.ExerciseGroupManager?.removeFromBlock?.('${groupId}'); event.stopPropagation();">
+                                    <i class="bx bx-unlink"></i>
+                                    Remove from Block
+                                </button>
+                                <button class="builder-menu-item"
+                                        onclick="window.ExerciseGroupManager?.renameBlock?.('${data.block_id}'); event.stopPropagation();">
+                                    <i class="bx bx-edit"></i>
+                                    Rename Block
+                                </button>
+        ` : '';
+
         return `
             <div class="exercise-group-card compact" data-group-id="${groupId}" data-index="${index}">
                 <div class="card">
@@ -120,7 +130,7 @@ class CardRenderer {
                                         onclick="window.builderCardMenu?.handleDelete('${groupId}');">
                                     <i class="bx bx-trash"></i>
                                     Delete
-                                </button>
+                                </button>${blockMenuItems}
                             </div>
                         </div>
                     </div>
@@ -130,180 +140,11 @@ class CardRenderer {
     }
     
     /**
-     * Create block card HTML (group of 2-5 exercises performed together)
-     * @param {string} groupId - Unique group ID
-     * @param {object} groupData - Group data with group_type === 'block'
-     * @param {number} displayIndex - Display number for fallback name
-     * @param {number} index - Current card index (0-based) for menu boundary detection
-     * @param {number} totalCards - Total number of cards for menu boundary detection
-     * @returns {string} HTML string
-     */
-    createBlockCard(groupId, groupData, displayIndex = 1, index = 0, totalCards = 1) {
-        const data = groupData;
-
-        // Store data
-        this.exerciseGroupsData[groupId] = data;
-
-        // Block name
-        const blockName = data.group_name || `Block ${displayIndex}`;
-
-        // Build exercise list from exercises dict (keys a-e, sorted alphabetically)
-        const exerciseKeys = Object.keys(data.exercises || {}).sort();
-        let exerciseListHtml = '';
-        if (exerciseKeys.length > 0) {
-            exerciseListHtml = exerciseKeys
-                .filter(key => data.exercises[key])
-                .map((key, idx) => {
-                    return `<div class="block-exercise-item">
-                        <span class="block-exercise-number">${idx + 1}.</span>
-                        <span class="block-exercise-name">${this.escapeHtml(data.exercises[key])}</span>
-                    </div>`;
-                }).join('');
-        }
-
-        if (!exerciseListHtml) {
-            exerciseListHtml = '<div class="block-exercise-item text-muted">Click edit to add exercises</div>';
-        }
-
-        // Build meta text
-        let metaText = '';
-        const hasExercises = exerciseKeys.some(key => data.exercises[key]);
-        if (hasExercises) {
-            const protocol = data.sets && data.reps ? `${data.sets}\u00d7${data.reps}` : (data.sets || data.reps || '');
-            const parts = [protocol, `${data.rest} rest after block`].filter(Boolean);
-            if (data.default_weight) {
-                const unitDisplay = data.default_weight_unit !== 'other' ? ` ${data.default_weight_unit}` : '';
-                parts.push(`${data.default_weight}${unitDisplay}`);
-            }
-            metaText = parts.join(' \u2022 ');
-        }
-
-        // Determine menu item states based on position
-        const isFirst = index === 0;
-        const isLast = index >= totalCards - 1;
-        const moveUpDisabled = isFirst ? 'disabled' : '';
-        const moveDownDisabled = isLast ? 'disabled' : '';
-
-        return `
-            <div class="exercise-group-card compact block-card" data-group-id="${groupId}" data-card-type="block" data-index="${index}">
-                <div class="card">
-                    <div class="card-body">
-                        <i class="bx bx-collection block-icon"></i>
-                        <div class="exercise-content">
-                            <div class="block-name">${this.escapeHtml(blockName)}</div>
-                            <div class="block-exercise-list">
-                                ${exerciseListHtml}
-                            </div>
-                            ${metaText ? `<div class="exercise-meta-text text-muted small">${metaText}</div>` : ''}
-                        </div>
-                        <div class="card-actions">
-                            <button type="button" class="btn btn-sm btn-edit-compact"
-                                    onclick="event.preventDefault(); event.stopPropagation(); openExerciseGroupEditor('${groupId}');"
-                                    title="Edit block">
-                                <i class="bx bx-pencil"></i>
-                            </button>
-                            <button type="button" class="btn btn-sm btn-menu-compact"
-                                    onclick="event.preventDefault(); event.stopPropagation(); window.builderCardMenu?.toggleMenu(this, '${groupId}', ${index});"
-                                    title="More options">
-                                <i class="bx bx-dots-vertical"></i>
-                            </button>
-                            <div class="builder-card-menu" onclick="event.stopPropagation();">
-                                <button class="builder-menu-item ${moveUpDisabled}"
-                                        onclick="window.builderCardMenu?.handleMoveUp('${groupId}', ${index});"
-                                        ${moveUpDisabled}>
-                                    <i class="bx bx-chevron-up"></i>
-                                    Move up
-                                </button>
-                                <button class="builder-menu-item ${moveDownDisabled}"
-                                        onclick="window.builderCardMenu?.handleMoveDown('${groupId}', ${index});"
-                                        ${moveDownDisabled}>
-                                    <i class="bx bx-chevron-down"></i>
-                                    Move down
-                                </button>
-                                <div class="builder-menu-divider"></div>
-                                <button class="builder-menu-item danger"
-                                        onclick="window.builderCardMenu?.handleDelete('${groupId}');">
-                                    <i class="bx bx-trash"></i>
-                                    Delete
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
-    }
-
-    /**
-     * Update block card preview
-     * @param {string} groupId - Group ID
-     * @param {object} groupData - Group data with group_type === 'block'
-     */
-    updateBlockCardPreview(groupId, groupData) {
-        const card = document.querySelector(`[data-group-id="${groupId}"]`);
-        if (!card) return;
-
-        // Update block name
-        const blockNameEl = card.querySelector('.block-name');
-        if (blockNameEl) {
-            blockNameEl.textContent = groupData.group_name || 'Block';
-        }
-
-        // Update exercise list
-        const exerciseKeys = Object.keys(groupData.exercises || {}).sort();
-        const blockList = card.querySelector('.block-exercise-list');
-        if (blockList) {
-            let exerciseListHtml = exerciseKeys
-                .filter(key => groupData.exercises[key])
-                .map((key, idx) => {
-                    return `<div class="block-exercise-item">
-                        <span class="block-exercise-number">${idx + 1}.</span>
-                        <span class="block-exercise-name">${this.escapeHtml(groupData.exercises[key])}</span>
-                    </div>`;
-                }).join('');
-
-            if (!exerciseListHtml) {
-                exerciseListHtml = '<div class="block-exercise-item text-muted">Click edit to add exercises</div>';
-            }
-            blockList.innerHTML = exerciseListHtml;
-        }
-
-        // Update meta text
-        const hasExercises = exerciseKeys.some(key => groupData.exercises[key]);
-        let metaText = '';
-        if (hasExercises) {
-            const protocol = groupData.sets && groupData.reps ? `${groupData.sets}\u00d7${groupData.reps}` : (groupData.sets || groupData.reps || '');
-            const parts = [protocol, `${groupData.rest} rest after block`].filter(Boolean);
-            if (groupData.default_weight) {
-                const unitDisplay = groupData.default_weight_unit !== 'other' ? ` ${groupData.default_weight_unit}` : '';
-                parts.push(`${groupData.default_weight}${unitDisplay}`);
-            }
-            metaText = parts.join(' \u2022 ');
-        }
-
-        const metaTextEl = card.querySelector('.exercise-meta-text');
-        if (metaTextEl) {
-            if (metaText) {
-                metaTextEl.textContent = metaText;
-                metaTextEl.style.display = 'block';
-            } else {
-                metaTextEl.textContent = '';
-                metaTextEl.style.display = 'none';
-            }
-        }
-    }
-
-    /**
      * Update exercise group card preview
      * @param {string} groupId - Group ID
      * @param {object} groupData - Group data
      */
     updateExerciseGroupCardPreview(groupId, groupData) {
-        // Delegate to block card preview for block-type groups
-        if (groupData && groupData.group_type === 'block') {
-            return this.updateBlockCardPreview(groupId, groupData);
-        }
-
         const card = document.querySelector(`[data-group-id="${groupId}"]`);
         if (!card) return;
 
@@ -518,6 +359,78 @@ class CardRenderer {
     }
     
     /**
+     * Apply visual grouping to consecutive cards sharing the same block_id.
+     * Called after any render/reorder/add/remove operation.
+     * Scans #exerciseGroups, finds runs of consecutive cards with same block_id,
+     * and applies CSS classes + inserts header labels.
+     */
+    applyBlockGrouping() {
+        const container = document.getElementById('exerciseGroups');
+        if (!container) return;
+
+        // Remove existing block headers and grouping classes
+        container.querySelectorAll('.block-group-header').forEach(h => h.remove());
+        container.querySelectorAll('.exercise-in-block').forEach(c => {
+            c.classList.remove('exercise-in-block', 'block-first', 'block-middle', 'block-last');
+            c.removeAttribute('data-block-id');
+        });
+
+        const cards = Array.from(container.querySelectorAll('.exercise-group-card'));
+        let i = 0;
+
+        while (i < cards.length) {
+            const groupId = cards[i].dataset.groupId;
+            const data = window.exerciseGroupsData?.[groupId];
+            const blockId = data?.block_id;
+
+            if (!blockId) { i++; continue; }
+
+            // Find run of consecutive cards with same block_id
+            let j = i;
+            while (j < cards.length) {
+                const jGroupId = cards[j].dataset.groupId;
+                const jData = window.exerciseGroupsData?.[jGroupId];
+                if (jData?.block_id !== blockId) break;
+                j++;
+            }
+
+            const groupCards = cards.slice(i, j);
+            const blockName = data.group_name || `Block`;
+
+            // Insert block header before first card
+            const headerHtml = `<div class="block-group-header" data-block-id="${blockId}">
+                <span class="block-group-label">
+                    <i class="bx bx-collection"></i>
+                    ${this.escapeHtml(blockName)}
+                </span>
+                <div class="block-group-actions">
+                    <button class="block-group-btn" onclick="window.ExerciseGroupManager?.addToBlock?.('${blockId}')" title="Add exercise to block">
+                        <i class="bx bx-plus"></i> Add
+                    </button>
+                </div>
+            </div>`;
+            groupCards[0].insertAdjacentHTML('beforebegin', headerHtml);
+
+            // Apply positional classes
+            groupCards.forEach((card, idx) => {
+                card.classList.add('exercise-in-block');
+                card.setAttribute('data-block-id', blockId);
+                if (groupCards.length === 1) {
+                    card.classList.add('block-first', 'block-last');
+                } else if (idx === 0) {
+                    card.classList.add('block-first');
+                } else if (idx === groupCards.length - 1) {
+                    card.classList.add('block-last');
+                } else {
+                    card.classList.add('block-middle');
+                }
+            });
+
+            i = j;
+        }
+    }
+
+    /**
      * Escape HTML to prevent XSS
      * @param {string} text - Text to escape
      * @returns {string} Escaped text
@@ -551,19 +464,16 @@ window.getExerciseGroupData = (groupId) =>
 window.deleteExerciseGroupCard = (groupId) =>
     window.cardRenderer.deleteExerciseGroupCard(groupId);
 
-window.createBlockCard = (groupId, groupData, displayIndex, index, totalCards) =>
-    window.cardRenderer.createBlockCard(groupId, groupData, displayIndex, index, totalCards);
-
-window.updateBlockCardPreview = (groupId, groupData) =>
-    window.cardRenderer.updateBlockCardPreview(groupId, groupData);
-
 window.createBonusExerciseCard = (bonusId, bonusData, bonusNumber) => 
     window.cardRenderer.createBonusExerciseCard(bonusId, bonusData, bonusNumber);
 
 window.updateBonusExerciseCardPreview = (bonusId, bonusData) => 
     window.cardRenderer.updateBonusExerciseCardPreview(bonusId, bonusData);
 
-window.deleteBonusExerciseCard = (bonusId) => 
+window.deleteBonusExerciseCard = (bonusId) =>
     window.cardRenderer.deleteBonusExerciseCard(bonusId);
+
+window.applyBlockGrouping = () =>
+    window.cardRenderer.applyBlockGrouping();
 
 console.log('📦 Card Renderer module loaded');

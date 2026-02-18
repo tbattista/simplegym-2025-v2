@@ -138,9 +138,10 @@
             ghostClass: 'sortable-ghost',
             dragClass: 'sortable-drag',
             chosenClass: 'sortable-chosen',
-            filter: '.template-note-card, .desktop-exercise-header',
+            filter: '.template-note-card, .desktop-exercise-header, .block-group-header',
             onEnd: function() {
                 if (window.markEditorDirty) window.markEditorDirty();
+                if (window.applyBlockGrouping) window.applyBlockGrouping();
             }
         });
     }

@@ -52,50 +52,170 @@ const ExerciseGroupManager = {
     },
 
     /**
-     * Add exercise block to workout form (group of 2-5 exercises performed together)
+     * Add exercise block — creates 2 individual ExerciseGroups linked by a shared block_id
      */
     addBlock() {
         const container = document.getElementById('exerciseGroups');
         if (!container) return;
 
-        const currentCardCount = container.querySelectorAll('.exercise-group-card').length;
-        const groupCount = currentCardCount + 1;
-        const groupId = `group-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        const blockId = `block-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`;
 
-        // Create default block data
-        const defaultData = {
-            group_type: 'block',
-            group_name: null,
-            exercises: { a: 'Exercise 1', b: 'Exercise 2' },
+        // Create 2 individual exercise groups linked by block_id
+        const groupIds = [];
+        for (let i = 0; i < 2; i++) {
+            const groupId = `group-${Date.now()}-${i}-${Math.random().toString(36).substr(2, 9)}`;
+            groupIds.push(groupId);
+            const currentCardCount = container.querySelectorAll('.exercise-group-card').length;
+
+            const data = {
+                exercises: { a: '' },
+                sets: '3',
+                reps: '10',
+                rest: '60s',
+                default_weight: null,
+                default_weight_unit: 'lbs',
+                block_id: blockId,
+                group_name: null
+            };
+
+            window.exerciseGroupsData[groupId] = data;
+
+            const cardHtml = window.createExerciseGroupCard(
+                groupId, data, currentCardCount, currentCardCount + 1
+            );
+            container.insertAdjacentHTML('beforeend', cardHtml);
+        }
+
+        // Apply visual grouping
+        if (window.applyBlockGrouping) window.applyBlockGrouping();
+
+        // Update menu boundaries and sorting
+        if (window.builderCardMenu?.updateAllMenuBoundaries) {
+            window.builderCardMenu.updateAllMenuBoundaries();
+        }
+        ExerciseGroupManager.initSorting();
+
+        // Auto-open editor for first card
+        setTimeout(() => {
+            if (window.openExerciseGroupEditor) {
+                window.openExerciseGroupEditor(groupIds[0]);
+            }
+        }, 100);
+
+        if (window.markEditorDirty) window.markEditorDirty();
+    },
+
+    /**
+     * Add a new exercise group to an existing block
+     */
+    addToBlock(blockId) {
+        const container = document.getElementById('exerciseGroups');
+        if (!container || !blockId) return;
+
+        // Find last card with this block_id
+        const blockCards = Array.from(container.querySelectorAll(`.exercise-group-card[data-block-id="${blockId}"]`));
+        const lastBlockCard = blockCards[blockCards.length - 1];
+        if (!lastBlockCard) return;
+
+        // Get block_name from sibling
+        const siblingGroupId = lastBlockCard.dataset.groupId;
+        const blockName = window.exerciseGroupsData[siblingGroupId]?.group_name || null;
+
+        const groupId = `group-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        const currentCardCount = container.querySelectorAll('.exercise-group-card').length;
+
+        const data = {
+            exercises: { a: '' },
             sets: '3',
             reps: '10',
             rest: '60s',
             default_weight: null,
-            default_weight_unit: 'lbs'
+            default_weight_unit: 'lbs',
+            block_id: blockId,
+            group_name: blockName
         };
 
-        // Create block card HTML with default data
-        const newIndex = currentCardCount;
-        const newTotalCards = currentCardCount + 1;
-        const groupHtml = createExerciseGroupCard(groupId, defaultData, groupCount, newIndex, newTotalCards);
+        window.exerciseGroupsData[groupId] = data;
 
-        container.insertAdjacentHTML('beforeend', groupHtml);
+        const cardHtml = window.createExerciseGroupCard(
+            groupId, data, currentCardCount, currentCardCount + 1
+        );
 
-        // Update all card menu boundaries after adding new card
-        window.builderCardMenu?.updateAllMenuBoundaries();
+        // Insert after last card in the block
+        lastBlockCard.insertAdjacentHTML('afterend', cardHtml);
 
-        // Initialize Sortable if not already done
-        ExerciseGroupManager.initSorting();
+        // Re-apply visual grouping
+        if (window.applyBlockGrouping) window.applyBlockGrouping();
 
-        // Auto-open editor for new block
+        if (window.builderCardMenu?.updateAllMenuBoundaries) {
+            window.builderCardMenu.updateAllMenuBoundaries();
+        }
+
+        // Open editor for new card
         setTimeout(() => {
-            openExerciseGroupEditor(groupId);
+            if (window.openExerciseGroupEditor) {
+                window.openExerciseGroupEditor(groupId);
+            }
         }, 100);
 
-        // Mark editor as dirty
         if (window.markEditorDirty) window.markEditorDirty();
+    },
 
-        console.log('✅ Added new exercise block card:', groupId);
+    /**
+     * Remove a single exercise group from its block.
+     * If only one member remains after removal, dissolve the block entirely.
+     */
+    removeFromBlock(groupId) {
+        const data = window.exerciseGroupsData[groupId];
+        if (!data || !data.block_id) return;
+
+        const blockId = data.block_id;
+        const otherMembers = Object.keys(window.exerciseGroupsData).filter(
+            id => id !== groupId && window.exerciseGroupsData[id]?.block_id === blockId
+        );
+
+        // Clear block membership
+        data.block_id = null;
+        data.group_name = null;
+
+        // If only 1 member left, dissolve the block entirely
+        if (otherMembers.length === 1) {
+            const lastMember = window.exerciseGroupsData[otherMembers[0]];
+            if (lastMember) {
+                lastMember.block_id = null;
+                lastMember.group_name = null;
+            }
+        }
+
+        // Re-apply visual grouping
+        if (window.applyBlockGrouping) window.applyBlockGrouping();
+        if (window.markEditorDirty) window.markEditorDirty();
+    },
+
+    /**
+     * Rename a block — prompts the user for a new name and updates all member groups.
+     */
+    renameBlock(blockId) {
+        if (!blockId) return;
+
+        // Find current name from any member
+        const memberIds = Object.keys(window.exerciseGroupsData).filter(
+            id => window.exerciseGroupsData[id]?.block_id === blockId
+        );
+        if (memberIds.length === 0) return;
+
+        const currentName = window.exerciseGroupsData[memberIds[0]]?.group_name || '';
+        const newName = prompt('Block name:', currentName);
+        if (newName === null) return; // cancelled
+
+        // Update all members
+        memberIds.forEach(id => {
+            window.exerciseGroupsData[id].group_name = newName || null;
+        });
+
+        // Re-apply visual grouping to update header labels
+        if (window.applyBlockGrouping) window.applyBlockGrouping();
+        if (window.markEditorDirty) window.markEditorDirty();
     },
 
     /**
@@ -225,6 +345,7 @@ const ExerciseGroupManager = {
             chosenClass: 'sortable-chosen',
             forceFallback: true,
             fallbackTolerance: 3,
+            filter: '.block-group-header',
 
             onStart: function(evt) {
                 const accordions = container.querySelectorAll('.accordion-collapse.show');
@@ -238,12 +359,35 @@ const ExerciseGroupManager = {
             },
 
             onEnd: function(evt) {
+                // Check if card was dragged between two block members — auto-join
+                const movedCard = evt.item;
+                const movedGroupId = movedCard.dataset.groupId;
+                const movedData = window.exerciseGroupsData[movedGroupId];
+
+                if (movedData) {
+                    const prevSibling = movedCard.previousElementSibling;
+                    const nextSibling = movedCard.nextElementSibling;
+
+                    // Skip block headers when checking siblings
+                    const prevCard = prevSibling?.classList.contains('exercise-group-card') ? prevSibling :
+                                     prevSibling?.previousElementSibling?.classList.contains('exercise-group-card') ? prevSibling.previousElementSibling : null;
+                    const nextCard = nextSibling?.classList.contains('exercise-group-card') ? nextSibling : null;
+
+                    const prevBlockId = prevCard ? window.exerciseGroupsData[prevCard.dataset.groupId]?.block_id : null;
+                    const nextBlockId = nextCard ? window.exerciseGroupsData[nextCard.dataset.groupId]?.block_id : null;
+
+                    // If dropped between two cards of the same block, join that block
+                    if (prevBlockId && prevBlockId === nextBlockId && movedData.block_id !== prevBlockId) {
+                        movedData.block_id = prevBlockId;
+                        movedData.group_name = window.exerciseGroupsData[prevCard.dataset.groupId]?.group_name;
+                    }
+                }
+
+                // Re-apply visual grouping
+                if (window.applyBlockGrouping) window.applyBlockGrouping();
+
                 ExerciseGroupManager.renumber();
                 if (window.markEditorDirty) window.markEditorDirty();
-                console.log('✅ Exercise group reordered:', {
-                    oldIndex: evt.oldIndex,
-                    newIndex: evt.newIndex
-                });
             }
         });
 
@@ -344,6 +488,7 @@ window.ExerciseGroupManager = ExerciseGroupManager;
 // Backward-compat globals
 window.addExerciseGroup = ExerciseGroupManager.add;
 window.addExerciseBlock = ExerciseGroupManager.addBlock;
+window.addToBlock = ExerciseGroupManager.addToBlock;
 window.removeExerciseGroup = ExerciseGroupManager.remove;
 window.renumberExerciseGroups = ExerciseGroupManager.renumber;
 window.updateExerciseGroupPreview = ExerciseGroupManager.updatePreview;
