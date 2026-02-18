@@ -722,7 +722,7 @@ function setupPlateSettingsListeners(offcanvas, onSave) {
  * @returns {Object} Offcanvas instance
  */
 export function createReorderOffcanvas(exercises, onSave) {
-    // Validate inputs - allow empty arrays, we'll show informative message
+    // Validate inputs
     if (!Array.isArray(exercises)) {
         console.error('❌ createReorderOffcanvas requires exercises array');
         return null;
@@ -733,31 +733,40 @@ export function createReorderOffcanvas(exercises, onSave) {
         return null;
     }
 
-    // Determine if reordering is possible (need at least 2 items)
     const canReorder = exercises.length >= 2;
-
-    // Check if any exercises have block data
     const hasBlocks = exercises.some(ex => ex.blockId);
 
-    // Build a single reorder-item row HTML
+    // Build a single flat reorder-item row HTML
     const buildItemHtml = (item, globalIndex) => {
         const isNote = item.isNote === true;
         const displayName = item.displayName || item.name;
         const itemTypeAttr = isNote ? 'data-item-type="note"' : 'data-item-type="exercise"';
-        const borderStyle = isNote ? 'border-left: 3px solid var(--workout-muted, #6c757d);' : '';
+        const noteStyle = isNote ? 'border-left: 3px solid var(--workout-muted, #6c757d);' : '';
         const icon = isNote ? '<i class="bx bx-note-text me-1 text-muted"></i>' : '';
         const badgeClass = isNote ? 'bg-label-info' : (item.isBonus ? 'bg-label-primary' : 'bg-label-secondary');
 
+        // Block data attributes for position-based inference
+        const blockAttrs = item.blockId
+            ? `data-block-id="${escapeHtml(item.blockId)}" data-block-name="${escapeHtml(item.blockName || 'Block')}"`
+            : '';
+
+        // Block name tag (visible on block members, hidden placeholder on standalone)
+        const blockTag = !isNote && !item.isBonus
+            ? (item.blockId
+                ? `<span class="reorder-block-tag">${escapeHtml(item.blockName || 'Block')}</span>`
+                : '<span class="reorder-block-tag" style="display:none;"></span>')
+            : '';
+
         return `
-            <div class="reorder-item" data-index="${globalIndex}" ${itemTypeAttr}>
-                <div class="d-flex align-items-center gap-3 p-3 border rounded mb-2 reorder-item-inner" style="cursor: ${canReorder ? 'move' : 'default'}; ${borderStyle}">
+            <div class="reorder-item" data-index="${globalIndex}" ${itemTypeAttr} ${blockAttrs}>
+                <div class="d-flex align-items-center gap-3 p-3 border rounded mb-2 reorder-item-inner" style="cursor: ${canReorder ? 'move' : 'default'}; ${noteStyle}">
                     ${canReorder ? `
                     <div class="reorder-handle text-muted">
                         <i class="bx bx-menu" style="font-size: 1.5rem;"></i>
                     </div>
                     ` : ''}
                     <div class="flex-grow-1">
-                        <div class="fw-medium">${icon}${escapeHtml(displayName)}</div>
+                        <div class="fw-medium">${icon}${escapeHtml(displayName)} ${blockTag}</div>
                         ${!isNote && (item.sets || item.reps) ? `
                             <small class="text-muted">
                                 ${item.sets ? `${item.sets} sets` : ''}
@@ -773,110 +782,64 @@ export function createReorderOffcanvas(exercises, onSave) {
         `;
     };
 
-    // Build nested list HTML — groups consecutive items with same blockId into block containers
-    const buildNestedListHtml = (items) => {
-        if (!hasBlocks) {
-            // No blocks — flat list (same as before)
-            return items.map((item, index) => buildItemHtml(item, index)).join('');
-        }
-
-        const result = [];
-        let i = 0;
-        let globalIndex = 0;
-
-        while (i < items.length) {
-            if (items[i].blockId) {
-                // Collect consecutive items with same blockId
-                const blockId = items[i].blockId;
-                const blockName = items[i].blockName || 'Block';
-                const blockItems = [];
-                while (i < items.length && items[i].blockId === blockId) {
-                    blockItems.push({ item: items[i], globalIndex });
-                    i++;
-                    globalIndex++;
-                }
-
-                // Build block container
-                const blockItemsHtml = blockItems.map(bi => buildItemHtml(bi.item, bi.globalIndex)).join('');
-                result.push(`
-                    <div class="reorder-block" data-block-id="${escapeHtml(blockId)}">
-                        <div class="reorder-block-header">
-                            <i class="bx bx-collection me-1"></i>
-                            <span class="reorder-block-name">${escapeHtml(blockName)}</span>
-                        </div>
-                        <div class="reorder-block-list">
-                            ${blockItemsHtml}
-                        </div>
-                    </div>
-                `);
-            } else {
-                // Standalone item
-                result.push(buildItemHtml(items[i], globalIndex));
-                i++;
-                globalIndex++;
-            }
-        }
-
-        return result.join('');
+    // Build flat list HTML — all items at same level, no nesting
+    const buildListHtml = (items) => {
+        return items.map((item, index) => buildItemHtml(item, index)).join('');
     };
 
-    // Block styling (inline to keep it self-contained in the offcanvas)
+    // Block styling for flat list with connected-card visual grouping
     const blockStyles = hasBlocks ? `
         <style>
-            .reorder-block {
+            /* Block member — teal left border */
+            .reorder-item.block-member .reorder-item-inner {
                 border-left: 3px solid var(--workout-block, #2dd4bf);
-                border-radius: 6px;
-                margin-bottom: 8px;
-                background: rgba(45, 212, 191, 0.04);
-                transition: box-shadow 0.15s, border-color 0.15s;
             }
-            .reorder-block-header {
-                display: flex;
-                align-items: center;
-                padding: 6px 12px;
-                font-size: 0.75rem;
+            /* First item in a consecutive block group */
+            .reorder-item.block-first .reorder-item-inner {
+                margin-bottom: 0;
+                border-bottom-left-radius: 0;
+                border-bottom-right-radius: 0;
+                border-bottom-color: rgba(45, 212, 191, 0.3);
+            }
+            /* Middle items */
+            .reorder-item.block-middle .reorder-item-inner {
+                margin-bottom: 0;
+                border-radius: 0;
+                border-bottom-color: rgba(45, 212, 191, 0.3);
+            }
+            /* Last item */
+            .reorder-item.block-last .reorder-item-inner {
+                border-top-left-radius: 0;
+                border-top-right-radius: 0;
+            }
+            /* Single-item block — full rounded, just teal border */
+            /* Item joining a block (position-inferred) */
+            .reorder-item.block-joining .reorder-item-inner {
+                border-left: 3px dashed var(--workout-block, #2dd4bf);
+                background: rgba(45, 212, 191, 0.06);
+            }
+            /* Item leaving its block */
+            .reorder-item.block-leaving .reorder-item-inner {
+                border-left: 3px dashed var(--bs-danger, #dc3545);
+                opacity: 0.75;
+            }
+            /* Block name tag inline with exercise name */
+            .reorder-block-tag {
+                font-size: 0.6rem;
                 font-weight: 600;
-                text-transform: uppercase;
-                letter-spacing: 0.5px;
                 color: var(--workout-block, #2dd4bf);
+                background: rgba(45, 212, 191, 0.1);
+                padding: 1px 5px;
+                border-radius: 3px;
+                margin-left: 6px;
+                text-transform: uppercase;
+                letter-spacing: 0.3px;
+                vertical-align: middle;
             }
-            .reorder-block-list {
-                padding: 4px 4px 8px 4px;
-                min-height: 50px;
-            }
-            .reorder-block-list .reorder-item .reorder-item-inner {
-                margin-bottom: 2px;
-            }
-            .reorder-block.sortable-ghost {
+            /* Ghost while dragging */
+            .reorder-item.sortable-ghost .reorder-item-inner {
                 opacity: 0.4;
-                border: 2px dashed var(--workout-block, #2dd4bf);
-            }
-            .reorder-block-list .sortable-ghost .reorder-item-inner {
                 border-style: dashed;
-                border-color: var(--workout-block, #2dd4bf);
-            }
-            /* Highlight block when an item is being dragged over it */
-            .reorder-block.drag-over {
-                box-shadow: 0 0 0 2px var(--workout-block, #2dd4bf), 0 4px 12px rgba(45, 212, 191, 0.2);
-                border-color: var(--workout-block, #2dd4bf);
-                background: rgba(45, 212, 191, 0.08);
-            }
-            .reorder-block.drag-over .reorder-block-header {
-                color: #fff;
-                background: var(--workout-block, #2dd4bf);
-                border-radius: 4px 4px 0 0;
-            }
-            /* Drop zone hint for empty block lists */
-            .reorder-block-list:empty::after {
-                content: 'Drop exercise here';
-                display: block;
-                text-align: center;
-                padding: 16px;
-                color: var(--bs-secondary);
-                font-size: 0.8rem;
-                border: 2px dashed var(--bs-border-color);
-                border-radius: 4px;
-                margin: 4px;
             }
         </style>
     ` : '';
@@ -884,7 +847,6 @@ export function createReorderOffcanvas(exercises, onSave) {
     // Build body content based on exercise count
     let bodyContent;
     if (exercises.length === 0) {
-        // No exercises - show empty state
         bodyContent = `
             <div class="text-center py-4">
                 <i class="bx bx-list-ul" style="font-size: 4rem; color: var(--bs-secondary);"></i>
@@ -893,7 +855,6 @@ export function createReorderOffcanvas(exercises, onSave) {
             </div>
         `;
     } else if (exercises.length === 1) {
-        // Single exercise - show it with informative message
         bodyContent = `
             <div class="alert alert-info d-flex align-items-start mb-3">
                 <i class="bx bx-info-circle me-2 mt-1"></i>
@@ -903,13 +864,12 @@ export function createReorderOffcanvas(exercises, onSave) {
                 </div>
             </div>
             <div id="reorderList" class="mb-4">
-                ${buildNestedListHtml(exercises)}
+                ${buildListHtml(exercises)}
             </div>
         `;
     } else {
-        // Normal case: 2+ exercises - full reorder functionality
         const helpText = hasBlocks
-            ? 'Drag exercises to reorder. Drag in or out of blocks to change grouping.'
+            ? 'Drag exercises to reorder. Drop between block members to join a block.'
             : 'Hold and drag exercises to change their order.';
         bodyContent = `
             ${blockStyles}
@@ -921,7 +881,7 @@ export function createReorderOffcanvas(exercises, onSave) {
                 </div>
             </div>
             <div id="reorderList" class="mb-4">
-                ${buildNestedListHtml(exercises)}
+                ${buildListHtml(exercises)}
             </div>
             <div id="reorderLoadingIndicator" class="text-center mb-3" style="display: none;">
                 <div class="spinner-border spinner-border-sm text-primary me-2" role="status">
@@ -932,7 +892,6 @@ export function createReorderOffcanvas(exercises, onSave) {
         `;
     }
 
-    // Footer buttons - show Save only when reordering is possible
     const footerContent = canReorder ? `
         <div class="d-flex gap-2">
             <button type="button" class="btn btn-outline-secondary flex-fill" data-bs-dismiss="offcanvas">
@@ -964,18 +923,16 @@ export function createReorderOffcanvas(exercises, onSave) {
         </div>
     `;
 
-    // Track loading state
     let sortableLoaded = false;
-    let sortableInstances = [];
+    let sortableInstance = null;
+    let draggedElement = null;
 
     return createOffcanvas('reorderExercisesOffcanvas', offcanvasHtml, (offcanvas, offcanvasElement) => {
-        // Skip SortableJS initialization if we can't reorder (0 or 1 exercises)
         if (!canReorder) {
             console.log('ℹ️ Reorder offcanvas opened with < 2 exercises, skipping SortableJS');
             return;
         }
 
-        // Get elements (only exist when canReorder is true)
         const listElement = document.getElementById('reorderList');
         const saveBtn = document.getElementById('saveReorderBtn');
         const loadingIndicator = document.getElementById('reorderLoadingIndicator');
@@ -985,167 +942,98 @@ export function createReorderOffcanvas(exercises, onSave) {
             return;
         }
 
-        // Show loading indicator
         if (loadingIndicator) {
             loadingIndicator.style.display = 'block';
         }
 
-        // Lazy-load SortableJS asynchronously (non-blocking)
-        loadSortableJS().then(() => {
-            sortableLoaded = true;
+        // ── Block inference helpers ──
 
-            // Hide loading indicator
-            if (loadingIndicator) {
-                loadingIndicator.style.display = 'none';
+        // Get the block name for a given blockId by finding an original block member
+        function getBlockName(blockId) {
+            const items = listElement.querySelectorAll('.reorder-item');
+            for (const item of items) {
+                if (item.dataset.blockId === blockId && item.dataset.blockName) {
+                    return item.dataset.blockName;
+                }
             }
+            return 'Block';
+        }
 
-            // Enable save button
-            saveBtn.disabled = false;
+        // Compute effective blockIds based on current DOM order.
+        // Only the dragged item's blockId can change (position-based inference).
+        // All other items keep their original blockId.
+        function computeEffectiveBlockIds() {
+            const items = Array.from(listElement.querySelectorAll('.reorder-item'));
 
-            if (hasBlocks) {
-                // Helper: clear all drag-over highlights
-                const clearDragOverHighlights = () => {
-                    listElement.querySelectorAll('.reorder-block.drag-over').forEach(b => {
-                        b.classList.remove('drag-over');
-                    });
-                };
+            return items.map((item, i) => {
+                const origBlockId = item.dataset.blockId || null;
 
-                // Nested SortableJS — root level handles blocks + standalone items
-                // invertSwap makes items prefer entering nested containers over swapping at root
-                const rootSortable = window.Sortable.create(listElement, {
-                    group: { name: 'exercises', pull: true, put: true },
-                    handle: '.reorder-handle',
-                    draggable: '.reorder-item, .reorder-block',
-                    animation: 150,
-                    ghostClass: 'sortable-ghost',
-                    chosenClass: 'sortable-chosen',
-                    dragClass: 'sortable-drag',
-                    forceFallback: true,
-                    fallbackClass: 'sortable-fallback',
-                    fallbackOnBody: true,
-                    invertSwap: true,
-                    swapThreshold: 0.5,
-                    invertedSwapThreshold: 0.5,
-                    filter: '.reorder-block-header',
-                    onStart: () => listElement.classList.add('is-dragging'),
-                    onEnd: () => {
-                        listElement.classList.remove('is-dragging');
-                        clearDragOverHighlights();
-                        updateAllBadges();
-                    },
-                    // Prevent blocks from being dropped inside other blocks
-                    onMove: (evt) => {
-                        if (evt.dragged.classList.contains('reorder-block') &&
-                            evt.to.classList.contains('reorder-block-list')) {
-                            return false;
-                        }
-                    }
-                });
-                sortableInstances.push(rootSortable);
+                // Only the dragged item gets position-based inference
+                if (item === draggedElement) {
+                    const prevBlockId = i > 0 ? (items[i - 1].dataset.blockId || null) : null;
+                    const nextBlockId = i < items.length - 1 ? (items[i + 1].dataset.blockId || null) : null;
 
-                // Each block's inner list — items can be dragged in/out
-                listElement.querySelectorAll('.reorder-block-list').forEach(blockList => {
-                    const blockSortable = window.Sortable.create(blockList, {
-                        group: {
-                            name: 'exercises',
-                            pull: true,
-                            put: (to, from, dragEl) => {
-                                // Only accept individual items, not entire blocks
-                                return !dragEl.classList.contains('reorder-block');
-                            }
-                        },
-                        handle: '.reorder-handle',
-                        animation: 150,
-                        ghostClass: 'sortable-ghost',
-                        chosenClass: 'sortable-chosen',
-                        forceFallback: true,
-                        fallbackOnBody: true,
-                        dragoverBubble: false,
-                        emptyInsertThreshold: 40,
-                        onAdd: (evt) => {
-                            // Item was dropped into this block — highlight briefly
-                            const block = evt.to.closest('.reorder-block');
-                            if (block) {
-                                block.classList.add('drag-over');
-                                setTimeout(() => block.classList.remove('drag-over'), 400);
-                            }
-                            updateAllBadges();
-                        },
-                        onRemove: () => updateAllBadges(),
-                        onEnd: () => {
-                            clearDragOverHighlights();
-                            updateAllBadges();
-                        }
-                    });
+                    // Between two items of same block → join that block
+                    if (prevBlockId && prevBlockId === nextBlockId) return prevBlockId;
+                    // Adjacent to own original block → stay in block (reorder within)
+                    if (origBlockId && (prevBlockId === origBlockId || nextBlockId === origBlockId)) return origBlockId;
+                    // Isolated → leave block / stay standalone
+                    return null;
+                }
 
-                    // Visual feedback: highlight block on dragenter/dragleave
-                    const parentBlock = blockList.closest('.reorder-block');
-                    if (parentBlock) {
-                        blockList.addEventListener('dragenter', () => {
-                            parentBlock.classList.add('drag-over');
-                        });
-                        blockList.addEventListener('dragleave', (e) => {
-                            // Only remove if leaving the block entirely
-                            if (!blockList.contains(e.relatedTarget)) {
-                                parentBlock.classList.remove('drag-over');
-                            }
-                        });
-                        blockList.addEventListener('drop', () => {
-                            setTimeout(() => parentBlock.classList.remove('drag-over'), 300);
-                        });
-                    }
+                return origBlockId;
+            });
+        }
 
-                    sortableInstances.push(blockSortable);
-                });
+        // Update visual block grouping classes based on effective blockIds
+        function updateVisualGrouping() {
+            const items = Array.from(listElement.querySelectorAll('.reorder-item'));
+            const effectiveBlockIds = computeEffectiveBlockIds();
 
-                console.log('✅ SortableJS initialized with nested block support');
-            } else {
-                // Flat SortableJS — no blocks, same as original
-                const flatSortable = window.Sortable.create(listElement, {
-                    animation: 150,
-                    ghostClass: 'sortable-ghost',
-                    chosenClass: 'sortable-chosen',
-                    dragClass: 'sortable-drag',
-                    forceFallback: true,
-                    fallbackClass: 'sortable-fallback',
-                    fallbackOnBody: true,
-                    swapThreshold: 0.65,
-                    onStart: () => listElement.classList.add('is-dragging'),
-                    onEnd: () => {
-                        listElement.classList.remove('is-dragging');
-                        updateAllBadges();
-                    }
-                });
-                sortableInstances.push(flatSortable);
+            items.forEach((item, i) => {
+                item.classList.remove('block-member', 'block-first', 'block-middle', 'block-last', 'block-single', 'block-joining', 'block-leaving');
 
-                console.log('✅ SortableJS initialized for flat reorder offcanvas');
-            }
+                const blockId = effectiveBlockIds[i];
+                const origBlockId = item.dataset.blockId || null;
 
-        }).catch(error => {
-            console.error('❌ Failed to load SortableJS:', error);
+                // Leaving indicator: was in block, now isolated
+                if (origBlockId && !blockId) {
+                    item.classList.add('block-leaving');
+                    // Hide block tag
+                    const tag = item.querySelector('.reorder-block-tag');
+                    if (tag) tag.style.display = 'none';
+                    return;
+                }
 
-            // Hide loading indicator
-            if (loadingIndicator) {
-                loadingIndicator.style.display = 'none';
-            }
+                if (!blockId) {
+                    // Standalone — ensure tag hidden
+                    const tag = item.querySelector('.reorder-block-tag');
+                    if (tag) tag.style.display = 'none';
+                    return;
+                }
 
-            // Show error message
-            if (listElement) {
-                listElement.innerHTML = `
-                    <div class="alert alert-warning">
-                        <i class="bx bx-error-circle me-2"></i>
-                        Failed to load drag-and-drop library. You can still reorder by closing and trying again.
-                    </div>
-                `;
-            }
+                // Item is in a block (original or joining)
+                const prevSame = i > 0 && effectiveBlockIds[i - 1] === blockId;
+                const nextSame = i < items.length - 1 && effectiveBlockIds[i + 1] === blockId;
 
-            // Keep save button disabled
-            saveBtn.disabled = true;
-        });
+                item.classList.add('block-member');
+                if (!origBlockId && blockId) item.classList.add('block-joining');
 
-        // Update badge numbers across all items (including inside blocks)
+                if (prevSame && nextSame) item.classList.add('block-middle');
+                else if (!prevSame && nextSame) item.classList.add('block-first');
+                else if (prevSame && !nextSame) item.classList.add('block-last');
+                else item.classList.add('block-single');
+
+                // Update block tag text and visibility
+                const tag = item.querySelector('.reorder-block-tag');
+                if (tag) {
+                    tag.textContent = getBlockName(blockId);
+                    tag.style.display = '';
+                }
+            });
+        }
+
         function updateAllBadges() {
-            // Gather all reorder-items in DOM order (including those inside blocks)
             const allItems = listElement.querySelectorAll('.reorder-item');
             let counter = 1;
             allItems.forEach(item => {
@@ -1157,50 +1045,96 @@ export function createReorderOffcanvas(exercises, onSave) {
             });
         }
 
-        // Save button handler — reads nested DOM to capture block membership
+        // ── SortableJS init ──
+
+        loadSortableJS().then(() => {
+            sortableLoaded = true;
+
+            if (loadingIndicator) {
+                loadingIndicator.style.display = 'none';
+            }
+
+            saveBtn.disabled = false;
+
+            // Single flat SortableJS instance — no nesting issues
+            sortableInstance = window.Sortable.create(listElement, {
+                animation: 150,
+                ghostClass: 'sortable-ghost',
+                chosenClass: 'sortable-chosen',
+                dragClass: 'sortable-drag',
+                handle: '.reorder-handle',
+                forceFallback: true,
+                fallbackClass: 'sortable-fallback',
+                fallbackOnBody: true,
+                swapThreshold: 0.65,
+                onStart: (evt) => {
+                    draggedElement = evt.item;
+                    listElement.classList.add('is-dragging');
+                },
+                onChange: () => {
+                    if (hasBlocks) updateVisualGrouping();
+                },
+                onEnd: () => {
+                    listElement.classList.remove('is-dragging');
+                    if (hasBlocks) updateVisualGrouping();
+                    updateAllBadges();
+                }
+            });
+
+            // Apply initial visual grouping for blocks
+            if (hasBlocks) updateVisualGrouping();
+
+            console.log('✅ SortableJS initialized (flat list' + (hasBlocks ? ' with block inference' : '') + ')');
+
+        }).catch(error => {
+            console.error('❌ Failed to load SortableJS:', error);
+
+            if (loadingIndicator) {
+                loadingIndicator.style.display = 'none';
+            }
+
+            if (listElement) {
+                listElement.innerHTML = `
+                    <div class="alert alert-warning">
+                        <i class="bx bx-error-circle me-2"></i>
+                        Failed to load drag-and-drop library. You can still reorder by closing and trying again.
+                    </div>
+                `;
+            }
+
+            saveBtn.disabled = true;
+        });
+
+        // ── Save handler ──
+        // Reads flat DOM order + applies position-based block inference for dragged item
+
         saveBtn.addEventListener('click', () => {
             if (!sortableLoaded) {
                 window.showAlert?.('Please wait, loading drag-and-drop...', 'info');
                 return;
             }
 
+            const items = Array.from(listElement.querySelectorAll('.reorder-item'));
+            const effectiveBlockIds = computeEffectiveBlockIds();
             const reorderedExercises = [];
 
-            // Walk root-level children: standalone .reorder-item or .reorder-block
-            Array.from(listElement.children).forEach(el => {
-                if (el.classList.contains('reorder-block')) {
-                    const blockId = el.dataset.blockId;
-                    const blockNameEl = el.querySelector('.reorder-block-name');
-                    const blockName = blockNameEl ? blockNameEl.textContent.trim() : 'Block';
+            items.forEach((item, i) => {
+                const origIdx = parseInt(item.dataset.index);
+                if (isNaN(origIdx) || !exercises[origIdx]) return;
 
-                    // Get items inside this block
-                    el.querySelectorAll('.reorder-block-list > .reorder-item').forEach(item => {
-                        const origIdx = parseInt(item.dataset.index);
-                        if (!isNaN(origIdx) && exercises[origIdx]) {
-                            reorderedExercises.push({
-                                ...exercises[origIdx],
-                                blockId: blockId,
-                                blockName: blockName
-                            });
-                        }
-                    });
-                } else if (el.classList.contains('reorder-item')) {
-                    const origIdx = parseInt(el.dataset.index);
-                    if (!isNaN(origIdx) && exercises[origIdx]) {
-                        reorderedExercises.push({
-                            ...exercises[origIdx],
-                            blockId: null,
-                            blockName: null
-                        });
-                    }
-                }
+                const blockId = effectiveBlockIds[i] || null;
+                const blockName = blockId ? getBlockName(blockId) : null;
+
+                reorderedExercises.push({
+                    ...exercises[origIdx],
+                    blockId: blockId,
+                    blockName: blockName
+                });
             });
 
-            // Disable button during save
             saveBtn.disabled = true;
             saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Saving...';
 
-            // Call onSave callback
             try {
                 onSave(reorderedExercises);
                 offcanvas.hide();
@@ -1212,12 +1146,13 @@ export function createReorderOffcanvas(exercises, onSave) {
             }
         });
 
-        // Cleanup all Sortable instances when offcanvas closes
+        // Cleanup when offcanvas closes
         offcanvasElement.addEventListener('hidden.bs.offcanvas', () => {
-            sortableInstances.forEach(instance => {
-                if (instance) instance.destroy();
-            });
-            sortableInstances = [];
+            if (sortableInstance) {
+                sortableInstance.destroy();
+                sortableInstance = null;
+            }
+            draggedElement = null;
         }, { once: true });
     });
 }
