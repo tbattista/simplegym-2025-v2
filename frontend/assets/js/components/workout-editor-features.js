@@ -99,6 +99,8 @@ function openReorderOffcanvas() {
             name: groupData.exercises?.a || `Exercise ${index + 1}`,
             sets: groupData.sets || '3',
             reps: groupData.reps || '8-12',
+            blockId: groupData.block_id || null,
+            blockName: groupData.group_name || null,
             index: index
         };
     });
@@ -127,15 +129,29 @@ function applyReorderedExercises(reorderedExercises) {
 
     console.log('📋 Applying new exercise order:', reorderedExercises.map(e => e.name));
 
-    // Reorder DOM elements based on new order
-    reorderedExercises.forEach((exercise, newIndex) => {
+    // 1. Reorder DOM elements based on new order
+    reorderedExercises.forEach((exercise) => {
         const card = container.querySelector(`[data-group-id="${exercise.groupId}"]`);
         if (card) {
             container.appendChild(card);
         }
     });
 
-    // Update all menu boundaries after reorder
+    // 2. Update block membership in exerciseGroupsData
+    reorderedExercises.forEach((exercise) => {
+        const data = window.exerciseGroupsData?.[exercise.groupId];
+        if (data) {
+            data.block_id = exercise.blockId || null;
+            data.group_name = exercise.blockName || null;
+        }
+    });
+
+    // 3. Re-render block visual grouping
+    if (window.cardRenderer?.applyBlockGrouping) {
+        window.cardRenderer.applyBlockGrouping();
+    }
+
+    // 4. Update all menu boundaries after reorder
     if (window.builderCardMenu?.updateAllMenuBoundaries) {
         window.builderCardMenu.updateAllMenuBoundaries();
     }

@@ -50,9 +50,8 @@ class WorkoutReorderManager {
                 exerciseList,
                 (reorderedExercises) => {
                     console.log('Saving new exercise order:', reorderedExercises);
-                    // Extract exercise names from reordered exercise objects
-                    const newOrder = reorderedExercises.map(ex => ex.name);
-                    this.applyExerciseOrder(newOrder);
+                    // Pass full exercise objects (with blockId/blockName) to apply block changes
+                    this.applyExerciseOrder(reorderedExercises);
                 }
             );
 
@@ -86,7 +85,11 @@ class WorkoutReorderManager {
                         name: exerciseName,
                         displayName: exerciseName,
                         isBonus: false,
-                        isNote: false
+                        isNote: false,
+                        blockId: group.block_id || null,
+                        blockName: group.group_name || null,
+                        sets: group.sets,
+                        reps: group.reps
                     });
                 }
             });
@@ -163,6 +166,9 @@ class WorkoutReorderManager {
 
             console.log('Applying new exercise order:', newOrder);
 
+            // Extract name order for session service
+            const nameOrder = newOrder.map(ex => typeof ex === 'string' ? ex : ex.name);
+
             // Preserve timer state before re-render
             const timerDisplay = document.getElementById('floatingTimer');
             const preservedTime = timerDisplay ? timerDisplay.textContent : null;
@@ -172,8 +178,23 @@ class WorkoutReorderManager {
                 console.log('Preserving timer state before reorder:', preservedTime);
             }
 
+            // Update block membership on the workout's exercise_groups
+            const currentWorkout = this.onGetCurrentWorkout();
+            if (currentWorkout?.exercise_groups) {
+                newOrder.forEach(item => {
+                    if (!item || typeof item === 'string' || item.isBonus || item.isNote) return;
+                    const group = currentWorkout.exercise_groups.find(
+                        g => g.exercises?.a === item.name
+                    );
+                    if (group) {
+                        group.block_id = item.blockId || null;
+                        group.group_name = item.blockName || null;
+                    }
+                });
+            }
+
             // Save to session service
-            this.sessionService.setExerciseOrder(newOrder);
+            this.sessionService.setExerciseOrder(nameOrder);
 
             // Re-render workout with new order
             this.onRenderWorkout();

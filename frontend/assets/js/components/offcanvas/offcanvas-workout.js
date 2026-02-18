@@ -736,18 +736,20 @@ export function createReorderOffcanvas(exercises, onSave) {
     // Determine if reordering is possible (need at least 2 items)
     const canReorder = exercises.length >= 2;
 
-    // Build exercise list HTML (supports exercises and notes)
-    const buildExerciseListHtml = (items) => items.map((item, index) => {
+    // Check if any exercises have block data
+    const hasBlocks = exercises.some(ex => ex.blockId);
+
+    // Build a single reorder-item row HTML
+    const buildItemHtml = (item, globalIndex) => {
         const isNote = item.isNote === true;
         const displayName = item.displayName || item.name;
         const itemTypeAttr = isNote ? 'data-item-type="note"' : 'data-item-type="exercise"';
         const borderStyle = isNote ? 'border-left: 3px solid var(--workout-muted, #6c757d);' : '';
         const icon = isNote ? '<i class="bx bx-note-text me-1 text-muted"></i>' : '';
         const badgeClass = isNote ? 'bg-label-info' : (item.isBonus ? 'bg-label-primary' : 'bg-label-secondary');
-        const badgeText = isNote ? 'Note' : (index + 1);
 
         return `
-            <div class="reorder-item" data-index="${index}" ${itemTypeAttr}>
+            <div class="reorder-item" data-index="${globalIndex}" ${itemTypeAttr}>
                 <div class="d-flex align-items-center gap-3 p-3 border rounded mb-2 reorder-item-inner" style="cursor: ${canReorder ? 'move' : 'default'}; ${borderStyle}">
                     ${canReorder ? `
                     <div class="reorder-handle text-muted">
@@ -765,11 +767,107 @@ export function createReorderOffcanvas(exercises, onSave) {
                         ` : ''}
                         ${isNote ? '<small class="text-muted">Session note</small>' : ''}
                     </div>
-                    <div class="badge ${badgeClass}">${badgeText}</div>
+                    <div class="badge reorder-badge ${badgeClass}">${globalIndex + 1}</div>
                 </div>
             </div>
         `;
-    }).join('');
+    };
+
+    // Build nested list HTML — groups consecutive items with same blockId into block containers
+    const buildNestedListHtml = (items) => {
+        if (!hasBlocks) {
+            // No blocks — flat list (same as before)
+            return items.map((item, index) => buildItemHtml(item, index)).join('');
+        }
+
+        const result = [];
+        let i = 0;
+        let globalIndex = 0;
+
+        while (i < items.length) {
+            if (items[i].blockId) {
+                // Collect consecutive items with same blockId
+                const blockId = items[i].blockId;
+                const blockName = items[i].blockName || 'Block';
+                const blockItems = [];
+                while (i < items.length && items[i].blockId === blockId) {
+                    blockItems.push({ item: items[i], globalIndex });
+                    i++;
+                    globalIndex++;
+                }
+
+                // Build block container
+                const blockItemsHtml = blockItems.map(bi => buildItemHtml(bi.item, bi.globalIndex)).join('');
+                result.push(`
+                    <div class="reorder-block" data-block-id="${escapeHtml(blockId)}">
+                        <div class="reorder-block-header">
+                            <i class="bx bx-collection me-1"></i>
+                            <span class="reorder-block-name">${escapeHtml(blockName)}</span>
+                        </div>
+                        <div class="reorder-block-list">
+                            ${blockItemsHtml}
+                        </div>
+                    </div>
+                `);
+            } else {
+                // Standalone item
+                result.push(buildItemHtml(items[i], globalIndex));
+                i++;
+                globalIndex++;
+            }
+        }
+
+        return result.join('');
+    };
+
+    // Block styling (inline to keep it self-contained in the offcanvas)
+    const blockStyles = hasBlocks ? `
+        <style>
+            .reorder-block {
+                border-left: 3px solid var(--workout-block, #2dd4bf);
+                border-radius: 6px;
+                margin-bottom: 8px;
+                background: rgba(45, 212, 191, 0.04);
+            }
+            .reorder-block-header {
+                display: flex;
+                align-items: center;
+                padding: 6px 12px;
+                font-size: 0.75rem;
+                font-weight: 600;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                color: var(--workout-block, #2dd4bf);
+            }
+            .reorder-block-list {
+                padding: 0 4px 4px 4px;
+                min-height: 40px;
+            }
+            .reorder-block-list .reorder-item .reorder-item-inner {
+                margin-bottom: 2px;
+            }
+            .reorder-block.sortable-ghost {
+                opacity: 0.4;
+                border: 2px dashed var(--workout-block, #2dd4bf);
+            }
+            .reorder-block-list .sortable-ghost .reorder-item-inner {
+                border-style: dashed;
+                border-color: var(--workout-block, #2dd4bf);
+            }
+            /* Drop zone hint for empty block lists */
+            .reorder-block-list:empty::after {
+                content: 'Drop exercise here';
+                display: block;
+                text-align: center;
+                padding: 12px;
+                color: var(--bs-secondary);
+                font-size: 0.8rem;
+                border: 2px dashed var(--bs-border-color);
+                border-radius: 4px;
+                margin: 4px;
+            }
+        </style>
+    ` : '';
 
     // Build body content based on exercise count
     let bodyContent;
@@ -793,21 +891,25 @@ export function createReorderOffcanvas(exercises, onSave) {
                 </div>
             </div>
             <div id="reorderList" class="mb-4">
-                ${buildExerciseListHtml(exercises)}
+                ${buildNestedListHtml(exercises)}
             </div>
         `;
     } else {
         // Normal case: 2+ exercises - full reorder functionality
+        const helpText = hasBlocks
+            ? 'Drag exercises to reorder. Drag in or out of blocks to change grouping.'
+            : 'Hold and drag exercises to change their order.';
         bodyContent = `
+            ${blockStyles}
             <div class="alert alert-info d-flex align-items-start mb-3">
                 <i class="bx bx-info-circle me-2 mt-1"></i>
                 <div>
                     <strong>Drag to reorder</strong>
-                    <p class="mb-0 small">Hold and drag exercises to change their order. Changes are saved when you tap "Save Order".</p>
+                    <p class="mb-0 small">${helpText} Changes are saved when you tap "Save Order".</p>
                 </div>
             </div>
             <div id="reorderList" class="mb-4">
-                ${buildExerciseListHtml(exercises)}
+                ${buildNestedListHtml(exercises)}
             </div>
             <div id="reorderLoadingIndicator" class="text-center mb-3" style="display: none;">
                 <div class="spinner-border spinner-border-sm text-primary me-2" role="status">
@@ -849,11 +951,11 @@ export function createReorderOffcanvas(exercises, onSave) {
             </div>
         </div>
     `;
-    
+
     // Track loading state
     let sortableLoaded = false;
-    let sortableInstance = null;
-    
+    let sortableInstances = [];
+
     return createOffcanvas('reorderExercisesOffcanvas', offcanvasHtml, (offcanvas, offcanvasElement) => {
         // Skip SortableJS initialization if we can't reorder (0 or 1 exercises)
         if (!canReorder) {
@@ -879,47 +981,85 @@ export function createReorderOffcanvas(exercises, onSave) {
         // Lazy-load SortableJS asynchronously (non-blocking)
         loadSortableJS().then(() => {
             sortableLoaded = true;
-            
+
             // Hide loading indicator
             if (loadingIndicator) {
                 loadingIndicator.style.display = 'none';
             }
-            
+
             // Enable save button
             saveBtn.disabled = false;
-            
-            // Create Sortable instance
-            sortableInstance = window.Sortable.create(listElement, {
-                animation: 150,
-                // No handle restriction - drag from anywhere
-                ghostClass: 'sortable-ghost',
-                chosenClass: 'sortable-chosen',
-                dragClass: 'sortable-drag',
-                forceFallback: true, // Better mobile support
-                fallbackClass: 'sortable-fallback',
-                fallbackOnBody: true,
-                swapThreshold: 0.65,
-                onStart: function() {
-                    // Add visual feedback when dragging starts
-                    listElement.classList.add('is-dragging');
-                },
-                onEnd: function() {
-                    // Remove visual feedback when dragging ends
-                    listElement.classList.remove('is-dragging');
-                    updateBadgeNumbers();
-                }
-            });
-            
-            console.log('✅ SortableJS initialized for reorder offcanvas');
-            
+
+            if (hasBlocks) {
+                // Nested SortableJS — root level handles blocks + standalone items
+                const rootSortable = window.Sortable.create(listElement, {
+                    group: { name: 'exercises', pull: true, put: true },
+                    handle: '.reorder-handle',
+                    draggable: '.reorder-item, .reorder-block',
+                    animation: 150,
+                    ghostClass: 'sortable-ghost',
+                    chosenClass: 'sortable-chosen',
+                    dragClass: 'sortable-drag',
+                    forceFallback: true,
+                    fallbackClass: 'sortable-fallback',
+                    fallbackOnBody: true,
+                    swapThreshold: 0.65,
+                    filter: '.reorder-block-header',
+                    onStart: () => listElement.classList.add('is-dragging'),
+                    onEnd: () => {
+                        listElement.classList.remove('is-dragging');
+                        updateAllBadges();
+                    }
+                });
+                sortableInstances.push(rootSortable);
+
+                // Each block's inner list — items can be dragged in/out
+                listElement.querySelectorAll('.reorder-block-list').forEach(blockList => {
+                    const blockSortable = window.Sortable.create(blockList, {
+                        group: { name: 'exercises', pull: true, put: true },
+                        handle: '.reorder-handle',
+                        animation: 150,
+                        ghostClass: 'sortable-ghost',
+                        chosenClass: 'sortable-chosen',
+                        forceFallback: true,
+                        fallbackOnBody: true,
+                        emptyInsertThreshold: 20,
+                        onEnd: () => updateAllBadges()
+                    });
+                    sortableInstances.push(blockSortable);
+                });
+
+                console.log('✅ SortableJS initialized with nested block support');
+            } else {
+                // Flat SortableJS — no blocks, same as original
+                const flatSortable = window.Sortable.create(listElement, {
+                    animation: 150,
+                    ghostClass: 'sortable-ghost',
+                    chosenClass: 'sortable-chosen',
+                    dragClass: 'sortable-drag',
+                    forceFallback: true,
+                    fallbackClass: 'sortable-fallback',
+                    fallbackOnBody: true,
+                    swapThreshold: 0.65,
+                    onStart: () => listElement.classList.add('is-dragging'),
+                    onEnd: () => {
+                        listElement.classList.remove('is-dragging');
+                        updateAllBadges();
+                    }
+                });
+                sortableInstances.push(flatSortable);
+
+                console.log('✅ SortableJS initialized for flat reorder offcanvas');
+            }
+
         }).catch(error => {
             console.error('❌ Failed to load SortableJS:', error);
-            
+
             // Hide loading indicator
             if (loadingIndicator) {
                 loadingIndicator.style.display = 'none';
             }
-            
+
             // Show error message
             if (listElement) {
                 listElement.innerHTML = `
@@ -929,41 +1069,68 @@ export function createReorderOffcanvas(exercises, onSave) {
                     </div>
                 `;
             }
-            
+
             // Keep save button disabled
             saveBtn.disabled = true;
         });
-        
-        // Update badge numbers after reordering
-        function updateBadgeNumbers() {
-            const items = listElement.querySelectorAll('.reorder-item');
-            items.forEach((item, index) => {
-                const badge = item.querySelector('.badge');
-                if (badge) {
-                    badge.textContent = index + 1;
+
+        // Update badge numbers across all items (including inside blocks)
+        function updateAllBadges() {
+            // Gather all reorder-items in DOM order (including those inside blocks)
+            const allItems = listElement.querySelectorAll('.reorder-item');
+            let counter = 1;
+            allItems.forEach(item => {
+                const badge = item.querySelector('.reorder-badge');
+                if (badge && item.getAttribute('data-item-type') !== 'note') {
+                    badge.textContent = counter;
+                    counter++;
                 }
             });
         }
-        
-        // Save button handler
+
+        // Save button handler — reads nested DOM to capture block membership
         saveBtn.addEventListener('click', () => {
-            // Check if sortable is loaded
             if (!sortableLoaded) {
                 window.showAlert?.('Please wait, loading drag-and-drop...', 'info');
                 return;
             }
-            
-            // Get current order from DOM
-            const items = listElement.querySelectorAll('.reorder-item');
-            const reorderedExercises = Array.from(items).map(item => {
-                const originalIndex = parseInt(item.getAttribute('data-index'));
-                return exercises[originalIndex];
+
+            const reorderedExercises = [];
+
+            // Walk root-level children: standalone .reorder-item or .reorder-block
+            Array.from(listElement.children).forEach(el => {
+                if (el.classList.contains('reorder-block')) {
+                    const blockId = el.dataset.blockId;
+                    const blockNameEl = el.querySelector('.reorder-block-name');
+                    const blockName = blockNameEl ? blockNameEl.textContent.trim() : 'Block';
+
+                    // Get items inside this block
+                    el.querySelectorAll('.reorder-block-list > .reorder-item').forEach(item => {
+                        const origIdx = parseInt(item.dataset.index);
+                        if (!isNaN(origIdx) && exercises[origIdx]) {
+                            reorderedExercises.push({
+                                ...exercises[origIdx],
+                                blockId: blockId,
+                                blockName: blockName
+                            });
+                        }
+                    });
+                } else if (el.classList.contains('reorder-item')) {
+                    const origIdx = parseInt(el.dataset.index);
+                    if (!isNaN(origIdx) && exercises[origIdx]) {
+                        reorderedExercises.push({
+                            ...exercises[origIdx],
+                            blockId: null,
+                            blockName: null
+                        });
+                    }
+                }
             });
-            
+
             // Disable button during save
             saveBtn.disabled = true;
             saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Saving...';
-            
+
             // Call onSave callback
             try {
                 onSave(reorderedExercises);
@@ -975,13 +1142,13 @@ export function createReorderOffcanvas(exercises, onSave) {
                 alert('Failed to save exercise order. Please try again.');
             }
         });
-        
-        // Cleanup Sortable instance when offcanvas closes
+
+        // Cleanup all Sortable instances when offcanvas closes
         offcanvasElement.addEventListener('hidden.bs.offcanvas', () => {
-            if (sortableInstance) {
-                sortableInstance.destroy();
-                sortableInstance = null;
-            }
+            sortableInstances.forEach(instance => {
+                if (instance) instance.destroy();
+            });
+            sortableInstances = [];
         }, { once: true });
     });
 }
