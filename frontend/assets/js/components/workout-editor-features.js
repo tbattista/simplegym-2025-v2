@@ -129,29 +129,55 @@ function applyReorderedExercises(reorderedExercises) {
 
     console.log('📋 Applying new exercise order:', reorderedExercises.map(e => e.name));
 
-    // 1. Reorder DOM elements based on new order
-    reorderedExercises.forEach((exercise) => {
-        const card = container.querySelector(`[data-group-id="${exercise.groupId}"]`);
-        if (card) {
-            container.appendChild(card);
-        }
-    });
+    if (window.SectionManager?.isSectionsMode()) {
+        // Sections mode: reorder sections and exercises within sections
+        // 1. Reorder sections by first appearance of their exercises
+        const processed = new Set();
+        reorderedExercises.forEach(exercise => {
+            const card = container.querySelector(`[data-group-id="${exercise.groupId}"]`);
+            if (!card) return;
+            const section = card.closest('.workout-section');
+            if (section && !processed.has(section.dataset.sectionId)) {
+                processed.add(section.dataset.sectionId);
+                container.appendChild(section);
+            }
+        });
 
-    // 2. Update block membership in exerciseGroupsData
-    reorderedExercises.forEach((exercise) => {
-        const data = window.exerciseGroupsData?.[exercise.groupId];
-        if (data) {
-            data.block_id = exercise.blockId || null;
-            data.group_name = exercise.blockName || null;
-        }
-    });
+        // 2. Reorder exercises within their section containers
+        reorderedExercises.forEach(exercise => {
+            const card = container.querySelector(`[data-group-id="${exercise.groupId}"]`);
+            if (card) {
+                const exercisesContainer = card.closest('.section-exercises');
+                if (exercisesContainer) {
+                    exercisesContainer.appendChild(card);
+                }
+            }
+        });
+    } else {
+        // Legacy mode: reorder flat DOM elements
+        reorderedExercises.forEach((exercise) => {
+            const card = container.querySelector(`[data-group-id="${exercise.groupId}"]`);
+            if (card) {
+                container.appendChild(card);
+            }
+        });
 
-    // 3. Re-render block visual grouping
-    if (window.cardRenderer?.applyBlockGrouping) {
-        window.cardRenderer.applyBlockGrouping();
+        // Update block membership in exerciseGroupsData
+        reorderedExercises.forEach((exercise) => {
+            const data = window.exerciseGroupsData?.[exercise.groupId];
+            if (data) {
+                data.block_id = exercise.blockId || null;
+                data.group_name = exercise.blockName || null;
+            }
+        });
+
+        // Re-render block visual grouping
+        if (window.cardRenderer?.applyBlockGrouping) {
+            window.cardRenderer.applyBlockGrouping();
+        }
     }
 
-    // 4. Update all menu boundaries after reorder
+    // Update all menu boundaries after reorder
     if (window.builderCardMenu?.updateAllMenuBoundaries) {
         window.builderCardMenu.updateAllMenuBoundaries();
     }

@@ -2,223 +2,48 @@
  * Exercise Group Manager Module
  * Handles exercise group CRUD, sorting, previews, and weight unit toggles
  * Extracted from workouts.js
+ *
+ * Shim methods (add, addBlock, addToBlock, removeFromBlock, renameBlock)
+ * route to SectionManager for sections-based workout editing.
+ * Active methods: remove, renumber, updatePreview, initSorting, addExercise,
+ * removeExercise, addWeightUnitListeners.
  */
 
 const ExerciseGroupManager = {
 
-    /**
-     * Add exercise group to workout form (card-based layout)
-     */
+    /** Route to SectionManager.addStandardSection() */
     add() {
-        const container = document.getElementById('exerciseGroups');
-        if (!container) return;
-
-        const currentCardCount = container.querySelectorAll('.exercise-group-card').length;
-        const groupCount = currentCardCount + 1;
-        const groupId = `group-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-
-        // Create default data with placeholder exercise name
-        const defaultData = {
-            exercises: { a: 'Exercise Name', b: '', c: '' },
-            sets: '3',
-            reps: '8-12',
-            rest: '60s',
-            default_weight: '',
-            default_weight_unit: 'lbs'
-        };
-
-        // Create card HTML with default data
-        const newIndex = currentCardCount;
-        const newTotalCards = currentCardCount + 1;
-        const groupHtml = createExerciseGroupCard(groupId, defaultData, groupCount, newIndex, newTotalCards);
-
-        container.insertAdjacentHTML('beforeend', groupHtml);
-
-        // Update all card menu boundaries after adding new card
-        window.builderCardMenu?.updateAllMenuBoundaries();
-
-        // Initialize Sortable if not already done
-        ExerciseGroupManager.initSorting();
-        ExerciseGroupManager.initBlockHeaderListeners();
-
-        // Auto-open editor for new group
-        setTimeout(() => {
-            openExerciseGroupEditor(groupId);
-        }, 100);
-
-        // Mark editor as dirty
-        if (window.markEditorDirty) window.markEditorDirty();
-
-        console.log('✅ Added new exercise card:', groupId);
+        if (window.SectionManager) {
+            window.SectionManager.addStandardSection();
+        }
     },
 
-    /**
-     * Add exercise block — creates 2 individual ExerciseGroups linked by a shared block_id
-     */
+    /** Route to SectionManager.addSupersetSection() */
     addBlock() {
-        const container = document.getElementById('exerciseGroups');
-        if (!container) return;
-
-        const blockId = `block-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`;
-
-        // Create 2 individual exercise groups linked by block_id
-        const groupIds = [];
-        for (let i = 0; i < 2; i++) {
-            const groupId = `group-${Date.now()}-${i}-${Math.random().toString(36).substr(2, 9)}`;
-            groupIds.push(groupId);
-            const currentCardCount = container.querySelectorAll('.exercise-group-card').length;
-
-            const data = {
-                exercises: { a: '' },
-                sets: '3',
-                reps: '10',
-                rest: '60s',
-                default_weight: null,
-                default_weight_unit: 'lbs',
-                block_id: blockId,
-                group_name: null
-            };
-
-            window.exerciseGroupsData[groupId] = data;
-
-            const cardHtml = window.createExerciseGroupCard(
-                groupId, data, currentCardCount, currentCardCount + 1
-            );
-            container.insertAdjacentHTML('beforeend', cardHtml);
+        if (window.SectionManager) {
+            window.SectionManager.addSupersetSection();
         }
-
-        // Apply visual grouping
-        if (window.applyBlockGrouping) window.applyBlockGrouping();
-
-        // Update menu boundaries and sorting
-        if (window.builderCardMenu?.updateAllMenuBoundaries) {
-            window.builderCardMenu.updateAllMenuBoundaries();
-        }
-        ExerciseGroupManager.initSorting();
-        ExerciseGroupManager.initBlockHeaderListeners();
-
-        // Auto-open editor for first card
-        setTimeout(() => {
-            if (window.openExerciseGroupEditor) {
-                window.openExerciseGroupEditor(groupIds[0]);
-            }
-        }, 100);
-
-        if (window.markEditorDirty) window.markEditorDirty();
     },
 
-    /**
-     * Add a new exercise to an existing block
-     */
+    /** Route to SectionManager.addExerciseToSection() */
     addToBlock(blockId) {
-        const container = document.getElementById('exerciseGroups');
-        if (!container || !blockId) return;
-
-        // Find last card with this block_id
-        const blockCards = Array.from(container.querySelectorAll(`.exercise-group-card[data-block-id="${blockId}"]`));
-        const lastBlockCard = blockCards[blockCards.length - 1];
-        if (!lastBlockCard) return;
-
-        // Get block_name from sibling
-        const siblingGroupId = lastBlockCard.dataset.groupId;
-        const blockName = window.exerciseGroupsData[siblingGroupId]?.group_name || null;
-
-        const groupId = `group-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-        const currentCardCount = container.querySelectorAll('.exercise-group-card').length;
-
-        const data = {
-            exercises: { a: '' },
-            sets: '3',
-            reps: '10',
-            rest: '60s',
-            default_weight: null,
-            default_weight_unit: 'lbs',
-            block_id: blockId,
-            group_name: blockName
-        };
-
-        window.exerciseGroupsData[groupId] = data;
-
-        const cardHtml = window.createExerciseGroupCard(
-            groupId, data, currentCardCount, currentCardCount + 1
-        );
-
-        // Insert after last card in the block
-        lastBlockCard.insertAdjacentHTML('afterend', cardHtml);
-
-        // Re-apply visual grouping
-        if (window.applyBlockGrouping) window.applyBlockGrouping();
-
-        if (window.builderCardMenu?.updateAllMenuBoundaries) {
-            window.builderCardMenu.updateAllMenuBoundaries();
+        if (window.SectionManager) {
+            window.SectionManager.addExerciseToSection(blockId);
         }
-        ExerciseGroupManager.initBlockHeaderListeners();
-
-        // Open editor for new card
-        setTimeout(() => {
-            if (window.openExerciseGroupEditor) {
-                window.openExerciseGroupEditor(groupId);
-            }
-        }, 100);
-
-        if (window.markEditorDirty) window.markEditorDirty();
     },
 
-    /**
-     * Remove a single exercise from its block.
-     * If only one member remains after removal, dissolve the block entirely.
-     */
+    /** Route to SectionManager.removeExerciseFromSection() */
     removeFromBlock(groupId) {
-        const data = window.exerciseGroupsData[groupId];
-        if (!data || !data.block_id) return;
-
-        const blockId = data.block_id;
-        const otherMembers = Object.keys(window.exerciseGroupsData).filter(
-            id => id !== groupId && window.exerciseGroupsData[id]?.block_id === blockId
-        );
-
-        // Clear block membership
-        data.block_id = null;
-        data.group_name = null;
-
-        // If only 1 member left, dissolve the block entirely
-        if (otherMembers.length === 1) {
-            const lastMember = window.exerciseGroupsData[otherMembers[0]];
-            if (lastMember) {
-                lastMember.block_id = null;
-                lastMember.group_name = null;
-            }
+        if (window.SectionManager) {
+            window.SectionManager.removeExerciseFromSection(groupId);
         }
-
-        // Re-apply visual grouping
-        if (window.applyBlockGrouping) window.applyBlockGrouping();
-        if (window.markEditorDirty) window.markEditorDirty();
     },
 
-    /**
-     * Rename a block — prompts the user for a new name and updates all member groups.
-     */
+    /** Route to SectionManager.renameSection() */
     renameBlock(blockId) {
-        if (!blockId) return;
-
-        // Find current name from any member
-        const memberIds = Object.keys(window.exerciseGroupsData).filter(
-            id => window.exerciseGroupsData[id]?.block_id === blockId
-        );
-        if (memberIds.length === 0) return;
-
-        const currentName = window.exerciseGroupsData[memberIds[0]]?.group_name || '';
-        const newName = prompt('Block name:', currentName);
-        if (newName === null) return; // cancelled
-
-        // Update all members
-        memberIds.forEach(id => {
-            window.exerciseGroupsData[id].group_name = newName || null;
-        });
-
-        // Re-apply visual grouping to update header labels
-        if (window.applyBlockGrouping) window.applyBlockGrouping();
-        if (window.markEditorDirty) window.markEditorDirty();
+        if (window.SectionManager) {
+            window.SectionManager.renameSection(blockId);
+        }
     },
 
     /**
@@ -332,110 +157,17 @@ const ExerciseGroupManager = {
     },
 
     /**
-     * Initialize drag-and-drop sorting for exercise groups
+     * Initialize drag-and-drop sorting for exercise groups.
+     * Routes to SectionManager's two-level Sortable in sections mode.
      */
     initSorting() {
         const container = document.getElementById('exerciseGroups');
         if (!container) return;
 
-        if (container.sortableInstance) return;
-
-        container.sortableInstance = new Sortable(container, {
-            animation: 150,
-            handle: '.drag-handle',
-            ghostClass: 'sortable-ghost',
-            dragClass: 'sortable-drag',
-            chosenClass: 'sortable-chosen',
-            forceFallback: true,
-            fallbackTolerance: 3,
-            filter: '.block-group-header',
-
-            onStart: function(evt) {
-                container.classList.add('is-dragging');
-                const accordions = container.querySelectorAll('.accordion-collapse.show');
-                accordions.forEach(acc => {
-                    const currentItemCollapse = evt.item.querySelector('.accordion-collapse');
-                    if (acc.id !== currentItemCollapse?.id) {
-                        const bsCollapse = bootstrap.Collapse.getInstance(acc);
-                        if (bsCollapse) bsCollapse.hide();
-                    }
-                });
-            },
-
-            onEnd: function(evt) {
-                container.classList.remove('is-dragging');
-                // Update block membership based on new position
-                const movedCard = evt.item;
-                const movedGroupId = movedCard.dataset.groupId;
-                const movedData = window.exerciseGroupsData[movedGroupId];
-
-                if (movedData) {
-                    // Walk siblings, skipping any non-card elements (block headers, etc.)
-                    let prevCard = movedCard.previousElementSibling;
-                    while (prevCard && !prevCard.classList.contains('exercise-group-card')) {
-                        prevCard = prevCard.previousElementSibling;
-                    }
-                    let nextCard = movedCard.nextElementSibling;
-                    while (nextCard && !nextCard.classList.contains('exercise-group-card')) {
-                        nextCard = nextCard.nextElementSibling;
-                    }
-
-                    const prevBlockId = prevCard ? window.exerciseGroupsData[prevCard.dataset.groupId]?.block_id : null;
-                    const nextBlockId = nextCard ? window.exerciseGroupsData[nextCard.dataset.groupId]?.block_id : null;
-
-                    // Between two cards of the same block → join
-                    if (prevBlockId && prevBlockId === nextBlockId && movedData.block_id !== prevBlockId) {
-                        movedData.block_id = prevBlockId;
-                        movedData.group_name = window.exerciseGroupsData[prevCard.dataset.groupId]?.group_name;
-                    }
-                    // Adjacent to a block on one side (other side empty/different) → join
-                    else if (prevBlockId && !nextBlockId && movedData.block_id !== prevBlockId) {
-                        movedData.block_id = prevBlockId;
-                        movedData.group_name = window.exerciseGroupsData[prevCard.dataset.groupId]?.group_name;
-                    }
-                    else if (!prevBlockId && nextBlockId && movedData.block_id !== nextBlockId) {
-                        movedData.block_id = nextBlockId;
-                        movedData.group_name = window.exerciseGroupsData[nextCard.dataset.groupId]?.group_name;
-                    }
-                    // Block member now isolated from its block → leave
-                    else if (movedData.block_id && prevBlockId !== movedData.block_id && nextBlockId !== movedData.block_id) {
-                        movedData.block_id = null;
-                        movedData.group_name = null;
-                    }
-                }
-
-                // Re-apply visual grouping
-                if (window.applyBlockGrouping) window.applyBlockGrouping();
-
-                ExerciseGroupManager.renumber();
-                if (window.markEditorDirty) window.markEditorDirty();
-            }
-        });
-
-        console.log('✅ Exercise group sorting initialized');
-    },
-
-    /**
-     * Initialize delegated click listener for block header "+Add" buttons.
-     * Uses event delegation on the container so it works regardless of when
-     * block headers are created/recreated by applyBlockGrouping().
-     */
-    initBlockHeaderListeners() {
-        const container = document.getElementById('exerciseGroups');
-        if (!container || container._blockHeaderListenersInit) return;
-        container._blockHeaderListenersInit = true;
-
-        container.addEventListener('click', function(e) {
-            const btn = e.target.closest('.block-group-btn');
-            if (!btn) return;
-            e.preventDefault();
-            e.stopPropagation();
-            const header = btn.closest('.block-group-header');
-            const blockId = header?.dataset?.blockId;
-            if (blockId) {
-                ExerciseGroupManager.addToBlock(blockId);
-            }
-        });
+        if (window.SectionManager && container.querySelector('.workout-section')) {
+            window.SectionManager.initSortable(container);
+            window.SectionManager.initHeaderListeners(container);
+        }
     },
 
     /**
