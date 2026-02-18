@@ -166,7 +166,7 @@
     transition: margin 0.15s;
 }
 
-/* Thin colored line between cards during drag */
+/* Thin colored line between cards during drag (mobile cards) */
 #exerciseGroups.is-dragging .exercise-group-card::after {
     content: '';
     display: block;
@@ -176,6 +176,19 @@
     margin: 3px 12px 0;
     opacity: 0.25;
     transition: opacity 0.15s, height 0.15s;
+}
+
+/* Desktop rows use display:grid so ::after must be absolutely positioned */
+#exerciseGroups.is-dragging .desktop-exercise-row.exercise-group-card {
+    position: relative;
+}
+#exerciseGroups.is-dragging .desktop-exercise-row.exercise-group-card::after {
+    position: absolute;
+    bottom: -5px;
+    left: 12px;
+    right: 12px;
+    margin: 0;
+    z-index: 1;
 }
 
 /* Hide line on last card */

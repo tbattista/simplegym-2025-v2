@@ -167,12 +167,21 @@
                     const prevBlockId = prevCard ? window.exerciseGroupsData[prevCard.dataset.groupId]?.block_id : null;
                     const nextBlockId = nextCard ? window.exerciseGroupsData[nextCard.dataset.groupId]?.block_id : null;
 
-                    // Between two cards of the same block → join that block
+                    // Between two cards of the same block → join
                     if (prevBlockId && prevBlockId === nextBlockId && movedData.block_id !== prevBlockId) {
                         movedData.block_id = prevBlockId;
                         movedData.group_name = window.exerciseGroupsData[prevCard.dataset.groupId]?.group_name;
                     }
-                    // Block member now isolated from its block → leave block
+                    // Adjacent to a block on one side (other side empty/different) → join
+                    else if (prevBlockId && !nextBlockId && movedData.block_id !== prevBlockId) {
+                        movedData.block_id = prevBlockId;
+                        movedData.group_name = window.exerciseGroupsData[prevCard.dataset.groupId]?.group_name;
+                    }
+                    else if (!prevBlockId && nextBlockId && movedData.block_id !== nextBlockId) {
+                        movedData.block_id = nextBlockId;
+                        movedData.group_name = window.exerciseGroupsData[nextCard.dataset.groupId]?.group_name;
+                    }
+                    // Block member now isolated from its block → leave
                     else if (movedData.block_id && prevBlockId !== movedData.block_id && nextBlockId !== movedData.block_id) {
                         movedData.block_id = null;
                         movedData.group_name = null;
