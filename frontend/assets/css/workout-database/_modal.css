@@ -1,0 +1,190 @@
+/* ============================================
+   MODAL STYLES
+   ============================================ */
+
+.modal-xl {
+    max-width: 1140px;
+}
+
+/* Modal header styling - compact */
+#workoutDetailModal .modal-header {
+    padding: 0.875rem 1rem;
+    border-bottom: 1px solid var(--bs-border-color);
+}
+
+#workoutDetailModal .modal-title {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+#workoutDetailModal .modal-title i {
+    font-size: 1.125rem;
+}
+
+/* Modal body spacing - compact */
+#workoutDetailModal .modal-body {
+    padding: 1rem;
+    font-size: 0.875rem;
+}
+
+.workout-detail-meta {
+    padding-bottom: 0.625rem;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid var(--bs-border-color);
+}
+
+.workout-detail-meta p {
+    font-size: 0.8125rem;
+    margin-bottom: 0.5rem;
+}
+
+/* Created/Modified dates spacing - compact */
+.workout-detail-meta .d-flex {
+    margin-bottom: 0.5rem;
+    font-size: 0.75rem;
+}
+
+.workout-detail-meta .d-flex span {
+    font-size: 0.75rem;
+}
+
+/* Tags in metadata - compact */
+.workout-detail-meta .badge {
+    font-size: 0.6875rem;
+    padding: 0.25rem 0.5rem;
+}
+
+/* Exercise groups heading - compact */
+#workoutDetailModal .modal-body h6 {
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    margin-top: 0.5rem;
+}
+
+.exercise-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+}
+
+.exercise-list .d-flex {
+    padding: 0.375rem 0.5rem;
+    background-color: var(--bs-gray-50);
+    border-radius: 0.25rem;
+    font-size: 0.8125rem;
+}
+
+/* Exercise group cards - compact */
+#workoutDetailModal .card {
+    margin-bottom: 0.75rem;
+}
+
+#workoutDetailModal .card-body {
+    padding: 0.75rem;
+}
+
+#workoutDetailModal .card-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+/* Exercise badges in groups - compact */
+#workoutDetailModal .badge {
+    font-size: 0.6875rem;
+    padding: 0.25rem 0.5rem;
+}
+
+/* Exercise letter badges - compact */
+#workoutDetailModal .badge.bg-primary {
+    font-size: 0.625rem;
+    padding: 0.1875rem 0.375rem;
+    min-width: 1.5rem;
+}
+
+/* Modal footer button styling - horizontal layout, compact */
+#workoutDetailModal .modal-footer {
+    padding: 0.75rem 1rem;
+    border-top: 1px solid var(--bs-border-color);
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 0.625rem; /* Increased gap between buttons */
+}
+
+#workoutDetailModal .modal-footer .btn {
+    min-width: 100px;
+    margin: 0;
+    padding: 0.5rem 1rem; /* Increased padding for better touch targets */
+    font-size: 0.875rem;
+    border-radius: 0.375rem; /* Rounded corners like search box buttons */
+    font-weight: 500;
+    transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+#workoutDetailModal .modal-footer .btn i {
+    font-size: 1rem;
+}
+
+/* Button hierarchy in modal footer: Close (label-secondary) < Edit (outline) < Start (primary filled) */
+/* Using Sneat's btn-label-secondary for less prominent actions */
+#workoutDetailModal .modal-footer .btn-label-secondary {
+    background-color: rgba(var(--bs-secondary-rgb), 0.1);
+    border: 1px solid transparent;
+    color: var(--bs-secondary);
+}
+
+#workoutDetailModal .modal-footer .btn-label-secondary:hover {
+    background-color: rgba(var(--bs-secondary-rgb), 0.2);
+    color: var(--bs-secondary);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+#workoutDetailModal .modal-footer .btn-outline-primary {
+    background: transparent;
+    border: 1px solid var(--bs-primary);
+    color: var(--bs-primary);
+}
+
+#workoutDetailModal .modal-footer .btn-outline-primary:hover {
+    background: var(--bs-primary);
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(var(--bs-primary-rgb), 0.3);
+}
+
+#workoutDetailModal .modal-footer .btn-primary {
+    background: var(--bs-primary);
+    border: 1px solid var(--bs-primary);
+    color: white;
+}
+
+#workoutDetailModal .modal-footer .btn-primary:hover {
+    background: var(--bs-primary);
+    border-color: var(--bs-primary);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(var(--bs-primary-rgb), 0.4);
+}
+
+/* Ensure buttons stay horizontal on mobile */
+@media (max-width: 767.98px) {
+    #workoutDetailModal .modal-footer {
+        flex-direction: row;
+        flex-wrap: wrap;
+        padding: 0.625rem 0.75rem;
+    }
+
+    #workoutDetailModal .modal-footer .btn {
+        flex: 1;
+        min-width: 85px;
+        padding: 0.3125rem 0.625rem;
+        font-size: 0.75rem;
+    }
+}

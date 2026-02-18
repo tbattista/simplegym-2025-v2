@@ -2,8 +2,8 @@
 
 A comprehensive guide to the CSS organization in Ghost Gym V2. This document helps developers quickly find where to edit specific styles.
 
-**Version:** 1.1.0
-**Last Updated:** 2026-01-30
+**Version:** 1.2.0
+**Last Updated:** 2026-02-18
 
 ---
 
@@ -53,6 +53,21 @@ frontend/assets/css/
 │   ├── _responsive.css     # Mobile responsive rules
 │   └── ... (14 partial files)
 │
+├── workout-database/       # Workout library page partials
+│   ├── _variables.css      # --wdb-* CSS custom properties
+│   ├── _offcanvas.css      # Workout detail offcanvas
+│   ├── _table.css          # Datatable styles
+│   ├── _filter-bar.css     # Badges, buttons, filter bar, pagination
+│   ├── _cards.css          # Card grid, base, menu, z-index fix
+│   ├── _card-preview.css   # Exercise preview list in cards
+│   ├── _modal.css          # Workout detail modal
+│   ├── _states.css         # Loading & empty states
+│   ├── _sections.css       # Today/Favorites/My Workouts sections
+│   ├── _delete-mode.css    # Delete mode, selection bar, card selection
+│   ├── _toolbar.css        # Toolbar + responsive/dark/print
+│   ├── _dark-mode.css      # General dark mode overrides
+│   └── _utilities.css      # Stats, animations, utilities, responsive, print
+│
 └── [page].css              # Page-specific stylesheets
     ├── workout-mode.css    # Workout execution page
     ├── workout-builder.css # Workout builder page
@@ -71,7 +86,7 @@ frontend/assets/css/
 | **Navigation** | `navbar-custom.css`, `bottom-action-bar.css` | Top/bottom nav bars |
 | **Page-Specific** | `workout-*.css`, `exercise-*.css` | Styles for specific pages |
 | **Components** | `components/*.css` | Reusable UI components |
-| **Partials** | `workout-mode/_*.css` | Module partials (prefixed with `_`) |
+| **Partials** | `workout-mode/_*.css`, `workout-database/_*.css` | Module partials (prefixed with `_`) |
 | **Vendor** | `vendor/css/core.css`, `demo.css` | Sneat Bootstrap template |
 
 ---
@@ -259,6 +274,28 @@ This file imports partials from the `workout-mode/` folder:
 @import url('workout-mode/_responsive.css');
 ```
 
+### workout-database.css Structure
+
+This file imports partials from the `workout-database/` folder:
+
+```css
+/* File: workout-database.css */
+
+@import url('workout-database/_variables.css');
+@import url('workout-database/_offcanvas.css');
+@import url('workout-database/_table.css');
+@import url('workout-database/_filter-bar.css');
+@import url('workout-database/_cards.css');
+@import url('workout-database/_card-preview.css');
+@import url('workout-database/_modal.css');
+@import url('workout-database/_states.css');
+@import url('workout-database/_sections.css');
+@import url('workout-database/_delete-mode.css');
+@import url('workout-database/_toolbar.css');
+@import url('workout-database/_dark-mode.css');
+@import url('workout-database/_utilities.css');
+```
+
 ---
 
 ## Component Location Map
@@ -278,7 +315,7 @@ This file imports partials from the `workout-mode/` folder:
 | Component | File |
 |-----------|------|
 | Base card styling | `ghost-gym-custom.css` (line ~36) |
-| Workout list cards | `workout-database.css` (line ~184) |
+| Workout list cards | `workout-database/_cards.css` |
 | Exercise cards (workout mode) | `workout-mode/_card-base.css` |
 | Note cards | `components/note-card.css` |
 | Exercise group cards | `components/exercise-group-card.css` |
@@ -300,7 +337,7 @@ This file imports partials from the `workout-mode/` folder:
 | General badges | `components/badges.css` |
 | Workout mode badges | `workout-mode/_badges.css` |
 | Next exercise chips | `workout-mode/_chips.css` |
-| Tag badges | `workout-database.css` (line ~117) |
+| Tag badges | `workout-database/_filter-bar.css` |
 
 ### Offcanvas & Modals
 
@@ -326,7 +363,7 @@ This file imports partials from the `workout-mode/` folder:
 |-----------|------|
 | Data tables | `components/data-table.css` |
 | Exercise database table | `exercise-database.css` |
-| Workout database table | `workout-database.css` (line ~76) |
+| Workout database table | `workout-database/_table.css` |
 
 ### Timers
 
@@ -392,7 +429,10 @@ color: #94a3b8;               /* Muted text */
 - `components/dark-mode.css` - Shared dark mode
 - `workout-mode/_variables.css` - Dark mode variables
 - `workout-builder.css` - Page-specific dark (line ~200)
-- `workout-database.css` - Page-specific dark (line ~857)
+- `workout-database/_dark-mode.css` - General page dark mode
+- `workout-database/_toolbar.css` - Toolbar dark mode (co-located)
+- `workout-database/_delete-mode.css` - Delete mode dark (co-located)
+- `workout-database/_sections.css` - Sections dark (co-located)
 - `components/unified-offcanvas.css` - Offcanvas dark (line ~514)
 - `bottom-action-bar.css` - Action bar dark (line ~60)
 
@@ -423,7 +463,8 @@ color: #94a3b8;               /* Muted text */
 |------|---------------------|
 | `workout-mode/_responsive.css` | < 400px, < 576px, 576-768px, > 768px |
 | `workout-builder.css` | < 576px, < 768px, < 1199px |
-| `workout-database.css` | < 768px, < 992px |
+| `workout-database/_utilities.css` | < 768px, < 992px |
+| `workout-database/_toolbar.css` | < 576px |
 | `components/unified-offcanvas.css` | < 576px, < 768px |
 | `bottom-action-bar.css` | > 768px, > 1200px |
 | `navbar-custom.css` | < 768px |
@@ -469,8 +510,7 @@ Lines: 36-52 (.card)
 
 **Workout List Cards:**
 ```
-File: frontend/assets/css/workout-database.css
-Lines: 184-220 (.workout-list-card)
+File: frontend/assets/css/workout-database/_cards.css
 ```
 
 **Exercise Cards (workout mode):**
@@ -656,6 +696,24 @@ Lines: 375-500 (.floating-timer-*)
 | `_session-controls.css` | Session start/end |
 | `_bottom-bar.css` | Bottom navigation |
 | `_responsive.css` | Mobile responsive |
+
+### Workout Database Partials (in `workout-database/`)
+
+| File | Purpose |
+|------|---------|
+| `_variables.css` | `--wdb-*` CSS custom properties |
+| `_offcanvas.css` | Workout detail offcanvas |
+| `_table.css` | Datatable styles |
+| `_filter-bar.css` | Badges, buttons, filter bar, pagination |
+| `_cards.css` | Card grid, base, menu, z-index fix |
+| `_card-preview.css` | Exercise preview list in cards |
+| `_modal.css` | Workout detail modal |
+| `_states.css` | Loading & empty states |
+| `_sections.css` | Today/Favorites/My Workouts sections |
+| `_delete-mode.css` | Delete mode, selection bar, card selection |
+| `_toolbar.css` | Toolbar + responsive/dark/print |
+| `_dark-mode.css` | General dark mode overrides |
+| `_utilities.css` | Stats, animations, utilities, responsive, print |
 
 ---
 

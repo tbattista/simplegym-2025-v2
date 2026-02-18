@@ -1,0 +1,30 @@
+/* ============================================
+   WORKOUT DETAIL OFFCANVAS
+   ============================================ */
+
+/* Make offcanvas grow to fit content with max height
+   Note: Bootstrap offcanvas-bottom sets height, need specificity to override */
+#workoutDetailOffcanvas.offcanvas-bottom {
+    height: auto;
+    max-height: 85vh;
+    min-height: 30vh;
+}
+
+#workoutDetailOffcanvas .offcanvas-body {
+    overflow-y: auto;
+    max-height: calc(85vh - 120px); /* Account for header and footer */
+}
+
+#workoutDetailOffcanvas .offcanvas-header {
+    flex-shrink: 0;
+}
+
+#workoutDetailOffcanvas .offcanvas-footer {
+    flex-shrink: 0;
+    background: var(--bs-body-bg);
+}
+
+/* Smooth transition for offcanvas */
+#workoutDetailOffcanvas.offcanvas-bottom {
+    transition: transform 0.3s ease-in-out;
+}

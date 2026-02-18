@@ -1,0 +1,40 @@
+/* ============================================
+   TABLE STYLES
+   ============================================ */
+
+.datatable-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.datatable-table thead th {
+    background-color: var(--bs-gray-100);
+    font-weight: 600;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 1rem;
+    border-bottom: 2px solid var(--bs-border-color);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.datatable-table tbody td {
+    padding: 1rem;
+    vertical-align: middle;
+    border-bottom: 1px solid var(--bs-border-color);
+}
+
+.datatable-table tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+.datatable-table tbody tr:hover {
+    background-color: var(--bs-gray-50);
+}
+
+.workout-row {
+    cursor: pointer;
+}

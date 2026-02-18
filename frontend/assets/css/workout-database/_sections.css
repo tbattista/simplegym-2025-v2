@@ -1,0 +1,51 @@
+/* ============================================
+   TODAY & FAVORITES SECTIONS
+   ============================================ */
+
+/* Section Headers */
+.section-header {
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--bs-secondary);
+}
+
+/* Favorites Section */
+#favoritesSection {
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--bs-border-color);
+}
+
+.workout-card-compact {
+    cursor: pointer;
+    transition: background-color 0.15s;
+}
+
+.workout-card-compact:hover {
+    background-color: var(--bs-light);
+}
+
+/* Favorite Toggle Button */
+.favorite-toggle:hover {
+    transform: scale(1.1);
+}
+
+.favorite-toggle.text-danger {
+    color: var(--bs-danger) !important;
+}
+
+/* My Workouts Section */
+#myWorkoutsSection .section-header {
+    margin-bottom: 0.5rem;
+}
+
+/* Dark mode support for sections */
+[data-bs-theme="dark"] .starter-workout-card {
+    background: var(--bs-dark);
+    border-color: var(--bs-border-color);
+}
+
+[data-bs-theme="dark"] .workout-card-compact:hover {
+    background-color: var(--bs-dark);
+}

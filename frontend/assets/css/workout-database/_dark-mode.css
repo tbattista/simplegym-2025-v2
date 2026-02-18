@@ -1,0 +1,58 @@
+/* ============================================
+   DARK MODE SUPPORT
+   Note: Most dark mode styles are now in components/dark-mode.css
+   These are page-specific overrides for workout-database
+   ============================================ */
+
+/* Page-specific dark mode styles using data-bs-theme attribute */
+[data-bs-theme="dark"] .datatable-table thead th {
+    background-color: var(--gs-gray-100);
+    color: var(--gs-gray-800);
+}
+
+[data-bs-theme="dark"] .datatable-table tbody tr:hover {
+    background-color: var(--gs-gray-100);
+}
+
+[data-bs-theme="dark"] .exercise-list .d-flex {
+    background-color: var(--gs-gray-100);
+}
+
+/* Workout card dark mode */
+[data-bs-theme="dark"] .workout-list-card {
+    background-color: var(--bs-card-bg);
+    border-color: var(--bs-border-color);
+}
+
+[data-bs-theme="dark"] .workout-list-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+[data-bs-theme="dark"] .workout-list-card .btn-card-menu {
+    color: var(--bs-body-color);
+}
+
+[data-bs-theme="dark"] .workout-list-card .exercise-preview-item {
+    color: var(--bs-body-color);
+}
+
+[data-bs-theme="dark"] .workout-list-card .dropdown-menu {
+    background-color: var(--bs-dropdown-bg);
+    border-color: var(--bs-border-color);
+}
+
+/* Fallback for prefers-color-scheme (system preference) */
+@media (prefers-color-scheme: dark) {
+    .datatable-table thead th {
+        background-color: var(--gs-gray-100);
+        color: var(--gs-gray-800);
+    }
+
+    .datatable-table tbody tr:hover {
+        background-color: var(--gs-gray-100);
+    }
+
+    .exercise-list .d-flex {
+        background-color: var(--gs-gray-100);
+    }
+}

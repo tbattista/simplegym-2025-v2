@@ -1,0 +1,131 @@
+/* ============================================
+   BADGE STYLES
+   ============================================ */
+
+.badge {
+    font-weight: 500;
+    padding: 0.35em 0.65em;
+    font-size: 0.75rem;
+}
+
+/* Badge label variants - use component selector for specificity */
+.workout-list-card .badge.bg-label-primary,
+.workout-detail-meta .badge.bg-label-primary {
+    background-color: rgba(var(--bs-primary-rgb), 0.1);
+    color: var(--bs-primary);
+}
+
+.workout-list-card .badge.bg-label-info,
+.workout-detail-meta .badge.bg-label-info {
+    background-color: rgba(var(--bs-info-rgb), 0.1);
+    color: var(--bs-info);
+}
+
+.workout-list-card .badge.bg-label-secondary,
+.workout-detail-meta .badge.bg-label-secondary {
+    background-color: rgba(var(--bs-secondary-rgb), 0.1);
+    color: var(--bs-secondary);
+}
+
+/* ============================================
+   BUTTON STYLES
+   ============================================ */
+
+.btn-group-sm .btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+}
+
+.btn-group .btn i {
+    font-size: 1rem;
+}
+
+.btn-outline-primary:hover,
+.btn-outline-info:hover,
+.btn-outline-secondary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* ============================================
+   COMPACT FILTER BAR
+   ============================================ */
+
+.form-control {
+    font-size: 0.875rem;
+}
+
+/* Filter buttons */
+#sortByBtn,
+#tagsBtn {
+    white-space: nowrap;
+    min-width: 150px;
+}
+
+#sortByBtn span,
+#tagsBtn span {
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+/* Popover content styling */
+.sort-popover-content,
+.tags-popover-content {
+    min-width: 200px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.sort-popover-content .btn,
+.tags-popover-content .btn {
+    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.sort-popover-content .btn:hover,
+.tags-popover-content .btn:hover {
+    background-color: var(--bs-primary);
+    color: white;
+    border-color: var(--bs-primary);
+}
+
+/* Custom popover styling */
+.popover.sort-popover,
+.popover.tags-popover {
+    max-width: 250px;
+}
+
+.popover-body {
+    padding: 0.5rem;
+}
+
+/* ============================================
+   PAGINATION
+   ============================================ */
+
+.pagination-sm .page-link {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.875rem;
+}
+
+.pagination .page-item.active .page-link {
+    background-color: var(--bs-primary);
+    border-color: var(--bs-primary);
+}
+
+.pagination .page-item.disabled .page-link {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.pagination .page-link {
+    color: var(--bs-primary);
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.pagination .page-link:hover:not(.disabled) {
+    background-color: var(--bs-gray-100);
+    transform: translateY(-1px);
+}

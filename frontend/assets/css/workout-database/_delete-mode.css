@@ -1,0 +1,215 @@
+/* ============================================
+   DELETE MODE STYLES
+   ============================================ */
+
+/* Delete mode toggle */
+.delete-mode-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--bs-secondary);
+    transition: color 0.2s ease;
+}
+
+#deleteModeToggle:checked + label .delete-mode-label {
+    color: var(--bs-danger);
+}
+
+/* Delete mode active state */
+body.delete-mode-active {
+    /* Optional: Add global indicator */
+}
+
+/* Card in delete mode */
+.card.delete-mode {
+    border-color: var(--bs-danger);
+    border-width: 2px;
+    background: rgba(var(--bs-danger-rgb), 0.02);
+    transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card.delete-mode:hover {
+    background: rgba(var(--bs-danger-rgb), 0.05);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(var(--bs-danger-rgb), 0.15);
+}
+
+/* Delete button in delete mode */
+.btn-delete-workout {
+    background: var(--bs-danger);
+    color: white;
+    border: none;
+    font-weight: 600;
+    transition: background-color 0.2s ease, filter 0.2s ease, transform 0.2s ease;
+}
+
+.btn-delete-workout:hover {
+    background: var(--bs-danger);
+    filter: brightness(0.9);
+    transform: scale(1.02);
+}
+
+.btn-delete-workout:active {
+    transform: scale(0.98);
+}
+
+.btn-delete-workout i {
+    font-size: 18px;
+}
+
+/* Dark mode adjustments */
+[data-bs-theme="dark"] .card.delete-mode {
+    background: rgba(var(--bs-danger-rgb), 0.08);
+}
+
+[data-bs-theme="dark"] .card.delete-mode:hover {
+    background: rgba(var(--bs-danger-rgb), 0.12);
+}
+
+/* Animation for mode transition */
+@keyframes deleteModePulse {
+    0%, 100% {
+        border-color: var(--bs-danger);
+    }
+    50% {
+        border-color: rgba(var(--bs-danger-rgb), 0.5);
+    }
+}
+
+.card.delete-mode.pulse {
+    animation: deleteModePulse 1.5s ease-in-out;
+}
+
+/* ============================================
+   SELECTION ACTION BAR (Gmail-style batch delete)
+   ============================================ */
+
+.selection-action-bar {
+    position: fixed;
+    bottom: calc(24px + env(safe-area-inset-bottom));
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--bs-gray-900);
+    color: white;
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.5rem;
+    display: none;
+    align-items: center;
+    gap: 1rem;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25), 0 2px 8px rgba(0, 0, 0, 0.15);
+    z-index: 1050;
+    animation: slideUp 0.25s ease-out;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+}
+
+.selection-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.btn-close-selection {
+    background: transparent;
+    border: none;
+    color: white;
+    padding: 0.25rem;
+    cursor: pointer;
+    line-height: 1;
+    font-size: 1.25rem;
+    opacity: 0.8;
+    transition: opacity 0.15s;
+}
+
+.btn-close-selection:hover {
+    opacity: 1;
+}
+
+.selection-count {
+    font-size: 0.875rem;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.btn-batch-delete {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.5rem 1rem;
+    background: var(--bs-danger);
+    color: white;
+    border: none;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: opacity 0.15s, background-color 0.15s;
+}
+
+.btn-batch-delete:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.btn-batch-delete:not(:disabled):hover {
+    background: var(--gs-danger-active);
+}
+
+.btn-batch-delete i {
+    font-size: 1rem;
+}
+
+/* Dark mode */
+[data-bs-theme="dark"] .selection-action-bar {
+    background: var(--gs-gray-100);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4), 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* ============================================
+   CARD SELECTION STATE
+   ============================================ */
+
+/* Card selected state (blue highlight) */
+.workout-list-card.delete-mode.selected {
+    border-color: var(--bs-primary) !important;
+    border-width: 2px;
+    background: rgba(var(--bs-primary-rgb), 0.05);
+}
+
+.workout-list-card.delete-mode.selected:hover {
+    background: rgba(var(--bs-primary-rgb), 0.08);
+    box-shadow: 0 4px 12px rgba(var(--bs-primary-rgb), 0.15);
+}
+
+/* Checkbox styling in delete mode */
+.workout-select-checkbox {
+    width: 1.25rem;
+    height: 1.25rem;
+    cursor: pointer;
+}
+
+.delete-mode-actions {
+    padding: 0.5rem 0;
+}
+
+.delete-mode-actions .form-check-label {
+    cursor: pointer;
+    user-select: none;
+}
+
+/* Dark mode card selection */
+[data-bs-theme="dark"] .workout-list-card.delete-mode.selected {
+    background: rgba(var(--bs-primary-rgb), 0.1);
+}
+
+[data-bs-theme="dark"] .workout-list-card.delete-mode.selected:hover {
+    background: rgba(var(--bs-primary-rgb), 0.15);
+}

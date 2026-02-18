@@ -1,0 +1,23 @@
+/* ============================================
+   CSS CUSTOM PROPERTIES (Variables)
+   ============================================ */
+:root {
+    /* Card styling - compact design */
+    --wdb-card-padding: 0.875rem;
+    --wdb-card-padding-mobile: 0.75rem;
+    --wdb-card-border-radius: 0.5rem;
+    --wdb-card-shadow: 0 2px 6px rgba(67, 89, 113, 0.12);
+    --wdb-card-shadow-hover: 0 4px 12px rgba(67, 89, 113, 0.16);
+
+    /* Typography */
+    --wdb-card-title-size: 1rem;
+    --wdb-card-meta-size: 0.8125rem;
+    --wdb-card-preview-size: 0.8125rem;
+    --wdb-card-preview-size-mobile: 0.75rem;
+
+    /* Touch targets - WCAG minimum */
+    --wdb-touch-target-min: 44px;
+
+    /* Transitions */
+    --wdb-card-transition: box-shadow 0.2s ease, transform 0.2s ease, opacity 0.2s ease;
+}
