@@ -77,23 +77,34 @@ function updateMuscleSummary() {
 
 /**
  * Open the reorder offcanvas with current exercise groups.
- * In sections mode: uses two-level sections reorder offcanvas matching desktop drag.
- * In legacy mode: uses flat list reorder offcanvas with block inference.
+ * Uses the flat reorder offcanvas with block inference for both modes.
+ * In sections mode: flattens sections → exercises with blockId = sectionId,
+ * then reconstructs sections from the reordered flat result.
  */
 function openReorderOffcanvas() {
     const container = document.getElementById('exerciseGroups');
     if (!container) {
-        console.error('❌ Exercise groups container not found');
+        console.error('Exercise groups container not found');
+        return;
+    }
+
+    if (!window.UnifiedOffcanvasFactory?.createReorderOffcanvas) {
+        alert('Reorder feature is not available. Please refresh the page.');
         return;
     }
 
     const isSectionsMode = window.SectionManager?.isSectionsMode();
 
-    if (isSectionsMode && window.UnifiedOffcanvasFactory?.createSectionsReorderOffcanvas) {
-        // Sections mode: collect section structure from DOM
-        const sections = [];
+    if (isSectionsMode) {
+        // Sections mode: flatten sections into exercises with blockId = sectionId
+        const exercises = [];
+        let globalIndex = 0;
         container.querySelectorAll('.workout-section').forEach(sectionEl => {
-            const exercises = [];
+            const sectionId = sectionEl.dataset.sectionId;
+            const sectionType = sectionEl.dataset.sectionType || 'standard';
+            const sectionName = sectionEl.querySelector('.section-name')?.textContent.trim() || null;
+            const isNamed = sectionType !== 'standard';
+
             sectionEl.querySelectorAll('.exercise-group-card').forEach(card => {
                 const groupId = card.getAttribute('data-group-id');
                 const groupData = window.exerciseGroupsData?.[groupId] || {};
@@ -101,22 +112,53 @@ function openReorderOffcanvas() {
                     groupId,
                     name: groupData.exercises?.a || 'Exercise',
                     sets: groupData.sets || '3',
-                    reps: groupData.reps || '8-12'
+                    reps: groupData.reps || '8-12',
+                    blockId: isNamed ? sectionId : null,
+                    blockName: isNamed ? (sectionName || sectionType.charAt(0).toUpperCase() + sectionType.slice(1)) : null,
+                    _sectionType: sectionType,
+                    index: globalIndex++
                 });
             });
-            const sectionType = sectionEl.dataset.sectionType || 'standard';
-            if (exercises.length > 0 || sectionType !== 'standard') {
-                sections.push({
-                    sectionId: sectionEl.dataset.sectionId,
-                    sectionType: sectionType,
-                    sectionName: sectionEl.querySelector('.section-name')?.textContent.trim() || null,
-                    exercises
-                });
-            }
         });
 
-        console.log('📋 Opening sections reorder offcanvas:', sections);
-        window.UnifiedOffcanvasFactory.createSectionsReorderOffcanvas(sections, applySectionReorder);
+        console.log('Opening sections reorder (flat mode):', exercises.length, 'exercises');
+        window.UnifiedOffcanvasFactory.createReorderOffcanvas(exercises, (reorderedExercises) => {
+            // Reconstruct sections from flat result: consecutive same-blockId = one section
+            const reorderedSections = [];
+            let currentBlockId = null;
+            let currentSection = null;
+
+            reorderedExercises.forEach(ex => {
+                if (ex.blockId && ex.blockId === currentBlockId) {
+                    // Continue current named section
+                    currentSection.exerciseIds.push(ex.groupId);
+                } else {
+                    // Start new section
+                    if (ex.blockId) {
+                        currentBlockId = ex.blockId;
+                        currentSection = {
+                            sectionId: ex.blockId,
+                            sectionType: ex._sectionType || 'superset',
+                            sectionName: ex.blockName || null,
+                            exerciseIds: [ex.groupId]
+                        };
+                        reorderedSections.push(currentSection);
+                    } else {
+                        // Standalone exercise → standard section
+                        currentBlockId = null;
+                        currentSection = null;
+                        reorderedSections.push({
+                            sectionId: `section-${ex.groupId}`,
+                            sectionType: 'standard',
+                            sectionName: null,
+                            exerciseIds: [ex.groupId]
+                        });
+                    }
+                }
+            });
+
+            applySectionReorder(reorderedSections);
+        });
         return;
     }
 
@@ -136,11 +178,7 @@ function openReorderOffcanvas() {
         };
     });
 
-    if (window.UnifiedOffcanvasFactory?.createReorderOffcanvas) {
-        window.UnifiedOffcanvasFactory.createReorderOffcanvas(exercises, applyLegacyReorder);
-    } else {
-        alert('Reorder feature is not available. Please refresh the page.');
-    }
+    window.UnifiedOffcanvasFactory.createReorderOffcanvas(exercises, applyLegacyReorder);
 }
 
 /**
