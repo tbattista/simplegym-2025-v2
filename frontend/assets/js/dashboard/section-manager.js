@@ -121,8 +121,8 @@ const SectionManager = {
                     <span class="section-name">${displayName}</span>
                 </div>
                 <div class="section-actions">
-                    <button class="btn-add-to-section" data-section-id="${section.section_id}">+ Add</button>
-                    <button class="btn-section-menu" data-section-id="${section.section_id}">
+                    <button type="button" class="btn-add-to-section" data-section-id="${section.section_id}">+ Add</button>
+                    <button type="button" class="btn-section-menu" data-section-id="${section.section_id}">
                         <i class="bx bx-dots-vertical-rounded"></i>
                     </button>
                 </div>
