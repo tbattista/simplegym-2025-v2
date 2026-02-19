@@ -1367,12 +1367,11 @@ export function createSectionsReorderOffcanvas(sections, onSave) {
         loadSortableJS().then(() => {
             saveBtn.disabled = false;
 
-            // Level 1: Section reorder
-            // Standard sections: drag by exercise .reorder-handle (moves whole section)
-            // Named sections: drag by header .reorder-section-drag (moves whole section)
+            // Level 1: Section reorder (named sections only, via header grip)
+            // Exercises dropped between sections get wrapped in new standard sections
             const sectionSortable = window.Sortable.create(listElement, {
                 animation: 150,
-                handle: '.reorder-section-drag, .reorder-section[data-section-type="standard"] .reorder-handle',
+                handle: '.reorder-section-drag',
                 draggable: '.reorder-section',
                 ghostClass: 'sortable-ghost',
                 forceFallback: true,
@@ -1390,13 +1389,17 @@ export function createSectionsReorderOffcanvas(sections, onSave) {
             });
             sortableInstances.push(sectionSortable);
 
-            // Level 2: Exercise reorder within named sections only
-            // Exercises can move between named sections via shared group
-            listElement.querySelectorAll('.reorder-section.section-named .reorder-section-exercises').forEach(el => {
+            // Level 2: Exercise reorder — ALL sections get inner Sortables
+            // Named sections: full pull+put (exercises move between named sections)
+            // Standard sections: pull only (exercise can leave to join named section or reposition)
+            listElement.querySelectorAll('.reorder-section .reorder-section-exercises').forEach(el => {
+                const isNamed = el.closest('.reorder-section').classList.contains('section-named');
                 const inner = window.Sortable.create(el, {
                     animation: 150,
                     handle: '.reorder-handle',
-                    group: 'reorder-exercises',
+                    group: isNamed
+                        ? 'reorder-exercises'
+                        : { name: 'reorder-exercises', pull: true, put: false },
                     ghostClass: 'sortable-ghost',
                     forceFallback: true,
                     fallbackClass: 'sortable-fallback',
