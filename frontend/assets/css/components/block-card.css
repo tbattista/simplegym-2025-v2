@@ -77,6 +77,11 @@
     opacity: 1;
 }
 
+/* Hide section drag handle on mobile — reorder via offcanvas instead */
+.mobile-view .section-drag-handle {
+    display: none;
+}
+
 .section-name {
     font-size: 0.75rem;
     font-weight: 600;
