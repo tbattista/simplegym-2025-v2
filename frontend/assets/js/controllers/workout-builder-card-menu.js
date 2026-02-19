@@ -47,13 +47,18 @@ class WorkoutBuilderCardMenu {
             menu.classList.add('show');
             button.classList.add('active');
             this.activeMenu = menu;
-            
+
             // Elevate the entire card's z-index to appear above other cards
             const card = button.closest('.exercise-group-card');
             if (card) {
                 card.style.zIndex = '1060';
                 card.style.position = 'relative';
                 this.activeCard = card;
+            }
+
+            // Populate dynamic "Move to Block" items if sections mode is active
+            if (window.SectionManager?.isSectionsMode()) {
+                window.SectionManager.populateCardSectionMenu(groupId, menu);
             }
         }
     }

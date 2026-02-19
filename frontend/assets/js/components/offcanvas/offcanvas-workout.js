@@ -751,6 +751,9 @@ export function createReorderOffcanvas(exercises, onSave) {
             : '';
 
         // Block name tag (visible on block members, hidden placeholder on standalone)
+        const blockDescSnippet = item.blockDescription
+            ? `<div class="text-muted" style="font-size: 0.65rem; margin-top: 1px; opacity: 0.7;">${escapeHtml(item.blockDescription.substring(0, 60))}${item.blockDescription.length > 60 ? '...' : ''}</div>`
+            : '';
         const blockTag = !isNote && !item.isBonus
             ? (item.blockId
                 ? `<span class="reorder-block-tag">${escapeHtml(item.blockName || 'Block')}</span>`
@@ -775,6 +778,7 @@ export function createReorderOffcanvas(exercises, onSave) {
                             </small>
                         ` : ''}
                         ${isNote ? '<small class="text-muted">Session note</small>' : ''}
+                        ${blockDescSnippet}
                     </div>
                     <div class="badge reorder-badge ${badgeClass}">${globalIndex + 1}</div>
                 </div>

@@ -106,14 +106,20 @@ const FormDataCollector = {
      * Walks section containers and reads exercise data from window.exerciseGroupsData.
      * Returns array matching the backend WorkoutSection format.
      */
+    // Keep in sync with SectionManager.collectSections()
     collectSections() {
         const sections = [];
 
         document.querySelectorAll('#exerciseGroups .workout-section').forEach(sectionEl => {
             const sectionId = sectionEl.dataset.sectionId;
             const sectionType = sectionEl.dataset.sectionType || 'standard';
-            const nameEl = sectionEl.querySelector('.section-name');
-            const name = (sectionType !== 'standard' && nameEl) ? nameEl.textContent.trim() : null;
+            // Support both inline input (Phase 2+) and span (legacy)
+            const nameInput = sectionEl.querySelector('.section-name-input');
+            const nameSpan = sectionEl.querySelector('.section-name');
+            const name = (sectionType !== 'standard')
+                ? (nameInput?.value?.trim() || nameSpan?.textContent?.trim() || null)
+                : null;
+            const description = sectionEl.querySelector('.section-description-input')?.value?.trim() || null;
 
             const exercises = [];
             sectionEl.querySelectorAll('.section-exercises .exercise-group-card').forEach(cardEl => {
@@ -148,6 +154,7 @@ const FormDataCollector = {
                     section_id: sectionId,
                     type: sectionType,
                     name: name,
+                    description: description,
                     exercises: exercises
                 });
             }

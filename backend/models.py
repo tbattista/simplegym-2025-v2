@@ -266,6 +266,11 @@ class WorkoutSection(BaseModel):
         default=None,
         description="User-defined label (null = default/unnamed)"
     )
+    description: Optional[str] = Field(
+        default=None,
+        max_length=500,
+        description="User notes/description for this section"
+    )
     config: Optional[Dict[str, Any]] = Field(
         default=None,
         description="Type-specific config (tabata: {work:20, rest:10}, emom: {interval:60})"

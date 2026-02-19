@@ -131,6 +131,8 @@ class CardRenderer {
                                     <i class="bx bx-trash"></i>
                                     Delete
                                 </button>${blockMenuItems}
+                                <div class="builder-menu-divider section-menu-divider" style="display:none;"></div>
+                                <div class="section-menu-items" data-group-id="${groupId}"></div>
                             </div>
                         </div>
                     </div>

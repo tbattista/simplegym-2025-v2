@@ -96,6 +96,10 @@ async function saveWorkoutFromEditor(silent = false) {
     // Collect template notes from state and update order indices based on DOM order
     const templateNotes = window.collectTemplateNotes();
 
+    // Flush any focused section inputs before collecting data
+    document.querySelectorAll('.section-name-input:focus, .section-description-input:focus')
+        .forEach(input => input.blur());
+
     // Check if we're in sections mode
     const useSections = window.SectionManager && window.SectionManager.isSectionsMode();
 

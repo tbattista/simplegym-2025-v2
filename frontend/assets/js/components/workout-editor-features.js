@@ -102,8 +102,11 @@ function openReorderOffcanvas() {
         container.querySelectorAll('.workout-section').forEach(sectionEl => {
             const sectionId = sectionEl.dataset.sectionId;
             const sectionType = sectionEl.dataset.sectionType || 'standard';
-            const sectionName = sectionEl.querySelector('.section-name')?.textContent.trim() || null;
+            const sectionName = sectionEl.querySelector('.section-name-input')?.value?.trim()
+                || sectionEl.querySelector('.section-name')?.textContent?.trim() || null;
             const isNamed = sectionType !== 'standard';
+
+            const sectionDescription = sectionEl.querySelector('.section-description-input')?.value?.trim() || null;
 
             sectionEl.querySelectorAll('.exercise-group-card').forEach(card => {
                 const groupId = card.getAttribute('data-group-id');
@@ -115,6 +118,7 @@ function openReorderOffcanvas() {
                     reps: groupData.reps || '8-12',
                     blockId: isNamed ? sectionId : null,
                     blockName: isNamed ? (sectionName || sectionType.charAt(0).toUpperCase() + sectionType.slice(1)) : null,
+                    blockDescription: isNamed ? sectionDescription : null,
                     _sectionType: sectionType,
                     index: globalIndex++
                 });
@@ -140,6 +144,7 @@ function openReorderOffcanvas() {
                             sectionId: ex.blockId,
                             sectionType: ex._sectionType || 'superset',
                             sectionName: ex.blockName || null,
+                            sectionDescription: ex.blockDescription || null,
                             exerciseIds: [ex.groupId]
                         };
                         reorderedSections.push(currentSection);
@@ -151,6 +156,7 @@ function openReorderOffcanvas() {
                             sectionId: `section-${ex.groupId}`,
                             sectionType: 'standard',
                             sectionName: null,
+                            sectionDescription: null,
                             exerciseIds: [ex.groupId]
                         });
                     }
@@ -197,6 +203,7 @@ function applySectionReorder(reorderedSections) {
         section_id: rs.sectionId,
         type: rs.sectionType,
         name: rs.sectionName || null,
+        description: rs.sectionDescription || null,
         exercises: rs.exerciseIds.map(groupId => {
             const data = window.exerciseGroupsData?.[groupId] || {};
             const primaryName = data.exercises?.a || '';

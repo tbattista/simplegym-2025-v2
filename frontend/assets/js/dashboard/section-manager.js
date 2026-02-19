@@ -44,18 +44,15 @@ const SectionManager = {
         sectionEl.className = `workout-section${isNamed ? ` section-${section.type}` : ''}`;
         sectionEl.dataset.sectionId = section.section_id;
         sectionEl.dataset.sectionType = section.type;
-
-        // Section header (only for named types like superset, circuit, etc.)
-        if (isNamed) {
-            sectionEl.insertAdjacentHTML('beforeend', this._createSectionHeaderHtml(section));
+        if (section.description) {
+            sectionEl.dataset.sectionDescription = section.description;
         }
 
         // Exercise container
         const exercisesEl = document.createElement('div');
-        exercisesEl.className = 'section-exercises';
+        exercisesEl.className = 'section-exercises p-2';
 
         if (section.exercises.length === 0 && isNamed) {
-            // Empty named section — show placeholder
             exercisesEl.innerHTML = this._placeholderHtml();
         } else {
             const totalExercises = section.exercises.length;
@@ -67,12 +64,26 @@ const SectionManager = {
                 );
                 exercisesEl.insertAdjacentHTML('beforeend', cardHtml);
 
-                // Store exercise data in the global lookup
                 window.exerciseGroupsData[exercise.exercise_id] = groupData;
             });
         }
 
-        sectionEl.appendChild(exercisesEl);
+        if (isNamed) {
+            // Wrap in card container for named sections
+            const cardWrapper = document.createElement('div');
+            cardWrapper.className = 'card section-block-card mb-0';
+
+            // Header + description area
+            cardWrapper.insertAdjacentHTML('beforeend', this._createSectionHeaderHtml(section));
+
+            // Card body = exercise container
+            exercisesEl.classList.add('card-body');
+            cardWrapper.appendChild(exercisesEl);
+
+            sectionEl.appendChild(cardWrapper);
+        } else {
+            sectionEl.appendChild(exercisesEl);
+        }
 
         return sectionEl;
     },
@@ -103,8 +114,11 @@ const SectionManager = {
      * Placeholder HTML for empty named sections.
      */
     _placeholderHtml() {
-        return `<div class="section-placeholder text-muted text-center py-3" style="font-size: 0.8rem; opacity: 0.6;">
-            Tap <strong>+ Add</strong> to add exercises
+        return `<div class="section-placeholder text-center py-4">
+            <i class="bx bx-plus-circle text-muted" style="font-size: 1.5rem;"></i>
+            <div class="text-muted mt-1" style="font-size: 0.8rem;">
+                Drop exercises here or tap + Add
+            </div>
         </div>`;
     },
 
@@ -113,19 +127,29 @@ const SectionManager = {
      */
     _createSectionHeaderHtml(section) {
         const displayName = section.name || 'Block';
+        const description = section.description || '';
+        const hasDescription = !!description;
 
         return `
-            <div class="section-header">
+            <div class="card-header section-block-header">
                 <div class="section-header-left">
                     <span class="section-drag-handle"><i class="bx bx-grid-vertical"></i></span>
-                    <span class="section-name">${displayName}</span>
+                    <input type="text" class="section-name-input" value="${displayName}"
+                           placeholder="Block name..." maxlength="50">
                 </div>
                 <div class="section-actions">
+                    <button type="button" class="btn-toggle-description" title="Notes">
+                        <i class="bx bx-note"></i>
+                    </button>
                     <button type="button" class="btn-add-to-section" data-section-id="${section.section_id}">+ Add</button>
                     <button type="button" class="btn-section-menu" data-section-id="${section.section_id}">
                         <i class="bx bx-dots-vertical-rounded"></i>
                     </button>
                 </div>
+            </div>
+            <div class="section-description-area" style="display: ${hasDescription ? 'block' : 'none'};">
+                <textarea class="section-description-input" placeholder="Add notes..."
+                          maxlength="500">${description}</textarea>
             </div>`;
     },
 
@@ -190,6 +214,7 @@ const SectionManager = {
             section_id: sectionId,
             type: type,
             name: null,
+            description: null,
             exercises: []
         };
 
@@ -304,13 +329,10 @@ const SectionManager = {
         const sectionEl = document.querySelector(`.workout-section[data-section-id="${sectionId}"]`);
         if (!sectionEl) return;
 
-        const nameEl = sectionEl.querySelector('.section-name');
-        const currentName = nameEl ? nameEl.textContent.trim() : '';
-        const newName = prompt('Enter section name:', currentName);
-
-        if (newName !== null && newName.trim() !== '') {
-            if (nameEl) nameEl.textContent = newName.trim();
-            if (window.markEditorDirty) window.markEditorDirty();
+        const nameInput = sectionEl.querySelector('.section-name-input');
+        if (nameInput) {
+            nameInput.focus();
+            nameInput.select();
         }
     },
 
@@ -334,6 +356,120 @@ const SectionManager = {
 
         sectionEl.remove();
         if (window.markEditorDirty) window.markEditorDirty();
+    },
+
+    // ─── Move Exercise Between Sections ──────────────────────────
+
+    /**
+     * Populate the card menu with "Move to [Block]" / "Remove from Block" items.
+     * Called by WorkoutBuilderCardMenu.toggleMenu() after opening.
+     * @param {string} groupId - Exercise group ID
+     * @param {HTMLElement} menuEl - The .builder-card-menu element
+     */
+    populateCardSectionMenu(groupId, menuEl) {
+        const divider = menuEl.querySelector('.section-menu-divider');
+        const itemsContainer = menuEl.querySelector('.section-menu-items');
+        if (!divider || !itemsContainer) return;
+
+        itemsContainer.innerHTML = '';
+
+        const cardEl = document.querySelector(`.exercise-group-card[data-group-id="${groupId}"]`);
+        if (!cardEl) { divider.style.display = 'none'; return; }
+
+        const currentSection = cardEl.closest('.workout-section');
+        const isInNamedSection = currentSection?.dataset.sectionType !== 'standard';
+
+        // Find all named sections in the builder
+        const namedSections = document.querySelectorAll('.workout-section:not([data-section-type="standard"])');
+        const items = [];
+
+        // "Remove from Block" if exercise is inside a named section
+        if (isInNamedSection) {
+            items.push(`<button class="builder-menu-item" data-action="remove-from-block" data-group-id="${groupId}">
+                <i class="bx bx-unlink"></i> Remove from Block
+            </button>`);
+        }
+
+        // "Move to [Block Name]" for each OTHER named section (max 8)
+        let count = 0;
+        namedSections.forEach(sectionEl => {
+            if (count >= 8) return;
+            const sectionId = sectionEl.dataset.sectionId;
+            if (currentSection && sectionId === currentSection.dataset.sectionId) return;
+
+            const nameInput = sectionEl.querySelector('.section-name-input');
+            const blockName = nameInput?.value?.trim() || 'Block';
+            items.push(`<button class="builder-menu-item" data-action="move-to-section" data-group-id="${groupId}" data-target-section="${sectionId}">
+                <i class="bx bx-right-arrow-alt"></i> Move to ${blockName}
+            </button>`);
+            count++;
+        });
+
+        if (count >= 8 && namedSections.length > 9) {
+            items.push(`<div class="builder-menu-hint text-muted" style="padding: 4px 14px; font-size: 0.7rem;">Use Reorder to manage more blocks</div>`);
+        }
+
+        if (items.length === 0) {
+            divider.style.display = 'none';
+            return;
+        }
+
+        divider.style.display = '';
+        itemsContainer.innerHTML = items.join('');
+
+        // Delegate clicks
+        itemsContainer.addEventListener('click', (e) => {
+            const btn = e.target.closest('[data-action]');
+            if (!btn) return;
+
+            const action = btn.dataset.action;
+            const gId = btn.dataset.groupId;
+
+            if (action === 'remove-from-block') {
+                this.removeExerciseFromSection(gId);
+            } else if (action === 'move-to-section') {
+                this.moveExerciseToSection(gId, btn.dataset.targetSection);
+            }
+
+            window.builderCardMenu?.closeAllMenus();
+        });
+    },
+
+    /**
+     * Move an exercise card to a target named section.
+     * @param {string} exerciseId - The exercise group ID
+     * @param {string} targetSectionId - Target section ID
+     */
+    moveExerciseToSection(exerciseId, targetSectionId) {
+        const cardEl = document.querySelector(`.exercise-group-card[data-group-id="${exerciseId}"]`);
+        const targetSection = document.querySelector(`.workout-section[data-section-id="${targetSectionId}"]`);
+        if (!cardEl || !targetSection) return;
+
+        const sourceSection = cardEl.closest('.workout-section');
+        const targetExercises = targetSection.querySelector('.section-exercises');
+        if (!targetExercises) return;
+
+        // Remove placeholder in target if present
+        const placeholder = targetExercises.querySelector('.section-placeholder');
+        if (placeholder) placeholder.remove();
+
+        // Move DOM element
+        targetExercises.appendChild(cardEl);
+
+        // Cleanup source section
+        if (sourceSection) this._cleanupSection(sourceSection);
+
+        if (window.markEditorDirty) window.markEditorDirty();
+
+        if (window.showToast) {
+            const targetName = targetSection.querySelector('.section-name-input')?.value?.trim() || 'Block';
+            window.showToast({
+                message: `Moved to ${targetName}`,
+                type: 'success',
+                icon: 'bx-check',
+                delay: 2000
+            });
+        }
     },
 
     /**
@@ -455,6 +591,9 @@ const SectionManager = {
             group: isNamed
                 ? 'exercises'
                 : { name: 'exercises', pull: true, put: false },
+            onStart: () => {
+                document.getElementById('exerciseGroups')?.classList.add('is-exercise-dragging');
+            },
             onAdd: (evt) => {
                 // Exercise arrived from another section — remove placeholder if present
                 const placeholder = exercisesEl.querySelector('.section-placeholder');
@@ -466,6 +605,7 @@ const SectionManager = {
                 if (window.markEditorDirty) window.markEditorDirty();
             },
             onEnd: () => {
+                document.getElementById('exerciseGroups')?.classList.remove('is-exercise-dragging');
                 if (window.markEditorDirty) window.markEditorDirty();
             }
         });
@@ -496,7 +636,29 @@ const SectionManager = {
                 if (sectionId) this._showSectionMenu(sectionId, menuBtn);
                 return;
             }
+
+            // Description toggle button
+            const descBtn = e.target.closest('.btn-toggle-description');
+            if (descBtn) {
+                const section = descBtn.closest('.workout-section');
+                const area = section?.querySelector('.section-description-area');
+                if (area) {
+                    const isHidden = area.style.display === 'none';
+                    area.style.display = isHidden ? 'block' : 'none';
+                    if (isHidden) {
+                        area.querySelector('.section-description-input')?.focus();
+                    }
+                }
+                return;
+            }
         });
+
+        // Mark dirty on name/description blur
+        container.addEventListener('blur', (e) => {
+            if (e.target.matches('.section-name-input') || e.target.matches('.section-description-input')) {
+                if (window.markEditorDirty) window.markEditorDirty();
+            }
+        }, true); // useCapture for blur
     },
 
     /**
@@ -594,14 +756,20 @@ const SectionManager = {
      * Walks section containers and reads exercise data from window.exerciseGroupsData.
      * Returns an array matching the backend WorkoutSection format.
      */
+    // Keep in sync with FormDataCollector.collectSections()
     collectSections() {
         const sections = [];
 
         document.querySelectorAll('#exerciseGroups .workout-section').forEach(sectionEl => {
             const sectionId = sectionEl.dataset.sectionId;
             const sectionType = sectionEl.dataset.sectionType || 'standard';
-            const nameEl = sectionEl.querySelector('.section-name');
-            const name = (sectionType !== 'standard' && nameEl) ? nameEl.textContent.trim() : null;
+            // Support both inline input (Phase 2+) and span (legacy)
+            const nameInput = sectionEl.querySelector('.section-name-input');
+            const nameSpan = sectionEl.querySelector('.section-name');
+            const name = (sectionType !== 'standard')
+                ? (nameInput?.value?.trim() || nameSpan?.textContent?.trim() || null)
+                : null;
+            const description = sectionEl.querySelector('.section-description-input')?.value?.trim() || null;
 
             const exercises = [];
             sectionEl.querySelectorAll('.section-exercises .exercise-group-card').forEach(cardEl => {
@@ -636,6 +804,7 @@ const SectionManager = {
                     section_id: sectionId,
                     type: sectionType,
                     name: name,
+                    description: description,
                     exercises: exercises
                 });
             }

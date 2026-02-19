@@ -8,54 +8,20 @@
     margin-bottom: 0.5rem;
 }
 
-/* Named sections (superset, circuit, etc.) get a left border and tight spacing */
-.workout-section[data-section-type="superset"],
-.workout-section[data-section-type="circuit"],
-.workout-section[data-section-type="tabata"],
-.workout-section[data-section-type="emom"],
-.workout-section[data-section-type="amrap"] {
+/* --- Block Card Container (named sections: superset, circuit, etc.) --- */
+.section-block-card {
+    border: 1px solid var(--bs-border-color, #e0e0e0);
     border-left: 3px solid var(--workout-block, #2dd4bf);
-    border-radius: 4px;
     margin-bottom: 0.75rem;
 }
 
-/* Tighter spacing for exercise cards inside named sections */
-.workout-section:not([data-section-type="standard"]) .section-exercises .exercise-group-card {
-    margin-bottom: 2px !important;
-}
-.workout-section:not([data-section-type="standard"]) .section-exercises .exercise-group-card:last-child {
-    margin-bottom: 0 !important;
-}
-
-/* Cards inside named sections: remove left border (section provides it) */
-.workout-section:not([data-section-type="standard"]) .exercise-group-card > .card {
-    border-left: none !important;
-    border-top-left-radius: 0 !important;
-    border-bottom-left-radius: 0 !important;
-}
-
-/* Desktop rows inside named sections */
-.workout-section:not([data-section-type="standard"]) .desktop-exercise-row.exercise-group-card {
-    border-left: none !important;
-    margin-bottom: 1px;
-}
-
-/* --- Section Placeholder (empty named section) --- */
-.section-placeholder {
-    padding: 16px 12px;
-    font-size: 0.8rem;
-    color: var(--bs-secondary-color, #999);
-    border: 1px dashed var(--bs-border-color, #ddd);
-    border-radius: 4px;
-    margin: 4px 8px 8px;
-}
-
-/* --- Section Header --- */
-.section-header {
+.section-block-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 6px 12px 4px 12px;
+    padding: 8px 12px;
+    background: rgba(45, 212, 191, 0.04);
+    border-bottom: 1px solid var(--bs-border-color, #e0e0e0);
 }
 
 .section-header-left {
@@ -66,6 +32,8 @@
 
 .section-drag-handle {
     cursor: grab;
+    user-select: none;
+    -webkit-user-select: none;
     color: #999;
     font-size: 1rem;
     padding: 2px;
@@ -82,16 +50,76 @@
     display: none;
 }
 
-.section-name {
-    font-size: 0.75rem;
+/* Inline editable block name */
+.section-name-input {
+    border: none;
+    background: transparent;
+    font-size: 0.85rem;
     font-weight: 600;
     color: var(--workout-block, #2dd4bf);
+    width: 140px;
+    padding: 2px 4px;
+    border-radius: 4px;
 }
 
+.section-name-input:focus {
+    outline: none;
+    background: rgba(45, 212, 191, 0.08);
+}
+
+.section-name-input::placeholder {
+    color: rgba(45, 212, 191, 0.4);
+}
+
+/* --- Description Area --- */
+.section-description-area {
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--bs-border-color, #e0e0e0);
+}
+
+.section-description-input {
+    width: 100%;
+    border: 1px dashed var(--bs-border-color, #ddd);
+    border-radius: 4px;
+    padding: 6px 8px;
+    font-size: 0.75rem;
+    resize: none;
+    min-height: 40px;
+    background: transparent;
+    color: var(--bs-body-color, #333);
+}
+
+.section-description-input:focus {
+    outline: none;
+    border-color: var(--workout-block, #2dd4bf);
+}
+
+.section-description-input::placeholder {
+    color: var(--bs-secondary-color, #999);
+}
+
+/* --- Section Actions --- */
 .section-actions {
     display: flex;
     align-items: center;
     gap: 4px;
+}
+
+.btn-toggle-description {
+    padding: 2px 6px;
+    font-size: 0.85rem;
+    color: var(--workout-block, #2dd4bf);
+    background: none;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    opacity: 0.5;
+    transition: opacity 0.15s, background 0.15s;
+}
+
+.btn-toggle-description:hover {
+    opacity: 1;
+    background: rgba(45, 212, 191, 0.08);
 }
 
 .btn-add-to-section {
@@ -126,6 +154,37 @@
 .btn-section-menu:hover {
     opacity: 1;
     background: rgba(45, 212, 191, 0.08);
+}
+
+/* --- Exercise Cards Inside Block Card --- */
+.section-block-card .exercise-group-card {
+    margin-bottom: 2px !important;
+}
+
+.section-block-card .exercise-group-card:last-child {
+    margin-bottom: 0 !important;
+}
+
+.section-block-card .exercise-group-card > .card {
+    border-left: none !important;
+    border-top-left-radius: 0 !important;
+    border-bottom-left-radius: 0 !important;
+}
+
+/* Desktop rows inside block card */
+.section-block-card .desktop-exercise-row.exercise-group-card {
+    border-left: none !important;
+    margin-bottom: 1px;
+}
+
+/* --- Section Placeholder (empty named section) --- */
+.section-placeholder {
+    padding: 16px 12px;
+    font-size: 0.8rem;
+    color: var(--bs-secondary-color, #999);
+    border: 1px dashed var(--bs-border-color, #ddd);
+    border-radius: 4px;
+    margin: 4px 8px 8px;
 }
 
 /* --- Section Context Menu --- */
@@ -168,17 +227,45 @@
     background: rgba(220, 53, 69, 0.06);
 }
 
-/* --- Dark Mode --- */
-[data-bs-theme="dark"] .workout-section[data-section-type="superset"],
-[data-bs-theme="dark"] .workout-section[data-section-type="circuit"],
-[data-bs-theme="dark"] .workout-section[data-section-type="tabata"],
-[data-bs-theme="dark"] .workout-section[data-section-type="emom"],
-[data-bs-theme="dark"] .workout-section[data-section-type="amrap"] {
+/* --- Dark Mode (Sections) --- */
+[data-bs-theme="dark"] .section-block-card {
+    border-color: rgba(255, 255, 255, 0.1);
     border-left-color: #5eead4;
 }
 
-[data-bs-theme="dark"] .section-name {
+[data-bs-theme="dark"] .section-block-header {
+    background: rgba(45, 212, 191, 0.06);
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-bs-theme="dark"] .section-name-input {
     color: #5eead4;
+}
+
+[data-bs-theme="dark"] .section-name-input:focus {
+    background: rgba(45, 212, 191, 0.15);
+}
+
+[data-bs-theme="dark"] .section-name-input::placeholder {
+    color: rgba(94, 234, 212, 0.4);
+}
+
+[data-bs-theme="dark"] .section-description-area {
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-bs-theme="dark"] .section-description-input {
+    color: var(--bs-light, #f8f9fa);
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(94, 234, 212, 0.3);
+}
+
+[data-bs-theme="dark"] .btn-toggle-description {
+    color: #5eead4;
+}
+
+[data-bs-theme="dark"] .btn-toggle-description:hover {
+    background: rgba(94, 234, 212, 0.1);
 }
 
 [data-bs-theme="dark"] .btn-add-to-section {
@@ -228,6 +315,60 @@
 
 #exerciseGroups.is-dragging .workout-section:last-child::after {
     display: none;
+}
+
+/* --- Drop Zone Indicators (exercise drag) --- */
+#exerciseGroups.is-exercise-dragging .section-block-card .section-exercises::after {
+    content: 'Drop here';
+    display: block;
+    padding: 12px;
+    margin: 4px 8px 8px;
+    border: 2px dashed var(--workout-block, #2dd4bf);
+    border-radius: 6px;
+    text-align: center;
+    font-size: 0.75rem;
+    color: var(--workout-block, #2dd4bf);
+    opacity: 0.5;
+    background: rgba(45, 212, 191, 0.04);
+}
+
+/* Drop lines between sections during exercise drag */
+#exerciseGroups.is-exercise-dragging .workout-section {
+    margin-bottom: 12px;
+}
+
+#exerciseGroups.is-exercise-dragging .workout-section::after {
+    content: '';
+    display: block;
+    height: 3px;
+    background: var(--bs-primary, #696cff);
+    border-radius: 2px;
+    margin: 6px 12px 0;
+    opacity: 0.3;
+}
+
+#exerciseGroups.is-exercise-dragging .workout-section:last-child::after {
+    display: none;
+}
+
+/* Bottom drop zone — gives SortableJS a visible target below the last section */
+#exerciseGroups.is-exercise-dragging::after {
+    content: 'Drop here as standalone';
+    display: block;
+    padding: 16px;
+    margin: 8px 0;
+    border: 2px dashed var(--bs-primary, #696cff);
+    border-radius: 6px;
+    text-align: center;
+    font-size: 0.75rem;
+    color: var(--bs-primary, #696cff);
+    opacity: 0.4;
+    background: rgba(105, 108, 255, 0.03);
+}
+
+/* Ensure enough space at bottom for the drop target during drag */
+#exerciseGroups.is-exercise-dragging {
+    padding-bottom: 20px;
 }
 
 /* ============================================
