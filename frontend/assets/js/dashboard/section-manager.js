@@ -385,7 +385,7 @@ const SectionManager = {
 
         // "Remove from Block" if exercise is inside a named section
         if (isInNamedSection) {
-            items.push(`<button class="builder-menu-item" data-action="remove-from-block" data-group-id="${groupId}">
+            items.push(`<button type="button" class="builder-menu-item" data-action="remove-from-block" data-group-id="${groupId}">
                 <i class="bx bx-unlink"></i> Remove from Block
             </button>`);
         }
@@ -399,7 +399,7 @@ const SectionManager = {
 
             const nameInput = sectionEl.querySelector('.section-name-input');
             const blockName = nameInput?.value?.trim() || 'Block';
-            items.push(`<button class="builder-menu-item" data-action="move-to-section" data-group-id="${groupId}" data-target-section="${sectionId}">
+            items.push(`<button type="button" class="builder-menu-item" data-action="move-to-section" data-group-id="${groupId}" data-target-section="${sectionId}">
                 <i class="bx bx-right-arrow-alt"></i> Move to ${blockName}
             </button>`);
             count++;
@@ -419,6 +419,8 @@ const SectionManager = {
 
         // Delegate clicks
         itemsContainer.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
             const btn = e.target.closest('[data-action]');
             if (!btn) return;
 
