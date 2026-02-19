@@ -87,6 +87,7 @@ function openReorderOffcanvas() {
     }
 
     const cards = container.querySelectorAll('.exercise-group-card');
+    const isSectionsMode = window.SectionManager?.isSectionsMode();
 
     // Build exercises array for reorder offcanvas (even if empty or single item)
     // The offcanvas will display appropriate messaging for 0/1 exercises
@@ -94,13 +95,29 @@ function openReorderOffcanvas() {
         const groupId = card.getAttribute('data-group-id');
         const groupData = window.exerciseGroupsData?.[groupId] || {};
 
+        let blockId = null;
+        let blockName = null;
+
+        if (isSectionsMode) {
+            // Derive block info from section DOM structure
+            const sectionEl = card.closest('.workout-section');
+            if (sectionEl && sectionEl.dataset.sectionType !== 'standard') {
+                blockId = sectionEl.dataset.sectionId;
+                const nameEl = sectionEl.querySelector('.section-name');
+                blockName = nameEl ? nameEl.textContent.trim() : 'Block';
+            }
+        } else {
+            blockId = groupData.block_id || null;
+            blockName = groupData.group_name || null;
+        }
+
         return {
             groupId: groupId,
             name: groupData.exercises?.a || `Exercise ${index + 1}`,
             sets: groupData.sets || '3',
             reps: groupData.reps || '8-12',
-            blockId: groupData.block_id || null,
-            blockName: groupData.group_name || null,
+            blockId: blockId,
+            blockName: blockName,
             index: index
         };
     });
