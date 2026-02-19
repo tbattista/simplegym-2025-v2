@@ -48,9 +48,14 @@ const SectionManager = {
             sectionEl.dataset.sectionDescription = section.description;
         }
 
-        // Exercise container
+        // Named sections: header + description as direct children (no card wrapper)
+        if (isNamed) {
+            sectionEl.insertAdjacentHTML('beforeend', this._createSectionHeaderHtml(section));
+        }
+
+        // Exercise container — always a direct child of .workout-section
         const exercisesEl = document.createElement('div');
-        exercisesEl.className = 'section-exercises p-2';
+        exercisesEl.className = 'section-exercises';
 
         if (section.exercises.length === 0 && isNamed) {
             exercisesEl.innerHTML = this._placeholderHtml();
@@ -68,21 +73,11 @@ const SectionManager = {
             });
         }
 
+        sectionEl.appendChild(exercisesEl);
+
+        // Apply left-border chain classes to exercise cards in named sections
         if (isNamed) {
-            // Wrap in card container for named sections
-            const cardWrapper = document.createElement('div');
-            cardWrapper.className = 'card section-block-card mb-0';
-
-            // Header + description area
-            cardWrapper.insertAdjacentHTML('beforeend', this._createSectionHeaderHtml(section));
-
-            // Card body = exercise container
-            exercisesEl.classList.add('card-body');
-            cardWrapper.appendChild(exercisesEl);
-
-            sectionEl.appendChild(cardWrapper);
-        } else {
-            sectionEl.appendChild(exercisesEl);
+            this._applyBlockChainClasses(exercisesEl);
         }
 
         return sectionEl;
@@ -123,6 +118,31 @@ const SectionManager = {
     },
 
     /**
+     * Apply left-border chain positional classes to exercise cards in a named section.
+     * Adds exercise-in-block + block-first/block-middle/block-last to each card.
+     */
+    _applyBlockChainClasses(exercisesEl) {
+        const cards = exercisesEl.querySelectorAll('.exercise-group-card');
+        cards.forEach(card => {
+            card.classList.remove('exercise-in-block', 'block-first', 'block-middle', 'block-last');
+        });
+        if (cards.length === 0) return;
+
+        cards.forEach((card, idx) => {
+            card.classList.add('exercise-in-block');
+            if (cards.length === 1) {
+                card.classList.add('block-first', 'block-last');
+            } else if (idx === 0) {
+                card.classList.add('block-first');
+            } else if (idx === cards.length - 1) {
+                card.classList.add('block-last');
+            } else {
+                card.classList.add('block-middle');
+            }
+        });
+    },
+
+    /**
      * Create HTML for a section header.
      */
     _createSectionHeaderHtml(section) {
@@ -131,7 +151,7 @@ const SectionManager = {
         const hasDescription = !!description;
 
         return `
-            <div class="card-header section-block-header">
+            <div class="section-block-header">
                 <div class="section-header-left">
                     <span class="section-drag-handle"><i class="bx bx-grid-vertical"></i></span>
                     <input type="text" class="section-name-input" value="${displayName}"
@@ -271,6 +291,11 @@ const SectionManager = {
 
         window.exerciseGroupsData[exerciseId] = groupData;
 
+        // Re-apply block chain classes
+        if (sectionEl.dataset.sectionType !== 'standard') {
+            this._applyBlockChainClasses(exercisesContainer);
+        }
+
         // Auto-open editor
         setTimeout(() => {
             if (window.openExerciseGroupEditor) {
@@ -304,6 +329,9 @@ const SectionManager = {
         newSection.dataset.sectionId = newSectionId;
         newSection.dataset.sectionType = 'standard';
 
+        // Strip block chain classes from the card
+        cardEl.classList.remove('exercise-in-block', 'block-first', 'block-middle', 'block-last');
+
         const exercisesEl = document.createElement('div');
         exercisesEl.className = 'section-exercises';
         exercisesEl.appendChild(cardEl); // Move card to new section
@@ -315,8 +343,10 @@ const SectionManager = {
         // Init inner Sortable so this exercise can be dragged to named sections
         this._initExerciseSortable(exercisesEl, false);
 
-        // Clean up source section
+        // Clean up source section and re-chain remaining cards
         this._cleanupSection(sectionEl);
+        const sourceExercises = sectionEl.querySelector('.section-exercises');
+        if (sourceExercises) this._applyBlockChainClasses(sourceExercises);
 
         if (window.markEditorDirty) window.markEditorDirty();
     },
@@ -458,8 +488,17 @@ const SectionManager = {
         // Move DOM element
         targetExercises.appendChild(cardEl);
 
-        // Cleanup source section
-        if (sourceSection) this._cleanupSection(sourceSection);
+        // Re-chain target section
+        this._applyBlockChainClasses(targetExercises);
+
+        // Cleanup source section and re-chain remaining cards
+        if (sourceSection) {
+            this._cleanupSection(sourceSection);
+            const sourceExercises = sourceSection.querySelector('.section-exercises');
+            if (sourceExercises && sourceSection.dataset.sectionType !== 'standard') {
+                this._applyBlockChainClasses(sourceExercises);
+            }
+        }
 
         if (window.markEditorDirty) window.markEditorDirty();
 
@@ -536,6 +575,9 @@ const SectionManager = {
             onAdd: (evt) => {
                 // An exercise card was dropped between sections — wrap in a new standard section
                 const card = evt.item;
+                // Strip block classes — now standalone
+                card.classList.remove('exercise-in-block', 'block-first', 'block-middle', 'block-last');
+
                 const newSectionId = `section-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`;
 
                 const newSection = document.createElement('div');
@@ -554,9 +596,15 @@ const SectionManager = {
                 // Init inner Sortable on the new standard section
                 this._initExerciseSortable(exercisesEl, false);
 
-                // Cleanup source section (show placeholder if named, remove if empty standard)
+                // Cleanup source section and re-chain remaining cards
                 const fromSectionEl = evt.from.closest('.workout-section');
-                if (fromSectionEl) this._cleanupSection(fromSectionEl);
+                if (fromSectionEl) {
+                    this._cleanupSection(fromSectionEl);
+                    const fromExercises = fromSectionEl.querySelector('.section-exercises');
+                    if (fromExercises && fromSectionEl.dataset.sectionType !== 'standard') {
+                        this._applyBlockChainClasses(fromExercises);
+                    }
+                }
 
                 if (window.markEditorDirty) window.markEditorDirty();
             }
@@ -601,13 +649,30 @@ const SectionManager = {
                 const placeholder = exercisesEl.querySelector('.section-placeholder');
                 if (placeholder) placeholder.remove();
 
-                // Cleanup source section (removes empty standard sections, shows placeholder for named)
+                // Re-chain target section
+                if (isNamed) this._applyBlockChainClasses(exercisesEl);
+
+                // Cleanup source section and re-chain remaining cards
                 const fromSectionEl = evt.from.closest('.workout-section');
-                if (fromSectionEl) this._cleanupSection(fromSectionEl);
+                if (fromSectionEl) {
+                    this._cleanupSection(fromSectionEl);
+                    const fromExercises = fromSectionEl.querySelector('.section-exercises');
+                    if (fromExercises && fromSectionEl.dataset.sectionType !== 'standard') {
+                        this._applyBlockChainClasses(fromExercises);
+                    }
+                }
+
+                // Strip block classes if card landed in a standard section
+                if (!isNamed) {
+                    evt.item.classList.remove('exercise-in-block', 'block-first', 'block-middle', 'block-last');
+                }
+
                 if (window.markEditorDirty) window.markEditorDirty();
             },
             onEnd: () => {
                 document.getElementById('exerciseGroups')?.classList.remove('is-exercise-dragging');
+                // Re-chain after internal reorder within same section
+                if (isNamed) this._applyBlockChainClasses(exercisesEl);
                 if (window.markEditorDirty) window.markEditorDirty();
             }
         });
@@ -676,6 +741,9 @@ const SectionManager = {
         // Move each exercise to its own standard section, inserted after the current section
         let insertAfter = sectionEl;
         cards.forEach(cardEl => {
+            // Strip block chain classes
+            cardEl.classList.remove('exercise-in-block', 'block-first', 'block-middle', 'block-last');
+
             const newSectionId = `section-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`;
             const newSection = document.createElement('div');
             newSection.className = 'workout-section';

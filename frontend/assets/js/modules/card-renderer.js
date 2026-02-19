@@ -228,11 +228,23 @@ class CardRenderer {
         const exerciseName = groupData?.exercises?.a || 'this exercise';
 
         if (confirm(`Are you sure you want to delete "${exerciseName}"?\n\nThis action cannot be undone.`)) {
+            // Capture parent section BEFORE removing card from DOM
+            const parentSection = card.closest('.workout-section');
+
             // Remove from DOM
             card.remove();
 
             // Remove from data storage
             delete this.exerciseGroupsData[groupId];
+
+            // Clean up parent section and re-chain remaining cards
+            if (parentSection && window.SectionManager) {
+                window.SectionManager._cleanupSection(parentSection);
+                const exercisesContainer = parentSection.querySelector('.section-exercises');
+                if (exercisesContainer && parentSection.dataset.sectionType !== 'standard') {
+                    window.SectionManager._applyBlockChainClasses(exercisesContainer);
+                }
+            }
 
             // Update menu boundaries for remaining cards
             if (window.builderCardMenu?.updateAllMenuBoundaries) {

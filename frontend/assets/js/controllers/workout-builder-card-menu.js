@@ -165,9 +165,18 @@ class WorkoutBuilderCardMenu {
                 const exerciseName = window.exerciseGroupsData?.[groupId]?.exercises?.a || 'this exercise';
 
                 if (confirm(`Are you sure you want to delete "${exerciseName}"?\n\nThis action cannot be undone.`)) {
+                    const parentSection = card.closest('.workout-section');
                     card.remove();
                     if (window.exerciseGroupsData) {
                         delete window.exerciseGroupsData[groupId];
+                    }
+                    // Clean up parent section and re-chain
+                    if (parentSection && window.SectionManager) {
+                        window.SectionManager._cleanupSection(parentSection);
+                        const exc = parentSection.querySelector('.section-exercises');
+                        if (exc && parentSection.dataset.sectionType !== 'standard') {
+                            window.SectionManager._applyBlockChainClasses(exc);
+                        }
                     }
                     if (window.markEditorDirty) {
                         window.markEditorDirty();
