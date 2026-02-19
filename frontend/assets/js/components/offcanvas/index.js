@@ -37,7 +37,8 @@ import {
     createCompletionSummary,
     createResumeSession,
     createPlateSettings,
-    createReorderOffcanvas
+    createReorderOffcanvas,
+    createSectionsReorderOffcanvas
 } from './offcanvas-workout.js';
 
 // Import form components
@@ -150,6 +151,10 @@ class UnifiedOffcanvasFactory {
     
     static createReorderOffcanvas(exercises, onSave) {
         return createReorderOffcanvas(exercises, onSave);
+    }
+
+    static createSectionsReorderOffcanvas(sections, onSave) {
+        return createSectionsReorderOffcanvas(sections, onSave);
     }
     
     /* ============================================
@@ -318,7 +323,8 @@ export {
     createResumeSession,
     createPlateSettings,
     createReorderOffcanvas,
-    
+    createSectionsReorderOffcanvas,
+
     // Forms
     createConfirmOffcanvas,
     createFilterOffcanvas,

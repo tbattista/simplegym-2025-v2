@@ -1189,6 +1189,275 @@ export function createReorderOffcanvas(exercises, onSave) {
     });
 }
 
+/* ============================================
+   SECTIONS REORDER (Workout Builder - Mobile)
+   Two-level SortableJS matching desktop drag-and-drop
+   ============================================ */
+
+/**
+ * Create sections-aware reorder offcanvas with two-level drag-and-drop.
+ * Mirrors the desktop builder's section drag behavior:
+ * - Standard sections: drag by exercise handle → moves the whole section
+ * - Named sections: drag by header handle → moves the whole section
+ * - Exercises within named sections: drag by exercise handle → reorder within/between sections
+ * - Exercises dragged out of named sections → become standalone standard sections
+ *
+ * @param {Array} sections - Array of { sectionId, sectionType, sectionName, exercises: [{ groupId, name, sets, reps }] }
+ * @param {Function} onSave - Callback(reorderedSections) when user saves
+ * @returns {Object} Offcanvas instance
+ */
+export function createSectionsReorderOffcanvas(sections, onSave) {
+    if (!Array.isArray(sections) || typeof onSave !== 'function') return null;
+
+    const totalExercises = sections.reduce((sum, s) => sum + s.exercises.length, 0);
+    const canReorder = totalExercises >= 2 || sections.length >= 2;
+
+    const buildItemHtml = (exercise) => `
+        <div class="reorder-item" data-group-id="${escapeHtml(exercise.groupId)}">
+            <div class="d-flex align-items-center gap-3 p-3 border rounded mb-1 reorder-item-inner" style="cursor: move;">
+                ${canReorder ? `<div class="reorder-handle text-muted"><i class="bx bx-menu" style="font-size: 1.5rem;"></i></div>` : ''}
+                <div class="flex-grow-1">
+                    <div class="fw-medium">${escapeHtml(exercise.name)}</div>
+                    ${exercise.sets || exercise.reps ? `<small class="text-muted">${exercise.sets ? `${exercise.sets} sets` : ''}${exercise.sets && exercise.reps ? ' × ' : ''}${exercise.reps ? `${exercise.reps} reps` : ''}</small>` : ''}
+                </div>
+                <div class="badge reorder-badge bg-label-secondary"></div>
+            </div>
+        </div>
+    `;
+
+    const buildSectionHtml = (section) => {
+        const isNamed = section.sectionType !== 'standard';
+        const exercisesHtml = section.exercises.map(ex => buildItemHtml(ex)).join('');
+
+        const headerHtml = isNamed ? `
+            <div class="reorder-section-header d-flex align-items-center gap-2 px-2 py-1 mb-1" style="cursor: grab;">
+                <div class="reorder-section-drag text-muted">
+                    <i class="bx bx-grid-vertical" style="font-size: 1.2rem;"></i>
+                </div>
+                <span style="font-size: 0.75rem; font-weight: 600; color: var(--workout-block, #2dd4bf);">${escapeHtml(section.sectionName || 'Block')}</span>
+            </div>
+        ` : '';
+
+        return `
+            <div class="reorder-section${isNamed ? ' section-named' : ''}"
+                 data-section-id="${escapeHtml(section.sectionId)}"
+                 data-section-type="${section.sectionType}"
+                 data-section-name="${escapeHtml(section.sectionName || '')}">
+                ${headerHtml}
+                <div class="reorder-section-exercises">${exercisesHtml}</div>
+            </div>
+        `;
+    };
+
+    const sectionStyles = `
+        <style>
+            .reorder-section.section-named {
+                border-left: 3px solid var(--workout-block, #2dd4bf);
+                border-radius: 4px;
+                margin-bottom: 8px;
+                padding-bottom: 4px;
+            }
+            .reorder-section:not(.section-named) { margin-bottom: 4px; }
+            .reorder-section.section-named .reorder-item-inner {
+                border-left: none !important;
+                border-top-left-radius: 0 !important;
+                border-bottom-left-radius: 0 !important;
+            }
+            .reorder-section.section-named .reorder-section-exercises { padding-left: 4px; }
+            .reorder-section-header { border-bottom: 1px solid rgba(45, 212, 191, 0.2); }
+            .reorder-section.sortable-ghost { opacity: 0.4; }
+            .reorder-section.sortable-ghost.section-named { border-style: dashed; }
+        </style>
+    `;
+
+    let bodyContent;
+    if (!canReorder) {
+        bodyContent = `<div class="text-center py-4">
+            <i class="bx bx-list-ul" style="font-size: 4rem; color: var(--bs-secondary);"></i>
+            <h6 class="mt-3">Not enough items to reorder</h6>
+            <p class="text-muted mb-0">Add more exercises to reorder them.</p>
+        </div>`;
+    } else {
+        bodyContent = `
+            ${sectionStyles}
+            <div class="alert alert-info d-flex align-items-start mb-3">
+                <i class="bx bx-info-circle me-2 mt-1"></i>
+                <div>
+                    <strong>Drag to reorder</strong>
+                    <p class="mb-0 small">Drag exercises to reorder. Drag block headers to move entire blocks.</p>
+                </div>
+            </div>
+            <div id="reorderSectionList" class="mb-4">
+                ${sections.map(s => buildSectionHtml(s)).join('')}
+            </div>
+        `;
+    }
+
+    const footerContent = canReorder ? `
+        <div class="d-flex gap-2">
+            <button type="button" class="btn btn-outline-secondary flex-fill" data-bs-dismiss="offcanvas">
+                <i class="bx bx-x me-1"></i>Cancel
+            </button>
+            <button type="button" class="btn btn-primary flex-fill" id="saveSectionReorderBtn" disabled>
+                <i class="bx bx-check me-1"></i>Save Order
+            </button>
+        </div>
+    ` : `
+        <button type="button" class="btn btn-secondary w-100" data-bs-dismiss="offcanvas">
+            <i class="bx bx-x me-1"></i>Close
+        </button>
+    `;
+
+    const offcanvasHtml = `
+        <div class="offcanvas offcanvas-bottom offcanvas-bottom-base offcanvas-desktop-wide" tabindex="-1" id="reorderSectionsOffcanvas"
+             aria-labelledby="reorderSectionsOffcanvasLabel" data-bs-scroll="false">
+            <div class="offcanvas-header border-bottom">
+                <h5 class="offcanvas-title" id="reorderSectionsOffcanvasLabel">
+                    <i class="bx bx-sort me-2"></i>Reorder Exercises
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+            </div>
+            <div class="offcanvas-body">
+                ${bodyContent}
+                ${footerContent}
+            </div>
+        </div>
+    `;
+
+    return createOffcanvas('reorderSectionsOffcanvas', offcanvasHtml, (offcanvas, offcanvasElement) => {
+        if (!canReorder) return;
+
+        const listElement = document.getElementById('reorderSectionList');
+        const saveBtn = document.getElementById('saveSectionReorderBtn');
+        if (!listElement || !saveBtn) return;
+
+        let sortableInstances = [];
+
+        function updateAllBadges() {
+            let counter = 1;
+            listElement.querySelectorAll('.reorder-item').forEach(item => {
+                const badge = item.querySelector('.reorder-badge');
+                if (badge) badge.textContent = counter++;
+            });
+        }
+
+        function cleanupEmptySection(sectionEl) {
+            if (!sectionEl) return;
+            if (sectionEl.querySelectorAll('.reorder-item').length === 0) {
+                sectionEl.remove();
+            }
+        }
+
+        function wrapInStandardSection(exerciseItem) {
+            const sectionId = `section-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`;
+            const wrapper = document.createElement('div');
+            wrapper.className = 'reorder-section';
+            wrapper.dataset.sectionId = sectionId;
+            wrapper.dataset.sectionType = 'standard';
+            wrapper.dataset.sectionName = '';
+
+            const exercisesDiv = document.createElement('div');
+            exercisesDiv.className = 'reorder-section-exercises';
+            wrapper.appendChild(exercisesDiv);
+
+            listElement.replaceChild(wrapper, exerciseItem);
+            exercisesDiv.appendChild(exerciseItem);
+        }
+
+        loadSortableJS().then(() => {
+            saveBtn.disabled = false;
+
+            // Level 1: Section reorder
+            // Standard sections: drag by exercise .reorder-handle (moves whole section)
+            // Named sections: drag by header .reorder-section-drag (moves whole section)
+            const sectionSortable = window.Sortable.create(listElement, {
+                animation: 150,
+                handle: '.reorder-section-drag, .reorder-section[data-section-type="standard"] .reorder-handle',
+                draggable: '.reorder-section',
+                ghostClass: 'sortable-ghost',
+                forceFallback: true,
+                fallbackClass: 'sortable-fallback',
+                fallbackOnBody: true,
+                group: { name: 'reorder-sections', put: ['reorder-exercises'] },
+                onAdd: (evt) => {
+                    // Exercise dropped between sections → wrap in new standard section
+                    wrapInStandardSection(evt.item);
+                    const fromSection = evt.from.closest('.reorder-section');
+                    if (fromSection) cleanupEmptySection(fromSection);
+                    updateAllBadges();
+                },
+                onEnd: () => { updateAllBadges(); }
+            });
+            sortableInstances.push(sectionSortable);
+
+            // Level 2: Exercise reorder within named sections only
+            // Exercises can move between named sections via shared group
+            listElement.querySelectorAll('.reorder-section.section-named .reorder-section-exercises').forEach(el => {
+                const inner = window.Sortable.create(el, {
+                    animation: 150,
+                    handle: '.reorder-handle',
+                    group: 'reorder-exercises',
+                    ghostClass: 'sortable-ghost',
+                    forceFallback: true,
+                    fallbackClass: 'sortable-fallback',
+                    fallbackOnBody: true,
+                    onAdd: (evt) => {
+                        const fromSection = evt.from.closest('.reorder-section');
+                        if (fromSection) cleanupEmptySection(fromSection);
+                        updateAllBadges();
+                    },
+                    onEnd: () => { updateAllBadges(); }
+                });
+                sortableInstances.push(inner);
+            });
+
+            updateAllBadges();
+            console.log('✅ Sections reorder SortableJS initialized (two-level)');
+
+        }).catch(error => {
+            console.error('❌ Failed to load SortableJS:', error);
+            saveBtn.disabled = true;
+        });
+
+        // Save handler — collect section structure from DOM
+        saveBtn.addEventListener('click', () => {
+            const reorderedSections = [];
+            listElement.querySelectorAll('.reorder-section').forEach(sectionEl => {
+                const exerciseIds = [];
+                sectionEl.querySelectorAll('.reorder-item').forEach(item => {
+                    if (item.dataset.groupId) exerciseIds.push(item.dataset.groupId);
+                });
+                if (exerciseIds.length > 0) {
+                    reorderedSections.push({
+                        sectionId: sectionEl.dataset.sectionId,
+                        sectionType: sectionEl.dataset.sectionType || 'standard',
+                        sectionName: sectionEl.dataset.sectionName || null,
+                        exerciseIds
+                    });
+                }
+            });
+
+            saveBtn.disabled = true;
+            saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Saving...';
+
+            try {
+                onSave(reorderedSections);
+                offcanvas.hide();
+            } catch (error) {
+                console.error('❌ Error saving section order:', error);
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = '<i class="bx bx-check me-1"></i>Save Order';
+            }
+        });
+
+        // Cleanup when offcanvas closes
+        offcanvasElement.addEventListener('hidden.bs.offcanvas', () => {
+            sortableInstances.forEach(s => s.destroy());
+            sortableInstances = [];
+        }, { once: true });
+    });
+}
+
 /**
  * Lazy-load SortableJS library from CDN
  * Only loads once, subsequent calls return immediately

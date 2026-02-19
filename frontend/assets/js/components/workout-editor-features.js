@@ -76,8 +76,9 @@ function updateMuscleSummary() {
 // ============================================
 
 /**
- * Open the reorder offcanvas with current exercise groups
- * Uses UnifiedOffcanvasFactory.createReorderOffcanvas from workout-mode
+ * Open the reorder offcanvas with current exercise groups.
+ * In sections mode: uses two-level sections reorder offcanvas matching desktop drag.
+ * In legacy mode: uses flat list reorder offcanvas with block inference.
  */
 function openReorderOffcanvas() {
     const container = document.getElementById('exerciseGroups');
@@ -86,123 +87,110 @@ function openReorderOffcanvas() {
         return;
     }
 
-    const cards = container.querySelectorAll('.exercise-group-card');
     const isSectionsMode = window.SectionManager?.isSectionsMode();
 
-    // Build exercises array for reorder offcanvas (even if empty or single item)
-    // The offcanvas will display appropriate messaging for 0/1 exercises
+    if (isSectionsMode && window.UnifiedOffcanvasFactory?.createSectionsReorderOffcanvas) {
+        // Sections mode: collect section structure from DOM
+        const sections = [];
+        container.querySelectorAll('.workout-section').forEach(sectionEl => {
+            const exercises = [];
+            sectionEl.querySelectorAll('.exercise-group-card').forEach(card => {
+                const groupId = card.getAttribute('data-group-id');
+                const groupData = window.exerciseGroupsData?.[groupId] || {};
+                exercises.push({
+                    groupId,
+                    name: groupData.exercises?.a || 'Exercise',
+                    sets: groupData.sets || '3',
+                    reps: groupData.reps || '8-12'
+                });
+            });
+            const sectionType = sectionEl.dataset.sectionType || 'standard';
+            if (exercises.length > 0 || sectionType !== 'standard') {
+                sections.push({
+                    sectionId: sectionEl.dataset.sectionId,
+                    sectionType: sectionType,
+                    sectionName: sectionEl.querySelector('.section-name')?.textContent.trim() || null,
+                    exercises
+                });
+            }
+        });
+
+        console.log('📋 Opening sections reorder offcanvas:', sections);
+        window.UnifiedOffcanvasFactory.createSectionsReorderOffcanvas(sections, applySectionReorder);
+        return;
+    }
+
+    // Legacy mode: flat list with block inference
+    const cards = container.querySelectorAll('.exercise-group-card');
     const exercises = Array.from(cards).map((card, index) => {
         const groupId = card.getAttribute('data-group-id');
         const groupData = window.exerciseGroupsData?.[groupId] || {};
-
-        let blockId = null;
-        let blockName = null;
-
-        if (isSectionsMode) {
-            // Derive block info from section DOM structure
-            const sectionEl = card.closest('.workout-section');
-            if (sectionEl && sectionEl.dataset.sectionType !== 'standard') {
-                blockId = sectionEl.dataset.sectionId;
-                const nameEl = sectionEl.querySelector('.section-name');
-                blockName = nameEl ? nameEl.textContent.trim() : 'Block';
-            }
-        } else {
-            blockId = groupData.block_id || null;
-            blockName = groupData.group_name || null;
-        }
-
         return {
             groupId: groupId,
             name: groupData.exercises?.a || `Exercise ${index + 1}`,
             sets: groupData.sets || '3',
             reps: groupData.reps || '8-12',
-            blockId: blockId,
-            blockName: blockName,
+            blockId: groupData.block_id || null,
+            blockName: groupData.group_name || null,
             index: index
         };
     });
 
-    console.log('📋 Opening reorder offcanvas with exercises:', exercises);
-
-    // Use UnifiedOffcanvasFactory to create reorder offcanvas
     if (window.UnifiedOffcanvasFactory?.createReorderOffcanvas) {
-        window.UnifiedOffcanvasFactory.createReorderOffcanvas(exercises, (reorderedExercises) => {
-            // Apply the new order
-            applyReorderedExercises(reorderedExercises);
-        });
+        window.UnifiedOffcanvasFactory.createReorderOffcanvas(exercises, applyLegacyReorder);
     } else {
-        console.error('❌ UnifiedOffcanvasFactory.createReorderOffcanvas not available');
         alert('Reorder feature is not available. Please refresh the page.');
     }
 }
 
 /**
- * Apply reordered exercises to the DOM
- * @param {Array} reorderedExercises - Array of exercises in new order
+ * Apply section-structured reorder from the sections reorder offcanvas.
+ * Rebuilds the builder DOM by re-rendering sections via SectionManager.
+ * @param {Array} reorderedSections - [{ sectionId, sectionType, sectionName, exerciseIds: [...] }]
  */
-function applyReorderedExercises(reorderedExercises) {
+function applySectionReorder(reorderedSections) {
     const container = document.getElementById('exerciseGroups');
     if (!container) return;
 
-    console.log('📋 Applying new exercise order:', reorderedExercises.map(e => e.name));
+    console.log('📋 Applying section reorder:', reorderedSections);
 
-    if (window.SectionManager?.isSectionsMode()) {
-        // Sections mode: reorder sections and exercises within sections
-        // 1. Reorder sections by first appearance of their exercises
-        const processed = new Set();
-        reorderedExercises.forEach(exercise => {
-            const card = container.querySelector(`[data-group-id="${exercise.groupId}"]`);
-            if (!card) return;
-            const section = card.closest('.workout-section');
-            if (section && !processed.has(section.dataset.sectionId)) {
-                processed.add(section.dataset.sectionId);
-                container.appendChild(section);
-            }
-        });
-
-        // 2. Reorder exercises within their section containers
-        reorderedExercises.forEach(exercise => {
-            const card = container.querySelector(`[data-group-id="${exercise.groupId}"]`);
-            if (card) {
-                const exercisesContainer = card.closest('.section-exercises');
-                if (exercisesContainer) {
-                    exercisesContainer.appendChild(card);
+    // Build full sections data for SectionManager.renderSections()
+    const sections = reorderedSections.map(rs => ({
+        section_id: rs.sectionId,
+        type: rs.sectionType,
+        name: rs.sectionName || null,
+        exercises: rs.exerciseIds.map(groupId => {
+            const data = window.exerciseGroupsData?.[groupId] || {};
+            const primaryName = data.exercises?.a || '';
+            const alternates = [];
+            Object.keys(data.exercises || {}).sort().forEach(key => {
+                if (key !== 'a' && data.exercises[key]) {
+                    alternates.push(data.exercises[key]);
                 }
-            }
-        });
-    } else {
-        // Legacy mode: reorder flat DOM elements
-        reorderedExercises.forEach((exercise) => {
-            const card = container.querySelector(`[data-group-id="${exercise.groupId}"]`);
-            if (card) {
-                container.appendChild(card);
-            }
-        });
+            });
+            return {
+                exercise_id: groupId,
+                name: primaryName,
+                alternates,
+                sets: data.sets || '3',
+                reps: data.reps || '8-12',
+                rest: data.rest || '60s',
+                default_weight: data.default_weight || null,
+                default_weight_unit: data.default_weight_unit || 'lbs'
+            };
+        })
+    }));
 
-        // Update block membership in exerciseGroupsData
-        reorderedExercises.forEach((exercise) => {
-            const data = window.exerciseGroupsData?.[exercise.groupId];
-            if (data) {
-                data.block_id = exercise.blockId || null;
-                data.group_name = exercise.blockName || null;
-            }
-        });
+    // Re-render via SectionManager
+    window.SectionManager.renderSections(sections, container);
+    window.SectionManager.initHeaderListeners(container);
 
-        // Re-render block visual grouping
-        if (window.cardRenderer?.applyBlockGrouping) {
-            window.cardRenderer.applyBlockGrouping();
-        }
-    }
-
-    // Update all menu boundaries after reorder
     if (window.builderCardMenu?.updateAllMenuBoundaries) {
         window.builderCardMenu.updateAllMenuBoundaries();
     }
 
-    // Mark editor as dirty (triggers autosave)
     window.markEditorDirty();
 
-    // Show success toast
     if (window.showToast) {
         window.showToast({
             message: 'Exercise order updated',
@@ -213,7 +201,53 @@ function applyReorderedExercises(reorderedExercises) {
         });
     }
 
-    console.log('✅ Exercise order applied successfully');
+    console.log('✅ Section reorder applied successfully');
+}
+
+/**
+ * Apply legacy flat-list reorder from the flat reorder offcanvas.
+ * @param {Array} reorderedExercises - Array of exercises in new order
+ */
+function applyLegacyReorder(reorderedExercises) {
+    const container = document.getElementById('exerciseGroups');
+    if (!container) return;
+
+    console.log('📋 Applying legacy reorder:', reorderedExercises.map(e => e.name));
+
+    reorderedExercises.forEach((exercise) => {
+        const card = container.querySelector(`[data-group-id="${exercise.groupId}"]`);
+        if (card) container.appendChild(card);
+    });
+
+    reorderedExercises.forEach((exercise) => {
+        const data = window.exerciseGroupsData?.[exercise.groupId];
+        if (data) {
+            data.block_id = exercise.blockId || null;
+            data.group_name = exercise.blockName || null;
+        }
+    });
+
+    if (window.cardRenderer?.applyBlockGrouping) {
+        window.cardRenderer.applyBlockGrouping();
+    }
+
+    if (window.builderCardMenu?.updateAllMenuBoundaries) {
+        window.builderCardMenu.updateAllMenuBoundaries();
+    }
+
+    window.markEditorDirty();
+
+    if (window.showToast) {
+        window.showToast({
+            message: 'Exercise order updated',
+            type: 'success',
+            title: 'Reordered',
+            icon: 'bx-check',
+            delay: 2000
+        });
+    }
+
+    console.log('✅ Legacy reorder applied successfully');
 }
 
 // ============================================
@@ -310,7 +344,6 @@ function initializeExerciseAutocompletesWithAutoCreate() {
 window.scheduleMuscleSummaryUpdate = scheduleMuscleSummaryUpdate;
 window.updateMuscleSummary = updateMuscleSummary;
 window.openReorderOffcanvas = openReorderOffcanvas;
-window.applyReorderedExercises = applyReorderedExercises;
 window.initializeExerciseAutocompletesWithAutoCreate = initializeExerciseAutocompletesWithAutoCreate;
 
 console.log('📦 Workout Editor Features loaded');
