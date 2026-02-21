@@ -1201,12 +1201,13 @@ export function createReorderOffcanvas(exercises, onSave) {
 /**
  * Create sections-aware reorder offcanvas with two-level drag-and-drop.
  * Mirrors the desktop builder's section drag behavior:
- * - Standard sections: drag by exercise handle → moves the whole section
- * - Named sections: drag by header handle → moves the whole section
- * - Exercises within named sections: drag by exercise handle → reorder within/between sections
- * - Exercises dragged out of named sections → become standalone standard sections
+ * - Named sections: drag by header handle → moves the whole block
+ * - Exercises: drag by exercise handle → reorder within/between sections
+ * - Exercises dragged out of named sections → become standalone
+ * - Exercises dragged into named sections → join that block
+ * - Drop zones visible during drag (between sections, inside blocks, bottom standalone)
  *
- * @param {Array} sections - Array of { sectionId, sectionType, sectionName, exercises: [{ groupId, name, sets, reps }] }
+ * @param {Array} sections - Array of { sectionId, sectionType, sectionName, sectionDescription, exercises: [{ groupId, name, sets, reps }] }
  * @param {Function} onSave - Callback(reorderedSections) when user saves
  * @returns {Object} Offcanvas instance
  */
@@ -1216,61 +1217,221 @@ export function createSectionsReorderOffcanvas(sections, onSave) {
     const totalExercises = sections.reduce((sum, s) => sum + s.exercises.length, 0);
     const canReorder = totalExercises >= 2 || sections.length >= 2;
 
+    // Build a single exercise row
     const buildItemHtml = (exercise) => `
         <div class="reorder-item" data-group-id="${escapeHtml(exercise.groupId)}">
-            <div class="d-flex align-items-center gap-3 p-3 border rounded mb-1 reorder-item-inner" style="cursor: move;">
-                ${canReorder ? `<div class="reorder-handle text-muted"><i class="bx bx-menu" style="font-size: 1.5rem;"></i></div>` : ''}
-                <div class="flex-grow-1">
-                    <div class="fw-medium">${escapeHtml(exercise.name)}</div>
-                    ${exercise.sets || exercise.reps ? `<small class="text-muted">${exercise.sets ? `${exercise.sets} sets` : ''}${exercise.sets && exercise.reps ? ' × ' : ''}${exercise.reps ? `${exercise.reps} reps` : ''}</small>` : ''}
+            <div class="d-flex align-items-center gap-2 px-3 py-2 reorder-item-inner">
+                <div class="reorder-handle text-muted" style="cursor: grab;">
+                    <i class="bx bx-menu" style="font-size: 1.3rem;"></i>
                 </div>
-                <div class="badge reorder-badge bg-label-secondary"></div>
+                <div class="flex-grow-1" style="min-width: 0;">
+                    <div class="fw-medium text-truncate" style="font-size: 0.85rem;">${escapeHtml(exercise.name || 'Exercise')}</div>
+                    ${exercise.sets || exercise.reps ? `<small class="text-muted" style="font-size: 0.7rem;">${exercise.sets ? `${exercise.sets} sets` : ''}${exercise.sets && exercise.reps ? ' \u00d7 ' : ''}${exercise.reps ? `${exercise.reps}` : ''}</small>` : ''}
+                </div>
             </div>
         </div>
     `;
 
+    // Build a section container
     const buildSectionHtml = (section) => {
         const isNamed = section.sectionType !== 'standard';
         const exercisesHtml = section.exercises.map(ex => buildItemHtml(ex)).join('');
 
-        const headerHtml = isNamed ? `
-            <div class="reorder-section-header d-flex align-items-center gap-2 px-2 py-1 mb-1" style="cursor: grab;">
-                <div class="reorder-section-drag text-muted">
-                    <i class="bx bx-grid-vertical" style="font-size: 1.2rem;"></i>
+        if (!isNamed) {
+            return `
+                <div class="reorder-section"
+                     data-section-id="${escapeHtml(section.sectionId)}"
+                     data-section-type="standard"
+                     data-section-name=""
+                     data-section-description="">
+                    <div class="reorder-section-exercises">${exercisesHtml}</div>
                 </div>
-                <span style="font-size: 0.75rem; font-weight: 600; color: var(--workout-block, #2dd4bf);">${escapeHtml(section.sectionName || 'Block')}</span>
-            </div>
-        ` : '';
+            `;
+        }
+
+        const emptyHtml = section.exercises.length === 0
+            ? '<div class="reorder-section-empty">Drop exercises here</div>'
+            : '';
 
         return `
-            <div class="reorder-section${isNamed ? ' section-named' : ''}"
+            <div class="reorder-section section-named"
                  data-section-id="${escapeHtml(section.sectionId)}"
-                 data-section-type="${section.sectionType}"
-                 data-section-name="${escapeHtml(section.sectionName || '')}">
-                ${headerHtml}
-                <div class="reorder-section-exercises">${exercisesHtml}</div>
+                 data-section-type="${escapeHtml(section.sectionType)}"
+                 data-section-name="${escapeHtml(section.sectionName || '')}"
+                 data-section-description="${escapeHtml(section.sectionDescription || '')}">
+                <div class="reorder-section-header">
+                    <div class="reorder-section-drag">
+                        <i class="bx bx-grid-vertical"></i>
+                    </div>
+                    <span class="reorder-section-name">${escapeHtml(section.sectionName || 'Block')}</span>
+                    <span class="reorder-section-badge">${escapeHtml(section.sectionType)}</span>
+                </div>
+                <div class="reorder-section-exercises">${exercisesHtml}${emptyHtml}</div>
             </div>
         `;
     };
 
+    // Scoped styles
     const sectionStyles = `
         <style>
+            /* --- Section containers --- */
+            .reorder-section { margin-bottom: 6px; }
+
+            /* Named section (block) */
             .reorder-section.section-named {
+                border: 1px solid var(--bs-border-color, #e0e0e0);
                 border-left: 3px solid var(--workout-block, #2dd4bf);
-                border-radius: 4px;
+                border-radius: 6px;
+                overflow: hidden;
                 margin-bottom: 8px;
-                padding-bottom: 4px;
             }
-            .reorder-section:not(.section-named) { margin-bottom: 4px; }
+
+            /* Section header bar */
+            .reorder-section-header {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                padding: 6px 10px;
+                background: rgba(45, 212, 191, 0.04);
+                border-bottom: 1px solid rgba(45, 212, 191, 0.15);
+                cursor: grab;
+            }
+            .reorder-section-drag {
+                color: #999;
+                font-size: 1.1rem;
+                opacity: 0.5;
+            }
+            .reorder-section-name {
+                font-size: 0.8rem;
+                font-weight: 600;
+                color: var(--workout-block, #2dd4bf);
+            }
+            .reorder-section-badge {
+                font-size: 0.6rem;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                color: var(--bs-secondary-color, #999);
+                margin-left: auto;
+            }
+
+            /* Exercise items inside named sections */
             .reorder-section.section-named .reorder-item-inner {
-                border-left: none !important;
-                border-top-left-radius: 0 !important;
-                border-bottom-left-radius: 0 !important;
+                border-bottom: 1px solid var(--bs-border-color, #eee);
             }
-            .reorder-section.section-named .reorder-section-exercises { padding-left: 4px; }
-            .reorder-section-header { border-bottom: 1px solid rgba(45, 212, 191, 0.2); }
-            .reorder-section.sortable-ghost { opacity: 0.4; }
+            .reorder-section.section-named .reorder-item:last-child .reorder-item-inner {
+                border-bottom: none;
+            }
+
+            /* Standalone exercise cards */
+            .reorder-section:not(.section-named) .reorder-item-inner {
+                border: 1px solid var(--bs-border-color, #e0e0e0);
+                border-radius: 6px;
+            }
+
+            /* Empty block placeholder */
+            .reorder-section-empty {
+                padding: 16px;
+                text-align: center;
+                font-size: 0.75rem;
+                color: var(--bs-secondary-color, #999);
+                border: 2px dashed var(--bs-border-color, #ddd);
+                border-radius: 4px;
+                margin: 6px 8px 8px;
+            }
+
+            /* --- Drag ghost --- */
+            .reorder-section.sortable-ghost { opacity: 0.3; }
             .reorder-section.sortable-ghost.section-named { border-style: dashed; }
+            .reorder-item.sortable-ghost .reorder-item-inner { opacity: 0.3; border-style: dashed; }
+
+            /* --- Drop lines between sections during section drag --- */
+            #reorderSectionList.is-section-dragging .reorder-section {
+                margin-bottom: 10px;
+            }
+            #reorderSectionList.is-section-dragging .reorder-section::after {
+                content: '';
+                display: block;
+                height: 3px;
+                background: var(--bs-primary, #696cff);
+                border-radius: 2px;
+                margin: 4px 8px 0;
+                opacity: 0.3;
+            }
+            #reorderSectionList.is-section-dragging .reorder-section:last-child::after {
+                display: none;
+            }
+
+            /* --- Drop indicators during exercise drag --- */
+
+            /* Drop zone inside named blocks */
+            #reorderSectionList.is-exercise-dragging .reorder-section.section-named .reorder-section-exercises {
+                min-height: 40px;
+            }
+            #reorderSectionList.is-exercise-dragging .reorder-section.section-named .reorder-section-exercises::after {
+                content: 'Drop here';
+                display: block;
+                padding: 10px;
+                text-align: center;
+                font-size: 0.7rem;
+                color: var(--workout-block, #2dd4bf);
+                border: 2px dashed var(--workout-block, #2dd4bf);
+                border-radius: 4px;
+                margin: 4px 8px 8px;
+                opacity: 0.4;
+                background: rgba(45, 212, 191, 0.03);
+            }
+
+            /* Drop lines between sections during exercise drag */
+            #reorderSectionList.is-exercise-dragging .reorder-section {
+                margin-bottom: 10px;
+            }
+            #reorderSectionList.is-exercise-dragging .reorder-section::after {
+                content: '';
+                display: block;
+                height: 3px;
+                background: var(--bs-primary, #696cff);
+                border-radius: 2px;
+                margin: 4px 8px 0;
+                opacity: 0.25;
+            }
+            #reorderSectionList.is-exercise-dragging .reorder-section:last-child::after {
+                display: none;
+            }
+
+            /* Bottom drop zone during exercise drag */
+            #reorderSectionList.is-exercise-dragging::after {
+                content: 'Drop here as standalone';
+                display: block;
+                padding: 14px;
+                margin: 6px 0;
+                border: 2px dashed var(--bs-primary, #696cff);
+                border-radius: 6px;
+                text-align: center;
+                font-size: 0.7rem;
+                color: var(--bs-primary, #696cff);
+                opacity: 0.35;
+                background: rgba(105, 108, 255, 0.03);
+            }
+            #reorderSectionList.is-exercise-dragging {
+                padding-bottom: 16px;
+            }
+
+            /* --- Dark mode --- */
+            [data-bs-theme="dark"] .reorder-section.section-named {
+                border-color: rgba(255, 255, 255, 0.1);
+                border-left-color: #5eead4;
+            }
+            [data-bs-theme="dark"] .reorder-section-header {
+                background: rgba(45, 212, 191, 0.06);
+                border-bottom-color: rgba(94, 234, 212, 0.15);
+            }
+            [data-bs-theme="dark"] .reorder-section-name { color: #5eead4; }
+            [data-bs-theme="dark"] .reorder-section.section-named .reorder-item-inner {
+                border-color: rgba(255, 255, 255, 0.08);
+            }
+            [data-bs-theme="dark"] .reorder-section:not(.section-named) .reorder-item-inner {
+                border-color: rgba(255, 255, 255, 0.1);
+            }
         </style>
     `;
 
@@ -1288,11 +1449,17 @@ export function createSectionsReorderOffcanvas(sections, onSave) {
                 <i class="bx bx-info-circle me-2 mt-1"></i>
                 <div>
                     <strong>Drag to reorder</strong>
-                    <p class="mb-0 small">Drag exercises to reorder. Drag block headers to move entire blocks.</p>
+                    <p class="mb-0 small">Drag exercises between blocks or to standalone. Drag block headers to move entire blocks.</p>
                 </div>
             </div>
             <div id="reorderSectionList" class="mb-4">
                 ${sections.map(s => buildSectionHtml(s)).join('')}
+            </div>
+            <div id="reorderLoadingIndicator" class="text-center mb-3" style="display: none;">
+                <div class="spinner-border spinner-border-sm text-primary me-2" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <small class="text-muted">Loading drag-and-drop...</small>
             </div>
         `;
     }
@@ -1333,9 +1500,15 @@ export function createSectionsReorderOffcanvas(sections, onSave) {
 
         const listElement = document.getElementById('reorderSectionList');
         const saveBtn = document.getElementById('saveSectionReorderBtn');
+        const loadingIndicator = document.getElementById('reorderLoadingIndicator');
+
         if (!listElement || !saveBtn) return;
 
+        if (loadingIndicator) loadingIndicator.style.display = 'block';
+
         let sortableInstances = [];
+
+        // ── Helpers ──
 
         function updateAllBadges() {
             let counter = 1;
@@ -1347,8 +1520,18 @@ export function createSectionsReorderOffcanvas(sections, onSave) {
 
         function cleanupEmptySection(sectionEl) {
             if (!sectionEl) return;
-            if (sectionEl.querySelectorAll('.reorder-item').length === 0) {
-                sectionEl.remove();
+            const isNamed = sectionEl.classList.contains('section-named');
+            const items = sectionEl.querySelectorAll('.reorder-item');
+            if (items.length === 0) {
+                if (isNamed) {
+                    // Show empty placeholder for named sections
+                    const exc = sectionEl.querySelector('.reorder-section-exercises');
+                    if (exc && !exc.querySelector('.reorder-section-empty')) {
+                        exc.innerHTML = '<div class="reorder-section-empty">Drop exercises here</div>';
+                    }
+                } else {
+                    sectionEl.remove();
+                }
             }
         }
 
@@ -1359,6 +1542,7 @@ export function createSectionsReorderOffcanvas(sections, onSave) {
             wrapper.dataset.sectionId = sectionId;
             wrapper.dataset.sectionType = 'standard';
             wrapper.dataset.sectionName = '';
+            wrapper.dataset.sectionDescription = '';
 
             const exercisesDiv = document.createElement('div');
             exercisesDiv.className = 'reorder-section-exercises';
@@ -1366,13 +1550,51 @@ export function createSectionsReorderOffcanvas(sections, onSave) {
 
             listElement.replaceChild(wrapper, exerciseItem);
             exercisesDiv.appendChild(exerciseItem);
+
+            // Init inner Sortable on the new standard section
+            initInnerSortable(exercisesDiv, false);
         }
 
+        function initInnerSortable(el, isNamed) {
+            const inner = window.Sortable.create(el, {
+                animation: 150,
+                handle: '.reorder-handle',
+                group: isNamed
+                    ? 'reorder-exercises'
+                    : { name: 'reorder-exercises', pull: true, put: false },
+                ghostClass: 'sortable-ghost',
+                forceFallback: true,
+                fallbackClass: 'sortable-fallback',
+                fallbackOnBody: true,
+                onStart: () => {
+                    listElement.classList.add('is-exercise-dragging');
+                },
+                onAdd: (evt) => {
+                    // Remove empty placeholder if an exercise was dropped in
+                    const placeholder = el.querySelector('.reorder-section-empty');
+                    if (placeholder) placeholder.remove();
+
+                    const fromSection = evt.from.closest('.reorder-section');
+                    if (fromSection) cleanupEmptySection(fromSection);
+                    updateAllBadges();
+                },
+                onEnd: () => {
+                    listElement.classList.remove('is-exercise-dragging');
+                    updateAllBadges();
+                }
+            });
+            sortableInstances.push(inner);
+            return inner;
+        }
+
+        // ── SortableJS init ──
+
         loadSortableJS().then(() => {
+            if (loadingIndicator) loadingIndicator.style.display = 'none';
             saveBtn.disabled = false;
 
-            // Level 1: Section reorder (named sections only, via header grip)
-            // Exercises dropped between sections get wrapped in new standard sections
+            // Level 1: Section reorder (named sections via header grip)
+            // Also accepts exercises dropped between sections → wrap in standard section
             const sectionSortable = window.Sortable.create(listElement, {
                 animation: 150,
                 handle: '.reorder-section-drag',
@@ -1382,6 +1604,9 @@ export function createSectionsReorderOffcanvas(sections, onSave) {
                 fallbackClass: 'sortable-fallback',
                 fallbackOnBody: true,
                 group: { name: 'reorder-sections', put: ['reorder-exercises'] },
+                onStart: () => {
+                    listElement.classList.add('is-section-dragging');
+                },
                 onAdd: (evt) => {
                     // Exercise dropped between sections → wrap in new standard section
                     wrapInStandardSection(evt.item);
@@ -1389,33 +1614,19 @@ export function createSectionsReorderOffcanvas(sections, onSave) {
                     if (fromSection) cleanupEmptySection(fromSection);
                     updateAllBadges();
                 },
-                onEnd: () => { updateAllBadges(); }
+                onEnd: () => {
+                    listElement.classList.remove('is-section-dragging');
+                    updateAllBadges();
+                }
             });
             sortableInstances.push(sectionSortable);
 
-            // Level 2: Exercise reorder — ALL sections get inner Sortables
-            // Named sections: full pull+put (exercises move between named sections)
-            // Standard sections: pull only (exercise can leave to join named section or reposition)
+            // Level 2: Inner Sortables on ALL sections for cross-section exercise drag
+            // Named sections: full pull+put (accept drops)
+            // Standard sections: pull-only (can drag OUT, nothing drops IN)
             listElement.querySelectorAll('.reorder-section .reorder-section-exercises').forEach(el => {
                 const isNamed = el.closest('.reorder-section').classList.contains('section-named');
-                const inner = window.Sortable.create(el, {
-                    animation: 150,
-                    handle: '.reorder-handle',
-                    group: isNamed
-                        ? 'reorder-exercises'
-                        : { name: 'reorder-exercises', pull: true, put: false },
-                    ghostClass: 'sortable-ghost',
-                    forceFallback: true,
-                    fallbackClass: 'sortable-fallback',
-                    fallbackOnBody: true,
-                    onAdd: (evt) => {
-                        const fromSection = evt.from.closest('.reorder-section');
-                        if (fromSection) cleanupEmptySection(fromSection);
-                        updateAllBadges();
-                    },
-                    onEnd: () => { updateAllBadges(); }
-                });
-                sortableInstances.push(inner);
+                initInnerSortable(el, isNamed);
             });
 
             updateAllBadges();
@@ -1423,10 +1634,12 @@ export function createSectionsReorderOffcanvas(sections, onSave) {
 
         }).catch(error => {
             console.error('❌ Failed to load SortableJS:', error);
+            if (loadingIndicator) loadingIndicator.style.display = 'none';
             saveBtn.disabled = true;
         });
 
-        // Save handler — collect section structure from DOM
+        // ── Save handler ──
+
         saveBtn.addEventListener('click', () => {
             const reorderedSections = [];
             listElement.querySelectorAll('.reorder-section').forEach(sectionEl => {
@@ -1439,6 +1652,7 @@ export function createSectionsReorderOffcanvas(sections, onSave) {
                         sectionId: sectionEl.dataset.sectionId,
                         sectionType: sectionEl.dataset.sectionType || 'standard',
                         sectionName: sectionEl.dataset.sectionName || null,
+                        sectionDescription: sectionEl.dataset.sectionDescription || null,
                         exerciseIds
                     });
                 }

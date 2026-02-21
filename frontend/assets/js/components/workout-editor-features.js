@@ -96,18 +96,22 @@ function openReorderOffcanvas() {
     const isSectionsMode = window.SectionManager?.isSectionsMode();
 
     if (isSectionsMode) {
-        // Sections mode: flatten sections into exercises with blockId = sectionId
-        const exercises = [];
-        let globalIndex = 0;
+        // Sections mode: two-level reorder matching desktop drag behavior
+        if (!window.UnifiedOffcanvasFactory?.createSectionsReorderOffcanvas) {
+            alert('Sections reorder feature is not available. Please refresh the page.');
+            return;
+        }
+
+        const sections = [];
         container.querySelectorAll('.workout-section').forEach(sectionEl => {
             const sectionId = sectionEl.dataset.sectionId;
             const sectionType = sectionEl.dataset.sectionType || 'standard';
             const sectionName = sectionEl.querySelector('.section-name-input')?.value?.trim()
                 || sectionEl.querySelector('.section-name')?.textContent?.trim() || null;
+            const sectionDescription = sectionEl.querySelector('.section-description-input')?.value?.trim() || null;
             const isNamed = sectionType !== 'standard';
 
-            const sectionDescription = sectionEl.querySelector('.section-description-input')?.value?.trim() || null;
-
+            const exercises = [];
             sectionEl.querySelectorAll('.exercise-group-card').forEach(card => {
                 const groupId = card.getAttribute('data-group-id');
                 const groupData = window.exerciseGroupsData?.[groupId] || {};
@@ -115,56 +119,24 @@ function openReorderOffcanvas() {
                     groupId,
                     name: groupData.exercises?.a || 'Exercise',
                     sets: groupData.sets || '3',
-                    reps: groupData.reps || '8-12',
-                    blockId: isNamed ? sectionId : null,
-                    blockName: isNamed ? (sectionName || sectionType.charAt(0).toUpperCase() + sectionType.slice(1)) : null,
-                    blockDescription: isNamed ? sectionDescription : null,
-                    _sectionType: sectionType,
-                    index: globalIndex++
+                    reps: groupData.reps || '8-12'
                 });
             });
+
+            // Include named sections even if empty (user can drag exercises into them)
+            if (exercises.length > 0 || isNamed) {
+                sections.push({
+                    sectionId,
+                    sectionType,
+                    sectionName: isNamed ? (sectionName || sectionType.charAt(0).toUpperCase() + sectionType.slice(1)) : null,
+                    sectionDescription: isNamed ? sectionDescription : null,
+                    exercises
+                });
+            }
         });
 
-        console.log('Opening sections reorder (flat mode):', exercises.length, 'exercises');
-        window.UnifiedOffcanvasFactory.createReorderOffcanvas(exercises, (reorderedExercises) => {
-            // Reconstruct sections from flat result: consecutive same-blockId = one section
-            const reorderedSections = [];
-            let currentBlockId = null;
-            let currentSection = null;
-
-            reorderedExercises.forEach(ex => {
-                if (ex.blockId && ex.blockId === currentBlockId) {
-                    // Continue current named section
-                    currentSection.exerciseIds.push(ex.groupId);
-                } else {
-                    // Start new section
-                    if (ex.blockId) {
-                        currentBlockId = ex.blockId;
-                        currentSection = {
-                            sectionId: ex.blockId,
-                            sectionType: ex._sectionType || 'superset',
-                            sectionName: ex.blockName || null,
-                            sectionDescription: ex.blockDescription || null,
-                            exerciseIds: [ex.groupId]
-                        };
-                        reorderedSections.push(currentSection);
-                    } else {
-                        // Standalone exercise → standard section
-                        currentBlockId = null;
-                        currentSection = null;
-                        reorderedSections.push({
-                            sectionId: `section-${ex.groupId}`,
-                            sectionType: 'standard',
-                            sectionName: null,
-                            sectionDescription: null,
-                            exerciseIds: [ex.groupId]
-                        });
-                    }
-                }
-            });
-
-            applySectionReorder(reorderedSections);
-        });
+        console.log('Opening sections reorder (two-level):', sections.length, 'sections');
+        window.UnifiedOffcanvasFactory.createSectionsReorderOffcanvas(sections, applySectionReorder);
         return;
     }
 
