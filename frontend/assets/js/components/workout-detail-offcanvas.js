@@ -191,11 +191,13 @@ class WorkoutDetailOffcanvas {
         
         html += '</div>';
         
-        // Exercise Groups
+        // Exercise Groups (prefer exercise_groups, fall back to sections)
         const exerciseGroups = workoutData.exercise_groups || [];
+        const sections = workoutData.sections || [];
+
         if (exerciseGroups.length > 0) {
             html += '<h6 class="mb-3">Exercises</h6>';
-            
+
             exerciseGroups.forEach((group, index) => {
                 // Build exercise list
                 const exercises = [];
@@ -204,7 +206,7 @@ class WorkoutDetailOffcanvas {
                     if (group.exercises.b) exercises.push({ label: 'Alt: ', name: group.exercises.b });
                     if (group.exercises.c) exercises.push({ label: 'Alt2: ', name: group.exercises.c });
                 }
-                
+
                 // Build exercises HTML - each on new line
                 let exercisesHtml = '';
                 if (exercises.length > 0) {
@@ -214,14 +216,14 @@ class WorkoutDetailOffcanvas {
                 } else {
                     exercisesHtml = '<div class="exercise-line text-muted">No exercises</div>';
                 }
-                
+
                 // Build meta text (plain text with bullet separators)
                 const parts = [`${group.sets || '3'} sets`, `${group.reps || '8-12'} reps`, `${group.rest || '60s'} rest`];
                 if (group.default_weight) {
                     parts.push(`${group.default_weight} ${group.default_weight_unit || 'lbs'}`);
                 }
                 const metaText = parts.join(' • ');
-                
+
                 html += `
                     <div class="card mb-2">
                         <div class="card-body py-2 px-3">
@@ -233,6 +235,39 @@ class WorkoutDetailOffcanvas {
                         </div>
                     </div>
                 `;
+            });
+        } else if (sections.length > 0) {
+            // Fallback: render from sections data when exercise_groups is empty
+            html += '<h6 class="mb-3">Exercises</h6>';
+
+            sections.forEach(section => {
+                (section.exercises || []).forEach(exercise => {
+                    const exercises = [];
+                    if (exercise.name) exercises.push({ label: '', name: exercise.name });
+                    (exercise.alternates || []).forEach((alt, i) => {
+                        if (alt) exercises.push({ label: `Alt${i > 0 ? (i + 1) : ''}: `, name: alt });
+                    });
+
+                    let exercisesHtml = exercises.length > 0
+                        ? exercises.map(ex =>
+                            `<div class="exercise-line">${ex.label ? `<span class="text-muted">${ex.label}</span>` : ''}${this._escapeHtml(ex.name)}</div>`
+                        ).join('')
+                        : '<div class="exercise-line text-muted">No exercises</div>';
+
+                    const parts = [`${exercise.sets || '3'} sets`, `${exercise.reps || '8-12'} reps`, `${exercise.rest || '60s'} rest`];
+                    if (exercise.default_weight) {
+                        parts.push(`${exercise.default_weight} ${exercise.default_weight_unit || 'lbs'}`);
+                    }
+
+                    html += `
+                        <div class="card mb-2">
+                            <div class="card-body py-2 px-3">
+                                <div class="exercise-list mb-1">${exercisesHtml}</div>
+                                <div class="exercise-meta-text text-muted small">${parts.join(' • ')}</div>
+                            </div>
+                        </div>
+                    `;
+                });
             });
         }
         

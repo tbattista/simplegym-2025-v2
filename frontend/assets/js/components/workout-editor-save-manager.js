@@ -6,6 +6,50 @@
  */
 
 /**
+ * Convert sections data back to exercise_groups format.
+ * Ensures exercise_groups always has complete, block-aware data for
+ * consumers that read only exercise_groups (library cards, detail offcanvas, etc.).
+ * @param {Array} sections - Array of WorkoutSection objects from collectSections()
+ * @returns {Array} Array of ExerciseGroup objects with block_id linking for named sections
+ */
+function sectionsToExerciseGroups(sections) {
+    const groups = [];
+
+    sections.forEach(section => {
+        const isNamed = section.type !== 'standard';
+        const blockId = isNamed ? section.section_id : null;
+
+        section.exercises.forEach(exercise => {
+            const exercises = {};
+            if (exercise.name) exercises.a = exercise.name;
+            (exercise.alternates || []).forEach((alt, i) => {
+                if (alt) exercises[String.fromCharCode(98 + i)] = alt; // b, c, d, ...
+            });
+
+            const group = {
+                group_id: exercise.exercise_id,
+                group_type: isNamed ? 'block' : 'standard',
+                exercises: exercises,
+                sets: exercise.sets || '3',
+                reps: exercise.reps || '8-12',
+                rest: exercise.rest || '60s',
+                default_weight: exercise.default_weight || null,
+                default_weight_unit: exercise.default_weight_unit || 'lbs'
+            };
+
+            if (blockId) {
+                group.block_id = blockId;
+                group.group_name = section.name || null;
+            }
+
+            groups.push(group);
+        });
+    });
+
+    return groups;
+}
+
+/**
  * Auto-create custom exercises for any unknown exercise names in groups
  * @param {Array} exerciseGroups - Array of exercise group objects
  * @returns {Promise<void>}
@@ -100,6 +144,11 @@ async function saveWorkoutFromEditor(silent = false) {
     document.querySelectorAll('.section-name-input:focus, .section-description-input:focus')
         .forEach(input => input.blur());
 
+    // Flush any active desktop inline edit before collecting data
+    if (window.desktopCardRenderer?.activeEdit) {
+        window.desktopCardRenderer.finishInlineEdit(window.desktopCardRenderer.activeEdit, true);
+    }
+
     // Check if we're in sections mode
     const useSections = window.SectionManager && window.SectionManager.isSectionsMode();
 
@@ -112,9 +161,12 @@ async function saveWorkoutFromEditor(silent = false) {
         template_notes: templateNotes
     };
 
-    // If in sections mode, also collect sections data
+    // If in sections mode, also collect sections data and regenerate exercise_groups from it
     if (useSections) {
         workoutData.sections = window.SectionManager.collectSections();
+        // Regenerate exercise_groups from sections to ensure block structure is preserved.
+        // The DOM-based collectExerciseGroups() loses block_id/group_type; sections is authoritative.
+        workoutData.exercise_groups = sectionsToExerciseGroups(workoutData.sections);
     }
 
     console.log('📊 SAVE DEBUG: Collected workout data:', {
@@ -267,6 +319,18 @@ async function saveWorkoutFromEditor(silent = false) {
             window.bottomActionBar.updateButtonState('right-0', 'saved');
         }
 
+        // Flash save FAB to show success
+        const saveFab = document.getElementById('mobileSaveFab');
+        if (saveFab && !silent) {
+            saveFab.classList.add('saved');
+            const icon = saveFab.querySelector('i');
+            if (icon) icon.className = 'bx bx-check';
+            setTimeout(() => {
+                saveFab.classList.remove('saved');
+                if (icon) icon.className = 'bx bx-save';
+            }, 1500);
+        }
+
         // Show delete button now that workout is saved (if it exists)
         const deleteBtn = document.getElementById('deleteWorkoutBtn');
         if (deleteBtn) {
@@ -311,5 +375,6 @@ async function saveWorkoutFromEditor(silent = false) {
 // Make functions globally available
 window.saveWorkoutFromEditor = saveWorkoutFromEditor;
 window.autoCreateExercisesInGroups = autoCreateExercisesInGroups;
+window.sectionsToExerciseGroups = sectionsToExerciseGroups;
 
 console.log('📦 Workout Editor Save Manager loaded');

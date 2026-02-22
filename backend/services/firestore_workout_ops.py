@@ -11,7 +11,7 @@ try:
 except ImportError:
     firestore = None
 
-from ..models import WorkoutTemplate, CreateWorkoutRequest, UpdateWorkoutRequest, migrate_exercise_groups_to_sections
+from ..models import WorkoutTemplate, CreateWorkoutRequest, UpdateWorkoutRequest, migrate_exercise_groups_to_sections, migrate_sections_to_exercise_groups
 
 logger = logging.getLogger(__name__)
 
@@ -36,9 +36,11 @@ class FirestoreWorkoutOps:
                 template_notes=workout_request.template_notes if hasattr(workout_request, 'template_notes') else []
             )
 
-            # Auto-migrate exercise_groups to sections if not provided
+            # Auto-migrate between formats to keep both in sync
             if not workout.sections and workout.exercise_groups:
                 workout.sections = migrate_exercise_groups_to_sections(workout.exercise_groups)
+            elif workout.sections and not workout.exercise_groups:
+                workout.exercise_groups = migrate_sections_to_exercise_groups(workout.sections)
 
             # Save to Firestore
             workout_ref = self.db.collection('users').document(user_id).collection('workouts').document(workout.id)

@@ -3,7 +3,7 @@ import os
 from pathlib import Path
 from typing import List, Optional, Dict, Any
 from datetime import datetime
-from ..models import Program, WorkoutTemplate, CreateWorkoutRequest, CreateProgramRequest, UpdateWorkoutRequest, UpdateProgramRequest, migrate_exercise_groups_to_sections
+from ..models import Program, WorkoutTemplate, CreateWorkoutRequest, CreateProgramRequest, UpdateWorkoutRequest, UpdateProgramRequest, migrate_exercise_groups_to_sections, migrate_sections_to_exercise_groups
 
 class DataService:
     """JSON-based data persistence service for programs and workouts"""
@@ -53,9 +53,11 @@ class DataService:
             template_notes=workout_request.template_notes if hasattr(workout_request, 'template_notes') else []
         )
 
-        # Auto-migrate exercise_groups to sections if not provided
+        # Auto-migrate between formats to keep both in sync
         if not workout.sections and workout.exercise_groups:
             workout.sections = migrate_exercise_groups_to_sections(workout.exercise_groups)
+        elif workout.sections and not workout.exercise_groups:
+            workout.exercise_groups = migrate_sections_to_exercise_groups(workout.sections)
 
         # Load existing workouts
         data = self._read_json(self.workouts_file)

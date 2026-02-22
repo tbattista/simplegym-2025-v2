@@ -296,6 +296,43 @@ def migrate_exercise_groups_to_sections(exercise_groups: List[ExerciseGroup]) ->
     return sections
 
 
+def migrate_sections_to_exercise_groups(sections: List[WorkoutSection]) -> List[ExerciseGroup]:
+    """Convert sections format back to legacy exercise_groups + block_id format.
+
+    Reverse of migrate_exercise_groups_to_sections(). Ensures exercise_groups
+    is always populated for consumers that only read the legacy format.
+    """
+    groups = []
+
+    for section in sections:
+        is_named = section.type != 'standard'
+        block_id = section.section_id if is_named else None
+
+        for ex in section.exercises:
+            exercises_dict = {}
+            if ex.name:
+                exercises_dict['a'] = ex.name
+            for i, alt in enumerate(ex.alternates or []):
+                if alt:
+                    exercises_dict[chr(98 + i)] = alt  # b, c, d, ...
+
+            group = ExerciseGroup(
+                group_id=ex.exercise_id,
+                exercises=exercises_dict if exercises_dict else {'a': ''},
+                sets=ex.sets,
+                reps=ex.reps,
+                rest=ex.rest,
+                default_weight=ex.default_weight,
+                default_weight_unit=ex.default_weight_unit,
+                group_type='block' if is_named else 'standard',
+                group_name=section.name if is_named else None,
+                block_id=block_id
+            )
+            groups.append(group)
+
+    return groups
+
+
 class TemplateNote(BaseModel):
     """Inline note within a workout template (permanent, saved with template)"""
 

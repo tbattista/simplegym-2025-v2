@@ -258,33 +258,32 @@
             var index = existingCards.length;
             var cardHtml = window.createExerciseGroupCard(groupId, groupData, index + 1, index, index + 1);
 
-            // Find drop position based on cursor Y
+            // Wrap card in a standard section so collectSections() can find it
+            var sectionId = 'section-' + Date.now() + '-' + Math.random().toString(36).substr(2, 6);
+            var sectionEl = document.createElement('div');
+            sectionEl.className = 'workout-section';
+            sectionEl.dataset.sectionId = sectionId;
+            sectionEl.dataset.sectionType = 'standard';
+            var exercisesEl = document.createElement('div');
+            exercisesEl.className = 'section-exercises';
+            exercisesEl.innerHTML = cardHtml;
+            sectionEl.appendChild(exercisesEl);
+
+            // Find drop position based on cursor Y relative to existing sections
             var insertBefore = null;
-            var cards = container.querySelectorAll('.exercise-group-card');
-            for (var i = 0; i < cards.length; i++) {
-                var rect = cards[i].getBoundingClientRect();
+            var sections = container.querySelectorAll('.workout-section');
+            for (var i = 0; i < sections.length; i++) {
+                var rect = sections[i].getBoundingClientRect();
                 if (e.clientY < rect.top + rect.height / 2) {
-                    insertBefore = cards[i];
+                    insertBefore = sections[i];
                     break;
                 }
             }
 
             if (insertBefore) {
-                insertBefore.insertAdjacentHTML('beforebegin', cardHtml);
+                container.insertBefore(sectionEl, insertBefore);
             } else {
-                // Drop after last card — find the right spot (after header/cards, before buttons)
-                var lastCard = container.querySelector('.exercise-group-card:last-of-type');
-                if (lastCard) {
-                    lastCard.insertAdjacentHTML('afterend', cardHtml);
-                } else {
-                    // No cards yet, insert after column header
-                    var header = container.querySelector('.desktop-exercise-header');
-                    if (header) {
-                        header.insertAdjacentHTML('afterend', cardHtml);
-                    } else {
-                        container.insertAdjacentHTML('afterbegin', cardHtml);
-                    }
-                }
+                container.appendChild(sectionEl);
             }
 
             if (window.markEditorDirty) window.markEditorDirty();
