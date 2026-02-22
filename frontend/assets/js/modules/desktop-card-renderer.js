@@ -537,6 +537,61 @@ class DesktopCardRenderer {
     }
 
     /**
+     * Create note row HTML (flat table-row style matching exercise rows)
+     * @param {Object} note - Note data with id, content, order_index
+     * @returns {string} HTML string
+     */
+    createNoteRow(note) {
+        const noteId = note.id || `template-note-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`;
+        const content = note.content || '';
+        const hasContent = content.length > 0;
+
+        const contentHtml = hasContent
+            ? `<span class="template-note-text">${this.escapeHtml(content)}</span>`
+            : `<span class="template-note-text text-muted">Click edit to add note content</span>`;
+
+        return `
+            <div class="desktop-exercise-row desktop-note-row exercise-group-card template-note-card" data-note-id="${this.escapeHtml(noteId)}" data-card-type="note">
+                <div class="drag-handle" title="Drag to reorder">
+                    <i class="bx bx-grid-vertical"></i>
+                </div>
+                <div class="note-content-col">
+                    <i class="bx bx-comment note-row-icon"></i>
+                    <span class="note-row-text text-muted small">${contentHtml}</span>
+                </div>
+                <div></div><div></div><div></div>
+                <div class="note-edit-col">
+                    <button type="button" class="row-menu-btn"
+                            onclick="event.preventDefault(); event.stopPropagation(); window.handleEditTemplateNote?.('${this.escapeHtml(noteId)}');"
+                            title="Edit note">
+                        <i class="bx bx-pencil"></i>
+                    </button>
+                </div>
+            </div>`;
+    }
+
+    /**
+     * Update note row preview after editing
+     * @param {string} noteId - Note ID
+     * @param {string} content - New content
+     */
+    updateNoteRowPreview(noteId, content) {
+        const row = document.querySelector(`.desktop-note-row[data-note-id="${noteId}"]`);
+        if (!row) return;
+
+        const noteTextSpan = row.querySelector('.template-note-text');
+        if (noteTextSpan) {
+            if (content.length > 0) {
+                noteTextSpan.textContent = content;
+                noteTextSpan.classList.remove('text-muted');
+            } else {
+                noteTextSpan.textContent = 'Click edit to add note content';
+                noteTextSpan.classList.add('text-muted');
+            }
+        }
+    }
+
+    /**
      * Escape HTML to prevent XSS
      */
     escapeHtml(text) {

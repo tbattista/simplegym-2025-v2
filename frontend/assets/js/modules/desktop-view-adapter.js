@@ -131,6 +131,16 @@
         // Wire inline tags/description fields
         wireDesktopMetadataFields();
 
+        // Override template note card rendering for desktop flat rows
+        if (window.templateNoteCardRenderer && window.desktopCardRenderer) {
+            window.templateNoteCardRenderer.createNoteCard = function(note) {
+                return window.desktopCardRenderer.createNoteRow(note);
+            };
+            window.templateNoteCardRenderer.updateNoteCardPreview = function(noteId, content) {
+                window.desktopCardRenderer.updateNoteRowPreview(noteId, content);
+            };
+        }
+
         console.log('✅ Desktop view initialization complete');
     }
 
@@ -147,15 +157,20 @@
             ghostClass: 'sortable-ghost',
             dragClass: 'sortable-drag',
             chosenClass: 'sortable-chosen',
-            filter: '.template-note-card, .desktop-exercise-header, .block-group-header',
+            filter: '.desktop-exercise-header, .block-group-header',
             onStart: function() {
                 container.classList.add('is-dragging');
             },
             onEnd: function(evt) {
                 container.classList.remove('is-dragging');
 
-                // Update block membership based on new position
+                // Update block membership based on new position (exercise cards only)
                 const movedCard = evt.item;
+                if (movedCard.classList.contains('template-note-card')) {
+                    // Note card moved — just mark dirty
+                    if (window.markEditorDirty) window.markEditorDirty();
+                    return;
+                }
                 const movedData = window.exerciseGroupsData[movedCard.dataset.groupId];
                 if (movedData) {
                     let prevCard = movedCard.previousElementSibling;
