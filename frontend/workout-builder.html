@@ -197,9 +197,14 @@
                               <i class="bx bx-list-ul me-1"></i>
                               Exercises
                             </h6>
-                            <button type="button" class="btn btn-sm btn-outline-secondary" id="reorderExercisesBtn">
-                              <i class="bx bx-sort me-1"></i>Reorder
-                            </button>
+                            <div class="d-flex gap-2">
+                              <button type="button" class="btn btn-sm btn-outline-secondary import-workout-btn" id="importWorkoutEditorBtn">
+                                <i class="bx bx-import me-1"></i>Import
+                              </button>
+                              <button type="button" class="btn btn-sm btn-outline-secondary" id="reorderExercisesBtn">
+                                <i class="bx bx-sort me-1"></i>Reorder
+                              </button>
+                            </div>
                           </div>
                           <div id="exerciseGroups" class="accordion accordion-workout-groups mb-2">
                             <!-- Exercise groups will be added here as accordion items -->
@@ -211,7 +216,7 @@
                           <!-- Add Cardio + Note + Block (Side by Side) -->
                           <div class="d-flex gap-2 mb-2">
                             <button type="button" class="btn btn-outline-secondary btn-sm flex-fill" id="mobileAddCardioBtn">
-                              <i class="bx bx-heart-circle me-1"></i>Cardio
+                              <i class="bx bx-heart-circle me-1"></i>Activity
                             </button>
                             <button type="button" class="btn btn-outline-secondary btn-sm flex-fill" id="mobileAddNoteBtn">
                               <i class="bx bx-note me-1"></i>Note
@@ -220,11 +225,6 @@
                               <i class="bx bx-collection me-1"></i>Block
                             </button>
                           </div>
-                          <!-- Import Workout Button -->
-                          <button type="button" class="btn btn-outline-primary w-100 import-workout-btn" id="importWorkoutEditorBtn">
-                            <i class="bx bx-import me-1"></i>
-                            Import Workout
-                          </button>
                         </div>
                       </form>
                     </div>
@@ -375,9 +375,14 @@
                       <div class="card">
                         <div class="card-header d-flex justify-content-between align-items-center py-2">
                           <h6 class="mb-0"><i class="bx bx-list-ul me-1"></i>Exercises</h6>
-                          <button type="button" class="btn btn-sm btn-outline-secondary" id="desktopReorderBtn">
-                            <i class="bx bx-sort me-1"></i>Reorder
-                          </button>
+                          <div class="d-flex gap-2">
+                            <button type="button" class="btn btn-sm btn-outline-secondary import-workout-btn" id="desktopImportLargeBtn">
+                              <i class="bx bx-import me-1"></i>Import
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" id="desktopReorderBtn">
+                              <i class="bx bx-sort me-1"></i>Reorder
+                            </button>
+                          </div>
                         </div>
                         <div class="card-body p-0">
                           <!-- Column Headers -->
@@ -399,7 +404,7 @@
                               <i class="bx bx-plus me-1"></i>Exercise
                             </button>
                             <button type="button" class="btn btn-outline-secondary btn-sm flex-fill" id="desktopAddCardioBtn">
-                              <i class="bx bx-heart-circle me-1"></i>Cardio
+                              <i class="bx bx-heart-circle me-1"></i>Activity
                             </button>
                             <button type="button" class="btn btn-outline-secondary btn-sm flex-fill" id="desktopAddNoteBtn">
                               <i class="bx bx-comment me-1"></i>Note
@@ -411,10 +416,6 @@
                         </div>
                       </div>
 
-                      <!-- Import Button -->
-                      <button type="button" class="btn btn-outline-primary w-100 mt-3 import-workout-btn" id="desktopImportLargeBtn">
-                        <i class="bx bx-import me-1"></i>Import Workout
-                      </button>
                     </div>
 
                   </div>
@@ -1120,7 +1121,7 @@
 
                     if (window.markEditorDirty) window.markEditorDirty();
                     if (window.showToast) {
-                        window.showToast({ message: 'Added cardio activity', type: 'success', delay: 2000 });
+                        window.showToast({ message: 'Added activity', type: 'success', delay: 2000 });
                     }
                 });
             }

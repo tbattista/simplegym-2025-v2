@@ -461,7 +461,7 @@
 
         if (window.markEditorDirty) window.markEditorDirty();
         if (window.showToast) {
-            window.showToast({ message: 'Added cardio activity', type: 'success', delay: 2000 });
+            window.showToast({ message: 'Added activity', type: 'success', delay: 2000 });
         }
     }
 

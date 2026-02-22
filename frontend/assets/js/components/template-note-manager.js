@@ -92,9 +92,19 @@ if (!window.openNoteEditor) {
                 note: { id: groupId, content: groupData.note_content || '' },
                 onSave: function(content) {
                     groupData.note_content = content;
-                    // Update card preview
+                    // Update card preview (try both data-note-id and data-group-id selectors)
                     if (window.templateNoteCardRenderer) {
                         window.templateNoteCardRenderer.updateNoteCardPreview(groupId, content);
+                    }
+                    // Mobile card uses data-group-id
+                    const card = document.querySelector(`.exercise-group-card[data-group-id="${groupId}"]`);
+                    if (card) {
+                        const textEl = card.querySelector('.exercise-line');
+                        if (textEl) {
+                            textEl.innerHTML = content
+                                ? `<i class="bx bx-comment text-muted me-1"></i>${content.length > 80 ? content.substring(0, 80) + '...' : content}`
+                                : '<i class="bx bx-comment text-muted me-1"></i><span class="text-muted">Tap edit to add note content</span>';
+                        }
                     }
                     if (window.markEditorDirty) window.markEditorDirty();
                 },
@@ -214,38 +224,5 @@ function collectTemplateNotes() {
 // Make functions globally available
 window.renderTemplateNotes = renderTemplateNotes;
 window.collectTemplateNotes = collectTemplateNotes;
-
-// Provide a default openNoteEditor for mobile (desktop adapter overrides this)
-if (!window.openNoteEditor) {
-    window.openNoteEditor = function(groupId) {
-        const groupData = window.exerciseGroupsData[groupId];
-        if (!groupData) return;
-
-        if (window.UnifiedOffcanvasFactory?.createTemplateNoteEditor) {
-            window.UnifiedOffcanvasFactory.createTemplateNoteEditor({
-                note: { id: groupId, content: groupData.note_content || '' },
-                onSave: function(content) {
-                    groupData.note_content = content;
-                    // Update mobile card preview
-                    const card = document.querySelector(`.exercise-group-card[data-group-id="${groupId}"]`);
-                    if (card) {
-                        const textEl = card.querySelector('.exercise-line');
-                        if (textEl) {
-                            textEl.innerHTML = content
-                                ? `<i class="bx bx-comment text-muted me-1"></i>${content.length > 80 ? content.substring(0, 80) + '...' : content}`
-                                : '<i class="bx bx-comment text-muted me-1"></i><span class="text-muted">Tap edit to add note content</span>';
-                        }
-                    }
-                    if (window.markEditorDirty) window.markEditorDirty();
-                },
-                onDelete: function() {
-                    if (window.deleteExerciseGroupCard) {
-                        window.deleteExerciseGroupCard(groupId);
-                    }
-                }
-            });
-        }
-    };
-}
 
 console.log('📦 Template Note Manager loaded (v2 — unified state)');

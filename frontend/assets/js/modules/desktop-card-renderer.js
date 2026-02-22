@@ -44,7 +44,7 @@ class DesktopCardRenderer {
             convertItems.push(`<li><a class="dropdown-item" href="#" data-action="convert-to-note" data-group-id="${groupId}"><i class="bx bx-comment me-2"></i>Convert to Note</a></li>`);
         }
         if (cardType !== 'cardio') {
-            convertItems.push(`<li><a class="dropdown-item" href="#" data-action="convert-to-cardio" data-group-id="${groupId}"><i class="bx bx-heart-circle me-2"></i>Convert to Cardio</a></li>`);
+            convertItems.push(`<li><a class="dropdown-item" href="#" data-action="convert-to-cardio" data-group-id="${groupId}"><i class="bx bx-heart-circle me-2"></i>Convert to Activity</a></li>`);
         }
 
         const deleteAction = 'delete-group'; // All types use unified delete
@@ -392,7 +392,7 @@ class DesktopCardRenderer {
         let newHtml = '';
 
         if (fromType === 'exercise' && toType === 'cardio') {
-            if (data.exercises.a && !confirm('Converting to Cardio will replace sets, reps, rest, and weight with cardio fields. Continue?')) return;
+            if (data.exercises.a && !confirm('Converting to Activity will replace sets, reps, rest, and weight with activity fields. Continue?')) return;
 
             const name = data.exercises.a || '';
             let activityType = '';
@@ -442,7 +442,7 @@ class DesktopCardRenderer {
             newHtml = this.createExerciseGroupRow(groupId, data);
 
         } else if (fromType === 'cardio' && toType === 'note') {
-            if (!confirm('Converting to Note will remove all cardio data. Continue?')) return;
+            if (!confirm('Converting to Note will remove all activity data. Continue?')) return;
 
             const activityName = data.cardio_config?.activity_type || '';
             let content = activityName;

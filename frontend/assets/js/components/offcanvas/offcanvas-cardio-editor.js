@@ -86,7 +86,7 @@ export function createCardioEditor(config) {
              data-bs-scroll="false" style="height: auto; max-height: 85vh;">
             <div class="offcanvas-header border-bottom">
                 <h5 class="offcanvas-title" id="${id}Label">
-                    <i class="bx bx-heart-circle me-2"></i>Edit Cardio Activity
+                    <i class="bx bx-heart-circle me-2"></i>Edit Activity
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
             </div>

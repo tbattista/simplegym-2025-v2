@@ -42,6 +42,11 @@ class CardRenderer {
             return this._createNoteCard(groupId, data, index, totalCards);
         }
 
+        // Cardio type → render an activity card
+        if (data.group_type === 'cardio') {
+            return this._createCardioCard(groupId, data, index, totalCards);
+        }
+
         // Build exercise list (main, alt, alt2)
         const exercises = [];
         if (data.exercises.a) exercises.push(data.exercises.a);
@@ -210,6 +215,89 @@ class CardRenderer {
     }
 
     /**
+     * Create a mobile cardio/activity card
+     */
+    _createCardioCard(groupId, data, index, totalCards) {
+        const config = data.cardio_config || {};
+        const activityType = config.activity_type || '';
+
+        // Get icon and display name from activity type registry
+        let iconClass = 'bx-heart-circle';
+        let activityName = activityType;
+        if (activityType && window.ActivityTypeRegistry) {
+            iconClass = window.ActivityTypeRegistry.getIcon(activityType);
+            activityName = window.ActivityTypeRegistry.getName(activityType);
+        }
+
+        // Build meta parts
+        const metaParts = [];
+        if (config.duration_minutes) metaParts.push(`${config.duration_minutes} min`);
+        if (config.distance) metaParts.push(`${config.distance} ${config.distance_unit || 'mi'}`);
+        if (config.target_pace) metaParts.push(config.target_pace);
+        const metaText = metaParts.join(' • ');
+
+        const preview = activityName
+            ? this.escapeHtml(activityName)
+            : '<span class="text-muted">Tap edit to set activity</span>';
+
+        const isFirst = index === 0;
+        const isLast = index >= totalCards - 1;
+        const moveUpDisabled = isFirst ? 'disabled' : '';
+        const moveDownDisabled = isLast ? 'disabled' : '';
+
+        return `
+            <div class="exercise-group-card compact" data-group-id="${groupId}" data-card-type="cardio" data-index="${index}">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="exercise-content">
+                            <div class="exercise-list">
+                                <div class="exercise-line">
+                                    <i class="bx ${iconClass} text-muted me-1"></i>${preview}
+                                </div>
+                            </div>
+                            ${metaText ? `<div class="exercise-meta-text text-muted small">${metaText}</div>` : ''}
+                        </div>
+                        <div class="card-actions">
+                            <button type="button" class="btn btn-sm btn-edit-compact"
+                                    onclick="event.preventDefault(); event.stopPropagation(); if(window.openCardioEditor) window.openCardioEditor('${groupId}');"
+                                    title="Edit activity">
+                                <i class="bx bx-pencil"></i>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-menu-compact"
+                                    onclick="event.preventDefault(); event.stopPropagation(); window.builderCardMenu?.toggleMenu(this, '${groupId}', ${index});"
+                                    title="More options">
+                                <i class="bx bx-dots-vertical"></i>
+                            </button>
+                            <div class="builder-card-menu" onclick="event.stopPropagation();">
+                                <button class="builder-menu-item ${moveUpDisabled}"
+                                        onclick="window.builderCardMenu?.handleMoveUp('${groupId}', ${index});"
+                                        ${moveUpDisabled}>
+                                    <i class="bx bx-chevron-up"></i>
+                                    Move up
+                                </button>
+                                <button class="builder-menu-item ${moveDownDisabled}"
+                                        onclick="window.builderCardMenu?.handleMoveDown('${groupId}', ${index});"
+                                        ${moveDownDisabled}>
+                                    <i class="bx bx-chevron-down"></i>
+                                    Move down
+                                </button>
+                                <div class="builder-menu-divider"></div>
+                                <button class="builder-menu-item danger"
+                                        onclick="window.builderCardMenu?.handleDelete('${groupId}');">
+                                    <i class="bx bx-trash"></i>
+                                    Delete
+                                </button>
+                                <div class="builder-menu-divider section-menu-divider" style="display:none;"></div>
+                                <div class="section-menu-items" data-group-id="${groupId}"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    /**
      * Update exercise group card preview
      * @param {string} groupId - Group ID
      * @param {object} groupData - Group data
@@ -298,7 +386,7 @@ class CardRenderer {
             const preview = groupData.note_content ? groupData.note_content.substring(0, 30) : '';
             exerciseName = preview ? `note: ${preview}` : 'this note';
         } else if (groupData?.group_type === 'cardio') {
-            exerciseName = groupData.cardio_config?.activity_type || 'this cardio activity';
+            exerciseName = groupData.cardio_config?.activity_type || 'this activity';
         }
 
         if (confirm(`Are you sure you want to delete "${exerciseName}"?\n\nThis action cannot be undone.`)) {
@@ -443,5 +531,71 @@ window.deleteExerciseGroupCard = (groupId) =>
 
 window.applyBlockGrouping = () =>
     window.cardRenderer.applyBlockGrouping();
+
+// Provide a default openCardioEditor for mobile (desktop-view-adapter overrides this on desktop)
+if (!window.openCardioEditor) {
+    window.openCardioEditor = function(groupId) {
+        const groupData = window.exerciseGroupsData[groupId];
+        if (!groupData) return;
+
+        if (window.UnifiedOffcanvasFactory?.createCardioEditor) {
+            window.UnifiedOffcanvasFactory.createCardioEditor({
+                groupId: groupId,
+                cardioConfig: groupData.cardio_config || {},
+                onSave: function(updatedConfig) {
+                    groupData.cardio_config = updatedConfig;
+                    // Sync activity_type to exercises.a for form-data-collector
+                    if (updatedConfig.activity_type) {
+                        groupData.exercises = groupData.exercises || {};
+                        groupData.exercises.a = updatedConfig.activity_type;
+                    }
+                    // Update mobile card preview
+                    const card = document.querySelector(`.exercise-group-card[data-group-id="${groupId}"]`);
+                    if (card) {
+                        const config = updatedConfig;
+                        // Update activity name
+                        const lineEl = card.querySelector('.exercise-line');
+                        if (lineEl) {
+                            let iconClass = 'bx-heart-circle';
+                            let name = config.activity_type || '';
+                            if (name && window.ActivityTypeRegistry) {
+                                iconClass = window.ActivityTypeRegistry.getIcon(name);
+                                name = window.ActivityTypeRegistry.getName(name);
+                            }
+                            lineEl.innerHTML = name
+                                ? `<i class="bx ${iconClass} text-muted me-1"></i>${window.escapeHtml ? window.escapeHtml(name) : name}`
+                                : '<i class="bx bx-heart-circle text-muted me-1"></i><span class="text-muted">Tap edit to set activity</span>';
+                        }
+                        // Update meta text
+                        const metaParts = [];
+                        if (config.duration_minutes) metaParts.push(`${config.duration_minutes} min`);
+                        if (config.distance) metaParts.push(`${config.distance} ${config.distance_unit || 'mi'}`);
+                        if (config.target_pace) metaParts.push(config.target_pace);
+                        let metaEl = card.querySelector('.exercise-meta-text');
+                        if (metaParts.length > 0) {
+                            if (!metaEl) {
+                                const contentEl = card.querySelector('.exercise-content');
+                                if (contentEl) {
+                                    metaEl = document.createElement('div');
+                                    metaEl.className = 'exercise-meta-text text-muted small';
+                                    contentEl.appendChild(metaEl);
+                                }
+                            }
+                            if (metaEl) metaEl.textContent = metaParts.join(' • ');
+                        } else if (metaEl) {
+                            metaEl.textContent = '';
+                        }
+                    }
+                    if (window.markEditorDirty) window.markEditorDirty();
+                },
+                onDelete: function() {
+                    if (window.deleteExerciseGroupCard) {
+                        window.deleteExerciseGroupCard(groupId);
+                    }
+                }
+            });
+        }
+    };
+}
 
 console.log('📦 Card Renderer module loaded');
