@@ -645,7 +645,12 @@ button {
 }
 
 .builder-fab-more {
-    background: var(--bs-warning);
+    background: #fff;
+    color: var(--bs-warning);
+}
+
+[data-bs-theme="dark"] .builder-fab-more {
+    background: var(--bs-body-bg);
 }
 
 .builder-fab-save {
