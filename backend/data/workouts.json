@@ -151,6 +151,57 @@
       "modified_date": "2026-02-21 20:50:44.499515",
       "is_favorite": false,
       "favorited_at": null
+    },
+    {
+      "id": "workout-a1b041d4",
+      "name": "New Workout - Feb 21, 10:20 PM",
+      "description": "",
+      "exercise_groups": [
+        {
+          "group_id": "group-01dc4b4a",
+          "exercises": {
+            "a": "Exercise Name"
+          },
+          "sets": "3",
+          "reps": "8-12",
+          "rest": "60s",
+          "default_weight": null,
+          "default_weight_unit": "lbs",
+          "group_type": "standard",
+          "group_name": null,
+          "cardio_config": null,
+          "interval_config": null,
+          "block_id": null
+        }
+      ],
+      "sections": [
+        {
+          "section_id": "section-group-01dc4b4a",
+          "type": "standard",
+          "name": null,
+          "description": null,
+          "config": null,
+          "exercises": [
+            {
+              "exercise_id": "group-01dc4b4a",
+              "name": "Exercise Name",
+              "alternates": [],
+              "sets": "3",
+              "reps": "8-12",
+              "rest": "60s",
+              "default_weight": null,
+              "default_weight_unit": "lbs"
+            }
+          ]
+        }
+      ],
+      "template_notes": [],
+      "is_template": true,
+      "tags": [],
+      "created_date": "2026-02-21 22:20:12.592725",
+      "modified_date": "2026-02-21 22:20:12.592728",
+      "is_favorite": false,
+      "favorited_at": null
     }
   ]
 }

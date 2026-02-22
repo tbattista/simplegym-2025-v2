@@ -31,6 +31,50 @@
    ============================================ */
 
 /* ============================================
+   INLINE METADATA FIELDS (Mobile Tags + Description)
+   ============================================ */
+
+.mobile-metadata-field {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  min-width: 0;
+}
+
+.mobile-metadata-field > i {
+  color: var(--bs-secondary-color);
+  font-size: 0.875rem;
+  flex-shrink: 0;
+}
+
+.mobile-metadata-input {
+  border: 1px solid var(--bs-border-color);
+  border-radius: var(--bs-border-radius);
+  background: var(--bs-body-bg);
+  color: var(--bs-body-color);
+  font-size: 0.8125rem;
+  padding: 0.25rem 0.5rem;
+  width: 100%;
+  outline: none;
+  height: 2rem;
+}
+
+.mobile-metadata-input::placeholder {
+  color: var(--bs-secondary-color);
+}
+
+.mobile-metadata-input:focus {
+  border-color: var(--bs-primary);
+  box-shadow: 0 0 0 2px rgba(var(--bs-primary-rgb), 0.1);
+}
+
+[data-bs-theme="dark"] .mobile-metadata-input {
+  background: var(--bs-body-bg);
+  color: var(--bs-body-color);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* ============================================
    WORKOUT EDITOR SECTION (Bottom)
    ============================================ */
 

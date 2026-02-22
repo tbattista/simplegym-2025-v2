@@ -763,7 +763,18 @@
                         }
                     }
                 }
-            ]
+            ],
+            fab: {
+                icon: 'bx-plus',
+                title: 'Add exercise',
+                variant: 'primary',
+                action: function() {
+                    if (window.addExerciseGroup) {
+                        window.addExerciseGroup();
+                        if (window.markEditorDirty) window.markEditorDirty();
+                    }
+                }
+            }
         },
 
         // ============================================
