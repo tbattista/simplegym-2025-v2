@@ -223,7 +223,13 @@ class CardRenderer {
         if (!card) return;
 
         const groupData = this.exerciseGroupsData[groupId];
-        const exerciseName = groupData?.exercises?.a || 'this exercise';
+        let exerciseName = groupData?.exercises?.a || 'this exercise';
+        if (groupData?.group_type === 'note') {
+            const preview = groupData.note_content ? groupData.note_content.substring(0, 30) : '';
+            exerciseName = preview ? `note: ${preview}` : 'this note';
+        } else if (groupData?.group_type === 'cardio') {
+            exerciseName = groupData.cardio_config?.activity_type || 'this cardio activity';
+        }
 
         if (confirm(`Are you sure you want to delete "${exerciseName}"?\n\nThis action cannot be undone.`)) {
             // Capture parent section BEFORE removing card from DOM

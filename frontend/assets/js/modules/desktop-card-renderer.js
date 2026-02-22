@@ -47,7 +47,7 @@ class DesktopCardRenderer {
             convertItems.push(`<li><a class="dropdown-item" href="#" data-action="convert-to-cardio" data-group-id="${groupId}"><i class="bx bx-heart-circle me-2"></i>Convert to Cardio</a></li>`);
         }
 
-        const deleteAction = cardType === 'note' ? 'delete-note' : 'delete-group';
+        const deleteAction = 'delete-group'; // All types use unified delete
 
         return `
             <div class="${classes}" data-group-id="${groupId}" data-card-type="${cardType}" ${indexAttr} ${dataStr}>
@@ -197,9 +197,11 @@ class DesktopCardRenderer {
     // Note Row
     // =========================================
 
-    createNoteRow(note) {
-        const noteId = note.id || `template-note-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`;
-        const content = note.content || '';
+    createNoteRow(groupId, groupData) {
+        const data = groupData || { group_type: 'note', note_content: '' };
+        window.exerciseGroupsData[groupId] = data;
+
+        const content = data.note_content || '';
         const hasContent = content.length > 0;
 
         const contentHtml = hasContent
@@ -214,28 +216,27 @@ class DesktopCardRenderer {
 
         const menuItemsHtml = `
             <li>
-                <a class="dropdown-item" href="#" data-action="edit-note" data-group-id="${noteId}">
+                <a class="dropdown-item" href="#" data-action="edit-note" data-group-id="${groupId}">
                     <i class="bx bx-pencil me-2"></i>Edit Note
                 </a>
             </li>`;
 
         return this._createRowShell({
-            groupId: noteId,
+            groupId,
             cardType: 'note',
-            extraClasses: ['desktop-note-row', 'template-note-card'],
-            dataAttrs: { 'note-id': noteId },
+            extraClasses: ['desktop-note-row'],
             columnsHtml,
             menuItemsHtml
         });
     }
 
-    updateNoteRowPreview(noteId, content) {
-        const row = document.querySelector(`.desktop-note-row[data-note-id="${noteId}"]`);
+    updateNoteRowPreview(groupId, content) {
+        const row = document.querySelector(`.desktop-note-row[data-group-id="${groupId}"]`);
         if (!row) return;
 
         const noteTextSpan = row.querySelector('.template-note-text');
         if (noteTextSpan) {
-            if (content.length > 0) {
+            if (content && content.length > 0) {
                 noteTextSpan.textContent = content;
                 noteTextSpan.classList.remove('text-muted');
             } else {
@@ -385,14 +386,14 @@ class DesktopCardRenderer {
         const row = document.querySelector(`.desktop-activity-row[data-group-id="${groupId}"]`);
         if (!row) return;
 
+        const data = window.exerciseGroupsData[groupId];
+        if (!data) return;
+
         let newHtml = '';
 
         if (fromType === 'exercise' && toType === 'cardio') {
-            const data = window.exerciseGroupsData[groupId];
-            if (!data) return;
             if (data.exercises.a && !confirm('Converting to Cardio will replace sets, reps, rest, and weight with cardio fields. Continue?')) return;
 
-            // Move exercise name to activity type (if it matches a known activity)
             const name = data.exercises.a || '';
             let activityType = '';
             if (name && window.ActivityTypeRegistry) {
@@ -405,6 +406,7 @@ class DesktopCardRenderer {
             data.exercises = { a: '' };
             data.sets = ''; data.reps = ''; data.rest = '';
             data.default_weight = ''; data.default_weight_unit = 'lbs';
+            data.note_content = undefined;
             data.cardio_config = {
                 activity_type: activityType || name,
                 duration_minutes: null, distance: null,
@@ -414,27 +416,17 @@ class DesktopCardRenderer {
             newHtml = this.createCardioRow(groupId, data);
 
         } else if (fromType === 'exercise' && toType === 'note') {
-            const data = window.exerciseGroupsData[groupId];
-            if (!data) return;
             if (data.exercises.a && !confirm('Converting to Note will remove all exercise data. Continue?')) return;
 
-            const content = data.exercises.a || '';
-            delete window.exerciseGroupsData[groupId];
-
-            // Create template note
-            const noteId = `template-note-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`;
-            const note = { id: noteId, content: content, order_index: 0, created_at: new Date().toISOString() };
-            const notes = window.ffn?.workoutBuilder?.currentWorkout?.template_notes;
-            if (notes) notes.push(note);
-
-            newHtml = this.createNoteRow(note);
+            data.group_type = 'note';
+            data.note_content = data.exercises.a || '';
+            data.exercises = { a: '' };
+            data.sets = ''; data.reps = ''; data.rest = '';
+            data.default_weight = ''; data.default_weight_unit = 'lbs';
+            newHtml = this.createNoteRow(groupId, data);
 
         } else if (fromType === 'cardio' && toType === 'exercise') {
-            const data = window.exerciseGroupsData[groupId];
-            if (!data) return;
-
             const activityName = data.cardio_config?.activity_type || '';
-            // If activity name matches a registry entry, use the display name
             let exerciseName = activityName;
             if (activityName && window.ActivityTypeRegistry) {
                 const type = window.ActivityTypeRegistry.getById(activityName);
@@ -446,11 +438,10 @@ class DesktopCardRenderer {
             data.sets = '3'; data.reps = '8-12'; data.rest = '60s';
             data.default_weight = ''; data.default_weight_unit = 'lbs';
             data.cardio_config = null;
+            data.note_content = undefined;
             newHtml = this.createExerciseGroupRow(groupId, data);
 
         } else if (fromType === 'cardio' && toType === 'note') {
-            const data = window.exerciseGroupsData[groupId];
-            if (!data) return;
             if (!confirm('Converting to Note will remove all cardio data. Continue?')) return;
 
             const activityName = data.cardio_config?.activity_type || '';
@@ -458,72 +449,45 @@ class DesktopCardRenderer {
             if (activityName && window.ActivityTypeRegistry) {
                 content = window.ActivityTypeRegistry.getName(activityName) || activityName;
             }
-            delete window.exerciseGroupsData[groupId];
 
-            const noteId = `template-note-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`;
-            const note = { id: noteId, content: content, order_index: 0, created_at: new Date().toISOString() };
-            const notes = window.ffn?.workoutBuilder?.currentWorkout?.template_notes;
-            if (notes) notes.push(note);
-
-            newHtml = this.createNoteRow(note);
+            data.group_type = 'note';
+            data.note_content = content;
+            data.exercises = { a: '' };
+            data.sets = ''; data.reps = ''; data.rest = '';
+            data.cardio_config = null;
+            newHtml = this.createNoteRow(groupId, data);
 
         } else if (fromType === 'note' && toType === 'exercise') {
-            // Get note content
-            const noteTextSpan = row.querySelector('.template-note-text');
-            const content = noteTextSpan?.textContent?.trim() || '';
-            const noteId = row.dataset.noteId || row.dataset.groupId;
+            const content = data.note_content || '';
 
-            // Remove from template_notes
-            const notes = window.ffn?.workoutBuilder?.currentWorkout?.template_notes;
-            if (notes) {
-                const idx = notes.findIndex(n => n.id === noteId);
-                if (idx >= 0) notes.splice(idx, 1);
-            }
-
-            // Create exercise group
-            const newGroupId = 'group-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
-            const data = {
-                exercises: { a: content !== 'Click edit to add note content' ? content : '', b: '', c: '' },
-                sets: '3', reps: '8-12', rest: '60s',
-                default_weight: '', default_weight_unit: 'lbs',
-                group_type: 'standard'
-            };
-            window.exerciseGroupsData[newGroupId] = data;
-            newHtml = this.createExerciseGroupRow(newGroupId, data);
+            data.group_type = 'standard';
+            data.exercises = { a: content, b: '', c: '' };
+            data.sets = '3'; data.reps = '8-12'; data.rest = '60s';
+            data.default_weight = ''; data.default_weight_unit = 'lbs';
+            data.note_content = undefined;
+            newHtml = this.createExerciseGroupRow(groupId, data);
 
         } else if (fromType === 'note' && toType === 'cardio') {
-            const noteTextSpan = row.querySelector('.template-note-text');
-            const content = noteTextSpan?.textContent?.trim() || '';
-            const noteId = row.dataset.noteId || row.dataset.groupId;
+            const content = data.note_content || '';
 
-            const notes = window.ffn?.workoutBuilder?.currentWorkout?.template_notes;
-            if (notes) {
-                const idx = notes.findIndex(n => n.id === noteId);
-                if (idx >= 0) notes.splice(idx, 1);
-            }
-
-            // Try to match content to an activity type
             let activityType = '';
-            if (content && content !== 'Click edit to add note content' && window.ActivityTypeRegistry) {
+            if (content && window.ActivityTypeRegistry) {
                 const allTypes = window.ActivityTypeRegistry.getAll();
                 const match = allTypes.find(t => t.name.toLowerCase() === content.toLowerCase());
                 if (match) activityType = match.id;
             }
 
-            const newGroupId = 'group-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
-            const data = {
-                exercises: { a: '' },
-                sets: '', reps: '', rest: '',
-                group_type: 'cardio',
-                cardio_config: {
-                    activity_type: activityType || (content !== 'Click edit to add note content' ? content : ''),
-                    duration_minutes: null, distance: null,
-                    distance_unit: 'mi', target_pace: '',
-                    activity_details: {}, notes: ''
-                }
+            data.group_type = 'cardio';
+            data.exercises = { a: '' };
+            data.sets = ''; data.reps = ''; data.rest = '';
+            data.note_content = undefined;
+            data.cardio_config = {
+                activity_type: activityType || content,
+                duration_minutes: null, distance: null,
+                distance_unit: 'mi', target_pace: '',
+                activity_details: {}, notes: ''
             };
-            window.exerciseGroupsData[newGroupId] = data;
-            newHtml = this.createCardioRow(newGroupId, data);
+            newHtml = this.createCardioRow(groupId, data);
         }
 
         if (newHtml) {
@@ -583,16 +547,17 @@ class DesktopCardRenderer {
                     }
                     break;
                 case 'edit-note':
-                    if (window.handleEditTemplateNote) window.handleEditTemplateNote(groupId);
+                    if (window.openNoteEditor) {
+                        window.openNoteEditor(groupId);
+                    } else if (window.handleEditTemplateNote) {
+                        window.handleEditTemplateNote(groupId);
+                    }
                     break;
                 case 'add-alternate':
                     this.handleAddAlternate(groupId);
                     break;
                 case 'delete-group':
                     if (window.deleteExerciseGroupCard) window.deleteExerciseGroupCard(groupId);
-                    break;
-                case 'delete-note':
-                    if (window.handleDeleteTemplateNote) window.handleDeleteTemplateNote(groupId);
                     break;
                 case 'convert-to-exercise': {
                     const row = actionEl.closest('.desktop-activity-row');

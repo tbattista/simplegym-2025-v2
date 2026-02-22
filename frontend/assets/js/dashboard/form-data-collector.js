@@ -25,6 +25,9 @@ const FormDataCollector = {
                 return;
             }
 
+            // Notes are collected separately via collectTemplateNotes()
+            if (groupData.group_type === 'note') return;
+
             if (groupData && groupData.exercises) {
                 const exercises = {};
                 Object.keys(groupData.exercises).forEach(key => {
@@ -103,6 +106,9 @@ const FormDataCollector = {
                 const groupId = cardEl.dataset.groupId;
                 const data = window.exerciseGroupsData[groupId];
                 if (!data) return;
+
+                // Notes are collected separately via collectTemplateNotes()
+                if (data.group_type === 'note') return;
 
                 const isCardioGroup = data.group_type === 'cardio';
 

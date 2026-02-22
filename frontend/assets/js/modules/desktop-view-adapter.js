@@ -36,6 +36,9 @@
             if (groupData && groupData.group_type === 'cardio') {
                 return window.desktopCardRenderer.createCardioRow(groupId, groupData);
             }
+            if (groupData && groupData.group_type === 'note') {
+                return window.desktopCardRenderer.createNoteRow(groupId, groupData);
+            }
             return window.desktopCardRenderer.createExerciseGroupRow(groupId, groupData, groupNumber, index, totalCards);
         }
         return _mobileCreateCard(groupId, groupData, groupNumber, index, totalCards);
@@ -135,15 +138,29 @@
         // Wire inline tags/description fields
         wireDesktopMetadataFields();
 
-        // Override template note card rendering for desktop flat rows
-        if (window.templateNoteCardRenderer && window.desktopCardRenderer) {
-            window.templateNoteCardRenderer.createNoteCard = function(note) {
-                return window.desktopCardRenderer.createNoteRow(note);
-            };
-            window.templateNoteCardRenderer.updateNoteCardPreview = function(noteId, content) {
-                window.desktopCardRenderer.updateNoteRowPreview(noteId, content);
-            };
-        }
+        // Wire note full-edit offcanvas
+        window.openNoteEditor = function(groupId) {
+            const groupData = window.exerciseGroupsData[groupId];
+            if (!groupData) return;
+
+            if (window.UnifiedOffcanvasFactory?.createTemplateNoteEditor) {
+                window.UnifiedOffcanvasFactory.createTemplateNoteEditor({
+                    note: { id: groupId, content: groupData.note_content || '' },
+                    onSave: function(content) {
+                        groupData.note_content = content;
+                        if (window.desktopCardRenderer) {
+                            window.desktopCardRenderer.updateNoteRowPreview(groupId, content);
+                        }
+                        if (window.markEditorDirty) window.markEditorDirty();
+                    },
+                    onDelete: function() {
+                        if (window.deleteExerciseGroupCard) {
+                            window.deleteExerciseGroupCard(groupId);
+                        }
+                    }
+                });
+            }
+        };
 
         // Wire cardio full-edit offcanvas
         window.openCardioEditor = function(groupId) {
@@ -201,7 +218,7 @@
 
                 // Update block membership based on new position (exercise cards only)
                 const movedCard = evt.item;
-                if (movedCard.classList.contains('template-note-card') || movedCard.dataset.cardType === 'note') {
+                if (movedCard.dataset.cardType === 'note') {
                     // Note card moved — just mark dirty, skip block logic
                     if (window.markEditorDirty) window.markEditorDirty();
                     return;
