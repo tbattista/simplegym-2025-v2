@@ -739,11 +739,12 @@ export function createReorderOffcanvas(exercises, onSave) {
     // Build a single flat reorder-item row HTML
     const buildItemHtml = (item, globalIndex) => {
         const isNote = item.isNote === true;
+        const isCardio = item.isCardio === true;
         const displayName = item.displayName || item.name;
-        const itemTypeAttr = isNote ? 'data-item-type="note"' : 'data-item-type="exercise"';
+        const itemTypeAttr = isNote ? 'data-item-type="note"' : (isCardio ? 'data-item-type="cardio"' : 'data-item-type="exercise"');
         const noteStyle = isNote ? 'border-left: 3px solid var(--workout-muted, #6c757d);' : '';
-        const icon = isNote ? '<i class="bx bx-note-text me-1 text-muted"></i>' : '';
-        const badgeClass = isNote ? 'bg-label-info' : 'bg-label-secondary';
+        const icon = isNote ? '<i class="bx bx-note-text me-1 text-muted"></i>' : (isCardio ? '<i class="bx bx-heart-circle me-1 text-muted"></i>' : '');
+        const badgeClass = isNote ? 'bg-label-info' : (isCardio ? 'bg-label-warning' : 'bg-label-secondary');
 
         // Block data attributes for position-based inference
         const blockAttrs = item.blockId
@@ -770,14 +771,19 @@ export function createReorderOffcanvas(exercises, onSave) {
                     ` : ''}
                     <div class="flex-grow-1">
                         <div class="fw-medium">${icon}${escapeHtml(displayName)} ${blockTag}</div>
-                        ${!isNote && (item.sets || item.reps) ? `
+                        ${!isNote && !isCardio && (item.sets || item.reps) ? `
                             <small class="text-muted">
                                 ${item.sets ? `${item.sets} sets` : ''}
                                 ${item.sets && item.reps ? ' × ' : ''}
-                                ${item.reps ? `${item.reps} reps` : ''}
+                                ${item.reps ? `${item.reps}` : ''}
                             </small>
                         ` : ''}
-                        ${isNote ? '<small class="text-muted">Session note</small>' : ''}
+                        ${isCardio && (item.sets || item.reps) ? `
+                            <small class="text-muted">
+                                ${[item.sets, item.reps].filter(Boolean).join(' • ')}
+                            </small>
+                        ` : ''}
+                        ${isNote ? '<small class="text-muted">Note</small>' : ''}
                         ${blockDescSnippet}
                     </div>
                     <div class="badge reorder-badge ${badgeClass}">${globalIndex + 1}</div>
@@ -1218,19 +1224,36 @@ export function createSectionsReorderOffcanvas(sections, onSave) {
     const canReorder = totalExercises >= 2 || sections.length >= 2;
 
     // Build a single exercise row
-    const buildItemHtml = (exercise) => `
+    const buildItemHtml = (exercise) => {
+        const isNote = exercise.isNote === true;
+        const isCardio = exercise.isCardio === true;
+        const icon = isNote ? '<i class="bx bx-note-text me-1 text-muted"></i>' : (isCardio ? '<i class="bx bx-heart-circle me-1 text-muted"></i>' : '');
+        const name = exercise.name || (isNote ? 'Note' : (isCardio ? 'Activity' : 'Exercise'));
+        const borderStyle = isNote ? 'border-left: 3px solid var(--workout-muted, #6c757d);' : '';
+
+        let subtitle = '';
+        if (isNote) {
+            subtitle = '<small class="text-muted" style="font-size: 0.7rem;">Note</small>';
+        } else if (isCardio && (exercise.sets || exercise.reps)) {
+            subtitle = `<small class="text-muted" style="font-size: 0.7rem;">${[exercise.sets, exercise.reps].filter(Boolean).join(' \u2022 ')}</small>`;
+        } else if (!isNote && !isCardio && (exercise.sets || exercise.reps)) {
+            subtitle = `<small class="text-muted" style="font-size: 0.7rem;">${exercise.sets ? `${exercise.sets} sets` : ''}${exercise.sets && exercise.reps ? ' \u00d7 ' : ''}${exercise.reps ? `${exercise.reps}` : ''}</small>`;
+        }
+
+        return `
         <div class="reorder-item" data-group-id="${escapeHtml(exercise.groupId)}">
-            <div class="d-flex align-items-center gap-2 px-3 py-2 reorder-item-inner">
+            <div class="d-flex align-items-center gap-2 px-3 py-2 reorder-item-inner" style="${borderStyle}">
                 <div class="reorder-handle text-muted" style="cursor: grab;">
                     <i class="bx bx-menu" style="font-size: 1.3rem;"></i>
                 </div>
                 <div class="flex-grow-1" style="min-width: 0;">
-                    <div class="fw-medium text-truncate" style="font-size: 0.85rem;">${escapeHtml(exercise.name || 'Exercise')}</div>
-                    ${exercise.sets || exercise.reps ? `<small class="text-muted" style="font-size: 0.7rem;">${exercise.sets ? `${exercise.sets} sets` : ''}${exercise.sets && exercise.reps ? ' \u00d7 ' : ''}${exercise.reps ? `${exercise.reps}` : ''}</small>` : ''}
+                    <div class="fw-medium text-truncate" style="font-size: 0.85rem;">${icon}${escapeHtml(name)}</div>
+                    ${subtitle}
                 </div>
             </div>
         </div>
     `;
+    };
 
     // Build a section container
     const buildSectionHtml = (section) => {

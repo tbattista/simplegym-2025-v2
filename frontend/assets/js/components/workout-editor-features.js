@@ -115,12 +115,31 @@ function openReorderOffcanvas() {
             sectionEl.querySelectorAll('.exercise-group-card').forEach(card => {
                 const groupId = card.getAttribute('data-group-id');
                 const groupData = window.exerciseGroupsData?.[groupId] || {};
-                exercises.push({
-                    groupId,
-                    name: groupData.exercises?.a || 'Exercise',
-                    sets: groupData.sets || '3',
-                    reps: groupData.reps || '8-12'
-                });
+                const item = { groupId };
+
+                if (groupData.group_type === 'note') {
+                    const preview = groupData.note_content
+                        ? (groupData.note_content.length > 40 ? groupData.note_content.substring(0, 40) + '...' : groupData.note_content)
+                        : 'Empty note';
+                    item.name = preview;
+                    item.isNote = true;
+                } else if (groupData.group_type === 'cardio') {
+                    const config = groupData.cardio_config || {};
+                    let activityName = config.activity_type || '';
+                    if (activityName && window.ActivityTypeRegistry) {
+                        activityName = window.ActivityTypeRegistry.getName(activityName) || activityName;
+                    }
+                    item.name = activityName || 'Activity';
+                    item.isCardio = true;
+                    item.sets = config.duration_minutes ? `${config.duration_minutes} min` : '';
+                    item.reps = config.distance ? `${config.distance} ${config.distance_unit || 'mi'}` : '';
+                } else {
+                    item.name = groupData.exercises?.a || 'Exercise';
+                    item.sets = groupData.sets || '3';
+                    item.reps = groupData.reps || '8-12';
+                }
+
+                exercises.push(item);
             });
 
             // Include named sections even if empty (user can drag exercises into them)
@@ -145,15 +164,36 @@ function openReorderOffcanvas() {
     const exercises = Array.from(cards).map((card, index) => {
         const groupId = card.getAttribute('data-group-id');
         const groupData = window.exerciseGroupsData?.[groupId] || {};
-        return {
+        const item = {
             groupId: groupId,
-            name: groupData.exercises?.a || `Exercise ${index + 1}`,
-            sets: groupData.sets || '3',
-            reps: groupData.reps || '8-12',
             blockId: groupData.block_id || null,
             blockName: groupData.group_name || null,
             index: index
         };
+
+        if (groupData.group_type === 'note') {
+            const preview = groupData.note_content
+                ? (groupData.note_content.length > 40 ? groupData.note_content.substring(0, 40) + '...' : groupData.note_content)
+                : 'Empty note';
+            item.name = preview;
+            item.isNote = true;
+        } else if (groupData.group_type === 'cardio') {
+            const config = groupData.cardio_config || {};
+            let activityName = config.activity_type || '';
+            if (activityName && window.ActivityTypeRegistry) {
+                activityName = window.ActivityTypeRegistry.getName(activityName) || activityName;
+            }
+            item.name = activityName || 'Activity';
+            item.isCardio = true;
+            item.sets = config.duration_minutes ? `${config.duration_minutes} min` : '';
+            item.reps = config.distance ? `${config.distance} ${config.distance_unit || 'mi'}` : '';
+        } else {
+            item.name = groupData.exercises?.a || `Exercise ${index + 1}`;
+            item.sets = groupData.sets || '3';
+            item.reps = groupData.reps || '8-12';
+        }
+
+        return item;
     });
 
     window.UnifiedOffcanvasFactory.createReorderOffcanvas(exercises, applyLegacyReorder);
