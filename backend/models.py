@@ -67,42 +67,6 @@ class WorkoutData(BaseModel):
         }
     )
     
-    bonus_exercises: Dict[str, str] = Field(
-        default_factory=dict,
-        description="Dictionary of bonus exercise names",
-        example={
-            "exercise-bonus-1": "Face Pulls",
-            "exercise-bonus-2": "Calf Raises"
-        }
-    )
-    
-    bonus_sets: Dict[str, str] = Field(
-        default_factory=dict,
-        description="Dictionary of bonus exercise sets",
-        example={
-            "sets-bonus-1": "2",
-            "sets-bonus-2": "3"
-        }
-    )
-    
-    bonus_reps: Dict[str, str] = Field(
-        default_factory=dict,
-        description="Dictionary of bonus exercise reps",
-        example={
-            "reps-bonus-1": "15",
-            "reps-bonus-2": "20"
-        }
-    )
-    
-    bonus_rest: Dict[str, str] = Field(
-        default_factory=dict,
-        description="Dictionary of bonus exercise rest periods",
-        example={
-            "rest_bonus-1": "30s",
-            "rest_bonus-2": "45s"
-        }
-    )
-
 class TemplateInfo(BaseModel):
     """Information about available templates"""
     
@@ -332,39 +296,6 @@ def migrate_exercise_groups_to_sections(exercise_groups: List[ExerciseGroup]) ->
     return sections
 
 
-class BonusExercise(BaseModel):
-    """Model for bonus exercises"""
-    
-    exercise_id: str = Field(
-        default_factory=lambda: f"bonus-{uuid4().hex[:8]}",
-        description="Unique identifier for the bonus exercise"
-    )
-    
-    name: str = Field(
-        ...,
-        description="Name of the bonus exercise",
-        example="Face Pulls"
-    )
-    
-    sets: str = Field(
-        default="2",
-        description="Number of sets",
-        example="2"
-    )
-    
-    reps: str = Field(
-        default="15",
-        description="Number of reps",
-        example="15"
-    )
-    
-    rest: str = Field(
-        default="30s",
-        description="Rest period",
-        example="30s"
-    )
-
-
 class TemplateNote(BaseModel):
     """Inline note within a workout template (permanent, saved with template)"""
 
@@ -420,11 +351,6 @@ class WorkoutTemplate(BaseModel):
     sections: Optional[List[WorkoutSection]] = Field(
         default=None,
         description="Sections-based layout (new format). If present, takes precedence over exercise_groups."
-    )
-
-    bonus_exercises: List[BonusExercise] = Field(
-        default_factory=list,
-        description="List of bonus exercises"
     )
 
     template_notes: List[TemplateNote] = Field(
@@ -553,7 +479,6 @@ class CreateWorkoutRequest(BaseModel):
     exercise_groups: List[ExerciseGroup] = Field(default_factory=list)
     sections: Optional[List[WorkoutSection]] = Field(default=None)
     template_notes: List[TemplateNote] = Field(default_factory=list)
-    bonus_exercises: List[BonusExercise] = Field(default_factory=list)
     tags: List[str] = Field(default_factory=list, max_items=10)
 
 class UpdateWorkoutRequest(BaseModel):
@@ -564,7 +489,6 @@ class UpdateWorkoutRequest(BaseModel):
     exercise_groups: Optional[List[ExerciseGroup]] = Field(None)
     sections: Optional[List[WorkoutSection]] = Field(default=None)
     template_notes: Optional[List[TemplateNote]] = Field(default=None)
-    bonus_exercises: Optional[List[BonusExercise]] = Field(None)
     tags: Optional[List[str]] = Field(None, max_items=10)
 
     # Favorites support
@@ -1051,7 +975,6 @@ class ExercisePerformance(BaseModel):
 
     # Metadata
     order_index: int = Field(..., ge=0, description="Position in workout (0-based)")
-    is_bonus: bool = Field(default=False, description="Whether this is a bonus exercise")
 
 
 class SessionNote(BaseModel):

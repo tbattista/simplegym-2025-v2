@@ -1068,8 +1068,8 @@
                     label: 'Add',
                     title: 'Add exercise',
                     action: function() {
-                        if (window.workoutModeController?.handleBonusExercises) {
-                            window.workoutModeController.handleBonusExercises();
+                        if (window.workoutModeController?.showAddExerciseForm) {
+                            window.workoutModeController.showAddExerciseForm();
                         } else {
                             console.warn('⚠️ Workout mode controller not ready');
                         }
@@ -1248,8 +1248,8 @@
                     label: 'Add',
                     title: 'Add exercise',
                     action: function() {
-                        if (window.workoutModeController?.handleBonusExercises) {
-                            window.workoutModeController.handleBonusExercises();
+                        if (window.workoutModeController?.showAddExerciseForm) {
+                            window.workoutModeController.showAddExerciseForm();
                         } else {
                             console.warn('⚠️ Workout mode controller not ready');
                         }
@@ -1422,8 +1422,8 @@
                     label: 'Add',
                     title: 'Add exercise',
                     action: function() {
-                        if (window.workoutModeController?.handleBonusExercises) {
-                            window.workoutModeController.handleBonusExercises();
+                        if (window.workoutModeController?.showAddExerciseForm) {
+                            window.workoutModeController.showAddExerciseForm();
                         } else {
                             console.warn('⚠️ Workout mode controller not ready');
                         }

@@ -47,9 +47,6 @@
     <link rel="stylesheet" href="/static/assets/css/components/unified-offcanvas.css" />
     <link rel="stylesheet" href="/static/assets/css/components/desktop-offcanvas.css?v=20260217" />
 
-    <!-- Bonus Exercise Search CSS -->
-    <link rel="stylesheet" href="/static/assets/css/components/bonus-exercise-search.css" />
-    
     <!-- Quick Notes Popover CSS -->
     <link rel="stylesheet" href="/static/assets/css/components/quick-notes-popover.css" />
 
@@ -134,11 +131,6 @@
                 </p>
               </div>
               
-              <!-- Add Exercise Button (Hidden, for JS reference) -->
-              <button class="btn btn-sm btn-outline-success" id="addBonusExerciseBtn" style="display: none;" title="Add exercises">
-                <i class="bx bx-plus-circle me-1"></i>Add
-              </button>
-
               <!-- Loading State -->
               <div id="workoutLoadingState" class="text-center py-5">
                 <div class="spinner-border text-primary" role="status">
@@ -349,7 +341,6 @@
 
     <!-- Session Service Dependencies (Phase 2: extracted sub-services) -->
     <script src="/static/assets/js/services/session-exercise-state-service.js?v=1.0.0"></script>
-    <script src="/static/assets/js/services/session-bonus-exercise-service.js?v=1.0.0"></script>
     <script src="/static/assets/js/services/session-lifecycle-api-service.js?v=1.0.0"></script>
 
     <!-- Session Service Orchestrator (last) -->

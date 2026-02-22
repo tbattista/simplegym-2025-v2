@@ -20,7 +20,7 @@ class WorkoutRenderManager {
 
     /**
      * Main render method - builds and injects exercise card HTML into the DOM
-     * Handles template notes, bonus exercises, session notes, and custom ordering
+     * Handles template notes, session notes, and custom ordering
      * @param {Object} currentWorkout - The current workout object
      * @param {boolean} forceRender - Force re-render even if unchanged
      */
@@ -38,19 +38,17 @@ class WorkoutRenderManager {
 
         // Calculate total cards
         const regularCount = currentWorkout.exercise_groups?.length || 0;
-        const bonusExercises = this.sessionService.getBonusExercises();
-        const bonusCount = bonusExercises?.length || 0;
         const sessionNotes = this.sessionService.getSessionNotes();
         const noteCount = sessionNotes?.length || 0;
         const templateNotes = currentWorkout.template_notes || [];
         const templateNoteCount = templateNotes.length;
-        const totalCards = regularCount + bonusCount + noteCount + templateNoteCount;
+        const totalCards = regularCount + noteCount + templateNoteCount;
 
         // Build combined item list (exercises + notes)
         const hasSectionBlocks = currentWorkout.sections?.some(s => s.type !== 'standard');
         const allItems = hasSectionBlocks
-            ? this._buildSectionedItemList(currentWorkout, bonusExercises, sessionNotes, templateNotes)
-            : this._buildItemList(currentWorkout, bonusExercises, sessionNotes, templateNotes);
+            ? this._buildSectionedItemList(currentWorkout, sessionNotes, templateNotes)
+            : this._buildItemList(currentWorkout, sessionNotes, templateNotes);
         if (!hasSectionBlocks) this._lastSectionMeta = null;
 
         // Apply custom order if exists
@@ -76,8 +74,7 @@ class WorkoutRenderManager {
                     console.warn('⚠️ NoteCardRenderer not available');
                 }
             } else {
-                const isBonus = item.subtype === 'bonus';
-                html += this.cardRenderer.renderCard(item.data, exerciseIndex, isBonus, totalCards);
+                html += this.cardRenderer.renderCard(item.data, exerciseIndex, false, totalCards);
             }
             exerciseIndex++;
         });
@@ -116,7 +113,7 @@ class WorkoutRenderManager {
      * Build the combined item list from exercises, notes, and template notes
      * @private
      */
-    _buildItemList(currentWorkout, bonusExercises, sessionNotes, templateNotes) {
+    _buildItemList(currentWorkout, sessionNotes, templateNotes) {
         const allItems = [];
 
         // Build template notes map for interleaving
@@ -163,26 +160,6 @@ class WorkoutRenderManager {
             });
         }
 
-        // Add bonus exercises
-        if (bonusExercises && bonusExercises.length > 0) {
-            bonusExercises.forEach((bonus) => {
-                allItems.push({
-                    type: 'exercise',
-                    subtype: 'bonus',
-                    data: {
-                        exercises: { a: bonus.name },
-                        sets: bonus.sets,
-                        reps: bonus.reps,
-                        rest: bonus.rest || '60s',
-                        default_weight: bonus.weight,
-                        default_weight_unit: bonus.weight_unit || 'lbs',
-                        notes: bonus.notes
-                    },
-                    name: bonus.name
-                });
-            });
-        }
-
         // Add session notes
         if (sessionNotes && sessionNotes.length > 0) {
             sessionNotes.forEach((note) => {
@@ -201,7 +178,7 @@ class WorkoutRenderManager {
      * Build item list using sections data for structured block grouping.
      * @private
      */
-    _buildSectionedItemList(currentWorkout, bonusExercises, sessionNotes, templateNotes) {
+    _buildSectionedItemList(currentWorkout, sessionNotes, templateNotes) {
         const allItems = [];
 
         // Build lookup: group_id -> exercise_group
@@ -277,26 +254,6 @@ class WorkoutRenderManager {
                 });
             }
         });
-
-        // Add bonus exercises
-        if (bonusExercises && bonusExercises.length > 0) {
-            bonusExercises.forEach(bonus => {
-                allItems.push({
-                    type: 'exercise',
-                    subtype: 'bonus',
-                    data: {
-                        exercises: { a: bonus.name },
-                        sets: bonus.sets,
-                        reps: bonus.reps,
-                        rest: bonus.rest || '60s',
-                        default_weight: bonus.weight,
-                        default_weight_unit: bonus.weight_unit || 'lbs',
-                        notes: bonus.notes
-                    },
-                    name: bonus.name
-                });
-            });
-        }
 
         // Add session notes
         if (sessionNotes && sessionNotes.length > 0) {
@@ -592,14 +549,6 @@ class WorkoutRenderManager {
                 if (exerciseName) {
                     allExercises.push({ type: 'regular', name: exerciseName });
                 }
-            });
-        }
-
-        // Add bonus exercises
-        const bonusExercises = this.sessionService.getBonusExercises();
-        if (bonusExercises && bonusExercises.length > 0) {
-            bonusExercises.forEach((bonus) => {
-                allExercises.push({ type: 'bonus', name: bonus.name });
             });
         }
 

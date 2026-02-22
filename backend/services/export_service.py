@@ -97,14 +97,6 @@ class ExportService:
             lines.append(f"   {' | '.join(detail_parts)}")
             lines.append("")
 
-        # Bonus exercises
-        if workout.bonus_exercises:
-            lines.append("BONUS:")
-            for bonus in workout.bonus_exercises:
-                if bonus.name:
-                    lines.append(f"- {bonus.name}: {bonus.sets}x{bonus.reps}")
-            lines.append("")
-
         # Tags
         if workout.tags:
             tag_str = " ".join(f"#{tag}" for tag in workout.tags)
@@ -171,7 +163,6 @@ class ExportService:
             len([e for e in group.exercises.values() if e])
             for group in workout.exercise_groups
         )
-        total_exercises += len([b for b in workout.bonus_exercises if b.name])
 
         # Count total sets
         total_sets = 0
@@ -182,13 +173,6 @@ class ExportService:
                 sets_num = int(sets_str)
                 num_exercises = len([e for e in group.exercises.values() if e])
                 total_sets += sets_num * num_exercises
-            except (ValueError, AttributeError):
-                pass
-
-        for bonus in workout.bonus_exercises:
-            try:
-                sets_str = bonus.sets.split("-")[0].strip()
-                total_sets += int(sets_str)
             except (ValueError, AttributeError):
                 pass
 
@@ -329,7 +313,6 @@ class ExportService:
             "workout_name": workout.name,
             "description": workout.description or "",
             "exercises": exercises,
-            "bonus_exercises": [b for b in workout.bonus_exercises if b.name],
             "tags": workout.tags if workout.tags else [],
             "include_weights": include_weights,
         }
@@ -410,21 +393,5 @@ class ExportService:
                 context[f"sets_{group_num}"] = ""
                 context[f"reps_{group_num}"] = ""
                 context[f"rest_{group_num}"] = ""
-
-        # Fill bonus exercises 1-2
-        for i in range(2):
-            bonus_num = i + 1
-
-            if i < len(workout.bonus_exercises):
-                bonus = workout.bonus_exercises[i]
-                context[f"exercise_bonus_{bonus_num}"] = bonus.name
-                context[f"sets_bonus_{bonus_num}"] = bonus.sets
-                context[f"reps_bonus_{bonus_num}"] = bonus.reps
-                context[f"rest_bonus_{bonus_num}"] = bonus.rest
-            else:
-                context[f"exercise_bonus_{bonus_num}"] = ""
-                context[f"sets_bonus_{bonus_num}"] = ""
-                context[f"reps_bonus_{bonus_num}"] = ""
-                context[f"rest_bonus_{bonus_num}"] = ""
 
         return context

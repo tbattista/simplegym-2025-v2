@@ -22,7 +22,7 @@ class WorkoutReorderManager {
 
     /**
      * Show reorder exercise offcanvas
-     * Allows user to reorder exercises (regular + bonus) via drag-and-drop
+     * Allows user to reorder exercises via drag-and-drop
      */
     showReorderOffcanvas() {
         try {
@@ -69,8 +69,8 @@ class WorkoutReorderManager {
 
     /**
      * Build item list for reorder offcanvas
-     * Combines regular exercises, bonus exercises, and session notes with current custom order applied
-     * @returns {Array} Array of item objects with name, isBonus, isNote, displayName properties
+     * Combines regular exercises and and session notes with current custom order applied
+     * @returns {Array} Array of item objects with name, isNote, displayName properties
      */
     buildExerciseList() {
         const itemList = [];
@@ -84,7 +84,6 @@ class WorkoutReorderManager {
                     itemList.push({
                         name: exerciseName,
                         displayName: exerciseName,
-                        isBonus: false,
                         isNote: false,
                         blockId: group.block_id || null,
                         blockName: group.group_name || null,
@@ -95,20 +94,8 @@ class WorkoutReorderManager {
             });
         }
 
-        // Gather bonus exercises from session
-        const bonusExercises = this.sessionService.getBonusExercises();
-        if (bonusExercises && bonusExercises.length > 0) {
-            bonusExercises.forEach((bonus) => {
-                itemList.push({
-                    name: bonus.name,
-                    displayName: bonus.name,
-                    isBonus: true,
-                    isNote: false
-                });
-            });
-        }
 
-        // Gather session notes
+                // Gather session notes
         const sessionNotes = this.sessionService.getSessionNotes();
         if (sessionNotes && sessionNotes.length > 0) {
             sessionNotes.forEach((note) => {
@@ -116,7 +103,6 @@ class WorkoutReorderManager {
                 itemList.push({
                     name: `note-${note.id}`,
                     displayName: truncatedContent + (note.content?.length > 30 ? '...' : ''),
-                    isBonus: false,
                     isNote: true,
                     noteId: note.id
                 });
@@ -182,7 +168,7 @@ class WorkoutReorderManager {
             const currentWorkout = this.onGetCurrentWorkout();
             if (currentWorkout?.exercise_groups) {
                 newOrder.forEach(item => {
-                    if (!item || typeof item === 'string' || item.isBonus || item.isNote) return;
+                    if (!item || typeof item === 'string' || item.isNote) return;
                     const group = currentWorkout.exercise_groups.find(
                         g => g.exercises?.a === item.name
                     );

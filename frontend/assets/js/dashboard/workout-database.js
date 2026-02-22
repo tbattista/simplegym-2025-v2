@@ -443,9 +443,6 @@ function getTotalExerciseCount(workout) {
         });
     }
 
-    // Add bonus exercises
-    count += (workout.bonus_exercises || []).length;
-
     return count;
 }
 

@@ -574,7 +574,6 @@ class ProgramDetailOffcanvas {
             const workout = this.config.workouts.find(w => w.id === pw.workout_id);
             if (workout) {
                 total += workout.exercise_groups?.length || 0;
-                total += workout.bonus_exercises?.length || 0;
             }
         });
 

@@ -181,18 +181,6 @@
                       </div>
                     </div>
 
-                    <!-- Bonus Exercises -->
-                    <div id="bonusCard" class="card mb-4" style="display: none;">
-                      <div class="card-header">
-                        <h5 class="mb-0">
-                          <i class="bx bx-plus-circle me-2"></i>
-                          Additional Exercises
-                        </h5>
-                      </div>
-                      <div class="card-body">
-                        <div id="bonusExercisesContainer"></div>
-                      </div>
-                    </div>
                   </div>
                 </div>
               </div>
@@ -329,7 +317,7 @@
 
                 // Update stats
                 document.getElementById('viewCount').textContent = workout.view_count || 0;
-                const exerciseCount = (workoutData.exercise_groups || []).length + (workoutData.bonus_exercises || []).length;
+                const exerciseCount = (workoutData.exercise_groups || []).length;
                 document.getElementById('exerciseCount').textContent = exerciseCount;
 
                 // Show expiration warning if applicable
@@ -347,13 +335,6 @@
 
                 // Render exercise groups
                 renderExerciseGroups(workoutData.exercise_groups || []);
-
-                // Render bonus exercises
-                const bonusExercises = workoutData.bonus_exercises || [];
-                if (bonusExercises.length > 0) {
-                    document.getElementById('bonusCard').style.display = 'block';
-                    renderBonusExercises(bonusExercises);
-                }
 
                 // Show content
                 document.getElementById('loadingState').style.display = 'none';
@@ -392,30 +373,8 @@
                     container.appendChild(groupDiv);
                 });
             }
-
-            function renderBonusExercises(bonusExercises) {
-                const container = document.getElementById('bonusExercisesContainer');
-                container.innerHTML = '';
-
-                bonusExercises.forEach(exercise => {
-                    const exerciseDiv = document.createElement('div');
-                    exerciseDiv.className = 'mb-3';
-                    exerciseDiv.innerHTML = `
-                        <div class="d-flex justify-content-between align-items-center">
-                            <span>${escapeHtml(exercise.name)}</span>
-                            <div class="d-flex gap-3 text-muted small">
-                                <span>${escapeHtml(exercise.sets || '2')} sets</span>
-                                <span>${escapeHtml(exercise.reps || '15')} reps</span>
-                                <span>${escapeHtml(exercise.rest || '30s')} rest</span>
-                            </div>
-                        </div>
-                    `;
-
-                    container.appendChild(exerciseDiv);
-                });
-            }
-
             async function handleSaveWorkout() {
+
                 if (!currentWorkout) {
                     alert('No workout to save');
                     return;

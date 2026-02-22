@@ -61,7 +61,6 @@ class JSONParser(BaseParser):
         {
             "name": "Push Day",
             "exercise_groups": [...],
-            "bonus_exercises": [...],
             ...
         }
         """
@@ -104,22 +103,10 @@ class JSONParser(BaseParser):
         if not normalized_groups:
             return ParseResult(errors=["No valid exercise groups found"])
 
-        # Parse bonus exercises
-        bonus_exercises = []
-        for bonus in data.get("bonus_exercises", []):
-            if isinstance(bonus, dict) and bonus.get("name"):
-                bonus_exercises.append({
-                    "name": bonus["name"],
-                    "sets": str(bonus.get("sets", "2")),
-                    "reps": str(bonus.get("reps", "15")),
-                    "rest": str(bonus.get("rest", "30s")),
-                })
-
         workout_data = {
             "name": data.get("name", "Imported Workout"),
             "description": data.get("description", ""),
             "exercise_groups": normalized_groups,
-            "bonus_exercises": bonus_exercises,
             "tags": data.get("tags", [])[:10],
         }
 
@@ -217,7 +204,6 @@ class JSONParser(BaseParser):
             "name": name,
             "description": description,
             "exercise_groups": groups,
-            "bonus_exercises": [],
             "tags": (tags or [])[:10],
         }
 

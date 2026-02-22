@@ -23,11 +23,8 @@ import {
 } from './offcanvas-menu.js';
 
 // Import exercise components
-import {
-    createBonusExercise,
-    createExerciseSearchOffcanvas,
-    createExerciseFilterOffcanvas
-} from './offcanvas-exercise.js';
+import { createExerciseSearchOffcanvas } from './offcanvas-exercise-search.js';
+import { createExerciseFilterOffcanvas } from './offcanvas-exercise-filter.js';
 
 // Import workout components
 import {
@@ -108,10 +105,6 @@ class UnifiedOffcanvasFactory {
     /* ============================================
        EXERCISE OFFCANVAS
        ============================================ */
-    
-    static createBonusExercise(data, onAddExercise) {
-        return createBonusExercise(data, onAddExercise);
-    }
     
     static createExerciseSearchOffcanvas(config = {}, onSelectExercise) {
         return createExerciseSearchOffcanvas(config, onSelectExercise);
@@ -311,7 +304,6 @@ export {
     createBuilderResumePrompt,
     
     // Exercise
-    createBonusExercise,
     createExerciseSearchOffcanvas,
     createExerciseFilterOffcanvas,
     

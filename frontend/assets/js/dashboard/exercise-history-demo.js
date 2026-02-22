@@ -112,13 +112,13 @@ function loadMockHistory() {
       date: new Date().toISOString(),
       duration: 52,
       exercises: [
-        { name: 'Bench Press', weight: 185, sets: 4, reps: 8, isSkipped: false, isBonus: false },
-        { name: 'Incline DB Press', weight: 65, sets: 3, reps: 10, isSkipped: false, isBonus: false },
-        { name: 'Cable Flyes', weight: 30, sets: 3, reps: 12, isSkipped: false, isBonus: false },
-        { name: 'Face Pulls', weight: 25, sets: 3, reps: 15, isSkipped: false, isBonus: true },
-        { name: 'Tricep Dips', weight: 0, sets: 0, reps: 0, isSkipped: true, isBonus: false },
-        { name: 'Overhead Press', weight: 95, sets: 4, reps: 8, isSkipped: false, isBonus: false },
-        { name: 'Lateral Raises', weight: 20, sets: 3, reps: 12, isSkipped: false, isBonus: false }
+        { name: 'Bench Press', weight: 185, sets: 4, reps: 8, isSkipped: false },
+        { name: 'Incline DB Press', weight: 65, sets: 3, reps: 10, isSkipped: false },
+        { name: 'Cable Flyes', weight: 30, sets: 3, reps: 12, isSkipped: false },
+        { name: 'Face Pulls', weight: 25, sets: 3, reps: 15, isSkipped: false },
+        { name: 'Tricep Dips', weight: 0, sets: 0, reps: 0, isSkipped: true },
+        { name: 'Overhead Press', weight: 95, sets: 4, reps: 8, isSkipped: false },
+        { name: 'Lateral Raises', weight: 20, sets: 3, reps: 12, isSkipped: false }
       ]
     },
     {
@@ -126,12 +126,12 @@ function loadMockHistory() {
       date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
       duration: 48,
       exercises: [
-        { name: 'Bench Press', weight: 180, sets: 4, reps: 8, isSkipped: false, isBonus: false },
-        { name: 'Incline DB Press', weight: 65, sets: 3, reps: 10, isSkipped: false, isBonus: false },
-        { name: 'Cable Flyes', weight: 30, sets: 3, reps: 12, isSkipped: false, isBonus: false },
-        { name: 'Tricep Dips', weight: 25, sets: 3, reps: 12, isSkipped: false, isBonus: false },
-        { name: 'Overhead Press', weight: 90, sets: 4, reps: 8, isSkipped: false, isBonus: false },
-        { name: 'Lateral Raises', weight: 20, sets: 3, reps: 12, isSkipped: false, isBonus: false }
+        { name: 'Bench Press', weight: 180, sets: 4, reps: 8, isSkipped: false },
+        { name: 'Incline DB Press', weight: 65, sets: 3, reps: 10, isSkipped: false },
+        { name: 'Cable Flyes', weight: 30, sets: 3, reps: 12, isSkipped: false },
+        { name: 'Tricep Dips', weight: 25, sets: 3, reps: 12, isSkipped: false },
+        { name: 'Overhead Press', weight: 90, sets: 4, reps: 8, isSkipped: false },
+        { name: 'Lateral Raises', weight: 20, sets: 3, reps: 12, isSkipped: false }
       ]
     },
     {
@@ -139,12 +139,12 @@ function loadMockHistory() {
       date: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString(),
       duration: 50,
       exercises: [
-        { name: 'Bench Press', weight: 175, sets: 4, reps: 8, isSkipped: false, isBonus: false },
-        { name: 'Incline DB Press', weight: 60, sets: 3, reps: 10, isSkipped: false, isBonus: false },
-        { name: 'Cable Flyes', weight: 25, sets: 3, reps: 12, isSkipped: false, isBonus: false },
-        { name: 'Tricep Dips', weight: 20, sets: 3, reps: 12, isSkipped: false, isBonus: false },
-        { name: 'Overhead Press', weight: 85, sets: 4, reps: 8, isSkipped: false, isBonus: false },
-        { name: 'Lateral Raises', weight: 17.5, sets: 3, reps: 12, isSkipped: false, isBonus: false }
+        { name: 'Bench Press', weight: 175, sets: 4, reps: 8, isSkipped: false },
+        { name: 'Incline DB Press', weight: 60, sets: 3, reps: 10, isSkipped: false },
+        { name: 'Cable Flyes', weight: 25, sets: 3, reps: 12, isSkipped: false },
+        { name: 'Tricep Dips', weight: 20, sets: 3, reps: 12, isSkipped: false },
+        { name: 'Overhead Press', weight: 85, sets: 4, reps: 8, isSkipped: false },
+        { name: 'Lateral Raises', weight: 17.5, sets: 3, reps: 12, isSkipped: false }
       ]
     },
     {
@@ -152,12 +152,12 @@ function loadMockHistory() {
       date: new Date(Date.now() - 9 * 24 * 60 * 60 * 1000).toISOString(),
       duration: 45,
       exercises: [
-        { name: 'Bench Press', weight: 175, sets: 4, reps: 8, isSkipped: false, isBonus: false },
-        { name: 'Incline DB Press', weight: 60, sets: 3, reps: 10, isSkipped: false, isBonus: false },
-        { name: 'Cable Flyes', weight: 25, sets: 3, reps: 12, isSkipped: false, isBonus: false },
-        { name: 'Tricep Dips', weight: 20, sets: 3, reps: 12, isSkipped: false, isBonus: false },
-        { name: 'Overhead Press', weight: 85, sets: 4, reps: 8, isSkipped: false, isBonus: false },
-        { name: 'Lateral Raises', weight: 15, sets: 3, reps: 12, isSkipped: false, isBonus: false }
+        { name: 'Bench Press', weight: 175, sets: 4, reps: 8, isSkipped: false },
+        { name: 'Incline DB Press', weight: 60, sets: 3, reps: 10, isSkipped: false },
+        { name: 'Cable Flyes', weight: 25, sets: 3, reps: 12, isSkipped: false },
+        { name: 'Tricep Dips', weight: 20, sets: 3, reps: 12, isSkipped: false },
+        { name: 'Overhead Press', weight: 85, sets: 4, reps: 8, isSkipped: false },
+        { name: 'Lateral Raises', weight: 15, sets: 3, reps: 12, isSkipped: false }
       ]
     },
     {
@@ -165,12 +165,12 @@ function loadMockHistory() {
       date: new Date(Date.now() - 13 * 24 * 60 * 60 * 1000).toISOString(),
       duration: 47,
       exercises: [
-        { name: 'Bench Press', weight: 170, sets: 4, reps: 8, isSkipped: false, isBonus: false },
-        { name: 'Incline DB Press', weight: 55, sets: 3, reps: 10, isSkipped: false, isBonus: false },
-        { name: 'Cable Flyes', weight: 25, sets: 3, reps: 12, isSkipped: false, isBonus: false },
-        { name: 'Tricep Dips', weight: 20, sets: 3, reps: 12, isSkipped: false, isBonus: false },
-        { name: 'Overhead Press', weight: 80, sets: 4, reps: 8, isSkipped: false, isBonus: false },
-        { name: 'Lateral Raises', weight: 15, sets: 3, reps: 12, isSkipped: false, isBonus: false }
+        { name: 'Bench Press', weight: 170, sets: 4, reps: 8, isSkipped: false },
+        { name: 'Incline DB Press', weight: 55, sets: 3, reps: 10, isSkipped: false },
+        { name: 'Cable Flyes', weight: 25, sets: 3, reps: 12, isSkipped: false },
+        { name: 'Tricep Dips', weight: 20, sets: 3, reps: 12, isSkipped: false },
+        { name: 'Overhead Press', weight: 80, sets: 4, reps: 8, isSkipped: false },
+        { name: 'Lateral Raises', weight: 15, sets: 3, reps: 12, isSkipped: false }
       ]
     }
   ];
@@ -178,7 +178,7 @@ function loadMockHistory() {
 
 /**
  * Process sessions into exercise matrix
- * Builds a matrix of exercises across sessions with bonus exercise tracking
+ * Builds a matrix of exercises across sessions
  */
 function processExerciseData() {
   const sessions = window.exerciseHistory.sessions;
@@ -195,7 +195,6 @@ function processExerciseData() {
       if (!exerciseMap.has(key)) {
         exerciseMap.set(key, {
           name: exercise.name,
-          isBonus: exercise.isBonus || false,
           firstSeenSession: sessionIndex,
           sessionData: new Array(sessions.length).fill(null)
         });
@@ -214,12 +213,8 @@ function processExerciseData() {
   // Convert to array and sort
   const exercises = Array.from(exerciseMap.values());
   
-  // Sort: template exercises first (not bonus), then bonus exercises
-  // Within each group, maintain order of first appearance
+  // Sort by order of first appearance
   exercises.sort((a, b) => {
-    if (a.isBonus !== b.isBonus) {
-      return a.isBonus ? 1 : -1; // Non-bonus first
-    }
     return a.firstSeenSession - b.firstSeenSession;
   });
   
@@ -366,13 +361,10 @@ function renderTableHeader(sessions) {
  * Render a single table row for an exercise
  */
 function renderTableRow(exercise, sessions) {
-  const rowClass = exercise.isBonus ? ' bonus-exercise-row' : '';
-  
   return `
-    <tr${rowClass}>
+    <tr>
       <td class="sticky-col exercise-col">
         <div class="fw-medium">${escapeHtml(exercise.name)}</div>
-        ${exercise.isBonus ? '<div class="bonus-indicator">+ Added</div>' : ''}
       </td>
       ${sessions.map((session, index) => renderTableCell(exercise, index, sessions)).join('')}
     </tr>

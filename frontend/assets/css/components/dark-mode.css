@@ -136,14 +136,12 @@
 }
 
 /* Exercise Group Cards */
-[data-bs-theme="dark"] .exercise-group-card .card,
-[data-bs-theme="dark"] .bonus-exercise-card .card {
+[data-bs-theme="dark"] .exercise-group-card .card {
     background: var(--gs-gray-50);
     border-color: var(--gs-gray-200);
 }
 
-[data-bs-theme="dark"] .exercise-group-card .card:hover,
-[data-bs-theme="dark"] .bonus-exercise-card .card:hover {
+[data-bs-theme="dark"] .exercise-group-card .card:hover {
     background: var(--gs-gray-100);
     border-color: var(--gs-primary);
 }
@@ -183,33 +181,6 @@
 
 [data-bs-theme="dark"] .exercise-group-title {
     color: var(--gs-gray-800);
-}
-
-/* Bonus Exercise Card Base Style */
-[data-bs-theme="dark"] .bonus-exercise {
-    background: var(--gs-gray-50);
-    border-color: var(--gs-gray-200);
-}
-
-[data-bs-theme="dark"] .bonus-exercise .card-header {
-    background: var(--gs-gray-100);
-    border-color: var(--gs-gray-200);
-    color: var(--gs-gray-800);
-}
-
-[data-bs-theme="dark"] .bonus-exercise .card-body {
-    background: var(--gs-gray-50);
-    color: var(--gs-gray-800);
-}
-
-/* Bonus Exercise Specific */
-[data-bs-theme="dark"] .bonus-exercise .card-header {
-    background: rgba(var(--gs-success-rgb), 0.1);
-    border-color: rgba(var(--gs-success-rgb), 0.3);
-}
-
-[data-bs-theme="dark"] .bonus-exercise-title {
-    color: var(--gs-success-light);
 }
 
 /* ============================================
@@ -1017,8 +988,7 @@
 }
 
 /* Edit mode for compact cards */
-[data-bs-theme="dark"] .exercise-groups-container.edit-mode-active .exercise-group-card.compact .card,
-[data-bs-theme="dark"] .exercise-groups-container.edit-mode-active .bonus-exercise-card.compact .card {
+[data-bs-theme="dark"] .exercise-groups-container.edit-mode-active .exercise-group-card.compact .card {
     background: rgba(var(--gs-warning-rgb), 0.1);
     border-color: var(--bs-warning);
 }
@@ -1160,23 +1130,6 @@
 [data-bs-theme="dark"] .workout-mode-footer {
     background: var(--bs-gray-900);
     border-color: var(--bs-gray-700);
-}
-
-/* ============================================
-   DARK MODE BONUS EXERCISE CARDS
-   ============================================ */
-
-[data-bs-theme="dark"] .exercise-card.bonus-exercise {
-    background: linear-gradient(135deg, rgba(var(--bs-success-rgb), 0.08), rgba(var(--bs-success-rgb), 0.12));
-    border-color: var(--bs-success);
-}
-
-[data-bs-theme="dark"] .exercise-card.bonus-exercise .exercise-card-header {
-    background: linear-gradient(135deg, rgba(var(--bs-success-rgb), 0.12), rgba(var(--bs-success-rgb), 0.16));
-}
-
-[data-bs-theme="dark"] .exercise-card.bonus-exercise.expanded .exercise-card-header {
-    background: linear-gradient(135deg, rgba(var(--bs-success-rgb), 0.16), rgba(var(--bs-success-rgb), 0.2));
 }
 
 /* ============================================

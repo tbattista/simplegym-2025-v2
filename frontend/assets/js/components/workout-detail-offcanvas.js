@@ -236,27 +236,6 @@ class WorkoutDetailOffcanvas {
             });
         }
         
-        // Bonus Exercises
-        const bonusExercises = workoutData.bonus_exercises || [];
-        if (bonusExercises.length > 0) {
-            html += '<h6 class="mb-3 mt-4">Additional Exercises</h6>';
-            
-            bonusExercises.forEach((bonus) => {
-                // Build meta text (plain text with bullet separators)
-                const metaText = `${bonus.sets || '2'} sets • ${bonus.reps || '15'} reps • ${bonus.rest || '30s'} rest`;
-                
-                html += `
-                    <div class="card mb-2">
-                        <div class="card-body py-2 px-3">
-                            <div class="exercise-line">${this._escapeHtml(bonus.name)}</div>
-                            <div class="exercise-meta-text text-muted small">${metaText}</div>
-                            ${bonus.notes ? `<div class="mt-1 small text-muted">${this._escapeHtml(bonus.notes)}</div>` : ''}
-                        </div>
-                    </div>
-                `;
-            });
-        }
-        
         return html;
     }
     

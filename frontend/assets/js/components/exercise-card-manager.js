@@ -159,22 +159,6 @@ class ExerciseCardManager {
         if (this.workout.exercise_groups && index < this.workout.exercise_groups.length) {
             exerciseGroup = { ...this.workout.exercise_groups[index] };
             exerciseName = exerciseGroup.exercises?.a;
-        } else {
-            // Check bonus exercises
-            const bonusExercises = this.sessionService.getBonusExercises();
-            const bonusIndex = index - (this.workout.exercise_groups?.length || 0);
-            if (bonusExercises && bonusIndex >= 0 && bonusIndex < bonusExercises.length) {
-                const bonus = bonusExercises[bonusIndex];
-                exerciseGroup = {
-                    exercises: { a: bonus.name },
-                    sets: bonus.sets,
-                    reps: bonus.reps,
-                    rest: bonus.rest || '60s',
-                    default_weight: bonus.weight,
-                    default_weight_unit: bonus.weight_unit || 'lbs'
-                };
-                exerciseName = bonus.name;
-            }
         }
         
         if (!exerciseGroup) {

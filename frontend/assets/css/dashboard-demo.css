@@ -825,22 +825,6 @@
   color: var(--bs-gray-400);
 }
 
-/* Bonus Exercise Row Styling - Subtle indicator */
-.exercise-history-table .bonus-exercise-row {
-  /* No heavy left border */
-}
-
-/* Bonus indicator as text, not badge */
-.exercise-history-table .bonus-indicator {
-  font-size: 0.625rem;
-  color: var(--bs-info);
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  display: inline-block;
-  margin-left: 0.5rem;
-}
-
 /* Session Header Styling */
 .exercise-history-table thead th {
   font-weight: 600;

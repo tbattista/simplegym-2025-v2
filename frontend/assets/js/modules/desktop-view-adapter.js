@@ -109,8 +109,11 @@
             window.desktopCardRenderer.initInlineEditing(exerciseGroupsContainer);
         }
 
-        // Initialize Sortable.js on desktop exercise container
+        // Initialize Sortable.js on desktop exercise container (reorder only)
         initDesktopSorting(exerciseGroupsContainer);
+
+        // Setup native drop zone for sidebar → editor drag
+        setupEditorDropZone(exerciseGroupsContainer);
 
         // Initialize block header click listeners (delegated)
         if (window.ExerciseGroupManager?.initBlockHeaderListeners) {
@@ -125,8 +128,8 @@
             window.desktopSidebar.init();
         }
 
-        // Wire desktop tags/description popovers
-        wireDesktopMetadataPopovers();
+        // Wire inline tags/description fields
+        wireDesktopMetadataFields();
 
         console.log('✅ Desktop view initialization complete');
     }
@@ -139,7 +142,6 @@
         if (container.sortableInstance) return; // Prevent duplicate
 
         container.sortableInstance = new Sortable(container, {
-            group: { name: 'workout-exercises', pull: true, put: true },
             animation: 150,
             handle: '.drag-handle',
             ghostClass: 'sortable-ghost',
@@ -148,44 +150,6 @@
             filter: '.template-note-card, .desktop-exercise-header, .block-group-header',
             onStart: function() {
                 container.classList.add('is-dragging');
-            },
-            onAdd: function(evt) {
-                // A sidebar exercise card was dropped into the editor
-                const droppedEl = evt.item;
-                const exerciseName = droppedEl.dataset.exerciseName;
-                if (!exerciseName) {
-                    droppedEl.remove();
-                    return;
-                }
-
-                // Create a proper exercise group
-                const groupId = 'group-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
-                const groupData = {
-                    exercises: { a: exerciseName, b: '', c: '' },
-                    sets: '3',
-                    reps: '8-12',
-                    rest: '60s',
-                    default_weight: '',
-                    default_weight_unit: 'lbs'
-                };
-                window.exerciseGroupsData[groupId] = groupData;
-
-                const existingCards = container.querySelectorAll('.exercise-group-card');
-                var index = existingCards.length;
-                var cardHtml = window.createExerciseGroupCard(groupId, groupData, index + 1, index, index + 1);
-
-                // Replace the sidebar card clone with the proper exercise row
-                var temp = document.createElement('div');
-                temp.innerHTML = cardHtml;
-                var newRow = temp.firstElementChild;
-                droppedEl.replaceWith(newRow);
-
-                if (window.markEditorDirty) window.markEditorDirty();
-                if (window.updateMuscleSummary) window.updateMuscleSummary();
-                if (window.showToast) {
-                    window.showToast({ message: 'Added "' + exerciseName + '" to workout', type: 'success', delay: 2000 });
-                }
-                console.log('✅ Dropped exercise from sidebar:', exerciseName);
             },
             onEnd: function(evt) {
                 container.classList.remove('is-dragging');
@@ -234,6 +198,90 @@
     }
 
     /**
+     * Setup native HTML5 drop zone on the editor for sidebar exercises.
+     * Sidebar cards have draggable="true" and set text/exercise-name in dataTransfer.
+     */
+    function setupEditorDropZone(container) {
+        if (!container) return;
+
+        container.addEventListener('dragover', function(e) {
+            // Only accept exercises from sidebar (has exercise-name data)
+            if (!e.dataTransfer.types.includes('text/exercise-name')) return;
+
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'copy';
+            container.classList.add('sidebar-drop-target');
+        });
+
+        container.addEventListener('dragleave', function(e) {
+            // Only clear if actually leaving the container
+            if (!container.contains(e.relatedTarget)) {
+                container.classList.remove('sidebar-drop-target');
+            }
+        });
+
+        container.addEventListener('drop', function(e) {
+            e.preventDefault();
+            container.classList.remove('sidebar-drop-target');
+
+            var exerciseName = e.dataTransfer.getData('text/exercise-name');
+            if (!exerciseName) return;
+
+            // Create proper exercise group
+            var groupId = 'group-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+            var groupData = {
+                exercises: { a: exerciseName, b: '', c: '' },
+                sets: '3',
+                reps: '8-12',
+                rest: '60s',
+                default_weight: '',
+                default_weight_unit: 'lbs'
+            };
+            window.exerciseGroupsData[groupId] = groupData;
+
+            var existingCards = container.querySelectorAll('.exercise-group-card');
+            var index = existingCards.length;
+            var cardHtml = window.createExerciseGroupCard(groupId, groupData, index + 1, index, index + 1);
+
+            // Find drop position based on cursor Y
+            var insertBefore = null;
+            var cards = container.querySelectorAll('.exercise-group-card');
+            for (var i = 0; i < cards.length; i++) {
+                var rect = cards[i].getBoundingClientRect();
+                if (e.clientY < rect.top + rect.height / 2) {
+                    insertBefore = cards[i];
+                    break;
+                }
+            }
+
+            if (insertBefore) {
+                insertBefore.insertAdjacentHTML('beforebegin', cardHtml);
+            } else {
+                // Drop after last card — find the right spot (after header/cards, before buttons)
+                var lastCard = container.querySelector('.exercise-group-card:last-of-type');
+                if (lastCard) {
+                    lastCard.insertAdjacentHTML('afterend', cardHtml);
+                } else {
+                    // No cards yet, insert after column header
+                    var header = container.querySelector('.desktop-exercise-header');
+                    if (header) {
+                        header.insertAdjacentHTML('afterend', cardHtml);
+                    } else {
+                        container.insertAdjacentHTML('afterbegin', cardHtml);
+                    }
+                }
+            }
+
+            if (window.markEditorDirty) window.markEditorDirty();
+            if (window.updateMuscleSummary) window.updateMuscleSummary();
+            if (window.showToast) {
+                window.showToast({ message: 'Added "' + exerciseName + '" to workout', type: 'success', delay: 2000 });
+            }
+            console.log('✅ Dropped exercise from sidebar:', exerciseName);
+        });
+    }
+
+    /**
      * Wire up desktop-only toolbar buttons.
      * NOTE: Save, Cancel, Delete, Add Group, and Reorder buttons are already
      * wired by workout-editor.js via canonical IDs (after ID swap).
@@ -262,182 +310,56 @@
     }
 
     /**
-     * Wire desktop tags and description popovers
+     * Wire inline tags and description fields to sync with hidden inputs
      */
-    function wireDesktopMetadataPopovers() {
-        // Tags button
-        const tagsBtn = document.getElementById('desktopTagsBtn');
-        if (tagsBtn && window.bootstrap) {
-            const tagsPopover = new bootstrap.Popover(tagsBtn, {
-                html: true,
-                placement: 'bottom',
-                trigger: 'click',
-                customClass: 'tags-popover',
-                sanitize: false,
-                content: function() {
-                    const currentTags = document.getElementById('workoutTags')?.value || '';
-                    return `
-                        <div class="popover-edit-container" style="min-width: 250px;">
-                            <label class="form-label small mb-1">Tags (comma-separated)</label>
-                            <input type="text" class="form-control form-control-sm" id="desktopTagsPopoverInput"
-                                   value="${currentTags}" placeholder="push, chest, shoulders" maxlength="200">
-                            <div class="d-flex gap-1 mt-2">
-                                <button class="btn btn-sm btn-primary flex-grow-1" onclick="window._desktopSaveTags()">
-                                    <i class="bx bx-check"></i> Save
-                                </button>
-                                <button class="btn btn-sm btn-outline-secondary" onclick="window._desktopCloseTags()">
-                                    <i class="bx bx-x"></i>
-                                </button>
-                            </div>
-                        </div>`;
-                }
-            });
+    function wireDesktopMetadataFields() {
+        const tagsInline = document.getElementById('desktopTagsInline');
+        const descInline = document.getElementById('desktopDescInline');
+        const hiddenTags = document.getElementById('workoutTags');
+        const hiddenDesc = document.getElementById('workoutDescription');
 
-            tagsBtn.addEventListener('shown.bs.popover', () => {
-                const input = document.getElementById('desktopTagsPopoverInput');
-                if (input) { input.focus(); input.select(); }
+        if (tagsInline && hiddenTags) {
+            tagsInline.addEventListener('input', () => {
+                hiddenTags.value = tagsInline.value;
+                if (window.markEditorDirty) window.markEditorDirty();
             });
         }
 
-        // Description button
-        const descBtn = document.getElementById('desktopDescBtn');
-        if (descBtn && window.bootstrap) {
-            const descPopover = new bootstrap.Popover(descBtn, {
-                html: true,
-                placement: 'bottom',
-                trigger: 'click',
-                customClass: 'description-popover',
-                sanitize: false,
-                content: function() {
-                    const currentDesc = document.getElementById('workoutDescription')?.value || '';
-                    return `
-                        <div class="popover-edit-container" style="min-width: 280px;">
-                            <label class="form-label small mb-1">Description</label>
-                            <textarea class="form-control form-control-sm" id="desktopDescPopoverInput"
-                                      rows="3" maxlength="500" placeholder="Brief description...">${currentDesc}</textarea>
-                            <div class="d-flex gap-1 mt-2">
-                                <button class="btn btn-sm btn-primary flex-grow-1" onclick="window._desktopSaveDesc()">
-                                    <i class="bx bx-check"></i> Save
-                                </button>
-                                <button class="btn btn-sm btn-outline-secondary" onclick="window._desktopCloseDesc()">
-                                    <i class="bx bx-x"></i>
-                                </button>
-                            </div>
-                        </div>`;
-                }
-            });
-
-            descBtn.addEventListener('shown.bs.popover', () => {
-                const textarea = document.getElementById('desktopDescPopoverInput');
-                if (textarea) textarea.focus();
+        if (descInline && hiddenDesc) {
+            descInline.addEventListener('input', () => {
+                hiddenDesc.value = descInline.value;
+                if (window.markEditorDirty) window.markEditorDirty();
             });
         }
 
-        // Tags popover save/close helpers
-        window._desktopSaveTags = function() {
-            const input = document.getElementById('desktopTagsPopoverInput');
-            const hiddenInput = document.getElementById('workoutTags');
-            const btnText = document.getElementById('desktopTagsText');
-            const btn = document.getElementById('desktopTagsBtn');
-
-            if (input && hiddenInput) {
-                const tags = input.value.trim();
-                hiddenInput.value = tags;
-
-                if (tags && btnText) {
-                    const tagArray = tags.split(',').map(t => t.trim()).filter(t => t);
-                    btnText.textContent = tagArray.length === 1 ? '1 tag' : `${tagArray.length} tags`;
-                    if (btn) { btn.classList.remove('btn-outline-secondary'); btn.classList.add('btn-outline-primary'); }
-                } else if (btnText) {
-                    btnText.textContent = 'Tags';
-                    if (btn) { btn.classList.remove('btn-outline-primary'); btn.classList.add('btn-outline-secondary'); }
-                }
-
-                if (window.markEditorDirty) window.markEditorDirty();
-            }
-            window._desktopCloseTags();
-        };
-
-        window._desktopCloseTags = function() {
-            const btn = document.getElementById('desktopTagsBtn');
-            if (btn) {
-                const popover = bootstrap.Popover.getInstance(btn);
-                if (popover) popover.hide();
-            }
-        };
-
-        // Description popover save/close helpers
-        window._desktopSaveDesc = function() {
-            const textarea = document.getElementById('desktopDescPopoverInput');
-            const hiddenTextarea = document.getElementById('workoutDescription');
-            const btnText = document.getElementById('desktopDescText');
-            const btn = document.getElementById('desktopDescBtn');
-
-            if (textarea && hiddenTextarea) {
-                const description = textarea.value.trim();
-                hiddenTextarea.value = description;
-
-                if (description && btnText) {
-                    const preview = description.length > 25 ? description.substring(0, 25) + '...' : description;
-                    btnText.textContent = preview;
-                    if (btn) { btn.classList.remove('btn-outline-secondary'); btn.classList.add('btn-outline-primary'); }
-                } else if (btnText) {
-                    btnText.textContent = 'Description';
-                    if (btn) { btn.classList.remove('btn-outline-primary'); btn.classList.add('btn-outline-secondary'); }
-                }
-
-                if (window.markEditorDirty) window.markEditorDirty();
-            }
-            window._desktopCloseDesc();
-        };
-
-        window._desktopCloseDesc = function() {
-            const btn = document.getElementById('desktopDescBtn');
-            if (btn) {
-                const popover = bootstrap.Popover.getInstance(btn);
-                if (popover) popover.hide();
-            }
-        };
+        // Wire Add Note button
+        const addNoteBtn = document.getElementById('desktopAddNoteBtn');
+        if (addNoteBtn) {
+            addNoteBtn.addEventListener('click', () => {
+                if (window.handleAddTemplateNote) window.handleAddTemplateNote();
+            });
+        }
     }
 
     /**
-     * Override updateMetadataButtonStates for desktop toolbar buttons
+     * Override updateMetadataButtonStates to populate inline fields
      */
     const _origUpdateMetadata = window.updateMetadataButtonStates;
     window.updateMetadataButtonStates = function() {
         // Call original for mobile (if it exists)
         if (_origUpdateMetadata) _origUpdateMetadata();
 
-        // Also update desktop toolbar buttons
-        const tagsInput = document.getElementById('workoutTags');
-        const descTextarea = document.getElementById('workoutDescription');
-        const tagsBtnText = document.getElementById('desktopTagsText');
-        const descBtnText = document.getElementById('desktopDescText');
-        const tagsBtn = document.getElementById('desktopTagsBtn');
-        const descBtn = document.getElementById('desktopDescBtn');
+        // Sync hidden inputs → inline fields
+        const hiddenTags = document.getElementById('workoutTags');
+        const hiddenDesc = document.getElementById('workoutDescription');
+        const tagsInline = document.getElementById('desktopTagsInline');
+        const descInline = document.getElementById('desktopDescInline');
 
-        if (tagsInput && tagsBtnText) {
-            const tags = tagsInput.value.trim();
-            if (tags) {
-                const tagArray = tags.split(',').map(t => t.trim()).filter(t => t);
-                tagsBtnText.textContent = tagArray.length === 1 ? '1 tag' : `${tagArray.length} tags`;
-                if (tagsBtn) { tagsBtn.classList.remove('btn-outline-secondary'); tagsBtn.classList.add('btn-outline-primary'); }
-            } else {
-                tagsBtnText.textContent = 'Tags';
-                if (tagsBtn) { tagsBtn.classList.remove('btn-outline-primary'); tagsBtn.classList.add('btn-outline-secondary'); }
-            }
+        if (hiddenTags && tagsInline) {
+            tagsInline.value = hiddenTags.value || '';
         }
-
-        if (descTextarea && descBtnText) {
-            const desc = descTextarea.value.trim();
-            if (desc) {
-                const preview = desc.length > 25 ? desc.substring(0, 25) + '...' : desc;
-                descBtnText.textContent = preview;
-                if (descBtn) { descBtn.classList.remove('btn-outline-secondary'); descBtn.classList.add('btn-outline-primary'); }
-            } else {
-                descBtnText.textContent = 'Description';
-                if (descBtn) { descBtn.classList.remove('btn-outline-primary'); descBtn.classList.add('btn-outline-secondary'); }
-            }
+        if (hiddenDesc && descInline) {
+            descInline.value = hiddenDesc.value || '';
         }
     };
 

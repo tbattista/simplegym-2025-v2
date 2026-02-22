@@ -164,7 +164,6 @@ class WorkoutModeController {
             console.log('🎮 Controller initialize() called');
 
             this.uiStateManager.updateLoadingMessage('Initializing authentication...');
-            this.setupBonusExerciseButton();
 
             // Auth state listener
             this.authService.onAuthStateChange((user) => {
@@ -317,15 +316,6 @@ class WorkoutModeController {
         if (changeBtn) changeBtn.addEventListener('click', () => this.handleChangeWorkout());
     }
 
-    /** Setup bonus exercise button (document-level click handler) */
-    setupBonusExerciseButton() {
-        document.addEventListener('click', (e) => {
-            if (e.target.closest('#addBonusExerciseBtn')) {
-                e.preventDefault();
-                this.handleBonusExercises();
-            }
-        });
-    }
 
     /** Auto-expand first exercise card when workout starts */
     expandFirstExerciseCard() {
@@ -435,7 +425,6 @@ class WorkoutModeController {
     async handleCompleteWorkout() { return this.lifecycleManager.handleCompleteWorkout(); }
     async handleStartQuickLog() { return await this.lifecycleManager.handleStartQuickLog(); }
     async handleSaveQuickLog() { return await this.lifecycleManager.handleSaveQuickLog(); }
-    async handleBonusExercises() { return await this.exerciseOpsManager.handleBonusExercises(); }
     handleAddNote() { return this.notesManager.handleAddNote(); }
     showReorderOffcanvas() { this.reorderManager.showReorderOffcanvas(); }
     initializeShareButton() { this.settingsManager.initializeShareButton(); }

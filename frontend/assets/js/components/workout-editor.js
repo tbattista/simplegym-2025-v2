@@ -174,7 +174,6 @@ async function createNewWorkoutInEditor() {
                 default_weight: null,
                 default_weight_unit: 'lbs'
             }],
-            bonus_exercises: [],
             template_notes: []
         };
 

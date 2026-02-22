@@ -1,6 +1,6 @@
 /**
  * Card Renderer Module
- * Handles rendering of exercise group and bonus exercise cards
+ * Handles rendering of exercise group cards
  * @version 1.0.0
  */
 
@@ -8,11 +8,9 @@ class CardRenderer {
     constructor() {
         // Initialize storage for card data
         this.exerciseGroupsData = {};
-        this.bonusExercisesData = {};
         
         // Make data accessible globally for backward compatibility
         window.exerciseGroupsData = this.exerciseGroupsData;
-        window.bonusExercisesData = this.bonusExercisesData;
         
         console.log('✅ CardRenderer initialized');
     }
@@ -261,118 +259,6 @@ class CardRenderer {
     }
     
     /**
-     * Create bonus exercise card HTML
-     * @param {string} bonusId - Unique bonus ID
-     * @param {object} bonusData - Bonus data (optional)
-     * @param {number} bonusNumber - Bonus number for display
-     * @returns {string} HTML string
-     */
-    createBonusExerciseCard(bonusId, bonusData = null, bonusNumber = 1) {
-        const data = bonusData || {
-            name: '',
-            sets: '2',
-            reps: '15',
-            rest: '30s'
-        };
-        
-        // Store data
-        this.bonusExercisesData[bonusId] = data;
-        
-        const exerciseName = data.name || `New Additional Exercise ${bonusNumber}`;
-        const hasData = data.name;
-        
-        // Build meta text (plain text, not badges)
-        let metaText = '';
-        if (hasData) {
-            const bonusProtocol = data.sets && data.reps ? `${data.sets}×${data.reps}` : (data.sets || data.reps || '');
-            metaText = [bonusProtocol, `${data.rest} rest`].filter(Boolean).join(' • ');
-        } else {
-            metaText = 'Click edit to add exercise';
-        }
-        
-        return `
-            <div class="bonus-exercise-card compact" data-bonus-id="${bonusId}">
-                <div class="card">
-                    <div class="card-body">
-                        <div class="exercise-content">
-                            <div class="exercise-line">${this.escapeHtml(exerciseName)}</div>
-                            <div class="exercise-meta-text text-muted small">${metaText}</div>
-                        </div>
-                        <div class="card-actions">
-                            <button type="button" class="btn btn-sm btn-edit-compact"
-                                    onclick="event.preventDefault(); event.stopPropagation(); openBonusExerciseEditor('${bonusId}');"
-                                    title="Edit additional exercise">
-                                <i class="bx bx-pencil"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
-    }
-    
-    /**
-     * Update bonus exercise card preview
-     * @param {string} bonusId - Bonus ID
-     * @param {object} bonusData - Bonus data
-     */
-    updateBonusExerciseCardPreview(bonusId, bonusData) {
-        const card = document.querySelector(`[data-bonus-id="${bonusId}"]`);
-        if (!card) return;
-        
-        const exerciseName = bonusData.name || 'New Additional Exercise';
-        const hasData = bonusData.name;
-        
-        // Build meta text (plain text, not badges)
-        let metaText = '';
-        if (hasData) {
-            const bonusProtocol2 = bonusData.sets && bonusData.reps ? `${bonusData.sets}×${bonusData.reps}` : (bonusData.sets || bonusData.reps || '');
-            metaText = [bonusProtocol2, `${bonusData.rest} rest`].filter(Boolean).join(' • ');
-        } else {
-            metaText = 'Click edit to add exercise';
-        }
-        
-        // Update exercise name
-        const exerciseLine = card.querySelector('.exercise-line');
-        if (exerciseLine) {
-            exerciseLine.textContent = exerciseName;
-        }
-        
-        // Update meta text
-        const metaTextEl = card.querySelector('.exercise-meta-text');
-        if (metaTextEl) {
-            metaTextEl.textContent = metaText;
-        }
-    }
-    
-    /**
-     * Delete bonus exercise card
-     * @param {string} bonusId - Bonus ID to delete
-     */
-    deleteBonusExerciseCard(bonusId) {
-        const card = document.querySelector(`[data-bonus-id="${bonusId}"]`);
-        if (!card) return;
-        
-        const bonusData = this.bonusExercisesData[bonusId];
-        const exerciseName = bonusData?.name || 'this bonus exercise';
-        
-        if (confirm(`Are you sure you want to delete "${exerciseName}"?\n\nThis action cannot be undone.`)) {
-            // Remove from DOM
-            card.remove();
-            
-            // Remove from data storage
-            delete this.bonusExercisesData[bonusId];
-            
-            // Mark as dirty
-            if (window.markEditorDirty) {
-                window.markEditorDirty();
-            }
-            
-            console.log('✅ Bonus exercise deleted:', bonusId);
-        }
-    }
-    
-    /**
      * Apply visual grouping to consecutive cards sharing the same block_id.
      * Called after any render/reorder/add/remove operation.
      * Scans #exerciseGroups, finds runs of consecutive cards with same block_id,
@@ -478,14 +364,6 @@ window.getExerciseGroupData = (groupId) =>
 window.deleteExerciseGroupCard = (groupId) =>
     window.cardRenderer.deleteExerciseGroupCard(groupId);
 
-window.createBonusExerciseCard = (bonusId, bonusData, bonusNumber) => 
-    window.cardRenderer.createBonusExerciseCard(bonusId, bonusData, bonusNumber);
-
-window.updateBonusExerciseCardPreview = (bonusId, bonusData) => 
-    window.cardRenderer.updateBonusExerciseCardPreview(bonusId, bonusData);
-
-window.deleteBonusExerciseCard = (bonusId) =>
-    window.cardRenderer.deleteBonusExerciseCard(bonusId);
 
 window.applyBlockGrouping = () =>
     window.cardRenderer.applyBlockGrouping();

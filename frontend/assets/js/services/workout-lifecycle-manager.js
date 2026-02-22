@@ -158,7 +158,7 @@ class WorkoutLifecycleManager {
             // Show bottom action bar
             this.showBottomBar(true);
 
-            // Re-render to show weight inputs and transferred bonus exercises
+            // Re-render to show weight inputs
             this.onRenderWorkout();
 
             // Auto-expand first exercise card after render completes
@@ -237,8 +237,7 @@ class WorkoutLifecycleManager {
         const elapsed = Math.floor((Date.now() - session.startedAt.getTime()) / 1000);
         const minutes = Math.floor(elapsed / 60);
         const exerciseCount = this.currentWorkout?.exercise_groups?.length || 0;
-        const bonusCount = this.currentWorkout?.bonus_exercises?.length || 0;
-        const totalExercises = exerciseCount + bonusCount;
+        const totalExercises = exerciseCount;
 
         // Use unified factory to create offcanvas
         window.UnifiedOffcanvasFactory.createCompleteWorkout({

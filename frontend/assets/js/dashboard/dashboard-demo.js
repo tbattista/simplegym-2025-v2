@@ -408,7 +408,6 @@ function getMockWorkouts() {
         exercise_groups: [
           { exercises: { '1': 'Bench Press', '2': 'Incline DB Press', '3': 'Cable Flyes', '4': 'Tricep Dips', '5': 'Overhead Press', '6': 'Lateral Raises' } }
         ],
-        bonus_exercises: []
       },
       estimated_duration: 45,
       last_completed: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString()
@@ -420,7 +419,6 @@ function getMockWorkouts() {
         exercise_groups: [
           { exercises: { '1': 'Pull-ups', '2': 'Barbell Rows', '3': 'Lat Pulldown', '4': 'Face Pulls', '5': 'Bicep Curls' } }
         ],
-        bonus_exercises: []
       },
       estimated_duration: 40,
       last_completed: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString()
@@ -432,7 +430,6 @@ function getMockWorkouts() {
         exercise_groups: [
           { exercises: { '1': 'Squats', '2': 'Romanian Deadlifts', '3': 'Leg Press', '4': 'Leg Curls', '5': 'Calf Raises' } }
         ],
-        bonus_exercises: []
       },
       estimated_duration: 50,
       last_completed: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString()

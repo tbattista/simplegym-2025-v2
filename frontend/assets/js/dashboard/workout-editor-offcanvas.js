@@ -1,6 +1,6 @@
 /**
  * Workout Editor Offcanvas Module
- * Handles offcanvas-based editors for exercise groups and bonus exercises
+ * Handles offcanvas-based editors for exercise groups
  * Extracted from workouts.js
  */
 
@@ -131,128 +131,6 @@ const WorkoutEditorOffcanvas = {
     },
 
     /**
-     * Open bonus exercise editor offcanvas
-     * @param {string} bonusId - ID of bonus to edit
-     */
-    openBonusEditor(bonusId) {
-        const bonusData = window.bonusExercisesData[bonusId] || {
-            name: '',
-            sets: '2',
-            reps: '15',
-            rest: '30s'
-        };
-
-        document.getElementById('editBonusName').value = bonusData.name || '';
-        document.getElementById('editBonusSets').value = bonusData.sets || '2';
-        document.getElementById('editBonusReps').value = bonusData.reps || '15';
-        document.getElementById('editBonusRest').value = bonusData.rest || '30s';
-
-        window.currentEditingBonusId = bonusId;
-
-        document.querySelectorAll('.bonus-exercise-card').forEach(c => c.classList.remove('editing'));
-        document.querySelector(`[data-bonus-id="${bonusId}"]`)?.classList.add('editing');
-
-        const searchBtn = document.getElementById('bonusSearchBtn');
-        if (searchBtn) {
-            searchBtn.onclick = () => {
-                const currentValue = document.getElementById('editBonusName')?.value?.trim() || '';
-
-                window.UnifiedOffcanvasFactory.createExerciseSearchOffcanvas(
-                    {
-                        title: 'Select Exercise',
-                        showFilters: true,
-                        buttonText: 'Select',
-                        buttonIcon: 'bx-check',
-                        initialQuery: currentValue
-                    },
-                    (selectedExercise) => {
-                        console.log('✅ Exercise selected for bonus:', selectedExercise.name);
-                        document.getElementById('editBonusName').value = selectedExercise.name;
-                    }
-                );
-            };
-        }
-
-        const clearBtn = document.getElementById('bonusClearBtn');
-        if (clearBtn) {
-            clearBtn.onclick = () => {
-                const nameInput = document.getElementById('editBonusName');
-                if (nameInput) {
-                    nameInput.value = '';
-                    nameInput.focus();
-                }
-            };
-        }
-
-        const offcanvas = new bootstrap.Offcanvas(document.getElementById('bonusExerciseEditOffcanvas'), { scroll: false });
-        offcanvas.show();
-
-        console.log('✅ Opened bonus exercise editor:', bonusId);
-    },
-
-    /**
-     * Save bonus exercise from offcanvas
-     */
-    async saveBonusFromOffcanvas() {
-        const bonusId = window.currentEditingBonusId;
-        if (!bonusId) return;
-
-        console.log('💾 OFFCANVAS SAVE: Saving bonus exercise');
-
-        const bonusData = {
-            name: document.getElementById('editBonusName').value.trim(),
-            sets: document.getElementById('editBonusSets').value,
-            reps: document.getElementById('editBonusReps').value,
-            rest: document.getElementById('editBonusRest').value
-        };
-
-        if (!bonusData.name) {
-            if (window.showAlert) {
-                showAlert('Exercise name is required', 'danger');
-            } else {
-                alert('Exercise name is required');
-            }
-            return;
-        }
-
-        if (window.exerciseCacheService && window.exerciseCacheService.autoCreateIfNeeded) {
-            try {
-                const userId = window.authService?.getCurrentUserId?.() || null;
-                console.log('🚀 Auto-creating custom exercise if needed:', bonusData.name);
-                await window.exerciseCacheService.autoCreateIfNeeded(bonusData.name, userId);
-            } catch (error) {
-                console.warn('⚠️ Could not auto-create exercise:', error);
-            }
-        }
-
-        window.bonusExercisesData[bonusId] = bonusData;
-
-        if (window.updateBonusExerciseCardPreview) {
-            window.updateBonusExerciseCardPreview(bonusId, bonusData);
-        }
-
-        const offcanvas = bootstrap.Offcanvas.getInstance(document.getElementById('bonusExerciseEditOffcanvas'));
-        if (offcanvas) offcanvas.hide();
-
-        document.querySelector(`[data-bonus-id="${bonusId}"]`)?.classList.remove('editing');
-
-        console.log('💾 OFFCANVAS SAVE: Triggering full workout save...');
-        if (window.saveWorkoutFromEditor) {
-            try {
-                await window.saveWorkoutFromEditor(false);
-                console.log('✅ OFFCANVAS SAVE: Full workout saved successfully');
-            } catch (error) {
-                console.error('❌ OFFCANVAS SAVE: Failed to save workout:', error);
-            }
-        } else {
-            console.warn('⚠️ OFFCANVAS SAVE: saveWorkoutFromEditor not available, marking dirty for autosave');
-            if (window.markEditorDirty) window.markEditorDirty();
-        }
-
-        console.log('✅ Bonus exercise saved:', bonusId);
-    },
-
-    /**
      * Add alternate exercise field (max 2)
      */
     addAlternate() {
@@ -355,8 +233,6 @@ window.WorkoutEditorOffcanvas = WorkoutEditorOffcanvas;
 
 // Backward-compat globals
 window.openExerciseGroupEditor = WorkoutEditorOffcanvas.openGroupEditor;
-window.openBonusExerciseEditor = WorkoutEditorOffcanvas.openBonusEditor;
-window.saveBonusExerciseFromOffcanvas = WorkoutEditorOffcanvas.saveBonusFromOffcanvas;
 window.addAlternateExercise = WorkoutEditorOffcanvas.addAlternate;
 window.removeAlternateExercise = WorkoutEditorOffcanvas.removeAlternate;
 window.loadAlternateExercises = WorkoutEditorOffcanvas.loadAlternates;

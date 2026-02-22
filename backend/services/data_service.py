@@ -48,7 +48,6 @@ class DataService:
             name=workout_request.name,
             description=workout_request.description,
             exercise_groups=workout_request.exercise_groups,
-            bonus_exercises=workout_request.bonus_exercises,
             tags=workout_request.tags,
             sections=workout_request.sections if hasattr(workout_request, 'sections') else None,
             template_notes=workout_request.template_notes if hasattr(workout_request, 'template_notes') else []
@@ -167,7 +166,6 @@ class DataService:
             name=new_name,
             description=f"Copy of {original_workout.description}",
             exercise_groups=original_workout.exercise_groups,
-            bonus_exercises=original_workout.bonus_exercises,
             tags=original_workout.tags + ["duplicate"],
             sections=original_workout.sections,
             template_notes=original_workout.template_notes if original_workout.template_notes else []

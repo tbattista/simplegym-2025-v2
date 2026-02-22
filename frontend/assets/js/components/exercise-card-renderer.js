@@ -17,11 +17,10 @@ class ExerciseCardRenderer {
      * Render an exercise card
      * @param {Object} group - Exercise group data
      * @param {number} index - Card index
-     * @param {boolean} isBonus - Whether this is a bonus exercise
      * @param {number} totalCards - Total number of cards (to determine if this is the last one)
      * @returns {string} HTML string for the card
      */
-    renderCard(group, index, isBonus = false, totalCards = 0) {
+    renderCard(group, index, totalCards = 0) {
         const exercises = group.exercises || {};
         const mainExercise = exercises.a || 'Unknown Exercise';
         const alternates = this._getAlternates(exercises);
@@ -85,7 +84,6 @@ class ExerciseCardRenderer {
                         <div class="workout-exercise-name">
                             ${notes ? '<i class="bx bx-note exercise-note-indicator" title="Has notes"></i>' : ''}
                             ${this._escapeHtml(mainExercise)}
-                            ${isBonus ? '<span class="additional-exercise-badge" title="Additional exercise">+</span>' : ''}
                         </div>
                         <div class="workout-header-actions">
                             <button class="workout-edit-btn${isCompleted ? ' edit-locked' : ''}" onclick="window.workoutModeController?.handleEditExercise?.('${this._escapeHtml(mainExercise)}', ${index}); event.stopPropagation();" aria-label="${isCompleted ? 'Editing locked - uncomplete to edit' : 'Modify exercise'}" title="${isCompleted ? 'Uncomplete to edit' : 'Modify exercise'}">

@@ -1,8 +1,8 @@
 /**
  * Ghost Gym - Workout Session Service
- * Orchestrator for workout session lifecycle, exercise state, and bonus exercises
+ * Orchestrator for workout session lifecycle and exercise state
  * Delegates to: SessionLifecycleApiService, SessionExerciseStateService,
- *   SessionBonusExerciseService, WeightHistoryService, SessionNotesService,
+ *   WeightHistoryService, SessionNotesService,
  *   PreSessionEditingService, SessionPersistenceService, AutoSaveService
  * @version 3.0.0
  * @date 2026-02-14
@@ -51,15 +51,6 @@ class WorkoutSessionService {
             onGetCurrentSession: () => this.currentSession,
             onGetExerciseHistory: () => this.exerciseHistory,
             onIsSessionActive: () => this.isSessionActive(),
-            onNotify: (event, data) => this.notifyListeners(event, data),
-            onPersist: () => this.persistSession()
-        });
-
-        // Initialize Bonus Exercise Service
-        this.bonusExerciseService = new SessionBonusExerciseService({
-            onGetCurrentSession: () => this.currentSession,
-            onGetExerciseOrder: () => this.getExerciseOrder(),
-            onSetExerciseOrder: (order) => this.setExerciseOrder(order),
             onNotify: (event, data) => this.notifyListeners(event, data),
             onPersist: () => this.persistSession()
         });
@@ -130,16 +121,7 @@ class WorkoutSessionService {
     // ============================================
 
     async startSession(workoutId, workoutName, workoutData = null, sessionMode = 'timed') {
-        const session = await this.lifecycleApiService.startSession(workoutId, workoutName, workoutData, sessionMode);
-
-        // Transfer pre-workout bonuses AFTER session creation (avoids coupling sub-services)
-        if (this.bonusExerciseService.preWorkoutBonusExercises.length > 0) {
-            console.log('\ud83d\udd04 Transferring pre-workout bonuses to new session...');
-            this.bonusExerciseService.transferPreWorkoutBonusesImmediate();
-            this.persistSession();
-        }
-
-        return session;
+        return this.lifecycleApiService.startSession(workoutId, workoutName, workoutData, sessionMode);
     }
 
     async completeSession(exercisesPerformed, durationMinutes = null) {
@@ -268,38 +250,6 @@ class WorkoutSessionService {
 
     hasCustomOrder() {
         return this.preSessionEditingService.hasCustomOrder();
-    }
-
-    // ============================================
-    // BONUS EXERCISE FACADES
-    // ============================================
-
-    addBonusExercise(exerciseData, insertAtIndex = null) {
-        return this.bonusExerciseService.addBonusExercise(exerciseData, insertAtIndex);
-    }
-
-    removeBonusExercise(indexOrName) {
-        return this.bonusExerciseService.removeBonusExercise(indexOrName);
-    }
-
-    getBonusExercises() {
-        return this.bonusExerciseService.getBonusExercises();
-    }
-
-    getPreWorkoutBonusExercises() {
-        return this.bonusExerciseService.getPreWorkoutBonusExercises();
-    }
-
-    clearPreWorkoutBonusExercises() {
-        return this.bonusExerciseService.clearPreWorkoutBonusExercises();
-    }
-
-    async getLastSessionBonusExercises(workoutId) {
-        return this.bonusExerciseService.getLastSessionBonusExercises(workoutId);
-    }
-
-    debugBonusExercises() {
-        return this.bonusExerciseService.debugBonusExercises();
     }
 
     // ============================================

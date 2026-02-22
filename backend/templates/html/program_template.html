@@ -224,10 +224,6 @@
             margin-bottom: 2px;
         }
         
-        .bonus-exercise {
-            padding: 6px;
-        }
-        
         .mets-row {
             background-color: #D0CECE;
             text-align: right;
@@ -447,18 +443,6 @@
                     <td class="rest-cell">{{ group.rest }}</td>
                     <td class="wt-cell">wt</td>
                     <td class="reps-track-cell">reps</td>
-                </tr>
-                {% endfor %}
-                
-                <!-- Bonus Exercises -->
-                {% for bonus in workout.bonus_exercises %}
-                <tr>
-                    <td class="bonus-exercise">{{ bonus.name }}</td>
-                    <td class="sets-cell">{{ bonus.sets }}</td>
-                    <td class="reps-cell">{{ bonus.reps }}</td>
-                    <td class="rest-cell">{{ bonus.rest }}</td>
-                    <td class="wt-cell">&nbsp;</td>
-                    <td class="reps-track-cell">&nbsp;</td>
                 </tr>
                 {% endfor %}
                 

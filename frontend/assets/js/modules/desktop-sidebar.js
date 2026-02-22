@@ -77,8 +77,8 @@ class DesktopSidebar {
         // Setup click delegation on exercise list
         this.setupListClickHandler();
 
-        // Setup drag-and-drop from sidebar to editor
-        this.initSidebarDrag();
+        // Setup native drag from sidebar to editor
+        this.initNativeDrag();
 
         this.initialized = true;
         console.log('✅ Desktop sidebar initialized with', this.searchCore.state.allExercises.length, 'exercises');
@@ -359,7 +359,7 @@ class DesktopSidebar {
                 : '';
 
             html += `
-                <div class="sidebar-exercise-card" data-exercise-id="${this.escapeAttr(exerciseId)}" data-exercise-name="${this.escapeAttr(name)}">
+                <div class="sidebar-exercise-card" draggable="true" data-exercise-id="${this.escapeAttr(exerciseId)}" data-exercise-name="${this.escapeAttr(name)}">
                     <div class="d-flex justify-content-between align-items-start">
                         <div class="flex-grow-1" style="min-width:0">
                             <div class="exercise-card-name">
@@ -417,31 +417,40 @@ class DesktopSidebar {
     }
 
     /**
-     * Initialize SortableJS on the sidebar list for drag-to-editor
+     * Initialize native HTML5 drag on sidebar cards for drag-to-editor
      */
-    initSidebarDrag() {
-        if (!this.listEl || !window.Sortable) return;
+    initNativeDrag() {
+        if (!this.listEl) return;
 
-        this.sidebarSortable = new Sortable(this.listEl, {
-            group: { name: 'workout-exercises', pull: 'clone', put: false },
-            sort: false,
-            draggable: '.sidebar-exercise-card',
-            ghostClass: 'sidebar-drag-ghost',
-            chosenClass: 'sidebar-drag-chosen',
-            dragClass: 'sidebar-drag-active',
-            animation: 150,
-            onStart: () => {
-                // Highlight the editor drop zone
+        // Delegated dragstart on list container
+        this.listEl.addEventListener('dragstart', (e) => {
+            const card = e.target.closest('.sidebar-exercise-card');
+            if (!card) return;
+
+            const name = card.dataset.exerciseName;
+            if (!name) { e.preventDefault(); return; }
+
+            e.dataTransfer.setData('text/exercise-name', name);
+            e.dataTransfer.effectAllowed = 'copy';
+
+            card.classList.add('sidebar-dragging');
+
+            // Highlight editor drop zone after a frame
+            setTimeout(() => {
                 const editor = document.getElementById('exerciseGroups');
                 if (editor) editor.classList.add('sidebar-drop-target');
-            },
-            onEnd: () => {
-                const editor = document.getElementById('exerciseGroups');
-                if (editor) editor.classList.remove('sidebar-drop-target');
-            }
+            }, 0);
         });
 
-        console.log('✅ Sidebar drag-and-drop initialized');
+        this.listEl.addEventListener('dragend', (e) => {
+            const card = e.target.closest('.sidebar-exercise-card');
+            if (card) card.classList.remove('sidebar-dragging');
+
+            const editor = document.getElementById('exerciseGroups');
+            if (editor) editor.classList.remove('sidebar-drop-target');
+        });
+
+        console.log('✅ Sidebar native drag initialized');
     }
 
     /**

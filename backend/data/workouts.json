@@ -42,7 +42,6 @@
           ]
         }
       ],
-      "bonus_exercises": [],
       "template_notes": [],
       "is_template": true,
       "tags": [],
@@ -94,12 +93,62 @@
           ]
         }
       ],
-      "bonus_exercises": [],
       "template_notes": [],
       "is_template": true,
       "tags": [],
       "created_date": "2026-02-21 18:28:35.631155",
       "modified_date": "2026-02-21 18:28:35.631159",
+      "is_favorite": false,
+      "favorited_at": null
+    },
+    {
+      "id": "workout-57bf5f1a",
+      "name": "New Workout - Feb 21, 8:50 PM",
+      "description": "",
+      "exercise_groups": [
+        {
+          "group_id": "group-1f9619c8",
+          "exercises": {
+            "a": "Exercise Name"
+          },
+          "sets": "3",
+          "reps": "8-12",
+          "rest": "60s",
+          "default_weight": null,
+          "default_weight_unit": "lbs",
+          "group_type": "standard",
+          "group_name": null,
+          "cardio_config": null,
+          "interval_config": null,
+          "block_id": null
+        }
+      ],
+      "sections": [
+        {
+          "section_id": "section-group-1f9619c8",
+          "type": "standard",
+          "name": null,
+          "description": null,
+          "config": null,
+          "exercises": [
+            {
+              "exercise_id": "group-1f9619c8",
+              "name": "Exercise Name",
+              "alternates": [],
+              "sets": "3",
+              "reps": "8-12",
+              "rest": "60s",
+              "default_weight": null,
+              "default_weight_unit": "lbs"
+            }
+          ]
+        }
+      ],
+      "template_notes": [],
+      "is_template": true,
+      "tags": [],
+      "created_date": "2026-02-21 20:50:44.499510",
+      "modified_date": "2026-02-21 20:50:44.499515",
       "is_favorite": false,
       "favorited_at": null
     }

@@ -1,6 +1,6 @@
 /**
  * Ghost Gym - Workout Exercise Operations Manager
- * Manages exercise operations: skip, edit, complete, bonus exercises
+ * Manages exercise operations: skip, edit, complete, replace
  * @version 1.0.0
  * @date 2026-01-05
  * Phase 7: Exercise Operations Management
@@ -401,14 +401,6 @@ class WorkoutExerciseOperationsManager {
     }
     
     /**
-     * Handle bonus exercises button click
-     * Now works BEFORE and DURING workout session
-     */
-    async handleBonusExercises() {
-        await this.showAddExerciseForm();
-    }
-    
-    /**
      * Show add exercise form (two-offcanvas approach)
      * Opens the Add Exercise form with search button integration
      * @param {number|null} insertAtIndex - Optional index to insert exercise at (for replace functionality)
@@ -431,9 +423,9 @@ class WorkoutExerciseOperationsManager {
                 async (groupData) => {
                     const newExerciseName = groupData.exercises.a;
                     const isSessionActive = this.sessionService.isSessionActive();
-                    
-                    // Handle adding exercise with weight data at specified position
-                    this.sessionService.addBonusExercise({
+
+                    // Add exercise as a new group to the workout template
+                    this._addExerciseGroupToWorkout({
                         name: newExerciseName,
                         sets: groupData.sets || '3',
                         reps: groupData.reps || '12',
@@ -441,13 +433,12 @@ class WorkoutExerciseOperationsManager {
                         weight: groupData.default_weight || '',
                         weight_unit: groupData.default_weight_unit || 'lbs'
                     }, insertAtIndex);
-                    
-                    // 🔧 FIX: For pre-workout mode with insertAtIndex, update the exercise order
-                    // This ensures the new exercise appears at the correct position in the list
+
+                    // For pre-workout mode with insertAtIndex, update the exercise order
                     if (!isSessionActive && insertAtIndex !== null) {
                         this._updatePreSessionOrderForReplace(newExerciseName, insertAtIndex);
                     }
-                    
+
                     this.onRenderWorkout();
 
                     // Scroll to newly added exercise after render
@@ -486,6 +477,42 @@ class WorkoutExerciseOperationsManager {
     }
     
     /**
+     * Add a new exercise group to the workout template
+     * @param {Object} exerciseData - Exercise data (name, sets, reps, rest, weight, weight_unit)
+     * @param {number|null} insertAtIndex - Optional index to insert at (null = append)
+     * @private
+     */
+    _addExerciseGroupToWorkout(exerciseData, insertAtIndex = null) {
+        const workout = this.onGetCurrentWorkout();
+        if (!workout) {
+            console.error('❌ Cannot add exercise: no current workout');
+            return;
+        }
+
+        if (!workout.exercise_groups) {
+            workout.exercise_groups = [];
+        }
+
+        const newGroup = {
+            group_id: `added-${Date.now()}`,
+            exercises: { a: exerciseData.name },
+            sets: exerciseData.sets,
+            reps: exerciseData.reps,
+            rest: exerciseData.rest,
+            default_weight: exerciseData.weight,
+            default_weight_unit: exerciseData.weight_unit
+        };
+
+        if (insertAtIndex !== null && insertAtIndex >= 0 && insertAtIndex < workout.exercise_groups.length) {
+            workout.exercise_groups.splice(insertAtIndex, 0, newGroup);
+        } else {
+            workout.exercise_groups.push(newGroup);
+        }
+
+        console.log(`✅ Added exercise "${exerciseData.name}" to workout (index: ${insertAtIndex ?? 'end'})`);
+    }
+
+    /**
      * Update pre-session exercise order for replacement
      * Builds the complete exercise list and inserts the new exercise at the correct position
      * @param {string} newExerciseName - Name of the new exercise to insert
@@ -506,7 +533,7 @@ class WorkoutExerciseOperationsManager {
         // Build new order with the replacement at the correct position
         const newOrder = [...allExerciseNames];
         
-        // Remove the new exercise if it's already in the list (it was just added to bonuses)
+        // Remove the new exercise if it's already in the list (it was just added)
         const existingIndex = newOrder.indexOf(newExerciseName);
         if (existingIndex !== -1) {
             newOrder.splice(existingIndex, 1);
@@ -549,15 +576,6 @@ class WorkoutExerciseOperationsManager {
             const modalManager = this.getModalManager();
             modalManager.alert('Error', 'Failed to load exercise search. Please try again.', 'danger');
         }
-    }
-    
-    /**
-     * Show bonus exercise modal (DEPRECATED - kept for backward compatibility)
-     * Use showAddExerciseForm() instead
-     */
-    async showBonusExerciseModal() {
-        console.warn('⚠️ showBonusExerciseModal() is deprecated, use showAddExerciseForm() instead');
-        await this.showAddExerciseForm();
     }
     
     /**

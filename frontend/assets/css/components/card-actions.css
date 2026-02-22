@@ -86,8 +86,7 @@
    ============================================ */
 
 /* Exercise group card - specific icon size */
-.exercise-group-card.compact .btn-edit-compact i,
-.bonus-exercise-card.compact .btn-edit-compact i {
+.exercise-group-card.compact .btn-edit-compact i {
     font-size: 20px;
 }
 
@@ -96,9 +95,6 @@
     padding-right: 56px;
 }
 
-.bonus-exercise-card.compact .exercise-content {
-    padding-right: 48px;
-}
 
 /* ============================================
    3-DOT MENU BUTTON
@@ -189,8 +185,7 @@
         font-size: 20px;
     }
 
-    .exercise-group-card.compact .exercise-content,
-    .bonus-exercise-card.compact .exercise-content {
+    .exercise-group-card.compact .exercise-content {
         padding-right: 64px;
     }
 }

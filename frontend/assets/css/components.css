@@ -12,7 +12,6 @@
  * across ghost-gym-custom.css, workout-mode.css, workout-builder.css, etc.
  *
  * UPDATE (v1.2.0):
- * Added bonus-exercise-offcanvas.css for enhanced add exercise modal
  *
  * UPDATE (v1.3.0):
  * Added design-system.css as the first import for unified design tokens
@@ -44,7 +43,6 @@
 @import url('components/badges.css');
 @import url('components/sticky-footer.css');
 @import url('components/feedback-button.css');
-@import url('components/bonus-exercise-offcanvas.css');
 
 /* ============================================
    SHARED CONSOLIDATED STYLES (Phase 1)

@@ -127,7 +127,7 @@
      * Used in: All pages with workout management
      */
     registry.register('workoutModal', {
-        dependencies: ['saveWorkout', 'addExerciseGroup', 'addBonusExercise'],
+        dependencies: ['saveWorkout', 'addExerciseGroup'],
         dataRequirements: [],
         
         initFunction: async (options) => {
@@ -170,7 +170,6 @@
         
         eventHandlers: [
             { elementId: 'saveWorkoutBtn', event: 'click', functionName: 'saveWorkout' },
-            { elementId: 'addBonusExerciseBtn', event: 'click', functionName: 'addBonusExercise' },
             { elementId: 'saveCustomExerciseBtn', event: 'click', functionName: 'saveCustomExercise' }
         ],
         

@@ -147,24 +147,6 @@ class DocumentServiceV2:
             clean_key = key.replace('{{ ', '').replace(' }}', '').replace('-', '_')
             template_vars[clean_key] = value
         
-        # Add bonus exercise variables
-        for key, value in workout_data.bonus_exercises.items():
-            clean_key = key.replace('{{ ', '').replace(' }}', '').replace('-', '_')
-            template_vars[clean_key] = value
-            
-        # Add bonus sets, reps, and rest variables
-        for key, value in workout_data.bonus_sets.items():
-            clean_key = key.replace('{{ ', '').replace(' }}', '').replace('-', '_')
-            template_vars[clean_key] = value
-            
-        for key, value in workout_data.bonus_reps.items():
-            clean_key = key.replace('{{ ', '').replace(' }}', '').replace('-', '_')
-            template_vars[clean_key] = value
-            
-        for key, value in workout_data.bonus_rest.items():
-            clean_key = key.replace('{{ ', '').replace(' }}', '').replace('-', '_')
-            template_vars[clean_key] = value
-        
         # Ensure all variables have values (empty string if not provided)
         # This prevents template errors for missing variables
         default_vars = {
@@ -177,9 +159,6 @@ class DocumentServiceV2:
             'sets_1': '', 'sets_2': '', 'sets_3': '', 'sets_4': '', 'sets_5': '', 'sets_6': '',
             'reps_1': '', 'reps_2': '', 'reps_3': '', 'reps_4': '', 'reps_5': '', 'reps_6': '',
             'rest_1': '', 'rest_2': '', 'rest_3': '', 'rest_4': '', 'rest_5': '', 'rest_6': '',
-            'exercise_bonus_1': '', 'exercise_bonus_2': '',
-            'sets_bonus_1': '', 'reps_bonus_1': '', 'rest_bonus_1': '',
-            'reps_bonus_2': '', 'rest_bonus_2': ''
         }
         
         # Merge defaults with actual values (actual values take precedence)
@@ -402,7 +381,6 @@ class DocumentServiceV2:
                 'workout_description': workout.description,
                 'workout_date': program_workout.custom_date if program_workout and program_workout.custom_date else '',
                 'exercise_groups': [],
-                'bonus_exercises': workout.bonus_exercises
             }
             
             # Process exercise groups
@@ -466,19 +444,6 @@ class DocumentServiceV2:
             reps[f"reps-{group_num}"] = group.reps
             rest[f"rest-{group_num}"] = group.rest
         
-        # Process bonus exercises
-        bonus_exercises = {}
-        bonus_sets = {}
-        bonus_reps = {}
-        bonus_rest = {}
-        
-        for i, bonus in enumerate(workout.bonus_exercises):
-            bonus_num = i + 1
-            bonus_exercises[f"exercise-bonus-{bonus_num}"] = bonus.name
-            bonus_sets[f"sets-bonus-{bonus_num}"] = bonus.sets
-            bonus_reps[f"reps-bonus-{bonus_num}"] = bonus.reps
-            bonus_rest[f"rest_bonus-{bonus_num}"] = bonus.rest
-        
         # Use custom name/date if provided
         workout_name = program_workout.custom_name if program_workout and program_workout.custom_name else workout.name
         workout_date = program_workout.custom_date if program_workout and program_workout.custom_date else datetime.now().strftime("%Y-%m-%d")
@@ -491,8 +456,4 @@ class DocumentServiceV2:
             sets=sets,
             reps=reps,
             rest=rest,
-            bonus_exercises=bonus_exercises,
-            bonus_sets=bonus_sets,
-            bonus_reps=bonus_reps,
-            bonus_rest=bonus_rest
         )

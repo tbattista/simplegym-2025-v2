@@ -265,31 +265,6 @@
 }
 
 /* ============================================
-   BONUS EXERCISE STYLING
-   ============================================ */
-
-.bonus-exercise {
-    background: rgba(var(--gs-success-rgb), 0.04);
-    border: 1px solid rgba(var(--gs-success-rgb), 0.2);
-    border-radius: 8px;
-    padding: 1rem;
-    margin-bottom: 1rem;
-}
-
-.bonus-exercise-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1rem;
-}
-
-.bonus-exercise-title {
-    color: var(--gs-success);
-    font-weight: 600;
-    margin: 0;
-}
-
-/* ============================================
    ALERT STYLING
    ============================================ */
 

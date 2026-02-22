@@ -148,17 +148,6 @@ class ImportService:
 
         data["exercise_groups"] = groups
 
-        # Normalize bonus exercises
-        bonus = data.get("bonus_exercises", [])
-        for b in bonus:
-            if "exercise_id" not in b:
-                b["exercise_id"] = f"bonus-{uuid4().hex[:8]}"
-            b["name"] = str(b.get("name", "")).strip()[:100]
-            b["sets"] = str(b.get("sets", "2")).strip()
-            b["reps"] = str(b.get("reps", "15")).strip()
-            b["rest"] = self._normalize_rest(str(b.get("rest", "30s")))
-        data["bonus_exercises"] = bonus
-
         # Normalize tags
         tags = data.get("tags", [])
         if isinstance(tags, list):

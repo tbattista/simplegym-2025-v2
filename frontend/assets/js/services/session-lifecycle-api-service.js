@@ -130,7 +130,6 @@ class SessionLifecycleApiService {
                         previous_weight: null,
                         weight_change: 0,
                         order_index: index,
-                        is_bonus: false,
                         is_modified: false,
                         is_skipped: false,
                         notes: '',
@@ -139,33 +138,6 @@ class SessionLifecycleApiService {
                         original_reps: templateReps
                     };
                 }
-            });
-        }
-
-        if (workout.bonus_exercises) {
-            const baseIndex = workout.exercise_groups?.length || 0;
-            workout.bonus_exercises.forEach((bonus, index) => {
-                const templateWeight = bonus.default_weight || null;
-                const templateSets = bonus.sets || '3';
-                const templateReps = bonus.reps || '12';
-
-                exercises[bonus.name] = {
-                    weight: templateWeight,
-                    weight_unit: bonus.default_weight_unit || 'lbs',
-                    target_sets: templateSets,
-                    target_reps: templateReps,
-                    rest: bonus.rest || '30s',
-                    previous_weight: null,
-                    weight_change: 0,
-                    order_index: baseIndex + index,
-                    is_bonus: true,
-                    is_modified: false,
-                    is_skipped: false,
-                    notes: '',
-                    original_weight: templateWeight,
-                    original_sets: templateSets,
-                    original_reps: templateReps
-                };
             });
         }
 

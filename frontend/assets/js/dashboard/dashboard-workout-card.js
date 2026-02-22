@@ -169,9 +169,6 @@ class DashboardWorkoutCard {
       });
     }
     
-    // Add bonus exercises
-    count += (workoutData.bonus_exercises || []).length;
-    
     return count || 0;
   }
   

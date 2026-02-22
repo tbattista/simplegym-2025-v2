@@ -2,7 +2,7 @@
 Plain Text Parser - Parses workout text in various common formats.
 
 Supported formats:
-1. FFN export format: Title with ===, numbered exercises, sets x reps | rest, BONUS:, #tags
+1. FFN export format: Title with ===, numbered exercises, sets x reps | rest, #tags
 2. Compact notation: Bench Press 3x10, Squats 4x8-12
 3. Numbered lists: 1. Bench Press - 3 sets x 8 reps
 4. Superset notation: A1) Bench Press 3x10 / A2) Row 3x10
@@ -80,16 +80,12 @@ class PlainTextParser(BaseParser):
             2. Overhead Press
                3 sets x 8-12 reps | 90s rest
 
-            BONUS:
-            - Face Pulls: 2x15
-
             #push #chest
         """
         warnings = []
         name = None
         description = None
         exercise_groups = []
-        bonus_exercises = []
         tags = []
         confidence = 0.0
 
@@ -116,8 +112,8 @@ class PlainTextParser(BaseParser):
         while i < len(lines) and not lines[i].strip():
             i += 1
 
-        # Check for description (non-numbered, non-BONUS line before exercises)
-        if i < len(lines) and not re.match(r"^\d+\.", lines[i].strip()) and not lines[i].strip().upper().startswith("BONUS"):
+        # Check for description (non-numbered line before exercises)
+        if i < len(lines) and not re.match(r"^\d+\.", lines[i].strip()):
             # Could be a description if the NEXT line is a numbered exercise
             peek = i + 1
             while peek < len(lines) and not lines[peek].strip():
@@ -130,11 +126,6 @@ class PlainTextParser(BaseParser):
         current_group = None
         while i < len(lines):
             line = lines[i].strip()
-
-            # Stop at BONUS section
-            if line.upper().startswith("BONUS"):
-                i += 1
-                break
 
             # Stop at tags
             if line.startswith("#"):
@@ -206,30 +197,6 @@ class PlainTextParser(BaseParser):
 
         # Expand superset groups into separate block_id-linked groups
         exercise_groups = self._expand_all_groups(exercise_groups)
-
-        # Parse BONUS section
-        while i < len(lines):
-            line = lines[i].strip()
-            if line.startswith("#"):
-                break
-            if line.lower().startswith("fitnessfieldnotes") or line.lower().startswith("fitness field notes"):
-                i += 1
-                continue
-            if not line:
-                i += 1
-                continue
-
-            bonus_match = re.match(r"^[-*]\s*(.+?):\s*(\d+)\s*x\s*(\S+)$", line)
-            if bonus_match:
-                bonus_exercises.append({
-                    "name": bonus_match.group(1).strip(),
-                    "sets": bonus_match.group(2),
-                    "reps": bonus_match.group(3),
-                    "rest": "30s",
-                })
-                confidence += 0.05
-            i += 1
-
         # Parse tags
         for j in range(i, len(lines)):
             line = lines[j].strip()
@@ -249,7 +216,6 @@ class PlainTextParser(BaseParser):
             "name": name or "Imported Workout",
             "description": description or "",
             "exercise_groups": exercise_groups,
-            "bonus_exercises": bonus_exercises,
             "tags": tags[:10],
         }
 
@@ -289,8 +255,8 @@ class PlainTextParser(BaseParser):
                 start_idx += 1
 
         for line in non_empty_lines[start_idx:]:
-            # Skip tag lines, bonus headers, footers
-            if line.startswith("#") or line.upper().startswith("BONUS") or "fitnessfieldnotes" in line.lower():
+            # Skip tag lines, footers
+            if line.startswith("#") or "fitnessfieldnotes" in line.lower():
                 continue
 
             # Match: "Exercise Name 3x10" or "Exercise Name 3x8-12" or "Exercise Name 3x10 60s"
@@ -340,7 +306,6 @@ class PlainTextParser(BaseParser):
             "name": name or "Imported Workout",
             "description": "",
             "exercise_groups": exercise_groups,
-            "bonus_exercises": [],
             "tags": [],
         }
 
@@ -453,7 +418,6 @@ class PlainTextParser(BaseParser):
             "name": name or "Imported Workout",
             "description": "",
             "exercise_groups": exercise_groups,
-            "bonus_exercises": [],
             "tags": [],
         }
 
@@ -525,7 +489,6 @@ class PlainTextParser(BaseParser):
             "name": name or "Imported Workout",
             "description": "",
             "exercise_groups": exercise_groups,
-            "bonus_exercises": [],
             "tags": [],
         }
 

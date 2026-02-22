@@ -135,7 +135,6 @@ Most pages load CSS in this order:
 @import url('components/badges.css');
 @import url('components/sticky-footer.css');
 @import url('components/feedback-button.css');
-@import url('components/bonus-exercise-offcanvas.css');
 
 /* Shared Consolidated Styles */
 @import url('components/buttons.css');
@@ -345,7 +344,6 @@ This file imports partials from the `workout-database/` folder:
 |-----------|------|
 | Unified offcanvas base | `components/unified-offcanvas.css` |
 | Exercise editor offcanvas | `components/offcanvas-editor.css` |
-| Bonus exercise offcanvas | `components/bonus-exercise-offcanvas.css` |
 | Modal enhancements | `ghost-gym-custom.css` (line ~205) |
 
 ### Navigation
@@ -673,7 +671,6 @@ Lines: 375-500 (.floating-timer-*)
 | `edit-mode.css` | Edit mode states |
 | `sticky-footer.css` | Sticky footer pattern |
 | `feedback-button.css` | Feedback button |
-| `bonus-exercise-offcanvas.css` | Add exercise modal |
 | `data-table.css` | Data table styling |
 | `filter-bar.css` | Filter bar component |
 

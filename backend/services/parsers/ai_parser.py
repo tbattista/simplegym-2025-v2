@@ -47,12 +47,11 @@ RULES:
 8. If sets, reps, or rest are not specified for an exercise, use these defaults: sets="3", reps="8-12", rest="60s".
 9. For rest periods, normalize to the format: number + unit. Examples: "60s", "90s", "2min". If just a number is given, assume seconds.
 10. If the content mentions a workout name or title, use it. Otherwise, infer a reasonable name from the exercises (e.g., "Upper Body Workout", "Leg Day").
-11. Detect exercises labeled as warm-up, cooldown, finisher, or bonus and place them in the bonus_exercises array.
 12. For weight values, extract the number and unit. If unit is ambiguous, default to "lbs".
 13. Tags should be inferred from the workout content. Common tags: push, pull, legs, upper, lower, full-body, chest, back, shoulders, arms, core, hiit, strength, hypertrophy, cardio.
 14. Description should summarize the workout purpose if evident, otherwise leave empty.
 15. If the content contains no recognizable exercises, return an empty exercise_groups array and set name to "Imported Workout".
-16. Maximum 20 exercise groups. Maximum 10 bonus exercises. Maximum 10 tags.
+16. Maximum 20 exercise groups. Maximum 10 tags.
 17. Exercise names should be concise and recognizable (e.g., "Barbell Bench Press" not "Flat Barbell Bench Press on a Flat Bench").
 18. For reps, preserve the original format: "8-12", "10", "AMRAP", "30s" (for timed exercises), "to failure", etc.
 
@@ -71,9 +70,6 @@ OUTPUT SCHEMA (respond with ONLY this JSON, no other text):
       "block_id": "string or null (e.g. 'block-1', null for standalone exercises)",
       "group_name": "string or null (e.g. 'Superset 1', null for standalone exercises)"
     }
-  ],
-  "bonus_exercises": [
-    {"name": "Exercise Name", "sets": "string", "reps": "string", "rest": "string"}
   ],
   "tags": ["string array, max 10 items"]
 }"""
@@ -173,7 +169,7 @@ class AIParser:
             workout_data = json.loads(response_text)
 
             # Validate minimum structure
-            if not workout_data.get("exercise_groups") and not workout_data.get("bonus_exercises"):
+            if not workout_data.get("exercise_groups"):
                 return ParseResult(
                     success=False,
                     errors=["AI could not identify any exercises in the content"],

@@ -76,18 +76,6 @@ class WorkoutSessionNotesManager {
             });
         }
 
-        // Add bonus exercises
-        const bonusExercises = this.sessionService.getBonusExercises();
-        if (bonusExercises?.length > 0) {
-            bonusExercises.forEach((bonus) => {
-                items.push({
-                    name: bonus.name,
-                    displayName: bonus.name,
-                    type: 'exercise'
-                });
-            });
-        }
-
         // Add session notes
         const sessionNotes = this.sessionService.getSessionNotes();
         if (sessionNotes?.length > 0) {

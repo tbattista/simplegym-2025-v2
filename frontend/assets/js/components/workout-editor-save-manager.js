@@ -109,7 +109,6 @@ async function saveWorkoutFromEditor(silent = false) {
         tags: document.getElementById('workoutTags').value
             .split(',').map(t => t.trim()).filter(t => t),
         exercise_groups: collectExerciseGroups(),
-        bonus_exercises: collectBonusExercises(),
         template_notes: templateNotes
     };
 
@@ -120,8 +119,7 @@ async function saveWorkoutFromEditor(silent = false) {
 
     console.log('📊 SAVE DEBUG: Collected workout data:', {
         name: workoutData.name,
-        exerciseGroupCount: workoutData.exercise_groups.length,
-        bonusExerciseCount: workoutData.bonus_exercises.length
+        exerciseGroupCount: workoutData.exercise_groups.length
     });
     console.log('📊 SAVE DEBUG: Exercise groups:', workoutData.exercise_groups);
 

@@ -153,7 +153,6 @@ class CSVParser(BaseParser):
             "name": "Imported Workout",
             "description": "",
             "exercise_groups": exercise_groups,
-            "bonus_exercises": [],
             "tags": [],
         }
 

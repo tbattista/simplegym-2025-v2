@@ -441,12 +441,6 @@ class WorkoutListComponent {
             });
         }
         
-        if (workout.bonus_exercises) {
-            workout.bonus_exercises.forEach(bonus => {
-                if (bonus.name) exercises.push(bonus.name);
-            });
-        }
-        
         return exercises;
     }
     
@@ -461,8 +455,6 @@ class WorkoutListComponent {
                 count += Object.keys(group.exercises || {}).length;
             });
         }
-        
-        count += (workout.bonus_exercises || []).length;
         
         return count;
     }

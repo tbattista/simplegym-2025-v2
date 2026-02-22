@@ -21,7 +21,6 @@ class WorkoutDataManager {
     
     /**
      * Find exercise group by exercise name
-     * Searches both regular and bonus exercises
      * @param {string} exerciseName - Exercise name to find
      * @param {Object} workout - Current workout object
      * @returns {Object|null} Exercise group or null if not found
@@ -31,22 +30,6 @@ class WorkoutDataManager {
         if (workout?.exercise_groups) {
             const group = workout.exercise_groups.find(g => g.exercises?.a === exerciseName);
             if (group) return group;
-        }
-        
-        // Check bonus exercises
-        const bonusExercises = this.sessionService.getBonusExercises();
-        if (bonusExercises) {
-            const bonus = bonusExercises.find(b => b.name === exerciseName);
-            if (bonus) {
-                return {
-                    exercises: { a: bonus.name },
-                    sets: bonus.sets,
-                    reps: bonus.reps,
-                    rest: bonus.rest || '60s',
-                    default_weight: bonus.weight,
-                    default_weight_unit: bonus.weight_unit || 'lbs'
-                };
-            }
         }
         
         return null;
@@ -99,7 +82,7 @@ class WorkoutDataManager {
     }
     
     /**
-     * Build combined exercise list (regular + bonus)
+     * Build exercise list from workout groups
      * @param {Object} workout - Current workout object
      * @returns {Array} Combined exercise list
      */
@@ -117,19 +100,6 @@ class WorkoutDataManager {
                         name: mainExercise
                     });
                 }
-            });
-        }
-        
-        // Add bonus exercises  
-        const bonusExercises = this.sessionService.getBonusExercises();
-        if (bonusExercises && bonusExercises.length > 0) {
-            bonusExercises.forEach((bonus) => {
-                const exerciseName = bonus.name || bonus.exercise_name;
-                allExercises.push({
-                    type: 'bonus',
-                    data: bonus,
-                    name: exerciseName
-                });
             });
         }
         
@@ -171,7 +141,7 @@ class WorkoutDataManager {
     
     /**
      * Collect all exercise data for the current session
-     * Respects custom order, includes regular + bonus exercises
+     * Respects custom order from session
      * @param {Object} workout - Current workout object
      * @returns {Array} Array of exercise data objects
      */
@@ -190,7 +160,6 @@ class WorkoutDataManager {
         // Collect data in display order
         allExercises.forEach((exercise, index) => {
             const mainExercise = exercise.name;
-            const isBonus = exercise.type === 'bonus';
             const group = exercise.data;
             
             const exerciseData = this.sessionService.getExerciseWeight(mainExercise);
@@ -222,7 +191,7 @@ class WorkoutDataManager {
             exercisesPerformed.push({
                 exercise_name: mainExercise,
                 exercise_id: null,
-                group_id: isBonus ? `bonus-${index}` : (group.group_id || `group-${index}`),
+                group_id: group.group_id || `group-${index}`,
                 sets_completed: parseInt(finalSets) || 0,
                 target_sets: finalSets,
                 target_reps: finalReps,
@@ -232,7 +201,6 @@ class WorkoutDataManager {
                 previous_weight: previousWeight,
                 weight_change: weightChange,
                 order_index: orderIndex++,
-                is_bonus: isBonus,
                 is_modified: exerciseData?.is_modified || false,
                 is_skipped: exerciseData?.is_skipped || false,
                 skip_reason: exerciseData?.skip_reason || null,
@@ -244,8 +212,6 @@ class WorkoutDataManager {
         });
         
         console.log('📊 Total exercises collected:', exercisesPerformed.length);
-        console.log('   Regular:', exercisesPerformed.filter(e => !e.is_bonus).length);
-        console.log('   Bonus:', exercisesPerformed.filter(e => e.is_bonus).length);
         
         return exercisesPerformed;
     }
@@ -288,19 +254,6 @@ class WorkoutDataManager {
                         group.default_weight_unit = weightData.weight_unit;
                         updated = true;
                         console.log(`✅ Updated ${mainExercise}: ${weightData.weight} ${weightData.weight_unit}`);
-                    }
-                });
-            }
-            
-            // Update bonus exercises with new weights
-            if (workout.bonus_exercises) {
-                workout.bonus_exercises.forEach(bonus => {
-                    if (bonus.name && weightMap.has(bonus.name)) {
-                        const weightData = weightMap.get(bonus.name);
-                        bonus.default_weight = weightData.weight;
-                        bonus.default_weight_unit = weightData.weight_unit;
-                        updated = true;
-                        console.log(`✅ Updated bonus ${bonus.name}: ${weightData.weight} ${weightData.weight_unit}`);
                     }
                 });
             }
@@ -372,24 +325,6 @@ class WorkoutDataManager {
                         if (exerciseData.weightUnit !== undefined) {
                             group.default_weight_unit = exerciseData.weightUnit;
                             console.log(`  ✅ Updated weight unit: ${exerciseData.weightUnit}`);
-                        }
-                        updated = true;
-                    }
-                });
-            }
-            
-            // Also check bonus_exercises if they exist in template
-            if (workout.bonus_exercises) {
-                workout.bonus_exercises.forEach(bonus => {
-                    if (bonus.name === exerciseName) {
-                        if (exerciseData.sets !== undefined) bonus.sets = exerciseData.sets;
-                        if (exerciseData.reps !== undefined) bonus.reps = exerciseData.reps;
-                        if (exerciseData.rest !== undefined) bonus.rest = exerciseData.rest;
-                        if (exerciseData.weight !== undefined && exerciseData.weight !== '') {
-                            bonus.default_weight = exerciseData.weight;
-                        }
-                        if (exerciseData.weightUnit !== undefined) {
-                            bonus.default_weight_unit = exerciseData.weightUnit;
                         }
                         updated = true;
                     }

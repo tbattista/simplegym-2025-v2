@@ -380,13 +380,6 @@ class WorkoutCard {
             });
         }
 
-        // Add bonus exercises
-        if (workoutData.bonus_exercises) {
-            workoutData.bonus_exercises.forEach(bonus => {
-                if (bonus.name) exercises.push(bonus.name);
-            });
-        }
-
         if (exercises.length === 0) {
             return `
                 <div class="exercise-preview mb-2">
@@ -786,9 +779,6 @@ class WorkoutCard {
                 count += Object.keys(group.exercises || {}).length;
             });
         }
-        
-        // Add bonus exercises
-        count += (workoutData.bonus_exercises || []).length;
         
         return count;
     }

@@ -75,33 +75,6 @@ const FormDataCollector = {
     },
 
     /**
-     * Collect bonus exercises from card data storage
-     * @returns {Array} Array of bonus exercise objects
-     */
-    collectBonusExercises() {
-        const bonusExercises = [];
-
-        const cardElements = document.querySelectorAll('#bonusExercises .bonus-exercise-card');
-
-        cardElements.forEach(cardEl => {
-            const bonusId = cardEl.getAttribute('data-bonus-id');
-            const bonusData = window.bonusExercisesData[bonusId];
-
-            if (bonusData && bonusData.name) {
-                bonusExercises.push({
-                    name: bonusData.name,
-                    sets: bonusData.sets || '2',
-                    reps: bonusData.reps || '15',
-                    rest: bonusData.rest || '30s'
-                });
-            }
-        });
-
-        console.log('🔍 Collected', bonusExercises.length, 'bonus exercises');
-        return bonusExercises;
-    },
-
-    /**
      * Collect sections data from DOM.
      * Walks section containers and reads exercise data from window.exerciseGroupsData.
      * Returns array matching the backend WorkoutSection format.
@@ -170,7 +143,6 @@ window.FormDataCollector = FormDataCollector;
 
 // Backward-compat globals
 window.collectExerciseGroups = FormDataCollector.collectExerciseGroups;
-window.collectBonusExercises = FormDataCollector.collectBonusExercises;
 window.collectSections = FormDataCollector.collectSections.bind(FormDataCollector);
 
 console.log('📦 FormDataCollector module loaded');

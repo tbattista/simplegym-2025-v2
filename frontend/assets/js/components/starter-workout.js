@@ -39,7 +39,6 @@ window.STARTER_WORKOUT = {
             rest: '30s'
         }
     ],
-    bonus_exercises: [],
     template_notes: [],
     created_date: '2026-01-01T00:00:00Z',
     modified_date: '2026-01-01T00:00:00Z'

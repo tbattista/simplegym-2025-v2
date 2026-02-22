@@ -113,34 +113,6 @@
             width: 80pt;
             white-space: nowrap;
         }
-
-        .bonus-section {
-            margin-top: 20pt;
-        }
-
-        .bonus-list {
-            list-style: none;
-            padding: 0;
-        }
-
-        .bonus-list li {
-            padding: 6pt 0;
-            border-bottom: 1pt dotted #ddd;
-        }
-
-        .bonus-list li:last-child {
-            border-bottom: none;
-        }
-
-        .bonus-name {
-            font-weight: 500;
-        }
-
-        .bonus-detail {
-            color: #666;
-            margin-left: 8pt;
-        }
-
         .tags {
             margin-top: 20pt;
             padding-top: 12pt;
@@ -237,20 +209,6 @@
             {% endfor %}
         </tbody>
     </table>
-
-    {% if bonus_exercises %}
-    <div class="bonus-section">
-        <div class="section-title">Bonus Exercises</div>
-        <ul class="bonus-list">
-            {% for bonus in bonus_exercises %}
-            <li>
-                <span class="bonus-name">{{ bonus.name }}</span>
-                <span class="bonus-detail">{{ bonus.sets }} x {{ bonus.reps }}{% if bonus.rest %} | {{ bonus.rest }} rest{% endif %}</span>
-            </li>
-            {% endfor %}
-        </ul>
-    </div>
-    {% endif %}
 
     {% if tags %}
     <div class="tags">

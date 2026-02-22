@@ -8,7 +8,6 @@
  *   - autosave-manager.js (AutosaveManager)
  *   - card-renderer.js (CardRenderer)
  *   - exercise-group-manager.js (ExerciseGroupManager)
- *   - bonus-exercise-manager.js (BonusExerciseManager)
  *   - form-data-collector.js (FormDataCollector)
  *   - workout-editor-offcanvas.js (WorkoutEditorOffcanvas)
  */
@@ -163,10 +162,6 @@ function renderWorkouts() {
                     <i class="bx bx-list-ul"></i>
                     ${workout.exercise_groups?.length || 0} groups
                 </span>
-                <span class="workout-card-stat">
-                    <i class="bx bx-plus-circle"></i>
-                    ${workout.bonus_exercises?.length || 0} bonus
-                </span>
             </div>
             ${workout.tags && workout.tags.length > 0 ? `
                 <div class="workout-card-tags">
@@ -246,8 +241,7 @@ async function saveWorkout(silent = false) {
             name: document.getElementById('workoutName')?.value?.trim(),
             description: document.getElementById('workoutDescription')?.value?.trim(),
             tags: document.getElementById('workoutTags')?.value?.split(',').map(tag => tag.trim()).filter(tag => tag) || [],
-            exercise_groups: collectExerciseGroups(),
-            bonus_exercises: collectBonusExercises()
+            exercise_groups: collectExerciseGroups()
         };
         
         // Validate required fields
@@ -393,24 +387,6 @@ function editWorkout(id) {
         addExerciseGroup();
     }
     
-    // Clear and populate bonus exercises
-    const bonusExercisesContainer = document.getElementById('bonusExercises');
-    bonusExercisesContainer.innerHTML = '';
-    
-    if (workout.bonus_exercises && workout.bonus_exercises.length > 0) {
-        workout.bonus_exercises.forEach(bonus => {
-            addBonusExercise();
-            const lastBonus = bonusExercisesContainer.lastElementChild;
-            
-            lastBonus.querySelector('.bonus-name-input').value = bonus.name || '';
-            lastBonus.querySelector('.bonus-sets-input').value = bonus.sets || '2';
-            lastBonus.querySelector('.bonus-reps-input').value = bonus.reps || '15';
-            lastBonus.querySelector('.bonus-rest-input').value = bonus.rest || '30s';
-            
-            // Update preview after populating
-            updateBonusExercisePreview(lastBonus);
-        });
-    }
     
     // Update modal title
     document.getElementById('workoutModalTitle').textContent = 'Edit Workout';
@@ -560,7 +536,6 @@ function clearWorkoutForm() {
     if (form) {
         form.reset();
         document.getElementById('exerciseGroups').innerHTML = '';
-        document.getElementById('bonusExercises').innerHTML = '';
         addExerciseGroup();
         
         // Reset autosave state for new workout

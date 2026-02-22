@@ -391,8 +391,6 @@ class ProgramCard {
                             count += Object.keys(group.exercises || {}).length;
                         });
                     }
-                    // Add bonus exercises
-                    count += (workout.bonus_exercises || []).length;
                 }
             });
         }

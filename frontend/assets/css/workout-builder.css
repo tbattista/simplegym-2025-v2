@@ -75,28 +75,6 @@
    ============================================ */
 
 /* ============================================
-   BONUS EXERCISES
-   ============================================ */
-
-.bonus-exercise {
-    background: var(--bs-body-bg);
-    border: 1px solid var(--bs-border-color);
-    border-radius: var(--bs-border-radius);
-    margin-bottom: 1rem;
-    transition: box-shadow 0.2s;
-}
-
-.bonus-exercise:hover {
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-}
-
-.bonus-exercise .card-header {
-    background: rgba(var(--bs-secondary-rgb), 0.1);
-    border-bottom: 1px solid var(--bs-border-color);
-    padding: 0.75rem 1rem;
-}
-
-/* ============================================
    EDITOR ACTIONS - USES SHARED STICKY FOOTER
    ============================================ */
 
@@ -293,28 +271,6 @@
     color: #64748b;
 }
 
-/* Bonus Exercise Card Dark Mode */
-[data-bs-theme="dark"] .bonus-exercise {
-    background: #1e293b;
-    border-color: #475569;
-}
-
-[data-bs-theme="dark"] .bonus-exercise .card-header {
-    background: #334155;
-    border-color: #475569;
-    color: #f8fafc;
-}
-
-[data-bs-theme="dark"] .bonus-exercise .card-body {
-    background: #1e293b;
-    color: #f8fafc;
-}
-
-/* Bonus Exercise Specific */
-[data-bs-theme="dark"] .bonus-exercise .card-header {
-    background: rgba(var(--gs-success-rgb), 0.1);
-    border-color: rgba(var(--gs-success-rgb), 0.3);
-}
 
 /* Editor Actions - Sticky Footer Dark Mode */
 [data-bs-theme="dark"] .editor-actions > div {
@@ -367,8 +323,7 @@
    ============================================ */
 
 .workout-card-compact,
-.exercise-group,
-.bonus-exercise {
+.exercise-group {
     transition: box-shadow 0.2s ease, transform 0.2s ease, opacity 0.2s ease;
 }
 
@@ -512,23 +467,6 @@ button {
         font-size: 0.9rem;
     }
 
-    /* Bonus exercises */
-    .bonus-exercise {
-        margin-bottom: 0.875rem;
-    }
-
-    .bonus-exercise .card-body {
-        padding: 1rem 0.875rem;
-    }
-
-    .bonus-exercise .card-header {
-        padding: 0.75rem 0.875rem;
-        min-height: 52px;
-    }
-
-    .bonus-exercise .card-header h6 {
-        font-size: 0.95rem;
-    }
 
     /* Editor actions - Sticky Footer Mobile */
     .editor-actions {

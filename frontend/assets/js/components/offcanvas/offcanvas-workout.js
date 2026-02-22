@@ -743,7 +743,7 @@ export function createReorderOffcanvas(exercises, onSave) {
         const itemTypeAttr = isNote ? 'data-item-type="note"' : 'data-item-type="exercise"';
         const noteStyle = isNote ? 'border-left: 3px solid var(--workout-muted, #6c757d);' : '';
         const icon = isNote ? '<i class="bx bx-note-text me-1 text-muted"></i>' : '';
-        const badgeClass = isNote ? 'bg-label-info' : (item.isBonus ? 'bg-label-primary' : 'bg-label-secondary');
+        const badgeClass = isNote ? 'bg-label-info' : 'bg-label-secondary';
 
         // Block data attributes for position-based inference
         const blockAttrs = item.blockId
@@ -754,7 +754,7 @@ export function createReorderOffcanvas(exercises, onSave) {
         const blockDescSnippet = item.blockDescription
             ? `<div class="text-muted" style="font-size: 0.65rem; margin-top: 1px; opacity: 0.7;">${escapeHtml(item.blockDescription.substring(0, 60))}${item.blockDescription.length > 60 ? '...' : ''}</div>`
             : '';
-        const blockTag = !isNote && !item.isBonus
+        const blockTag = !isNote
             ? (item.blockId
                 ? `<span class="reorder-block-tag">${escapeHtml(item.blockName || 'Block')}</span>`
                 : '<span class="reorder-block-tag" style="display:none;"></span>')

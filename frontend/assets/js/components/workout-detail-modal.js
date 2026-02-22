@@ -82,11 +82,6 @@
                                         <div id="detailExerciseGroups"></div>
                                     </div>
 
-                                    <!-- Bonus Exercises -->
-                                    <div id="detailBonusContainer" class="mb-4" style="display: none;">
-                                        <h6 class="mb-3">Additional Exercises</h6>
-                                        <div id="detailBonusExercises"></div>
-                                    </div>
                                 </div>
                             </div>
                             <div class="modal-footer">
@@ -199,20 +194,11 @@
                 document.getElementById('detailSaveCountContainer').style.display = 'none';
             }
 
-            const exerciseCount = (workoutData.exercise_groups || []).length + (workoutData.bonus_exercises || []).length;
+            const exerciseCount = (workoutData.exercise_groups || []).length;
             document.getElementById('detailExerciseCount').textContent = exerciseCount;
 
             // Render exercise groups
             this.renderExerciseGroups(workoutData.exercise_groups || []);
-
-            // Render bonus exercises
-            const bonusExercises = workoutData.bonus_exercises || [];
-            if (bonusExercises.length > 0) {
-                document.getElementById('detailBonusContainer').style.display = 'block';
-                this.renderBonusExercises(bonusExercises);
-            } else {
-                document.getElementById('detailBonusContainer').style.display = 'none';
-            }
 
             // Show content
             this.showContent();
@@ -251,31 +237,6 @@
                 `;
 
                 container.appendChild(groupDiv);
-            });
-        }
-
-        renderBonusExercises(bonusExercises) {
-            const container = document.getElementById('detailBonusExercises');
-            container.innerHTML = '';
-
-            bonusExercises.forEach(exercise => {
-                const exerciseDiv = document.createElement('div');
-                exerciseDiv.className = 'card mb-2';
-
-                exerciseDiv.innerHTML = `
-                    <div class="card-body py-2">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <span>${this.escapeHtml(exercise.name)}</span>
-                            <div class="d-flex gap-3 text-muted small">
-                                <span>${this.escapeHtml(exercise.sets || '2')} sets</span>
-                                <span>${this.escapeHtml(exercise.reps || '15')} reps</span>
-                                <span>${this.escapeHtml(exercise.rest || '30s')} rest</span>
-                            </div>
-                        </div>
-                    </div>
-                `;
-
-                container.appendChild(exerciseDiv);
             });
         }
 

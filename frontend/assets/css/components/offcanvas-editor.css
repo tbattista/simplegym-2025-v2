@@ -1,6 +1,6 @@
 /**
  * Ghost Gym - Offcanvas Editor Component
- * Styling for exercise and bonus exercise edit offcanvas modals
+ * Styling for exercise edit offcanvas modal
  * Extracted from workout-builder.css v2.2.0
  *
  * @version 1.0.0
@@ -12,35 +12,30 @@
    ============================================ */
 
 /* Match workout-database offcanvas sizing */
-#exerciseGroupEditOffcanvas,
-#bonusExerciseEditOffcanvas {
+#exerciseGroupEditOffcanvas {
     height: auto !important;
     max-height: 85vh;
     min-height: 40vh;
 }
 
-#exerciseGroupEditOffcanvas .offcanvas-body,
-#bonusExerciseEditOffcanvas .offcanvas-body {
+#exerciseGroupEditOffcanvas .offcanvas-body {
     overflow-y: auto;
     max-height: calc(85vh - 140px);
     padding: 1.5rem;
 }
 
-#exerciseGroupEditOffcanvas .offcanvas-header,
-#bonusExerciseEditOffcanvas .offcanvas-header {
+#exerciseGroupEditOffcanvas .offcanvas-header {
     flex-shrink: 0;
     padding: 1rem 1.5rem;
 }
 
-#exerciseGroupEditOffcanvas .offcanvas-footer,
-#bonusExerciseEditOffcanvas .offcanvas-footer {
+#exerciseGroupEditOffcanvas .offcanvas-footer {
     flex-shrink: 0;
     background: var(--bs-body-bg);
 }
 
 /* Smooth transition for offcanvas */
-#exerciseGroupEditOffcanvas.offcanvas-bottom,
-#bonusExerciseEditOffcanvas.offcanvas-bottom {
+#exerciseGroupEditOffcanvas.offcanvas-bottom {
     transition: transform 0.3s ease-in-out;
 }
 
@@ -135,8 +130,7 @@
 
 @media (max-width: 768px) {
     /* Offcanvas adjustments */
-    #exerciseGroupEditOffcanvas,
-    #bonusExerciseEditOffcanvas {
+    #exerciseGroupEditOffcanvas {
         max-height: 90vh;
     }
 
