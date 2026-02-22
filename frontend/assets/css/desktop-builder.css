@@ -243,6 +243,38 @@
   color: var(--bs-secondary-color);
 }
 
+/* ---- Sidebar Drag-and-Drop ---- */
+.sidebar-exercise-card {
+  cursor: grab;
+}
+
+.sidebar-exercise-card:active {
+  cursor: grabbing;
+}
+
+.sidebar-drag-ghost {
+  opacity: 0.3;
+}
+
+.sidebar-drag-chosen {
+  opacity: 0.8;
+}
+
+.sidebar-drag-active {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  background: var(--bs-card-bg, #fff);
+  border-radius: var(--bs-border-radius);
+  z-index: 100;
+}
+
+/* Editor drop zone highlight when dragging from sidebar */
+.desktop-exercise-groups.sidebar-drop-target {
+  outline: 2px dashed var(--bs-primary);
+  outline-offset: -2px;
+  background: rgba(var(--bs-primary-rgb), 0.02);
+  min-height: 120px;
+}
+
 /* ============================================
    EXERCISE GROUPS (DESKTOP TABLE-ROW LAYOUT)
    ============================================ */

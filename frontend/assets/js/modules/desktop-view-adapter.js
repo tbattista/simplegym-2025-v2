@@ -139,6 +139,7 @@
         if (container.sortableInstance) return; // Prevent duplicate
 
         container.sortableInstance = new Sortable(container, {
+            group: { name: 'workout-exercises', pull: true, put: true },
             animation: 150,
             handle: '.drag-handle',
             ghostClass: 'sortable-ghost',
@@ -147,6 +148,44 @@
             filter: '.template-note-card, .desktop-exercise-header, .block-group-header',
             onStart: function() {
                 container.classList.add('is-dragging');
+            },
+            onAdd: function(evt) {
+                // A sidebar exercise card was dropped into the editor
+                const droppedEl = evt.item;
+                const exerciseName = droppedEl.dataset.exerciseName;
+                if (!exerciseName) {
+                    droppedEl.remove();
+                    return;
+                }
+
+                // Create a proper exercise group
+                const groupId = 'group-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+                const groupData = {
+                    exercises: { a: exerciseName, b: '', c: '' },
+                    sets: '3',
+                    reps: '8-12',
+                    rest: '60s',
+                    default_weight: '',
+                    default_weight_unit: 'lbs'
+                };
+                window.exerciseGroupsData[groupId] = groupData;
+
+                const existingCards = container.querySelectorAll('.exercise-group-card');
+                var index = existingCards.length;
+                var cardHtml = window.createExerciseGroupCard(groupId, groupData, index + 1, index, index + 1);
+
+                // Replace the sidebar card clone with the proper exercise row
+                var temp = document.createElement('div');
+                temp.innerHTML = cardHtml;
+                var newRow = temp.firstElementChild;
+                droppedEl.replaceWith(newRow);
+
+                if (window.markEditorDirty) window.markEditorDirty();
+                if (window.updateMuscleSummary) window.updateMuscleSummary();
+                if (window.showToast) {
+                    window.showToast({ message: 'Added "' + exerciseName + '" to workout', type: 'success', delay: 2000 });
+                }
+                console.log('✅ Dropped exercise from sidebar:', exerciseName);
             },
             onEnd: function(evt) {
                 container.classList.remove('is-dragging');

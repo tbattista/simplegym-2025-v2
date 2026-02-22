@@ -62,7 +62,10 @@ class DesktopSidebar {
 
         // Ensure ffn.exercises structures exist for favorites
         if (!window.ffn) window.ffn = {};
-        if (!window.ffn.exercises) window.ffn.exercises = { all: [], favorites: new Set(), custom: [] };
+        if (!window.ffn.exercises) window.ffn.exercises = {};
+        if (!window.ffn.exercises.all) window.ffn.exercises.all = [];
+        if (!window.ffn.exercises.favorites) window.ffn.exercises.favorites = new Set();
+        if (!window.ffn.exercises.custom) window.ffn.exercises.custom = [];
         // Copy loaded exercises into ffn.exercises.all if empty (for showExerciseDetails)
         if (window.ffn.exercises.all.length === 0 && this.searchCore.state.allExercises.length > 0) {
             window.ffn.exercises.all = this.searchCore.state.allExercises;
@@ -73,6 +76,9 @@ class DesktopSidebar {
 
         // Setup click delegation on exercise list
         this.setupListClickHandler();
+
+        // Setup drag-and-drop from sidebar to editor
+        this.initSidebarDrag();
 
         this.initialized = true;
         console.log('✅ Desktop sidebar initialized with', this.searchCore.state.allExercises.length, 'exercises');
@@ -408,6 +414,34 @@ class DesktopSidebar {
                 window.initializePopovers();
             }
         }, 50);
+    }
+
+    /**
+     * Initialize SortableJS on the sidebar list for drag-to-editor
+     */
+    initSidebarDrag() {
+        if (!this.listEl || !window.Sortable) return;
+
+        this.sidebarSortable = new Sortable(this.listEl, {
+            group: { name: 'workout-exercises', pull: 'clone', put: false },
+            sort: false,
+            draggable: '.sidebar-exercise-card',
+            ghostClass: 'sidebar-drag-ghost',
+            chosenClass: 'sidebar-drag-chosen',
+            dragClass: 'sidebar-drag-active',
+            animation: 150,
+            onStart: () => {
+                // Highlight the editor drop zone
+                const editor = document.getElementById('exerciseGroups');
+                if (editor) editor.classList.add('sidebar-drop-target');
+            },
+            onEnd: () => {
+                const editor = document.getElementById('exerciseGroups');
+                if (editor) editor.classList.remove('sidebar-drop-target');
+            }
+        });
+
+        console.log('✅ Sidebar drag-and-drop initialized');
     }
 
     /**
