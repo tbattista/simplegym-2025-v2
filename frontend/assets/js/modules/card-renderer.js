@@ -37,6 +37,11 @@ class CardRenderer {
         // Store data
         this.exerciseGroupsData[groupId] = data;
 
+        // Note type → render a simple note card
+        if (data.group_type === 'note') {
+            return this._createNoteCard(groupId, data, index, totalCards);
+        }
+
         // Build exercise list (main, alt, alt2)
         const exercises = [];
         if (data.exercises.a) exercises.push(data.exercises.a);
@@ -138,7 +143,72 @@ class CardRenderer {
             </div>
         `;
     }
-    
+
+    /**
+     * Create a mobile note card (used when desktop adapter is not active)
+     */
+    _createNoteCard(groupId, data, index, totalCards) {
+        const content = data.note_content || '';
+        const preview = content
+            ? this.escapeHtml(content.length > 80 ? content.substring(0, 80) + '...' : content)
+            : '<span class="text-muted">Tap edit to add note content</span>';
+
+        const isFirst = index === 0;
+        const isLast = index >= totalCards - 1;
+        const moveUpDisabled = isFirst ? 'disabled' : '';
+        const moveDownDisabled = isLast ? 'disabled' : '';
+
+        return `
+            <div class="exercise-group-card compact" data-group-id="${groupId}" data-card-type="note" data-index="${index}">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="exercise-content">
+                            <div class="exercise-list">
+                                <div class="exercise-line">
+                                    <i class="bx bx-comment text-muted me-1"></i>${preview}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-actions">
+                            <button type="button" class="btn btn-sm btn-edit-compact"
+                                    onclick="event.preventDefault(); event.stopPropagation(); if(window.openNoteEditor) window.openNoteEditor('${groupId}'); else if(window.handleEditTemplateNote) window.handleEditTemplateNote('${groupId}');"
+                                    title="Edit note">
+                                <i class="bx bx-pencil"></i>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-menu-compact"
+                                    onclick="event.preventDefault(); event.stopPropagation(); window.builderCardMenu?.toggleMenu(this, '${groupId}', ${index});"
+                                    title="More options">
+                                <i class="bx bx-dots-vertical"></i>
+                            </button>
+                            <div class="builder-card-menu" onclick="event.stopPropagation();">
+                                <button class="builder-menu-item ${moveUpDisabled}"
+                                        onclick="window.builderCardMenu?.handleMoveUp('${groupId}', ${index});"
+                                        ${moveUpDisabled}>
+                                    <i class="bx bx-chevron-up"></i>
+                                    Move up
+                                </button>
+                                <button class="builder-menu-item ${moveDownDisabled}"
+                                        onclick="window.builderCardMenu?.handleMoveDown('${groupId}', ${index});"
+                                        ${moveDownDisabled}>
+                                    <i class="bx bx-chevron-down"></i>
+                                    Move down
+                                </button>
+                                <div class="builder-menu-divider"></div>
+                                <button class="builder-menu-item danger"
+                                        onclick="window.builderCardMenu?.handleDelete('${groupId}');">
+                                    <i class="bx bx-trash"></i>
+                                    Delete
+                                </button>
+                                <div class="builder-menu-divider section-menu-divider" style="display:none;"></div>
+                                <div class="section-menu-items" data-group-id="${groupId}"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
     /**
      * Update exercise group card preview
      * @param {string} groupId - Group ID
