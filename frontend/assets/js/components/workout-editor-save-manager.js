@@ -6,48 +6,10 @@
  */
 
 /**
- * Convert sections data back to exercise_groups format.
- * Ensures exercise_groups always has complete, block-aware data for
- * consumers that read only exercise_groups (library cards, detail offcanvas, etc.).
- * @param {Array} sections - Array of WorkoutSection objects from collectSections()
- * @returns {Array} Array of ExerciseGroup objects with block_id linking for named sections
+ * sectionsToExerciseGroups is now provided by exercise-data-utils.js
+ * via window.sectionsToExerciseGroups = ExerciseDataUtils.sectionsToExerciseGroups
+ * The save pipeline at line ~169 calls it via the window global.
  */
-function sectionsToExerciseGroups(sections) {
-    const groups = [];
-
-    sections.forEach(section => {
-        const isNamed = section.type !== 'standard';
-        const blockId = isNamed ? section.section_id : null;
-
-        section.exercises.forEach(exercise => {
-            const exercises = {};
-            if (exercise.name) exercises.a = exercise.name;
-            (exercise.alternates || []).forEach((alt, i) => {
-                if (alt) exercises[String.fromCharCode(98 + i)] = alt; // b, c, d, ...
-            });
-
-            const group = {
-                group_id: exercise.exercise_id,
-                group_type: isNamed ? 'block' : 'standard',
-                exercises: exercises,
-                sets: exercise.sets || '3',
-                reps: exercise.reps || '8-12',
-                rest: exercise.rest || '60s',
-                default_weight: exercise.default_weight || null,
-                default_weight_unit: exercise.default_weight_unit || 'lbs'
-            };
-
-            if (blockId) {
-                group.block_id = blockId;
-                group.group_name = section.name || null;
-            }
-
-            groups.push(group);
-        });
-    });
-
-    return groups;
-}
 
 /**
  * Auto-create custom exercises for any unknown exercise names in groups
@@ -166,7 +128,13 @@ async function saveWorkoutFromEditor(silent = false) {
         workoutData.sections = window.SectionManager.collectSections();
         // Regenerate exercise_groups from sections to ensure block structure is preserved.
         // The DOM-based collectExerciseGroups() loses block_id/group_type; sections is authoritative.
-        workoutData.exercise_groups = sectionsToExerciseGroups(workoutData.sections);
+        workoutData.exercise_groups = window.ExerciseDataUtils
+            ? ExerciseDataUtils.sectionsToExerciseGroups(workoutData.sections)
+            : (workoutData.sections || []).flatMap(s => (s.exercises || []).map(e => ({
+                group_id: e.exercise_id,
+                exercises: { a: e.name },
+                sets: e.sets || '3', reps: e.reps || '8-12', rest: e.rest || '60s'
+            })));
     }
 
     console.log('📊 SAVE DEBUG: Collected workout data:', {
@@ -375,6 +343,6 @@ async function saveWorkoutFromEditor(silent = false) {
 // Make functions globally available
 window.saveWorkoutFromEditor = saveWorkoutFromEditor;
 window.autoCreateExercisesInGroups = autoCreateExercisesInGroups;
-window.sectionsToExerciseGroups = sectionsToExerciseGroups;
+// Note: window.sectionsToExerciseGroups is now provided by exercise-data-utils.js
 
 console.log('📦 Workout Editor Save Manager loaded');

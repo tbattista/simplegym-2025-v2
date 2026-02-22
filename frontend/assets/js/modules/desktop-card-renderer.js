@@ -1,36 +1,90 @@
 /**
  * Desktop Card Renderer Module
- * Renders exercise groups as table rows with inline editing for desktop view
+ * Renders activity rows (exercise, note, cardio) as table rows with inline editing
  * Works alongside (not replacing) the mobile CardRenderer
- * @version 1.0.0
+ * @version 2.0.0 — Unified Activity Card system
  */
 
 class DesktopCardRenderer {
     constructor() {
-        this.activeEdit = null; // Currently active inline editor element
-        this.autocompleteInstances = new Map(); // Track autocomplete instances
+        this.activeEdit = null;
+        this.autocompleteInstances = new Map();
     }
 
+    // =========================================
+    // Row Shell (shared base for all card types)
+    // =========================================
+
     /**
-     * Create exercise group row HTML (table-row style)
-     * @param {string} groupId - Unique group ID
-     * @param {object} groupData - Group data (optional)
-     * @param {number} groupNumber - Group number (unused in desktop, kept for API compat)
-     * @param {number} index - Current row index (0-based)
-     * @param {number} totalRows - Total number of rows
+     * Create the shared row wrapper with drag handle (col 1) and dropdown menu (col 6).
+     * Callers provide columns 2-5 content and type-specific menu items.
+     * @param {Object} opts
+     * @param {string} opts.groupId - Group ID (data-group-id)
+     * @param {string} opts.cardType - 'exercise' | 'note' | 'cardio'
+     * @param {string[]} opts.extraClasses - Additional CSS classes
+     * @param {Object} opts.dataAttrs - Extra data-* attributes (key-value)
+     * @param {string} opts.columnsHtml - HTML for columns 2-5
+     * @param {string} opts.menuItemsHtml - Type-specific menu items (before Convert To)
+     * @param {number} [opts.index] - Row index
      * @returns {string} HTML string
      */
+    _createRowShell(opts) {
+        const { groupId, cardType, extraClasses = [], dataAttrs = {}, columnsHtml, menuItemsHtml, index } = opts;
+
+        const classes = ['desktop-exercise-row', 'desktop-activity-row', 'exercise-group-card', ...extraClasses].join(' ');
+        const dataStr = Object.entries(dataAttrs).map(([k, v]) => `data-${k}="${this.escapeHtml(String(v))}"`).join(' ');
+        const indexAttr = index !== undefined ? `data-index="${index}"` : '';
+
+        // Build Convert To menu items (omit current type)
+        const convertItems = [];
+        if (cardType !== 'exercise') {
+            convertItems.push(`<li><a class="dropdown-item" href="#" data-action="convert-to-exercise" data-group-id="${groupId}"><i class="bx bx-dumbbell me-2"></i>Convert to Exercise</a></li>`);
+        }
+        if (cardType !== 'note') {
+            convertItems.push(`<li><a class="dropdown-item" href="#" data-action="convert-to-note" data-group-id="${groupId}"><i class="bx bx-comment me-2"></i>Convert to Note</a></li>`);
+        }
+        if (cardType !== 'cardio') {
+            convertItems.push(`<li><a class="dropdown-item" href="#" data-action="convert-to-cardio" data-group-id="${groupId}"><i class="bx bx-heart-circle me-2"></i>Convert to Cardio</a></li>`);
+        }
+
+        const deleteAction = cardType === 'note' ? 'delete-note' : 'delete-group';
+
+        return `
+            <div class="${classes}" data-group-id="${groupId}" data-card-type="${cardType}" ${indexAttr} ${dataStr}>
+                <div class="drag-handle" title="Drag to reorder">
+                    <i class="bx bx-grid-vertical"></i>
+                </div>
+                ${columnsHtml}
+                <div class="dropdown">
+                    <button class="row-menu-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bx bx-dots-vertical"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        ${menuItemsHtml}
+                        <li><hr class="dropdown-divider"></li>
+                        ${convertItems.join('\n')}
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <a class="dropdown-item text-danger" href="#" data-action="${deleteAction}" data-group-id="${groupId}">
+                                <i class="bx bx-trash me-2"></i>Delete
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>`;
+    }
+
+    // =========================================
+    // Exercise Row
+    // =========================================
+
     createExerciseGroupRow(groupId, groupData = null, groupNumber = 1, index = 0, totalRows = 1) {
         const data = groupData || {
             exercises: { a: '', b: '', c: '' },
-            sets: '3',
-            reps: '8-12',
-            rest: '60s',
-            default_weight: '',
-            default_weight_unit: 'lbs'
+            sets: '3', reps: '8-12', rest: '60s',
+            default_weight: '', default_weight_unit: 'lbs'
         };
 
-        // Store in shared data object
         window.exerciseGroupsData[groupId] = data;
 
         const primaryName = data.exercises.a || '';
@@ -54,62 +108,45 @@ class DesktopCardRenderer {
 
         const protocolDisplay = data.sets && data.reps ? `${data.sets}×${data.reps}` : (data.sets || data.reps || '');
 
-        return `
-            <div class="desktop-exercise-row exercise-group-card" data-group-id="${groupId}" data-index="${index}">
-                <div class="drag-handle" title="Drag to reorder">
-                    <i class="bx bx-grid-vertical"></i>
+        const columnsHtml = `
+            <div class="exercise-name-col">
+                <div class="inline-editable exercise-name-editable" data-field="exercise-a" data-group-id="${groupId}">
+                    ${nameHtml}
                 </div>
-                <div class="exercise-name-col">
-                    <div class="inline-editable exercise-name-editable" data-field="exercise-a" data-group-id="${groupId}">
-                        ${nameHtml}
-                    </div>
-                    ${alternatesHtml}
-                </div>
-                <div class="inline-editable" data-field="protocol" data-group-id="${groupId}">
-                    <span class="display-value${!protocolDisplay ? ' empty-value' : ''}">${protocolDisplay || '-'}</span>
-                </div>
-                <div class="inline-editable" data-field="rest" data-group-id="${groupId}">
-                    <span class="display-value${!data.rest ? ' empty-value' : ''}">${data.rest || '-'}</span>
-                </div>
-                <div class="inline-editable" data-field="weight" data-group-id="${groupId}">
-                    <span class="display-value${!weightDisplay ? ' empty-value' : ''}">${weightDisplay || '-'}</span>
-                </div>
-                <div class="dropdown">
-                    <button class="row-menu-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="bx bx-dots-vertical"></i>
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-end">
-                        <li>
-                            <a class="dropdown-item" href="#" data-action="full-edit" data-group-id="${groupId}">
-                                <i class="bx bx-edit me-2"></i>Full Edit
-                            </a>
-                        </li>
-                        <li>
-                            <a class="dropdown-item" href="#" data-action="add-alternate" data-group-id="${groupId}">
-                                <i class="bx bx-plus me-2"></i>Add Alternate
-                            </a>
-                        </li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li>
-                            <a class="dropdown-item text-danger" href="#" data-action="delete-group" data-group-id="${groupId}">
-                                <i class="bx bx-trash me-2"></i>Delete
-                            </a>
-                        </li>
-                    </ul>
-                </div>
+                ${alternatesHtml}
+            </div>
+            <div class="inline-editable" data-field="protocol" data-group-id="${groupId}">
+                <span class="display-value${!protocolDisplay ? ' empty-value' : ''}">${protocolDisplay || '-'}</span>
+            </div>
+            <div class="inline-editable" data-field="rest" data-group-id="${groupId}">
+                <span class="display-value${!data.rest ? ' empty-value' : ''}">${data.rest || '-'}</span>
+            </div>
+            <div class="inline-editable" data-field="weight" data-group-id="${groupId}">
+                <span class="display-value${!weightDisplay ? ' empty-value' : ''}">${weightDisplay || '-'}</span>
             </div>`;
+
+        const menuItemsHtml = `
+            <li>
+                <a class="dropdown-item" href="#" data-action="full-edit" data-group-id="${groupId}">
+                    <i class="bx bx-edit me-2"></i>Full Edit
+                </a>
+            </li>
+            <li>
+                <a class="dropdown-item" href="#" data-action="add-alternate" data-group-id="${groupId}">
+                    <i class="bx bx-plus me-2"></i>Add Alternate
+                </a>
+            </li>`;
+
+        return this._createRowShell({
+            groupId, cardType: 'exercise', index,
+            columnsHtml, menuItemsHtml
+        });
     }
 
-    /**
-     * Update exercise group row preview after data changes
-     * @param {string} groupId - Group ID
-     * @param {object} groupData - Updated group data
-     */
     updateExerciseGroupRowPreview(groupId, groupData) {
         const row = document.querySelector(`.desktop-exercise-row[data-group-id="${groupId}"]`);
         if (!row) return;
 
-        // Update exercise name
         const nameEditable = row.querySelector('[data-field="exercise-a"]');
         if (nameEditable) {
             const displayValue = nameEditable.querySelector('.display-value');
@@ -124,7 +161,6 @@ class DesktopCardRenderer {
             }
         }
 
-        // Update alternates
         const nameCol = row.querySelector('.exercise-name-col');
         const existingAlts = nameCol.querySelector('.alternate-exercises');
         const alternates = [];
@@ -146,22 +182,362 @@ class DesktopCardRenderer {
             existingAlts.remove();
         }
 
-        // Update simple fields
         const protocolDisplay = groupData.sets && groupData.reps
             ? `${groupData.sets}×${groupData.reps}` : (groupData.sets || groupData.reps || '');
         this.updateFieldDisplay(row, 'protocol', protocolDisplay);
         this.updateFieldDisplay(row, 'rest', groupData.rest);
 
-        // Update weight
         const weightDisplay = groupData.default_weight
             ? `${groupData.default_weight}${groupData.default_weight_unit && groupData.default_weight_unit !== 'other' ? ' ' + groupData.default_weight_unit : ''}`
             : '';
         this.updateFieldDisplay(row, 'weight', weightDisplay);
     }
 
+    // =========================================
+    // Note Row
+    // =========================================
+
+    createNoteRow(note) {
+        const noteId = note.id || `template-note-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`;
+        const content = note.content || '';
+        const hasContent = content.length > 0;
+
+        const contentHtml = hasContent
+            ? `<span class="template-note-text">${this.escapeHtml(content)}</span>`
+            : `<span class="template-note-text text-muted">Click edit to add note content</span>`;
+
+        const columnsHtml = `
+            <div class="note-content-spanning">
+                <i class="bx bx-comment note-row-icon"></i>
+                <span class="note-row-text text-muted small">${contentHtml}</span>
+            </div>`;
+
+        const menuItemsHtml = `
+            <li>
+                <a class="dropdown-item" href="#" data-action="edit-note" data-group-id="${noteId}">
+                    <i class="bx bx-pencil me-2"></i>Edit Note
+                </a>
+            </li>`;
+
+        return this._createRowShell({
+            groupId: noteId,
+            cardType: 'note',
+            extraClasses: ['desktop-note-row', 'template-note-card'],
+            dataAttrs: { 'note-id': noteId },
+            columnsHtml,
+            menuItemsHtml
+        });
+    }
+
+    updateNoteRowPreview(noteId, content) {
+        const row = document.querySelector(`.desktop-note-row[data-note-id="${noteId}"]`);
+        if (!row) return;
+
+        const noteTextSpan = row.querySelector('.template-note-text');
+        if (noteTextSpan) {
+            if (content.length > 0) {
+                noteTextSpan.textContent = content;
+                noteTextSpan.classList.remove('text-muted');
+            } else {
+                noteTextSpan.textContent = 'Click edit to add note content';
+                noteTextSpan.classList.add('text-muted');
+            }
+        }
+    }
+
+    // =========================================
+    // Cardio Row
+    // =========================================
+
     /**
-     * Update a single field's display value
+     * Create cardio activity row HTML
+     * @param {string} groupId - Unique group ID
+     * @param {object} groupData - Group data with cardio_config
+     * @returns {string} HTML string
      */
+    createCardioRow(groupId, groupData = null) {
+        const data = groupData || {
+            exercises: { a: '' },
+            sets: '', reps: '', rest: '',
+            group_type: 'cardio',
+            cardio_config: {
+                activity_type: '', duration_minutes: null,
+                distance: null, distance_unit: 'mi', target_pace: ''
+            }
+        };
+
+        window.exerciseGroupsData[groupId] = data;
+
+        const config = data.cardio_config || {};
+        const activityType = config.activity_type || '';
+
+        // Get icon from activity type registry
+        let iconClass = 'bx-heart-circle';
+        let activityName = activityType;
+        if (activityType && window.ActivityTypeRegistry) {
+            iconClass = window.ActivityTypeRegistry.getIcon(activityType);
+            activityName = window.ActivityTypeRegistry.getName(activityType);
+        }
+
+        const durationDisplay = config.duration_minutes ? `${config.duration_minutes} min` : '';
+        const distanceDisplay = config.distance
+            ? `${config.distance} ${config.distance_unit || 'mi'}`
+            : '';
+        const paceDisplay = config.target_pace || '';
+
+        const columnsHtml = `
+            <div class="exercise-name-col">
+                <div class="inline-editable cardio-name-editable" data-field="activity-name" data-group-id="${groupId}">
+                    <i class="bx ${iconClass} cardio-type-icon"></i>
+                    ${activityName
+                        ? `<span class="display-value">${this.escapeHtml(activityName)}</span>`
+                        : `<span class="display-value empty-exercise">Click to set activity</span>`
+                    }
+                </div>
+            </div>
+            <div class="inline-editable" data-field="duration" data-group-id="${groupId}">
+                <span class="display-value${!durationDisplay ? ' empty-value' : ''}">${durationDisplay || '-'}</span>
+            </div>
+            <div class="inline-editable" data-field="distance" data-group-id="${groupId}">
+                <span class="display-value${!distanceDisplay ? ' empty-value' : ''}">${distanceDisplay || '-'}</span>
+            </div>
+            <div class="inline-editable" data-field="pace" data-group-id="${groupId}">
+                <span class="display-value${!paceDisplay ? ' empty-value' : ''}">${paceDisplay || '-'}</span>
+            </div>`;
+
+        const menuItemsHtml = `
+            <li>
+                <a class="dropdown-item" href="#" data-action="full-edit-cardio" data-group-id="${groupId}">
+                    <i class="bx bx-edit me-2"></i>Full Edit
+                </a>
+            </li>`;
+
+        return this._createRowShell({
+            groupId, cardType: 'cardio',
+            extraClasses: ['desktop-cardio-row'],
+            columnsHtml, menuItemsHtml
+        });
+    }
+
+    /**
+     * Update cardio row preview after data changes
+     */
+    updateCardioRowPreview(groupId, groupData) {
+        const row = document.querySelector(`.desktop-cardio-row[data-group-id="${groupId}"]`);
+        if (!row) return;
+
+        const config = groupData.cardio_config || {};
+        const activityType = config.activity_type || '';
+
+        // Update activity name + icon
+        const nameEditable = row.querySelector('[data-field="activity-name"]');
+        if (nameEditable) {
+            let iconClass = 'bx-heart-circle';
+            let activityName = activityType;
+            if (activityType && window.ActivityTypeRegistry) {
+                iconClass = window.ActivityTypeRegistry.getIcon(activityType);
+                activityName = window.ActivityTypeRegistry.getName(activityType);
+            }
+            const icon = nameEditable.querySelector('.cardio-type-icon');
+            if (icon) {
+                icon.className = `bx ${iconClass} cardio-type-icon`;
+            }
+            const displayValue = nameEditable.querySelector('.display-value');
+            if (displayValue) {
+                if (activityName) {
+                    displayValue.textContent = activityName;
+                    displayValue.classList.remove('empty-exercise');
+                } else {
+                    displayValue.textContent = 'Click to set activity';
+                    displayValue.classList.add('empty-exercise');
+                }
+            }
+        }
+
+        // Update duration
+        const durationDisplay = config.duration_minutes ? `${config.duration_minutes} min` : '';
+        this.updateFieldDisplay(row, 'duration', durationDisplay);
+
+        // Update distance
+        const distanceDisplay = config.distance
+            ? `${config.distance} ${config.distance_unit || 'mi'}`
+            : '';
+        this.updateFieldDisplay(row, 'distance', distanceDisplay);
+
+        // Update pace
+        this.updateFieldDisplay(row, 'pace', config.target_pace);
+    }
+
+    // =========================================
+    // Type Conversion
+    // =========================================
+
+    /**
+     * Convert a card from one type to another.
+     * Re-renders the row in-place.
+     * @param {string} groupId - The group/note ID
+     * @param {string} fromType - Current type: 'exercise' | 'note' | 'cardio'
+     * @param {string} toType - Target type
+     */
+    convertCardType(groupId, fromType, toType) {
+        if (fromType === toType) return;
+
+        const row = document.querySelector(`.desktop-activity-row[data-group-id="${groupId}"]`);
+        if (!row) return;
+
+        let newHtml = '';
+
+        if (fromType === 'exercise' && toType === 'cardio') {
+            const data = window.exerciseGroupsData[groupId];
+            if (!data) return;
+            if (data.exercises.a && !confirm('Converting to Cardio will replace sets, reps, rest, and weight with cardio fields. Continue?')) return;
+
+            // Move exercise name to activity type (if it matches a known activity)
+            const name = data.exercises.a || '';
+            let activityType = '';
+            if (name && window.ActivityTypeRegistry) {
+                const allTypes = window.ActivityTypeRegistry.getAll();
+                const match = allTypes.find(t => t.name.toLowerCase() === name.toLowerCase() || t.id === name.toLowerCase());
+                if (match) activityType = match.id;
+            }
+
+            data.group_type = 'cardio';
+            data.exercises = { a: '' };
+            data.sets = ''; data.reps = ''; data.rest = '';
+            data.default_weight = ''; data.default_weight_unit = 'lbs';
+            data.cardio_config = {
+                activity_type: activityType || name,
+                duration_minutes: null, distance: null,
+                distance_unit: 'mi', target_pace: '',
+                activity_details: {}, notes: ''
+            };
+            newHtml = this.createCardioRow(groupId, data);
+
+        } else if (fromType === 'exercise' && toType === 'note') {
+            const data = window.exerciseGroupsData[groupId];
+            if (!data) return;
+            if (data.exercises.a && !confirm('Converting to Note will remove all exercise data. Continue?')) return;
+
+            const content = data.exercises.a || '';
+            delete window.exerciseGroupsData[groupId];
+
+            // Create template note
+            const noteId = `template-note-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`;
+            const note = { id: noteId, content: content, order_index: 0, created_at: new Date().toISOString() };
+            const notes = window.ffn?.workoutBuilder?.currentWorkout?.template_notes;
+            if (notes) notes.push(note);
+
+            newHtml = this.createNoteRow(note);
+
+        } else if (fromType === 'cardio' && toType === 'exercise') {
+            const data = window.exerciseGroupsData[groupId];
+            if (!data) return;
+
+            const activityName = data.cardio_config?.activity_type || '';
+            // If activity name matches a registry entry, use the display name
+            let exerciseName = activityName;
+            if (activityName && window.ActivityTypeRegistry) {
+                const type = window.ActivityTypeRegistry.getById(activityName);
+                if (type && type.name !== activityName) exerciseName = type.name;
+            }
+
+            data.group_type = 'standard';
+            data.exercises = { a: exerciseName, b: '', c: '' };
+            data.sets = '3'; data.reps = '8-12'; data.rest = '60s';
+            data.default_weight = ''; data.default_weight_unit = 'lbs';
+            data.cardio_config = null;
+            newHtml = this.createExerciseGroupRow(groupId, data);
+
+        } else if (fromType === 'cardio' && toType === 'note') {
+            const data = window.exerciseGroupsData[groupId];
+            if (!data) return;
+            if (!confirm('Converting to Note will remove all cardio data. Continue?')) return;
+
+            const activityName = data.cardio_config?.activity_type || '';
+            let content = activityName;
+            if (activityName && window.ActivityTypeRegistry) {
+                content = window.ActivityTypeRegistry.getName(activityName) || activityName;
+            }
+            delete window.exerciseGroupsData[groupId];
+
+            const noteId = `template-note-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`;
+            const note = { id: noteId, content: content, order_index: 0, created_at: new Date().toISOString() };
+            const notes = window.ffn?.workoutBuilder?.currentWorkout?.template_notes;
+            if (notes) notes.push(note);
+
+            newHtml = this.createNoteRow(note);
+
+        } else if (fromType === 'note' && toType === 'exercise') {
+            // Get note content
+            const noteTextSpan = row.querySelector('.template-note-text');
+            const content = noteTextSpan?.textContent?.trim() || '';
+            const noteId = row.dataset.noteId || row.dataset.groupId;
+
+            // Remove from template_notes
+            const notes = window.ffn?.workoutBuilder?.currentWorkout?.template_notes;
+            if (notes) {
+                const idx = notes.findIndex(n => n.id === noteId);
+                if (idx >= 0) notes.splice(idx, 1);
+            }
+
+            // Create exercise group
+            const newGroupId = 'group-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+            const data = {
+                exercises: { a: content !== 'Click edit to add note content' ? content : '', b: '', c: '' },
+                sets: '3', reps: '8-12', rest: '60s',
+                default_weight: '', default_weight_unit: 'lbs',
+                group_type: 'standard'
+            };
+            window.exerciseGroupsData[newGroupId] = data;
+            newHtml = this.createExerciseGroupRow(newGroupId, data);
+
+        } else if (fromType === 'note' && toType === 'cardio') {
+            const noteTextSpan = row.querySelector('.template-note-text');
+            const content = noteTextSpan?.textContent?.trim() || '';
+            const noteId = row.dataset.noteId || row.dataset.groupId;
+
+            const notes = window.ffn?.workoutBuilder?.currentWorkout?.template_notes;
+            if (notes) {
+                const idx = notes.findIndex(n => n.id === noteId);
+                if (idx >= 0) notes.splice(idx, 1);
+            }
+
+            // Try to match content to an activity type
+            let activityType = '';
+            if (content && content !== 'Click edit to add note content' && window.ActivityTypeRegistry) {
+                const allTypes = window.ActivityTypeRegistry.getAll();
+                const match = allTypes.find(t => t.name.toLowerCase() === content.toLowerCase());
+                if (match) activityType = match.id;
+            }
+
+            const newGroupId = 'group-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+            const data = {
+                exercises: { a: '' },
+                sets: '', reps: '', rest: '',
+                group_type: 'cardio',
+                cardio_config: {
+                    activity_type: activityType || (content !== 'Click edit to add note content' ? content : ''),
+                    duration_minutes: null, distance: null,
+                    distance_unit: 'mi', target_pace: '',
+                    activity_details: {}, notes: ''
+                }
+            };
+            window.exerciseGroupsData[newGroupId] = data;
+            newHtml = this.createCardioRow(newGroupId, data);
+        }
+
+        if (newHtml) {
+            row.insertAdjacentHTML('afterend', newHtml);
+            row.remove();
+            if (window.markEditorDirty) window.markEditorDirty();
+            if (window.applyBlockGrouping) window.applyBlockGrouping();
+        }
+    }
+
+    // =========================================
+    // Shared Utilities
+    // =========================================
+
     updateFieldDisplay(row, field, value) {
         const editable = row.querySelector(`[data-field="${field}"]`);
         if (!editable) return;
@@ -171,10 +547,10 @@ class DesktopCardRenderer {
         displayValue.classList.toggle('empty-value', !value);
     }
 
-    /**
-     * Initialize inline editing for all editable fields within a container
-     * @param {HTMLElement} container - The exercise groups container
-     */
+    // =========================================
+    // Inline Editing
+    // =========================================
+
     initInlineEditing(container) {
         if (!container) return;
 
@@ -182,10 +558,7 @@ class DesktopCardRenderer {
         container.addEventListener('click', (e) => {
             const editable = e.target.closest('.inline-editable');
             if (!editable || editable.classList.contains('editing')) return;
-
-            // Don't start editing if clicking on autocomplete dropdown
             if (e.target.closest('.exercise-autocomplete-dropdown')) return;
-
             this.startInlineEdit(editable);
         });
 
@@ -200,28 +573,50 @@ class DesktopCardRenderer {
 
             switch (action) {
                 case 'full-edit':
-                    if (window.openExerciseGroupEditor) {
-                        window.openExerciseGroupEditor(groupId);
+                    if (window.openExerciseGroupEditor) window.openExerciseGroupEditor(groupId);
+                    break;
+                case 'full-edit-cardio':
+                    if (window.openCardioEditor) {
+                        window.openCardioEditor(groupId);
+                    } else {
+                        console.log('Cardio full-edit offcanvas not yet implemented');
                     }
+                    break;
+                case 'edit-note':
+                    if (window.handleEditTemplateNote) window.handleEditTemplateNote(groupId);
                     break;
                 case 'add-alternate':
                     this.handleAddAlternate(groupId);
                     break;
                 case 'delete-group':
-                    if (window.deleteExerciseGroupCard) {
-                        window.deleteExerciseGroupCard(groupId);
-                    }
+                    if (window.deleteExerciseGroupCard) window.deleteExerciseGroupCard(groupId);
                     break;
+                case 'delete-note':
+                    if (window.handleDeleteTemplateNote) window.handleDeleteTemplateNote(groupId);
+                    break;
+                case 'convert-to-exercise': {
+                    const row = actionEl.closest('.desktop-activity-row');
+                    const fromType = row?.dataset.cardType;
+                    if (fromType) this.convertCardType(groupId, fromType, 'exercise');
+                    break;
+                }
+                case 'convert-to-note': {
+                    const row = actionEl.closest('.desktop-activity-row');
+                    const fromType = row?.dataset.cardType;
+                    if (fromType) this.convertCardType(groupId, fromType, 'note');
+                    break;
+                }
+                case 'convert-to-cardio': {
+                    const row = actionEl.closest('.desktop-activity-row');
+                    const fromType = row?.dataset.cardType;
+                    if (fromType) this.convertCardType(groupId, fromType, 'cardio');
+                    break;
+                }
             }
         });
     }
 
-    /**
-     * Start inline editing on a field
-     * @param {HTMLElement} element - The .inline-editable element
-     */
     startInlineEdit(element) {
-        // Close any currently active edit
         if (this.activeEdit && this.activeEdit !== element) {
             this.finishInlineEdit(this.activeEdit, false);
         }
@@ -233,7 +628,6 @@ class DesktopCardRenderer {
 
         const currentValue = this.getFieldValue(groupId, field);
 
-        // Create input
         const input = document.createElement('input');
         input.type = 'text';
         input.value = currentValue;
@@ -241,12 +635,16 @@ class DesktopCardRenderer {
 
         if (field === 'exercise-a') {
             input.placeholder = 'Search exercises...';
+        } else if (field === 'activity-name') {
+            input.placeholder = 'Activity type...';
         } else {
             input.placeholder = this.getPlaceholder(field);
         }
 
-        // Hide display, show input
+        // Hide display elements, show input
         displayValue.style.display = 'none';
+        const icon = element.querySelector('.cardio-type-icon');
+        if (icon) icon.style.display = 'none';
         element.classList.add('editing');
         element.appendChild(input);
         input.focus();
@@ -254,9 +652,7 @@ class DesktopCardRenderer {
 
         this.activeEdit = element;
 
-        // Save on blur (with delay for autocomplete clicks)
         const handleBlur = () => {
-            // Delay to allow autocomplete selection clicks to register
             setTimeout(() => {
                 if (element.classList.contains('editing')) {
                     this.finishInlineEdit(element, true);
@@ -265,17 +661,9 @@ class DesktopCardRenderer {
         };
         input.addEventListener('blur', handleBlur);
 
-        // Save on Enter, cancel on Escape
         input.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                this.finishInlineEdit(element, true);
-            }
-            if (e.key === 'Escape') {
-                e.preventDefault();
-                this.finishInlineEdit(element, false);
-            }
-            // Tab to next editable field
+            if (e.key === 'Enter') { e.preventDefault(); this.finishInlineEdit(element, true); }
+            if (e.key === 'Escape') { e.preventDefault(); this.finishInlineEdit(element, false); }
             if (e.key === 'Tab') {
                 e.preventDefault();
                 this.finishInlineEdit(element, true);
@@ -283,32 +671,73 @@ class DesktopCardRenderer {
             }
         });
 
-        // Initialize autocomplete for exercise name fields
+        // Autocomplete for exercise name
         if (field === 'exercise-a' && window.ExerciseAutocomplete) {
             setTimeout(() => {
                 try {
                     const autocomplete = new ExerciseAutocomplete(input, {
-                        minChars: 1,
-                        maxResults: 8,
-                        allowAutoCreate: true,
+                        minChars: 1, maxResults: 8, allowAutoCreate: true,
                         onSelect: (exercise) => {
                             input.value = exercise.name;
                             this.finishInlineEdit(element, true);
                         }
                     });
-                    this.autocompleteInstances.set(groupId, autocomplete);
+                    this.autocompleteInstances.set(groupId + '-' + field, autocomplete);
                 } catch (err) {
                     console.warn('Desktop: Could not init autocomplete', err);
                 }
             }, 50);
         }
+
+        // Autocomplete for cardio activity name
+        if (field === 'activity-name' && window.ActivityTypeRegistry) {
+            setTimeout(() => {
+                this._initActivityAutocomplete(input, element, groupId);
+            }, 50);
+        }
     }
 
     /**
-     * Finish inline editing - save or cancel
-     * @param {HTMLElement} element - The .inline-editable element
-     * @param {boolean} save - Whether to save the value
+     * Simple autocomplete dropdown for activity types
      */
+    _initActivityAutocomplete(input, element, groupId) {
+        const allTypes = window.ActivityTypeRegistry.getAll();
+
+        const dropdown = document.createElement('div');
+        dropdown.className = 'activity-autocomplete-dropdown';
+        element.appendChild(dropdown);
+
+        const showResults = () => {
+            const query = input.value.toLowerCase().trim();
+            const matches = query
+                ? allTypes.filter(t => t.name.toLowerCase().includes(query) || t.id.includes(query)).slice(0, 8)
+                : allTypes.slice(0, 8);
+
+            dropdown.innerHTML = matches.map(t =>
+                `<div class="activity-autocomplete-item" data-activity-id="${t.id}">
+                    <i class="bx ${t.icon}"></i> ${t.name}
+                </div>`
+            ).join('');
+            dropdown.style.display = matches.length ? 'block' : 'none';
+        };
+
+        input.addEventListener('input', showResults);
+        input.addEventListener('focus', showResults);
+
+        dropdown.addEventListener('mousedown', (e) => {
+            e.preventDefault(); // Prevent blur
+            const item = e.target.closest('.activity-autocomplete-item');
+            if (item) {
+                input.value = item.dataset.activityId;
+                dropdown.style.display = 'none';
+                this.finishInlineEdit(element, true);
+            }
+        });
+
+        this.autocompleteInstances.set(groupId + '-activity-name', { destroy: () => dropdown.remove() });
+        showResults();
+    }
+
     finishInlineEdit(element, save) {
         if (!element.classList.contains('editing')) return;
 
@@ -321,10 +750,25 @@ class DesktopCardRenderer {
             const newValue = input.value.trim();
             this.setFieldValue(groupId, field, newValue);
 
-            // Update display
             if (field === 'exercise-a') {
                 displayValue.textContent = newValue || 'Click to add exercise';
                 displayValue.classList.toggle('empty-exercise', !newValue);
+            } else if (field === 'activity-name') {
+                // Resolve display name from registry
+                let displayName = newValue;
+                let iconClass = 'bx-heart-circle';
+                if (newValue && window.ActivityTypeRegistry) {
+                    const type = window.ActivityTypeRegistry.getById(newValue);
+                    if (type) {
+                        displayName = type.name;
+                        iconClass = type.icon;
+                    }
+                }
+                displayValue.textContent = displayName || 'Click to set activity';
+                displayValue.classList.toggle('empty-exercise', !displayName);
+                // Update icon
+                const icon = element.querySelector('.cardio-type-icon');
+                if (icon) icon.className = `bx ${iconClass} cardio-type-icon`;
             } else if (field === 'weight') {
                 const data = window.exerciseGroupsData[groupId];
                 const weightDisplay = data.default_weight
@@ -332,6 +776,17 @@ class DesktopCardRenderer {
                     : '';
                 displayValue.textContent = weightDisplay || '-';
                 displayValue.classList.toggle('empty-value', !weightDisplay);
+            } else if (field === 'duration') {
+                const data = window.exerciseGroupsData[groupId];
+                const dur = data.cardio_config?.duration_minutes;
+                displayValue.textContent = dur ? `${dur} min` : '-';
+                displayValue.classList.toggle('empty-value', !dur);
+            } else if (field === 'distance') {
+                const data = window.exerciseGroupsData[groupId];
+                const dist = data.cardio_config?.distance;
+                const unit = data.cardio_config?.distance_unit || 'mi';
+                displayValue.textContent = dist ? `${dist} ${unit}` : '-';
+                displayValue.classList.toggle('empty-value', !dist);
             } else {
                 displayValue.textContent = newValue || '-';
                 displayValue.classList.toggle('empty-value', !newValue);
@@ -343,25 +798,29 @@ class DesktopCardRenderer {
         // Clean up
         if (input) input.remove();
         if (displayValue) displayValue.style.display = '';
+        const icon = element.querySelector('.cardio-type-icon');
+        if (icon) icon.style.display = '';
         element.classList.remove('editing');
 
+        // Remove autocomplete dropdown
+        const acDropdown = element.querySelector('.activity-autocomplete-dropdown');
+        if (acDropdown) acDropdown.remove();
+
         // Clean up autocomplete instance
+        const acKey = groupId + '-' + field;
+        const autocomplete = this.autocompleteInstances.get(acKey);
+        if (autocomplete && autocomplete.destroy) autocomplete.destroy();
+        this.autocompleteInstances.delete(acKey);
+        // Legacy key cleanup
         if (field === 'exercise-a') {
-            const autocomplete = this.autocompleteInstances.get(groupId);
-            if (autocomplete && autocomplete.destroy) {
-                autocomplete.destroy();
-            }
+            const legacyAc = this.autocompleteInstances.get(groupId);
+            if (legacyAc && legacyAc.destroy) legacyAc.destroy();
             this.autocompleteInstances.delete(groupId);
         }
 
-        if (this.activeEdit === element) {
-            this.activeEdit = null;
-        }
+        if (this.activeEdit === element) this.activeEdit = null;
     }
 
-    /**
-     * Tab to next/previous editable field in the row
-     */
     tabToNextField(currentElement, reverse) {
         const row = currentElement.closest('.desktop-exercise-row');
         if (!row) return;
@@ -373,7 +832,6 @@ class DesktopCardRenderer {
         if (nextIndex >= 0 && nextIndex < editables.length) {
             this.startInlineEdit(editables[nextIndex]);
         } else if (!reverse) {
-            // Tab past last field in row → go to first field of next row
             const nextRow = row.nextElementSibling;
             if (nextRow && nextRow.classList.contains('desktop-exercise-row')) {
                 const firstEditable = nextRow.querySelector('.inline-editable');
@@ -382,9 +840,10 @@ class DesktopCardRenderer {
         }
     }
 
-    /**
-     * Get field value from data storage
-     */
+    // =========================================
+    // Field Value Get/Set
+    // =========================================
+
     getFieldValue(groupId, field) {
         const data = window.exerciseGroupsData[groupId];
         if (!data) return '';
@@ -401,13 +860,15 @@ class DesktopCardRenderer {
             }
             case 'rest': return data.rest || '';
             case 'weight': return data.default_weight || '';
+            // Cardio fields
+            case 'activity-name': return data.cardio_config?.activity_type || '';
+            case 'duration': return data.cardio_config?.duration_minutes ? String(data.cardio_config.duration_minutes) : '';
+            case 'distance': return data.cardio_config?.distance ? String(data.cardio_config.distance) : '';
+            case 'pace': return data.cardio_config?.target_pace || '';
             default: return '';
         }
     }
 
-    /**
-     * Set field value in data storage
-     */
     setFieldValue(groupId, field, value) {
         const data = window.exerciseGroupsData[groupId];
         if (!data) return;
@@ -417,7 +878,6 @@ class DesktopCardRenderer {
             case 'exercise-b': data.exercises.b = value; break;
             case 'exercise-c': data.exercises.c = value; break;
             case 'protocol': {
-                // Parse protocol back into sets and reps
                 const xPattern = /(\d+)\s*[x×]\s*(.+)/i;
                 const setsPattern = /(\d+)\s*set/i;
                 const xMatch = value.match(xPattern);
@@ -439,44 +899,52 @@ class DesktopCardRenderer {
             case 'rest': data.rest = value; break;
             case 'weight':
                 data.default_weight = value;
-                // Auto-set unit if not set
-                if (value && !data.default_weight_unit) {
-                    data.default_weight_unit = 'lbs';
-                }
+                if (value && !data.default_weight_unit) data.default_weight_unit = 'lbs';
+                break;
+            // Cardio fields
+            case 'activity-name':
+                if (!data.cardio_config) data.cardio_config = {};
+                data.cardio_config.activity_type = value;
+                break;
+            case 'duration':
+                if (!data.cardio_config) data.cardio_config = {};
+                data.cardio_config.duration_minutes = value ? parseInt(value, 10) || null : null;
+                break;
+            case 'distance':
+                if (!data.cardio_config) data.cardio_config = {};
+                data.cardio_config.distance = value ? parseFloat(value) || null : null;
+                break;
+            case 'pace':
+                if (!data.cardio_config) data.cardio_config = {};
+                data.cardio_config.target_pace = value;
                 break;
         }
     }
 
-    /**
-     * Get placeholder text for a field
-     */
     getPlaceholder(field) {
         switch (field) {
             case 'protocol': return '3×10';
             case 'rest': return '60s';
             case 'weight': return 'lbs';
+            case 'duration': return '30 min';
+            case 'distance': return '3 mi';
+            case 'pace': return '10:00/mi';
             default: return '';
         }
     }
 
-    /**
-     * Handle adding an alternate exercise via offcanvas
-     */
     handleAddAlternate(groupId) {
-        // Open the full editor offcanvas which supports alternate exercises
-        if (window.openExerciseGroupEditor) {
-            window.openExerciseGroupEditor(groupId);
-        }
+        if (window.openExerciseGroupEditor) window.openExerciseGroupEditor(groupId);
     }
 
-    /**
-     * Apply visual grouping to consecutive desktop rows sharing the same block_id.
-     */
+    // =========================================
+    // Block Grouping (unchanged)
+    // =========================================
+
     applyBlockGrouping() {
         const container = document.getElementById('exerciseGroups');
         if (!container) return;
 
-        // Remove existing block headers and grouping classes
         container.querySelectorAll('.block-group-header').forEach(h => h.remove());
         container.querySelectorAll('.exercise-in-block').forEach(r => {
             r.classList.remove('exercise-in-block', 'block-first', 'block-middle', 'block-last');
@@ -504,7 +972,6 @@ class DesktopCardRenderer {
             const groupRows = rows.slice(i, j);
             const blockName = data.group_name || 'Block';
 
-            // Insert header row before first row
             const headerHtml = `<div class="block-group-header" data-block-id="${blockId}">
                 <span class="block-group-label">
                     <i class="bx bx-collection"></i>
@@ -536,68 +1003,8 @@ class DesktopCardRenderer {
         }
     }
 
-    /**
-     * Create note row HTML (flat table-row style matching exercise rows)
-     * @param {Object} note - Note data with id, content, order_index
-     * @returns {string} HTML string
-     */
-    createNoteRow(note) {
-        const noteId = note.id || `template-note-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`;
-        const content = note.content || '';
-        const hasContent = content.length > 0;
-
-        const contentHtml = hasContent
-            ? `<span class="template-note-text">${this.escapeHtml(content)}</span>`
-            : `<span class="template-note-text text-muted">Click edit to add note content</span>`;
-
-        return `
-            <div class="desktop-exercise-row desktop-note-row exercise-group-card template-note-card" data-note-id="${this.escapeHtml(noteId)}" data-card-type="note">
-                <div class="drag-handle" title="Drag to reorder">
-                    <i class="bx bx-grid-vertical"></i>
-                </div>
-                <div class="note-content-col">
-                    <i class="bx bx-comment note-row-icon"></i>
-                    <span class="note-row-text text-muted small">${contentHtml}</span>
-                </div>
-                <div></div><div></div><div></div>
-                <div class="note-edit-col">
-                    <button type="button" class="row-menu-btn"
-                            onclick="event.preventDefault(); event.stopPropagation(); window.handleEditTemplateNote?.('${this.escapeHtml(noteId)}');"
-                            title="Edit note">
-                        <i class="bx bx-pencil"></i>
-                    </button>
-                </div>
-            </div>`;
-    }
-
-    /**
-     * Update note row preview after editing
-     * @param {string} noteId - Note ID
-     * @param {string} content - New content
-     */
-    updateNoteRowPreview(noteId, content) {
-        const row = document.querySelector(`.desktop-note-row[data-note-id="${noteId}"]`);
-        if (!row) return;
-
-        const noteTextSpan = row.querySelector('.template-note-text');
-        if (noteTextSpan) {
-            if (content.length > 0) {
-                noteTextSpan.textContent = content;
-                noteTextSpan.classList.remove('text-muted');
-            } else {
-                noteTextSpan.textContent = 'Click edit to add note content';
-                noteTextSpan.classList.add('text-muted');
-            }
-        }
-    }
-
-    /**
-     * Escape HTML to prevent XSS
-     */
     escapeHtml(text) {
-        if (typeof window.escapeHtml === 'function') {
-            return window.escapeHtml(text);
-        }
+        if (typeof window.escapeHtml === 'function') return window.escapeHtml(text);
         const div = document.createElement('div');
         div.textContent = text;
         return div.innerHTML;
@@ -607,4 +1014,4 @@ class DesktopCardRenderer {
 // Initialize global instance
 window.desktopCardRenderer = new DesktopCardRenderer();
 
-console.log('📦 Desktop Card Renderer module loaded');
+console.log('📦 Desktop Card Renderer module loaded (v2.0 — Activity Card system)');

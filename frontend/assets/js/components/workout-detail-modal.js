@@ -194,11 +194,13 @@
                 document.getElementById('detailSaveCountContainer').style.display = 'none';
             }
 
-            const exerciseCount = (workoutData.exercise_groups || []).length;
-            document.getElementById('detailExerciseCount').textContent = exerciseCount;
+            const exerciseGroups = window.ExerciseDataUtils
+                ? ExerciseDataUtils.getExerciseGroups(workoutData)
+                : (workoutData.exercise_groups || []);
+            document.getElementById('detailExerciseCount').textContent = exerciseGroups.length;
 
-            // Render exercise groups
-            this.renderExerciseGroups(workoutData.exercise_groups || []);
+            // Render exercise groups (utility normalizes sections → groups)
+            this.renderExerciseGroups(exerciseGroups);
 
             // Show content
             this.showContent();

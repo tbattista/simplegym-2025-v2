@@ -339,7 +339,7 @@
     }
 
     function renderFavoriteCard(workout) {
-        const exerciseCount = workout.exercise_groups?.length || 0;
+        const exerciseCount = window.ExerciseDataUtils ? ExerciseDataUtils.getGroupCount(workout) : (workout.exercise_groups?.length || 0);
         return `
             <div class="card favorite-card" onclick="showWorkoutDetail('${workout.id}')">
                 <div class="card-body py-3 px-3">

@@ -230,6 +230,7 @@
 
     <!-- Common Utilities -->
     <script src="/static/assets/js/utils/common-utils.js"></script>
+    <script src="/static/assets/js/utils/exercise-data-utils.js"></script>
 
     <!-- Share Page JS -->
     <script>
@@ -317,8 +318,10 @@
 
                 // Update stats
                 document.getElementById('viewCount').textContent = workout.view_count || 0;
-                const exerciseCount = (workoutData.exercise_groups || []).length;
-                document.getElementById('exerciseCount').textContent = exerciseCount;
+                const exerciseGroups = window.ExerciseDataUtils
+                    ? ExerciseDataUtils.getExerciseGroups(workoutData)
+                    : (workoutData.exercise_groups || []);
+                document.getElementById('exerciseCount').textContent = exerciseGroups.length;
 
                 // Show expiration warning if applicable
                 if (workout.expires_at) {
@@ -333,8 +336,8 @@
                     }
                 }
 
-                // Render exercise groups
-                renderExerciseGroups(workoutData.exercise_groups || []);
+                // Render exercise groups (utility normalizes sections → groups)
+                renderExerciseGroups(exerciseGroups);
 
                 // Show content
                 document.getElementById('loadingState').style.display = 'none';
@@ -355,7 +358,7 @@
                         <h6 class="mb-2">Group ${index + 1}</h6>
                         <div class="mb-2">
                             ${exerciseNames.map(name => `
-                                <div class="text-muted">• ${escapeHtml(name)}</div>
+                                <div class="text-muted">\u2022 ${escapeHtml(name)}</div>
                             `).join('')}
                         </div>
                         <div class="d-flex gap-3 text-muted small">
@@ -373,6 +376,7 @@
                     container.appendChild(groupDiv);
                 });
             }
+
             async function handleSaveWorkout() {
 
                 if (!currentWorkout) {

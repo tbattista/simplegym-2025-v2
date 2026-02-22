@@ -211,8 +211,8 @@ class WorkoutListComponent {
         const exercises = this.getWorkoutExercisesList(workout);
         const exercisesPreview = exercises.slice(0, 6).map(e => this.truncateText(e, 15)).join(', ');
         const tags = workout.tags || [];
-        const groupCount = workout.exercise_groups?.length || 0;
-        const totalExercises = this.getTotalExerciseCount(workout);
+        const groupCount = window.ExerciseDataUtils ? ExerciseDataUtils.getGroupCount(workout) : (workout.exercise_groups?.length || 0);
+        const totalExercises = window.ExerciseDataUtils ? ExerciseDataUtils.getExerciseCount(workout) : this.getTotalExerciseCount(workout);
         
         // Determine which action buttons to show
         const showView = this.showActions.includes('view');
@@ -429,18 +429,17 @@ class WorkoutListComponent {
      * Get workout exercises list
      */
     getWorkoutExercisesList(workout) {
-        const exercises = [];
-        
-        if (workout.exercise_groups) {
-            workout.exercise_groups.forEach(group => {
-                if (group.exercises) {
-                    Object.values(group.exercises).forEach(name => {
-                        if (name) exercises.push(name);
-                    });
-                }
-            });
+        if (window.ExerciseDataUtils) {
+            return ExerciseDataUtils.getExerciseNames(workout);
         }
-        
+        const exercises = [];
+        (workout.exercise_groups || []).forEach(group => {
+            if (group.exercises) {
+                Object.values(group.exercises).forEach(name => {
+                    if (name) exercises.push(name);
+                });
+            }
+        });
         return exercises;
     }
     
@@ -448,14 +447,13 @@ class WorkoutListComponent {
      * Get total exercise count
      */
     getTotalExerciseCount(workout) {
-        let count = 0;
-        
-        if (workout.exercise_groups) {
-            workout.exercise_groups.forEach(group => {
-                count += Object.keys(group.exercises || {}).length;
-            });
+        if (window.ExerciseDataUtils) {
+            return ExerciseDataUtils.getExerciseCount(workout);
         }
-        
+        let count = 0;
+        (workout.exercise_groups || []).forEach(group => {
+            count += Object.keys(group.exercises || {}).length;
+        });
         return count;
     }
     

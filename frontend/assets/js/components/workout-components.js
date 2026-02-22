@@ -211,7 +211,7 @@
                                 <div>
                                     <h6 class="mb-0">${escapeHtml(workout.name)}</h6>
                                     <small class="text-muted">
-                                        ${workout.exercise_groups?.length || 0} groups
+                                        ${window.ExerciseDataUtils ? ExerciseDataUtils.getGroupCount(workout) : (workout.exercise_groups?.length || 0)} groups
                                     </small>
                                 </div>
                                 <i class="bx bx-chevron-right"></i>

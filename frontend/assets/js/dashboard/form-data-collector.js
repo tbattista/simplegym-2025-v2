@@ -34,19 +34,23 @@ const FormDataCollector = {
                 });
 
                 // For standard groups, require exercise 'a'; for blocks, require at least one exercise
+                // For cardio groups, require activity_type or duration
                 const isBlock = groupData.group_type === 'block';
+                const isCardio = groupData.group_type === 'cardio';
                 const hasRequiredExercises = isBlock
                     ? Object.keys(exercises).length > 0
-                    : !!exercises.a;
+                    : isCardio
+                        ? !!(groupData.cardio_config?.activity_type || groupData.cardio_config?.duration_minutes)
+                        : !!exercises.a;
 
                 if (hasRequiredExercises) {
                     const groupEntry = {
                         group_id: groupId,
                         group_type: groupData.group_type || 'standard',
-                        exercises: exercises,
-                        sets: groupData.sets || '3',
-                        reps: groupData.reps || '8-12',
-                        rest: groupData.rest || '60s',
+                        exercises: isCardio ? { a: groupData.cardio_config?.activity_type || '' } : exercises,
+                        sets: isCardio ? '' : (groupData.sets || '3'),
+                        reps: isCardio ? '' : (groupData.reps || '8-12'),
+                        rest: isCardio ? '' : (groupData.rest || '60s'),
                         default_weight: groupData.default_weight || null,
                         default_weight_unit: groupData.default_weight_unit || 'lbs'
                     };
@@ -99,6 +103,25 @@ const FormDataCollector = {
                 const groupId = cardEl.dataset.groupId;
                 const data = window.exerciseGroupsData[groupId];
                 if (!data) return;
+
+                const isCardioGroup = data.group_type === 'cardio';
+
+                // Cardio groups use activity_type as their primary identifier
+                if (isCardioGroup) {
+                    if (!data.cardio_config?.activity_type && !data.cardio_config?.duration_minutes) return;
+                    const entry = {
+                        exercise_id: groupId,
+                        name: data.cardio_config?.activity_type || '',
+                        alternates: [],
+                        group_type: 'cardio',
+                        sets: '', reps: '', rest: '',
+                        default_weight: null,
+                        default_weight_unit: data.default_weight_unit || 'lbs'
+                    };
+                    if (data.cardio_config) entry.cardio_config = data.cardio_config;
+                    exercises.push(entry);
+                    return;
+                }
 
                 const primaryName = data.exercises?.a || '';
                 const alternates = [];

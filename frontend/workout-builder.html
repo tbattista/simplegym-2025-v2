@@ -63,7 +63,10 @@
     <link rel="stylesheet" href="/static/assets/css/components/note-card.css?v=1.0.0" />
 
     <!-- Desktop Builder CSS -->
-    <link rel="stylesheet" href="/static/assets/css/desktop-builder.css?v=20260222-02" />
+    <link rel="stylesheet" href="/static/assets/css/desktop-builder.css?v=20260222-03" />
+
+    <!-- Activity Log CSS (shared styles for cardio editor: activity type grid, RPE selector) -->
+    <link rel="stylesheet" href="/static/assets/css/activity-log.css?v=1.0.0" />
 
     <!-- Exercise Database CSS (shared card styles for sidebar) -->
     <link rel="stylesheet" href="/static/assets/css/exercise-database.css?v=2.0.2" />
@@ -210,13 +213,16 @@
                           <button type="button" class="btn btn-outline-primary w-100 mb-2" id="addExerciseGroupBtnVisible">
                             <i class="bx bx-plus me-1"></i>Add Exercise
                           </button>
-                          <!-- Add Note + Add Block (Side by Side) -->
+                          <!-- Add Cardio + Note + Block (Side by Side) -->
                           <div class="d-flex gap-2 mb-2">
+                            <button type="button" class="btn btn-outline-secondary btn-sm flex-fill" id="mobileAddCardioBtn">
+                              <i class="bx bx-heart-circle me-1"></i>Cardio
+                            </button>
                             <button type="button" class="btn btn-outline-secondary btn-sm flex-fill" id="mobileAddNoteBtn">
-                              <i class="bx bx-note me-1"></i>Add Note
+                              <i class="bx bx-note me-1"></i>Note
                             </button>
                             <button type="button" class="btn btn-outline-secondary btn-sm flex-fill" onclick="window.ExerciseGroupManager?.addBlock?.()">
-                              <i class="bx bx-collection me-1"></i>Add Block
+                              <i class="bx bx-collection me-1"></i>Block
                             </button>
                           </div>
                           <!-- Import Workout Button -->
@@ -392,13 +398,16 @@
                           <!-- Add buttons inside card -->
                           <div class="d-flex gap-2 p-2 border-top">
                             <button type="button" class="btn btn-outline-secondary btn-sm flex-fill" id="desktopAddGroupBtn">
-                              <i class="bx bx-plus me-1"></i>Add Exercise
+                              <i class="bx bx-plus me-1"></i>Exercise
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm flex-fill" id="desktopAddCardioBtn">
+                              <i class="bx bx-heart-circle me-1"></i>Cardio
                             </button>
                             <button type="button" class="btn btn-outline-secondary btn-sm flex-fill" id="desktopAddNoteBtn">
-                              <i class="bx bx-note me-1"></i>Add Note
+                              <i class="bx bx-comment me-1"></i>Note
                             </button>
                             <button type="button" class="btn btn-outline-secondary btn-sm flex-fill" onclick="window.ExerciseGroupManager?.addBlock?.()">
-                              <i class="bx bx-collection me-1"></i>Add Block
+                              <i class="bx bx-collection me-1"></i>Block
                             </button>
                           </div>
                         </div>
@@ -596,7 +605,8 @@
 
     <!-- Common Utilities (MUST load before other dashboard scripts) -->
     <script src="/static/assets/js/utils/common-utils.js"></script>
-    
+    <script src="/static/assets/js/utils/exercise-data-utils.js"></script>
+
     <!-- Toast Notifications -->
     <script src="/static/assets/js/utils/toast-notifications.js"></script>
     
@@ -628,11 +638,14 @@
     <!-- Exercise Autocomplete Component -->
     <script src="/static/assets/js/components/exercise-autocomplete.js?v=20251128-01"></script>
     
+    <!-- Activity Type Registry (needed by cardio editor offcanvas) -->
+    <script src="/static/assets/js/services/activity-type-registry.js?v=1.0.0"></script>
+
     <!-- Offcanvas Manager (Phase 1 - Centralized lifecycle) -->
     <script src="/static/assets/js/components/offcanvas/offcanvas-manager.js?v=20251220-01"></script>
-    
+
     <!-- Unified Offcanvas Factory (Modular v3.0.0) -->
-    <script type="module" src="/static/assets/js/components/offcanvas/index.js?v=20260209-01"></script>
+    <script type="module" src="/static/assets/js/components/offcanvas/index.js?v=20260222-01"></script>
 
     <!-- UI Helpers -->
     <script src="/static/assets/js/dashboard/ui-helpers.js?v=20251020-04"></script>
@@ -640,14 +653,14 @@
     <!-- Desktop Builder Modules (load after card-renderer, exercise-autocomplete, before managers) -->
     <script src="/static/assets/js/modules/desktop-card-renderer.js?v=20260222-02"></script>
     <script src="/static/assets/js/modules/desktop-sidebar.js?v=20260221-02"></script>
-    <script src="/static/assets/js/modules/desktop-view-adapter.js?v=20260222-02"></script>
+    <script src="/static/assets/js/modules/desktop-view-adapter.js?v=20260222-03"></script>
 
     <!-- Exercise group management -->
     <script src="/static/assets/js/dashboard/section-manager.js?v=20260218-01"></script>
     <script src="/static/assets/js/dashboard/exercise-group-manager.js?v=20260218-01"></script>
 
     <!-- Form data collection -->
-    <script src="/static/assets/js/dashboard/form-data-collector.js?v=20260208-01"></script>
+    <script src="/static/assets/js/dashboard/form-data-collector.js?v=20260222-01"></script>
 
     <!-- Editor UI -->
     <script src="/static/assets/js/dashboard/workout-editor-offcanvas.js?v=20260208-01"></script>
@@ -1061,6 +1074,59 @@
             if (addNoteBtn) {
                 addNoteBtn.addEventListener('click', () => {
                     if (window.handleAddTemplateNote) window.handleAddTemplateNote();
+                });
+            }
+
+            // Wire Add Cardio button (mobile)
+            const addCardioBtn = document.getElementById('mobileAddCardioBtn');
+            if (addCardioBtn) {
+                addCardioBtn.addEventListener('click', () => {
+                    // For mobile, add a cardio exercise group with standard mobile card rendering
+                    const groupId = 'group-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+                    const groupData = {
+                        exercises: { a: '' },
+                        sets: '', reps: '', rest: '',
+                        default_weight: '', default_weight_unit: 'lbs',
+                        group_type: 'cardio',
+                        cardio_config: {
+                            activity_type: '',
+                            duration_minutes: null,
+                            distance: null,
+                            distance_unit: 'mi',
+                            target_pace: '',
+                            target_heart_rate: null,
+                            target_calories: null,
+                            target_rpe: null,
+                            elevation_gain: null,
+                            elevation_unit: 'ft',
+                            activity_details: {},
+                            notes: ''
+                        }
+                    };
+                    window.exerciseGroupsData[groupId] = groupData;
+
+                    const container = document.getElementById('exerciseGroups');
+                    if (!container) return;
+
+                    const existingCards = container.querySelectorAll('.exercise-group-card');
+                    const index = existingCards.length;
+                    const cardHtml = window.createExerciseGroupCard(groupId, groupData, index + 1, index, index + 1);
+
+                    const sectionId = 'section-' + Date.now() + '-' + Math.random().toString(36).substr(2, 6);
+                    const sectionEl = document.createElement('div');
+                    sectionEl.className = 'workout-section';
+                    sectionEl.dataset.sectionId = sectionId;
+                    sectionEl.dataset.sectionType = 'standard';
+                    const exercisesEl = document.createElement('div');
+                    exercisesEl.className = 'section-exercises';
+                    exercisesEl.innerHTML = cardHtml;
+                    sectionEl.appendChild(exercisesEl);
+                    container.appendChild(sectionEl);
+
+                    if (window.markEditorDirty) window.markEditorDirty();
+                    if (window.showToast) {
+                        window.showToast({ message: 'Added cardio activity', type: 'success', delay: 2000 });
+                    }
                 });
             }
         }

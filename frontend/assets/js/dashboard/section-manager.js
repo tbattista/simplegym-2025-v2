@@ -58,7 +58,7 @@ const SectionManager = {
         exercisesEl.className = 'section-exercises';
 
         if (section.exercises.length === 0 && isNamed) {
-            exercisesEl.innerHTML = this._placeholderHtml();
+            exercisesEl.innerHTML = this._placeholderHtml(section.section_id);
         } else {
             const totalExercises = section.exercises.length;
             section.exercises.forEach((exercise, exIndex) => {
@@ -78,6 +78,11 @@ const SectionManager = {
         // Apply left-border chain classes to exercise cards in named sections
         if (isNamed) {
             this._applyBlockChainClasses(exercisesEl);
+        }
+
+        // Add zone for named sections with exercises
+        if (isNamed && section.exercises.length > 0) {
+            sectionEl.insertAdjacentHTML('beforeend', this._addZoneHtml(section.section_id));
         }
 
         return sectionEl;
@@ -106,14 +111,23 @@ const SectionManager = {
     },
 
     /**
-     * Placeholder HTML for empty named sections.
+     * Placeholder HTML for empty named sections (clickable).
      */
-    _placeholderHtml() {
-        return `<div class="section-placeholder text-center py-4">
+    _placeholderHtml(sectionId) {
+        return `<div class="section-placeholder text-center py-4" data-section-id="${sectionId}">
             <i class="bx bx-plus-circle text-muted" style="font-size: 1.5rem;"></i>
             <div class="text-muted mt-1" style="font-size: 0.8rem;">
-                Drop exercises here or tap + Add
+                Drop exercises here or tap to add
             </div>
+        </div>`;
+    },
+
+    /**
+     * Add-zone HTML for the bottom of populated named sections.
+     */
+    _addZoneHtml(sectionId) {
+        return `<div class="section-add-zone" data-section-id="${sectionId}">
+            <i class="bx bx-plus"></i> Add Exercise
         </div>`;
     },
 
@@ -158,10 +172,6 @@ const SectionManager = {
                            placeholder="Block name..." maxlength="50">
                 </div>
                 <div class="section-actions">
-                    <button type="button" class="btn-toggle-description" title="Notes">
-                        <i class="bx bx-note"></i>
-                    </button>
-                    <button type="button" class="btn-add-to-section" data-section-id="${section.section_id}">+ Add</button>
                     <button type="button" class="btn-section-menu" data-section-id="${section.section_id}">
                         <i class="bx bx-dots-vertical-rounded"></i>
                     </button>
@@ -221,7 +231,7 @@ const SectionManager = {
 
     /**
      * Add a new empty named section.
-     * User adds exercises via the "+ Add" button on the section header.
+     * User adds exercises by clicking the placeholder or the add zone.
      * @param {string} type - Section type: 'superset', 'circuit', 'tabata', 'emom', 'amrap'
      */
     addNamedSection(type = 'superset') {
@@ -294,6 +304,11 @@ const SectionManager = {
         // Re-apply block chain classes
         if (sectionEl.dataset.sectionType !== 'standard') {
             this._applyBlockChainClasses(exercisesContainer);
+
+            // Ensure add zone exists
+            if (!sectionEl.querySelector('.section-add-zone')) {
+                sectionEl.insertAdjacentHTML('beforeend', this._addZoneHtml(sectionId));
+            }
         }
 
         // Auto-open editor
@@ -491,6 +506,11 @@ const SectionManager = {
         // Re-chain target section
         this._applyBlockChainClasses(targetExercises);
 
+        // Ensure add zone exists on target
+        if (!targetSection.querySelector('.section-add-zone')) {
+            targetSection.insertAdjacentHTML('beforeend', this._addZoneHtml(targetSectionId));
+        }
+
         // Cleanup source section and re-chain remaining cards
         if (sourceSection) {
             this._cleanupSection(sourceSection);
@@ -528,9 +548,11 @@ const SectionManager = {
 
         if (remainingCards.length === 0) {
             if (isNamed) {
-                // Show placeholder — user can add exercises back via "+ Add"
+                // Remove add zone and show placeholder
+                const addZone = sectionEl.querySelector('.section-add-zone');
+                if (addZone) addZone.remove();
                 if (!exercisesContainer.querySelector('.section-placeholder')) {
-                    exercisesContainer.innerHTML = this._placeholderHtml();
+                    exercisesContainer.innerHTML = this._placeholderHtml(sectionEl.dataset.sectionId);
                 }
             } else {
                 sectionEl.remove();
@@ -650,7 +672,14 @@ const SectionManager = {
                 if (placeholder) placeholder.remove();
 
                 // Re-chain target section
-                if (isNamed) this._applyBlockChainClasses(exercisesEl);
+                if (isNamed) {
+                    this._applyBlockChainClasses(exercisesEl);
+                    // Ensure add zone exists
+                    const sectionEl = exercisesEl.closest('.workout-section');
+                    if (sectionEl && !sectionEl.querySelector('.section-add-zone')) {
+                        sectionEl.insertAdjacentHTML('beforeend', this._addZoneHtml(sectionEl.dataset.sectionId));
+                    }
+                }
 
                 // Cleanup source section and re-chain remaining cards
                 const fromSectionEl = evt.from.closest('.workout-section');
@@ -688,14 +717,6 @@ const SectionManager = {
         container._sectionHeaderListenersInit = true;
 
         container.addEventListener('click', (e) => {
-            // "+ Add" button on section header
-            const addBtn = e.target.closest('.btn-add-to-section');
-            if (addBtn) {
-                const sectionId = addBtn.dataset.sectionId;
-                if (sectionId) this.addExerciseToSection(sectionId);
-                return;
-            }
-
             // Section menu button
             const menuBtn = e.target.closest('.btn-section-menu');
             if (menuBtn) {
@@ -704,18 +725,21 @@ const SectionManager = {
                 return;
             }
 
-            // Description toggle button
-            const descBtn = e.target.closest('.btn-toggle-description');
-            if (descBtn) {
-                const section = descBtn.closest('.workout-section');
-                const area = section?.querySelector('.section-description-area');
-                if (area) {
-                    const isHidden = area.style.display === 'none';
-                    area.style.display = isHidden ? 'block' : 'none';
-                    if (isHidden) {
-                        area.querySelector('.section-description-input')?.focus();
-                    }
-                }
+            // Placeholder click to add exercise (empty named sections)
+            const placeholder = e.target.closest('.section-placeholder');
+            if (placeholder) {
+                const sectionId = placeholder.dataset.sectionId
+                    || placeholder.closest('.workout-section')?.dataset.sectionId;
+                if (sectionId) this.addExerciseToSection(sectionId);
+                return;
+            }
+
+            // Add zone click to add exercise (bottom of populated named sections)
+            const addZone = e.target.closest('.section-add-zone');
+            if (addZone) {
+                const sectionId = addZone.dataset.sectionId
+                    || addZone.closest('.workout-section')?.dataset.sectionId;
+                if (sectionId) this.addExerciseToSection(sectionId);
                 return;
             }
         });
@@ -776,10 +800,15 @@ const SectionManager = {
 
         const sectionEl = document.querySelector(`.workout-section[data-section-id="${sectionId}"]`);
         const hasExercises = sectionEl?.querySelectorAll('.exercise-group-card').length > 0;
+        const descArea = sectionEl?.querySelector('.section-description-area');
+        const isDescVisible = descArea && descArea.style.display !== 'none';
 
         const menu = document.createElement('div');
         menu.className = 'section-context-menu';
         menu.innerHTML = `
+            <button class="section-menu-item" data-action="toggle-notes">
+                <i class="bx bx-note"></i> ${isDescVisible ? 'Hide Notes' : 'Notes'}
+            </button>
             <button class="section-menu-item" data-action="rename">
                 <i class="bx bx-edit-alt"></i> Rename
             </button>
@@ -796,6 +825,15 @@ const SectionManager = {
             if (!item) return;
 
             const action = item.dataset.action;
+            if (action === 'toggle-notes') {
+                if (descArea) {
+                    const isHidden = descArea.style.display === 'none';
+                    descArea.style.display = isHidden ? 'block' : 'none';
+                    if (isHidden) {
+                        descArea.querySelector('.section-description-input')?.focus();
+                    }
+                }
+            }
             if (action === 'rename') this.renameSection(sectionId);
             if (action === 'dissolve') this.dissolveSection(sectionId);
             if (action === 'delete') this.deleteSection(sectionId);

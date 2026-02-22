@@ -367,25 +367,15 @@ class WorkoutCard {
         if (!this.config.showExercisePreview) return '';
 
         const workoutData = this.workout.workout_data || this.workout;
-        const exercises = [];
-
-        // Collect exercises from groups (fall back to sections)
-        if (workoutData.exercise_groups && workoutData.exercise_groups.length > 0) {
-            workoutData.exercise_groups.forEach(group => {
-                if (group.exercises) {
-                    Object.values(group.exercises).forEach(name => {
-                        if (name) exercises.push(name);
-                    });
-                }
-            });
-        } else if (workoutData.sections && workoutData.sections.length > 0) {
-            workoutData.sections.forEach(section => {
-                (section.exercises || []).forEach(ex => {
-                    if (ex.name) exercises.push(ex.name);
-                    (ex.alternates || []).forEach(alt => { if (alt) exercises.push(alt); });
+        const exercises = window.ExerciseDataUtils
+            ? ExerciseDataUtils.getExerciseNames(workoutData)
+            : (() => {
+                const names = [];
+                (workoutData.exercise_groups || []).forEach(group => {
+                    if (group.exercises) Object.values(group.exercises).forEach(n => { if (n) names.push(n); });
                 });
-            });
-        }
+                return names;
+            })();
 
         if (exercises.length === 0) {
             return `
@@ -439,11 +429,9 @@ class WorkoutCard {
         if (!window.muscleGroupSummaryService) return '';
 
         const workoutData = this.workout.workout_data || this.workout;
-        let exerciseGroups = workoutData.exercise_groups || [];
-        // Fall back to generating exercise_groups from sections for muscle summary
-        if (exerciseGroups.length === 0 && workoutData.sections?.length > 0 && window.sectionsToExerciseGroups) {
-            exerciseGroups = window.sectionsToExerciseGroups(workoutData.sections);
-        }
+        const exerciseGroups = window.ExerciseDataUtils
+            ? ExerciseDataUtils.getExerciseGroups(workoutData)
+            : (workoutData.exercise_groups || []);
         const summary = window.muscleGroupSummaryService.forCard(exerciseGroups);
 
         if (summary.totalExercises === 0 || !summary.displayText) return '';
@@ -782,21 +770,13 @@ class WorkoutCard {
      * Get total exercise count
      */
     _getTotalExerciseCount(workoutData) {
-        let count = 0;
-
-        // Count exercises in groups (fall back to sections)
-        if (workoutData.exercise_groups && workoutData.exercise_groups.length > 0) {
-            workoutData.exercise_groups.forEach(group => {
-                count += Object.keys(group.exercises || {}).length;
-            });
-        } else if (workoutData.sections && workoutData.sections.length > 0) {
-            workoutData.sections.forEach(section => {
-                (section.exercises || []).forEach(ex => {
-                    count += 1 + (ex.alternates || []).length;
-                });
-            });
+        if (window.ExerciseDataUtils) {
+            return ExerciseDataUtils.getExerciseCount(workoutData);
         }
-
+        let count = 0;
+        (workoutData.exercise_groups || []).forEach(group => {
+            count += Object.keys(group.exercises || {}).length;
+        });
         return count;
     }
     

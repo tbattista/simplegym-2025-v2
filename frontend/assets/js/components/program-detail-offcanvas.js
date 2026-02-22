@@ -292,7 +292,7 @@ class ProgramDetailOffcanvas {
         // Find full workout details from config.workouts
         const fullWorkout = this.config.workouts.find(w => w.id === programWorkout.workout_id);
         const workoutName = programWorkout.custom_name || fullWorkout?.name || 'Unknown Workout';
-        const exerciseCount = fullWorkout?.exercise_groups?.length || 0;
+        const exerciseCount = window.ExerciseDataUtils ? ExerciseDataUtils.getGroupCount(fullWorkout || {}) : (fullWorkout?.exercise_groups?.length || 0);
 
         return `
             <div class="workout-chip" data-workout-id="${programWorkout.workout_id}" data-order="${index}">
@@ -573,7 +573,7 @@ class ProgramDetailOffcanvas {
         (program.workouts || []).forEach(pw => {
             const workout = this.config.workouts.find(w => w.id === pw.workout_id);
             if (workout) {
-                total += workout.exercise_groups?.length || 0;
+                total += window.ExerciseDataUtils ? ExerciseDataUtils.getGroupCount(workout) : (workout.exercise_groups?.length || 0);
             }
         });
 

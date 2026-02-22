@@ -46,7 +46,7 @@ function renderProgramsView() {
         const workoutCount = program.workouts?.length || 0;
         const totalExercises = program.workouts?.reduce((sum, pw) => {
             const workout = window.ffn.workouts.find(w => w.id === pw.workout_id);
-            return sum + (workout?.exercise_groups?.length || 0);
+            return sum + (window.ExerciseDataUtils ? ExerciseDataUtils.getGroupCount(workout || {}) : (workout?.exercise_groups?.length || 0));
         }, 0) || 0;
         
         return `

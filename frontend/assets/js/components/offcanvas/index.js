@@ -54,6 +54,11 @@ import {
     createNotePositionPicker
 } from './offcanvas-notes.js';
 
+// Import cardio editor
+import {
+    createCardioEditor
+} from './offcanvas-cardio-editor.js';
+
 // Import feedback components
 import {
     createFeedbackOffcanvas
@@ -188,6 +193,14 @@ class UnifiedOffcanvasFactory {
 
     static createNotePositionPicker(config) {
         return createNotePositionPicker(config);
+    }
+
+    /* ============================================
+       CARDIO OFFCANVAS
+       ============================================ */
+
+    static createCardioEditor(config) {
+        return createCardioEditor(config);
     }
 
     /* ============================================
@@ -329,7 +342,10 @@ export {
     createFeedbackOffcanvas,
 
     // Import
-    createImportWizard
+    createImportWizard,
+
+    // Cardio
+    createCardioEditor
 };
 
 console.log('📦 UnifiedOffcanvasFactory v3.0.0 (modular) loaded');

@@ -26,7 +26,7 @@
     // ============================================
 
     window.renderFavoriteCard = function(workout) {
-        const exerciseCount = workout.exercise_groups?.length || 0;
+        const exerciseCount = window.ExerciseDataUtils ? ExerciseDataUtils.getGroupCount(workout) : (workout.exercise_groups?.length || 0);
         const esc = window.escapeHtml || function(t) { return t || ''; };
 
         return `

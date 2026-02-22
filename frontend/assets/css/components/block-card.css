@@ -105,55 +105,31 @@
     gap: 4px;
 }
 
-.btn-toggle-description {
-    padding: 2px 6px;
-    font-size: 0.85rem;
-    color: var(--workout-block, #2dd4bf);
-    background: none;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    opacity: 0.5;
-    transition: opacity 0.15s, background 0.15s;
-}
-
-.btn-toggle-description:hover {
-    opacity: 1;
-    background: rgba(45, 212, 191, 0.08);
-}
-
-.btn-add-to-section {
-    padding: 2px 10px;
-    font-size: 0.7rem;
-    color: var(--workout-block, #2dd4bf);
-    background: none;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    opacity: 0.6;
-    transition: opacity 0.15s, background 0.15s;
-}
-
-.btn-add-to-section:hover {
-    opacity: 1;
-    background: rgba(45, 212, 191, 0.08);
-}
-
 .btn-section-menu {
-    padding: 2px 6px;
-    font-size: 0.85rem;
-    color: var(--workout-block, #2dd4bf);
-    background: none;
+    padding: 0.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
     border: none;
     border-radius: 4px;
+    color: var(--bs-secondary);
+    opacity: 0.7;
     cursor: pointer;
-    opacity: 0.5;
-    transition: opacity 0.15s, background 0.15s;
+    transition: color 0.15s ease, background-color 0.15s ease, opacity 0.15s ease;
+    line-height: 1;
 }
 
 .btn-section-menu:hover {
     opacity: 1;
-    background: rgba(45, 212, 191, 0.08);
+    color: var(--bs-body-color);
+    background: rgba(var(--bs-primary-rgb), 0.08);
+}
+
+.btn-section-menu i {
+    font-size: 1.25rem;
+    line-height: 1;
+    display: block;
 }
 
 /* --- Exercise Cards in Block (left-border chain) --- */
@@ -176,23 +152,19 @@
     border-radius: 0 !important;
 }
 
-/* Last card: no top radius, keeps bottom radius */
+/* Last card: no radius (add zone continues below in named sections) */
 .exercise-in-block.block-last.exercise-group-card > .card {
-    border-top-left-radius: 0 !important;
-    border-top-right-radius: 0 !important;
+    border-radius: 0 !important;
 }
 
-/* Single card in block (first+last): only top radius removed */
+/* Single card in block (first+last): no radius (add zone continues below) */
 .exercise-in-block.block-first.block-last.exercise-group-card > .card {
-    border-top-left-radius: 0 !important;
-    border-top-right-radius: 0 !important;
-    border-bottom-left-radius: 0.375rem !important;
-    border-bottom-right-radius: 0.375rem !important;
+    border-radius: 0 !important;
 }
 
-/* Last card gets normal bottom margin for section spacing */
+/* Last card: no bottom margin (add zone follows) */
 .exercise-in-block.block-last.exercise-group-card.compact {
-    margin-bottom: 0.5rem !important;
+    margin-bottom: 0 !important;
 }
 
 /* --- Section Placeholder (empty named section) --- */
@@ -204,6 +176,45 @@
     border-left: 3px solid var(--workout-block, #2dd4bf);
     border-radius: 0 0 0.375rem 0.375rem;
     margin: 0;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+}
+
+.section-placeholder:hover {
+    background: rgba(45, 212, 191, 0.06);
+    border-color: var(--workout-block, #2dd4bf);
+}
+
+.section-placeholder:hover .bx,
+.section-placeholder:hover .text-muted {
+    color: var(--workout-block, #2dd4bf) !important;
+}
+
+/* --- Section Add Zone (bottom of populated named sections) --- */
+.section-add-zone {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 8px 12px;
+    font-size: 0.75rem;
+    color: var(--bs-secondary-color, #999);
+    border: 1px dashed var(--bs-border-color, #ddd);
+    border-left: 3px solid var(--workout-block, #2dd4bf);
+    border-top: none;
+    border-radius: 0 0 0.375rem 0.375rem;
+    margin: 0;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+}
+
+.section-add-zone:hover {
+    background: rgba(45, 212, 191, 0.06);
+    color: var(--workout-block, #2dd4bf);
+}
+
+.section-add-zone .bx {
+    font-size: 0.9rem;
 }
 
 /* --- Section Context Menu --- */
@@ -276,23 +287,22 @@
     border-color: rgba(94, 234, 212, 0.3);
 }
 
-[data-bs-theme="dark"] .btn-toggle-description {
-    color: #5eead4;
-}
-
-[data-bs-theme="dark"] .btn-toggle-description:hover {
-    background: rgba(94, 234, 212, 0.1);
-}
-
-[data-bs-theme="dark"] .btn-add-to-section {
-    color: #5eead4;
-}
-
-[data-bs-theme="dark"] .btn-add-to-section:hover {
-    background: rgba(94, 234, 212, 0.1);
-}
-
 [data-bs-theme="dark"] .btn-section-menu {
+    color: var(--bs-secondary);
+}
+
+[data-bs-theme="dark"] .btn-section-menu:hover {
+    color: var(--bs-body-color);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+[data-bs-theme="dark"] .section-add-zone {
+    border-left-color: #5eead4;
+    color: var(--bs-secondary-color, #888);
+}
+
+[data-bs-theme="dark"] .section-add-zone:hover {
+    background: rgba(94, 234, 212, 0.08);
     color: #5eead4;
 }
 

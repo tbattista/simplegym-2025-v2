@@ -160,15 +160,13 @@ class DashboardWorkoutCard {
    * @private
    */
   _getExerciseCount(workoutData) {
-    let count = 0;
-    
-    // Count exercises in groups
-    if (workoutData.exercise_groups) {
-      workoutData.exercise_groups.forEach(group => {
-        count += Object.keys(group.exercises || {}).length;
-      });
+    if (window.ExerciseDataUtils) {
+      return ExerciseDataUtils.getExerciseCount(workoutData);
     }
-    
+    let count = 0;
+    (workoutData.exercise_groups || []).forEach(group => {
+      count += Object.keys(group.exercises || {}).length;
+    });
     return count || 0;
   }
   

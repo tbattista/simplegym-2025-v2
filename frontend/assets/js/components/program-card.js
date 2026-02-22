@@ -385,9 +385,10 @@ class ProgramCard {
             this.program.workouts.forEach(programWorkout => {
                 const workout = this.config.workouts.find(w => w.id === programWorkout.workout_id);
                 if (workout) {
-                    // Count exercises in groups
-                    if (workout.exercise_groups) {
-                        workout.exercise_groups.forEach(group => {
+                    if (window.ExerciseDataUtils) {
+                        count += ExerciseDataUtils.getExerciseCount(workout);
+                    } else {
+                        (workout.exercise_groups || []).forEach(group => {
                             count += Object.keys(group.exercises || {}).length;
                         });
                     }

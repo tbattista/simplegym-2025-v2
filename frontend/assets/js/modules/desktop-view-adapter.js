@@ -28,10 +28,14 @@
     const _mobileUpdatePreview = window.updateExerciseGroupCardPreview;
 
     /**
-     * Override createExerciseGroupCard to use desktop row renderer
+     * Override createExerciseGroupCard to use desktop row renderer.
+     * Routes to the correct card type based on group_type.
      */
     window.createExerciseGroupCard = function(groupId, groupData, groupNumber, index, totalCards) {
         if (window.desktopCardRenderer) {
+            if (groupData && groupData.group_type === 'cardio') {
+                return window.desktopCardRenderer.createCardioRow(groupId, groupData);
+            }
             return window.desktopCardRenderer.createExerciseGroupRow(groupId, groupData, groupNumber, index, totalCards);
         }
         return _mobileCreateCard(groupId, groupData, groupNumber, index, totalCards);
@@ -141,6 +145,37 @@
             };
         }
 
+        // Wire cardio full-edit offcanvas
+        window.openCardioEditor = function(groupId) {
+            const groupData = window.exerciseGroupsData[groupId];
+            if (!groupData) return;
+
+            if (window.UnifiedOffcanvasFactory && window.UnifiedOffcanvasFactory.createCardioEditor) {
+                window.UnifiedOffcanvasFactory.createCardioEditor({
+                    groupId: groupId,
+                    cardioConfig: groupData.cardio_config || {},
+                    onSave: function(updatedConfig) {
+                        groupData.cardio_config = updatedConfig;
+                        // Sync activity_type to exercises.a for form-data-collector
+                        if (updatedConfig.activity_type) {
+                            groupData.exercises = groupData.exercises || {};
+                            groupData.exercises.a = updatedConfig.activity_type;
+                        }
+                        // Update row preview
+                        if (window.desktopCardRenderer) {
+                            window.desktopCardRenderer.updateCardioRowPreview(groupId, groupData);
+                        }
+                        if (window.markEditorDirty) window.markEditorDirty();
+                    },
+                    onDelete: function() {
+                        if (window.deleteExerciseGroupCard) {
+                            window.deleteExerciseGroupCard(groupId);
+                        }
+                    }
+                });
+            }
+        };
+
         console.log('✅ Desktop view initialization complete');
     }
 
@@ -166,8 +201,8 @@
 
                 // Update block membership based on new position (exercise cards only)
                 const movedCard = evt.item;
-                if (movedCard.classList.contains('template-note-card')) {
-                    // Note card moved — just mark dirty
+                if (movedCard.classList.contains('template-note-card') || movedCard.dataset.cardType === 'note') {
+                    // Note card moved — just mark dirty, skip block logic
                     if (window.markEditorDirty) window.markEditorDirty();
                     return;
                 }
@@ -352,6 +387,64 @@
             addNoteBtn.addEventListener('click', () => {
                 if (window.handleAddTemplateNote) window.handleAddTemplateNote();
             });
+        }
+
+        // Wire Add Cardio button
+        const addCardioBtn = document.getElementById('desktopAddCardioBtn');
+        if (addCardioBtn) {
+            addCardioBtn.addEventListener('click', () => {
+                addCardioActivity();
+            });
+        }
+    }
+
+    /**
+     * Add a new cardio activity card to the exercise list
+     */
+    function addCardioActivity() {
+        const container = document.getElementById('exerciseGroups');
+        if (!container || !window.desktopCardRenderer) return;
+
+        const groupId = 'group-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+        const groupData = {
+            exercises: { a: '' },
+            sets: '', reps: '', rest: '',
+            default_weight: '', default_weight_unit: 'lbs',
+            group_type: 'cardio',
+            cardio_config: {
+                activity_type: '',
+                duration_minutes: null,
+                distance: null,
+                distance_unit: 'mi',
+                target_pace: '',
+                target_heart_rate: null,
+                target_calories: null,
+                target_rpe: null,
+                elevation_gain: null,
+                elevation_unit: 'ft',
+                activity_details: {},
+                notes: ''
+            }
+        };
+
+        const cardHtml = window.desktopCardRenderer.createCardioRow(groupId, groupData);
+
+        // Wrap in a standard section for collectSections() compatibility
+        const sectionId = 'section-' + Date.now() + '-' + Math.random().toString(36).substr(2, 6);
+        const sectionEl = document.createElement('div');
+        sectionEl.className = 'workout-section';
+        sectionEl.dataset.sectionId = sectionId;
+        sectionEl.dataset.sectionType = 'standard';
+        const exercisesEl = document.createElement('div');
+        exercisesEl.className = 'section-exercises';
+        exercisesEl.innerHTML = cardHtml;
+        sectionEl.appendChild(exercisesEl);
+
+        container.appendChild(sectionEl);
+
+        if (window.markEditorDirty) window.markEditorDirty();
+        if (window.showToast) {
+            window.showToast({ message: 'Added cardio activity', type: 'success', delay: 2000 });
         }
     }
 

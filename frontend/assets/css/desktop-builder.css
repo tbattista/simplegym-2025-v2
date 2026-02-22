@@ -532,13 +532,16 @@
 }
 
 /* ============================================
-   TEMPLATE NOTES (DESKTOP) - Flat row style
-   Note rows use .desktop-exercise-row base class
-   and inherit grid, padding, borders, drag handle
+   ACTIVITY CARD VARIANTS
+   Note and cardio rows use .desktop-exercise-row
+   base class and inherit grid, padding, borders
    ============================================ */
 
-/* Note content column — icon + text */
-.desktop-note-row .note-content-col {
+/* --- Note Row --- */
+
+/* Note content spans columns 2-5 for full-width text */
+.desktop-note-row .note-content-spanning {
+  grid-column: 2 / 6;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -564,15 +567,73 @@
   text-overflow: ellipsis;
 }
 
-.desktop-note-row .note-edit-col {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* Dark mode */
 [data-bs-theme="dark"] .desktop-note-row .note-row-icon {
   color: #94a3b8;
+}
+
+/* --- Cardio Row --- */
+
+.desktop-cardio-row .cardio-type-icon {
+  font-size: 1rem;
+  color: var(--bs-success);
+  margin-right: 2px;
+  flex-shrink: 0;
+}
+
+.desktop-cardio-row .cardio-name-editable {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.desktop-cardio-row .display-value.empty-value {
+  font-style: italic;
+  color: var(--bs-secondary-color);
+}
+
+[data-bs-theme="dark"] .desktop-cardio-row .cardio-type-icon {
+  color: #4ade80;
+}
+
+/* --- Activity Autocomplete Dropdown --- */
+
+.activity-autocomplete-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 1050;
+  background: var(--bs-body-bg);
+  border: 1px solid var(--bs-border-color);
+  border-top: none;
+  border-radius: 0 0 var(--bs-border-radius) var(--bs-border-radius);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.activity-autocomplete-item {
+  padding: 6px 10px;
+  cursor: pointer;
+  font-size: 0.8125rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.activity-autocomplete-item:hover {
+  background: rgba(var(--bs-primary-rgb), 0.08);
+}
+
+.activity-autocomplete-item i {
+  font-size: 1rem;
+  color: var(--bs-secondary-color);
+  flex-shrink: 0;
+}
+
+[data-bs-theme="dark"] .activity-autocomplete-dropdown {
+  background: var(--bs-body-bg);
+  border-color: rgba(255, 255, 255, 0.1);
 }
 
 /* ============================================

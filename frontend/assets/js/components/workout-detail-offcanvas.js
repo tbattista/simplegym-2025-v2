@@ -191,9 +191,10 @@ class WorkoutDetailOffcanvas {
         
         html += '</div>';
         
-        // Exercise Groups (prefer exercise_groups, fall back to sections)
-        const exerciseGroups = workoutData.exercise_groups || [];
-        const sections = workoutData.sections || [];
+        // Exercise Groups (utility normalizes sections → groups)
+        const exerciseGroups = window.ExerciseDataUtils
+            ? ExerciseDataUtils.getExerciseGroups(workoutData)
+            : (workoutData.exercise_groups || []);
 
         if (exerciseGroups.length > 0) {
             html += '<h6 class="mb-3">Exercises</h6>';
@@ -235,39 +236,6 @@ class WorkoutDetailOffcanvas {
                         </div>
                     </div>
                 `;
-            });
-        } else if (sections.length > 0) {
-            // Fallback: render from sections data when exercise_groups is empty
-            html += '<h6 class="mb-3">Exercises</h6>';
-
-            sections.forEach(section => {
-                (section.exercises || []).forEach(exercise => {
-                    const exercises = [];
-                    if (exercise.name) exercises.push({ label: '', name: exercise.name });
-                    (exercise.alternates || []).forEach((alt, i) => {
-                        if (alt) exercises.push({ label: `Alt${i > 0 ? (i + 1) : ''}: `, name: alt });
-                    });
-
-                    let exercisesHtml = exercises.length > 0
-                        ? exercises.map(ex =>
-                            `<div class="exercise-line">${ex.label ? `<span class="text-muted">${ex.label}</span>` : ''}${this._escapeHtml(ex.name)}</div>`
-                        ).join('')
-                        : '<div class="exercise-line text-muted">No exercises</div>';
-
-                    const parts = [`${exercise.sets || '3'} sets`, `${exercise.reps || '8-12'} reps`, `${exercise.rest || '60s'} rest`];
-                    if (exercise.default_weight) {
-                        parts.push(`${exercise.default_weight} ${exercise.default_weight_unit || 'lbs'}`);
-                    }
-
-                    html += `
-                        <div class="card mb-2">
-                            <div class="card-body py-2 px-3">
-                                <div class="exercise-list mb-1">${exercisesHtml}</div>
-                                <div class="exercise-meta-text text-muted small">${parts.join(' • ')}</div>
-                            </div>
-                        </div>
-                    `;
-                });
             });
         }
         

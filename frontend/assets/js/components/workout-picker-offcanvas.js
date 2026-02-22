@@ -247,7 +247,7 @@ class WorkoutPickerOffcanvas {
 
         listEl.innerHTML = this.filteredWorkouts.map(workout => {
             const isSelected = this.selectedIds.has(workout.id);
-            const exerciseCount = workout.exercise_groups?.length || 0;
+            const exerciseCount = window.ExerciseDataUtils ? ExerciseDataUtils.getGroupCount(workout) : (workout.exercise_groups?.length || 0);
             const tags = workout.tags || [];
 
             return `
