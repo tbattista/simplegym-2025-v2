@@ -644,6 +644,10 @@ button {
     transform: scale(0.93);
 }
 
+.builder-fab-more {
+    background: var(--bs-warning);
+}
+
 .builder-fab-save {
     background: var(--bs-primary);
 }

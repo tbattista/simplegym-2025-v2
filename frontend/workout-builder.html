@@ -197,14 +197,9 @@
                               <i class="bx bx-list-ul me-1"></i>
                               Exercises
                             </h6>
-                            <div class="d-flex gap-1">
-                              <button type="button" class="btn btn-sm btn-icon btn-outline-secondary" id="mobileMoreOptionsBtn" title="More options">
-                                <i class="bx bx-dots-vertical-rounded"></i>
-                              </button>
-                              <button type="button" class="btn btn-sm btn-outline-secondary" id="reorderExercisesBtn">
-                                <i class="bx bx-sort me-1"></i>Reorder
-                              </button>
-                            </div>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" id="reorderExercisesBtn">
+                              <i class="bx bx-sort me-1"></i>Reorder
+                            </button>
                           </div>
                           <div id="exerciseGroups" class="accordion accordion-workout-groups mb-2">
                             <!-- Exercise groups will be added here as accordion items -->
@@ -236,6 +231,9 @@
 
                 <!-- Floating FABs (Save + Go) - Mobile Only -->
                 <div class="builder-floating-fabs" id="builderFloatingFabs" style="display: none;">
+                  <button type="button" class="builder-fab builder-fab-more" id="mobileMoreOptionsBtn" title="More options" aria-label="More options">
+                    <i class="bx bx-dots-vertical-rounded"></i>
+                  </button>
                   <button type="button" class="builder-fab builder-fab-save" id="mobileSaveFab" title="Save workout" aria-label="Save workout">
                     <i class="bx bx-save"></i>
                   </button>
