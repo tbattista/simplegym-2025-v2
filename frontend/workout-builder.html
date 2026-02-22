@@ -194,15 +194,24 @@
                               <i class="bx bx-list-ul me-1"></i>
                               Exercises
                             </h6>
-                            <button type="button" class="btn btn-sm btn-outline-secondary" id="reorderExercisesBtn">
-                              <i class="bx bx-sort me-1"></i>Reorder
-                            </button>
+                            <div class="d-flex gap-1">
+                              <button type="button" class="btn btn-sm btn-icon btn-outline-secondary" id="mobileMoreOptionsBtn" title="More options">
+                                <i class="bx bx-dots-vertical-rounded"></i>
+                              </button>
+                              <button type="button" class="btn btn-sm btn-outline-secondary" id="reorderExercisesBtn">
+                                <i class="bx bx-sort me-1"></i>Reorder
+                              </button>
+                            </div>
                           </div>
                           <div id="exerciseGroups" class="accordion accordion-workout-groups mb-2">
                             <!-- Exercise groups will be added here as accordion items -->
                           </div>
-                          <!-- Add Buttons -->
-                          <div class="d-flex gap-2">
+                          <!-- Add Exercise Button (Full Width) -->
+                          <button type="button" class="btn btn-outline-primary w-100 mb-2" id="addExerciseGroupBtnVisible">
+                            <i class="bx bx-plus me-1"></i>Add Exercise
+                          </button>
+                          <!-- Add Note + Add Block (Side by Side) -->
+                          <div class="d-flex gap-2 mb-2">
                             <button type="button" class="btn btn-outline-secondary btn-sm flex-fill" id="mobileAddNoteBtn">
                               <i class="bx bx-note me-1"></i>Add Note
                             </button>
@@ -211,13 +220,23 @@
                             </button>
                           </div>
                           <!-- Import Workout Button -->
-                          <button type="button" class="btn btn-outline-primary w-100 mt-2 import-workout-btn" id="importWorkoutEditorBtn">
+                          <button type="button" class="btn btn-outline-primary w-100 import-workout-btn" id="importWorkoutEditorBtn">
                             <i class="bx bx-import me-1"></i>
                             Import Workout
                           </button>
                         </div>
                       </form>
                     </div>
+
+                <!-- Floating FABs (Save + Go) - Mobile Only -->
+                <div class="builder-floating-fabs" id="builderFloatingFabs" style="display: none;">
+                  <button type="button" class="builder-fab builder-fab-save" id="mobileSaveFab" title="Save workout" aria-label="Save workout">
+                    <i class="bx bx-save"></i>
+                  </button>
+                  <button type="button" class="builder-fab builder-fab-go" id="mobileGoFab" title="Start workout" aria-label="Start workout">
+                    <i class="bx bx-play"></i>
+                  </button>
+                </div>
 
               </div>
               <!-- / MOBILE VIEW -->

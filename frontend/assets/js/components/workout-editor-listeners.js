@@ -343,6 +343,95 @@ function setupWorkoutEditorListeners() {
         }
     });
 
+    // ── Mobile floating FABs (Save + Go) ──
+
+    const mobileSaveFab = document.getElementById('mobileSaveFab');
+    if (mobileSaveFab) {
+        mobileSaveFab.addEventListener('click', () => {
+            const saveBtn = document.getElementById('saveWorkoutBtn');
+            if (saveBtn) saveBtn.click();
+        });
+    }
+
+    const mobileGoFab = document.getElementById('mobileGoFab');
+    if (mobileGoFab) {
+        mobileGoFab.addEventListener('click', () => {
+            const workoutId = window.ffn?.workoutBuilder?.selectedWorkoutId ||
+                            window.ffn?.workoutBuilder?.currentWorkout?.id;
+            if (workoutId) {
+                window.location.href = `workout-mode.html?id=${workoutId}`;
+            } else {
+                alert('Please save the workout first before starting workout mode');
+            }
+        });
+    }
+
+    // ── Mobile More Options button ──
+
+    const mobileMoreBtn = document.getElementById('mobileMoreOptionsBtn');
+    if (mobileMoreBtn) {
+        mobileMoreBtn.addEventListener('click', () => {
+            if (!window.UnifiedOffcanvasFactory) return;
+            window.UnifiedOffcanvasFactory.createMenuOffcanvas({
+                id: 'moreMenuOffcanvas',
+                title: 'More Options',
+                icon: 'bx-dots-vertical-rounded',
+                menuItems: [
+                    {
+                        icon: 'bx-plus-circle',
+                        title: 'New Workout',
+                        description: 'Start editing a new workout template',
+                        onClick: () => {
+                            try { localStorage.removeItem('currentEditingWorkoutId'); } catch (e) {}
+                            if (window.createNewWorkoutInEditor) window.createNewWorkoutInEditor();
+                        }
+                    },
+                    {
+                        icon: 'bx-x',
+                        title: 'Cancel Edit',
+                        description: 'Discard changes and exit',
+                        onClick: () => { window.location.href = 'workout-database.html'; }
+                    },
+                    {
+                        icon: 'bx-share-alt',
+                        title: 'Share Workout',
+                        description: 'Share publicly or create private link',
+                        onClick: () => {
+                            const wid = window.ffn?.workoutBuilder?.selectedWorkoutId ||
+                                       window.ffn?.workoutBuilder?.currentWorkout?.id;
+                            if (wid && window.shareModal) {
+                                window.shareModal.open(wid);
+                            } else if (!wid) {
+                                alert('Please save the workout first before sharing');
+                            }
+                        }
+                    },
+                    {
+                        icon: 'bx-trash',
+                        title: 'Delete Workout',
+                        description: 'This action cannot be undone',
+                        variant: 'danger',
+                        onClick: () => {
+                            const deleteBtn = document.getElementById('deleteWorkoutBtn');
+                            if (deleteBtn) deleteBtn.click();
+                        }
+                    }
+                ]
+            });
+        });
+    }
+
+    // ── Show/hide builder FABs based on editor form visibility ──
+
+    const builderFabs = document.getElementById('builderFloatingFabs');
+    const editorForm = document.getElementById('workoutEditorForm');
+    if (builderFabs && editorForm) {
+        const observer = new MutationObserver(() => {
+            builderFabs.style.display = editorForm.style.display === 'none' ? 'none' : 'flex';
+        });
+        observer.observe(editorForm, { attributes: true, attributeFilter: ['style'] });
+    }
+
     console.log('✅ Workout editor listeners setup');
 }
 

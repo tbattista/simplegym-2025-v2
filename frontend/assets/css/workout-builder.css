@@ -125,9 +125,9 @@
 /* Note: .editor-actions now uses .sticky-footer-base from components/sticky-footer.css */
 /* No custom CSS needed - all styling comes from the shared component */
 
-/* Add padding to workout editor to prevent content from being hidden behind sticky footer */
+/* Add padding to workout editor to clear floating FABs */
 #workoutEditorForm {
-    padding-bottom: 200px;
+    padding-bottom: 140px;
 }
 
 /* Save status styling */
@@ -529,7 +529,7 @@ button {
 
     /* Adjust padding for mobile */
     #workoutEditorForm {
-        padding-bottom: 180px;
+        padding-bottom: 130px;
     }
 }
 
@@ -552,7 +552,7 @@ button {
 
     /* Extra compact for very small screens */
     #workoutEditorForm {
-        padding-bottom: 160px;
+        padding-bottom: 130px;
     }
 
     .editor-actions .btn-group {
@@ -607,4 +607,56 @@ button {
     .workout-editor-empty-state {
         min-height: 250px;
     }
+}
+
+/* ============================================
+   BUILDER FLOATING FABS (Mobile Save + Go)
+   ============================================ */
+
+.builder-floating-fabs {
+    position: fixed;
+    bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+    right: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    z-index: 1050;
+    pointer-events: none;
+}
+
+.builder-fab {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    color: #fff;
+    cursor: pointer;
+    pointer-events: auto;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.builder-fab:active {
+    transform: scale(0.93);
+}
+
+.builder-fab-save {
+    background: var(--bs-primary);
+}
+
+.builder-fab-go {
+    background: var(--bs-success);
+}
+
+/* Save feedback */
+.builder-fab-save.saved {
+    background: var(--bs-success);
+}
+
+[data-bs-theme="dark"] .builder-fab {
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.5);
 }
