@@ -618,7 +618,7 @@ button {
     bottom: calc(16px + env(safe-area-inset-bottom, 0px));
     right: 16px;
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     gap: 10px;
     z-index: 1050;
     pointer-events: none;
