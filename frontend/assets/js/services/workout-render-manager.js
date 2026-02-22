@@ -13,6 +13,7 @@ class WorkoutRenderManager {
         this.noteCardRenderer = options.noteCardRenderer;
         this.timerManager = options.timerManager;
         this.cardManager = null;
+        this._lastSectionMeta = null;
 
         console.log('🎨 Workout Render Manager initialized');
     }
@@ -46,13 +47,22 @@ class WorkoutRenderManager {
         const totalCards = regularCount + bonusCount + noteCount + templateNoteCount;
 
         // Build combined item list (exercises + notes)
-        const allItems = this._buildItemList(currentWorkout, bonusExercises, sessionNotes, templateNotes);
+        const hasSectionBlocks = currentWorkout.sections?.some(s => s.type !== 'standard');
+        const allItems = hasSectionBlocks
+            ? this._buildSectionedItemList(currentWorkout, bonusExercises, sessionNotes, templateNotes)
+            : this._buildItemList(currentWorkout, bonusExercises, sessionNotes, templateNotes);
+        if (!hasSectionBlocks) this._lastSectionMeta = null;
 
         // Apply custom order if exists
         const customOrder = this.sessionService.getExerciseOrder();
         if (customOrder.length > 0) {
             console.log('📋 Applying custom item order:', customOrder);
             this._applyCustomOrder(allItems, customOrder);
+        }
+
+        // Compute section position metadata after custom ordering
+        if (hasSectionBlocks) {
+            this._lastSectionMeta = this._computeSectionMeta(allItems);
         }
 
         // Render items in order
@@ -73,6 +83,11 @@ class WorkoutRenderManager {
         });
 
         container.innerHTML = html;
+
+        // Apply visual block grouping for sectioned workouts
+        if (this._lastSectionMeta) {
+            this._applyWorkoutBlockGrouping(container);
+        }
 
         // Initialize or update Card Manager
         if (!this.cardManager) {
@@ -180,6 +195,226 @@ class WorkoutRenderManager {
         }
 
         return allItems;
+    }
+
+    /**
+     * Build item list using sections data for structured block grouping.
+     * @private
+     */
+    _buildSectionedItemList(currentWorkout, bonusExercises, sessionNotes, templateNotes) {
+        const allItems = [];
+
+        // Build lookup: group_id -> exercise_group
+        const groupLookup = new Map();
+        (currentWorkout.exercise_groups || []).forEach(g => {
+            groupLookup.set(g.group_id, g);
+        });
+
+        // Fallback: name -> exercise_group
+        const nameLookup = new Map();
+        (currentWorkout.exercise_groups || []).forEach(g => {
+            const name = g.exercises?.a;
+            if (name && !nameLookup.has(name)) nameLookup.set(name, g);
+        });
+
+        const placedGroupIds = new Set();
+
+        // Build template notes map for interleaving
+        const templateNotesMap = new Map();
+        (templateNotes || []).forEach(note => {
+            templateNotesMap.set(note.order_index, {
+                type: 'template_note',
+                data: note,
+                name: `template-note-${note.id}`,
+                order_index: note.order_index
+            });
+        });
+
+        // Iterate sections in order
+        let currentIndex = 0;
+        (currentWorkout.sections || []).forEach(section => {
+            const isNamed = section.type !== 'standard';
+
+            section.exercises.forEach(sectionExercise => {
+                // Interleave template notes by order_index
+                while (templateNotesMap.has(currentIndex)) {
+                    allItems.push(templateNotesMap.get(currentIndex));
+                    templateNotesMap.delete(currentIndex);
+                    currentIndex++;
+                }
+
+                // Find matching exercise_group
+                let group = groupLookup.get(sectionExercise.exercise_id);
+                if (!group) group = nameLookup.get(sectionExercise.name);
+
+                if (group) {
+                    allItems.push({
+                        type: 'exercise',
+                        subtype: 'regular',
+                        data: group,
+                        name: group.exercises?.a,
+                        sectionId: isNamed ? section.section_id : null,
+                        sectionType: isNamed ? section.type : null,
+                        sectionName: isNamed ? (section.name || section.type) : null
+                    });
+                    placedGroupIds.add(group.group_id);
+                }
+                currentIndex++;
+            });
+        });
+
+        // Add remaining template notes
+        templateNotesMap.forEach(noteItem => allItems.push(noteItem));
+
+        // Safety net: add exercise_groups not covered by sections
+        (currentWorkout.exercise_groups || []).forEach(group => {
+            if (!placedGroupIds.has(group.group_id)) {
+                allItems.push({
+                    type: 'exercise',
+                    subtype: 'regular',
+                    data: group,
+                    name: group.exercises?.a
+                });
+            }
+        });
+
+        // Add bonus exercises
+        if (bonusExercises && bonusExercises.length > 0) {
+            bonusExercises.forEach(bonus => {
+                allItems.push({
+                    type: 'exercise',
+                    subtype: 'bonus',
+                    data: {
+                        exercises: { a: bonus.name },
+                        sets: bonus.sets,
+                        reps: bonus.reps,
+                        rest: bonus.rest || '60s',
+                        default_weight: bonus.weight,
+                        default_weight_unit: bonus.weight_unit || 'lbs',
+                        notes: bonus.notes
+                    },
+                    name: bonus.name
+                });
+            });
+        }
+
+        // Add session notes
+        if (sessionNotes && sessionNotes.length > 0) {
+            sessionNotes.forEach(note => {
+                allItems.push({
+                    type: 'note',
+                    data: note,
+                    name: `note-${note.id}`
+                });
+            });
+        }
+
+        return allItems;
+    }
+
+    /**
+     * Compute section position metadata from the final ordered items array.
+     * Finds consecutive runs of exercises sharing a sectionId and assigns positional labels.
+     * @private
+     */
+    _computeSectionMeta(allItems) {
+        const meta = new Map();
+
+        // Collect exercise items that have section metadata, with their render indices
+        const sectionItems = [];
+        let renderIndex = 0;
+        allItems.forEach(item => {
+            if (item.sectionId) {
+                sectionItems.push({
+                    renderIndex,
+                    sectionId: item.sectionId,
+                    sectionType: item.sectionType,
+                    sectionName: item.sectionName
+                });
+            }
+            renderIndex++;
+        });
+
+        // Find consecutive runs of same sectionId and assign positions
+        let i = 0;
+        while (i < sectionItems.length) {
+            const sectionId = sectionItems[i].sectionId;
+            let j = i;
+            while (j < sectionItems.length && sectionItems[j].sectionId === sectionId) j++;
+
+            const runLength = j - i;
+            for (let k = i; k < j; k++) {
+                let position;
+                if (runLength === 1) position = 'only';
+                else if (k === i) position = 'first';
+                else if (k === j - 1) position = 'last';
+                else position = 'middle';
+
+                meta.set(sectionItems[k].renderIndex, {
+                    sectionId: sectionItems[k].sectionId,
+                    sectionType: sectionItems[k].sectionType,
+                    sectionName: sectionItems[k].sectionName,
+                    position
+                });
+            }
+            i = j;
+        }
+
+        return meta;
+    }
+
+    /**
+     * Apply visual block grouping to rendered workout cards.
+     * Adds CSS classes and injects block-group-header divs.
+     * @private
+     */
+    _applyWorkoutBlockGrouping(container) {
+        if (!this._lastSectionMeta || this._lastSectionMeta.size === 0) return;
+
+        const iconMap = {
+            circuit: 'bx-refresh',
+            superset: 'bx-transfer',
+            tabata: 'bx-timer',
+            emom: 'bx-time-five',
+            amrap: 'bx-infinite'
+        };
+
+        this._lastSectionMeta.forEach((info, exerciseIndex) => {
+            const card = container.querySelector(`.workout-card[data-exercise-index="${exerciseIndex}"]`);
+            if (!card) return;
+
+            card.classList.add('exercise-in-block');
+
+            switch (info.position) {
+                case 'only':
+                    card.classList.add('block-first', 'block-last');
+                    break;
+                case 'first':
+                    card.classList.add('block-first');
+                    break;
+                case 'middle':
+                    card.classList.add('block-middle');
+                    break;
+                case 'last':
+                    card.classList.add('block-last');
+                    break;
+            }
+
+            // Inject block header before first/only cards
+            if (info.position === 'first' || info.position === 'only') {
+                const icon = iconMap[info.sectionType] || 'bx-collection';
+                const name = info.sectionName || info.sectionType || 'Block';
+                const label = name.charAt(0).toUpperCase() + name.slice(1);
+
+                card.insertAdjacentHTML('beforebegin',
+                    `<div class="block-group-header" data-section-id="${info.sectionId}">
+                        <span class="block-group-label">
+                            <i class="bx ${icon}"></i>
+                            ${label}
+                        </span>
+                    </div>`);
+            }
+        });
     }
 
     /**

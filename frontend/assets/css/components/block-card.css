@@ -450,6 +450,16 @@
     background: rgba(45, 212, 191, 0.08);
 }
 
+/* Workout-mode header spacing */
+#exerciseCardsContainer .block-group-header {
+    margin-top: 12px;
+    margin-bottom: 0;
+}
+
+#exerciseCardsContainer .block-group-header:first-child {
+    margin-top: 0;
+}
+
 /* Linked card styling (workout-mode) */
 .exercise-in-block > .card,
 .exercise-in-block.desktop-exercise-row {
@@ -503,6 +513,11 @@
 .workout-card.exercise-in-block.block-last {
     border-top-left-radius: 0;
     border-top-right-radius: 0;
+    margin-bottom: 12px;
+}
+
+.workout-card.exercise-in-block.block-first.block-last {
+    border-radius: 0.5rem;
     margin-bottom: 12px;
 }
 
