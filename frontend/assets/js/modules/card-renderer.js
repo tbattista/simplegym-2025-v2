@@ -56,9 +56,9 @@ class CardRenderer {
             exercisesHtml = '<div class="exercise-line text-muted">Click edit to add exercises</div>';
         }
 
-        // Build meta text (plain text, not badges)
+        // Build meta text (plain text, not badges) — show whenever sets/reps/rest exist
         let metaText = '';
-        if (hasData) {
+        if (data.sets || data.reps || data.rest) {
             const protocol = data.sets && data.reps ? `${data.sets}×${data.reps}` : (data.sets || data.reps || '');
             const parts = [protocol, `${data.rest} rest`].filter(Boolean);
             if (data.default_weight) {
@@ -167,9 +167,9 @@ class CardRenderer {
             exercisesHtml = '<div class="exercise-line text-muted">Click edit to add exercises</div>';
         }
         
-        // Build meta text (plain text, not badges)
+        // Build meta text (plain text, not badges) — show whenever sets/reps/rest exist
         let metaText = '';
-        if (hasData) {
+        if (groupData.sets || groupData.reps || groupData.rest) {
             const protocol = groupData.sets && groupData.reps ? `${groupData.sets}×${groupData.reps}` : (groupData.sets || groupData.reps || '');
             const parts = [protocol, `${groupData.rest} rest`].filter(Boolean);
             if (groupData.default_weight) {
