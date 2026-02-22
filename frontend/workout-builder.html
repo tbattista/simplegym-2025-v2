@@ -1120,9 +1120,13 @@
                     container.appendChild(sectionEl);
 
                     if (window.markEditorDirty) window.markEditorDirty();
-                    if (window.showToast) {
-                        window.showToast({ message: 'Added activity', type: 'success', delay: 2000 });
-                    }
+
+                    // Auto-open the activity editor for the new card
+                    setTimeout(() => {
+                        if (window.openCardioEditor) {
+                            window.openCardioEditor(groupId);
+                        }
+                    }, 100);
                 });
             }
         }

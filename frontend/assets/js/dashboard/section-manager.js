@@ -107,6 +107,18 @@ const SectionManager = {
             groupData.exercises[key] = alt;
         });
 
+        // Preserve note card properties
+        if (exercise.group_type === 'note') {
+            groupData.group_type = 'note';
+            groupData.note_content = exercise.note_content || '';
+        }
+
+        // Preserve cardio/activity card properties
+        if (exercise.group_type === 'cardio') {
+            groupData.group_type = 'cardio';
+            groupData.cardio_config = exercise.cardio_config || {};
+        }
+
         return groupData;
     },
 

@@ -218,6 +218,33 @@ function applySectionReorder(reorderedSections) {
         description: rs.sectionDescription || null,
         exercises: rs.exerciseIds.map(groupId => {
             const data = window.exerciseGroupsData?.[groupId] || {};
+
+            // Note cards — preserve type and content
+            if (data.group_type === 'note') {
+                return {
+                    exercise_id: groupId,
+                    group_type: 'note',
+                    note_content: data.note_content || '',
+                    name: '', alternates: [],
+                    sets: '', reps: '', rest: '',
+                    default_weight: null, default_weight_unit: 'lbs'
+                };
+            }
+
+            // Cardio/activity cards — preserve type and config
+            if (data.group_type === 'cardio') {
+                return {
+                    exercise_id: groupId,
+                    group_type: 'cardio',
+                    cardio_config: data.cardio_config || {},
+                    name: data.exercises?.a || '',
+                    alternates: [],
+                    sets: '', reps: '', rest: '',
+                    default_weight: null, default_weight_unit: 'lbs'
+                };
+            }
+
+            // Standard exercise
             const primaryName = data.exercises?.a || '';
             const alternates = [];
             Object.keys(data.exercises || {}).sort().forEach(key => {
