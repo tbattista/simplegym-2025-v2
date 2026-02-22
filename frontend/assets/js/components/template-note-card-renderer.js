@@ -53,7 +53,7 @@ class TemplateNoteCardRenderer {
                             </button>
                         </div>
                         <div class="drag-handle" style="display: none;">
-                            <i class="bx bx-menu"></i>
+                            <i class="bx bx-grid-vertical"></i>
                         </div>
                     </div>
                 </div>
