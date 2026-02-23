@@ -189,12 +189,30 @@ function renderCardioSessionEntry(session) {
         metaParts.push(`${session.avg_heart_rate} bpm`);
     }
 
-    // Build details section
+    // Build details section (comprehensive view of all optional data)
     const detailRows = [];
+    if (session.distance) {
+        let distStr = `${session.distance} ${session.distance_unit || 'mi'}`;
+        if (session.pace_per_unit) distStr += ` @ ${session.pace_per_unit}`;
+        detailRows.push(`<div><i class="bx bx-map me-1"></i>${distStr}</div>`);
+    }
+    const hrParts = [];
+    if (session.avg_heart_rate) hrParts.push(`Avg: ${session.avg_heart_rate}`);
+    if (session.max_heart_rate) hrParts.push(`Max: ${session.max_heart_rate}`);
+    if (hrParts.length > 0) {
+        detailRows.push(`<div><i class="bx bx-heart me-1"></i>${hrParts.join(' · ')} bpm</div>`);
+    }
     if (session.calories) detailRows.push(`<div><i class="bx bx-flame me-1"></i>${session.calories} kcal</div>`);
     if (session.rpe) detailRows.push(`<div><i class="bx bx-bar-chart me-1"></i>RPE: ${session.rpe}/10</div>`);
     if (session.elevation_gain) detailRows.push(`<div><i class="bx bx-trending-up me-1"></i>${session.elevation_gain} ${session.elevation_unit || 'ft'} gain</div>`);
-    if (session.max_heart_rate) detailRows.push(`<div><i class="bx bx-heart me-1"></i>Max HR: ${session.max_heart_rate} bpm</div>`);
+    if (session.activity_details && typeof session.activity_details === 'object') {
+        const ad = session.activity_details;
+        if (ad.cadence_rpm || ad.cadence) detailRows.push(`<div><i class="bx bx-revision me-1"></i>Cadence: ${ad.cadence_rpm || ad.cadence} rpm</div>`);
+        if (ad.stroke_rate) detailRows.push(`<div><i class="bx bx-water me-1"></i>Stroke Rate: ${ad.stroke_rate} spm</div>`);
+        if (ad.laps) detailRows.push(`<div><i class="bx bx-refresh me-1"></i>Laps: ${ad.laps}</div>`);
+        if (ad.pool_length_m || ad.pool_length) detailRows.push(`<div><i class="bx bx-ruler me-1"></i>Pool: ${ad.pool_length_m || ad.pool_length}m</div>`);
+        if (ad.incline_percent || ad.incline) detailRows.push(`<div><i class="bx bx-trending-up me-1"></i>Incline: ${ad.incline_percent || ad.incline}%</div>`);
+    }
     if (session.notes) detailRows.push(`<div class="mt-2 fst-italic text-muted">"${escapeHtml(session.notes)}"</div>`);
 
     const hasDetails = detailRows.length > 0;
