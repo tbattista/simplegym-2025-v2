@@ -115,6 +115,9 @@ class SessionLifecycleApiService {
 
         if (workout.exercise_groups) {
             workout.exercise_groups.forEach((group, index) => {
+                // Skip non-exercise card types (cardio/activity, notes)
+                if (group.group_type === 'cardio' || group.group_type === 'note') return;
+
                 const exerciseName = group.exercises?.a;
                 if (exerciseName) {
                     const templateWeight = group.default_weight || null;

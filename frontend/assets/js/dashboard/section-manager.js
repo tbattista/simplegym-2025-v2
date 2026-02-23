@@ -932,7 +932,7 @@ const SectionManager = {
 
                 if (!primaryName && alternates.length === 0) return;
 
-                exercises.push({
+                const entry = {
                     exercise_id: groupId,
                     name: primaryName,
                     alternates: alternates,
@@ -941,7 +941,9 @@ const SectionManager = {
                     rest: data.rest || '60s',
                     default_weight: data.default_weight || null,
                     default_weight_unit: data.default_weight_unit || 'lbs'
-                });
+                };
+                if (data.interval_config) entry.interval_config = data.interval_config;
+                exercises.push(entry);
             });
 
             if (exercises.length > 0) {
