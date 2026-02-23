@@ -27,7 +27,7 @@ const ExerciseDataUtils = {
 
                 const group = {
                     group_id: exercise.exercise_id,
-                    group_type: isNamed ? 'block' : 'standard',
+                    group_type: exercise.group_type || (isNamed ? 'block' : 'standard'),
                     exercises: exercises,
                     sets: exercise.sets || '3',
                     reps: exercise.reps || '8-12',
@@ -40,6 +40,8 @@ const ExerciseDataUtils = {
                     group.block_id = blockId;
                     group.group_name = section.name || null;
                 }
+                if (exercise.cardio_config) group.cardio_config = exercise.cardio_config;
+                if (exercise.interval_config) group.interval_config = exercise.interval_config;
 
                 groups.push(group);
             });

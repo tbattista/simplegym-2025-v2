@@ -214,6 +214,18 @@ class SectionExercise(BaseModel):
         default="lbs",
         description="Weight unit: 'lbs', 'kg', or 'other'"
     )
+    group_type: str = Field(
+        default="standard",
+        description="Exercise type: 'standard', 'cardio', 'block'"
+    )
+    cardio_config: Optional[Dict[str, Any]] = Field(
+        default=None,
+        description="Cardio-specific configuration: {activity_type, duration_minutes, distance, distance_unit, target_pace}"
+    )
+    interval_config: Optional[Dict[str, Any]] = Field(
+        default=None,
+        description="Interval timer configuration: {mode, work_seconds, rest_seconds, rounds}"
+    )
 
 
 class WorkoutSection(BaseModel):
@@ -268,7 +280,10 @@ def migrate_exercise_groups_to_sections(exercise_groups: List[ExerciseGroup]) ->
             reps=eg.reps,
             rest=eg.rest,
             default_weight=eg.default_weight,
-            default_weight_unit=eg.default_weight_unit
+            default_weight_unit=eg.default_weight_unit,
+            group_type=eg.group_type,
+            cardio_config=eg.cardio_config,
+            interval_config=eg.interval_config
         )
 
         if eg.block_id and eg.block_id in seen_block_ids:
@@ -316,6 +331,9 @@ def migrate_sections_to_exercise_groups(sections: List[WorkoutSection]) -> List[
                 if alt:
                     exercises_dict[chr(98 + i)] = alt  # b, c, d, ...
 
+            # Preserve exercise-level group_type (cardio, interval) over section inference
+            effective_group_type = ex.group_type if ex.group_type not in ('standard', None) else ('block' if is_named else 'standard')
+
             group = ExerciseGroup(
                 group_id=ex.exercise_id,
                 exercises=exercises_dict if exercises_dict else {'a': ''},
@@ -324,9 +342,11 @@ def migrate_sections_to_exercise_groups(sections: List[WorkoutSection]) -> List[
                 rest=ex.rest,
                 default_weight=ex.default_weight,
                 default_weight_unit=ex.default_weight_unit,
-                group_type='block' if is_named else 'standard',
+                group_type=effective_group_type,
                 group_name=section.name if is_named else None,
-                block_id=block_id
+                block_id=block_id,
+                cardio_config=ex.cardio_config,
+                interval_config=ex.interval_config
             )
             groups.append(group)
 

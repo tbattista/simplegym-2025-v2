@@ -73,6 +73,8 @@ class WorkoutRenderManager {
                 } else {
                     console.warn('⚠️ NoteCardRenderer not available');
                 }
+            } else if (item.type === 'cardio') {
+                html += this.renderCardioCard(item.data, exerciseIndex, totalCards);
             } else {
                 html += this.cardRenderer.renderCard(item.data, exerciseIndex, false, totalCards);
             }
@@ -137,7 +139,7 @@ class WorkoutRenderManager {
                     currentIndex++;
                 }
                 allItems.push({
-                    type: 'exercise',
+                    type: group.group_type === 'cardio' ? 'cardio' : 'exercise',
                     subtype: 'regular',
                     data: group,
                     name: group.exercises?.a
@@ -226,7 +228,7 @@ class WorkoutRenderManager {
 
                 if (group) {
                     allItems.push({
-                        type: 'exercise',
+                        type: group.group_type === 'cardio' ? 'cardio' : 'exercise',
                         subtype: 'regular',
                         data: group,
                         name: group.exercises?.a,
@@ -247,7 +249,7 @@ class WorkoutRenderManager {
         (currentWorkout.exercise_groups || []).forEach(group => {
             if (!placedGroupIds.has(group.group_id)) {
                 allItems.push({
-                    type: 'exercise',
+                    type: group.group_type === 'cardio' ? 'cardio' : 'exercise',
                     subtype: 'regular',
                     data: group,
                     name: group.exercises?.a
@@ -402,6 +404,65 @@ class WorkoutRenderManager {
      * @param {number} totalCards - Total number of cards
      * @returns {string} HTML string
      */
+    /**
+     * Render a cardio/activity card for workout mode (read-only summary)
+     */
+    renderCardioCard(group, index, totalCards) {
+        const config = group.cardio_config || {};
+        const activityType = config.activity_type || '';
+
+        // Get icon and display name from activity type registry
+        let iconClass = 'bx-heart-circle';
+        let activityName = activityType;
+        if (activityType && window.ActivityTypeRegistry) {
+            iconClass = window.ActivityTypeRegistry.getIcon(activityType) || 'bx-heart-circle';
+            activityName = window.ActivityTypeRegistry.getName(activityType) || activityType;
+        }
+
+        // Build meta parts
+        const metaParts = [];
+        if (config.duration_minutes) metaParts.push(`${config.duration_minutes} min`);
+        if (config.distance) metaParts.push(`${config.distance} ${config.distance_unit || 'mi'}`);
+        if (config.target_pace) metaParts.push(config.target_pace);
+        const metaText = metaParts.join(' \u00b7 ');
+
+        const escapeHtml = (text) => {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        };
+
+        const displayName = activityName || 'Activity';
+
+        return `
+            <div class="workout-card" data-exercise-index="${index}" data-card-type="cardio"
+                 onclick="if(!event.target.closest('.workout-more-btn')) { this.classList.toggle('expanded'); }">
+                <div class="workout-card-header">
+                    <div class="workout-exercise-name-row">
+                        <div class="workout-exercise-name">
+                            <i class="bx ${iconClass}" style="margin-right: 4px;"></i>${escapeHtml(displayName)}
+                        </div>
+                        <div class="workout-header-actions">
+                            <i class="bx bx-chevron-down workout-chevron"></i>
+                        </div>
+                    </div>
+                    <div class="workout-exercise-info">
+                        <span class="workout-meta">${metaText || 'Activity'}</span>
+                    </div>
+                </div>
+                <div class="workout-card-body">
+                    <div class="p-3 text-muted small">
+                        ${config.duration_minutes ? `<div><strong>Duration:</strong> ${config.duration_minutes} min</div>` : ''}
+                        ${config.distance ? `<div><strong>Distance:</strong> ${config.distance} ${config.distance_unit || 'mi'}</div>` : ''}
+                        ${config.target_pace ? `<div><strong>Target Pace:</strong> ${config.target_pace}</div>` : ''}
+                        ${config.rpe ? `<div><strong>RPE:</strong> ${config.rpe}/10</div>` : ''}
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
     renderReadOnlyTemplateNote(note, index, totalCards) {
         const noteId = note.id || `template-note-${Date.now()}`;
         const content = note.content || '';

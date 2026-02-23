@@ -903,6 +903,25 @@ const SectionManager = {
                 const data = window.exerciseGroupsData[groupId];
                 if (!data) return;
 
+                // Notes are collected separately via collectTemplateNotes()
+                if (data.group_type === 'note') return;
+
+                // Cardio groups — include group_type and cardio_config
+                if (data.group_type === 'cardio') {
+                    if (!data.cardio_config?.activity_type && !data.cardio_config?.duration_minutes) return;
+                    exercises.push({
+                        exercise_id: groupId,
+                        name: data.cardio_config?.activity_type || '',
+                        alternates: [],
+                        group_type: 'cardio',
+                        cardio_config: data.cardio_config,
+                        sets: '', reps: '', rest: '',
+                        default_weight: null,
+                        default_weight_unit: data.default_weight_unit || 'lbs'
+                    });
+                    return;
+                }
+
                 const primaryName = data.exercises?.a || '';
                 const alternates = [];
                 Object.keys(data.exercises || {}).sort().forEach(key => {
