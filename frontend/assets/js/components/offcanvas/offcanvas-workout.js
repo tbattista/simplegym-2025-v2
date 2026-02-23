@@ -743,7 +743,7 @@ export function createReorderOffcanvas(exercises, onSave) {
         const displayName = item.displayName || item.name;
         const itemTypeAttr = isNote ? 'data-item-type="note"' : (isCardio ? 'data-item-type="cardio"' : 'data-item-type="exercise"');
         const noteStyle = isNote ? 'border-left: 3px solid var(--workout-muted, #6c757d);' : '';
-        const icon = isNote ? '<i class="bx bx-note-text me-1 text-muted"></i>' : (isCardio ? '<i class="bx bx-heart-circle me-1 text-muted"></i>' : '');
+        const icon = isNote ? '<i class="bx bx-note me-1 text-muted"></i>' : (isCardio ? '<i class="bx bx-heart-circle me-1 text-muted"></i>' : '');
         const badgeClass = isNote ? 'bg-label-info' : (isCardio ? 'bg-label-warning' : 'bg-label-secondary');
 
         // Block data attributes for position-based inference
@@ -783,7 +783,6 @@ export function createReorderOffcanvas(exercises, onSave) {
                                 ${[item.sets, item.reps].filter(Boolean).join(' • ')}
                             </small>
                         ` : ''}
-                        ${isNote ? '<small class="text-muted">Note</small>' : ''}
                         ${blockDescSnippet}
                     </div>
                     <div class="badge reorder-badge ${badgeClass}">${globalIndex + 1}</div>
@@ -1227,13 +1226,13 @@ export function createSectionsReorderOffcanvas(sections, onSave) {
     const buildItemHtml = (exercise) => {
         const isNote = exercise.isNote === true;
         const isCardio = exercise.isCardio === true;
-        const icon = isNote ? '<i class="bx bx-note-text me-1 text-muted"></i>' : (isCardio ? '<i class="bx bx-heart-circle me-1 text-muted"></i>' : '');
+        const icon = isNote ? '<i class="bx bx-note me-1 text-muted"></i>' : (isCardio ? '<i class="bx bx-heart-circle me-1 text-muted"></i>' : '');
         const name = exercise.name || (isNote ? 'Note' : (isCardio ? 'Activity' : 'Exercise'));
         const borderStyle = isNote ? 'border-left: 3px solid var(--workout-muted, #6c757d);' : '';
 
         let subtitle = '';
         if (isNote) {
-            subtitle = '<small class="text-muted" style="font-size: 0.7rem;">Note</small>';
+            subtitle = '';
         } else if (isCardio && (exercise.sets || exercise.reps)) {
             subtitle = `<small class="text-muted" style="font-size: 0.7rem;">${[exercise.sets, exercise.reps].filter(Boolean).join(' \u2022 ')}</small>`;
         } else if (!isNote && !isCardio && (exercise.sets || exercise.reps)) {
