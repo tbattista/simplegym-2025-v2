@@ -25,7 +25,13 @@ const SectionManager = {
      */
     renderSections(sections, container) {
         container.innerHTML = '';
-        window.exerciseGroupsData = {};
+        // Clear existing object to preserve cardRenderer reference (don't replace with new {})
+        const existing = window.exerciseGroupsData;
+        if (existing) {
+            Object.keys(existing).forEach(k => delete existing[k]);
+        } else {
+            window.exerciseGroupsData = {};
+        }
 
         sections.forEach(section => {
             const sectionEl = this.createSectionElement(section);
