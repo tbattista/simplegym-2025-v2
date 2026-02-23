@@ -956,6 +956,12 @@
             return;
         }
 
+        // Skip workout-mode — it uses its own floating FABs (workout-mode-fab-manager.js)
+        if (pageId === 'workout-mode') {
+            console.log('ℹ️ Skipping bottom action bar for workout-mode (uses floating FABs)');
+            return;
+        }
+
         // Check if configuration exists for this page
         if (!window.BOTTOM_BAR_CONFIGS[pageId]) {
             console.log('ℹ️ No configuration found for page:', pageId);

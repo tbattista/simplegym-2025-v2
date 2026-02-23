@@ -1,141 +1,259 @@
 /**
- * Workout Mode - Bottom Bar
- * Fixed bottom action bar and floating timer
+ * Workout Mode - Floating FABs & Inline Add Buttons
+ * Replaces the old bottom action bar with builder-consistent floating FABs
  *
- * @version 4.0.0 - Phase 4 CSS Refactor
- * @date 2026-01-20
+ * @version 5.0.0 - Floating FAB Revamp
+ * @date 2026-02-22
  */
 
 /* ============================================
-   BOTTOM ACTION BAR
+   WORKOUT MODE FLOATING FABS
+   Fixed bottom-right, matching builder pattern
    ============================================ */
 
-.workout-bottom-action-bar {
+.workout-mode-floating-fabs {
     position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: var(--workout-card-bg);
-    border-top: 1px solid var(--workout-border);
-    padding: 0.5rem 1rem;
-    z-index: 1000;
-    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+    bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+    right: 16px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+    z-index: 1050;
+    pointer-events: none;
 }
 
-.workout-bottom-action-bar-container {
-    max-width: 600px;
-    margin: 0 auto;
+/* Base FAB button */
+.wm-fab {
+    height: 44px;
+    min-width: 44px;
+    border-radius: 12px;
+    border: none;
     display: flex;
+    align-items: center;
     justify-content: center;
+    gap: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    pointer-events: auto;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+    transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+    white-space: nowrap;
+    padding: 0 14px;
+    color: #fff;
 }
 
-.workout-bottom-bar-buttons {
-    display: flex;
-    gap: 0.5rem;
-    justify-content: center;
-    flex: 1;
+.wm-fab:active {
+    transform: scale(0.93);
+}
+
+/* More options (icon-only, white bg) */
+.wm-fab-more {
+    background: var(--bs-body-bg);
+    color: var(--bs-body-color);
+    width: 44px;
+    padding: 0;
+    font-size: 20px;
+}
+
+.wm-fab-more:hover {
+    background: rgba(var(--bs-primary-rgb), 0.08);
+}
+
+/* Quick Log button */
+.wm-fab-quicklog {
+    background: var(--gs-action-quicklog, #6c757d);
+}
+
+.wm-fab-quicklog:hover {
+    filter: brightness(0.9);
+}
+
+/* Start button (green) */
+.wm-fab-start {
+    background: var(--gs-action-start, var(--bs-success));
+}
+
+.wm-fab-start:hover {
+    filter: brightness(0.9);
+}
+
+/* Timer display (not a button) */
+.wm-fab-timer {
+    background: var(--bs-body-bg);
+    color: var(--bs-body-color);
+    border: 2px solid var(--bs-primary);
+    cursor: default;
+    font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
+    font-variant-numeric: tabular-nums;
+    min-width: 110px;
+}
+
+.wm-fab-timer i {
+    color: var(--bs-primary);
+}
+
+/* End button (red) */
+.wm-fab-end {
+    background: var(--bs-danger);
+}
+
+.wm-fab-end:hover {
+    filter: brightness(0.9);
+}
+
+/* Cancel button (red, icon-only) */
+.wm-fab-cancel {
+    background: var(--bs-danger);
+    width: 44px;
+    padding: 0;
+    font-size: 20px;
+}
+
+.wm-fab-cancel:hover {
+    filter: brightness(0.9);
+}
+
+/* Save button (green) */
+.wm-fab-save {
+    background: var(--gs-action-start, var(--bs-success));
+}
+
+.wm-fab-save:hover {
+    filter: brightness(0.9);
+}
+
+/* FAB slot containers */
+.wm-fab-dynamic {
+    display: contents;
+}
+
+.wm-fab-slot {
+    display: contents;
 }
 
 /* ============================================
-   BOTTOM BAR BUTTONS
+   INLINE ADD BUTTONS (below exercise cards)
+   Matches the workout builder pattern
    ============================================ */
 
-.workout-bottom-bar-btn {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.25rem;
-    padding: 0.5rem 1rem;
-    border: 1px solid var(--workout-border);
-    border-radius: 0.5rem;
-    background: transparent;
-    color: var(--workout-muted);
-    cursor: pointer;
-    transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
-    min-width: 60px;
-}
-
-.workout-bottom-bar-btn:hover {
-    border-color: var(--workout-accent);
-    color: var(--workout-accent);
-    background: var(--workout-status-active);
-}
-
-.workout-bottom-bar-btn i {
-    font-size: 1.25rem;
-}
-
-.workout-bottom-bar-btn-label {
-    font-size: 0.6875rem;
-    font-weight: 500;
-}
-
-/* ============================================
-   FLOATING TIMER + END COMBO
-   ============================================ */
-
-.floating-timer-end-combo {
-    position: fixed;
-    bottom: 80px;
-    right: 1rem;
-    z-index: 1002;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    background: transparent;
-    border: none;
-    border-radius: 2rem;
-    padding: 0.375rem;
-    box-shadow: none;
-}
-
-.floating-timer-display {
-    display: flex;
-    align-items: center;
-    gap: 0.375rem;
-    padding: 0.375rem 0.75rem;
-    background: var(--workout-status-active);
-    border-radius: 1.5rem;
-    font-size: 1rem;
-    font-weight: 600;
-    color: var(--workout-text);
-}
-
-.floating-timer-display i {
-    color: var(--workout-accent);
-}
-
-.floating-end-btn {
-    display: flex;
-    align-items: center;
-    gap: 0.375rem;
-    padding: 0.5rem 1rem;
-    border-radius: 1.5rem;
-    border: none;
-    background: var(--workout-danger-15);
-    color: var(--workout-danger);
-    font-size: 0.875rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.15s ease;
-}
-
-.floating-end-btn:hover {
-    background: var(--workout-danger-25);
+.workout-mode-add-buttons {
+    margin-top: 0.5rem;
+    padding-bottom: 1rem;
 }
 
 /* ============================================
    CONTENT PADDING
-   Now handled globally by .has-bottom-action-bar in bottom-action-bar.css
+   Reduced: no bottom bar, just FABs + inline buttons
+   FABs (44px) + gap (16px) + breathing room (40px) = 100px
    ============================================ */
 
-/* Additional bottom padding for exercise cards to clear floating FABs
-   Height breakdown: action bar (56px) + gap (12px) + floating buttons (44px) + breathing room (28px) = 140px */
 #exerciseCardsContainer {
-    padding-bottom: 140px;
+    padding-bottom: 20px;
 }
 
-/* Also add to landing page for consistency */
+/* Add buttons area needs clearance for floating FABs */
+.workout-mode-add-buttons {
+    padding-bottom: 80px;
+}
+
+/* Landing page padding for floating FABs */
 #workoutLandingPage {
-    padding-bottom: 140px;
+    padding-bottom: 100px;
+}
+
+/* ============================================
+   DARK MODE
+   ============================================ */
+
+[data-bs-theme="dark"] .wm-fab {
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.5);
+}
+
+[data-bs-theme="dark"] .wm-fab-more {
+    background: var(--bs-body-bg);
+}
+
+[data-bs-theme="dark"] .wm-fab-timer {
+    background: var(--bs-body-bg);
+    border-color: var(--bs-primary);
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.5);
+}
+
+/* ============================================
+   QUICK LOG MODE BANNER
+   Shows at top of page during Quick Log mode
+   ============================================ */
+
+.quick-log-mode-banner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 16px;
+    background: linear-gradient(135deg, var(--gs-action-quicklog, #6c757d) 0%, var(--gs-action-quicklog-dark, #495057) 100%);
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    position: sticky;
+    top: 0;
+    z-index: 1050;
+}
+
+.quick-log-mode-banner i {
+    font-size: 18px;
+}
+
+.quick-log-mode-banner span {
+    font-weight: 700;
+}
+
+.quick-log-mode-banner small {
+    font-weight: 400;
+    opacity: 0.85;
+    margin-left: 4px;
+}
+
+[data-bs-theme="dark"] .quick-log-mode-banner {
+    background: linear-gradient(135deg, var(--gs-action-quicklog-dark, #495057) 0%, var(--gs-gray-700, #343a40) 100%);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 576px) {
+    /* Hide labels on very small screens, keep icons */
+    .wm-fab-quicklog span,
+    .wm-fab-start span,
+    .wm-fab-end span,
+    .wm-fab-save span {
+        display: none;
+    }
+
+    .wm-fab-quicklog,
+    .wm-fab-start,
+    .wm-fab-end,
+    .wm-fab-save {
+        width: 44px;
+        padding: 0;
+    }
+}
+
+/* ============================================
+   ACCESSIBILITY
+   ============================================ */
+
+.wm-fab:focus-visible {
+    outline: 2px solid var(--bs-primary);
+    outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .wm-fab {
+        transition: none;
+    }
 }

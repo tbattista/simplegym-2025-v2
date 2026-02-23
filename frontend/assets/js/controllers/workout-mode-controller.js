@@ -129,6 +129,10 @@ class WorkoutModeController {
             onGetModalManager: () => this.getModalManager()
         });
 
+        // FAB Manager (replaces bottom action bar)
+        this.fabManager = new WorkoutModeFabManager();
+        window.workoutModeFabManager = this.fabManager;
+
         // State
         this.currentWorkout = null;
         this.autoSaveTimer = null;
@@ -216,6 +220,7 @@ class WorkoutModeController {
             await this.loadWorkout(workoutId);
             this.setupEventListeners();
             this.settingsManager.initialize();
+            this.fabManager.initialize();
 
             console.log('✅ Workout Mode Controller ready');
         } catch (error) {
@@ -380,7 +385,6 @@ class WorkoutModeController {
         if (this.timerManager) this.timerManager.stopSessionTimer();
         if (this.uiStateManager) this.uiStateManager.updateSessionState(false, null);
         if (this.lifecycleManager) this.lifecycleManager.showFloatingControls(false);
-        if (window.bottomActionBar) window.bottomActionBar.showQuickLogBanner(false);
         this.renderWorkout();
         if (window.toastNotifications) {
             window.toastNotifications.info('Workout cancelled. Ready to start fresh!', 'Cancelled');
@@ -426,6 +430,7 @@ class WorkoutModeController {
     async handleStartQuickLog() { return await this.lifecycleManager.handleStartQuickLog(); }
     async handleSaveQuickLog() { return await this.lifecycleManager.handleSaveQuickLog(); }
     handleAddNote() { return this.notesManager.handleAddNote(); }
+    showAddExerciseForm() { return this.exerciseOpsManager.showAddExerciseForm(); }
     showReorderOffcanvas() { this.reorderManager.showReorderOffcanvas(); }
     initializeShareButton() { this.settingsManager.initializeShareButton(); }
 

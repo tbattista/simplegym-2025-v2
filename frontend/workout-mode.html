@@ -219,6 +219,21 @@
                 <div id="exerciseCardsContainer">
                   <!-- Cards will be rendered here by JavaScript -->
                 </div>
+
+                <!-- Inline Add Buttons (below exercise cards, matching builder pattern) -->
+                <div class="workout-mode-add-buttons" id="workoutModeAddButtons" style="display: none;">
+                  <button type="button" class="btn btn-outline-primary w-100 mb-2" id="inlineAddExerciseBtn">
+                    <i class="bx bx-plus me-1"></i>Add Exercise
+                  </button>
+                  <div class="d-flex gap-2 mb-2">
+                    <button type="button" class="btn btn-outline-secondary btn-sm flex-fill" id="inlineAddNoteBtn">
+                      <i class="bx bx-note me-1"></i>Note
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm flex-fill" id="inlineReorderBtn">
+                      <i class="bx bx-sort me-1"></i>Reorder
+                    </button>
+                  </div>
+                </div>
               </div>
 
             </div>
@@ -233,8 +248,46 @@
 
       <!-- Overlay -->
       <div class="layout-overlay layout-menu-toggle"></div>
-      
-      
+
+      <!-- Workout Mode Floating FABs (replaces bottom action bar) -->
+      <div class="workout-mode-floating-fabs" id="workoutModeFabs" style="display: none;">
+        <!-- More options FAB -->
+        <button type="button" class="wm-fab wm-fab-more" id="wmFabMore" title="More options" aria-label="More options">
+          <i class="bx bx-dots-vertical-rounded"></i>
+        </button>
+        <!-- Dynamic slot: pre-session, timed-active, or quick-log-active -->
+        <div class="wm-fab-dynamic" id="wmFabDynamic">
+          <!-- Pre-session: Quick Log + Start -->
+          <div class="wm-fab-slot" id="wmSlotPreSession">
+            <button type="button" class="wm-fab wm-fab-quicklog" id="wmFabQuickLog" title="Quick Log" aria-label="Quick Log">
+              <i class="bx bx-edit-alt me-1"></i><span>Quick Log</span>
+            </button>
+            <button type="button" class="wm-fab wm-fab-start" id="wmFabStart" title="Start Timed" aria-label="Start timed workout">
+              <i class="bx bx-play me-1"></i><span>Start</span>
+            </button>
+          </div>
+          <!-- Timed active: Rest Timer + Timer + End -->
+          <div class="wm-fab-slot" id="wmSlotTimedActive" style="display: none;">
+            <div class="global-rest-timer-button" id="globalRestTimerButton"></div>
+            <div class="wm-fab wm-fab-timer" id="wmFabTimer">
+              <i class="bx bx-time-five me-1"></i><span id="floatingTimer">0:00:00</span>
+            </div>
+            <button type="button" class="wm-fab wm-fab-end" id="wmFabEnd" title="End Workout" aria-label="End workout">
+              <i class="bx bx-stop me-1"></i><span>End</span>
+            </button>
+          </div>
+          <!-- Quick Log active: Cancel + Save -->
+          <div class="wm-fab-slot" id="wmSlotQuickLogActive" style="display: none;">
+            <button type="button" class="wm-fab wm-fab-cancel" id="wmFabCancel" title="Cancel Quick Log" aria-label="Cancel quick log">
+              <i class="bx bx-x"></i>
+            </button>
+            <button type="button" class="wm-fab wm-fab-save" id="wmFabSave" title="Save Quick Log" aria-label="Save quick log">
+              <i class="bx bx-check me-1"></i><span>Save</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
     </div>
     <!-- / Layout wrapper -->
 
@@ -394,7 +447,10 @@
     <!-- Phase 13 Refactoring: Landing Page -->
     <script src="/static/assets/js/services/workout-landing-manager.js?v=20260213-01"></script>
 
-    <script src="/static/assets/js/controllers/workout-mode-controller.js?v=20260213-01"></script>
+    <!-- Workout Mode FAB Manager (replaces bottom action bar) -->
+    <script src="/static/assets/js/services/workout-mode-fab-manager.js?v=20260222-01"></script>
+
+    <script src="/static/assets/js/controllers/workout-mode-controller.js?v=20260222-01"></script>
     
     <!-- Logbook V2 Controllers (NEW - Phase 2 & 3) -->
     <script src="/static/assets/js/controllers/weight-field-controller.js?v=2.4.0"></script>

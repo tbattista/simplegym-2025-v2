@@ -83,6 +83,12 @@ class WorkoutRenderManager {
 
         container.innerHTML = html;
 
+        // Show inline add buttons when exercises are rendered
+        const addButtons = document.getElementById('workoutModeAddButtons');
+        if (addButtons) {
+            addButtons.style.display = allItems.length > 0 ? 'block' : 'none';
+        }
+
         // Apply visual block grouping for sectioned workouts
         if (this._lastSectionMeta) {
             this._applyWorkoutBlockGrouping(container);

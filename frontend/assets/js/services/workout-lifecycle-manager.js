@@ -263,8 +263,8 @@ class WorkoutLifecycleManager {
                 this.showFloatingControls(false);
 
                 // Hide Quick Log banner if it was showing
-                if (window.bottomActionBar) {
-                    window.bottomActionBar.showQuickLogBanner(false);
+                if (window.workoutModeFabManager) {
+                    window.workoutModeFabManager._hideQuickLogBanner();
                 }
 
                 // Show completion summary
@@ -697,42 +697,44 @@ class WorkoutLifecycleManager {
     }
     
     /**
-     * Show/hide floating controls (FAB and Timer+End combo)
-     * Phase 8: Coordinate visibility of floating UI elements
+     * Show/hide floating controls
+     * Uses WorkoutModeFabManager for state transitions
      * @param {boolean} sessionActive - True to show timer+end, false to show FAB
      * @param {string} sessionMode - Session mode: 'timed' or 'quick_log'
      */
     showFloatingControls(sessionActive, sessionMode = 'timed') {
         console.log('🎮 showFloatingControls called:', { sessionActive, sessionMode });
 
-        // ✅ PHASE 8 FIX: Use bottom-action-bar-service element IDs
-        // Service creates: #floatingDualButtons, #floatingTimerEndCombo, #floatingQuickLogCombo
-        // This replaces static HTML element IDs: #startWorkoutFAB
+        const fabManager = window.workoutModeFabManager;
+        if (!fabManager) {
+            console.warn('⚠️ WorkoutModeFabManager not available');
+            return;
+        }
 
-        // Delegate to bottom-action-bar-service for state management
-        // Service registers as window.bottomActionBar (not bottomActionBarService)
-        console.log('🔍 window.bottomActionBar exists:', !!window.bottomActionBar);
-
-        if (window.bottomActionBar) {
-            console.log('📞 Calling updateWorkoutModeState...');
-            window.bottomActionBar.updateWorkoutModeState(sessionActive, sessionMode);
-            const modeLabel = sessionActive ? (sessionMode === 'quick_log' ? 'Quick Log combo' : 'Timer+End combo') : 'Dual buttons';
-            console.log(`✅ Floating controls updated via service: ${modeLabel} shown`);
+        if (sessionActive) {
+            if (sessionMode === 'quick_log') {
+                fabManager.updateState('quicklog-active');
+            } else {
+                fabManager.updateState('timed-active');
+                // Start timer display
+                const session = this.sessionService.getCurrentSession();
+                if (session?.startedAt) {
+                    fabManager.startTimer(session.startedAt);
+                }
+            }
         } else {
-            console.warn('⚠️ bottom-action-bar (bottomActionBar) not available, controls may not update');
+            fabManager.stopTimer();
+            fabManager.updateState('pre-session');
         }
     }
     
     /**
      * Show/hide bottom action bar
-     * Phase 8: Control bottom bar visibility
+     * Now a no-op — workout mode uses floating FABs instead
      * @param {boolean} show - True to show, false to hide
      */
     showBottomBar(show) {
-        // ✅ PHASE 8 FIX: Bottom bar is managed by bottom-action-bar-service
-        // Service automatically shows/hides based on page and session state
-        // This method is now a no-op, kept for backward compatibility
-        console.log(`✅ Bottom action bar visibility delegated to service (show: ${show})`);
+        // No-op: workout mode no longer uses a bottom action bar
     }
 }
 

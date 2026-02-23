@@ -247,19 +247,17 @@ class WorkoutUIStateManager {
             if (sessionIndicator) sessionIndicator.style.display = 'block';
             if (sessionInfo) sessionInfo.style.display = 'block';
             
-            // Update floating timer/end combo to show active state
-            if (window.bottomActionBar) {
-                console.log('🔄 Updating timer/end combo to active mode');
-                window.bottomActionBar.updateWorkoutModeState(true);
+            // Update FABs to show active session state
+            if (window.workoutModeFabManager) {
+                window.workoutModeFabManager.updateState('timed-active');
             }
         } else {
             if (sessionIndicator) sessionIndicator.style.display = 'none';
             if (sessionInfo) sessionInfo.style.display = 'none';
             
-            // Update timer/end combo to show inactive state (Start button)
-            if (window.bottomActionBar) {
-                console.log('🔄 Updating timer/end combo to inactive mode');
-                window.bottomActionBar.updateWorkoutModeState(false);
+            // Update FABs to show pre-session state
+            if (window.workoutModeFabManager) {
+                window.workoutModeFabManager.updateState('pre-session');
             }
         }
     }
