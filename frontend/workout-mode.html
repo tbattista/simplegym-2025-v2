@@ -123,12 +123,19 @@
               
               <!-- Workout Info Header (Above Cards) -->
               <div class="mb-3" id="workoutInfoHeader" style="display: none;">
-                <h6 class="mb-2">
-                  <span id="workoutName">Loading workout...</span>
-                </h6>
-                <p class="text-muted small mb-3">
-                  Last completed: <span id="lastCompletedDate">Never</span>
-                </p>
+                <div class="d-flex align-items-start justify-content-between">
+                  <div>
+                    <h6 class="mb-2">
+                      <span id="workoutName">Loading workout...</span>
+                    </h6>
+                    <p class="text-muted small mb-0">
+                      Last completed: <span id="lastCompletedDate">Never</span>
+                    </p>
+                  </div>
+                  <button type="button" class="btn btn-sm btn-icon" id="workoutOptionsBtn" title="Workout options" aria-label="Workout options">
+                    <i class="bx bx-dots-vertical"></i>
+                  </button>
+                </div>
               </div>
               
               <!-- Loading State -->
@@ -251,10 +258,6 @@
 
       <!-- Workout Mode Floating FABs (replaces bottom action bar) -->
       <div class="workout-mode-floating-fabs" id="workoutModeFabs" style="display: none;">
-        <!-- More options FAB -->
-        <button type="button" class="wm-fab wm-fab-more" id="wmFabMore" title="More options" aria-label="More options">
-          <i class="bx bx-dots-vertical-rounded"></i>
-        </button>
         <!-- Dynamic slot: pre-session, timed-active, or quick-log-active -->
         <div class="wm-fab-dynamic" id="wmFabDynamic">
           <!-- Pre-session: Quick Log + Start -->

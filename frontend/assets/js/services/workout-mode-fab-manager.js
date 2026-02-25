@@ -31,6 +31,12 @@ class WorkoutModeFabManager {
         // Wire up FAB click handlers
         this._wireFabButtons();
 
+        // Wire up header options button
+        const optionsBtn = document.getElementById('workoutOptionsBtn');
+        if (optionsBtn) {
+            optionsBtn.addEventListener('click', () => this.openSettingsMenu());
+        }
+
         // Set initial state
         this.updateState('pre-session');
 
@@ -133,12 +139,6 @@ class WorkoutModeFabManager {
      * @private
      */
     _wireFabButtons() {
-        // More options
-        const moreBtn = document.getElementById('wmFabMore');
-        if (moreBtn) {
-            moreBtn.addEventListener('click', () => this._handleMore());
-        }
-
         // Pre-session buttons
         const quickLogBtn = document.getElementById('wmFabQuickLog');
         const startBtn = document.getElementById('wmFabStart');
@@ -187,11 +187,9 @@ class WorkoutModeFabManager {
     }
 
     /**
-     * Handle "More" button — opens settings offcanvas
-     * Mirrors the workout-mode config from bottom-action-bar-config.js
-     * @private
+     * Open settings menu offcanvas (triggered from header options button)
      */
-    _handleMore() {
+    openSettingsMenu() {
         if (!window.UnifiedOffcanvasFactory) {
             console.error('❌ UnifiedOffcanvasFactory not loaded');
             return;

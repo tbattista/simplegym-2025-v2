@@ -48,19 +48,6 @@
     transform: scale(0.93);
 }
 
-/* More options (icon-only, white bg) */
-.wm-fab-more {
-    background: var(--bs-body-bg);
-    color: var(--bs-body-color);
-    width: 44px;
-    padding: 0;
-    font-size: 20px;
-}
-
-.wm-fab-more:hover {
-    background: rgba(var(--bs-primary-rgb), 0.08);
-}
-
 /* Quick Log button */
 .wm-fab-quicklog {
     background: var(--gs-action-quicklog, #6c757d);
@@ -169,10 +156,6 @@
 
 [data-bs-theme="dark"] .wm-fab {
     box-shadow: 0 3px 8px rgba(0, 0, 0, 0.5);
-}
-
-[data-bs-theme="dark"] .wm-fab-more {
-    background: var(--bs-body-bg);
 }
 
 [data-bs-theme="dark"] .wm-fab-timer {
