@@ -190,11 +190,11 @@
    ============================================ */
 
 .exercise-group-card[data-card-type="cardio"] > .card {
-    border-top: 3px solid var(--workout-cardio, #3b82f6);
+    border-left: 3px solid var(--workout-cardio, #3b82f6);
 }
 
 .exercise-group-card[data-card-type="note"] > .card {
-    border-top: 3px solid var(--workout-note, #64748b);
+    border-left: 3px solid var(--workout-note, #64748b);
 }
 
 /* ============================================
@@ -202,11 +202,11 @@
    ============================================ */
 
 [data-bs-theme="dark"] .exercise-group-card[data-card-type="cardio"] > .card {
-    border-top-color: #60a5fa;
+    border-left-color: #60a5fa;
 }
 
 [data-bs-theme="dark"] .exercise-group-card[data-card-type="note"] > .card {
-    border-top-color: #94a3b8;
+    border-left-color: #94a3b8;
 }
 
 [data-bs-theme="dark"] .exercise-group-card .card {

@@ -74,9 +74,9 @@
     cursor: not-allowed;
 }
 
-/* Cardio card accent - subtle top border */
+/* Cardio card accent - subtle left border */
 .workout-card[data-card-type="cardio"] {
-    border-top: 3px solid var(--workout-cardio, #3b82f6);
+    border-left: 3px solid var(--workout-cardio, #3b82f6);
 }
 
 /* Skipped state - distinct but not alarming */

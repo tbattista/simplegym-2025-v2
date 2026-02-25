@@ -14,17 +14,18 @@
 /* Note card base - inherits from logbook-card */
 .workout-card.note-card {
     background: var(--workout-card-bg);
-    border-top: 3px solid var(--workout-note, #64748b);
-    border-left: 3px solid var(--workout-muted);
+    border-left: 3px solid var(--workout-note, #64748b);
     transition: border-color 0.2s ease;
 }
 
 .workout-card.note-card:hover:not(.expanded) {
-    border-left-color: var(--workout-accent);
+    border-color: var(--workout-accent);
+    border-left-color: var(--workout-note, #64748b);
 }
 
 .workout-card.note-card.expanded {
-    border-left-color: var(--workout-accent);
+    border-color: var(--workout-accent);
+    border-left-color: var(--workout-note, #64748b);
 }
 
 /* ============================================
