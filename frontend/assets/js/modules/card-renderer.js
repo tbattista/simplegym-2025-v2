@@ -234,6 +234,9 @@ class CardRenderer {
         if (config.duration_minutes) metaParts.push(`${config.duration_minutes} min`);
         if (config.distance) metaParts.push(`${config.distance} ${config.distance_unit || 'mi'}`);
         if (config.target_pace) metaParts.push(config.target_pace);
+        if (config.target_rpe) metaParts.push(`RPE ${config.target_rpe}`);
+        if (config.target_heart_rate) metaParts.push(`${config.target_heart_rate} bpm`);
+        if (config.target_calories) metaParts.push(`${config.target_calories} cal`);
         const metaText = metaParts.join(' • ');
 
         const preview = activityName
@@ -571,6 +574,9 @@ if (!window.openCardioEditor) {
                         if (config.duration_minutes) metaParts.push(`${config.duration_minutes} min`);
                         if (config.distance) metaParts.push(`${config.distance} ${config.distance_unit || 'mi'}`);
                         if (config.target_pace) metaParts.push(config.target_pace);
+                        if (config.target_rpe) metaParts.push(`RPE ${config.target_rpe}`);
+                        if (config.target_heart_rate) metaParts.push(`${config.target_heart_rate} bpm`);
+                        if (config.target_calories) metaParts.push(`${config.target_calories} cal`);
                         let metaEl = card.querySelector('.exercise-meta-text');
                         if (metaParts.length > 0) {
                             if (!metaEl) {

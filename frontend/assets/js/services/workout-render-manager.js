@@ -430,6 +430,9 @@ class WorkoutRenderManager {
         if (config.duration_minutes) metaParts.push(`${config.duration_minutes} min`);
         if (config.distance) metaParts.push(`${config.distance} ${config.distance_unit || 'mi'}`);
         if (config.target_pace) metaParts.push(config.target_pace);
+        if (config.target_rpe) metaParts.push(`RPE ${config.target_rpe}`);
+        if (config.target_heart_rate) metaParts.push(`${config.target_heart_rate} bpm`);
+        if (config.target_calories) metaParts.push(`${config.target_calories} cal`);
         const metaText = metaParts.join(' \u00b7 ');
 
         const escapeHtml = (text) => {
@@ -462,7 +465,9 @@ class WorkoutRenderManager {
                         ${config.duration_minutes ? `<div><strong>Duration:</strong> ${config.duration_minutes} min</div>` : ''}
                         ${config.distance ? `<div><strong>Distance:</strong> ${config.distance} ${config.distance_unit || 'mi'}</div>` : ''}
                         ${config.target_pace ? `<div><strong>Target Pace:</strong> ${config.target_pace}</div>` : ''}
-                        ${config.rpe ? `<div><strong>RPE:</strong> ${config.rpe}/10</div>` : ''}
+                        ${config.target_rpe ? `<div><strong>RPE:</strong> ${config.target_rpe}/10</div>` : ''}
+                        ${config.target_heart_rate ? `<div><strong>Heart Rate:</strong> ${config.target_heart_rate} bpm</div>` : ''}
+                        ${config.target_calories ? `<div><strong>Calories:</strong> ${config.target_calories} cal</div>` : ''}
                     </div>
                 </div>
             </div>
