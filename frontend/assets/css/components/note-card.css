@@ -1,86 +1,31 @@
 /**
- * Ghost Gym - Note Card Styles
- * Styles for session notes that appear inline with exercise cards
- * Extends the workout-card pattern for consistent UI
- * @version 1.0.0
- * @date 2026-01-16
+ * Fitness Field Notes - Note Card Styles
+ * Styles for session notes in workout mode
+ * Session notes use exercise-group-card compact structure (matching builder)
+ * with an expandable body for editing
+ * @version 2.0.0
+ * @date 2026-02-25
  */
 
 /* ============================================
-   NOTE CARD BASE STYLES
-   Extends .workout-card pattern
+   SESSION NOTE CARD - EXPANDED STATE
+   Uses exercise-group-card compact base (from compact-card-layout.css)
+   with expandable body for edit functionality
    ============================================ */
 
-/* Note card base - inherits from logbook-card */
-.workout-card.note-card {
-    background: var(--workout-card-bg);
-    border-left: 3px solid var(--workout-note, #64748b);
-    transition: border-color 0.2s ease;
+/* Clickable cursor for session note cards */
+.session-note-card {
+    cursor: pointer;
 }
 
-.workout-card.note-card:hover:not(.expanded) {
-    border-color: var(--workout-accent);
-    border-left-color: var(--workout-note, #64748b);
-}
-
-.workout-card.note-card.expanded {
-    border-color: var(--workout-accent);
-    border-left-color: var(--workout-note, #64748b);
-}
-
-/* ============================================
-   NOTE CARD HEADER
-   ============================================ */
-
-.note-card-header {
-    padding: 0.75rem 1rem;
-}
-
-.note-card-title {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    flex: 1;
-    min-width: 0; /* Allow text truncation */
-}
-
-/* Note icon styling */
-.note-icon {
-    color: var(--workout-muted);
-    font-size: 1.125rem;
-    flex-shrink: 0;
-    transition: color 0.2s ease;
-}
-
-.note-card.expanded .note-icon,
-.note-card:hover .note-icon {
-    color: var(--workout-accent);
-}
-
-/* Note preview in collapsed state - shows up to 3 lines */
-.note-preview {
-    color: var(--workout-muted);
-    font-weight: 400;
-    font-style: italic;
-    overflow: hidden;
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-    line-clamp: 3;
-    flex: 1;
-    min-width: 0;
-}
-
-.note-card.expanded .note-preview {
-    color: var(--workout-text);
-}
-
-/* ============================================
-   NOTE CARD BODY
-   ============================================ */
-
-.note-card-body {
+/* Note card body - hidden by default, shown when expanded */
+.session-note-card .note-card-body {
+    display: none;
     padding: 0 1rem 1rem 1rem;
+}
+
+.session-note-card.expanded .note-card-body {
+    display: block;
 }
 
 /* Note full content in expanded state */
@@ -125,7 +70,7 @@
 
 .note-textarea:focus {
     border-color: var(--workout-accent);
-    box-shadow: 0 0 0 2px rgba(201, 124, 93, 0.1);  /* Soft Clay */
+    box-shadow: 0 0 0 2px rgba(201, 124, 93, 0.1);
     outline: none;
 }
 
@@ -147,12 +92,10 @@
     font-weight: 500;
 }
 
-/* Warning when approaching limit */
 .note-char-count.warning .note-char-current {
     color: var(--workout-warning);
 }
 
-/* Error when at limit */
 .note-char-count.error .note-char-current {
     color: var(--bs-danger);
 }
@@ -254,7 +197,6 @@
     color: white;
 }
 
-/* Quick add option (at the end) */
 .position-picker-item.quick-add {
     background: rgba(var(--bs-success-rgb), 0.1);
     border-color: var(--workout-success);
@@ -291,11 +233,6 @@
    DARK MODE ADJUSTMENTS
    ============================================ */
 
-[data-bs-theme="dark"] .note-card,
-.dark-mode .note-card {
-    background: var(--workout-card-bg);
-}
-
 [data-bs-theme="dark"] .note-textarea,
 .dark-mode .note-textarea {
     background: rgba(0, 0, 0, 0.2);
@@ -312,11 +249,7 @@
    ============================================ */
 
 @media (max-width: 768px) {
-    .note-card-header {
-        padding: 0.625rem 0.875rem;
-    }
-
-    .note-card-body {
+    .session-note-card .note-card-body {
         padding: 0 0.875rem 0.875rem 0.875rem;
     }
 
@@ -336,10 +269,6 @@
 }
 
 @media (max-width: 576px) {
-    .note-preview {
-        max-width: 150px;
-    }
-
     .note-full-content {
         font-size: 0.875rem;
     }
@@ -349,7 +278,6 @@
    ANIMATIONS
    ============================================ */
 
-/* Fade in animation for new notes */
 @keyframes noteCardFadeIn {
     from {
         opacity: 0;
@@ -361,7 +289,7 @@
     }
 }
 
-.note-card.just-added {
+.session-note-card.just-added {
     animation: noteCardFadeIn 0.3s ease-out;
 }
 
@@ -371,20 +299,19 @@
     transition: opacity 0.2s ease;
 }
 
-.note-card.editing .note-display {
+.session-note-card.editing .note-display {
     display: none;
 }
 
-.note-card.editing .note-editor {
+.session-note-card.editing .note-editor {
     display: flex;
 }
 
 /* Reduced motion support */
 @media (prefers-reduced-motion: reduce) {
-    .note-card,
-    .note-card.just-added,
+    .session-note-card,
+    .session-note-card.just-added,
     .note-textarea,
-    .note-icon,
     .position-picker-item {
         animation: none !important;
         transition: none !important;

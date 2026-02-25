@@ -477,9 +477,8 @@ class WorkoutRenderManager {
     renderReadOnlyTemplateNote(note, index, totalCards) {
         const noteId = note.id || `template-note-${Date.now()}`;
         const content = note.content || '';
-        const truncatedContent = content.length > 150 ? content.substring(0, 150) + '...' : content;
-        const displayText = truncatedContent || 'Empty note';
-        const hasContent = content.length > 0;
+        const preview = content.length > 80 ? content.substring(0, 80) + '...' : content;
+        const displayText = preview || 'Empty note';
 
         const escapeHtml = (text) => {
             if (!text) return '';
@@ -489,19 +488,13 @@ class WorkoutRenderManager {
         };
 
         return `
-            <div class="template-note-card-readonly" data-note-id="${escapeHtml(noteId)}" data-card-type="template-note">
-                <div class="card border-info border-opacity-50">
-                    <div class="card-body py-2 px-3">
-                        <div class="d-flex align-items-start gap-2">
-                            <div class="template-note-icon">
-                                <i class="bx bx-pin text-info"></i>
-                            </div>
-                            <div class="template-note-content flex-grow-1">
-                                <div class="template-note-label text-info small fw-semibold mb-1">
-                                    TEMPLATE NOTE
-                                </div>
-                                <div class="template-note-text ${hasContent ? '' : 'text-muted fst-italic'}">
-                                    ${escapeHtml(displayText)}
+            <div class="exercise-group-card compact" data-note-id="${escapeHtml(noteId)}" data-card-type="note" data-card-index="${index}">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="exercise-content">
+                            <div class="exercise-list">
+                                <div class="exercise-line">
+                                    <i class="bx bx-comment text-muted me-1"></i>${escapeHtml(displayText)}
                                 </div>
                             </div>
                         </div>

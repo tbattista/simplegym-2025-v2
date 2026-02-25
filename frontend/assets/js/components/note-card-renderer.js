@@ -24,43 +24,44 @@ class NoteCardRenderer {
     renderCard(note, displayIndex, totalCards = 0) {
         const noteId = note.id || '';
         const content = note.content || '';
-        const truncatedContent = this._truncateText(content, 150);
-        const displayText = truncatedContent || 'Empty note';
-        const isSessionActive = this.sessionService.isSessionActive();
+        const preview = content
+            ? this._escapeHtml(content.length > 80 ? content.substring(0, 80) + '...' : content)
+            : '<span class="text-muted">Tap edit to add note content</span>';
 
         return `
-            <div class="workout-card note-card"
+            <div class="exercise-group-card compact session-note-card"
                  data-card-type="note"
                  data-note-id="${this._escapeHtml(noteId)}"
                  data-card-index="${displayIndex}"
-                 onclick="if(!event.target.closest('.workout-more-btn, .note-edit-btn, .workout-menu, .note-editor')) { this.classList.toggle('expanded'); if(this.classList.contains('expanded')) setTimeout(() => this.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100); }">
-                <!-- Collapsed Header -->
-                <div class="workout-card-header note-card-header">
-                    <div class="workout-exercise-name-row">
-                        <div class="workout-exercise-name note-card-title">
-                            <i class="bx bx-comment note-icon"></i>
-                            <span class="note-preview">${this._escapeHtml(displayText)}</span>
+                 onclick="if(!event.target.closest('.btn-menu-compact, .btn-edit-compact, .workout-menu, .note-editor')) { this.classList.toggle('expanded'); if(this.classList.contains('expanded')) setTimeout(() => this.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100); }">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="exercise-content">
+                            <div class="exercise-list">
+                                <div class="exercise-line">
+                                    <i class="bx bx-comment text-muted me-1"></i>${preview}
+                                </div>
+                            </div>
                         </div>
-                        <div class="workout-header-actions">
-                            <button class="workout-edit-btn note-edit-btn"
+                        <div class="card-actions">
+                            <button type="button" class="btn btn-sm btn-edit-compact"
                                     aria-label="Edit note"
                                     title="Edit note"
-                                    onclick="window.workoutModeController?.handleEditNote?.('${this._escapeHtml(noteId)}'); event.stopPropagation();">
+                                    onclick="event.preventDefault(); event.stopPropagation(); window.workoutModeController?.handleEditNote?.('${this._escapeHtml(noteId)}');">
                                 <i class="bx bx-pencil"></i>
                             </button>
-                            <button class="workout-more-btn"
-                                    onclick="window.workoutModeController?.toggleNoteMenu?.(this, '${this._escapeHtml(noteId)}', ${displayIndex}); event.stopPropagation();"
+                            <button type="button" class="btn btn-sm btn-menu-compact"
+                                    onclick="event.preventDefault(); event.stopPropagation(); window.workoutModeController?.toggleNoteMenu?.(this, '${this._escapeHtml(noteId)}', ${displayIndex});"
                                     title="More options">
                                 <i class="bx bx-dots-vertical"></i>
                             </button>
-                            <i class="bx bx-chevron-down workout-chevron"></i>
                             ${this._renderMoreMenu(noteId, displayIndex, totalCards)}
                         </div>
                     </div>
                 </div>
 
                 <!-- Expanded Body -->
-                <div class="workout-card-body note-card-body" onclick="event.stopPropagation()">
+                <div class="note-card-body" onclick="event.stopPropagation()">
                     <!-- Display Mode -->
                     <div class="note-display">
                         <div class="note-full-content">${content ? this._escapeHtml(content) : '<em class="text-muted">No content yet. Click the edit button to add a note.</em>'}</div>
