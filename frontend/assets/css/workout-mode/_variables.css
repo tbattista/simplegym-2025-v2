@@ -58,6 +58,7 @@
     /* Exercise type colors */
     --workout-block: #2dd4bf;
     --workout-cardio: #3b82f6;
+    --workout-note: #64748b;
 
     /* Weight progression - reference design-system.css */
     --workout-weight-increased: var(--gs-weight-increased);

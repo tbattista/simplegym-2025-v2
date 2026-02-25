@@ -537,6 +537,15 @@
    base class and inherit grid, padding, borders
    ============================================ */
 
+/* Top accent borders for non-exercise card types */
+.desktop-exercise-row[data-card-type="cardio"] {
+  border-top: 3px solid var(--workout-cardio, #3b82f6);
+}
+
+.desktop-exercise-row[data-card-type="note"] {
+  border-top: 3px solid var(--workout-note, #64748b);
+}
+
 /* --- Note Row --- */
 
 /* Note content spans columns 2-5 for full-width text */
@@ -721,6 +730,14 @@
 
 [data-bs-theme="dark"] .desktop-metadata-row {
   border-top-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-bs-theme="dark"] .desktop-exercise-row[data-card-type="cardio"] {
+  border-top-color: #60a5fa;
+}
+
+[data-bs-theme="dark"] .desktop-exercise-row[data-card-type="note"] {
+  border-top-color: #94a3b8;
 }
 
 [data-bs-theme="dark"] .desktop-exercise-row.sortable-drag {

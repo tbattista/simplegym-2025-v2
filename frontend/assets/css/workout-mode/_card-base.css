@@ -74,6 +74,11 @@
     cursor: not-allowed;
 }
 
+/* Cardio card accent - subtle top border */
+.workout-card[data-card-type="cardio"] {
+    border-top: 3px solid var(--workout-cardio, #3b82f6);
+}
+
 /* Skipped state - distinct but not alarming */
 .workout-card.skipped {
     border-left: 3px solid var(--workout-warning);

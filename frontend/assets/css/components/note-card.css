@@ -14,6 +14,7 @@
 /* Note card base - inherits from logbook-card */
 .workout-card.note-card {
     background: var(--workout-card-bg);
+    border-top: 3px solid var(--workout-note, #64748b);
     border-left: 3px solid var(--workout-muted);
     transition: border-color 0.2s ease;
 }
