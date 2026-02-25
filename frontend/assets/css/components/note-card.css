@@ -18,6 +18,19 @@
     cursor: pointer;
 }
 
+/* 3-dot menu button - white background, orange icon */
+.session-note-card .btn-menu-compact {
+    background: #fff;
+    border: 1px solid var(--bs-border-color);
+    color: var(--workout-accent, #c97c5d);
+    opacity: 1;
+}
+
+.session-note-card .btn-menu-compact:hover {
+    background: rgba(var(--bs-primary-rgb), 0.08);
+    color: var(--workout-accent, #c97c5d);
+}
+
 /* Note card body - hidden by default, shown when expanded */
 .session-note-card .note-card-body {
     display: none;
