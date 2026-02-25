@@ -21,41 +21,37 @@ class WorkoutReorderManager {
     }
 
     /**
-     * Show reorder exercise offcanvas
-     * Allows user to reorder exercises via drag-and-drop
+     * Show reorder exercise offcanvas (sections-style, matching workout-builder)
+     * Allows user to reorder exercises via drag-and-drop with block headers
      */
     showReorderOffcanvas() {
         try {
-            console.log('📋 Building exercise list for reorder...');
+            console.log('📋 Building sections list for reorder...');
 
-            // Build exercise list with current order
-            const exerciseList = this.buildExerciseList();
+            const { sections, groupIdToName } = this.buildSectionsList();
 
-            if (exerciseList.length === 0) {
+            const totalExercises = sections.reduce((sum, s) => sum + s.exercises.length, 0);
+            if (totalExercises === 0) {
                 window.showAlert('No exercises to reorder', 'warning');
                 return;
             }
 
-            console.log('📋 Exercise list built:', exerciseList);
+            console.log('📋 Sections list built:', sections.length, 'sections,', totalExercises, 'items');
 
-            // Create reorder offcanvas using UnifiedOffcanvasFactory
-            if (!window.UnifiedOffcanvasFactory) {
-                console.error('UnifiedOffcanvasFactory not available');
+            if (!window.UnifiedOffcanvasFactory?.createSectionsReorderOffcanvas) {
+                console.error('UnifiedOffcanvasFactory.createSectionsReorderOffcanvas not available');
                 window.showAlert('Reorder feature not available', 'error');
                 return;
             }
 
-            // Create offcanvas with correct argument format
-            const result = window.UnifiedOffcanvasFactory.createReorderOffcanvas(
-                exerciseList,
-                (reorderedExercises) => {
-                    console.log('Saving new exercise order:', reorderedExercises);
-                    // Pass full exercise objects (with blockId/blockName) to apply block changes
-                    this.applyExerciseOrder(reorderedExercises);
+            const result = window.UnifiedOffcanvasFactory.createSectionsReorderOffcanvas(
+                sections,
+                (reorderedSections) => {
+                    console.log('Saving new section order:', reorderedSections);
+                    this.applySectionReorder(reorderedSections, groupIdToName);
                 }
             );
 
-            // Verify offcanvas was created successfully
             if (!result) {
                 console.error('Failed to create reorder offcanvas');
                 window.showAlert('Failed to open reorder panel', 'error');
@@ -68,8 +64,286 @@ class WorkoutReorderManager {
     }
 
     /**
-     * Build item list for reorder offcanvas
-     * Combines regular exercises and and session notes with current custom order applied
+     * Build sections list for the sections reorder offcanvas.
+     * Groups exercises by block_id/sections, includes template notes and session notes.
+     * @returns {{ sections: Array, groupIdToName: Map }} Sections and ID-to-name mapping
+     */
+    buildSectionsList() {
+        const currentWorkout = this.onGetCurrentWorkout();
+        const groupIdToName = new Map();
+        if (!currentWorkout) return { sections: [], groupIdToName };
+
+        const exerciseGroups = currentWorkout.exercise_groups || [];
+        const templateNotes = currentWorkout.template_notes || [];
+        const sessionNotes = this.sessionService.getSessionNotes() || [];
+
+        // Helper to build an item for the offcanvas
+        const buildItem = (group) => {
+            const item = { groupId: group.group_id };
+
+            if (group.group_type === 'cardio') {
+                const config = group.cardio_config || {};
+                let activityName = config.activity_type || '';
+                if (activityName && window.ActivityTypeRegistry) {
+                    activityName = window.ActivityTypeRegistry.getName(activityName) || activityName;
+                }
+                item.name = activityName || 'Activity';
+                item.isCardio = true;
+                item.sets = config.duration_minutes ? `${config.duration_minutes} min` : '';
+                item.reps = config.distance ? `${config.distance} ${config.distance_unit || 'mi'}` : '';
+            } else if (group.group_type === 'note') {
+                const preview = group.note_content
+                    ? (group.note_content.length > 40 ? group.note_content.substring(0, 40) + '...' : group.note_content)
+                    : 'Empty note';
+                item.name = preview;
+                item.isNote = true;
+            } else {
+                item.name = group.exercises?.a || 'Exercise';
+                item.sets = group.sets || '';
+                item.reps = group.reps || '';
+            }
+
+            // Map groupId back to the name used by session service
+            const sessionName = group.exercises?.a || item.name;
+            groupIdToName.set(group.group_id, sessionName);
+            return item;
+        };
+
+        let sections = [];
+        const hasSections = currentWorkout.sections?.some(s => s.type !== 'standard');
+
+        if (hasSections) {
+            // Build from explicit sections data
+            const groupLookup = new Map();
+            exerciseGroups.forEach(g => groupLookup.set(g.group_id, g));
+            const nameLookup = new Map();
+            exerciseGroups.forEach(g => {
+                const name = g.exercises?.a;
+                if (name && !nameLookup.has(name)) nameLookup.set(name, g);
+            });
+            const placedGroupIds = new Set();
+
+            (currentWorkout.sections || []).forEach(section => {
+                const isNamed = section.type !== 'standard';
+                const exercises = [];
+                section.exercises.forEach(sectionExercise => {
+                    let group = groupLookup.get(sectionExercise.exercise_id);
+                    if (!group) group = nameLookup.get(sectionExercise.name);
+                    if (group) {
+                        exercises.push(buildItem(group));
+                        placedGroupIds.add(group.group_id);
+                    }
+                });
+
+                if (exercises.length > 0 || isNamed) {
+                    sections.push({
+                        sectionId: section.section_id || `section-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`,
+                        sectionType: isNamed ? section.type : 'standard',
+                        sectionName: isNamed ? (section.name || section.type) : null,
+                        sectionDescription: null,
+                        exercises
+                    });
+                }
+            });
+
+            // Safety net: add unplaced exercise_groups
+            exerciseGroups.forEach(group => {
+                if (!placedGroupIds.has(group.group_id)) {
+                    sections.push({
+                        sectionId: `section-${group.group_id}`,
+                        sectionType: 'standard',
+                        sectionName: null,
+                        sectionDescription: null,
+                        exercises: [buildItem(group)]
+                    });
+                }
+            });
+        } else {
+            // Group by block_id, maintaining original order
+            const blockGroups = new Map();
+            const processedBlocks = new Set();
+
+            exerciseGroups.forEach(group => {
+                if (group.block_id) {
+                    if (!blockGroups.has(group.block_id)) {
+                        blockGroups.set(group.block_id, {
+                            name: group.group_name || 'Block',
+                            exercises: []
+                        });
+                    }
+                    blockGroups.get(group.block_id).exercises.push(buildItem(group));
+                }
+            });
+
+            exerciseGroups.forEach(group => {
+                if (group.block_id && !processedBlocks.has(group.block_id)) {
+                    processedBlocks.add(group.block_id);
+                    const block = blockGroups.get(group.block_id);
+                    sections.push({
+                        sectionId: group.block_id,
+                        sectionType: 'block',
+                        sectionName: block.name,
+                        sectionDescription: null,
+                        exercises: block.exercises
+                    });
+                } else if (!group.block_id) {
+                    sections.push({
+                        sectionId: `section-${group.group_id}`,
+                        sectionType: 'standard',
+                        sectionName: null,
+                        sectionDescription: null,
+                        exercises: [buildItem(group)]
+                    });
+                }
+            });
+        }
+
+        // Add template notes as standalone items
+        templateNotes.forEach(note => {
+            const noteGroupId = `template-note-${note.id}`;
+            const preview = note.content
+                ? (note.content.length > 40 ? note.content.substring(0, 40) + '...' : note.content)
+                : 'Empty note';
+            groupIdToName.set(noteGroupId, noteGroupId);
+            sections.push({
+                sectionId: `section-tn-${note.id}`,
+                sectionType: 'standard',
+                sectionName: null,
+                sectionDescription: null,
+                exercises: [{ groupId: noteGroupId, name: preview, isNote: true }]
+            });
+        });
+
+        // Add session notes as standalone items
+        sessionNotes.forEach(note => {
+            const noteGroupId = `note-${note.id}`;
+            const preview = note.content
+                ? (note.content.length > 30 ? note.content.substring(0, 30) + '...' : note.content)
+                : 'Empty note';
+            groupIdToName.set(noteGroupId, noteGroupId);
+            sections.push({
+                sectionId: `section-sn-${note.id}`,
+                sectionType: 'standard',
+                sectionName: null,
+                sectionDescription: null,
+                exercises: [{ groupId: noteGroupId, name: preview, isNote: true }]
+            });
+        });
+
+        // Apply current custom order to section ordering
+        const customOrder = this.sessionService.getExerciseOrder();
+        if (customOrder.length > 0) {
+            // Build reverse lookup: name -> first position in custom order
+            const nameToPos = new Map();
+            customOrder.forEach((name, idx) => nameToPos.set(name, idx));
+
+            sections.sort((a, b) => {
+                const aName = this._getSectionSortName(a, groupIdToName);
+                const bName = this._getSectionSortName(b, groupIdToName);
+                const aPos = nameToPos.has(aName) ? nameToPos.get(aName) : Infinity;
+                const bPos = nameToPos.has(bName) ? nameToPos.get(bName) : Infinity;
+                return aPos - bPos;
+            });
+        }
+
+        return { sections, groupIdToName };
+    }
+
+    /**
+     * Get the session-service name for a section's first exercise (for sort ordering)
+     * @private
+     */
+    _getSectionSortName(section, groupIdToName) {
+        const firstEx = section.exercises[0];
+        if (!firstEx) return '';
+        return groupIdToName.get(firstEx.groupId) || firstEx.name || firstEx.groupId || '';
+    }
+
+    /**
+     * Apply section-structured reorder from the sections reorder offcanvas.
+     * Converts sections output back to flat name order for session service.
+     * @param {Array} reorderedSections - [{ sectionId, sectionType, sectionName, exerciseIds: [...] }]
+     * @param {Map} groupIdToName - Mapping from groupId to session-service name
+     */
+    applySectionReorder(reorderedSections, groupIdToName) {
+        try {
+            if (!Array.isArray(reorderedSections) || reorderedSections.length === 0) {
+                console.error('Invalid sections array:', reorderedSections);
+                window.showAlert('Invalid exercise order', 'error');
+                return;
+            }
+
+            // Flatten sections into ordered name list for session service
+            const nameOrder = [];
+            reorderedSections.forEach(section => {
+                (section.exerciseIds || []).forEach(groupId => {
+                    const name = groupIdToName.get(groupId) || groupId;
+                    nameOrder.push(name);
+                });
+            });
+
+            // Preserve timer state before re-render
+            const timerDisplay = document.getElementById('floatingTimer');
+            const preservedTime = timerDisplay ? timerDisplay.textContent : null;
+            const isSessionActive = this.sessionService.isSessionActive();
+
+            // Update block membership on exercise_groups based on section placement
+            const currentWorkout = this.onGetCurrentWorkout();
+            if (currentWorkout?.exercise_groups) {
+                // Build groupId -> exercise_group lookup
+                const groupLookup = new Map();
+                currentWorkout.exercise_groups.forEach(g => groupLookup.set(g.group_id, g));
+
+                reorderedSections.forEach(section => {
+                    const isNamed = section.sectionType !== 'standard';
+                    (section.exerciseIds || []).forEach(groupId => {
+                        const group = groupLookup.get(groupId);
+                        if (!group) return;
+                        if (isNamed) {
+                            group.block_id = section.sectionId;
+                            group.group_name = section.sectionName || null;
+                        } else {
+                            group.block_id = null;
+                            group.group_name = null;
+                        }
+                    });
+                });
+            }
+
+            // Save to session service
+            this.sessionService.setExerciseOrder(nameOrder);
+
+            // Re-render workout with new order
+            this.onRenderWorkout();
+
+            // Restore timer state if it was inadvertently cleared
+            if (isSessionActive && preservedTime && timerDisplay) {
+                const currentTime = timerDisplay.textContent;
+                if (currentTime === '00:00' && preservedTime !== '00:00') {
+                    timerDisplay.textContent = preservedTime;
+                    console.log('Timer restored after reorder:', preservedTime);
+                }
+            }
+
+            // Show success feedback
+            window.showAlert('Exercise order updated successfully', 'success');
+
+            // Auto-save if session is active
+            if (this.sessionService.isSessionActive()) {
+                console.log('Auto-saving session with new order...');
+                this.onAutoSave();
+            }
+
+            console.log('Section reorder applied successfully');
+
+        } catch (error) {
+            console.error('Error applying section reorder:', error);
+            window.showAlert('Failed to update exercise order', 'error');
+        }
+    }
+
+    /**
+     * Build flat item list for reorder (used by move up/down and getCurrentExerciseOrder)
      * @returns {Array} Array of item objects with name, isNote, displayName properties
      */
     buildExerciseList() {
@@ -94,8 +368,7 @@ class WorkoutReorderManager {
             });
         }
 
-
-                // Gather session notes
+        // Gather session notes
         const sessionNotes = this.sessionService.getSessionNotes();
         if (sessionNotes && sessionNotes.length > 0) {
             sessionNotes.forEach((note) => {
@@ -112,24 +385,14 @@ class WorkoutReorderManager {
         // Apply current custom order if exists
         const customOrder = this.sessionService.getExerciseOrder();
         if (customOrder.length > 0) {
-            console.log('📋 Applying current custom order:', customOrder);
-
-            // Reorder based on current custom order
             const orderedList = [];
             customOrder.forEach(name => {
                 const item = itemList.find(ex => ex.name === name);
-                if (item) {
-                    orderedList.push(item);
-                }
+                if (item) orderedList.push(item);
             });
-
-            // Add any items not in custom order (safety check)
             itemList.forEach(ex => {
-                if (!customOrder.includes(ex.name)) {
-                    orderedList.push(ex);
-                }
+                if (!customOrder.includes(ex.name)) orderedList.push(ex);
             });
-
             return orderedList;
         }
 
@@ -137,32 +400,24 @@ class WorkoutReorderManager {
     }
 
     /**
-     * Apply new exercise order
+     * Apply new exercise order (used by move up/down)
      * Saves order to session and re-renders workout
      * @param {Array} newOrder - Array of exercise names in new order
      */
     applyExerciseOrder(newOrder) {
         try {
-            // Validate input
             if (!Array.isArray(newOrder) || newOrder.length === 0) {
                 console.error('Invalid order array:', newOrder);
                 window.showAlert('Invalid exercise order', 'error');
                 return;
             }
 
-            console.log('Applying new exercise order:', newOrder);
-
-            // Extract name order for session service
             const nameOrder = newOrder.map(ex => typeof ex === 'string' ? ex : ex.name);
 
             // Preserve timer state before re-render
             const timerDisplay = document.getElementById('floatingTimer');
             const preservedTime = timerDisplay ? timerDisplay.textContent : null;
             const isSessionActive = this.sessionService.isSessionActive();
-
-            if (isSessionActive && preservedTime) {
-                console.log('Preserving timer state before reorder:', preservedTime);
-            }
 
             // Update block membership on the workout's exercise_groups
             const currentWorkout = this.onGetCurrentWorkout();
@@ -194,16 +449,11 @@ class WorkoutReorderManager {
                 }
             }
 
-            // Show success feedback
             window.showAlert('Exercise order updated successfully', 'success');
 
-            // Auto-save if session is active
             if (this.sessionService.isSessionActive()) {
-                console.log('Auto-saving session with new order...');
                 this.onAutoSave();
             }
-
-            console.log('Exercise order applied successfully');
 
         } catch (error) {
             console.error('Error applying exercise order:', error);
