@@ -197,6 +197,12 @@ class WorkoutModeController {
             const authState = await this.dataManager.waitForAuthReady();
             console.log('✅ Auth state ready:', authState.storageMode, 'authenticated:', authState.isAuthenticated);
 
+            // Always initialize event listeners, settings, and FABs
+            // (needed for both resume and fresh-load paths)
+            this.setupEventListeners();
+            this.settingsManager.initialize();
+            this.fabManager.initialize();
+
             // Check for persisted session
             const hasSession = await this.lifecycleManager.checkPersistedSession();
             if (hasSession) return;
@@ -218,9 +224,6 @@ class WorkoutModeController {
             );
 
             await this.loadWorkout(workoutId);
-            this.setupEventListeners();
-            this.settingsManager.initialize();
-            this.fabManager.initialize();
 
             console.log('✅ Workout Mode Controller ready');
         } catch (error) {
