@@ -59,6 +59,11 @@ import {
     createCardioEditor
 } from './offcanvas-cardio-editor.js';
 
+// Import activity display settings
+import {
+    createActivityDisplaySettings
+} from './offcanvas-activity-display-settings.js?v=20260226-02';
+
 // Import feedback components
 import {
     createFeedbackOffcanvas
@@ -203,6 +208,10 @@ class UnifiedOffcanvasFactory {
         return createCardioEditor(config);
     }
 
+    static createActivityDisplaySettings(config) {
+        return createActivityDisplaySettings(config);
+    }
+
     /* ============================================
        FEEDBACK OFFCANVAS
        ============================================ */
@@ -345,7 +354,8 @@ export {
     createImportWizard,
 
     // Cardio
-    createCardioEditor
+    createCardioEditor,
+    createActivityDisplaySettings
 };
 
 console.log('📦 UnifiedOffcanvasFactory v3.0.0 (modular) loaded');

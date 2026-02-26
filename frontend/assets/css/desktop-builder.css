@@ -444,34 +444,39 @@
 
 /* ---- Inline Field Labels (per-row, replacing fixed header) ---- */
 
-/* Stack label above value inside each cell */
-.desktop-exercise-row .inline-editable[data-field="protocol"],
-.desktop-exercise-row .inline-editable[data-field="rest"],
-.desktop-exercise-row .inline-editable[data-field="weight"],
-.desktop-cardio-row .inline-editable[data-field="duration"],
-.desktop-cardio-row .inline-editable[data-field="distance"],
-.desktop-cardio-row .inline-editable[data-field="pace"] {
+/* Stack label above value inside each cell — exercise rows (hardcoded fields) */
+.desktop-exercise-row:not(.desktop-cardio-row) .inline-editable[data-field="protocol"],
+.desktop-exercise-row:not(.desktop-cardio-row) .inline-editable[data-field="rest"],
+.desktop-exercise-row:not(.desktop-cardio-row) .inline-editable[data-field="weight"] {
   flex-direction: column;
   align-items: flex-start;
   justify-content: center;
   gap: 1px;
 }
 
-/* Label text per field type */
+/* Stack label above value — cardio rows (dynamic fields via data-label) */
+.desktop-cardio-row .inline-editable[data-label] {
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 1px;
+}
+
+/* Exercise row label text (static) */
 .desktop-exercise-row:not(.desktop-cardio-row) .inline-editable[data-field="protocol"]::before { content: "Protocol"; }
 .desktop-exercise-row:not(.desktop-cardio-row) .inline-editable[data-field="rest"]::before { content: "Rest"; }
 .desktop-exercise-row:not(.desktop-cardio-row) .inline-editable[data-field="weight"]::before { content: "Weight"; }
-.desktop-cardio-row .inline-editable[data-field="duration"]::before { content: "Duration"; }
-.desktop-cardio-row .inline-editable[data-field="distance"]::before { content: "Distance"; }
-.desktop-cardio-row .inline-editable[data-field="pace"]::before { content: "Pace"; }
 
-/* Label styling */
-.desktop-exercise-row .inline-editable[data-field="protocol"]::before,
-.desktop-exercise-row .inline-editable[data-field="rest"]::before,
-.desktop-exercise-row .inline-editable[data-field="weight"]::before,
-.desktop-cardio-row .inline-editable[data-field="duration"]::before,
-.desktop-cardio-row .inline-editable[data-field="distance"]::before,
-.desktop-cardio-row .inline-editable[data-field="pace"]::before {
+/* Cardio row label text (dynamic from data-label attribute) */
+.desktop-cardio-row .inline-editable[data-label]::before {
+  content: attr(data-label);
+}
+
+/* Shared label styling */
+.desktop-exercise-row:not(.desktop-cardio-row) .inline-editable[data-field="protocol"]::before,
+.desktop-exercise-row:not(.desktop-cardio-row) .inline-editable[data-field="rest"]::before,
+.desktop-exercise-row:not(.desktop-cardio-row) .inline-editable[data-field="weight"]::before,
+.desktop-cardio-row .inline-editable[data-label]::before {
   font-size: 0.5625rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -483,6 +488,49 @@
 /* Hide labels during inline editing */
 .desktop-exercise-row .inline-editable.editing::before {
   display: none;
+}
+
+/* ---- Activity Display Settings Offcanvas ---- */
+
+.activity-display-field-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--bs-border-color);
+  cursor: pointer;
+  transition: background-color 0.15s ease, opacity 0.15s ease;
+}
+
+.activity-display-field-row:last-child {
+  border-bottom: none;
+}
+
+.activity-display-field-row:hover {
+  background: rgba(var(--bs-primary-rgb), 0.04);
+}
+
+.activity-display-field-row.field-disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.activity-display-field-icon {
+  font-size: 1.125rem;
+  color: var(--bs-secondary-color);
+  width: 1.5rem;
+  text-align: center;
+}
+
+.activity-display-field-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.activity-display-fields-list {
+  border: 1px solid var(--bs-border-color);
+  border-radius: var(--bs-border-radius);
+  overflow: hidden;
 }
 
 /* Exercise name inline edit (wider, with autocomplete support) */

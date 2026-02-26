@@ -640,17 +640,20 @@
     <!-- Activity Type Registry (needed by cardio editor offcanvas) -->
     <script src="/static/assets/js/services/activity-type-registry.js?v=1.0.0"></script>
 
+    <!-- Activity Display Config (configurable columns for activity cards) -->
+    <script src="/static/assets/js/services/activity-display-config.js?v=20260226-01"></script>
+
     <!-- Offcanvas Manager (Phase 1 - Centralized lifecycle) -->
     <script src="/static/assets/js/components/offcanvas/offcanvas-manager.js?v=20251220-01"></script>
 
     <!-- Unified Offcanvas Factory (Modular v3.0.0) -->
-    <script type="module" src="/static/assets/js/components/offcanvas/index.js?v=20260222-01"></script>
+    <script type="module" src="/static/assets/js/components/offcanvas/index.js?v=20260226-02"></script>
 
     <!-- UI Helpers -->
     <script src="/static/assets/js/dashboard/ui-helpers.js?v=20251020-04"></script>
 
     <!-- Desktop Builder Modules (load after card-renderer, exercise-autocomplete, before managers) -->
-    <script src="/static/assets/js/modules/desktop-card-renderer.js?v=20260222-03"></script>
+    <script src="/static/assets/js/modules/desktop-card-renderer.js?v=20260226-01"></script>
     <script src="/static/assets/js/modules/desktop-sidebar.js?v=20260221-02"></script>
     <script src="/static/assets/js/modules/desktop-view-adapter.js?v=20260222-04"></script>
 
@@ -1044,6 +1047,22 @@
             console.log('✅ Workout editor page ready!');
         });
         
+        // Global handler: open Activity Display Settings offcanvas
+        window.openActivityDisplaySettings = function() {
+            if (window.UnifiedOffcanvasFactory?.createActivityDisplaySettings) {
+                window.UnifiedOffcanvasFactory.createActivityDisplaySettings({
+                    onSave: function() {
+                        // Re-render all desktop cardio rows
+                        if (window.desktopCardRenderer?.refreshAllCardioRows) {
+                            window.desktopCardRenderer.refreshAllCardioRows();
+                        }
+                        // Dispatch event for mobile re-renders
+                        window.dispatchEvent(new CustomEvent('activityDisplayChanged'));
+                    }
+                });
+            }
+        };
+
         // Initialize inline metadata fields (tags + description)
         function initializeMetadataPopovers() {
             const tagsInline = document.getElementById('mobileTagsInline');

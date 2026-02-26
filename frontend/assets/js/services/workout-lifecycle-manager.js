@@ -219,7 +219,17 @@ class WorkoutLifecycleManager {
         // NOTE: Do NOT call showFloatingControls(false) here!
         // The timer/controls should remain visible while the completion offcanvas is open.
         // Controls will be reset when the workout is actually completed or cancelled.
-        this.showCompleteWorkoutOffcanvas();
+        try {
+            this.showCompleteWorkoutOffcanvas();
+        } catch (error) {
+            console.error('❌ Error showing complete workout offcanvas:', error);
+            const modalManager = this.getModalManager();
+            modalManager.alert(
+                'Save Error',
+                `Something went wrong while trying to save: ${error.message}. Please try again.`,
+                'danger'
+            );
+        }
     }
     
     /**
@@ -228,7 +238,16 @@ class WorkoutLifecycleManager {
      */
     showCompleteWorkoutOffcanvas() {
         const session = this.sessionService.getCurrentSession();
-        if (!session) return;
+        if (!session) {
+            console.error('❌ No active session found when trying to save');
+            const modalManager = this.getModalManager();
+            modalManager.alert(
+                'No Active Session',
+                'Could not find an active workout session. Please start a new session and try again.',
+                'warning'
+            );
+            return;
+        }
 
         // Detect session mode (Quick Log vs Timed)
         const isQuickLog = this.sessionService.isQuickLogMode();
@@ -238,6 +257,17 @@ class WorkoutLifecycleManager {
         const minutes = Math.floor(elapsed / 60);
         const exerciseCount = this.currentWorkout?.exercise_groups?.length || 0;
         const totalExercises = exerciseCount;
+
+        if (!window.UnifiedOffcanvasFactory) {
+            console.error('❌ UnifiedOffcanvasFactory not loaded — cannot show save offcanvas');
+            const modalManager = this.getModalManager();
+            modalManager.alert(
+                'Save Error',
+                'A required component failed to load. Please refresh the page and try again.',
+                'danger'
+            );
+            return;
+        }
 
         // Use unified factory to create offcanvas
         window.UnifiedOffcanvasFactory.createCompleteWorkout({

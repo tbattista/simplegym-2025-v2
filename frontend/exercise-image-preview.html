@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ExerciseDB Image Preview</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body { background: #1a1a2e; color: #e0e0e0; font-family: system-ui, sans-serif; }
+    .search-bar { position: sticky; top: 0; z-index: 100; background: #1a1a2e; padding: 1rem 0; border-bottom: 1px solid #333; }
+    .filter-row { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.5rem; }
+    .filter-row select { background: #16213e; color: #e0e0e0; border: 1px solid #444; border-radius: 6px; padding: 0.35rem 0.6rem; font-size: 0.85rem; }
+    .filter-row select:focus { border-color: #696cff; outline: none; }
+    .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; padding: 1rem 0; }
+    .exercise-card { background: #16213e; border-radius: 10px; overflow: hidden; transition: transform 0.2s; }
+    .exercise-card:hover { transform: translateY(-2px); }
+    .exercise-card img { width: 100%; aspect-ratio: 1; object-fit: contain; background: #0f3460; cursor: pointer; }
+    .exercise-card .card-body { padding: 0.75rem; }
+    .exercise-card .card-title { font-size: 0.95rem; font-weight: 600; text-transform: capitalize; margin-bottom: 0.5rem; }
+    .badge-muscle { background: #696cff; font-size: 0.7rem; }
+    .badge-equipment { background: #03dac6; color: #000; font-size: 0.7rem; }
+    .badge-bodypart { background: #ff6b6b; font-size: 0.7rem; }
+    .stats-bar { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; color: #888; font-size: 0.85rem; }
+    #loadMore { display: none; }
+    .spinner-wrap { text-align: center; padding: 2rem; }
+    .no-results { text-align: center; padding: 3rem; color: #666; }
+    .modal-body img { width: 100%; background: #0f3460; border-radius: 8px; }
+    .modal-content { background: #16213e; color: #e0e0e0; }
+    .modal-header { border-bottom-color: #333; }
+    .instruction-list { padding-left: 0; list-style: none; }
+    .instruction-list li { padding: 0.3rem 0; font-size: 0.9rem; color: #ccc; }
+    .instruction-list li::before { content: "→ "; color: #696cff; }
+  </style>
+</head>
+<body>
+
+<div class="container-fluid px-3 px-md-5">
+  <!-- Search & Filters -->
+  <div class="search-bar">
+    <h4 class="mb-2">ExerciseDB Preview <span class="text-muted" style="font-size:0.8rem">(1,500 exercises)</span></h4>
+    <input type="text" id="searchInput" class="form-control form-control-lg"
+           style="background:#16213e; color:#e0e0e0; border-color:#444;"
+           placeholder="Search exercises... (e.g. bench press, squat, curl)">
+    <div class="filter-row">
+      <select id="filterMuscle"><option value="">All Muscles</option></select>
+      <select id="filterEquipment"><option value="">All Equipment</option></select>
+      <select id="filterBodypart"><option value="">All Body Parts</option></select>
+      <button id="clearFilters" class="btn btn-sm btn-outline-secondary" style="display:none;">Clear Filters</button>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-bar">
+    <span id="resultCount">Loading...</span>
+    <span id="pageInfo"></span>
+  </div>
+
+  <!-- Card Grid -->
+  <div class="card-grid" id="cardGrid"></div>
+
+  <!-- Load More -->
+  <div class="text-center py-3">
+    <button id="loadMore" class="btn btn-outline-light btn-lg px-5">Load More</button>
+  </div>
+
+  <!-- Spinner -->
+  <div class="spinner-wrap" id="spinner">
+    <div class="spinner-border text-light" role="status"></div>
+    <p class="mt-2">Loading exercises...</p>
+  </div>
+
+  <!-- No Results -->
+  <div class="no-results" id="noResults" style="display:none;">
+    <h5>No exercises found</h5>
+    <p>Try a different search term or filter</p>
+  </div>
+</div>
+
+<!-- Detail Modal -->
+<div class="modal fade" id="detailModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalTitle" style="text-transform:capitalize;"></h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <img id="modalGif" src="" alt="" loading="lazy">
+        <div class="mt-3" id="modalBadges"></div>
+        <h6 class="mt-3 mb-2">Instructions</h6>
+        <ul class="instruction-list" id="modalInstructions"></ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+const API = 'https://exercisedb.dev/api/v1';
+const LIMIT = 25;
+
+let currentOffset = 0;
+let totalExercises = 0;
+let currentMode = 'browse'; // 'browse' | 'search' | 'filter'
+let searchTimeout = null;
+let detailModal = null;
+
+// ── Init ──
+document.addEventListener('DOMContentLoaded', async () => {
+  detailModal = new bootstrap.Modal(document.getElementById('detailModal'));
+  loadFilters();
+  loadExercises();
+
+  document.getElementById('searchInput').addEventListener('input', onSearchInput);
+  document.getElementById('filterMuscle').addEventListener('change', onFilterChange);
+  document.getElementById('filterEquipment').addEventListener('change', onFilterChange);
+  document.getElementById('filterBodypart').addEventListener('change', onFilterChange);
+  document.getElementById('loadMore').addEventListener('click', loadMore);
+  document.getElementById('clearFilters').addEventListener('click', clearFilters);
+});
+
+// ── Load filter dropdowns ──
+async function loadFilters() {
+  try {
+    const [muscles, equip, bodyparts] = await Promise.all([
+      fetchJson(`${API}/muscles`),
+      fetchJson(`${API}/equipments`),
+      fetchJson(`${API}/bodyparts`)
+    ]);
+
+    populateSelect('filterMuscle', muscles.data.map(m => m.name).sort(), 'All Muscles');
+    populateSelect('filterEquipment', equip.data.map(e => e.name).sort(), 'All Equipment');
+    populateSelect('filterBodypart', bodyparts.data.map(b => b.name).sort(), 'All Body Parts');
+  } catch (e) {
+    console.error('Failed to load filters:', e);
+  }
+}
+
+function populateSelect(id, items, placeholder) {
+  const sel = document.getElementById(id);
+  sel.innerHTML = `<option value="">${placeholder}</option>` +
+    items.map(i => `<option value="${i}">${capitalize(i)}</option>`).join('');
+}
+
+// ── Browse all exercises ──
+async function loadExercises(append = false) {
+  if (!append) { currentOffset = 0; showSpinner(true); clearGrid(); }
+
+  try {
+    const data = await fetchJson(`${API}/exercises?offset=${currentOffset}&limit=${LIMIT}`);
+    totalExercises = data.metadata.totalExercises;
+    renderExercises(data.data, append);
+    updateStats(data);
+  } catch (e) {
+    console.error('Failed to load exercises:', e);
+    showNoResults(true);
+  }
+  showSpinner(false);
+}
+
+// ── Search ──
+function onSearchInput(e) {
+  clearTimeout(searchTimeout);
+  const q = e.target.value.trim();
+
+  // Reset filters when searching
+  if (q) {
+    document.getElementById('filterMuscle').value = '';
+    document.getElementById('filterEquipment').value = '';
+    document.getElementById('filterBodypart').value = '';
+  }
+
+  searchTimeout = setTimeout(() => {
+    if (q.length >= 2) {
+      currentMode = 'search';
+      searchExercises(q);
+    } else if (q.length === 0) {
+      currentMode = 'browse';
+      loadExercises();
+    }
+  }, 400);
+
+  updateClearButton();
+}
+
+async function searchExercises(query, append = false) {
+  if (!append) { currentOffset = 0; showSpinner(true); clearGrid(); }
+
+  try {
+    const data = await fetchJson(`${API}/exercises/search?q=${encodeURIComponent(query)}&offset=${currentOffset}&limit=${LIMIT}`);
+    renderExercises(data.data, append);
+    updateStats(data);
+  } catch (e) {
+    console.error('Search failed:', e);
+    showNoResults(true);
+  }
+  showSpinner(false);
+}
+
+// ── Filter by muscle/equipment/bodypart ──
+function onFilterChange() {
+  const muscle = document.getElementById('filterMuscle').value;
+  const equipment = document.getElementById('filterEquipment').value;
+  const bodypart = document.getElementById('filterBodypart').value;
+
+  // Clear search when filtering
+  document.getElementById('searchInput').value = '';
+
+  if (muscle) {
+    currentMode = 'filter';
+    filterExercises('muscles', muscle);
+  } else if (equipment) {
+    currentMode = 'filter';
+    filterExercises('equipments', equipment);
+  } else if (bodypart) {
+    currentMode = 'filter';
+    filterExercises('bodyparts', bodypart);
+  } else {
+    currentMode = 'browse';
+    loadExercises();
+  }
+
+  updateClearButton();
+}
+
+async function filterExercises(type, value, append = false) {
+  if (!append) { currentOffset = 0; showSpinner(true); clearGrid(); }
+
+  try {
+    const data = await fetchJson(`${API}/${type}/${encodeURIComponent(value)}/exercises?offset=${currentOffset}&limit=${LIMIT}`);
+    renderExercises(data.data, append);
+    updateStats(data);
+  } catch (e) {
+    console.error('Filter failed:', e);
+    showNoResults(true);
+  }
+  showSpinner(false);
+}
+
+function clearFilters() {
+  document.getElementById('searchInput').value = '';
+  document.getElementById('filterMuscle').value = '';
+  document.getElementById('filterEquipment').value = '';
+  document.getElementById('filterBodypart').value = '';
+  currentMode = 'browse';
+  updateClearButton();
+  loadExercises();
+}
+
+function updateClearButton() {
+  const hasFilter = document.getElementById('searchInput').value ||
+    document.getElementById('filterMuscle').value ||
+    document.getElementById('filterEquipment').value ||
+    document.getElementById('filterBodypart').value;
+  document.getElementById('clearFilters').style.display = hasFilter ? 'inline-block' : 'none';
+}
+
+// ── Load More ──
+function loadMore() {
+  currentOffset += LIMIT;
+  const q = document.getElementById('searchInput').value.trim();
+  const muscle = document.getElementById('filterMuscle').value;
+  const equipment = document.getElementById('filterEquipment').value;
+  const bodypart = document.getElementById('filterBodypart').value;
+
+  if (currentMode === 'search' && q) {
+    searchExercises(q, true);
+  } else if (currentMode === 'filter') {
+    if (muscle) filterExercises('muscles', muscle, true);
+    else if (equipment) filterExercises('equipments', equipment, true);
+    else if (bodypart) filterExercises('bodyparts', bodypart, true);
+  } else {
+    loadExercises(true);
+  }
+}
+
+// ── Render ──
+function renderExercises(exercises, append) {
+  const grid = document.getElementById('cardGrid');
+  if (!append) grid.innerHTML = '';
+
+  if (!exercises || exercises.length === 0) {
+    if (!append) showNoResults(true);
+    return;
+  }
+
+  showNoResults(false);
+
+  exercises.forEach(ex => {
+    const card = document.createElement('div');
+    card.className = 'exercise-card';
+    card.innerHTML = `
+      <img src="${ex.gifUrl}" alt="${ex.name}" loading="lazy"
+           onclick="showDetail('${ex.exerciseId}')">
+      <div class="card-body">
+        <div class="card-title">${ex.name}</div>
+        <div class="d-flex flex-wrap gap-1">
+          ${(ex.targetMuscles || []).map(m => `<span class="badge badge-muscle">${m}</span>`).join('')}
+          ${(ex.equipments || []).map(e => `<span class="badge badge-equipment">${e}</span>`).join('')}
+          ${(ex.bodyParts || []).map(b => `<span class="badge badge-bodypart">${b}</span>`).join('')}
+        </div>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+function updateStats(data) {
+  const total = data.metadata.totalExercises;
+  const loaded = currentOffset + data.data.length;
+  document.getElementById('resultCount').textContent = `${total} exercises found`;
+  document.getElementById('pageInfo').textContent = `Showing ${Math.min(loaded, total)} of ${total}`;
+  document.getElementById('loadMore').style.display = loaded < total ? 'inline-block' : 'none';
+}
+
+// ── Detail Modal ──
+async function showDetail(id) {
+  try {
+    const data = await fetchJson(`${API}/exercises/${id}`);
+    const ex = data.data;
+    document.getElementById('modalTitle').textContent = ex.name;
+    document.getElementById('modalGif').src = ex.gifUrl;
+    document.getElementById('modalGif').alt = ex.name;
+
+    document.getElementById('modalBadges').innerHTML = `
+      ${(ex.targetMuscles || []).map(m => `<span class="badge badge-muscle me-1">${m}</span>`).join('')}
+      ${(ex.secondaryMuscles || []).map(m => `<span class="badge bg-secondary me-1">${m}</span>`).join('')}
+      ${(ex.equipments || []).map(e => `<span class="badge badge-equipment me-1">${e}</span>`).join('')}
+      ${(ex.bodyParts || []).map(b => `<span class="badge badge-bodypart me-1">${b}</span>`).join('')}
+    `;
+
+    const instructions = ex.instructions || [];
+    document.getElementById('modalInstructions').innerHTML =
+      instructions.map(i => `<li>${i.replace(/^Step:\d+\s*/, '')}</li>`).join('');
+
+    detailModal.show();
+  } catch (e) {
+    console.error('Failed to load exercise detail:', e);
+  }
+}
+// Expose to onclick
+window.showDetail = showDetail;
+
+// ── Helpers ──
+async function fetchJson(url) {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json();
+}
+
+function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+function clearGrid() { document.getElementById('cardGrid').innerHTML = ''; }
+function showSpinner(show) { document.getElementById('spinner').style.display = show ? 'block' : 'none'; }
+function showNoResults(show) { document.getElementById('noResults').style.display = show ? 'block' : 'none'; }
+</script>
+
+</body>
+</html>

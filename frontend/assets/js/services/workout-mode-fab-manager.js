@@ -160,9 +160,15 @@ class WorkoutModeFabManager {
         // Timed active buttons
         const endBtn = document.getElementById('wmFabEnd');
         if (endBtn) {
-            endBtn.addEventListener('click', () => {
-                if (window.workoutModeController?.handleCompleteWorkout) {
-                    window.workoutModeController.handleCompleteWorkout();
+            endBtn.addEventListener('click', async () => {
+                try {
+                    if (window.workoutModeController?.handleCompleteWorkout) {
+                        await window.workoutModeController.handleCompleteWorkout();
+                    } else {
+                        console.error('❌ workoutModeController.handleCompleteWorkout not available');
+                    }
+                } catch (error) {
+                    console.error('❌ End workout failed:', error);
                 }
             });
         }
@@ -178,9 +184,15 @@ class WorkoutModeFabManager {
             });
         }
         if (saveBtn) {
-            saveBtn.addEventListener('click', () => {
-                if (window.workoutModeController?.handleSaveQuickLog) {
-                    window.workoutModeController.handleSaveQuickLog();
+            saveBtn.addEventListener('click', async () => {
+                try {
+                    if (window.workoutModeController?.handleSaveQuickLog) {
+                        await window.workoutModeController.handleSaveQuickLog();
+                    } else {
+                        console.error('❌ workoutModeController.handleSaveQuickLog not available');
+                    }
+                } catch (error) {
+                    console.error('❌ Save Quick Log failed:', error);
                 }
             });
         }

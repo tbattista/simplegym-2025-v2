@@ -229,14 +229,17 @@ class CardRenderer {
             activityName = window.ActivityTypeRegistry.getName(activityType);
         }
 
-        // Build meta parts
+        // Build meta parts from user-selected display columns
+        const ADC = window.ActivityDisplayConfig;
+        const displayColumns = ADC ? ADC.getColumns() : ['duration', 'distance', 'pace'];
         const metaParts = [];
-        if (config.duration_minutes) metaParts.push(`${config.duration_minutes} min`);
-        if (config.distance) metaParts.push(`${config.distance} ${config.distance_unit || 'mi'}`);
-        if (config.target_pace) metaParts.push(config.target_pace);
-        if (config.target_rpe) metaParts.push(`RPE ${config.target_rpe}`);
-        if (config.target_heart_rate) metaParts.push(`${config.target_heart_rate} bpm`);
-        if (config.target_calories) metaParts.push(`${config.target_calories} cal`);
+        displayColumns.forEach(fieldId => {
+            const def = ADC ? ADC.getFieldDef(fieldId) : null;
+            if (def) {
+                const val = def.format(config);
+                if (val) metaParts.push(val);
+            }
+        });
         const metaText = metaParts.join(' • ');
 
         const preview = activityName
@@ -283,6 +286,12 @@ class CardRenderer {
                                         ${moveDownDisabled}>
                                     <i class="bx bx-chevron-down"></i>
                                     Move down
+                                </button>
+                                <div class="builder-menu-divider"></div>
+                                <button class="builder-menu-item"
+                                        onclick="window.builderCardMenu?.closeAllMenus(); window.openActivityDisplaySettings?.();">
+                                    <i class="bx bx-slider"></i>
+                                    Display Settings
                                 </button>
                                 <div class="builder-menu-divider"></div>
                                 <button class="builder-menu-item danger"

@@ -280,11 +280,20 @@ class DesktopCardRenderer {
             activityName = window.ActivityTypeRegistry.getName(activityType);
         }
 
-        const durationDisplay = config.duration_minutes ? `${config.duration_minutes} min` : '';
-        const distanceDisplay = config.distance
-            ? `${config.distance} ${config.distance_unit || 'mi'}`
-            : '';
-        const paceDisplay = config.target_pace || '';
+        // Build dynamic data columns from user settings
+        const ADC = window.ActivityDisplayConfig;
+        const columns = ADC ? ADC.getColumns() : ['duration', 'distance', 'pace'];
+
+        let dataColumnsHtml = '';
+        columns.forEach(fieldId => {
+            const def = ADC ? ADC.getFieldDef(fieldId) : null;
+            const displayVal = def ? def.format(config) : '';
+            const label = def ? def.label : fieldId;
+            dataColumnsHtml += `
+            <div class="inline-editable" data-field="${fieldId}" data-label="${this.escapeHtml(label)}" data-group-id="${groupId}">
+                <span class="display-value${!displayVal ? ' empty-value' : ''}">${displayVal || '-'}</span>
+            </div>`;
+        });
 
         const columnsHtml = `
             <div class="exercise-name-col">
@@ -296,20 +305,17 @@ class DesktopCardRenderer {
                     }
                 </div>
             </div>
-            <div class="inline-editable" data-field="duration" data-group-id="${groupId}">
-                <span class="display-value${!durationDisplay ? ' empty-value' : ''}">${durationDisplay || '-'}</span>
-            </div>
-            <div class="inline-editable" data-field="distance" data-group-id="${groupId}">
-                <span class="display-value${!distanceDisplay ? ' empty-value' : ''}">${distanceDisplay || '-'}</span>
-            </div>
-            <div class="inline-editable" data-field="pace" data-group-id="${groupId}">
-                <span class="display-value${!paceDisplay ? ' empty-value' : ''}">${paceDisplay || '-'}</span>
-            </div>`;
+            ${dataColumnsHtml}`;
 
         const menuItemsHtml = `
             <li>
                 <a class="dropdown-item" href="#" data-action="full-edit-cardio" data-group-id="${groupId}">
                     <i class="bx bx-edit me-2"></i>Full Edit
+                </a>
+            </li>
+            <li>
+                <a class="dropdown-item" href="#" data-action="activity-display-settings" data-group-id="${groupId}">
+                    <i class="bx bx-slider me-2"></i>Display Settings
                 </a>
             </li>`;
 
@@ -355,18 +361,33 @@ class DesktopCardRenderer {
             }
         }
 
-        // Update duration
-        const durationDisplay = config.duration_minutes ? `${config.duration_minutes} min` : '';
-        this.updateFieldDisplay(row, 'duration', durationDisplay);
+        // Update dynamic data columns using ActivityDisplayConfig
+        const ADC = window.ActivityDisplayConfig;
+        const columns = ADC ? ADC.getColumns() : ['duration', 'distance', 'pace'];
+        columns.forEach(fieldId => {
+            const def = ADC ? ADC.getFieldDef(fieldId) : null;
+            const displayVal = def ? def.format(config) : '';
+            this.updateFieldDisplay(row, fieldId, displayVal);
+        });
+    }
 
-        // Update distance
-        const distanceDisplay = config.distance
-            ? `${config.distance} ${config.distance_unit || 'mi'}`
-            : '';
-        this.updateFieldDisplay(row, 'distance', distanceDisplay);
+    /**
+     * Re-render all cardio rows with current display settings.
+     * Called after the user changes Activity Display Settings.
+     */
+    refreshAllCardioRows() {
+        const rows = document.querySelectorAll('.desktop-cardio-row');
+        rows.forEach(row => {
+            const groupId = row.dataset.groupId;
+            if (!groupId) return;
+            const data = window.exerciseGroupsData?.[groupId];
+            if (!data) return;
 
-        // Update pace
-        this.updateFieldDisplay(row, 'pace', config.target_pace);
+            // Re-create the row HTML and swap in place
+            const newHtml = this.createCardioRow(groupId, data);
+            row.insertAdjacentHTML('afterend', newHtml);
+            row.remove();
+        });
     }
 
     // =========================================
@@ -559,6 +580,9 @@ class DesktopCardRenderer {
                 case 'delete-group':
                     if (window.deleteExerciseGroupCard) window.deleteExerciseGroupCard(groupId);
                     break;
+                case 'activity-display-settings':
+                    if (window.openActivityDisplaySettings) window.openActivityDisplaySettings();
+                    break;
                 case 'convert-to-exercise': {
                     const row = actionEl.closest('.desktop-activity-row');
                     const fromType = row?.dataset.cardType;
@@ -741,20 +765,20 @@ class DesktopCardRenderer {
                     : '';
                 displayValue.textContent = weightDisplay || '-';
                 displayValue.classList.toggle('empty-value', !weightDisplay);
-            } else if (field === 'duration') {
-                const data = window.exerciseGroupsData[groupId];
-                const dur = data.cardio_config?.duration_minutes;
-                displayValue.textContent = dur ? `${dur} min` : '-';
-                displayValue.classList.toggle('empty-value', !dur);
-            } else if (field === 'distance') {
-                const data = window.exerciseGroupsData[groupId];
-                const dist = data.cardio_config?.distance;
-                const unit = data.cardio_config?.distance_unit || 'mi';
-                displayValue.textContent = dist ? `${dist} ${unit}` : '-';
-                displayValue.classList.toggle('empty-value', !dist);
             } else {
-                displayValue.textContent = newValue || '-';
-                displayValue.classList.toggle('empty-value', !newValue);
+                // Use ActivityDisplayConfig formatter for cardio fields, plain fallback for others
+                const ADC = window.ActivityDisplayConfig;
+                const def = ADC ? ADC.getFieldDef(field) : null;
+                if (def) {
+                    const data = window.exerciseGroupsData[groupId];
+                    const cfg = data?.cardio_config || {};
+                    const formatted = def.format(cfg);
+                    displayValue.textContent = formatted || '-';
+                    displayValue.classList.toggle('empty-value', !formatted);
+                } else {
+                    displayValue.textContent = newValue || '-';
+                    displayValue.classList.toggle('empty-value', !newValue);
+                }
             }
 
             if (window.markEditorDirty) window.markEditorDirty();
@@ -830,6 +854,15 @@ class DesktopCardRenderer {
             case 'duration': return data.cardio_config?.duration_minutes ? String(data.cardio_config.duration_minutes) : '';
             case 'distance': return data.cardio_config?.distance ? String(data.cardio_config.distance) : '';
             case 'pace': return data.cardio_config?.target_pace || '';
+            case 'rpe': return data.cardio_config?.target_rpe ? String(data.cardio_config.target_rpe) : '';
+            case 'heart_rate': return data.cardio_config?.target_heart_rate ? String(data.cardio_config.target_heart_rate) : '';
+            case 'calories': return data.cardio_config?.target_calories ? String(data.cardio_config.target_calories) : '';
+            case 'elevation': return data.cardio_config?.elevation_gain ? String(data.cardio_config.elevation_gain) : '';
+            case 'cadence': return data.cardio_config?.activity_details?.cadence ? String(data.cardio_config.activity_details.cadence) : '';
+            case 'stroke_rate': return data.cardio_config?.activity_details?.stroke_rate ? String(data.cardio_config.activity_details.stroke_rate) : '';
+            case 'laps': return data.cardio_config?.activity_details?.laps ? String(data.cardio_config.activity_details.laps) : '';
+            case 'incline': return data.cardio_config?.activity_details?.incline ? String(data.cardio_config.activity_details.incline) : '';
+            case 'notes': return data.cardio_config?.notes || '';
             default: return '';
         }
     }
@@ -883,17 +916,58 @@ class DesktopCardRenderer {
                 if (!data.cardio_config) data.cardio_config = {};
                 data.cardio_config.target_pace = value;
                 break;
+            case 'rpe':
+                if (!data.cardio_config) data.cardio_config = {};
+                data.cardio_config.target_rpe = value ? parseInt(value, 10) || null : null;
+                break;
+            case 'heart_rate':
+                if (!data.cardio_config) data.cardio_config = {};
+                data.cardio_config.target_heart_rate = value ? parseInt(value, 10) || null : null;
+                break;
+            case 'calories':
+                if (!data.cardio_config) data.cardio_config = {};
+                data.cardio_config.target_calories = value ? parseInt(value, 10) || null : null;
+                break;
+            case 'elevation':
+                if (!data.cardio_config) data.cardio_config = {};
+                data.cardio_config.elevation_gain = value ? parseFloat(value) || null : null;
+                break;
+            case 'cadence':
+                if (!data.cardio_config) data.cardio_config = {};
+                if (!data.cardio_config.activity_details) data.cardio_config.activity_details = {};
+                data.cardio_config.activity_details.cadence = value ? parseInt(value, 10) || null : null;
+                break;
+            case 'stroke_rate':
+                if (!data.cardio_config) data.cardio_config = {};
+                if (!data.cardio_config.activity_details) data.cardio_config.activity_details = {};
+                data.cardio_config.activity_details.stroke_rate = value ? parseInt(value, 10) || null : null;
+                break;
+            case 'laps':
+                if (!data.cardio_config) data.cardio_config = {};
+                if (!data.cardio_config.activity_details) data.cardio_config.activity_details = {};
+                data.cardio_config.activity_details.laps = value ? parseInt(value, 10) || null : null;
+                break;
+            case 'incline':
+                if (!data.cardio_config) data.cardio_config = {};
+                if (!data.cardio_config.activity_details) data.cardio_config.activity_details = {};
+                data.cardio_config.activity_details.incline = value ? parseFloat(value) || null : null;
+                break;
+            case 'notes':
+                if (!data.cardio_config) data.cardio_config = {};
+                data.cardio_config.notes = value;
+                break;
         }
     }
 
     getPlaceholder(field) {
+        // Check ActivityDisplayConfig first (covers all cardio fields)
+        const def = window.ActivityDisplayConfig?.getFieldDef(field);
+        if (def) return def.placeholder;
+
         switch (field) {
             case 'protocol': return '3×10';
             case 'rest': return '60s';
             case 'weight': return 'lbs';
-            case 'duration': return '30 min';
-            case 'distance': return '3 mi';
-            case 'pace': return '10:00/mi';
             default: return '';
         }
     }
