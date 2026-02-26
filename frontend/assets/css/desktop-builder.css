@@ -311,19 +311,9 @@
   min-height: 80px;
 }
 
-/* Column header row */
+/* Column header row — hidden, labels are now inline per-row */
 .desktop-exercise-header {
-  display: grid;
-  grid-template-columns: 32px 1fr 100px 72px 100px 40px;
-  gap: 8px;
-  padding: 0.5rem 1rem;
-  border-bottom: 2px solid var(--bs-border-color);
-  font-size: 0.6875rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--bs-secondary-color);
-  user-select: none;
+  display: none;
 }
 
 /* Exercise group row */
@@ -450,6 +440,49 @@
   padding: 4px 6px;
   color: var(--bs-body-color);
   min-height: 30px;
+}
+
+/* ---- Inline Field Labels (per-row, replacing fixed header) ---- */
+
+/* Stack label above value inside each cell */
+.desktop-exercise-row .inline-editable[data-field="protocol"],
+.desktop-exercise-row .inline-editable[data-field="rest"],
+.desktop-exercise-row .inline-editable[data-field="weight"],
+.desktop-cardio-row .inline-editable[data-field="duration"],
+.desktop-cardio-row .inline-editable[data-field="distance"],
+.desktop-cardio-row .inline-editable[data-field="pace"] {
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 1px;
+}
+
+/* Label text per field type */
+.desktop-exercise-row:not(.desktop-cardio-row) .inline-editable[data-field="protocol"]::before { content: "Protocol"; }
+.desktop-exercise-row:not(.desktop-cardio-row) .inline-editable[data-field="rest"]::before { content: "Rest"; }
+.desktop-exercise-row:not(.desktop-cardio-row) .inline-editable[data-field="weight"]::before { content: "Weight"; }
+.desktop-cardio-row .inline-editable[data-field="duration"]::before { content: "Duration"; }
+.desktop-cardio-row .inline-editable[data-field="distance"]::before { content: "Distance"; }
+.desktop-cardio-row .inline-editable[data-field="pace"]::before { content: "Pace"; }
+
+/* Label styling */
+.desktop-exercise-row .inline-editable[data-field="protocol"]::before,
+.desktop-exercise-row .inline-editable[data-field="rest"]::before,
+.desktop-exercise-row .inline-editable[data-field="weight"]::before,
+.desktop-cardio-row .inline-editable[data-field="duration"]::before,
+.desktop-cardio-row .inline-editable[data-field="distance"]::before,
+.desktop-cardio-row .inline-editable[data-field="pace"]::before {
+  font-size: 0.5625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--bs-secondary-color);
+  line-height: 1;
+}
+
+/* Hide labels during inline editing */
+.desktop-exercise-row .inline-editable.editing::before {
+  display: none;
 }
 
 /* Exercise name inline edit (wider, with autocomplete support) */
@@ -662,7 +695,6 @@
    For smaller desktop screens (992px-1200px)
    ============================================ */
 @media (min-width: 992px) and (max-width: 1199.98px) {
-  .desktop-exercise-header,
   .desktop-exercise-row {
     grid-template-columns: 28px 1fr 88px 60px 88px 36px;
     gap: 6px;
@@ -679,7 +711,6 @@
 
 /* For larger screens (1400px+) */
 @media (min-width: 1400px) {
-  .desktop-exercise-header,
   .desktop-exercise-row {
     grid-template-columns: 36px 1fr 110px 80px 120px 44px;
     gap: 10px;
