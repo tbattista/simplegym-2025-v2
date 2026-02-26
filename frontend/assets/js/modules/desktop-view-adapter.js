@@ -202,6 +202,8 @@
     function initDesktopSorting(container) {
         if (!container || !window.Sortable) return;
         if (container.sortableInstance) return; // Prevent duplicate
+        // Skip flat sorting when sections exist — SectionManager handles two-level drag
+        if (container.querySelector('.workout-section')) return;
 
         container.sortableInstance = new Sortable(container, {
             animation: 150,
@@ -216,13 +218,8 @@
             onEnd: function(evt) {
                 container.classList.remove('is-dragging');
 
-                // Update block membership based on new position (exercise cards only)
+                // Update block membership based on new position (all card types)
                 const movedCard = evt.item;
-                if (movedCard.dataset.cardType === 'note') {
-                    // Note card moved — just mark dirty, skip block logic
-                    if (window.markEditorDirty) window.markEditorDirty();
-                    return;
-                }
                 const movedData = window.exerciseGroupsData[movedCard.dataset.groupId];
                 if (movedData) {
                     let prevCard = movedCard.previousElementSibling;

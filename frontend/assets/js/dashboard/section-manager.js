@@ -591,7 +591,13 @@ const SectionManager = {
             return;
         }
 
-        // Destroy existing Sortable instances
+        // Destroy desktop-view-adapter's flat Sortable if present (prevents dual-sortable conflict)
+        if (container.sortableInstance) {
+            container.sortableInstance.destroy();
+            container.sortableInstance = null;
+        }
+
+        // Destroy existing section Sortable instances
         if (container._sectionSortable) {
             container._sectionSortable.destroy();
         }
