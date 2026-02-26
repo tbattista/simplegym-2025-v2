@@ -51,8 +51,8 @@
             // Attach event listeners
             this.attachEventListeners();
 
-            // Enable auto-hide on scroll for new layout (except workout-builder, workout-database, and workout-mode)
-            if (this.isNewLayout && this.pageId !== 'workout-builder' && this.pageId !== 'workout-database' && this.pageId !== 'workout-mode') {
+            // Enable auto-hide on scroll for new layout (except workout-builder and workout-database)
+            if (this.isNewLayout && this.pageId !== 'workout-builder' && this.pageId !== 'workout-database' ) {
                 this.enableAutoHide();
             }
 
@@ -136,34 +136,13 @@
                 // Render search FAB if configured (either as main FAB or searchFab)
                 const searchConfig = this.config.searchFab || (this.config.fab?.icon === 'bx-search' ? this.config.fab : null);
                 if (searchConfig) {
-                    // Render search FAB with morphing functionality (hidden, triggered by button)
                     this.renderFloatingSearchFAB(searchConfig);
-                    // Note: No click handler attached - search FAB is triggered by the Search button
-                }
-                
-                // Render main FAB if it's not a search FAB
-                if (this.config.fab && this.config.fab.icon !== 'bx-search') {
-                    // For workout mode, always render timer combo (not regular FAB)
-                    if (this.pageId === 'workout-mode') {
-                        this.renderFloatingTimerEndCombo();
-                    } else {
-                        // Render regular floating FAB for other pages
-                        this.renderFloatingFAB(this.config.fab);
-                    }
                 }
 
-                // Render dual FAB for workout-mode (Quick Log + Timed buttons)
-                if (this.pageId === 'workout-mode' && this.config.dualFab) {
-                    console.log('🎯 Rendering dual FAB for workout-mode (Quick Log + Timed)');
-                    this.renderFloatingTimerEndCombo();
+                // Render main FAB if it's not a search FAB
+                if (this.config.fab && this.config.fab.icon !== 'bx-search') {
+                    this.renderFloatingFAB(this.config.fab);
                 }
-            }
-            
-            // Also initialize global rest timer for non-active workout mode (so it's available when cards expand)
-            if (this.pageId === 'workout-mode') {
-                setTimeout(() => {
-                    this.initializeGlobalRestTimer();
-                }, 100);
             }
 
             console.log('✅ Bottom Action Bar rendered');
@@ -246,149 +225,6 @@
             this.container.insertAdjacentHTML('beforeend', fabHTML);
             
             console.log('✅ Floating FAB rendered');
-        }
-
-        /**
-         * Render floating timer + end button combo (for workout mode)
-         * Shows dual buttons (Quick Log + Timed) when inactive, timer+End when timed active, badge+Save when Quick Log active
-         */
-        renderFloatingTimerEndCombo() {
-            // Check if combo already exists
-            if (document.getElementById('floatingTimerEndCombo')) {
-                console.log('ℹ️ Floating timer+end combo already exists');
-                return;
-            }
-
-            const comboHTML = `
-                <!-- Dual Buttons Container (shown before workout starts) -->
-                <div class="floating-dual-buttons" id="floatingDualButtons" style="display: flex;">
-                    <!-- Quick Log Button (secondary) - NO floating-action-fab class (container handles positioning) -->
-                    <button class="floating-quicklog-button"
-                            id="floatingQuickLogButton"
-                            data-action="start-quick-log"
-                            title="Log a completed workout (no timer)"
-                            aria-label="Quick Log">
-                        <i class="bx bx-edit-alt"></i>
-                        <span>Quick Log</span>
-                    </button>
-                    <!-- Timed Session Button (primary) - NO floating-action-fab class (container handles positioning) -->
-                    <button class="floating-start-button"
-                            id="floatingStartButton"
-                            data-action="start-workout"
-                            title="Start timed workout session"
-                            aria-label="Start timed session">
-                        <i class="bx bx-play"></i>
-                        <span>Timed</span>
-                    </button>
-                </div>
-
-                <!-- Timer + End Combo (shown during timed workout) -->
-                <div class="floating-timer-end-combo" id="floatingTimerEndCombo" style="display: none;">
-                    <!-- Global Rest Timer (now as flex item) -->
-                    <div class="global-rest-timer-button" id="globalRestTimerButton"></div>
-
-                    <!-- Timer Display -->
-                    <div class="floating-timer-display" id="floatingTimerDisplay">
-                        <i class="bx bx-time-five"></i>
-                        <span id="floatingTimer">0:00:00</span>
-                    </div>
-
-                    <!-- Stop Button -->
-                    <button class="floating-end-button"
-                            id="floatingEndButton"
-                            data-action="end-workout"
-                            title="Stop workout session"
-                            aria-label="Stop workout">
-                        <i class="bx bx-stop-circle"></i>
-                        <span>Stop</span>
-                    </button>
-                </div>
-
-                <!-- Quick Log Save + Cancel Combo (shown during Quick Log) -->
-                <div class="floating-quicklog-combo" id="floatingQuickLogCombo" style="display: none;">
-                    <!-- Save Button (primary action, comes first) -->
-                    <button class="floating-save-button"
-                            id="floatingSaveButton"
-                            data-action="save-quick-log"
-                            title="Save Quick Log"
-                            aria-label="Save Quick Log">
-                        <i class="bx bx-check"></i>
-                        <span>Save</span>
-                    </button>
-
-                    <!-- Cancel Button -->
-                    <button class="floating-cancel-button"
-                            id="floatingCancelButton"
-                            data-action="cancel-quick-log"
-                            title="Cancel Quick Log"
-                            aria-label="Cancel Quick Log">
-                        <i class="bx bx-x"></i>
-                    </button>
-                </div>
-            `;
-
-            // Append to the action bar container so it moves with the bar
-            this.container.insertAdjacentHTML('beforeend', comboHTML);
-
-            // Attach event listener to Quick Log button
-            const quickLogButton = document.getElementById('floatingQuickLogButton');
-            if (quickLogButton) {
-                quickLogButton.addEventListener('click', () => {
-                    this.handleButtonClick('start-quick-log');
-                });
-            }
-
-            // Attach event listener to Timed/Start button
-            const startButton = document.getElementById('floatingStartButton');
-            if (startButton) {
-                startButton.addEventListener('click', () => {
-                    this.handleButtonClick('start-workout');
-                });
-            }
-
-            // Attach event listener to End button in timed combo
-            const endButton = document.getElementById('floatingEndButton');
-            if (endButton) {
-                endButton.addEventListener('click', () => {
-                    this.handleButtonClick('end-workout');
-                });
-            }
-
-            // Attach event listener to Save button in Quick Log combo
-            const saveButton = document.getElementById('floatingSaveButton');
-            if (saveButton) {
-                saveButton.addEventListener('click', () => {
-                    this.handleButtonClick('save-quick-log');
-                });
-            }
-
-            // Attach event listener to Cancel button in Quick Log combo
-            const cancelButton = document.getElementById('floatingCancelButton');
-            if (cancelButton) {
-                cancelButton.addEventListener('click', () => {
-                    this.handleButtonClick('cancel-quick-log');
-                });
-            }
-
-            // Initialize global rest timer if class is available
-            this.initializeGlobalRestTimer();
-
-            console.log('✅ Floating dual buttons + combos rendered');
-        }
-        
-        /**
-         * Initialize global rest timer (extracted for reuse)
-         */
-        initializeGlobalRestTimer() {
-            if (window.GlobalRestTimer && !window.globalRestTimer) {
-                window.globalRestTimer = new GlobalRestTimer();
-                window.globalRestTimer.initialize();
-                console.log('✅ Global rest timer initialized');
-            } else if (window.globalRestTimer) {
-                console.log('ℹ️ Global rest timer already exists');
-            } else {
-                console.warn('⚠️ GlobalRestTimer class not available');
-            }
         }
 
         /**
@@ -625,142 +461,6 @@
         }
 
         /**
-         * Update FAB for workout mode state changes
-         * @param {boolean} isActive - Whether workout is active
-         * @param {string} sessionMode - Session mode: 'timed' (default) or 'quick_log'
-         */
-        updateWorkoutModeState(isActive, sessionMode = 'timed') {
-            console.log('🔄 updateWorkoutModeState called:', { isActive, sessionMode, pageId: this.pageId });
-
-            if (this.pageId !== 'workout-mode') {
-                console.log('⚠️ Not on workout-mode page, skipping state update');
-                return;
-            }
-
-            const dualButtons = document.getElementById('floatingDualButtons');
-            const timedCombo = document.getElementById('floatingTimerEndCombo');
-            const quickLogCombo = document.getElementById('floatingQuickLogCombo');
-
-            console.log('🔍 Elements found:', {
-                dualButtons: !!dualButtons,
-                timedCombo: !!timedCombo,
-                quickLogCombo: !!quickLogCombo
-            });
-
-            if (!dualButtons) {
-                console.warn('⚠️ Dual buttons container not found');
-                return;
-            }
-
-            if (isActive) {
-                // Hide dual buttons with redundant properties for safety
-                dualButtons.style.display = 'none';
-                dualButtons.style.visibility = 'hidden';
-                dualButtons.style.pointerEvents = 'none';
-                console.log('✅ Dual buttons hidden');
-
-                if (sessionMode === 'quick_log') {
-                    // Quick Log mode: Show Save + Cancel buttons
-                    if (timedCombo) {
-                        timedCombo.style.display = 'none';
-                        timedCombo.style.visibility = 'hidden';
-                    }
-                    if (quickLogCombo) {
-                        quickLogCombo.style.display = 'flex';
-                        quickLogCombo.style.visibility = 'visible';
-                        quickLogCombo.style.pointerEvents = 'auto';
-                        console.log('✅ Quick Log combo shown');
-                    }
-
-                    // Show Quick Log mode banner
-                    this.showQuickLogBanner(true);
-
-                    // Update config to Quick Log active state
-                    this.config = window.BOTTOM_BAR_CONFIGS['workout-mode-quick-log-active'];
-                    console.log('✅ Workout mode state updated: Quick Log active');
-                } else {
-                    // Timed mode: Show timer + End button
-                    if (timedCombo) {
-                        timedCombo.style.display = 'flex';
-                        timedCombo.style.visibility = 'visible';
-                        timedCombo.style.pointerEvents = 'auto';
-                    }
-                    if (quickLogCombo) {
-                        quickLogCombo.style.display = 'none';
-                        quickLogCombo.style.visibility = 'hidden';
-                    }
-
-                    // Hide Quick Log mode banner (in case switching from quick_log to timed)
-                    this.showQuickLogBanner(false);
-
-                    // Update config to timed active state
-                    this.config = window.BOTTOM_BAR_CONFIGS['workout-mode-active'];
-                    console.log('✅ Workout mode state updated: Timed active');
-                }
-
-                this.attachEventListeners();
-            } else {
-                // Inactive: Show dual buttons, hide both combos
-                dualButtons.style.display = 'flex';
-                dualButtons.style.visibility = 'visible';
-                dualButtons.style.pointerEvents = 'auto';
-
-                if (timedCombo) {
-                    timedCombo.style.display = 'none';
-                    timedCombo.style.visibility = 'hidden';
-                }
-                if (quickLogCombo) {
-                    quickLogCombo.style.display = 'none';
-                    quickLogCombo.style.visibility = 'hidden';
-                }
-
-                // Hide Quick Log mode banner
-                this.showQuickLogBanner(false);
-
-                // Update config to inactive state
-                this.config = window.BOTTOM_BAR_CONFIGS['workout-mode'];
-                this.attachEventListeners();
-
-                console.log('✅ Workout mode state updated: inactive (dual buttons visible)');
-            }
-        }
-
-        /**
-         * Show/hide Quick Log mode banner on the page
-         * @param {boolean} show - True to show, false to hide
-         */
-        showQuickLogBanner(show) {
-            const bannerId = 'quickLogModeBanner';
-            let banner = document.getElementById(bannerId);
-
-            if (show) {
-                // Create banner if it doesn't exist
-                if (!banner) {
-                    banner = document.createElement('div');
-                    banner.id = bannerId;
-                    banner.className = 'quick-log-mode-banner';
-                    banner.innerHTML = `
-                        <i class="bx bx-edit-alt"></i>
-                        <span>Quick Log Mode</span>
-                        <small>Log your completed workout</small>
-                    `;
-
-                    // Insert after navbar or at top of main content
-                    const mainContent = document.querySelector('.content-wrapper') || document.querySelector('main') || document.body;
-                    mainContent.insertBefore(banner, mainContent.firstChild);
-                    console.log('✅ Quick Log banner shown');
-                }
-                banner.style.display = 'flex';
-            } else {
-                // Hide banner if it exists
-                if (banner) {
-                    banner.style.display = 'none';
-                    console.log('✅ Quick Log banner hidden');
-                }
-            }
-        }
-
-        /**
          * Show the bottom action bar
          */
         show() {
@@ -927,7 +627,6 @@
         const filename = path.split('/').pop() || 'index.html';
 
         // Map filenames to page identifiers
-        if (filename.includes('workout-mode-demo')) return 'workout-mode-demo';
         if (filename.includes('workout-database')) return 'workout-database';
         if (filename.includes('workout-builder')) return 'workout-builder';
         if (filename.includes('exercise-database')) return 'exercise-database';
