@@ -197,9 +197,8 @@ class WorkoutModeController {
             const authState = await this.dataManager.waitForAuthReady();
             console.log('✅ Auth state ready:', authState.storageMode, 'authenticated:', authState.isAuthenticated);
 
-            // Always initialize event listeners, settings, and FABs
+            // Always initialize settings and FABs
             // (needed for both resume and fresh-load paths)
-            this.setupEventListeners();
             this.settingsManager.initialize();
             this.fabManager.initialize();
 

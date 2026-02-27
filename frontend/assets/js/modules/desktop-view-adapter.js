@@ -456,6 +456,11 @@
 
         container.appendChild(sectionEl);
 
+        // Init inner Sortable so this activity can be dragged to named sections
+        if (window.SectionManager?._initExerciseSortable) {
+            window.SectionManager._initExerciseSortable(exercisesEl, false);
+        }
+
         if (window.markEditorDirty) window.markEditorDirty();
         if (window.showToast) {
             window.showToast({ message: 'Added activity', type: 'success', delay: 2000 });

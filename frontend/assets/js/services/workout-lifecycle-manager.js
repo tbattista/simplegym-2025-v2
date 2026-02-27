@@ -460,6 +460,13 @@ class WorkoutLifecycleManager {
             .filter(name => sessionData.exercises[name].weight).length;
         const totalExercises = Object.keys(sessionData.exercises || {}).length;
         
+        // Guard: if factory not loaded, fall back to auto-resume
+        if (!window.UnifiedOffcanvasFactory) {
+            console.error('❌ UnifiedOffcanvasFactory not loaded, falling back to auto-resume');
+            await this.resumeSession(sessionData);
+            return;
+        }
+
         // Use unified factory to create offcanvas
         window.UnifiedOffcanvasFactory.createResumeSession({
             workoutName: sessionData.workoutName,
@@ -470,9 +477,8 @@ class WorkoutLifecycleManager {
         async () => await this.resumeSession(sessionData),  // onResume
         (onDiscardComplete) => {                             // onStartFresh
             this.sessionService.clearPersistedSession();
-            if (onDiscardComplete) {
-                onDiscardComplete();
-            }
+            if (onDiscardComplete) onDiscardComplete();
+            window.location.href = 'workout-database.html';
         },
         () => {                                              // onCancel (NEW)
             // Show confirmation before canceling workout

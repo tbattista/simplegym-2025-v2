@@ -56,6 +56,11 @@ window.handleAddTemplateNote = function() {
 
     container.appendChild(sectionEl);
 
+    // Init inner Sortable so this note can be dragged to named sections
+    if (window.SectionManager?._initExerciseSortable) {
+        window.SectionManager._initExerciseSortable(exercisesEl, false);
+    }
+
     if (window.markEditorDirty) window.markEditorDirty();
 
     // Auto-open note editor for the new empty note
