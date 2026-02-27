@@ -905,6 +905,69 @@
                 return; // Exit early, don't load regular workout
             }
             
+            // Priority 1.5: Create workout from session history data
+            const fromSession = urlParams.get('from_session');
+            if (fromSession === 'true') {
+                const sessionDataStr = sessionStorage.getItem('ffn_create_from_session');
+                sessionStorage.removeItem('ffn_create_from_session');
+
+                if (sessionDataStr) {
+                    console.log('📋 Creating workout from session data...');
+                    loadingState.style.display = 'block';
+                    emptyState.style.display = 'none';
+
+                    try {
+                        const workoutData = JSON.parse(sessionDataStr);
+
+                        // Create the workout via dataManager
+                        const savedWorkout = await window.dataManager.createWorkout(workoutData);
+
+                        loadingState.style.display = 'none';
+
+                        // Add to local state
+                        if (!window.ffn.workouts) window.ffn.workouts = [];
+                        window.ffn.workouts.unshift(savedWorkout);
+
+                        // Load into editor
+                        if (window.loadWorkoutIntoEditor) {
+                            window.loadWorkoutIntoEditor(savedWorkout.id);
+
+                            // Focus name input for easy rename
+                            setTimeout(() => {
+                                const nameInput = document.getElementById('workoutName');
+                                if (nameInput) {
+                                    nameInput.focus();
+                                    nameInput.select();
+                                }
+                            }, 300);
+                        }
+
+                        // Show toast
+                        setTimeout(() => {
+                            if (window.showToast) {
+                                window.showToast({
+                                    message: 'Template created from session. Edit and save your changes.',
+                                    type: 'success',
+                                    title: 'Template Created',
+                                    icon: 'bx-check-circle',
+                                    delay: 4000
+                                });
+                            }
+                        }, 500);
+                    } catch (error) {
+                        console.error('❌ Failed to create from session:', error);
+                        loadingState.style.display = 'none';
+
+                        // Fall through to create new blank workout
+                        if (window.createNewWorkoutInEditor) {
+                            window.createNewWorkoutInEditor();
+                        }
+                    }
+
+                    return;
+                }
+            }
+
             // Priority 2a: URL param - direct load (explicit navigation from workout-database)
             if (urlWorkoutId) {
                 console.log('📝 Loading workout from URL param:', urlWorkoutId);

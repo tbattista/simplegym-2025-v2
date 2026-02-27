@@ -2,10 +2,11 @@
  * ExerciseCacheService - Singleton service for caching and searching exercises
  * 
  * Features:
- * - Instant loading with bundled seed data (200 exercises)
+ * - Instant loading with bundled seed data (~150 exercises)
  * - Fuse.js fuzzy search for typo-tolerant matching
  * - localStorage caching with version-based invalidation
- * - Background data fetching for full database
+ * - Tiered loading: fetches Tier 1+2 by default (~400 exercises), full DB on demand
+ * - GIF URL and instructions support from ExerciseDB
  */
 
 class ExerciseCacheService {
@@ -160,30 +161,46 @@ class ExerciseCacheService {
         return this.fetchPromise;
     }
     
-    async fetchFromServer() {
+    async fetchFromServer(options = {}) {
+        const { maxTier = 2 } = options;
         const PAGE_SIZE = 500;
         let allExercises = [];
         let page = 1;
         let hasMore = true;
-        
+
+        const tierParam = maxTier ? `&max_tier=${maxTier}` : '';
+
         while (hasMore) {
             this.metrics.apiRequests++;
-            const apiUrl = window.getApiUrl(`/api/v3/exercises?page=${page}&page_size=${PAGE_SIZE}`);
+            const apiUrl = window.getApiUrl(`/api/v3/exercises?page=${page}&page_size=${PAGE_SIZE}${tierParam}`);
             const response = await fetch(apiUrl);
-            
+
             if (!response.ok) {
                 throw new Error(`Server responded with ${response.status}`);
             }
-            
+
             const data = await response.json();
             const exercises = data.exercises || [];
             allExercises = [...allExercises, ...exercises];
-            
+
             hasMore = exercises.length === PAGE_SIZE;
             page++;
         }
-        
+
         return allExercises;
+    }
+
+    /**
+     * Fetch the full database (all tiers) for exercise database browsing page.
+     * This bypasses the default max_tier=2 filter.
+     */
+    async fetchFullDatabase() {
+        const fullExercises = await this.fetchFromServer({ maxTier: null });
+        this.exercises = fullExercises;
+        this.buildFuseIndex(this.exercises);
+        this.isFullDataLoaded = true;
+        this.emit('fullDataLoaded', { count: fullExercises.length });
+        return fullExercises;
     }
     
     buildFuseIndex(exercises) {

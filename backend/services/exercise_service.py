@@ -75,15 +75,17 @@ class ExerciseService:
     def get_all_exercises(
         self,
         limit: int = 1000,
-        page: int = 1
+        page: int = 1,
+        max_tier: Optional[int] = None
     ) -> ExerciseListResponse:
         """
-        Get all global exercises with pagination
-        
+        Get all global exercises with pagination and optional tier filtering
+
         Args:
             limit: Maximum number of exercises to return
             page: Page number (1-based)
-            
+            max_tier: If set, only return exercises with exerciseTier <= max_tier
+
         Returns:
             ExerciseListResponse with exercises and metadata
         """
@@ -95,20 +97,26 @@ class ExerciseService:
                 page=page,
                 page_size=limit
             )
-        
+
         try:
             # Calculate offset
             offset = (page - 1) * limit
-            
-            # Query exercises
-            exercises_ref = (self.db.collection('global_exercises')
+
+            # Build query
+            exercises_ref = self.db.collection('global_exercises')
+
+            # Apply tier filter if specified
+            if max_tier is not None:
+                exercises_ref = exercises_ref.where('exerciseTier', '<=', max_tier)
+
+            exercises_ref = (exercises_ref
                            .order_by('name')
                            .limit(limit)
                            .offset(offset))
-            
+
             docs = exercises_ref.stream()
             exercises = []
-            
+
             for doc in docs:
                 try:
                     exercise_data = doc.to_dict()
@@ -117,19 +125,22 @@ class ExerciseService:
                 except Exception as e:
                     logger.warning(f"Failed to parse exercise {doc.id}: {str(e)}")
                     continue
-            
-            # Get total count (expensive operation, consider caching)
-            total_count = len(list(self.db.collection('global_exercises').stream()))
-            
-            logger.info(f"Retrieved {len(exercises)} exercises (page {page})")
-            
+
+            # Get total count for the filtered set
+            count_ref = self.db.collection('global_exercises')
+            if max_tier is not None:
+                count_ref = count_ref.where('exerciseTier', '<=', max_tier)
+            total_count = len(list(count_ref.stream()))
+
+            logger.info(f"Retrieved {len(exercises)} exercises (page {page}, max_tier={max_tier})")
+
             return ExerciseListResponse(
                 exercises=exercises,
                 total_count=total_count,
                 page=page,
                 page_size=limit
             )
-            
+
         except Exception as e:
             logger.error(f"Failed to get exercises: {str(e)}")
             return ExerciseListResponse(

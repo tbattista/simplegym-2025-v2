@@ -1,9 +1,9 @@
 /**
  * Workout Mode FAB Manager
  * Manages floating action buttons and inline add buttons for the workout mode page.
- * Replaces the bottom-action-bar for this page to match the workout builder pattern.
- * @version 1.0.0
- * @date 2026-02-22
+ * Uses event delegation on data-action attributes so buttons never lose their handlers.
+ * @version 2.0.0
+ * @date 2026-02-26
  */
 
 class WorkoutModeFabManager {
@@ -11,11 +11,32 @@ class WorkoutModeFabManager {
         this.state = 'pre-session'; // pre-session | timed-active | quicklog-active | completed
         this.timerInterval = null;
         this._initialized = false;
-        console.log('🎯 Workout Mode FAB Manager created');
+
+        // Action map: data-action value → handler
+        // All button routing lives here — add new actions by adding a row
+        this._actions = {
+            'quicklog':      () => window.workoutModeController?.handleStartQuickLog(),
+            'start':         () => window.workoutModeController?.handleStartWorkout(),
+            'end':           () => window.workoutModeController?.handleCompleteWorkout(),
+            'cancel':        () => window.workoutModeController?.handleCancelWorkout(),
+            'save':          () => window.workoutModeController?.handleSaveQuickLog(),
+            'add-exercise':  () => window.workoutModeController?.showAddExerciseForm(),
+            'add-note':      () => window.workoutModeController?.handleAddNote(),
+            'reorder':       () => window.workoutModeController?.showReorderOffcanvas(),
+            'options':       () => this.openSettingsMenu()
+        };
+
+        // Self-attach delegation listener on the document body.
+        // Uses capture:false so it runs in bubble phase on any [data-action] click.
+        // This runs once in the constructor — no initialize() call required for wiring.
+        document.addEventListener('click', (e) => this._handleDelegatedClick(e));
+
+        console.log('🎯 Workout Mode FAB Manager created (event delegation active)');
     }
 
     /**
-     * Initialize: show FABs, wire up inline buttons and FAB click handlers
+     * Initialize: show FAB container and set initial state.
+     * Safe to call multiple times (idempotent).
      */
     initialize() {
         if (this._initialized) return;
@@ -25,18 +46,6 @@ class WorkoutModeFabManager {
         const fabs = document.getElementById('workoutModeFabs');
         if (fabs) fabs.style.display = 'flex';
 
-        // Wire up inline add buttons
-        this._wireInlineButtons();
-
-        // Wire up FAB click handlers
-        this._wireFabButtons();
-
-        // Wire up header options button
-        const optionsBtn = document.getElementById('workoutOptionsBtn');
-        if (optionsBtn) {
-            optionsBtn.addEventListener('click', () => this.openSettingsMenu());
-        }
-
         // Set initial state
         this.updateState('pre-session');
 
@@ -44,10 +53,14 @@ class WorkoutModeFabManager {
     }
 
     /**
-     * Update the FAB state (shows/hides the correct slot)
+     * Update the FAB state (shows/hides the correct slot).
+     * Auto-calls initialize() if it hasn't run yet — safety net so no
+     * code-path reordering can leave buttons invisible.
      * @param {string} newState - 'pre-session' | 'timed-active' | 'quicklog-active' | 'completed'
      */
     updateState(newState) {
+        if (!this._initialized) this.initialize();
+
         this.state = newState;
         console.log('🔄 FAB state →', newState);
 
@@ -85,6 +98,27 @@ class WorkoutModeFabManager {
     }
 
     /**
+     * Delegated click handler — routes any [data-action] click to the right method.
+     * Walks up from the click target to find the nearest [data-action] element.
+     * @param {Event} e - Click event
+     * @private
+     */
+    async _handleDelegatedClick(e) {
+        const actionEl = e.target.closest('[data-action]');
+        if (!actionEl) return;
+
+        const action = actionEl.dataset.action;
+        const handler = this._actions[action];
+        if (!handler) return;
+
+        try {
+            await handler();
+        } catch (error) {
+            console.error(`❌ Action "${action}" failed:`, error);
+        }
+    }
+
+    /**
      * Start the session timer display (delegates to WorkoutTimerManager via #floatingTimer element)
      * No-op: the timer manager updates #floatingTimer directly
      */
@@ -98,104 +132,6 @@ class WorkoutModeFabManager {
      */
     stopTimer() {
         // Timer display is managed by WorkoutTimerManager
-    }
-
-    /**
-     * Wire up inline add buttons to controller methods
-     * @private
-     */
-    _wireInlineButtons() {
-        const addExerciseBtn = document.getElementById('inlineAddExerciseBtn');
-        const addNoteBtn = document.getElementById('inlineAddNoteBtn');
-        const reorderBtn = document.getElementById('inlineReorderBtn');
-
-        if (addExerciseBtn) {
-            addExerciseBtn.addEventListener('click', () => {
-                if (window.workoutModeController?.showAddExerciseForm) {
-                    window.workoutModeController.showAddExerciseForm();
-                }
-            });
-        }
-
-        if (addNoteBtn) {
-            addNoteBtn.addEventListener('click', () => {
-                if (window.workoutModeController?.handleAddNote) {
-                    window.workoutModeController.handleAddNote();
-                }
-            });
-        }
-
-        if (reorderBtn) {
-            reorderBtn.addEventListener('click', () => {
-                if (window.workoutModeController?.showReorderOffcanvas) {
-                    window.workoutModeController.showReorderOffcanvas();
-                }
-            });
-        }
-    }
-
-    /**
-     * Wire up FAB click handlers
-     * @private
-     */
-    _wireFabButtons() {
-        // Pre-session buttons
-        const quickLogBtn = document.getElementById('wmFabQuickLog');
-        const startBtn = document.getElementById('wmFabStart');
-        if (quickLogBtn) {
-            quickLogBtn.addEventListener('click', () => {
-                if (window.workoutModeController?.handleStartQuickLog) {
-                    window.workoutModeController.handleStartQuickLog();
-                }
-            });
-        }
-        if (startBtn) {
-            startBtn.addEventListener('click', () => {
-                if (window.workoutModeController?.handleStartWorkout) {
-                    window.workoutModeController.handleStartWorkout();
-                }
-            });
-        }
-
-        // Timed active buttons
-        const endBtn = document.getElementById('wmFabEnd');
-        if (endBtn) {
-            endBtn.addEventListener('click', async () => {
-                try {
-                    if (window.workoutModeController?.handleCompleteWorkout) {
-                        await window.workoutModeController.handleCompleteWorkout();
-                    } else {
-                        console.error('❌ workoutModeController.handleCompleteWorkout not available');
-                    }
-                } catch (error) {
-                    console.error('❌ End workout failed:', error);
-                }
-            });
-        }
-
-        // Quick log active buttons
-        const cancelBtn = document.getElementById('wmFabCancel');
-        const saveBtn = document.getElementById('wmFabSave');
-        if (cancelBtn) {
-            cancelBtn.addEventListener('click', () => {
-                if (window.workoutModeController?.handleCancelWorkout) {
-                    window.workoutModeController.handleCancelWorkout();
-                }
-            });
-        }
-        if (saveBtn) {
-            saveBtn.addEventListener('click', async () => {
-                try {
-                    if (window.workoutModeController?.handleSaveQuickLog) {
-                        await window.workoutModeController.handleSaveQuickLog();
-                    } else {
-                        console.error('❌ workoutModeController.handleSaveQuickLog not available');
-                    }
-                } catch (error) {
-                    console.error('❌ Save Quick Log failed:', error);
-                }
-            });
-        }
     }
 
     /**

@@ -144,17 +144,47 @@ class DataService:
         return None
     
     def delete_workout(self, workout_id: str) -> bool:
-        """Delete a workout"""
+        """Soft-delete (archive) a workout"""
         data = self._read_json(self.workouts_file)
         workouts = data.get("workouts", [])
-        
+
+        for workout in workouts:
+            if workout.get("id") == workout_id:
+                workout["is_archived"] = True
+                workout["archived_at"] = datetime.now().isoformat()
+                workout["modified_date"] = datetime.now().isoformat()
+                self._write_json(self.workouts_file, {"workouts": workouts})
+                return True
+
+        return False
+
+    def restore_workout(self, workout_id: str) -> bool:
+        """Restore an archived workout"""
+        data = self._read_json(self.workouts_file)
+        workouts = data.get("workouts", [])
+
+        for workout in workouts:
+            if workout.get("id") == workout_id:
+                workout["is_archived"] = False
+                workout["archived_at"] = None
+                workout["modified_date"] = datetime.now().isoformat()
+                self._write_json(self.workouts_file, {"workouts": workouts})
+                return True
+
+        return False
+
+    def permanent_delete_workout(self, workout_id: str) -> bool:
+        """Permanently delete a workout (no recovery)"""
+        data = self._read_json(self.workouts_file)
+        workouts = data.get("workouts", [])
+
         original_length = len(workouts)
         workouts = [w for w in workouts if w.get("id") != workout_id]
-        
+
         if len(workouts) < original_length:
             self._write_json(self.workouts_file, {"workouts": workouts})
             return True
-        
+
         return False
     
     def duplicate_workout(self, workout_id: str, new_name: str) -> Optional[WorkoutTemplate]:

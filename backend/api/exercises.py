@@ -70,11 +70,12 @@ async def get_exercise_metadata():
 async def get_all_exercises(
     page: int = Query(1, ge=1),
     page_size: int = Query(100, ge=1, le=500),
+    max_tier: Optional[int] = Query(None, ge=1, le=3, description="Max exercise tier to include (1=Essential, 2=Common, 3=All)"),
     exercise_service = Depends(get_exercise_service)
 ):
-    """Get all global exercises with pagination"""
+    """Get all global exercises with pagination and optional tier filtering"""
     try:
-        result = exercise_service.get_all_exercises(limit=page_size, page=page)
+        result = exercise_service.get_all_exercises(limit=page_size, page=page, max_tier=max_tier)
         return result
         
     except HTTPException:

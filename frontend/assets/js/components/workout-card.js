@@ -51,11 +51,15 @@ class WorkoutCard {
      * @returns {HTMLElement} The card element
      */
     render() {
-        const cardClass = this.config.deleteMode ? 'card workout-list-card delete-mode' : 'card workout-list-card';
-        
+        const workoutData = this.workout.workout_data || this.workout;
+        const isArchived = workoutData.is_archived || false;
+        let cardClass = this.config.deleteMode ? 'card workout-list-card delete-mode' : 'card workout-list-card';
+        if (isArchived) cardClass += ' archived-card';
+
         const card = document.createElement('div');
         card.className = cardClass;
         card.setAttribute('data-workout-id', this.workout.id);
+        if (isArchived) card.style.opacity = '0.7';
         
         card.innerHTML = `
             <div class="card-body position-relative">
@@ -83,6 +87,34 @@ class WorkoutCard {
      */
     _renderDropdownMenu() {
         if (this.config.deleteMode) return '';
+
+        const workoutData = this.workout.workout_data || this.workout;
+        const isArchived = workoutData.is_archived || false;
+
+        // Archived workouts get a different menu: Restore + Permanently Delete
+        if (isArchived) {
+            const workoutName = (workoutData.name || this.workout.name || 'Untitled Workout').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+            return `
+                <div class="dropdown position-absolute" style="top: 8px; right: 8px; z-index: 1050;">
+                    <button class="btn btn-icon btn-card-menu" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bx bx-dots-vertical-rounded"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li>
+                            <a class="dropdown-item" href="javascript:void(0);" data-action="restore">
+                                <i class="bx bx-undo me-2"></i>Restore
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <a class="dropdown-item text-danger" href="javascript:void(0);" data-action="permanent-delete">
+                                <i class="bx bx-trash me-2"></i>Permanently Delete
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            `;
+        }
 
         const dropdownActions = this.config.dropdownActions || ['edit', 'delete'];
         let menuItems = '';
@@ -157,14 +189,14 @@ class WorkoutCard {
         }
 
         if (dropdownActions.includes('delete')) {
-            // Add divider before delete if there are other items
+            // Add divider before archive/delete if there are other items
             if (menuItems) {
                 menuItems += `<li><hr class="dropdown-divider"></li>`;
             }
             menuItems += `
                     <li>
                         <a class="dropdown-item text-danger" href="javascript:void(0);" data-action="delete">
-                            <i class="bx bx-trash me-2"></i>Delete
+                            <i class="bx bx-archive-in me-2"></i>Archive
                         </a>
                     </li>`;
         }
@@ -245,12 +277,14 @@ class WorkoutCard {
     _renderHeader() {
         const workoutData = this.workout.workout_data || this.workout;
         const name = workoutData.name || this.workout.name || 'Untitled Workout';
+        const isArchived = workoutData.is_archived || false;
 
         // Add left padding when in delete mode to accommodate checkbox
         const paddingLeft = this.config.deleteMode ? 'padding-left: 32px;' : '';
+        const archivedBadge = isArchived ? ' <span class="badge bg-label-secondary badge-sm ms-1"><i class="bx bx-archive bx-xs"></i> Archived</span>' : '';
 
         return `
-            <h5 class="card-title mb-2" style="padding-right: 30px; ${paddingLeft}">${this._escapeHtml(name)}</h5>
+            <h5 class="card-title mb-2" style="padding-right: 30px; ${paddingLeft}">${this._escapeHtml(name)}${archivedBadge}</h5>
         `;
     }
     
@@ -625,6 +659,20 @@ class WorkoutCard {
                         const workoutData = this.workout.workout_data || this.workout;
                         const name = workoutData.name || this.workout.name || 'Untitled Workout';
                         this.config.onDelete(this.workout.id, name);
+                    }
+                } else if (actionId === 'restore') {
+                    // Restore archived workout
+                    const workoutData = this.workout.workout_data || this.workout;
+                    const name = workoutData.name || this.workout.name || 'Untitled Workout';
+                    if (window.restoreWorkoutFromArchive) {
+                        window.restoreWorkoutFromArchive(this.workout.id, name);
+                    }
+                } else if (actionId === 'permanent-delete') {
+                    // Permanently delete archived workout
+                    const workoutData = this.workout.workout_data || this.workout;
+                    const name = workoutData.name || this.workout.name || 'Untitled Workout';
+                    if (window.permanentDeleteWorkout) {
+                        window.permanentDeleteWorkout(this.workout.id, name);
                     }
                 } else if (actionId === 'view-details' && this.config.onViewDetails) {
                     // View Details from dropdown menu

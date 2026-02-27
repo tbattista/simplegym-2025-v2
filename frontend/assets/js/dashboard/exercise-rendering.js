@@ -125,6 +125,14 @@ function showExerciseDetails(exerciseId) {
         return equip + (count ? ` (${count})` : '');
     };
 
+    // GIF URL: use linked if custom has none
+    const gifUrl = exercise.gifUrl || (linked && linked.gifUrl);
+
+    // Instructions: use linked if custom has none
+    const instructions = exercise.instructions?.length > 0
+        ? exercise.instructions
+        : (linked && linked.instructions?.length > 0 ? linked.instructions : []);
+
     // Video URLs: use linked if custom has none
     const shortVideoUrl = exercise.shortVideoUrl || (linked && linked.shortVideoUrl);
     const detailedVideoUrl = exercise.detailedVideoUrl || (linked && linked.detailedVideoUrl);
@@ -140,6 +148,27 @@ function showExerciseDetails(exerciseId) {
                 Linked to: ${escapeHtml(linked.name)}
             </span>
             <small class="text-muted d-block mt-1">Fields marked with <i class="bx bx-link text-primary" style="font-size: 0.75rem;"></i> are inherited from the linked exercise</small>
+        </div>
+        <hr>
+        ` : ''}
+
+        <!-- Exercise GIF Demonstration -->
+        ${gifUrl ? `
+        <div class="mb-3 text-center">
+            <img src="${escapeHtml(gifUrl)}" alt="${escapeHtml(exercise.name)} demonstration"
+                loading="lazy"
+                style="max-width: 100%; max-height: 300px; border-radius: 8px; background: #f0f0f0;"
+                onerror="this.style.display='none'">
+        </div>
+        ` : ''}
+
+        <!-- Instructions -->
+        ${instructions.length > 0 ? `
+        <div class="mb-3">
+            <h6 class="mb-2"><i class="bx bx-list-ol me-1"></i>Instructions</h6>
+            <ol class="ps-3 mb-0" style="font-size: 0.9rem; line-height: 1.6;">
+                ${instructions.map(step => `<li class="mb-1">${escapeHtml(step)}</li>`).join('')}
+            </ol>
         </div>
         <hr>
         ` : ''}

@@ -166,7 +166,55 @@ class FirestoreWorkoutOps:
             raise
 
     async def delete_workout(self, user_id: str, workout_id: str) -> bool:
-        """Delete a workout"""
+        """Soft-delete (archive) a workout"""
+        if not self.is_available():
+            return False
+
+        try:
+            workout_ref = (self.db.collection('users')
+                          .document(user_id)
+                          .collection('workouts')
+                          .document(workout_id))
+
+            workout_ref.update({
+                'is_archived': True,
+                'archived_at': firestore.SERVER_TIMESTAMP,
+                'modified_date': firestore.SERVER_TIMESTAMP
+            })
+
+            logger.info(f"Archived workout {workout_id} for user {user_id}")
+            return True
+
+        except Exception as e:
+            logger.error(f"Failed to archive workout: {str(e)}")
+            return False
+
+    async def restore_workout(self, user_id: str, workout_id: str) -> bool:
+        """Restore an archived workout"""
+        if not self.is_available():
+            return False
+
+        try:
+            workout_ref = (self.db.collection('users')
+                          .document(user_id)
+                          .collection('workouts')
+                          .document(workout_id))
+
+            workout_ref.update({
+                'is_archived': False,
+                'archived_at': None,
+                'modified_date': firestore.SERVER_TIMESTAMP
+            })
+
+            logger.info(f"Restored workout {workout_id} for user {user_id}")
+            return True
+
+        except Exception as e:
+            logger.error(f"Failed to restore workout: {str(e)}")
+            return False
+
+    async def permanent_delete_workout(self, user_id: str, workout_id: str) -> bool:
+        """Permanently delete a workout (no recovery)"""
         if not self.is_available():
             return False
 
@@ -181,11 +229,11 @@ class FirestoreWorkoutOps:
             # Update user stats
             await self._decrement_user_workout_count(user_id)
 
-            logger.info(f"Deleted workout {workout_id} for user {user_id}")
+            logger.info(f"Permanently deleted workout {workout_id} for user {user_id}")
             return True
 
         except Exception as e:
-            logger.error(f"Failed to delete workout: {str(e)}")
+            logger.error(f"Failed to permanently delete workout: {str(e)}")
             return False
 
     async def duplicate_workout(self, user_id: str, workout_id: str, new_name: str) -> Optional[WorkoutTemplate]:

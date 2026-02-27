@@ -225,6 +225,17 @@
           </div>
         </div>
 
+        <!-- Archive Filter -->
+        <div class="mb-4">
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" role="switch" id="archiveFilterToggle">
+            <label class="form-check-label fw-semibold" for="archiveFilterToggle">
+              <i class="bx bx-archive text-secondary me-1"></i>
+              Show archived
+            </label>
+          </div>
+        </div>
+
         <!-- Tags Filter -->
         <div class="mb-4">
           <label class="form-label fw-semibold">Filter by Tags</label>
@@ -353,7 +364,8 @@
                 tags: [],
                 sortBy: 'modified_date',
                 sortOrder: 'desc',
-                favoritesOnly: false
+                favoritesOnly: false,
+                showArchived: false
             },
             stats: {
                 total: 0,
@@ -508,6 +520,13 @@
                 if (window.filterFavoritesOnly) {
                     window.filterFavoritesOnly(e.target.checked);
                 }
+            });
+
+            // Initialize archive filter toggle
+            document.getElementById('archiveFilterToggle')?.addEventListener('change', (e) => {
+                window.ffn.workoutDatabase.filters.showArchived = e.target.checked;
+                window.filterWorkouts();
+                window.updateFilterBadge?.();
             });
 
             // Initialize delete mode toggle

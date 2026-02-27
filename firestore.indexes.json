@@ -273,6 +273,20 @@
           "order": "DESCENDING"
         }
       ]
+    },
+    {
+      "collectionGroup": "global_exercises",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "exerciseTier",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "name",
+          "order": "ASCENDING"
+        }
+      ]
     }
   ],
   "fieldOverrides": []

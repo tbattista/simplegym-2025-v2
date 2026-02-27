@@ -989,27 +989,150 @@ class FirebaseDataManager {
     
     deleteLocalStorageWorkout(workoutId) {
         try {
-            // Get all existing workouts from localStorage
+            // Soft-delete: mark as archived in localStorage
             const stored = localStorage.getItem('gym_workouts');
             const workouts = stored ? JSON.parse(stored) : [];
-            
-            // Find and remove the workout
+
+            const workout = workouts.find(w => w.id === workoutId);
+            if (!workout) {
+                throw new Error('Workout not found');
+            }
+
+            workout.is_archived = true;
+            workout.archived_at = new Date().toISOString();
+            workout.modified_date = new Date().toISOString();
+            localStorage.setItem('gym_workouts', JSON.stringify(workouts));
+
+            console.log('✅ Workout archived in localStorage');
+            return true;
+        } catch (error) {
+            console.error('❌ Error archiving local workout:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Restore an archived workout
+     */
+    async restoreWorkout(workoutId) {
+        try {
+            if (this.getFirebaseUser() && this.isOnline) {
+                return await this.restoreFirestoreWorkout(workoutId);
+            } else {
+                return this.restoreLocalStorageWorkout(workoutId);
+            }
+        } catch (error) {
+            console.error('❌ Error restoring workout:', error);
+            return this.restoreLocalStorageWorkout(workoutId);
+        }
+    }
+
+    async restoreFirestoreWorkout(workoutId) {
+        try {
+            const url = window.config.api.getUrl(`/api/v3/firebase/workouts/${workoutId}/restore`);
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${await this.getAuthToken()}`
+                }
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.detail || 'Failed to restore workout');
+            }
+
+            console.log('✅ Workout restored from Firestore');
+            return true;
+        } catch (error) {
+            console.error('❌ Error restoring Firestore workout:', error);
+            throw error;
+        }
+    }
+
+    restoreLocalStorageWorkout(workoutId) {
+        try {
+            const stored = localStorage.getItem('gym_workouts');
+            const workouts = stored ? JSON.parse(stored) : [];
+
+            const workout = workouts.find(w => w.id === workoutId);
+            if (!workout) {
+                throw new Error('Workout not found');
+            }
+
+            workout.is_archived = false;
+            workout.archived_at = null;
+            workout.modified_date = new Date().toISOString();
+            localStorage.setItem('gym_workouts', JSON.stringify(workouts));
+
+            console.log('✅ Workout restored in localStorage');
+            return true;
+        } catch (error) {
+            console.error('❌ Error restoring local workout:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Permanently delete a workout (no recovery)
+     */
+    async permanentDeleteWorkout(workoutId) {
+        try {
+            if (this.getFirebaseUser() && this.isOnline) {
+                return await this.permanentDeleteFirestoreWorkout(workoutId);
+            } else {
+                return this.permanentDeleteLocalStorageWorkout(workoutId);
+            }
+        } catch (error) {
+            console.error('❌ Error permanently deleting workout:', error);
+            return this.permanentDeleteLocalStorageWorkout(workoutId);
+        }
+    }
+
+    async permanentDeleteFirestoreWorkout(workoutId) {
+        try {
+            const url = window.config.api.getUrl(`/api/v3/firebase/workouts/${workoutId}/permanent`);
+            const response = await fetch(url, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${await this.getAuthToken()}`
+                }
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.detail || 'Failed to permanently delete workout');
+            }
+
+            console.log('✅ Workout permanently deleted from Firestore');
+            return true;
+        } catch (error) {
+            console.error('❌ Error permanently deleting Firestore workout:', error);
+            throw error;
+        }
+    }
+
+    permanentDeleteLocalStorageWorkout(workoutId) {
+        try {
+            const stored = localStorage.getItem('gym_workouts');
+            const workouts = stored ? JSON.parse(stored) : [];
+
             const index = workouts.findIndex(w => w.id === workoutId);
             if (index === -1) {
                 throw new Error('Workout not found');
             }
-            
+
             workouts.splice(index, 1);
             localStorage.setItem('gym_workouts', JSON.stringify(workouts));
-            
-            console.log('✅ Workout deleted from localStorage');
+
+            console.log('✅ Workout permanently deleted from localStorage');
             return true;
         } catch (error) {
-            console.error('❌ Error deleting local workout:', error);
+            console.error('❌ Error permanently deleting local workout:', error);
             throw error;
         }
     }
-    
+
     // Real-time Sync Management
     
     setupRealtimeListeners() {

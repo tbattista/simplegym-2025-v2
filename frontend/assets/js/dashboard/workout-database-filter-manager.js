@@ -221,6 +221,11 @@ function updateFilterBadge() {
         count += 1;
     }
 
+    // Include archive filter in count
+    if (window.ffn.workoutDatabase.filters.showArchived) {
+        count += 1;
+    }
+
     badge.textContent = count;
     badge.style.display = count > 0 ? 'inline-block' : 'none';
 }
@@ -242,8 +247,16 @@ function filterWorkouts() {
     const selectedTags = window.ffn.workoutDatabase.filters.tags || [];
     const sortBy = window.ffn.workoutDatabase.filters.sortBy || 'modified_date';
     const favoritesOnly = window.ffn.workoutDatabase.filters.favoritesOnly || false;
+    const showArchived = window.ffn.workoutDatabase.filters.showArchived || false;
 
-    console.log('🔍 Applying filters:', { searchTerm, selectedTags, sortBy, favoritesOnly });
+    console.log('🔍 Applying filters:', { searchTerm, selectedTags, sortBy, favoritesOnly, showArchived });
+
+    // Archive filter: show only archived, or exclude archived
+    if (showArchived) {
+        filtered = filtered.filter(workout => workout.is_archived);
+    } else {
+        filtered = filtered.filter(workout => !workout.is_archived);
+    }
 
     // Apply favorites filter
     if (favoritesOnly) {
@@ -346,11 +359,12 @@ function clearFilters() {
         clearSearchBtn.style.display = 'none';
     }
 
-    // Reset filter state (including search and favorites)
+    // Reset filter state (including search, favorites, and archive)
     window.ffn.workoutDatabase.filters.search = '';
     window.ffn.workoutDatabase.filters.tags = [];
     window.ffn.workoutDatabase.filters.sortBy = 'modified_date';
     window.ffn.workoutDatabase.filters.favoritesOnly = false;
+    window.ffn.workoutDatabase.filters.showArchived = false;
 
     // Reset favorites filter toggle immediately after state change
     const favoritesToggle = document.getElementById('favoritesFilterToggle');
@@ -358,6 +372,12 @@ function clearFilters() {
     if (favoritesToggle) {
         favoritesToggle.checked = false;
         console.log('✅ Favorites toggle set to:', favoritesToggle.checked);
+    }
+
+    // Reset archive filter toggle
+    const archiveToggle = document.getElementById('archiveFilterToggle');
+    if (archiveToggle) {
+        archiveToggle.checked = false;
     }
 
     // Reset sort cycle button to default

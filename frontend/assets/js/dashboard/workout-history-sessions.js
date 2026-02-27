@@ -256,6 +256,13 @@ function createSessionEntry(session) {
         </button>
         <ul class="dropdown-menu dropdown-menu-end">
           <li>
+            <a class="dropdown-item" href="javascript:void(0);"
+               onclick="createTemplateFromSession('${session.id}');">
+              <i class="bx bx-copy-alt me-2"></i>Save as Template
+            </a>
+          </li>
+          <li><hr class="dropdown-divider"></li>
+          <li>
             <a class="dropdown-item text-danger" href="javascript:void(0);"
                onclick="enterDeleteModeWithSelection('${session.id}');">
               <i class="bx bx-trash me-2"></i>Delete
@@ -306,6 +313,13 @@ function renderSessionDetails(session) {
             ${exercises.map(ex => renderExerciseTableRow(ex, prevExerciseMap[ex.exercise_name])).join('')}
           </tbody>
         </table>
+      </div>
+
+      <div class="text-end mt-2">
+        <button class="btn btn-sm btn-outline-primary"
+                onclick="event.stopPropagation(); createTemplateFromSession('${session.id}');">
+          <i class="bx bx-copy-alt me-1"></i>Save as Template
+        </button>
       </div>
     </div>
   `;
@@ -554,6 +568,88 @@ function renderCardioHistoryEntry(session) {
 }
 
 /* ============================================
+   CREATE TEMPLATE FROM SESSION
+   ============================================ */
+
+/**
+ * Convert a completed session into workout creation data
+ * Uses actual performed values (sets_completed, actual reps, weight used)
+ */
+function sessionToWorkoutData(session) {
+  const exercises = (session.exercises_performed || [])
+    .filter(ex => !ex.is_skipped)
+    .sort((a, b) => (a.order_index || 0) - (b.order_index || 0));
+
+  if (exercises.length === 0) return null;
+
+  const exercise_groups = exercises.map((ex, index) => {
+    // Determine reps: prefer actual reps from set_details, fall back to target_reps
+    let reps = String(ex.target_reps || '8-12');
+    if (ex.set_details && ex.set_details.length > 0) {
+      const actualReps = ex.set_details
+        .filter(s => s.reps_completed != null)
+        .map(s => s.reps_completed);
+      if (actualReps.length > 0) {
+        const minReps = Math.min(...actualReps);
+        const maxReps = Math.max(...actualReps);
+        reps = minReps === maxReps ? String(minReps) : `${minReps}-${maxReps}`;
+      }
+    }
+
+    return {
+      group_id: `group-${Date.now()}-${index}`,
+      exercises: { a: ex.exercise_name },
+      sets: String(ex.sets_completed || ex.target_sets || '3'),
+      reps: reps,
+      rest: '60s',
+      default_weight: ex.weight || null,
+      default_weight_unit: ex.weight_unit || 'lbs',
+      group_type: 'standard'
+    };
+  });
+
+  const completedDate = session.completed_at
+    ? new Date(session.completed_at).toLocaleDateString()
+    : 'unknown date';
+
+  return {
+    name: `${session.workout_name || 'Workout'} (from session)`,
+    description: `Created from session on ${completedDate}`,
+    tags: [],
+    exercise_groups: exercise_groups,
+    template_notes: []
+  };
+}
+
+/**
+ * Create a workout template from a completed session
+ * Stores data in sessionStorage and navigates to workout builder
+ */
+function createTemplateFromSession(sessionId) {
+  const session = (window.ffn.workoutHistory.sessions || []).find(s => s.id === sessionId);
+  if (!session) {
+    console.error('Session not found:', sessionId);
+    return;
+  }
+
+  const workoutData = sessionToWorkoutData(session);
+  if (!workoutData) {
+    if (window.showToast) {
+      window.showToast('No exercises to create a template from (all were skipped)', 'warning');
+    } else {
+      alert('No exercises to create a template from.');
+    }
+    return;
+  }
+
+  // Store in sessionStorage for the workout builder to pick up
+  sessionStorage.setItem('ffn_create_from_session', JSON.stringify(workoutData));
+
+  // Navigate to workout builder
+  window.location.href = 'workout-builder.html?from_session=true';
+}
+
+/* ============================================
    EXPORTS
    ============================================ */
 
@@ -566,5 +662,7 @@ window.renderSessionDetails = renderSessionDetails;
 window.renderExerciseTableRow = renderExerciseTableRow;
 window.scrollToSession = scrollToSession;
 window.renderCardioHistoryEntry = renderCardioHistoryEntry;
+window.sessionToWorkoutData = sessionToWorkoutData;
+window.createTemplateFromSession = createTemplateFromSession;
 
-console.log('📦 Workout History Sessions module loaded (v1.1.0)');
+console.log('📦 Workout History Sessions module loaded (v1.2.0)');

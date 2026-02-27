@@ -99,11 +99,35 @@ async def delete_workout(
     workout_id: str,
     data_service: DataService = Depends(get_data_service)
 ):
-    """Delete a workout template (local storage)"""
+    """Archive a workout template (local storage)"""
     success = data_service.delete_workout(workout_id)
     if not success:
         raise HTTPException(status_code=404, detail="Workout not found")
-    return {"message": "Workout deleted successfully"}
+    return {"message": "Workout archived successfully"}
+
+
+@router.post("/workouts/{workout_id}/restore")
+async def restore_workout(
+    workout_id: str,
+    data_service: DataService = Depends(get_data_service)
+):
+    """Restore an archived workout (local storage)"""
+    success = data_service.restore_workout(workout_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Workout not found")
+    return {"message": "Workout restored successfully"}
+
+
+@router.delete("/workouts/{workout_id}/permanent")
+async def permanent_delete_workout(
+    workout_id: str,
+    data_service: DataService = Depends(get_data_service)
+):
+    """Permanently delete a workout (local storage)"""
+    success = data_service.permanent_delete_workout(workout_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Workout not found")
+    return {"message": "Workout permanently deleted"}
 
 
 @router.post("/workouts/{workout_id}/duplicate", response_model=WorkoutTemplate)
@@ -259,29 +283,92 @@ async def delete_workout_firebase(
         logger.info(f"Deleting workout {workout_id}, user_id: {user_id}")
         
         if user_id and firebase_service.is_available():
-            logger.info("Using Firestore for authenticated user workout deletion")
+            logger.info("Using Firestore for authenticated user workout archival")
             # Authenticated user - use Firestore data service
             success = await firestore_data_service.delete_workout(user_id, workout_id)
             if success:
-                logger.info(f"✅ Workout deleted from Firestore: {workout_id}")
-                return {"message": "Workout deleted successfully"}
+                logger.info(f"✅ Workout archived in Firestore: {workout_id}")
+                return {"message": "Workout archived successfully"}
             else:
-                logger.warning("Firebase workout deletion failed, falling back to local storage")
-        
+                logger.warning("Firebase workout archival failed, falling back to local storage")
+
         # Anonymous user or Firebase unavailable - use local storage
-        logger.info("Using local storage for workout deletion")
+        logger.info("Using local storage for workout archival")
         data_service = DataService()
         success = data_service.delete_workout(workout_id)
         if not success:
             raise HTTPException(status_code=404, detail="Workout not found")
-        logger.info(f"Workout deleted from local storage: {workout_id}")
-        return {"message": "Workout deleted successfully"}
-        
+        logger.info(f"Workout archived in local storage: {workout_id}")
+        return {"message": "Workout archived successfully"}
+
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error deleting workout: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Error deleting workout: {str(e)}")
+        logger.error(f"Error archiving workout: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error archiving workout: {str(e)}")
+
+
+@firebase_router.post("/{workout_id}/restore")
+async def restore_workout_firebase(
+    workout_id: str,
+    current_user: Optional[dict] = Depends(get_current_user_optional)
+):
+    """Restore an archived workout (Firebase-enabled with fallback)"""
+    try:
+        user_id = extract_user_id(current_user)
+        logger.info(f"Restoring workout {workout_id}, user_id: {user_id}")
+
+        if user_id and firebase_service.is_available():
+            success = await firestore_data_service.restore_workout(user_id, workout_id)
+            if success:
+                logger.info(f"✅ Workout restored in Firestore: {workout_id}")
+                return {"message": "Workout restored successfully"}
+            else:
+                logger.warning("Firebase workout restore failed, falling back to local storage")
+
+        data_service = DataService()
+        success = data_service.restore_workout(workout_id)
+        if not success:
+            raise HTTPException(status_code=404, detail="Workout not found")
+        return {"message": "Workout restored successfully"}
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error restoring workout: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error restoring workout: {str(e)}")
+
+
+@firebase_router.delete("/{workout_id}/permanent")
+async def permanent_delete_workout_firebase(
+    workout_id: str,
+    current_user: Optional[dict] = Depends(get_current_user_optional)
+):
+    """Permanently delete a workout (Firebase-enabled with fallback)"""
+    try:
+        user_id = extract_user_id(current_user)
+        logger.info(f"Permanently deleting workout {workout_id}, user_id: {user_id}")
+
+        if user_id and firebase_service.is_available():
+            success = await firestore_data_service.permanent_delete_workout(user_id, workout_id)
+            if success:
+                logger.info(f"✅ Workout permanently deleted from Firestore: {workout_id}")
+                return {"message": "Workout permanently deleted"}
+            else:
+                logger.warning("Firebase permanent delete failed, falling back to local storage")
+
+        data_service = DataService()
+        success = data_service.permanent_delete_workout(workout_id)
+        if not success:
+            raise HTTPException(status_code=404, detail="Workout not found")
+        return {"message": "Workout permanently deleted"}
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error permanently deleting workout: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error permanently deleting workout: {str(e)}")
+
 
 @firebase_router.get("/exercise-history/workout/{workout_id}")
 async def get_workout_exercise_history(

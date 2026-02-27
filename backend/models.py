@@ -447,6 +447,17 @@ class WorkoutTemplate(BaseModel):
         description="When the workout was marked as favorite"
     )
 
+    # Archive (soft-delete) support
+    is_archived: bool = Field(
+        default=False,
+        description="Whether this workout is archived (soft-deleted)"
+    )
+
+    archived_at: Optional[datetime] = Field(
+        default=None,
+        description="When the workout was archived"
+    )
+
 class ProgramWorkout(BaseModel):
     """Association model for workouts within a program"""
     
@@ -552,6 +563,10 @@ class UpdateWorkoutRequest(BaseModel):
     is_favorite: Optional[bool] = Field(None, description="Whether this workout is marked as a favorite")
     favorited_at: Optional[datetime] = Field(None, description="When the workout was marked as favorite")
 
+    # Archive (soft-delete) support
+    is_archived: Optional[bool] = Field(None, description="Whether this workout is archived")
+    archived_at: Optional[datetime] = Field(None, description="When the workout was archived")
+
 class CreateProgramRequest(BaseModel):
     """Request model for creating a new program"""
     
@@ -645,7 +660,23 @@ class Exercise(BaseModel):
         default=None,
         description="URL to detailed explanation video"
     )
-    
+
+    # ExerciseDB Integration
+    gifUrl: Optional[str] = Field(
+        default=None,
+        description="URL to animated GIF demonstration (from ExerciseDB)"
+    )
+
+    exerciseDbId: Optional[str] = Field(
+        default=None,
+        description="ExerciseDB API exercise ID for image lookup"
+    )
+
+    instructions: List[str] = Field(
+        default_factory=list,
+        description="Step-by-step exercise instructions"
+    )
+
     # Classification
     difficultyLevel: Optional[str] = Field(
         default=None,
@@ -910,6 +941,9 @@ class CreateExerciseRequest(BaseModel):
     bodyRegion: Optional[str] = Field(None)
     mechanics: Optional[str] = Field(None)
     linkedExerciseId: Optional[str] = Field(None)
+    gifUrl: Optional[str] = Field(None)
+    exerciseDbId: Optional[str] = Field(None)
+    instructions: Optional[List[str]] = Field(default_factory=list)
 
 class ExerciseListResponse(BaseModel):
     """Response model for exercise list"""
