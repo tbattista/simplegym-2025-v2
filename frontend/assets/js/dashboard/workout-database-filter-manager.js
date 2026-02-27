@@ -301,6 +301,11 @@ function filterWorkouts() {
     // Update filter badge
     updateFilterBadge();
 
+    // Re-apply desktop selection highlight after grid re-render
+    if (window.reapplyWorkoutSelection) {
+        window.reapplyWorkoutSelection();
+    }
+
     console.log('📊 Filter results:', filtered.length, 'of', window.ffn.workoutDatabase.all.length);
 }
 

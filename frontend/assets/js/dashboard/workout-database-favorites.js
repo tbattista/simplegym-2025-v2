@@ -63,47 +63,71 @@ async function toggleWorkoutFavorite(event, workoutId, currentState) {
 }
 
 /**
- * Render the Favorites section
+ * Render the Favorites section (both mobile and desktop containers)
  */
 function renderFavoritesSection() {
-    const section = document.getElementById('favoritesSection');
-    const container = document.getElementById('favoritesContent');
+    const mobileSection = document.getElementById('favoritesSection');
+    const mobileContainer = document.getElementById('favoritesContent');
+    const desktopSection = document.getElementById('desktopFavoritesSection');
 
-    if (!section || !container) return;
-
-    // Hide section if favorites filter is active (redundant cards)
-    if (window.ffn.workoutDatabase.filters.favoritesOnly) {
-        section.style.display = 'none';
-        return;
-    }
+    // Hide sections if favorites filter is active (redundant cards)
+    const favoritesOnly = window.ffn.workoutDatabase.filters.favoritesOnly;
 
     const favorites = window.ffn.workoutDatabase.all
         .filter(w => w.is_favorite)
         .sort((a, b) => new Date(b.favorited_at) - new Date(a.favorited_at));
 
-    if (favorites.length === 0) {
-        section.style.display = 'none';
-        return;
+    // --- Mobile favorites ---
+    if (mobileSection && mobileContainer) {
+        if (favoritesOnly || favorites.length === 0) {
+            mobileSection.style.display = 'none';
+        } else {
+            mobileSection.style.display = 'block';
+            const displayFavorites = favorites.slice(0, 3);
+            mobileContainer.innerHTML = displayFavorites.map(workout =>
+                renderCompactWorkoutCard(workout)
+            ).join('');
+
+            const viewAllLink = document.getElementById('viewAllFavorites');
+            if (viewAllLink) {
+                viewAllLink.style.display = 'inline';
+                viewAllLink.textContent = `View all (${favorites.length})`;
+                viewAllLink.onclick = (e) => {
+                    e.preventDefault();
+                    filterFavoritesOnly();
+                };
+            }
+        }
     }
 
-    section.style.display = 'block';
+    // --- Desktop favorites (right panel) ---
+    if (desktopSection) {
+        if (favoritesOnly || favorites.length === 0) {
+            desktopSection.innerHTML = '';
+        } else {
+            const displayCount = 5; // Show more on desktop
+            const displayFavorites = favorites.slice(0, displayCount);
+            desktopSection.innerHTML = `
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h6 class="section-header mb-0">
+                        <i class="bx bx-star me-1"></i>Favorites
+                    </h6>
+                    ${favorites.length > displayCount
+                        ? `<a href="#" class="small text-muted" id="desktopViewAllFavorites">View all (${favorites.length})</a>`
+                        : ''}
+                </div>
+                ${displayFavorites.map(workout => renderCompactWorkoutCard(workout)).join('')}
+            `;
 
-    // Show max 3 in collapsed view
-    const displayFavorites = favorites.slice(0, 3);
-
-    container.innerHTML = displayFavorites.map(workout =>
-        renderCompactWorkoutCard(workout)
-    ).join('');
-
-    // Always show "View all" link when there are favorites
-    const viewAllLink = document.getElementById('viewAllFavorites');
-    if (viewAllLink) {
-        viewAllLink.style.display = 'inline';
-        viewAllLink.textContent = `View all (${favorites.length})`;
-        viewAllLink.onclick = (e) => {
-            e.preventDefault();
-            filterFavoritesOnly();
-        };
+            // Wire "View all" click
+            const viewAllBtn = document.getElementById('desktopViewAllFavorites');
+            if (viewAllBtn) {
+                viewAllBtn.onclick = (e) => {
+                    e.preventDefault();
+                    filterFavoritesOnly();
+                };
+            }
+        }
     }
 }
 

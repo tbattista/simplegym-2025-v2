@@ -1,0 +1,199 @@
+/**
+ * Workout Database - Desktop Split-View Layout
+ * Two-panel layout: workout grid (left) + favorites & detail (right)
+ * Only active on desktop (>=992px) via .desktop-view class
+ *
+ * Pattern mirrors exercise-database.css split-view (lines 229-373)
+ */
+
+/* ============================================
+   SPLIT-VIEW CONTAINER
+   ============================================ */
+
+.workout-split-layout {
+    display: flex;
+    gap: 1rem;
+    min-height: calc(100vh - 280px);
+}
+
+/* Left panel: workout grid */
+.workout-list-panel {
+    flex: 1;
+    min-width: 0;
+}
+
+/* Right panel: favorites + detail */
+.workout-detail-panel {
+    width: 400px;
+    min-width: 400px;
+    max-width: 400px;
+    flex-shrink: 0;
+}
+
+.workout-detail-panel-inner {
+    position: sticky;
+    top: 80px;
+    max-height: calc(100vh - 100px);
+    overflow-y: auto;
+    background: var(--bs-card-bg, #fff);
+    border: 1px solid var(--bs-border-color);
+    border-radius: var(--bs-border-radius-lg);
+    padding: 1.25rem;
+}
+
+/* ============================================
+   EMPTY STATE (before selecting a workout)
+   ============================================ */
+
+.workout-detail-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+    color: var(--bs-secondary-color);
+    text-align: center;
+}
+
+.workout-detail-empty i {
+    font-size: 3rem;
+    margin-bottom: 0.75rem;
+    opacity: 0.4;
+}
+
+.workout-detail-empty p {
+    font-size: 0.9rem;
+    margin: 0;
+    opacity: 0.6;
+}
+
+/* ============================================
+   DETAIL CONTENT (selected workout)
+   ============================================ */
+
+.workout-detail-content .detail-header h5 {
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.workout-detail-content .exercise-line {
+    font-size: 0.875rem;
+}
+
+.workout-detail-content .exercise-meta-text {
+    font-size: 0.8rem;
+}
+
+/* Action buttons at bottom of detail */
+.workout-panel-actions {
+    position: sticky;
+    bottom: 0;
+    background: var(--bs-card-bg, #fff);
+    padding-top: 0.75rem;
+}
+
+/* ============================================
+   DESKTOP FAVORITES (in right panel)
+   ============================================ */
+
+.desktop-favorites-section .section-header {
+    font-size: 0.875rem;
+}
+
+.desktop-favorites-section .workout-card-compact {
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+
+.desktop-favorites-section .workout-card-compact:hover {
+    background-color: rgba(var(--bs-primary-rgb), 0.03);
+}
+
+/* ============================================
+   SELECTION HIGHLIGHT
+   ============================================ */
+
+/* Desktop: cards are clickable */
+.desktop-view #workoutCardsGrid .col > [data-workout-id] {
+    cursor: pointer;
+    transition: background-color 0.15s ease, border-left-color 0.15s ease;
+}
+
+.desktop-view #workoutCardsGrid .col > [data-workout-id]:hover {
+    background-color: rgba(var(--bs-primary-rgb), 0.02);
+}
+
+/* Selected workout card highlight */
+.desktop-view #workoutCardsGrid .col > .workout-card-selected {
+    border-left: 3px solid var(--bs-primary);
+    background-color: rgba(var(--bs-primary-rgb), 0.04);
+}
+
+/* ============================================
+   GRID COLUMN OVERRIDE
+   On desktop with side panel, force 2 columns
+   ============================================ */
+
+.desktop-view .workout-list-panel .row-cols-lg-3 > .col {
+    flex: 0 0 50%;
+    max-width: 50%;
+}
+
+/* ============================================
+   VIEW TOGGLING: show/hide per viewport
+   ============================================ */
+
+/* Desktop: hide mobile-only elements */
+.desktop-view [data-view="mobile"] {
+    display: none !important;
+}
+
+/* Mobile: hide desktop-only elements */
+.mobile-view [data-view="desktop"] {
+    display: none !important;
+}
+
+/* Mobile: single-column layout */
+.mobile-view .workout-split-layout {
+    display: block;
+}
+
+/* ============================================
+   RESPONSIVE PANEL WIDTHS
+   ============================================ */
+
+@media (min-width: 992px) and (max-width: 1199.98px) {
+    .workout-detail-panel {
+        width: 300px;
+        min-width: 300px;
+        max-width: 300px;
+    }
+
+    .workout-detail-panel-inner {
+        padding: 1rem;
+    }
+}
+
+@media (min-width: 1400px) {
+    .workout-detail-panel {
+        width: 480px;
+        min-width: 480px;
+        max-width: 480px;
+    }
+}
+
+/* ============================================
+   DARK MODE
+   ============================================ */
+
+[data-bs-theme="dark"] .workout-detail-panel-inner {
+    background: var(--bs-card-bg, #2b2c40);
+}
+
+[data-bs-theme="dark"] .workout-panel-actions {
+    background: var(--bs-card-bg, #2b2c40);
+}
+
+[data-bs-theme="dark"] .desktop-view #workoutCardsGrid .col > .workout-card-selected {
+    background-color: rgba(var(--bs-primary-rgb), 0.08);
+}

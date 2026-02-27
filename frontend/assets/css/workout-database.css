@@ -44,6 +44,9 @@
 @import url('workout-database/_delete-mode.css');
 @import url('workout-database/_toolbar.css');
 
+/* Desktop split-view layout */
+@import url('workout-database/_split-view.css');
+
 /* Theming and cross-cutting - load last */
 @import url('workout-database/_dark-mode.css');
 @import url('workout-database/_utilities.css');

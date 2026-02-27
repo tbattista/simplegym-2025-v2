@@ -27,6 +27,9 @@ let componentsInitialized = false;
 let activeSessionWorkoutId = null;
 let completedWorkoutIds = new Set();
 
+// Desktop split-view selection state
+let _selectedWorkoutId = null;
+
 /**
  * ============================================
  * SESSION STATE MANAGEMENT
@@ -287,6 +290,189 @@ function initializeComponents() {
 
 /**
  * ============================================
+ * DESKTOP SPLIT-VIEW PANEL
+ * ============================================
+ */
+
+/**
+ * Check if we're in desktop split-view mode
+ */
+function isDesktopView() {
+    return document.documentElement.classList.contains('desktop-view');
+}
+
+/**
+ * Show workout details in the desktop side panel
+ */
+function showWorkoutDetailInPanel(workoutId) {
+    const workout = window.ffn.workoutDatabase.all.find(w => w.id === workoutId);
+    if (!workout) return;
+
+    const content = document.getElementById('workoutDetailContent');
+    const empty = document.getElementById('workoutDetailEmpty');
+    const divider = document.getElementById('workoutDetailDivider');
+    const panelInner = document.getElementById('workoutDetailPanelInner');
+    if (!content || !empty) return;
+
+    const workoutData = workout.workout_data || workout;
+
+    // Build detail HTML
+    let html = '';
+
+    // Header
+    html += `
+        <div class="detail-header mb-3">
+            <h5 class="mb-1">${escapeHtml(workoutData.name || 'Untitled Workout')}</h5>
+            <div class="text-muted small">
+                ${workoutData.exercise_groups?.length || 0} exercises
+            </div>
+        </div>
+    `;
+
+    // Description
+    if (workoutData.description) {
+        html += `<p class="text-muted small">${escapeHtml(workoutData.description)}</p>`;
+    }
+
+    // Dates
+    const createdDate = workoutData.created_date || workout.created_date;
+    const modifiedDate = workoutData.modified_date || workout.modified_date;
+    if (createdDate || modifiedDate) {
+        html += '<div class="d-flex gap-3 mb-2 flex-wrap">';
+        if (createdDate) html += `<span class="text-muted small"><i class="bx bx-calendar me-1"></i>${formatDate(createdDate)}</span>`;
+        if (modifiedDate) html += `<span class="text-muted small"><i class="bx bx-time me-1"></i>${formatDate(modifiedDate)}</span>`;
+        html += '</div>';
+    }
+
+    // Tags
+    const tags = workoutData.tags || workout.tags || [];
+    if (tags.length > 0) {
+        html += `<div class="mt-2 mb-3">${tags.map(tag =>
+            `<span class="badge bg-label-secondary me-1">${escapeHtml(tag)}</span>`
+        ).join('')}</div>`;
+    }
+
+    // Exercise groups (reuse same logic as WorkoutDetailOffcanvas._generateContentHTML)
+    const exerciseGroups = window.ExerciseDataUtils
+        ? ExerciseDataUtils.getExerciseGroups(workoutData)
+        : (workoutData.exercise_groups || []);
+
+    if (exerciseGroups.length > 0) {
+        html += '<h6 class="mb-3">Exercises</h6>';
+
+        exerciseGroups.forEach((group) => {
+            const exercises = [];
+            if (group.exercises) {
+                if (group.exercises.a) exercises.push({ label: '', name: group.exercises.a });
+                if (group.exercises.b) exercises.push({ label: 'Alt: ', name: group.exercises.b });
+                if (group.exercises.c) exercises.push({ label: 'Alt2: ', name: group.exercises.c });
+            }
+
+            let exercisesHtml = exercises.length > 0
+                ? exercises.map(ex =>
+                    `<div class="exercise-line">${ex.label ? `<span class="text-muted">${ex.label}</span>` : ''}${escapeHtml(ex.name)}</div>`
+                ).join('')
+                : '<div class="exercise-line text-muted">No exercises</div>';
+
+            const parts = [`${group.sets || '3'} sets`, `${group.reps || '8-12'} reps`, `${group.rest || '60s'} rest`];
+            if (group.default_weight) {
+                parts.push(`${group.default_weight} ${group.default_weight_unit || 'lbs'}`);
+            }
+
+            html += `
+                <div class="card mb-2">
+                    <div class="card-body py-2 px-3">
+                        <div class="exercise-list mb-1">${exercisesHtml}</div>
+                        <div class="exercise-meta-text text-muted small">${parts.join(' • ')}</div>
+                        ${group.notes ? `<div class="mt-1 small text-muted">${escapeHtml(group.notes)}</div>` : ''}
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    // Action buttons
+    html += `
+        <div class="workout-panel-actions mt-3 pt-3 border-top">
+            <div class="d-flex gap-2 mb-2">
+                <button class="btn btn-outline-primary flex-fill btn-sm" data-panel-action="edit">
+                    <i class="bx bx-edit me-1"></i>Edit
+                </button>
+                <button class="btn btn-outline-secondary flex-fill btn-sm" data-panel-action="history">
+                    <i class="bx bx-history me-1"></i>History
+                </button>
+                <button class="btn btn-outline-secondary flex-fill btn-sm" data-panel-action="share">
+                    <i class="bx bx-share-alt me-1"></i>Share
+                </button>
+            </div>
+            <button class="btn btn-primary w-100" data-panel-action="start">
+                <i class="bx bx-play me-1"></i>Start Workout
+            </button>
+        </div>
+    `;
+
+    content.innerHTML = html;
+    empty.style.display = 'none';
+    content.style.display = 'block';
+    if (divider) divider.style.display = 'block';
+
+    // Scroll panel to top
+    if (panelInner) panelInner.scrollTop = 0;
+
+    // Track selected workout and update highlight
+    _selectedWorkoutId = workoutId;
+    _updateSelectedWorkoutHighlight(workoutId);
+
+    // Attach action button listeners
+    content.querySelectorAll('[data-panel-action]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const action = btn.dataset.panelAction;
+            if (action === 'edit') editWorkout(workout.id);
+            else if (action === 'history') viewWorkoutHistory(workout.id);
+            else if (action === 'share') shareWorkout(workout.id);
+            else if (action === 'start') doWorkout(workout.id);
+        });
+    });
+}
+
+/**
+ * Update selection highlight on workout cards
+ */
+function _updateSelectedWorkoutHighlight(workoutId) {
+    // Remove existing highlight
+    document.querySelectorAll('#workoutCardsGrid .workout-card-selected')
+        .forEach(el => el.classList.remove('workout-card-selected'));
+
+    // Add highlight to selected card
+    if (workoutId) {
+        const card = document.querySelector(`#workoutCardsGrid [data-workout-id="${workoutId}"]`);
+        if (card) card.classList.add('workout-card-selected');
+    }
+}
+
+/**
+ * Auto-select the first workout after initial render (desktop only)
+ */
+function autoSelectFirstWorkout() {
+    const firstCard = document.querySelector('#workoutCardsGrid [data-workout-id]');
+    if (firstCard) {
+        const workoutId = firstCard.getAttribute('data-workout-id');
+        showWorkoutDetailInPanel(workoutId);
+    }
+}
+
+/**
+ * Re-apply selection highlight after grid re-render (filter/sort/pagination)
+ * Called by filterWorkouts() via window export
+ */
+function reapplyWorkoutSelection() {
+    if (_selectedWorkoutId && isDesktopView()) {
+        setTimeout(() => _updateSelectedWorkoutHighlight(_selectedWorkoutId), 50);
+    }
+}
+
+/**
+ * ============================================
  * ACTIONS / NAVIGATION
  * ============================================
  */
@@ -308,7 +494,7 @@ function doWorkout(workoutId) {
 }
 
 /**
- * View workout details - Use shared component
+ * View workout details - Routes to desktop panel or mobile offcanvas
  */
 async function viewWorkoutDetails(workoutId) {
     try {
@@ -333,9 +519,13 @@ async function viewWorkoutDetails(workoutId) {
             workout = await response.json();
         }
 
-        // Use shared component to show details
-        if (workoutDetailOffcanvas) {
-            workoutDetailOffcanvas.show(workout);
+        // Route: desktop panel vs mobile offcanvas
+        if (isDesktopView()) {
+            showWorkoutDetailInPanel(workoutId);
+        } else {
+            if (workoutDetailOffcanvas) {
+                workoutDetailOffcanvas.show(workout);
+            }
         }
 
     } catch (error) {
@@ -464,5 +654,11 @@ window.createNewWorkout = createNewWorkout;
 window.duplicateWorkout = duplicateWorkout;
 window.shareWorkout = shareWorkout;
 window.getTotalExerciseCount = getTotalExerciseCount;
+
+// Desktop split-view functions
+window.isDesktopView = isDesktopView;
+window.showWorkoutDetailInPanel = showWorkoutDetailInPanel;
+window.autoSelectFirstWorkout = autoSelectFirstWorkout;
+window.reapplyWorkoutSelection = reapplyWorkoutSelection;
 
 console.log('📦 Workout Database orchestrator loaded (v4.0 - modular)');

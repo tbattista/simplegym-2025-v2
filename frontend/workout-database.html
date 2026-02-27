@@ -161,34 +161,69 @@
                 </button>
               </div>
 
-              <!-- Favorites Section -->
-              <div id="favoritesSection" class="mb-4" style="display: none;">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                  <h6 class="section-header mb-0">
-                    <i class="bx bx-star me-1"></i>
-                    Favorites
-                  </h6>
-                  <a href="#" class="small text-muted" id="viewAllFavorites">View all</a>
+              <!-- Split-View Layout: workout grid (left) + favorites & detail (right) -->
+              <div class="workout-split-layout" id="workoutSplitLayout">
+
+                <!-- LEFT PANEL: Favorites (mobile) + Workout Grid -->
+                <div class="workout-list-panel" id="workoutListPanel">
+
+                  <!-- Favorites Section (mobile only - desktop shows in right panel) -->
+                  <div id="favoritesSection" class="mb-4" data-view="mobile" style="display: none;">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                      <h6 class="section-header mb-0">
+                        <i class="bx bx-star me-1"></i>
+                        Favorites
+                      </h6>
+                      <a href="#" class="small text-muted" id="viewAllFavorites">View all</a>
+                    </div>
+                    <div id="favoritesContent">
+                      <!-- Populated by JS -->
+                    </div>
+                  </div>
+
+                  <!-- My Workouts Section -->
+                  <div id="myWorkoutsSection" class="mb-3">
+                    <h6 class="section-header mb-3">
+                      <i class="bx bx-dumbbell me-1"></i>
+                      My Workouts
+                    </h6>
+
+                    <!-- Hidden delete mode toggle (controlled by More menu) -->
+                    <input class="form-check-input" type="checkbox" role="switch"
+                           id="deleteModeToggle" style="display: none;">
+
+                    <!-- DataTable Container -->
+                    <div id="workoutTableContainer"></div>
+                  </div>
+
                 </div>
-                <div id="favoritesContent">
-                  <!-- Populated by JS -->
+                <!-- / LEFT PANEL -->
+
+                <!-- RIGHT PANEL: Favorites + Detail (desktop only) -->
+                <div class="workout-detail-panel" id="workoutDetailPanel" data-view="desktop">
+                  <div class="workout-detail-panel-inner" id="workoutDetailPanelInner">
+
+                    <!-- Desktop Favorites -->
+                    <div id="desktopFavoritesSection" class="desktop-favorites-section"></div>
+
+                    <!-- Divider (shown when workout selected) -->
+                    <hr id="workoutDetailDivider" style="display: none;">
+
+                    <!-- Empty state (before selecting a workout) -->
+                    <div class="workout-detail-empty" id="workoutDetailEmpty">
+                      <i class="bx bx-dumbbell"></i>
+                      <p>Select a workout to view details</p>
+                    </div>
+
+                    <!-- Detail content (hidden until workout selected) -->
+                    <div class="workout-detail-content" id="workoutDetailContent" style="display: none;"></div>
+
+                  </div>
                 </div>
+                <!-- / RIGHT PANEL -->
+
               </div>
-
-              <!-- My Workouts Section -->
-              <div id="myWorkoutsSection" class="mb-3">
-                <h6 class="section-header mb-3">
-                  <i class="bx bx-dumbbell me-1"></i>
-                  My Workouts
-                </h6>
-
-                <!-- Hidden delete mode toggle (controlled by More menu) -->
-                <input class="form-check-input" type="checkbox" role="switch"
-                       id="deleteModeToggle" style="display: none;">
-
-                <!-- DataTable Container -->
-                <div id="workoutTableContainer"></div>
-              </div>
+              <!-- / Split-View Layout -->
             </div>
             <!-- / Content -->
 
@@ -338,11 +373,11 @@
     <script src="/static/assets/js/components/share-modal.js"></script>
 
     <!-- Workout Database Modules (load before orchestrator) -->
-    <script src="/static/assets/js/dashboard/workout-database-favorites.js?v=1.0.0"></script>
+    <script src="/static/assets/js/dashboard/workout-database-favorites.js?v=2.0.0"></script>
     <script src="/static/assets/js/dashboard/workout-database-delete-manager.js?v=1.0.0"></script>
-    <script src="/static/assets/js/dashboard/workout-database-filter-manager.js?v=1.0.0"></script>
+    <script src="/static/assets/js/dashboard/workout-database-filter-manager.js?v=1.1.0"></script>
     <!-- Workout Database Orchestrator (last) -->
-    <script src="/static/assets/js/dashboard/workout-database.js?v=4.0.0"></script>
+    <script src="/static/assets/js/dashboard/workout-database.js?v=5.0.0"></script>
 
     <!-- UI Helpers -->
     <script src="/static/assets/js/dashboard/ui-helpers.js?v=20251020-04"></script>
@@ -545,6 +580,13 @@
             // Render Favorites section
             if (window.renderFavoritesSection) {
                 renderFavoritesSection();
+            }
+
+            // Desktop: auto-select first workout after initial render
+            if (window.isDesktopView && window.isDesktopView()) {
+                setTimeout(() => {
+                    if (window.autoSelectFirstWorkout) window.autoSelectFirstWorkout();
+                }, 200);
             }
 
             console.log('✅ Workout Database initialized');
