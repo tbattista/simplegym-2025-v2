@@ -308,22 +308,6 @@ class WorkoutModeController {
         }
     }
 
-    /** Setup button event listeners */
-    setupEventListeners() {
-        const startBtn = document.getElementById('startWorkoutBtn');
-        if (startBtn) startBtn.addEventListener('click', () => this.handleStartWorkout());
-
-        const completeBtn = document.getElementById('completeWorkoutBtn');
-        if (completeBtn) completeBtn.addEventListener('click', () => this.handleCompleteWorkout());
-
-        const editBtn = document.getElementById('editWorkoutBtn');
-        if (editBtn) editBtn.addEventListener('click', () => this.handleEditWorkout());
-
-        const changeBtn = document.getElementById('changeWorkoutBtn');
-        if (changeBtn) changeBtn.addEventListener('click', () => this.handleChangeWorkout());
-    }
-
-
     /** Auto-expand first exercise card when workout starts */
     expandFirstExerciseCard() {
         const firstCard = document.querySelector('.exercise-card[data-exercise-index="0"]');
