@@ -7,7 +7,7 @@
  */
 
 // Toolbar state
-let currentSortIndex = 0;
+let currentSortIndex = 1;
 const SORT_OPTIONS = [
     { value: 'name', label: 'A-Z', icon: 'bx-sort-a-z' },
     { value: 'popularity', label: 'Popular', icon: 'bx-trending-up' },

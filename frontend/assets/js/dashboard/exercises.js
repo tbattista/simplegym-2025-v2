@@ -62,7 +62,7 @@ async function initializeExerciseDatabase(page) {
 
         // Initialize filter state
         window.currentFilters = {
-            sortBy: 'name',
+            sortBy: 'popularity',
             muscleGroup: '',
             equipment: [],
             difficulty: '',
@@ -84,7 +84,7 @@ async function initializeExerciseDatabase(page) {
                         { value: 'popularity', label: 'Most Popular' },
                         { value: 'favorites', label: 'My Favorites First' }
                     ],
-                    defaultValue: 'name'
+                    defaultValue: 'popularity'
                 },
                 {
                     key: 'muscleGroup',
@@ -155,6 +155,25 @@ async function initializeExerciseDatabase(page) {
         // Add event delegation for buttons
         document.getElementById('exerciseTableContainer').addEventListener('click', handleTableClick);
 
+        // Add event delegation for panel favorite button (desktop)
+        const detailPanel = document.getElementById('exerciseDetailPanel');
+        if (detailPanel) {
+            detailPanel.addEventListener('click', async (e) => {
+                const favBtn = e.target.closest('.panel-favorite-btn');
+                if (favBtn) {
+                    e.stopPropagation();
+                    const exerciseId = favBtn.dataset.exerciseId;
+                    if (window.toggleExerciseFavorite) {
+                        await window.toggleExerciseFavorite(exerciseId);
+                        // Re-render panel to update heart state
+                        if (window.showExerciseDetailsInPanel) {
+                            window.showExerciseDetailsInPanel(exerciseId);
+                        }
+                    }
+                }
+            });
+        }
+
         // Initialize toolbar components
         if (window.initExerciseToolbar) {
             window.initExerciseToolbar();
@@ -163,6 +182,11 @@ async function initializeExerciseDatabase(page) {
         // Set initial data with default filters
         if (window.applyFiltersAndRender) {
             window.applyFiltersAndRender(window.currentFilters);
+        }
+
+        // Desktop: auto-select first exercise after initial render
+        if (isDesktopView()) {
+            setTimeout(() => autoSelectFirstExercise(), 200);
         }
 
         console.log('✅ Exercise Database initialized with components');
@@ -239,6 +263,24 @@ function renderExerciseCard(row) {
 }
 
 /**
+ * Check if we're in desktop split-view mode
+ */
+function isDesktopView() {
+    return document.documentElement.classList.contains('desktop-view');
+}
+
+/**
+ * Show exercise details — routes to panel (desktop) or modal (mobile)
+ */
+function showExerciseDetailsAdaptive(exerciseId) {
+    if (isDesktopView() && window.showExerciseDetailsInPanel) {
+        window.showExerciseDetailsInPanel(exerciseId);
+    } else if (window.showExerciseDetails) {
+        window.showExerciseDetails(exerciseId);
+    }
+}
+
+/**
  * Handle click events on exercise table
  */
 async function handleTableClick(e) {
@@ -252,13 +294,16 @@ async function handleTableClick(e) {
         return;
     }
 
+    // Ignore clicks on dropdown menus/buttons
+    if (e.target.closest('.dropdown-menu') || e.target.closest('.dropdown-toggle')) {
+        return;
+    }
+
     const viewDetailsLink = e.target.closest('.view-details-link');
     if (viewDetailsLink) {
         e.preventDefault();
         const exerciseId = viewDetailsLink.dataset.exerciseId;
-        if (window.showExerciseDetails) {
-            window.showExerciseDetails(exerciseId);
-        }
+        showExerciseDetailsAdaptive(exerciseId);
         return;
     }
 
@@ -297,6 +342,17 @@ async function handleTableClick(e) {
             window.deleteExercise(exerciseId);
         }
         return;
+    }
+
+    // Desktop: clicking anywhere on a card opens details in panel
+    if (isDesktopView()) {
+        const card = e.target.closest('.card');
+        if (card) {
+            const favBtn = card.querySelector('.favorite-btn');
+            if (favBtn?.dataset.exerciseId) {
+                showExerciseDetailsAdaptive(favBtn.dataset.exerciseId);
+            }
+        }
     }
 }
 
@@ -395,6 +451,16 @@ async function loadUserExerciseData(userOverride = null) {
 
     } catch (error) {
         console.error('❌ Error loading user exercise data:', error);
+    }
+}
+
+/**
+ * Auto-select the first exercise in the list for the desktop panel
+ */
+function autoSelectFirstExercise() {
+    const firstFavBtn = document.querySelector('#exerciseTableContainer .favorite-btn[data-exercise-id]');
+    if (firstFavBtn?.dataset.exerciseId && window.showExerciseDetailsInPanel) {
+        window.showExerciseDetailsInPanel(firstFavBtn.dataset.exerciseId);
     }
 }
 

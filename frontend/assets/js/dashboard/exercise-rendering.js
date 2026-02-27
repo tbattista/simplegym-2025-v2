@@ -71,18 +71,11 @@ function initializePopovers() {
 }
 
 /**
- * Show exercise details modal
- * @param {string} exerciseId - Exercise ID
+ * Build exercise detail HTML (shared by modal and panel)
+ * @param {Object} exercise - Exercise object
+ * @returns {string} HTML string for exercise details
  */
-function showExerciseDetails(exerciseId) {
-    const exercise = [...window.ffn.exercises.all, ...window.ffn.exercises.custom]
-        .find(e => e.id === exerciseId);
-
-    if (!exercise) return;
-
-    const modal = new bootstrap.Modal(document.getElementById('exerciseDetailModal'));
-    document.getElementById('exerciseDetailTitle').textContent = exercise.name;
-
+function _buildExerciseDetailHTML(exercise) {
     // Helper to escape HTML
     const escapeHtml = (text) => {
         if (!text) return '';
@@ -139,7 +132,7 @@ function showExerciseDetails(exerciseId) {
     const hasVideos = shortVideoUrl || detailedVideoUrl;
     const videosInherited = !exercise.shortVideoUrl && !exercise.detailedVideoUrl && linked && (linked.shortVideoUrl || linked.detailedVideoUrl);
 
-    const detailsHtml = `
+    return `
         <!-- Linked Exercise Badge -->
         ${linked ? `
         <div class="mb-3">
@@ -285,9 +278,97 @@ function showExerciseDetails(exerciseId) {
         </div>
         ` : ''}
     `;
+}
 
-    document.getElementById('exerciseDetailBody').innerHTML = detailsHtml;
+/**
+ * Show exercise details in modal (mobile / fallback)
+ * @param {string} exerciseId - Exercise ID
+ */
+function showExerciseDetails(exerciseId) {
+    const exercise = [...window.ffn.exercises.all, ...window.ffn.exercises.custom]
+        .find(e => e.id === exerciseId);
+
+    if (!exercise) return;
+
+    const modal = new bootstrap.Modal(document.getElementById('exerciseDetailModal'));
+    document.getElementById('exerciseDetailTitle').textContent = exercise.name;
+    document.getElementById('exerciseDetailBody').innerHTML = _buildExerciseDetailHTML(exercise);
     modal.show();
+}
+
+/**
+ * Show exercise details in desktop side panel
+ * @param {string} exerciseId - Exercise ID
+ */
+function showExerciseDetailsInPanel(exerciseId) {
+    const exercise = [...window.ffn.exercises.all, ...window.ffn.exercises.custom]
+        .find(e => e.id === exerciseId);
+
+    if (!exercise) return;
+
+    const content = document.getElementById('exerciseDetailContent');
+    const empty = document.getElementById('exerciseDetailEmpty');
+    const panelInner = document.getElementById('exerciseDetailPanelInner');
+    if (!content || !empty) return;
+
+    const escapeHtml = (text) => {
+        if (!text) return '';
+        return text.replace(/[&<>"']/g, char => ({
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+        }[char]));
+    };
+
+    const isFavorited = window.ffn.exercises.favorites.has(exercise.id);
+
+    // Build panel header with name + favorite button
+    const headerHtml = `
+        <div class="detail-header">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+                <h5 class="mb-0">${escapeHtml(exercise.name)}</h5>
+                <button class="btn btn-sm btn-icon detail-favorite-btn panel-favorite-btn ${isFavorited ? 'text-danger' : ''}"
+                        data-exercise-id="${exercise.id}"
+                        title="${isFavorited ? 'Remove from favorites' : 'Add to favorites'}">
+                    <i class="bx ${isFavorited ? 'bxs-heart' : 'bx-heart'}" style="font-size: 1.25rem;"></i>
+                </button>
+            </div>
+            <div class="detail-meta">
+                ${exercise.targetMuscleGroup ? `<span class="badge bg-label-secondary">${escapeHtml(exercise.targetMuscleGroup)}</span>` : ''}
+                ${exercise.primaryEquipment ? `<span class="badge bg-label-secondary">${escapeHtml(exercise.primaryEquipment)}</span>` : ''}
+                ${!exercise.isGlobal ? '<span class="badge bg-label-primary"><i class="bx bx-user me-1"></i>Custom</span>' : ''}
+            </div>
+        </div>
+        <hr>
+    `;
+
+    content.innerHTML = headerHtml + _buildExerciseDetailHTML(exercise);
+    empty.style.display = 'none';
+    content.style.display = 'block';
+
+    // Scroll panel to top
+    if (panelInner) panelInner.scrollTop = 0;
+
+    // Track selected exercise
+    window._selectedExerciseId = exerciseId;
+
+    // Update selected card highlight
+    _updateSelectedCardHighlight(exerciseId);
+}
+
+/**
+ * Update the selected card highlight in the exercise list
+ * @param {string} exerciseId - Currently selected exercise ID
+ */
+function _updateSelectedCardHighlight(exerciseId) {
+    // Remove existing highlight
+    document.querySelectorAll('#exerciseTableContainer .exercise-card-selected')
+        .forEach(el => el.classList.remove('exercise-card-selected'));
+
+    // Add highlight to selected card
+    if (exerciseId) {
+        const btn = document.querySelector(`#exerciseTableContainer .favorite-btn[data-exercise-id="${exerciseId}"]`);
+        const card = btn?.closest('.card');
+        if (card) card.classList.add('exercise-card-selected');
+    }
 }
 
 /**
@@ -446,6 +527,7 @@ async function deleteExercise(exerciseId) {
 window.getDifficultyBadgeWithPopover = getDifficultyBadgeWithPopover;
 window.initializePopovers = initializePopovers;
 window.showExerciseDetails = showExerciseDetails;
+window.showExerciseDetailsInPanel = showExerciseDetailsInPanel;
 window.toggleExerciseFavorite = toggleExerciseFavorite;
 window.addExerciseToWorkout = addExerciseToWorkout;
 window.deleteExercise = deleteExercise;

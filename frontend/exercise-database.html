@@ -44,7 +44,7 @@
     <link rel="stylesheet" href="/static/assets/css/components.css?v=20260216" />
     
     <!-- Exercise Database CSS -->
-    <link rel="stylesheet" href="/static/assets/css/exercise-database.css?v=2.0.2" />
+    <link rel="stylesheet" href="/static/assets/css/exercise-database.css?v=3.0.0" />
     
     <!-- Unified Offcanvas CSS -->
     <link rel="stylesheet" href="/static/assets/css/components/unified-offcanvas.css" />
@@ -127,8 +127,8 @@
 
                   <!-- Sort Cycle Button -->
                   <button class="btn btn-outline-secondary exercise-toolbar-btn" id="sortCycleBtn" type="button">
-                    <i class="bx bx-sort-a-z"></i>
-                    <span class="sort-label">A-Z</span>
+                    <i class="bx bx-trending-up"></i>
+                    <span class="sort-label">Popular</span>
                   </button>
 
                   <!-- Filter Button -->
@@ -157,8 +157,26 @@
                   <div id="filterFeedbackText"></div>
                 </div>
                 
-                <!-- DataTable Container (Component will render here) -->
-                <div id="exerciseTableContainer"></div>
+                <!-- Split-View Layout (desktop: list + detail panel) -->
+                <div class="exercise-split-layout" id="exerciseSplitLayout">
+                  <!-- Exercise List Panel -->
+                  <div class="exercise-list-panel" id="exerciseListPanel">
+                    <div id="exerciseTableContainer"></div>
+                  </div>
+
+                  <!-- Exercise Detail Panel (desktop only) -->
+                  <div class="exercise-detail-panel" id="exerciseDetailPanel" data-view="desktop">
+                    <div class="exercise-detail-panel-inner" id="exerciseDetailPanelInner">
+                      <!-- Empty state -->
+                      <div class="exercise-detail-empty" id="exerciseDetailEmpty">
+                        <i class="bx bx-dumbbell"></i>
+                        <p>Select an exercise to view details</p>
+                      </div>
+                      <!-- Detail content (hidden until exercise selected) -->
+                      <div class="exercise-detail-content" id="exerciseDetailContent" style="display: none;"></div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
             <!-- / Content -->
@@ -308,10 +326,10 @@
     <script src="/static/assets/js/services/exercise-cache-service.js?v=20260226"></script>
 
     <!-- Exercise Database JS (Modular v3.0.0) -->
-    <script src="/static/assets/js/dashboard/exercise-rendering.js?v=3.0.1"></script>
+    <script src="/static/assets/js/dashboard/exercise-rendering.js?v=3.1.0"></script>
     <script src="/static/assets/js/dashboard/exercise-filters.js?v=3.0.0"></script>
-    <script src="/static/assets/js/dashboard/exercise-toolbar.js?v=3.0.0"></script>
-    <script src="/static/assets/js/dashboard/exercises.js?v=3.0.0"></script>
+    <script src="/static/assets/js/dashboard/exercise-toolbar.js?v=3.1.0"></script>
+    <script src="/static/assets/js/dashboard/exercises.js?v=3.1.0"></script>
     
     <!-- UI Helpers -->
     <script src="/static/assets/js/dashboard/ui-helpers.js?v=20251020-04"></script>

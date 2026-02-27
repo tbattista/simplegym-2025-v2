@@ -221,6 +221,157 @@
 }
 
 /* ============================================
+   DESKTOP SPLIT-VIEW LAYOUT
+   List on left, detail panel on right (≥992px)
+   Reuses patterns from desktop-builder.css
+   ============================================ */
+
+.exercise-split-layout {
+    display: flex;
+    gap: 1rem;
+    min-height: calc(100vh - 280px);
+}
+
+.exercise-list-panel {
+    flex: 1;
+    min-width: 0;
+}
+
+/* Detail panel: hidden on mobile, visible on desktop */
+.exercise-detail-panel {
+    width: 400px;
+    min-width: 400px;
+    max-width: 400px;
+    flex-shrink: 0;
+}
+
+.exercise-detail-panel-inner {
+    position: sticky;
+    top: 80px;
+    max-height: calc(100vh - 100px);
+    overflow-y: auto;
+    background: var(--bs-card-bg, #fff);
+    border: 1px solid var(--bs-border-color);
+    border-radius: var(--bs-border-radius-lg);
+    padding: 1.25rem;
+}
+
+/* Empty state */
+.exercise-detail-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 300px;
+    color: var(--bs-secondary-color);
+    text-align: center;
+}
+
+.exercise-detail-empty i {
+    font-size: 3rem;
+    margin-bottom: 0.75rem;
+    opacity: 0.4;
+}
+
+.exercise-detail-empty p {
+    font-size: 0.9rem;
+    margin: 0;
+    opacity: 0.6;
+}
+
+/* Detail content styling */
+.exercise-detail-content .detail-header {
+    margin-bottom: 1rem;
+}
+
+.exercise-detail-content .detail-header h5 {
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.exercise-detail-content .detail-header .detail-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+/* GIF sizing in panel */
+.exercise-detail-content img {
+    max-width: 100%;
+    max-height: 250px;
+    border-radius: 8px;
+    background: #f0f0f0;
+}
+
+/* Favorite button in panel header */
+.exercise-detail-content .detail-favorite-btn {
+    padding: 0.375rem;
+    font-size: 1.25rem;
+    line-height: 1;
+}
+
+/* Desktop: cards are clickable */
+.desktop-view #exerciseTableContainer .card {
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+
+.desktop-view #exerciseTableContainer .card:hover {
+    background-color: rgba(var(--bs-primary-rgb), 0.02);
+}
+
+/* Selected exercise card highlight */
+#exerciseTableContainer .card.exercise-card-selected {
+    border-left: 3px solid var(--bs-primary);
+    background-color: rgba(var(--bs-primary-rgb), 0.04);
+}
+
+[data-bs-theme="dark"] #exerciseTableContainer .card.exercise-card-selected {
+    background-color: rgba(var(--bs-primary-rgb), 0.08);
+}
+
+/* Dark mode panel */
+[data-bs-theme="dark"] .exercise-detail-panel-inner {
+    background: var(--bs-card-bg, #2b2c40);
+}
+
+[data-bs-theme="dark"] .exercise-detail-content img {
+    background: #1a1b2e;
+}
+
+/* View toggle: hide detail panel on mobile */
+.mobile-view [data-view="desktop"] {
+    display: none !important;
+}
+
+/* Mobile: single column layout */
+.mobile-view .exercise-split-layout {
+    display: block;
+}
+
+/* Responsive panel widths */
+@media (min-width: 992px) and (max-width: 1199.98px) {
+    .exercise-detail-panel {
+        width: 320px;
+        min-width: 320px;
+        max-width: 320px;
+    }
+
+    .exercise-detail-panel-inner {
+        padding: 1rem;
+    }
+}
+
+@media (min-width: 1400px) {
+    .exercise-detail-panel {
+        width: 480px;
+        min-width: 480px;
+        max-width: 480px;
+    }
+}
+
+/* ============================================
    EXERCISE TOOLBAR
    Unified controls in one consistent row
    Adapted from workout-database.css
