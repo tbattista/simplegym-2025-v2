@@ -335,6 +335,11 @@
                 container.appendChild(sectionEl);
             }
 
+            // Init inner Sortable so this exercise can be dragged to named sections
+            if (window.SectionManager && window.SectionManager._initExerciseSortable) {
+                window.SectionManager._initExerciseSortable(exercisesEl, false);
+            }
+
             if (window.markEditorDirty) window.markEditorDirty();
             if (window.updateMuscleSummary) window.updateMuscleSummary();
             if (window.showToast) {

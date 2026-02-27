@@ -192,6 +192,11 @@ function renderTemplateNotes(templateNotes) {
         } else {
             container.insertBefore(sectionEl, currentSections[targetPosition]);
         }
+
+        // Init inner Sortable so this note can be dragged to named sections
+        if (window.SectionManager?._initExerciseSortable) {
+            window.SectionManager._initExerciseSortable(exercisesEl, false);
+        }
     });
 
     console.log('✅ Template notes rendered');

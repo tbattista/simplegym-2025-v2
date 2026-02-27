@@ -118,7 +118,7 @@ class ExerciseCacheService {
     
     async fetchMetadata() {
         try {
-            const response = await fetch(`${ExerciseCacheService.API_BASE_URL}/api/exercises/metadata`);
+            const response = await fetch(`${ExerciseCacheService.API_BASE_URL}/api/v3/exercises/metadata`);
             if (!response.ok) throw new Error('Metadata fetch failed');
             return await response.json();
         } catch (error) {
