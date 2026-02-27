@@ -233,8 +233,8 @@ const SectionManager = {
         const sectionEl = this.createSectionElement(section);
         container.appendChild(sectionEl);
 
-        // Init inner Sortable so this exercise can be dragged to named sections
-        this._initExerciseSortable(sectionEl.querySelector('.section-exercises'), false);
+        // Ensure sorting is available for the new section
+        this.ensureSortable(container, sectionEl.querySelector('.section-exercises'), false);
 
         // Auto-open editor for the new exercise
         setTimeout(() => {
@@ -269,8 +269,8 @@ const SectionManager = {
         const sectionEl = this.createSectionElement(section);
         container.appendChild(sectionEl);
 
-        // Initialize inner Sortable for the new named section
-        this._initExerciseSortable(sectionEl.querySelector('.section-exercises'));
+        // Ensure sorting is available for the new section
+        this.ensureSortable(container, sectionEl.querySelector('.section-exercises'), true);
 
         if (window.markEditorDirty) window.markEditorDirty();
 
@@ -478,10 +478,14 @@ const SectionManager = {
         }
 
         divider.style.display = '';
-        itemsContainer.innerHTML = items.join('');
 
-        // Delegate clicks
-        itemsContainer.addEventListener('click', (e) => {
+        // Clone container to strip any previously accumulated event listeners
+        const freshContainer = itemsContainer.cloneNode(false);
+        itemsContainer.parentNode.replaceChild(freshContainer, itemsContainer);
+        freshContainer.innerHTML = items.join('');
+
+        // Delegate clicks on the fresh container
+        freshContainer.addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
             const btn = e.target.closest('[data-action]');
@@ -573,6 +577,11 @@ const SectionManager = {
                     exercisesContainer.innerHTML = this._placeholderHtml(sectionEl.dataset.sectionId);
                 }
             } else {
+                // Destroy inner Sortable before removing from DOM
+                if (exercisesContainer._exerciseSortable) {
+                    exercisesContainer._exerciseSortable.destroy();
+                    exercisesContainer._exerciseSortable = null;
+                }
                 sectionEl.remove();
             }
         }
@@ -681,6 +690,7 @@ const SectionManager = {
         exercisesEl._exerciseSortable = new Sortable(exercisesEl, {
             animation: 150,
             handle: '.drag-handle',
+            draggable: '.exercise-group-card',
             ghostClass: 'sortable-ghost',
             // Named sections: accept drops from any section
             // Standard sections: can only drag OUT (pull), nothing drops IN (put: false)
@@ -729,6 +739,24 @@ const SectionManager = {
                 if (window.markEditorDirty) window.markEditorDirty();
             }
         });
+    },
+
+    /**
+     * Ensure sorting is available for a newly added section.
+     * If the parent Sortable doesn't exist yet, does a full init (parent + all inner).
+     * If the parent already exists, only initializes the new section's inner Sortable.
+     * @param {HTMLElement} container - The #exerciseGroups container
+     * @param {HTMLElement} newExercisesEl - The new section's .section-exercises element
+     * @param {boolean} isNamed - true for named sections (pull+put), false for standard
+     */
+    ensureSortable(container, newExercisesEl, isNamed = false) {
+        if (!container._sectionSortable) {
+            // No parent Sortable yet — full init (creates parent + ALL inner)
+            this.initSortable(container);
+        } else {
+            // Parent exists — only init the new section's inner Sortable
+            this._initExerciseSortable(newExercisesEl, isNamed);
+        }
     },
 
     // ─── Event Delegation ────────────────────────────────────────
@@ -810,7 +838,12 @@ const SectionManager = {
             this._initExerciseSortable(exercisesEl, false);
         });
 
-        // Remove the now-empty named section
+        // Destroy old section's inner Sortable before removing from DOM
+        const oldExercisesEl = sectionEl.querySelector('.section-exercises');
+        if (oldExercisesEl?._exerciseSortable) {
+            oldExercisesEl._exerciseSortable.destroy();
+            oldExercisesEl._exerciseSortable = null;
+        }
         sectionEl.remove();
         if (window.markEditorDirty) window.markEditorDirty();
     },

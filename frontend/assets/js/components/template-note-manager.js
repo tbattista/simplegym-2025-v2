@@ -56,9 +56,9 @@ window.handleAddTemplateNote = function() {
 
     container.appendChild(sectionEl);
 
-    // Init inner Sortable so this note can be dragged to named sections
-    if (window.SectionManager?._initExerciseSortable) {
-        window.SectionManager._initExerciseSortable(exercisesEl, false);
+    // Ensure sorting is available for the new section
+    if (window.SectionManager?.ensureSortable) {
+        window.SectionManager.ensureSortable(container, exercisesEl, false);
     }
 
     if (window.markEditorDirty) window.markEditorDirty();
@@ -193,11 +193,13 @@ function renderTemplateNotes(templateNotes) {
             container.insertBefore(sectionEl, currentSections[targetPosition]);
         }
 
-        // Init inner Sortable so this note can be dragged to named sections
-        if (window.SectionManager?._initExerciseSortable) {
-            window.SectionManager._initExerciseSortable(exercisesEl, false);
-        }
     });
+
+    // Re-init two-level Sortable once after all notes are placed
+    // (parent Sortable + all inner Sortables, matching renderSections() behavior)
+    if (window.SectionManager?.initSortable) {
+        window.SectionManager.initSortable(container);
+    }
 
     console.log('✅ Template notes rendered');
 }

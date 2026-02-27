@@ -335,9 +335,9 @@
                 container.appendChild(sectionEl);
             }
 
-            // Init inner Sortable so this exercise can be dragged to named sections
-            if (window.SectionManager && window.SectionManager._initExerciseSortable) {
-                window.SectionManager._initExerciseSortable(exercisesEl, false);
+            // Ensure sorting is available for the new section
+            if (window.SectionManager?.ensureSortable) {
+                window.SectionManager.ensureSortable(container, exercisesEl, false);
             }
 
             if (window.markEditorDirty) window.markEditorDirty();
@@ -461,9 +461,9 @@
 
         container.appendChild(sectionEl);
 
-        // Init inner Sortable so this activity can be dragged to named sections
-        if (window.SectionManager?._initExerciseSortable) {
-            window.SectionManager._initExerciseSortable(exercisesEl, false);
+        // Ensure sorting is available for the new section
+        if (window.SectionManager?.ensureSortable) {
+            window.SectionManager.ensureSortable(container, exercisesEl, false);
         }
 
         if (window.markEditorDirty) window.markEditorDirty();

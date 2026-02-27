@@ -90,20 +90,9 @@
    DRAG AND DROP VISUAL FEEDBACK
    ============================================ */
 
-.sortable-ghost {
-    opacity: 0.4;
-    background: var(--gs-primary) !important;
-    color: white !important;
-}
-
-.sortable-chosen {
-    opacity: 0.8;
-}
-
-.sortable-drag {
-    opacity: 0.6;
-    transform: rotate(5deg);
-}
+/* Note: SortableJS ghost/chosen/drag classes are defined per-component
+   in desktop-builder.css, block-card.css, exercise-group-card.css, and
+   unified-offcanvas.css — no global definitions needed here. */
 
 /* Workout item dragging state */
 .workout-item.dragging {
