@@ -3,16 +3,16 @@ Exercise Database Management
 Handles global exercise database and user custom exercises
 """
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Header
-from typing import Optional, Set
+from fastapi import APIRouter, Depends, HTTPException, Query
+from typing import Optional
 from datetime import datetime
 from firebase_admin import firestore
 import logging
 from ..models import (
     Exercise, CreateExerciseRequest,
-    ExerciseListResponse, ExerciseSearchResponse
+    ExerciseListResponse
 )
-from ..api.dependencies import get_exercise_service, require_auth, get_favorites_service, optional_auth
+from ..api.dependencies import get_exercise_service, require_auth
 
 router = APIRouter(prefix="/api/v3", tags=["Exercises"])
 logger = logging.getLogger(__name__)
@@ -85,45 +85,6 @@ async def get_all_exercises(
         raise HTTPException(status_code=500, detail=f"Error retrieving exercises: {str(e)}")
 
 
-@router.get("/exercises/search", response_model=ExerciseSearchResponse)
-async def search_exercises(
-    q: str = Query(..., min_length=1, description="Search query"),
-    muscle_group: Optional[str] = Query(None, description="Filter by muscle group"),
-    equipment: Optional[str] = Query(None, description="Filter by equipment"),
-    difficulty: Optional[str] = Query(None, description="Filter by difficulty level"),
-    tier: Optional[int] = Query(None, ge=1, le=3, description="Filter by exercise tier (1=Foundation, 2=Standard, 3=Specialized)"),
-    limit: int = Query(20, ge=1, le=100),
-    user_id: Optional[str] = Depends(optional_auth),
-    exercise_service = Depends(get_exercise_service),
-    favorites_service = Depends(get_favorites_service)
-):
-    """Search exercises by name and optional filters with smart ranking"""
-    try:
-        filters = {}
-        if muscle_group:
-            filters['muscle_group'] = muscle_group
-        if equipment:
-            filters['equipment'] = equipment
-        if difficulty:
-            filters['difficulty'] = difficulty
-        if tier:
-            filters['tier'] = tier
-        
-        result = exercise_service.search_exercises(
-            query=q,
-            filters=filters if filters else None,
-            limit=limit,
-            user_id=user_id
-        )
-        return result
-        
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"Error searching exercises: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Error searching exercises: {str(e)}")
-
-
 @router.get("/exercises/{exercise_id}", response_model=Exercise)
 async def get_exercise(
     exercise_id: str,
@@ -142,39 +103,6 @@ async def get_exercise(
     except Exception as e:
         logger.error(f"Error retrieving exercise: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error retrieving exercise: {str(e)}")
-
-
-@router.get("/exercises/filters/{field}")
-async def get_exercise_filter_values(
-    field: str,
-    exercise_service = Depends(get_exercise_service)
-):
-    """Get unique values for a filter field (muscle groups, equipment, etc.)"""
-    try:
-        # Validate field name
-        valid_fields = [
-            'targetMuscleGroup', 'primaryEquipment', 'difficultyLevel',
-            'bodyRegion', 'mechanics', 'classification'
-        ]
-        
-        if field not in valid_fields:
-            raise HTTPException(
-                status_code=400,
-                detail=f"Invalid filter field. Must be one of: {', '.join(valid_fields)}"
-            )
-        
-        values = exercise_service.get_unique_values(field)
-        return {
-            "field": field,
-            "values": values,
-            "count": len(values)
-        }
-        
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"Error retrieving filter values: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Error retrieving filter values: {str(e)}")
 
 
 # User Custom Exercise Endpoints

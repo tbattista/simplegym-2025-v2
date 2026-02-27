@@ -4,6 +4,7 @@ Handles exercise database operations including CSV import, search, and CRUD oper
 """
 
 import logging
+import time
 import traceback
 from typing import List, Optional, Dict, Any, Set
 from datetime import datetime
@@ -23,6 +24,40 @@ except ImportError as e:
 
 from ..config.firebase_config import get_firebase_app
 from ..models import Exercise, CreateExerciseRequest, ExerciseListResponse, ExerciseSearchResponse
+
+
+class _ExerciseMemoryCache:
+    """Simple in-memory TTL cache for exercise data. Invalidates on version change."""
+
+    def __init__(self, ttl_seconds: int = 3600):
+        self.ttl_seconds = ttl_seconds
+        self._cache: Dict[str, tuple] = {}  # key -> (timestamp, data)
+        self._version: Optional[str] = None
+
+    def get(self, key: str):
+        entry = self._cache.get(key)
+        if entry is None:
+            return None
+        ts, data = entry
+        if time.time() - ts > self.ttl_seconds:
+            del self._cache[key]
+            return None
+        return data
+
+    def set(self, key: str, data):
+        self._cache[key] = (time.time(), data)
+
+    def invalidate(self):
+        self._cache.clear()
+
+    def check_version(self, current_version: Optional[str]):
+        if current_version and current_version != self._version:
+            self.invalidate()
+            self._version = current_version
+
+
+_exercise_cache = _ExerciseMemoryCache(ttl_seconds=3600)
+
 
 class ExerciseService:
     """
@@ -99,6 +134,18 @@ class ExerciseService:
             )
 
         try:
+            # Check in-memory cache first
+            cache_key = f"exercises_p{page}_l{limit}_t{max_tier}"
+            cached_result = _exercise_cache.get(cache_key)
+            if cached_result is not None:
+                logger.debug(f"Cache hit for {cache_key}")
+                return cached_result
+
+            # Check if cache version is still valid
+            metadata = self._get_metadata()
+            if metadata:
+                _exercise_cache.check_version(metadata.get('version'))
+
             # Calculate offset
             offset = (page - 1) * limit
 
@@ -126,20 +173,21 @@ class ExerciseService:
                     logger.warning(f"Failed to parse exercise {doc.id}: {str(e)}")
                     continue
 
-            # Get total count for the filtered set
-            count_ref = self.db.collection('global_exercises')
-            if max_tier is not None:
-                count_ref = count_ref.where('exerciseTier', '<=', max_tier)
-            total_count = len(list(count_ref.stream()))
+            # Get total count from metadata (avoids full collection scan)
+            total_count = self._get_exercise_count_from_metadata(metadata, max_tier)
 
             logger.info(f"Retrieved {len(exercises)} exercises (page {page}, max_tier={max_tier})")
 
-            return ExerciseListResponse(
+            result = ExerciseListResponse(
                 exercises=exercises,
                 total_count=total_count,
                 page=page,
                 page_size=limit
             )
+
+            # Cache the result
+            _exercise_cache.set(cache_key, result)
+            return result
 
         except Exception as e:
             logger.error(f"Failed to get exercises: {str(e)}")
@@ -150,6 +198,33 @@ class ExerciseService:
                 page_size=limit
             )
     
+    def _get_metadata(self) -> Optional[Dict]:
+        """Read the exercises_metadata/global document (1 Firestore read)."""
+        try:
+            doc = self.db.collection('exercises_metadata').document('global').get()
+            return doc.to_dict() if doc.exists else None
+        except Exception as e:
+            logger.warning(f"Failed to read exercise metadata: {e}")
+            return None
+
+    def _get_exercise_count_from_metadata(
+        self, metadata: Optional[Dict], max_tier: Optional[int] = None
+    ) -> int:
+        """
+        Get exercise count from an already-fetched metadata dict.
+        Uses tierCounts map if available, falls back to exerciseCount.
+        """
+        if not metadata:
+            return 0
+
+        if max_tier is not None:
+            tier_counts = metadata.get('tierCounts', {})
+            if tier_counts:
+                return sum(tier_counts.get(str(t), 0) for t in range(1, max_tier + 1))
+            return metadata.get('exerciseCount', 0)
+
+        return metadata.get('exerciseCount', 0)
+
     def search_exercises(
         self,
         query: str,
@@ -651,26 +726,29 @@ class ExerciseService:
     
     def get_unique_values(self, field: str) -> List[str]:
         """
-        Get unique values for a specific field (for filters)
-        
-        Args:
-            field: Field name (e.g., 'targetMuscleGroup', 'primaryEquipment')
-            
-        Returns:
-            List of unique values
+        Get unique values for a specific field (for filters).
+        Reads from metadata first (1 doc read), falls back to collection scan.
         """
         if not self.is_available():
             return []
-        
+
         try:
+            # Try metadata first (pre-computed during import)
+            metadata = self._get_metadata()
+            if metadata:
+                filter_values = metadata.get('filterValues', {})
+                if field in filter_values:
+                    return filter_values[field]
+
+            # Fallback: full collection scan (only if metadata missing)
             docs = self.db.collection('global_exercises').stream()
             values = set()
-            
+
             for doc in docs:
                 data = doc.to_dict()
                 if field in data and data[field]:
                     values.add(data[field])
-            
+
             return sorted(list(values))
             
         except Exception as e:

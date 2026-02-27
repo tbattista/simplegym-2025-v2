@@ -395,38 +395,6 @@ function addExerciseToWorkout(exercise) {
 }
 
 /**
- * Exercise cache management
- */
-function getExerciseCache() {
-    try {
-        const cached = localStorage.getItem('exercise_cache');
-        return cached ? JSON.parse(cached) : null;
-    } catch (error) {
-        console.error('Error reading exercise cache:', error);
-        return null;
-    }
-}
-
-function setExerciseCache(exercises) {
-    try {
-        const cacheData = {
-            exercises: exercises,
-            timestamp: Date.now(),
-            version: '1.1'
-        };
-        localStorage.setItem('exercise_cache', JSON.stringify(cacheData));
-    } catch (error) {
-        console.error('Error setting exercise cache:', error);
-    }
-}
-
-function isExerciseCacheValid(cached) {
-    if (cached.version !== '1.1') return false;
-    const CACHE_DURATION = 7 * 24 * 60 * 60 * 1000; // 7 days
-    return (Date.now() - cached.timestamp) < CACHE_DURATION;
-}
-
-/**
  * Delete a custom exercise with confirmation
  * @param {string} exerciseId - Exercise ID to delete
  */
@@ -480,9 +448,6 @@ window.initializePopovers = initializePopovers;
 window.showExerciseDetails = showExerciseDetails;
 window.toggleExerciseFavorite = toggleExerciseFavorite;
 window.addExerciseToWorkout = addExerciseToWorkout;
-window.getExerciseCache = getExerciseCache;
-window.setExerciseCache = setExerciseCache;
-window.isExerciseCacheValid = isExerciseCacheValid;
 window.deleteExercise = deleteExercise;
 
 console.log('📦 Exercise Rendering module loaded');

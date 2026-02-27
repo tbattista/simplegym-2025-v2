@@ -301,18 +301,18 @@ async function handleTableClick(e) {
 }
 
 /**
- * Load all exercise data
+ * Load all exercise data via ExerciseCacheService (unified caching)
  */
 async function loadAllExerciseData(page) {
-    // Load global exercises with caching
-    const cached = window.getExerciseCache ? window.getExerciseCache() : null;
-    const isValid = cached && window.isExerciseCacheValid && window.isExerciseCacheValid(cached);
+    const cacheService = window.exerciseCacheService;
 
-    if (isValid) {
-        window.ffn.exercises.all = cached.exercises;
-        console.log(`✅ Loaded ${window.ffn.exercises.all.length} exercises from cache`);
+    if (cacheService) {
+        // fetchFullDatabase() handles localStorage caching, version checking, and all tiers
+        window.ffn.exercises.all = await cacheService.fetchFullDatabase();
+        console.log(`[ExerciseDB] Loaded ${window.ffn.exercises.all.length} exercises via ExerciseCacheService`);
     } else {
-        console.log('📡 Loading exercises from API...');
+        // Fallback: direct API fetch (should not happen if scripts loaded correctly)
+        console.warn('[ExerciseDB] ExerciseCacheService not available, falling back to direct fetch');
         const PAGE_SIZE = 500;
         let allExercises = [];
         let pageNum = 1;
@@ -325,21 +325,16 @@ async function loadAllExerciseData(page) {
             const data = await response.json();
             const exercises = data.exercises || [];
             allExercises = [...allExercises, ...exercises];
-            console.log(`📦 Loaded page ${pageNum}: ${exercises.length} exercises (total: ${allExercises.length})`);
-
             hasMore = exercises.length === PAGE_SIZE;
             pageNum++;
         }
 
         window.ffn.exercises.all = allExercises;
-        if (window.setExerciseCache) {
-            window.setExerciseCache(allExercises);
-        }
-
-        // Update total count
-        const totalCount = document.getElementById('totalExercisesCount');
-        if (totalCount) totalCount.textContent = allExercises.length.toLocaleString();
     }
+
+    // Update total count display
+    const totalCount = document.getElementById('totalExercisesCount');
+    if (totalCount) totalCount.textContent = window.ffn.exercises.all.length.toLocaleString();
 
     // Load user-specific data
     await loadUserExerciseData();
@@ -374,18 +369,22 @@ async function loadUserExerciseData(userOverride = null) {
             console.log(`✅ Loaded ${window.ffn.exercises.favorites.size} favorites`);
         }
 
-        // Load custom exercises
-        const customExercisesUrl = exercisePage.getApiUrl('/api/v3/users/me/exercises');
-        console.log('📡 Fetching custom exercises from:', customExercisesUrl);
-        const customResponse = await fetch(customExercisesUrl, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (customResponse.ok) {
-            const customData = await customResponse.json();
-            window.ffn.exercises.custom = customData.exercises || [];
-            console.log(`✅ Loaded ${window.ffn.exercises.custom.length} custom exercises`);
+        // Load custom exercises via ExerciseCacheService (avoids duplicate API call)
+        const cacheService = window.exerciseCacheService;
+        if (cacheService) {
+            await cacheService.loadCustomExercisesBackground();
+            window.ffn.exercises.custom = cacheService.customExercises || [];
+            console.log(`[ExerciseDB] Loaded ${window.ffn.exercises.custom.length} custom exercises via cache service`);
         } else {
-            console.warn(`⚠️ Failed to load custom exercises: ${customResponse.status} ${customResponse.statusText}`);
+            // Fallback: direct API call
+            const customExercisesUrl = exercisePage.getApiUrl('/api/v3/users/me/exercises');
+            const customResponse = await fetch(customExercisesUrl, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (customResponse.ok) {
+                const customData = await customResponse.json();
+                window.ffn.exercises.custom = customData.exercises || [];
+            }
         }
 
         // Refresh table if it exists

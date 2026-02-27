@@ -11,6 +11,7 @@
 
 class ExerciseCacheService {
     static CACHE_KEY = 'exercise_cache_v3';
+    static FULL_CACHE_KEY = 'exercise_cache_v3_full';
     static CACHE_TTL_DAYS = 7;
     static API_BASE_URL = window.ENV?.API_URL || window.location.origin;
     
@@ -49,6 +50,9 @@ class ExerciseCacheService {
             apiRequests: 0,
             loadTime: 0
         };
+
+        // Cleanup legacy cache key (was used by exercise-database page before consolidation)
+        try { localStorage.removeItem('exercise_cache'); } catch(e) {}
     }
     
     static getInstance() {
@@ -192,15 +196,53 @@ class ExerciseCacheService {
 
     /**
      * Fetch the full database (all tiers) for exercise database browsing page.
-     * This bypasses the default max_tier=2 filter.
+     * Uses a separate localStorage key so it doesn't pollute the tier-filtered cache.
      */
     async fetchFullDatabase() {
+        // Check full-database localStorage cache first
+        const cached = this._getFullFromLocalStorage();
+        if (cached && await this.isCacheValid(cached)) {
+            console.log(`[ExerciseCache] Using full DB cache: ${cached.exercises.length} exercises`);
+            this.exercises = cached.exercises;
+            this.buildFuseIndex(this.exercises);
+            this.isFullDataLoaded = true;
+            await this.loadCustomExercisesBackground();
+            return this.exercises;
+        }
+
         const fullExercises = await this.fetchFromServer({ maxTier: null });
         this.exercises = fullExercises;
         this.buildFuseIndex(this.exercises);
         this.isFullDataLoaded = true;
+        this._saveFullToLocalStorage(fullExercises);
         this.emit('fullDataLoaded', { count: fullExercises.length });
+        await this.loadCustomExercisesBackground();
         return fullExercises;
+    }
+
+    _getFullFromLocalStorage() {
+        try {
+            const data = localStorage.getItem(ExerciseCacheService.FULL_CACHE_KEY);
+            return data ? JSON.parse(data) : null;
+        } catch (error) {
+            console.warn('[ExerciseCache] Error reading full cache:', error);
+            return null;
+        }
+    }
+
+    _saveFullToLocalStorage(exercises) {
+        try {
+            const data = {
+                exercises,
+                timestamp: Date.now(),
+                version: this.serverVersion || 'unknown',
+                count: exercises.length
+            };
+            localStorage.setItem(ExerciseCacheService.FULL_CACHE_KEY, JSON.stringify(data));
+            console.log(`[ExerciseCache] Saved ${exercises.length} exercises to full DB cache`);
+        } catch (error) {
+            console.error('[ExerciseCache] Error saving full cache:', error);
+        }
     }
     
     buildFuseIndex(exercises) {
@@ -327,6 +369,7 @@ class ExerciseCacheService {
     
     async refreshCache() {
         localStorage.removeItem(ExerciseCacheService.CACHE_KEY);
+        localStorage.removeItem(ExerciseCacheService.FULL_CACHE_KEY);
         this.isFullDataLoaded = false;
         this.seedDataUsed = false;
         return this.getExercisesWithInstantFallback();

@@ -130,9 +130,10 @@ function populateForm(exercise) {
     if (exercise.linkedExerciseId) {
         editState.linkedExerciseId = exercise.linkedExerciseId;
         // Try to find the linked exercise name from cache or use the ID
-        const cachedExercises = window.getExerciseCache?.();
-        if (cachedExercises?.exercises) {
-            const linked = cachedExercises.exercises.find(e => e.id === exercise.linkedExerciseId);
+        const cacheService = window.exerciseCacheService;
+        const cachedExercises = cacheService?.exercises;
+        if (cachedExercises?.length > 0) {
+            const linked = cachedExercises.find(e => e.id === exercise.linkedExerciseId);
             if (linked) {
                 editState.linkedExerciseName = linked.name;
                 showLinkedExercise(linked.name, linked.targetMuscleGroup);
