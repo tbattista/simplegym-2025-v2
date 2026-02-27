@@ -189,6 +189,11 @@ async function initializeExerciseDatabase(page) {
             setTimeout(() => autoSelectFirstExercise(), 200);
         }
 
+        // Mobile: initialize exercise detail offcanvas
+        if (!isDesktopView() && window.ExerciseDetailOffcanvas) {
+            window._exerciseDetailOffcanvas = new ExerciseDetailOffcanvas();
+        }
+
         console.log('✅ Exercise Database initialized with components');
 
     } catch (error) {
@@ -209,7 +214,7 @@ function renderExerciseCard(row) {
         ? window.getDifficultyBadgeWithPopover(row.difficultyLevel) : '';
 
     return `
-        <div class="card mb-0" style="margin-bottom: 0.375rem !important;">
+        <div class="card mb-0" style="margin-bottom: 0.375rem !important;" data-exercise-id="${row.id}">
             <div class="card-body p-3">
                 <div class="d-flex justify-content-between align-items-center">
                     <div class="flex-grow-1">
@@ -229,7 +234,7 @@ function renderExerciseCard(row) {
                                 title="${isFavorited ? 'Remove from favorites' : 'Add to favorites'}">
                             <i class="bx ${isFavorited ? 'bxs-heart' : 'bx-heart'}"></i>
                         </button>
-                        <div class="dropdown">
+                        <div class="exercise-card-dropdown dropdown">
                             <button type="button" class="btn btn-sm btn-icon dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
                                 <i class="bx bx-dots-vertical-rounded"></i>
                             </button>
@@ -255,6 +260,7 @@ function renderExerciseCard(row) {
                                 ` : ''}
                             </div>
                         </div>
+                        <i class="bx bx-chevron-right exercise-card-chevron text-muted" style="font-size: 1.25rem;"></i>
                     </div>
                 </div>
             </div>
@@ -275,6 +281,8 @@ function isDesktopView() {
 function showExerciseDetailsAdaptive(exerciseId) {
     if (isDesktopView() && window.showExerciseDetailsInPanel) {
         window.showExerciseDetailsInPanel(exerciseId);
+    } else if (window._exerciseDetailOffcanvas) {
+        window._exerciseDetailOffcanvas.show(exerciseId);
     } else if (window.showExerciseDetails) {
         window.showExerciseDetails(exerciseId);
     }
@@ -344,14 +352,12 @@ async function handleTableClick(e) {
         return;
     }
 
-    // Desktop: clicking anywhere on a card opens details in panel
-    if (isDesktopView()) {
-        const card = e.target.closest('.card');
-        if (card) {
-            const favBtn = card.querySelector('.favorite-btn');
-            if (favBtn?.dataset.exerciseId) {
-                showExerciseDetailsAdaptive(favBtn.dataset.exerciseId);
-            }
+    // Clicking anywhere on a card opens details (panel on desktop, offcanvas on mobile)
+    const card = e.target.closest('.card');
+    if (card) {
+        const exerciseId = card.dataset.exerciseId;
+        if (exerciseId) {
+            showExerciseDetailsAdaptive(exerciseId);
         }
     }
 }

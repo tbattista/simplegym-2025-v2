@@ -100,12 +100,12 @@ function renderFavoritesSection() {
         }
     }
 
-    // --- Desktop favorites (right panel) ---
+    // --- Desktop favorites (horizontal row above split-view) ---
     if (desktopSection) {
         if (favoritesOnly || favorites.length === 0) {
             desktopSection.innerHTML = '';
         } else {
-            const displayCount = 5; // Show more on desktop
+            const displayCount = 6;
             const displayFavorites = favorites.slice(0, displayCount);
             desktopSection.innerHTML = `
                 <div class="d-flex justify-content-between align-items-center mb-2">
@@ -116,7 +116,9 @@ function renderFavoritesSection() {
                         ? `<a href="#" class="small text-muted" id="desktopViewAllFavorites">View all (${favorites.length})</a>`
                         : ''}
                 </div>
-                ${displayFavorites.map(workout => renderCompactWorkoutCard(workout)).join('')}
+                <div class="desktop-favorites-row">
+                    ${displayFavorites.map(workout => renderCompactFavoriteCard(workout)).join('')}
+                </div>
             `;
 
             // Wire "View all" click
@@ -145,6 +147,27 @@ function renderCompactWorkoutCard(workout) {
                     <div>
                         <span class="fw-medium">${workout.name}</span>
                         <small class="text-muted d-block">${exerciseCount} exercises</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+/**
+ * Render a horizontal compact favorite card for desktop row
+ */
+function renderCompactFavoriteCard(workout) {
+    const exerciseCount = workout.exercise_groups?.length || 0;
+
+    return `
+        <div class="card workout-card-compact" onclick="viewWorkoutDetails('${workout.id}')">
+            <div class="card-body py-2 px-3">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bx bxs-heart text-danger" style="font-size: 0.85rem;"></i>
+                    <div style="min-width: 0;">
+                        <span class="fw-medium text-truncate d-block" style="font-size: 0.85rem;">${workout.name}</span>
+                        <small class="text-muted" style="font-size: 0.75rem;">${exerciseCount} exercises</small>
                     </div>
                 </div>
             </div>

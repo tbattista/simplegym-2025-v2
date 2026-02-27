@@ -310,7 +310,6 @@ function showWorkoutDetailInPanel(workoutId) {
 
     const content = document.getElementById('workoutDetailContent');
     const empty = document.getElementById('workoutDetailEmpty');
-    const divider = document.getElementById('workoutDetailDivider');
     const panelInner = document.getElementById('workoutDetailPanelInner');
     if (!content || !empty) return;
 
@@ -414,7 +413,6 @@ function showWorkoutDetailInPanel(workoutId) {
     content.innerHTML = html;
     empty.style.display = 'none';
     content.style.display = 'block';
-    if (divider) divider.style.display = 'block';
 
     // Scroll panel to top
     if (panelInner) panelInner.scrollTop = 0;

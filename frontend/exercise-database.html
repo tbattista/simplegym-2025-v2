@@ -195,27 +195,7 @@
     
     <!-- Filters Offcanvas will be created dynamically by UnifiedOffcanvasFactory -->
 
-    <!-- Exercise Detail Modal -->
-    <div class="modal fade" id="exerciseDetailModal" tabindex="-1">
-      <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="exerciseDetailTitle">Exercise Details</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-          </div>
-          <div class="modal-body" id="exerciseDetailBody">
-            <!-- Exercise details will be loaded here -->
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-            <button type="button" class="btn btn-primary" id="addToWorkoutBtn">
-              <i class="bx bx-plus me-1"></i>
-              Add to Workout
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+    <!-- Exercise Detail Offcanvas will be created dynamically by ExerciseDetailOffcanvas -->
 
     <!-- Custom Exercise Modal -->
     <div class="modal fade" id="customExerciseModal" tabindex="-1">
@@ -324,6 +304,9 @@
     <script src="/static/assets/js/data/exercise-seed-data.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
     <script src="/static/assets/js/services/exercise-cache-service.js?v=20260226"></script>
+
+    <!-- Exercise Detail Offcanvas (mobile bottom-sheet) -->
+    <script src="/static/assets/js/components/exercise-detail-offcanvas.js?v=1.0.0"></script>
 
     <!-- Exercise Database JS (Modular v3.0.0) -->
     <script src="/static/assets/js/dashboard/exercise-rendering.js?v=3.1.0"></script>

@@ -161,27 +161,28 @@
                 </button>
               </div>
 
-              <!-- Split-View Layout: workout grid (left) + favorites & detail (right) -->
+              <!-- Desktop Favorites (spans full width above split-view) -->
+              <div id="desktopFavoritesSection" class="desktop-favorites-section" data-view="desktop"></div>
+
+              <!-- Favorites Section (mobile only) -->
+              <div id="favoritesSection" class="mb-4" data-view="mobile" style="display: none;">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                  <h6 class="section-header mb-0">
+                    <i class="bx bx-star me-1"></i>
+                    Favorites
+                  </h6>
+                  <a href="#" class="small text-muted" id="viewAllFavorites">View all</a>
+                </div>
+                <div id="favoritesContent">
+                  <!-- Populated by JS -->
+                </div>
+              </div>
+
+              <!-- Split-View Layout: workout grid (left) + detail (right) -->
               <div class="workout-split-layout" id="workoutSplitLayout">
 
-                <!-- LEFT PANEL: Favorites (mobile) + Workout Grid -->
+                <!-- LEFT PANEL: Workout Grid -->
                 <div class="workout-list-panel" id="workoutListPanel">
-
-                  <!-- Favorites Section (mobile only - desktop shows in right panel) -->
-                  <div id="favoritesSection" class="mb-4" data-view="mobile" style="display: none;">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                      <h6 class="section-header mb-0">
-                        <i class="bx bx-star me-1"></i>
-                        Favorites
-                      </h6>
-                      <a href="#" class="small text-muted" id="viewAllFavorites">View all</a>
-                    </div>
-                    <div id="favoritesContent">
-                      <!-- Populated by JS -->
-                    </div>
-                  </div>
-
-                  <!-- My Workouts Section -->
                   <div id="myWorkoutsSection" class="mb-3">
                     <h6 class="section-header mb-3">
                       <i class="bx bx-dumbbell me-1"></i>
@@ -195,19 +196,12 @@
                     <!-- DataTable Container -->
                     <div id="workoutTableContainer"></div>
                   </div>
-
                 </div>
                 <!-- / LEFT PANEL -->
 
-                <!-- RIGHT PANEL: Favorites + Detail (desktop only) -->
+                <!-- RIGHT PANEL: Detail (desktop only) -->
                 <div class="workout-detail-panel" id="workoutDetailPanel" data-view="desktop">
                   <div class="workout-detail-panel-inner" id="workoutDetailPanelInner">
-
-                    <!-- Desktop Favorites -->
-                    <div id="desktopFavoritesSection" class="desktop-favorites-section"></div>
-
-                    <!-- Divider (shown when workout selected) -->
-                    <hr id="workoutDetailDivider" style="display: none;">
 
                     <!-- Empty state (before selecting a workout) -->
                     <div class="workout-detail-empty" id="workoutDetailEmpty">
@@ -373,7 +367,7 @@
     <script src="/static/assets/js/components/share-modal.js"></script>
 
     <!-- Workout Database Modules (load before orchestrator) -->
-    <script src="/static/assets/js/dashboard/workout-database-favorites.js?v=2.0.0"></script>
+    <script src="/static/assets/js/dashboard/workout-database-favorites.js?v=3.0.0"></script>
     <script src="/static/assets/js/dashboard/workout-database-delete-manager.js?v=1.0.0"></script>
     <script src="/static/assets/js/dashboard/workout-database-filter-manager.js?v=1.1.0"></script>
     <!-- Workout Database Orchestrator (last) -->

@@ -93,20 +93,34 @@
 }
 
 /* ============================================
-   DESKTOP FAVORITES (in right panel)
+   DESKTOP FAVORITES (full-width above split-view)
    ============================================ */
+
+.desktop-favorites-section {
+    margin-bottom: 1rem;
+}
 
 .desktop-favorites-section .section-header {
     font-size: 0.875rem;
 }
 
-.desktop-favorites-section .workout-card-compact {
-    cursor: pointer;
-    transition: background-color 0.15s ease;
+.desktop-favorites-row {
+    display: flex;
+    gap: 0.75rem;
+    overflow-x: auto;
+    padding-bottom: 0.25rem;
 }
 
-.desktop-favorites-section .workout-card-compact:hover {
+.desktop-favorites-row .workout-card-compact {
+    flex: 0 0 auto;
+    width: 220px;
+    cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.desktop-favorites-row .workout-card-compact:hover {
     background-color: rgba(var(--bs-primary-rgb), 0.03);
+    border-color: var(--bs-primary);
 }
 
 /* ============================================

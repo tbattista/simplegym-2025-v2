@@ -531,5 +531,6 @@ window.showExerciseDetailsInPanel = showExerciseDetailsInPanel;
 window.toggleExerciseFavorite = toggleExerciseFavorite;
 window.addExerciseToWorkout = addExerciseToWorkout;
 window.deleteExercise = deleteExercise;
+window._buildExerciseDetailHTML = _buildExerciseDetailHTML;
 
 console.log('📦 Exercise Rendering module loaded');

@@ -350,6 +350,29 @@
     display: block;
 }
 
+/* Mobile: cards are tappable, show chevron, hide dropdown */
+.mobile-view #exerciseTableContainer .card {
+    cursor: pointer;
+}
+
+.mobile-view .exercise-card-chevron {
+    display: flex;
+    align-items: center;
+}
+
+.mobile-view .exercise-card-dropdown {
+    display: none;
+}
+
+/* Desktop: hide chevron (detail panel visible), show dropdown */
+.desktop-view .exercise-card-chevron {
+    display: none;
+}
+
+.desktop-view .exercise-card-dropdown {
+    display: flex;
+}
+
 /* Responsive panel widths */
 @media (min-width: 992px) and (max-width: 1199.98px) {
     .exercise-detail-panel {
