@@ -1,5 +1,5 @@
 // Auto-generated seed exercises for instant loading
-// Generated: 2026-02-26T16:44:36.706391
+// Generated: 2026-02-26T19:39:39.347224
 // Source: ExerciseDB API + StrengthLevel rankings
 // Contains 139 exercises (Tier 1: 47, Tier 2: 92)
 
@@ -3114,7 +3114,7 @@ window.EXERCISE_SEED_DATA = [
 // Quick stats for debugging
 window.EXERCISE_SEED_STATS = {
   count: 139,
-  generated: "2026-02-26T16:44:36.706762",
+  generated: "2026-02-26T19:39:39.347559",
   tier1Count: 47,
   tier2Count: 92,
   foundationalCount: 47
