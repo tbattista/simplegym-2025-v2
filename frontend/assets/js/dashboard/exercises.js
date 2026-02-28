@@ -184,11 +184,6 @@ async function initializeExerciseDatabase(page) {
             window.applyFiltersAndRender(window.currentFilters);
         }
 
-        // Desktop: auto-select first exercise after initial render
-        if (isDesktopView()) {
-            setTimeout(() => autoSelectFirstExercise(), 200);
-        }
-
         // Mobile: initialize exercise detail offcanvas
         if (!isDesktopView() && window.ExerciseDetailOffcanvas) {
             window._exerciseDetailOffcanvas = new ExerciseDetailOffcanvas();
@@ -457,16 +452,6 @@ async function loadUserExerciseData(userOverride = null) {
 
     } catch (error) {
         console.error('❌ Error loading user exercise data:', error);
-    }
-}
-
-/**
- * Auto-select the first exercise in the list for the desktop panel
- */
-function autoSelectFirstExercise() {
-    const firstFavBtn = document.querySelector('#exerciseTableContainer .favorite-btn[data-exercise-id]');
-    if (firstFavBtn?.dataset.exerciseId && window.showExerciseDetailsInPanel) {
-        window.showExerciseDetailsInPanel(firstFavBtn.dataset.exerciseId);
     }
 }
 

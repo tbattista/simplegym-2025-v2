@@ -297,9 +297,11 @@ function showExerciseDetails(exerciseId) {
 }
 
 /**
- * Show exercise details in desktop side panel
+ * Show exercise details in desktop side panel (with cross-fade transition)
  * @param {string} exerciseId - Exercise ID
  */
+let _panelTransitionTimer = null;
+
 function showExerciseDetailsInPanel(exerciseId) {
     const exercise = [...window.ffn.exercises.all, ...window.ffn.exercises.custom]
         .find(e => e.id === exerciseId);
@@ -311,6 +313,13 @@ function showExerciseDetailsInPanel(exerciseId) {
     const panelInner = document.getElementById('exerciseDetailPanelInner');
     if (!content || !empty) return;
 
+    // Cancel any pending transition
+    if (_panelTransitionTimer) clearTimeout(_panelTransitionTimer);
+
+    // Update highlight immediately (no delay)
+    window._selectedExerciseId = exerciseId;
+    _updateSelectedCardHighlight(exerciseId);
+
     const escapeHtml = (text) => {
         if (!text) return '';
         return text.replace(/[&<>"']/g, char => ({
@@ -321,7 +330,7 @@ function showExerciseDetailsInPanel(exerciseId) {
     const isFavorited = window.ffn.exercises.favorites.has(exercise.id);
 
     // Build panel header with name + favorite button
-    const headerHtml = `
+    const newHtml = `
         <div class="detail-header">
             <div class="d-flex justify-content-between align-items-start mb-2">
                 <h5 class="mb-0">${escapeHtml(exercise.name)}</h5>
@@ -338,20 +347,27 @@ function showExerciseDetailsInPanel(exerciseId) {
             </div>
         </div>
         <hr>
-    `;
+    ` + _buildExerciseDetailHTML(exercise);
 
-    content.innerHTML = headerHtml + _buildExerciseDetailHTML(exercise);
-    empty.style.display = 'none';
-    content.style.display = 'block';
-
-    // Scroll panel to top
-    if (panelInner) panelInner.scrollTop = 0;
-
-    // Track selected exercise
-    window._selectedExerciseId = exerciseId;
-
-    // Update selected card highlight
-    _updateSelectedCardHighlight(exerciseId);
+    if (content.style.display !== 'none') {
+        // Cross-fade: content already showing
+        content.classList.add('transitioning-out');
+        _panelTransitionTimer = setTimeout(() => {
+            content.innerHTML = newHtml;
+            content.classList.remove('transitioning-out');
+            if (panelInner) panelInner.scrollTop = 0;
+        }, 150);
+    } else {
+        // First selection: fade out empty state, then show content
+        empty.classList.add('transitioning-out');
+        _panelTransitionTimer = setTimeout(() => {
+            empty.style.display = 'none';
+            empty.classList.remove('transitioning-out');
+            content.innerHTML = newHtml;
+            content.style.display = 'block';
+            if (panelInner) panelInner.scrollTop = 0;
+        }, 150);
+    }
 }
 
 /**
@@ -360,13 +376,12 @@ function showExerciseDetailsInPanel(exerciseId) {
  */
 function _updateSelectedCardHighlight(exerciseId) {
     // Remove existing highlight
-    document.querySelectorAll('#exerciseTableContainer .exercise-card-selected')
+    document.querySelectorAll('.exercise-list-panel .exercise-card-selected')
         .forEach(el => el.classList.remove('exercise-card-selected'));
 
     // Add highlight to selected card
     if (exerciseId) {
-        const btn = document.querySelector(`#exerciseTableContainer .favorite-btn[data-exercise-id="${exerciseId}"]`);
-        const card = btn?.closest('.card');
+        const card = document.querySelector(`.exercise-list-panel [data-exercise-id="${exerciseId}"]`);
         if (card) card.classList.add('exercise-card-selected');
     }
 }
