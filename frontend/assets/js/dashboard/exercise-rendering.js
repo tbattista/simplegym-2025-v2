@@ -196,7 +196,6 @@ function _buildExerciseDetailHTML(exercise) {
         <div class="mb-3 text-center">
             <img src="${escapeHtml(gifUrl)}" alt="${escapeHtml(exercise.name)} demonstration"
                 loading="lazy"
-                style="max-width: 100%; max-height: 300px; border-radius: 8px; background: #f0f0f0;"
                 onerror="this.style.display='none'">
         </div>
         ` : ''}

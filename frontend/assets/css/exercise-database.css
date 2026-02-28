@@ -318,7 +318,7 @@
 /* GIF sizing in panel */
 .exercise-detail-content img {
     max-width: 100%;
-    max-height: 250px;
+    max-height: 400px;
     border-radius: 8px;
     background: #f0f0f0;
 }
