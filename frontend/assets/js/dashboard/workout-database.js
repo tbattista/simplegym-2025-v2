@@ -302,8 +302,10 @@ function isDesktopView() {
 }
 
 /**
- * Show workout details in the desktop side panel
+ * Show workout details in the desktop side panel (with cross-fade transition)
  */
+let _transitionTimer = null;
+
 function showWorkoutDetailInPanel(workoutId) {
     const workout = window.ffn.workoutDatabase.all.find(w => w.id === workoutId);
     if (!workout) return;
@@ -313,9 +315,44 @@ function showWorkoutDetailInPanel(workoutId) {
     const panelInner = document.getElementById('workoutDetailPanelInner');
     if (!content || !empty) return;
 
-    const workoutData = workout.workout_data || workout;
+    // Cancel any pending transition
+    if (_transitionTimer) clearTimeout(_transitionTimer);
 
-    // Build detail HTML
+    // Update highlight immediately (no delay)
+    _selectedWorkoutId = workoutId;
+    _updateSelectedWorkoutHighlight(workoutId);
+
+    // Build the new HTML
+    const newHtml = _buildDetailPanelHtml(workout);
+
+    if (content.style.display !== 'none') {
+        // Cross-fade: content already showing
+        content.classList.add('transitioning-out');
+        _transitionTimer = setTimeout(() => {
+            content.innerHTML = newHtml;
+            _attachPanelActionListeners(content, workout);
+            content.classList.remove('transitioning-out');
+            if (panelInner) panelInner.scrollTop = 0;
+        }, 150);
+    } else {
+        // First selection: fade out empty state, then show content
+        empty.classList.add('transitioning-out');
+        _transitionTimer = setTimeout(() => {
+            empty.style.display = 'none';
+            empty.classList.remove('transitioning-out');
+            content.innerHTML = newHtml;
+            _attachPanelActionListeners(content, workout);
+            content.style.display = 'block';
+            if (panelInner) panelInner.scrollTop = 0;
+        }, 150);
+    }
+}
+
+/**
+ * Build the detail panel HTML for a workout
+ */
+function _buildDetailPanelHtml(workout) {
+    const workoutData = workout.workout_data || workout;
     let html = '';
 
     // Header
@@ -351,7 +388,7 @@ function showWorkoutDetailInPanel(workoutId) {
         ).join('')}</div>`;
     }
 
-    // Exercise groups (reuse same logic as WorkoutDetailOffcanvas._generateContentHTML)
+    // Exercise groups
     const exerciseGroups = window.ExerciseDataUtils
         ? ExerciseDataUtils.getExerciseGroups(workoutData)
         : (workoutData.exercise_groups || []);
@@ -410,19 +447,14 @@ function showWorkoutDetailInPanel(workoutId) {
         </div>
     `;
 
-    content.innerHTML = html;
-    empty.style.display = 'none';
-    content.style.display = 'block';
+    return html;
+}
 
-    // Scroll panel to top
-    if (panelInner) panelInner.scrollTop = 0;
-
-    // Track selected workout and update highlight
-    _selectedWorkoutId = workoutId;
-    _updateSelectedWorkoutHighlight(workoutId);
-
-    // Attach action button listeners
-    content.querySelectorAll('[data-panel-action]').forEach(btn => {
+/**
+ * Attach action button listeners inside the detail panel
+ */
+function _attachPanelActionListeners(container, workout) {
+    container.querySelectorAll('[data-panel-action]').forEach(btn => {
         btn.addEventListener('click', () => {
             const action = btn.dataset.panelAction;
             if (action === 'edit') editWorkout(workout.id);
@@ -437,15 +469,31 @@ function showWorkoutDetailInPanel(workoutId) {
  * Update selection highlight on workout cards
  */
 function _updateSelectedWorkoutHighlight(workoutId) {
-    // Remove existing highlight
     document.querySelectorAll('#workoutCardsGrid .workout-card-selected')
         .forEach(el => el.classList.remove('workout-card-selected'));
 
-    // Add highlight to selected card
     if (workoutId) {
         const card = document.querySelector(`#workoutCardsGrid [data-workout-id="${workoutId}"]`);
         if (card) card.classList.add('workout-card-selected');
     }
+}
+
+/**
+ * Clear the detail panel back to empty state
+ */
+function _clearDetailPanel() {
+    const content = document.getElementById('workoutDetailContent');
+    const empty = document.getElementById('workoutDetailEmpty');
+    if (content) {
+        content.style.display = 'none';
+        content.innerHTML = '';
+        content.classList.remove('transitioning-out');
+    }
+    if (empty) {
+        empty.style.display = 'flex';
+        empty.classList.remove('transitioning-out');
+    }
+    _selectedWorkoutId = null;
 }
 
 /**
@@ -461,11 +509,18 @@ function autoSelectFirstWorkout() {
 
 /**
  * Re-apply selection highlight after grid re-render (filter/sort/pagination)
- * Called by filterWorkouts() via window export
+ * If selected workout is no longer visible, clear the detail panel
  */
 function reapplyWorkoutSelection() {
     if (_selectedWorkoutId && isDesktopView()) {
-        setTimeout(() => _updateSelectedWorkoutHighlight(_selectedWorkoutId), 50);
+        setTimeout(() => {
+            const card = document.querySelector(`#workoutCardsGrid [data-workout-id="${_selectedWorkoutId}"]`);
+            if (card) {
+                _updateSelectedWorkoutHighlight(_selectedWorkoutId);
+            } else {
+                _clearDetailPanel();
+            }
+        }, 50);
     }
 }
 

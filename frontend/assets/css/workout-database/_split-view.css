@@ -1,9 +1,10 @@
 /**
  * Workout Database - Desktop Split-View Layout
- * Two-panel layout: workout grid (left) + favorites & detail (right)
+ * Narrow card list (left) + spacious detail panel (right)
  * Only active on desktop (>=992px) via .desktop-view class
  *
- * Pattern mirrors exercise-database.css split-view (lines 229-373)
+ * UX pattern: Material Design 3 list-detail canonical layout
+ * Detail panel is borderless (fights right-rail blindness per NNG research)
  */
 
 /* ============================================
@@ -12,33 +13,33 @@
 
 .workout-split-layout {
     display: flex;
-    gap: 1rem;
+    gap: 0;
     min-height: calc(100vh - 280px);
 }
 
-/* Left panel: workout grid */
+/* Left panel: workout list (fixed narrow width) */
 .workout-list-panel {
+    width: 380px;
+    min-width: 380px;
+    max-width: 380px;
+    flex-shrink: 0;
+    padding-right: 1rem;
+}
+
+/* Right panel: detail (takes remaining space) */
+.workout-detail-panel {
     flex: 1;
     min-width: 0;
 }
 
-/* Right panel: favorites + detail */
-.workout-detail-panel {
-    width: 400px;
-    min-width: 400px;
-    max-width: 400px;
-    flex-shrink: 0;
-}
-
+/* Panel inner: borderless, uses left divider line */
 .workout-detail-panel-inner {
     position: sticky;
     top: 80px;
     max-height: calc(100vh - 100px);
     overflow-y: auto;
-    background: var(--bs-card-bg, #fff);
-    border: 1px solid var(--bs-border-color);
-    border-radius: var(--bs-border-radius-lg);
-    padding: 1.25rem;
+    border-left: 1px solid var(--bs-border-color);
+    padding: 0 0 0 1.25rem;
 }
 
 /* ============================================
@@ -50,9 +51,15 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    min-height: 200px;
+    min-height: 300px;
     color: var(--bs-secondary-color);
     text-align: center;
+    opacity: 1;
+    transition: opacity 150ms ease-out;
+}
+
+.workout-detail-empty.transitioning-out {
+    opacity: 0;
 }
 
 .workout-detail-empty i {
@@ -71,6 +78,15 @@
    DETAIL CONTENT (selected workout)
    ============================================ */
 
+.workout-detail-content {
+    opacity: 1;
+    transition: opacity 150ms ease-out;
+}
+
+.workout-detail-content.transitioning-out {
+    opacity: 0;
+}
+
 .workout-detail-content .detail-header h5 {
     font-weight: 600;
     margin-bottom: 0.25rem;
@@ -88,39 +104,8 @@
 .workout-panel-actions {
     position: sticky;
     bottom: 0;
-    background: var(--bs-card-bg, #fff);
+    background: var(--bs-body-bg, #f5f5f9);
     padding-top: 0.75rem;
-}
-
-/* ============================================
-   DESKTOP FAVORITES (full-width above split-view)
-   ============================================ */
-
-.desktop-favorites-section {
-    margin-bottom: 1rem;
-}
-
-.desktop-favorites-section .section-header {
-    font-size: 0.875rem;
-}
-
-.desktop-favorites-row {
-    display: flex;
-    gap: 0.75rem;
-    overflow-x: auto;
-    padding-bottom: 0.25rem;
-}
-
-.desktop-favorites-row .workout-card-compact {
-    flex: 0 0 auto;
-    width: 220px;
-    cursor: pointer;
-    transition: background-color 0.15s ease, border-color 0.15s ease;
-}
-
-.desktop-favorites-row .workout-card-compact:hover {
-    background-color: rgba(var(--bs-primary-rgb), 0.03);
-    border-color: var(--bs-primary);
 }
 
 /* ============================================
@@ -128,29 +113,31 @@
    ============================================ */
 
 /* Desktop: cards are clickable */
-.desktop-view #workoutCardsGrid .col > [data-workout-id] {
+.desktop-view .workout-list-panel [data-workout-id] {
     cursor: pointer;
-    transition: background-color 0.15s ease, border-left-color 0.15s ease;
+    transition: background-color 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
 }
 
-.desktop-view #workoutCardsGrid .col > [data-workout-id]:hover {
-    background-color: rgba(var(--bs-primary-rgb), 0.02);
-}
-
-/* Selected workout card highlight */
-.desktop-view #workoutCardsGrid .col > .workout-card-selected {
-    border-left: 3px solid var(--bs-primary);
+.desktop-view .workout-list-panel [data-workout-id]:hover {
     background-color: rgba(var(--bs-primary-rgb), 0.04);
+}
+
+/* Selected workout card - elevated with primary accent */
+.desktop-view .workout-list-panel .workout-card-selected {
+    border-left: 3px solid var(--bs-primary);
+    background-color: rgba(var(--bs-primary-rgb), 0.06);
+    box-shadow: 0 2px 8px rgba(var(--bs-primary-rgb), 0.15);
 }
 
 /* ============================================
    GRID COLUMN OVERRIDE
-   On desktop with side panel, force 2 columns
+   On desktop with narrow list panel, force 1 column
    ============================================ */
 
-.desktop-view .workout-list-panel .row-cols-lg-3 > .col {
-    flex: 0 0 50%;
-    max-width: 50%;
+.desktop-view .workout-list-panel .row-cols-lg-3 > .col,
+.desktop-view .workout-list-panel .row-cols-md-2 > .col {
+    flex: 0 0 100%;
+    max-width: 100%;
 }
 
 /* ============================================
@@ -173,26 +160,26 @@
 }
 
 /* ============================================
-   RESPONSIVE PANEL WIDTHS
+   RESPONSIVE LIST PANEL WIDTHS
    ============================================ */
 
 @media (min-width: 992px) and (max-width: 1199.98px) {
-    .workout-detail-panel {
-        width: 300px;
-        min-width: 300px;
-        max-width: 300px;
+    .workout-list-panel {
+        width: 320px;
+        min-width: 320px;
+        max-width: 320px;
     }
 
     .workout-detail-panel-inner {
-        padding: 1rem;
+        padding: 0 0 0 1rem;
     }
 }
 
 @media (min-width: 1400px) {
-    .workout-detail-panel {
-        width: 480px;
-        min-width: 480px;
-        max-width: 480px;
+    .workout-list-panel {
+        width: 420px;
+        min-width: 420px;
+        max-width: 420px;
     }
 }
 
@@ -201,13 +188,14 @@
    ============================================ */
 
 [data-bs-theme="dark"] .workout-detail-panel-inner {
-    background: var(--bs-card-bg, #2b2c40);
+    background: transparent;
 }
 
 [data-bs-theme="dark"] .workout-panel-actions {
-    background: var(--bs-card-bg, #2b2c40);
+    background: var(--bs-body-bg, #384551);
 }
 
-[data-bs-theme="dark"] .desktop-view #workoutCardsGrid .col > .workout-card-selected {
-    background-color: rgba(var(--bs-primary-rgb), 0.08);
+[data-bs-theme="dark"] .desktop-view .workout-list-panel .workout-card-selected {
+    background-color: rgba(var(--bs-primary-rgb), 0.10);
+    box-shadow: 0 2px 8px rgba(var(--bs-primary-rgb), 0.25);
 }

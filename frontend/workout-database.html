@@ -161,9 +161,6 @@
                 </button>
               </div>
 
-              <!-- Desktop Favorites (spans full width above split-view) -->
-              <div id="desktopFavoritesSection" class="desktop-favorites-section" data-view="desktop"></div>
-
               <!-- Favorites Section (mobile only) -->
               <div id="favoritesSection" class="mb-4" data-view="mobile" style="display: none;">
                 <div class="d-flex justify-content-between align-items-center mb-3">
@@ -367,11 +364,11 @@
     <script src="/static/assets/js/components/share-modal.js"></script>
 
     <!-- Workout Database Modules (load before orchestrator) -->
-    <script src="/static/assets/js/dashboard/workout-database-favorites.js?v=3.0.0"></script>
+    <script src="/static/assets/js/dashboard/workout-database-favorites.js?v=4.0.0"></script>
     <script src="/static/assets/js/dashboard/workout-database-delete-manager.js?v=1.0.0"></script>
     <script src="/static/assets/js/dashboard/workout-database-filter-manager.js?v=1.1.0"></script>
     <!-- Workout Database Orchestrator (last) -->
-    <script src="/static/assets/js/dashboard/workout-database.js?v=5.0.0"></script>
+    <script src="/static/assets/js/dashboard/workout-database.js?v=6.0.0"></script>
 
     <!-- UI Helpers -->
     <script src="/static/assets/js/dashboard/ui-helpers.js?v=20251020-04"></script>
@@ -574,13 +571,6 @@
             // Render Favorites section
             if (window.renderFavoritesSection) {
                 renderFavoritesSection();
-            }
-
-            // Desktop: auto-select first workout after initial render
-            if (window.isDesktopView && window.isDesktopView()) {
-                setTimeout(() => {
-                    if (window.autoSelectFirstWorkout) window.autoSelectFirstWorkout();
-                }, 200);
             }
 
             console.log('✅ Workout Database initialized');

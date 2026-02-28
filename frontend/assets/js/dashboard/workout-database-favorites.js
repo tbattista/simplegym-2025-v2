@@ -63,14 +63,13 @@ async function toggleWorkoutFavorite(event, workoutId, currentState) {
 }
 
 /**
- * Render the Favorites section (both mobile and desktop containers)
+ * Render the Favorites section (mobile only - desktop uses inline heart icons + filter toggle)
  */
 function renderFavoritesSection() {
     const mobileSection = document.getElementById('favoritesSection');
     const mobileContainer = document.getElementById('favoritesContent');
-    const desktopSection = document.getElementById('desktopFavoritesSection');
 
-    // Hide sections if favorites filter is active (redundant cards)
+    // Hide section if favorites filter is active (redundant cards)
     const favoritesOnly = window.ffn.workoutDatabase.filters.favoritesOnly;
 
     const favorites = window.ffn.workoutDatabase.all
@@ -99,42 +98,10 @@ function renderFavoritesSection() {
             }
         }
     }
-
-    // --- Desktop favorites (horizontal row above split-view) ---
-    if (desktopSection) {
-        if (favoritesOnly || favorites.length === 0) {
-            desktopSection.innerHTML = '';
-        } else {
-            const displayCount = 6;
-            const displayFavorites = favorites.slice(0, displayCount);
-            desktopSection.innerHTML = `
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                    <h6 class="section-header mb-0">
-                        <i class="bx bx-star me-1"></i>Favorites
-                    </h6>
-                    ${favorites.length > displayCount
-                        ? `<a href="#" class="small text-muted" id="desktopViewAllFavorites">View all (${favorites.length})</a>`
-                        : ''}
-                </div>
-                <div class="desktop-favorites-row">
-                    ${displayFavorites.map(workout => renderCompactFavoriteCard(workout)).join('')}
-                </div>
-            `;
-
-            // Wire "View all" click
-            const viewAllBtn = document.getElementById('desktopViewAllFavorites');
-            if (viewAllBtn) {
-                viewAllBtn.onclick = (e) => {
-                    e.preventDefault();
-                    filterFavoritesOnly();
-                };
-            }
-        }
-    }
 }
 
 /**
- * Render a compact workout card for favorites section
+ * Render a compact workout card for mobile favorites section
  */
 function renderCompactWorkoutCard(workout) {
     const exerciseCount = workout.exercise_groups?.length || 0;
@@ -147,27 +114,6 @@ function renderCompactWorkoutCard(workout) {
                     <div>
                         <span class="fw-medium">${workout.name}</span>
                         <small class="text-muted d-block">${exerciseCount} exercises</small>
-                    </div>
-                </div>
-            </div>
-        </div>
-    `;
-}
-
-/**
- * Render a horizontal compact favorite card for desktop row
- */
-function renderCompactFavoriteCard(workout) {
-    const exerciseCount = workout.exercise_groups?.length || 0;
-
-    return `
-        <div class="card workout-card-compact" onclick="viewWorkoutDetails('${workout.id}')">
-            <div class="card-body py-2 px-3">
-                <div class="d-flex align-items-center gap-2">
-                    <i class="bx bxs-heart text-danger" style="font-size: 0.85rem;"></i>
-                    <div style="min-width: 0;">
-                        <span class="fw-medium text-truncate d-block" style="font-size: 0.85rem;">${workout.name}</span>
-                        <small class="text-muted" style="font-size: 0.75rem;">${exerciseCount} exercises</small>
                     </div>
                 </div>
             </div>
