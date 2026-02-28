@@ -358,16 +358,15 @@ async function handleTableClick(e) {
 }
 
 /**
- * Load all exercise data via ExerciseCacheService (unified caching)
+ * Load exercise data progressively:
+ * 1. localStorage cache → instant render
+ * 2. Seed data fallback → instant render with 139 exercises
+ * 3. Background fetch → swap in full dataset when ready
  */
 async function loadAllExerciseData(page) {
     const cacheService = window.exerciseCacheService;
 
-    if (cacheService) {
-        // fetchFullDatabase() handles localStorage caching, version checking, and all tiers
-        window.ffn.exercises.all = await cacheService.fetchFullDatabase();
-        console.log(`[ExerciseDB] Loaded ${window.ffn.exercises.all.length} exercises via ExerciseCacheService`);
-    } else {
+    if (!cacheService) {
         // Fallback: direct API fetch (should not happen if scripts loaded correctly)
         console.warn('[ExerciseDB] ExerciseCacheService not available, falling back to direct fetch');
         const PAGE_SIZE = 500;
@@ -387,14 +386,69 @@ async function loadAllExerciseData(page) {
         }
 
         window.ffn.exercises.all = allExercises;
+        updateExerciseCount();
+        await loadUserExerciseData();
+        return;
     }
 
-    // Update total count display
+    // Try localStorage full-database cache first (instant)
+    const cached = cacheService._getFullFromLocalStorage();
+    if (cached) {
+        window.ffn.exercises.all = cached.exercises;
+        updateExerciseCount();
+        console.log(`[ExerciseDB] Instant load from cache: ${cached.exercises.length} exercises`);
+
+        // Validate cache in background; re-fetch if stale
+        cacheService.isCacheValid(cached).then(valid => {
+            if (!valid) {
+                console.log('[ExerciseDB] Cache stale, fetching fresh data...');
+                fetchFullDatabaseInBackground(cacheService);
+            }
+        });
+
+        await loadUserExerciseData();
+        return;
+    }
+
+    // No cache — use seed data for instant display
+    if (window.EXERCISE_SEED_DATA) {
+        window.ffn.exercises.all = window.EXERCISE_SEED_DATA;
+        updateExerciseCount();
+        console.log(`[ExerciseDB] Using seed data: ${window.EXERCISE_SEED_DATA.length} exercises`);
+    }
+
+    // Fetch full database in background
+    fetchFullDatabaseInBackground(cacheService);
+
+    // Load user data in parallel
+    await loadUserExerciseData();
+}
+
+/**
+ * Fetch full database in background and update table when ready
+ */
+function fetchFullDatabaseInBackground(cacheService) {
+    cacheService.fetchFullDatabase().then(fullExercises => {
+        window.ffn.exercises.all = fullExercises;
+        updateExerciseCount();
+
+        // Re-apply current filters with new data
+        if (window.applyFiltersAndRender && window.currentFilters) {
+            window.applyFiltersAndRender(window.currentFilters);
+        }
+
+        console.log(`[ExerciseDB] Background load complete: ${fullExercises.length} exercises`);
+    }).catch(error => {
+        console.error('[ExerciseDB] Background fetch failed:', error);
+    });
+}
+
+/**
+ * Update the total exercise count display
+ */
+function updateExerciseCount() {
     const totalCount = document.getElementById('totalExercisesCount');
     if (totalCount) totalCount.textContent = window.ffn.exercises.all.length.toLocaleString();
-
-    // Load user-specific data
-    await loadUserExerciseData();
 }
 
 /**

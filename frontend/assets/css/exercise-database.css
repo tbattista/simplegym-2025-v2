@@ -435,6 +435,68 @@
 }
 
 /* ============================================
+   PAIRS WELL WITH — Recommendation Chips
+   ============================================ */
+
+.pairs-well-with-section h6 {
+    font-weight: 600;
+}
+
+.pairing-category-label {
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.pairing-exercise-chip {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0.75rem;
+    margin-bottom: 0.25rem;
+    border-radius: 0.375rem;
+    background-color: rgba(var(--bs-primary-rgb), 0.04);
+    border: 1px solid var(--bs-border-color);
+    cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.pairing-exercise-chip:hover {
+    background-color: rgba(var(--bs-primary-rgb), 0.08);
+    border-color: var(--bs-primary);
+}
+
+.pairing-exercise-chip:focus-visible {
+    outline: 2px solid var(--bs-primary);
+    outline-offset: 1px;
+}
+
+.pairing-exercise-name {
+    font-size: 0.875rem;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex: 1;
+    min-width: 0;
+}
+
+.pairing-exercise-meta {
+    font-size: 0.7rem;
+    margin-left: 0.5rem;
+    flex-shrink: 0;
+}
+
+[data-bs-theme="dark"] .pairing-exercise-chip {
+    background-color: rgba(var(--bs-primary-rgb), 0.08);
+}
+
+[data-bs-theme="dark"] .pairing-exercise-chip:hover {
+    background-color: rgba(var(--bs-primary-rgb), 0.14);
+}
+
+/* ============================================
    EXERCISE TOOLBAR
    Unified controls in one consistent row
    Adapted from workout-database.css
@@ -643,4 +705,32 @@
     .exercise-toolbar {
         display: none;
     }
+}
+
+/* ============================================
+   PAGINATION - NARROW PANEL OVERRIDES
+   Force stacked layout within the exercise list panel
+   ============================================ */
+
+#exerciseTableContainer .datatable-pagination .row {
+    flex-direction: column;
+    text-align: center;
+}
+
+#exerciseTableContainer .datatable-pagination .col-sm-6 {
+    width: 100%;
+}
+
+#exerciseTableContainer .datatable-pagination .pagination {
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+#exerciseTableContainer .datatable-pagination .page-link {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+}
+
+#exerciseTableContainer .datatable-pagination .datatable-page-info {
+    margin-bottom: 0.375rem;
 }

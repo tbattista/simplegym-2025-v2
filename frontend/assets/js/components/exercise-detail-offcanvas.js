@@ -94,7 +94,13 @@ class ExerciseDetailOffcanvas {
             ? window._buildExerciseDetailHTML(exercise)
             : '<p class="text-muted">Exercise details unavailable.</p>';
 
-        document.getElementById('exerciseOffcanvasContent').innerHTML = detailHTML;
+        const contentEl = document.getElementById('exerciseOffcanvasContent');
+        contentEl.innerHTML = detailHTML;
+
+        // Wire up pairing chip clicks to navigate within offcanvas
+        if (window._wirePairingChipClicks) {
+            window._wirePairingChipClicks(contentEl, (targetId) => this.show(targetId));
+        }
     }
 
     _renderFooterActions(exercise) {

@@ -71,6 +71,52 @@ function initializePopovers() {
 }
 
 /**
+ * Build "Pairs Well With" recommendation HTML
+ * @param {Object} exercise - Source exercise
+ * @param {Function} escapeHtml - HTML escaper function
+ * @returns {string} HTML string (empty if no recommendations)
+ */
+function _buildPairsWellWithHTML(exercise, escapeHtml) {
+    if (!window.ExercisePairingService || !window.ffn?.exercises?.all?.length) return '';
+
+    const result = window.ExercisePairingService.getPairings(exercise, window.ffn.exercises.all);
+    const validCategories = result.categories.filter(c => c.exercises.length > 0);
+    if (validCategories.length === 0) return '';
+
+    let html = `
+        <div class="mb-3 pairs-well-with-section">
+            <h6 class="mb-2"><i class="bx bx-group me-1"></i>Pairs Well With</h6>
+    `;
+
+    for (const category of validCategories) {
+        html += `
+            <div class="mb-2">
+                <small class="text-muted d-flex align-items-center gap-1 mb-1 pairing-category-label">
+                    <i class="bx ${category.icon}" style="font-size: 0.85rem;"></i>
+                    ${category.label}
+                </small>
+        `;
+
+        for (const ex of category.exercises) {
+            html += `
+                <div class="pairing-exercise-chip"
+                     data-pairing-exercise-id="${ex.id}"
+                     role="button" tabindex="0"
+                     title="${escapeHtml(category.description)}">
+                    <span class="pairing-exercise-name">${escapeHtml(ex.name)}</span>
+                    <span class="badge bg-label-secondary pairing-exercise-meta">${escapeHtml(ex.targetMuscleGroup || '')}</span>
+                </div>
+            `;
+        }
+
+        html += `</div>`;
+    }
+
+    html += `</div><hr>`;
+    return html;
+}
+
+/**
  * Build exercise detail HTML (shared by modal and panel)
  * @param {Object} exercise - Exercise object
  * @returns {string} HTML string for exercise details
@@ -269,6 +315,9 @@ function _buildExerciseDetailHTML(exercise) {
         </div>
         ` : ''}
 
+        <!-- Pairs Well With -->
+        ${_buildPairsWellWithHTML(exercise, escapeHtml)}
+
         <!-- Custom Exercise Badge -->
         ${!exercise.isGlobal ? `
         <div class="mt-3">
@@ -355,6 +404,7 @@ function showExerciseDetailsInPanel(exerciseId) {
         _panelTransitionTimer = setTimeout(() => {
             content.innerHTML = newHtml;
             content.classList.remove('transitioning-out');
+            _wirePairingChipClicks(content, showExerciseDetailsInPanel);
             if (panelInner) panelInner.scrollTop = 0;
         }, 150);
     } else {
@@ -365,6 +415,7 @@ function showExerciseDetailsInPanel(exerciseId) {
             empty.classList.remove('transitioning-out');
             content.innerHTML = newHtml;
             content.style.display = 'block';
+            _wirePairingChipClicks(content, showExerciseDetailsInPanel);
             if (panelInner) panelInner.scrollTop = 0;
         }, 150);
     }
@@ -538,6 +589,28 @@ async function deleteExercise(exerciseId) {
     }
 }
 
+/**
+ * Wire up click handlers for pairing exercise chips
+ * @param {HTMLElement} container - Container element with chips
+ * @param {Function} navigateFn - Function to call with exercise ID
+ */
+function _wirePairingChipClicks(container, navigateFn) {
+    if (!container) return;
+    container.querySelectorAll('.pairing-exercise-chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+            const targetId = chip.dataset.pairingExerciseId;
+            if (targetId && navigateFn) navigateFn(targetId);
+        });
+        chip.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                const targetId = chip.dataset.pairingExerciseId;
+                if (targetId && navigateFn) navigateFn(targetId);
+            }
+        });
+    });
+}
+
 // Export for global access
 window.getDifficultyBadgeWithPopover = getDifficultyBadgeWithPopover;
 window.initializePopovers = initializePopovers;
@@ -547,5 +620,6 @@ window.toggleExerciseFavorite = toggleExerciseFavorite;
 window.addExerciseToWorkout = addExerciseToWorkout;
 window.deleteExercise = deleteExercise;
 window._buildExerciseDetailHTML = _buildExerciseDetailHTML;
+window._wirePairingChipClicks = _wirePairingChipClicks;
 
 console.log('📦 Exercise Rendering module loaded');
