@@ -185,15 +185,19 @@
 
 /* ============================================
    NOTE & CARDIO CARDS IN DETAIL PREVIEW
+   Matches builder/workout-mode left-edge colors
    ============================================ */
 
-/* Note card - subtle accent to distinguish from exercises */
+/* Note card - slate left border (matches builder) */
 .detail-note-card {
-    background: rgba(var(--bs-secondary-rgb), 0.04);
-    border-left: 3px solid var(--bs-secondary);
+    border-left: 3px solid var(--workout-note, #64748b);
 }
 
-/* Cardio/activity card - activity name styling */
+/* Cardio/activity card - blue left border (matches builder) */
+.detail-cardio-card {
+    border-left: 3px solid var(--workout-cardio, #3b82f6);
+}
+
 .detail-cardio-card .activity-name {
     font-weight: 500;
 }
@@ -216,5 +220,9 @@
 }
 
 [data-bs-theme="dark"] .detail-note-card {
-    background: rgba(var(--bs-secondary-rgb), 0.08);
+    border-left-color: #94a3b8;
+}
+
+[data-bs-theme="dark"] .detail-cardio-card {
+    border-left-color: #60a5fa;
 }

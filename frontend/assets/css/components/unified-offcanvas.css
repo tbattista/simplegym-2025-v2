@@ -241,6 +241,15 @@ body.offcanvas-scroll-locked {
     border-radius: 8px;
 }
 
+/* Note & cardio card left-edge accents (matches builder/workout-mode) */
+.offcanvas-bottom-base .detail-note-card {
+    border-left: 3px solid var(--workout-note, #64748b);
+}
+
+.offcanvas-bottom-base .detail-cardio-card {
+    border-left: 3px solid var(--workout-cardio, #3b82f6);
+}
+
 .offcanvas-bottom-base .card.bg-label-primary {
     background-color: rgba(var(--bs-primary-rgb), 0.1);
     color: var(--bs-primary);
@@ -600,6 +609,14 @@ body.offcanvas-scroll-locked {
 [data-bs-theme="dark"] .offcanvas-bottom-base .card {
     background-color: #334155;
     border-color: #475569;
+}
+
+[data-bs-theme="dark"] .offcanvas-bottom-base .detail-note-card {
+    border-left-color: #94a3b8;
+}
+
+[data-bs-theme="dark"] .offcanvas-bottom-base .detail-cardio-card {
+    border-left-color: #60a5fa;
 }
 
 /* Stats card text in dark mode */
