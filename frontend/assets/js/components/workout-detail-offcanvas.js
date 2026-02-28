@@ -191,57 +191,129 @@ class WorkoutDetailOffcanvas {
         
         html += '</div>';
         
-        // Exercise Groups (utility normalizes sections → groups)
-        const exerciseGroups = window.ExerciseDataUtils
-            ? ExerciseDataUtils.getExerciseGroups(workoutData)
-            : (workoutData.exercise_groups || []);
-
-        if (exerciseGroups.length > 0) {
+        // Workout items (exercises, notes, cardio — merged and interleaved)
+        const items = this._buildMergedItems(workoutData);
+        if (items.length > 0) {
             html += '<h6 class="mb-3">Exercises</h6>';
-
-            exerciseGroups.forEach((group, index) => {
-                // Build exercise list
-                const exercises = [];
-                if (group.exercises) {
-                    if (group.exercises.a) exercises.push({ label: '', name: group.exercises.a });
-                    if (group.exercises.b) exercises.push({ label: 'Alt: ', name: group.exercises.b });
-                    if (group.exercises.c) exercises.push({ label: 'Alt2: ', name: group.exercises.c });
-                }
-
-                // Build exercises HTML - each on new line
-                let exercisesHtml = '';
-                if (exercises.length > 0) {
-                    exercisesHtml = exercises.map(ex =>
-                        `<div class="exercise-line">${ex.label ? `<span class="text-muted">${ex.label}</span>` : ''}${this._escapeHtml(ex.name)}</div>`
-                    ).join('');
-                } else {
-                    exercisesHtml = '<div class="exercise-line text-muted">No exercises</div>';
-                }
-
-                // Build meta text (plain text with bullet separators)
-                const parts = [`${group.sets || '3'} sets`, `${group.reps || '8-12'} reps`, `${group.rest || '60s'} rest`];
-                if (group.default_weight) {
-                    parts.push(`${group.default_weight} ${group.default_weight_unit || 'lbs'}`);
-                }
-                const metaText = parts.join(' • ');
-
-                html += `
-                    <div class="card mb-2">
-                        <div class="card-body py-2 px-3">
-                            <div class="exercise-list mb-1">
-                                ${exercisesHtml}
-                            </div>
-                            <div class="exercise-meta-text text-muted small">${metaText}</div>
-                            ${group.notes ? `<div class="mt-1 small text-muted">${this._escapeHtml(group.notes)}</div>` : ''}
-                        </div>
-                    </div>
-                `;
-            });
+            items.forEach(item => { html += this._renderDetailItem(item); });
         }
         
         return html;
     }
-    
+
+    /**
+     * Merge exercise groups with template_notes, interleaved by order_index.
+     */
+    _buildMergedItems(workoutData) {
+        const groups = window.ExerciseDataUtils
+            ? ExerciseDataUtils.getExerciseGroups(workoutData)
+            : (workoutData.exercise_groups || []);
+
+        const items = groups.map(g => ({ ...g, _itemType: g.group_type || 'standard' }));
+
+        const notes = workoutData.template_notes || [];
+        [...notes].sort((a, b) => a.order_index - b.order_index).forEach(note => {
+            const idx = Math.min(note.order_index, items.length);
+            items.splice(idx, 0, { _itemType: 'note', content: note.content });
+        });
+
+        return items;
+    }
+
+    /**
+     * Renderer map — dispatch by item type. Extensible for future types.
+     */
+    _renderDetailItem(item) {
+        const renderers = {
+            note:    (i) => this._renderNoteItem(i),
+            cardio:  (i) => this._renderCardioItem(i),
+            default: (i) => this._renderExerciseItem(i)
+        };
+        const renderer = renderers[item._itemType] || renderers.default;
+        return renderer(item);
+    }
+
+    /** Render an exercise group card */
+    _renderExerciseItem(group) {
+        const exercises = [];
+        if (group.exercises) {
+            if (group.exercises.a) exercises.push({ label: '', name: group.exercises.a });
+            if (group.exercises.b) exercises.push({ label: 'Alt: ', name: group.exercises.b });
+            if (group.exercises.c) exercises.push({ label: 'Alt2: ', name: group.exercises.c });
+        }
+
+        const exercisesHtml = exercises.length > 0
+            ? exercises.map(ex =>
+                `<div class="exercise-line">${ex.label ? `<span class="text-muted">${ex.label}</span>` : ''}${this._escapeHtml(ex.name)}</div>`
+            ).join('')
+            : '<div class="exercise-line text-muted">No exercises</div>';
+
+        const parts = [`${group.sets || '3'} sets`, `${group.reps || '8-12'} reps`, `${group.rest || '60s'} rest`];
+        if (group.default_weight) {
+            parts.push(`${group.default_weight} ${group.default_weight_unit || 'lbs'}`);
+        }
+
+        return `
+            <div class="card mb-2">
+                <div class="card-body py-2 px-3">
+                    <div class="exercise-list mb-1">${exercisesHtml}</div>
+                    <div class="exercise-meta-text text-muted small">${parts.join(' • ')}</div>
+                    ${group.notes ? `<div class="mt-1 small text-muted"><i class="bx bx-note me-1"></i>${this._escapeHtml(group.notes)}</div>` : ''}
+                </div>
+            </div>
+        `;
+    }
+
+    /** Render a template note card */
+    _renderNoteItem(item) {
+        return `
+            <div class="card mb-2 detail-note-card">
+                <div class="card-body py-2 px-3 d-flex align-items-start gap-2">
+                    <i class="bx bx-comment text-muted" style="font-size: 1.2rem; margin-top: 2px;"></i>
+                    <div class="small" style="white-space: pre-line;">${this._escapeHtml(item.content || '')}</div>
+                </div>
+            </div>
+        `;
+    }
+
+    /** Render a cardio/activity card */
+    _renderCardioItem(group) {
+        const _cardioIconMap = {
+            running: 'bx-run', walking: 'bx-walk', cycling: 'bx-cycling',
+            swimming: 'bx-water', hiking: 'bx-map-alt', rowing: 'bx-transfer',
+            elliptical: 'bx-loader-circle', stair_climber: 'bx-trending-up',
+            jump_rope: 'bx-up-arrow-circle', yoga: 'bx-body',
+            stair_master: 'bx-trending-up'
+        };
+
+        const config = group.cardio_config || {};
+        const activityType = config.activity_type || '';
+        const iconClass = _cardioIconMap[activityType] || 'bx-heart-circle';
+
+        const activityName = activityType
+            ? activityType.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+            : 'Activity';
+
+        const metaParts = [];
+        if (config.duration_minutes) metaParts.push(`${config.duration_minutes} min`);
+        if (config.distance) {
+            const unit = config.distance_unit || 'mi';
+            metaParts.push(`${config.distance} ${unit}`);
+        }
+        if (config.target_pace) metaParts.push(config.target_pace);
+
+        return `
+            <div class="card mb-2 detail-cardio-card">
+                <div class="card-body py-2 px-3">
+                    <div class="exercise-line">
+                        <i class="bx ${iconClass} me-1"></i><span class="activity-name">${this._escapeHtml(activityName)}</span>
+                    </div>
+                    ${metaParts.length > 0 ? `<div class="exercise-meta-text text-muted small">${metaParts.join(' • ')}</div>` : ''}
+                </div>
+            </div>
+        `;
+    }
+
     /**
      * Render footer actions
      * Supports two-row layout: secondary actions on top, primary action full-width below

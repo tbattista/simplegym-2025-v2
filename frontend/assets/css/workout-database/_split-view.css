@@ -184,6 +184,21 @@
 }
 
 /* ============================================
+   NOTE & CARDIO CARDS IN DETAIL PREVIEW
+   ============================================ */
+
+/* Note card - subtle accent to distinguish from exercises */
+.detail-note-card {
+    background: rgba(var(--bs-secondary-rgb), 0.04);
+    border-left: 3px solid var(--bs-secondary);
+}
+
+/* Cardio/activity card - activity name styling */
+.detail-cardio-card .activity-name {
+    font-weight: 500;
+}
+
+/* ============================================
    DARK MODE
    ============================================ */
 
@@ -198,4 +213,8 @@
 [data-bs-theme="dark"] .desktop-view .workout-list-panel .workout-card-selected {
     background-color: rgba(var(--bs-primary-rgb), 0.10);
     box-shadow: 0 2px 8px rgba(var(--bs-primary-rgb), 0.25);
+}
+
+[data-bs-theme="dark"] .detail-note-card {
+    background: rgba(var(--bs-secondary-rgb), 0.08);
 }
