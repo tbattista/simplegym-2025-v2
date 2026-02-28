@@ -26,17 +26,25 @@ import {
 import { createExerciseSearchOffcanvas } from './offcanvas-exercise-search.js';
 import { createExerciseFilterOffcanvas } from './offcanvas-exercise-filter.js';
 
-// Import workout components
+// Import workout session components
 import {
     createWeightEdit,
     setupWeightEditListeners,
     createCompleteWorkout,
     createCompletionSummary,
-    createResumeSession,
-    createPlateSettings,
+    createResumeSession
+} from './offcanvas-workout-session.js';
+
+// Import plate calculator settings
+import {
+    createPlateSettings
+} from './offcanvas-plate-settings.js';
+
+// Import reorder components (exercise + sections)
+import {
     createReorderOffcanvas,
     createSectionsReorderOffcanvas
-} from './offcanvas-workout.js';
+} from './offcanvas-reorder.js';
 
 // Import form components
 import {

@@ -37,10 +37,13 @@ class WorkoutSessionNotesManager {
             }
 
             // Dynamically import the position picker
-            const module = await import('/static/assets/js/components/offcanvas/offcanvas-workout.js');
+            const module = await import('/static/assets/js/components/offcanvas/offcanvas-notes.js');
             if (module.createNotePositionPicker) {
-                module.createNotePositionPicker(items, (position) => {
-                    this._createNoteAtPosition(position);
+                module.createNotePositionPicker({
+                    items,
+                    onSelect: (position) => {
+                        this._createNoteAtPosition(position);
+                    }
                 });
             } else {
                 console.error('createNotePositionPicker not found in module');
