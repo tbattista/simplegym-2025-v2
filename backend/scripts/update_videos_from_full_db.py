@@ -63,20 +63,17 @@ def load_excel_videos():
     return exercises
 
 
-def build_name_index_from_dump():
-    """Build name->doc_id index from local db dump (avoids Firestore pagination issues)."""
-    print(f"Loading name index from: {DB_DUMP_PATH}")
-    with open(DB_DUMP_PATH, 'r') as f:
-        db_data = json.load(f)
-
-    exercises_list = db_data.get('global_exercises', [])
+def build_name_index_from_firestore(db):
+    """Build name->doc_id index from live Firestore (source of truth)."""
+    print("Building name index from live Firestore...")
+    docs = db.collection('global_exercises').select(['name']).stream()
     index = {}
-    for ex in exercises_list:
-        name = (ex.get('name') or '').strip().lower()
-        eid = ex.get('id', '')
-        if name and eid:
-            index[name] = eid
-    print(f"  Indexed {len(index)} exercises from dump")
+    for doc in docs:
+        data = doc.to_dict()
+        name = (data.get('name') or '').strip().lower()
+        if name:
+            index[name] = doc.id
+    print(f"  Indexed {len(index)} exercises from live Firestore")
     return index
 
 
@@ -117,26 +114,21 @@ def match_and_update(excel_exercises, name_index, db, dry_run=False):
                 print(f"  - {name}")
         return len(matched)
 
-    # Live update using batched writes (max 500 per batch)
-    BATCH_SIZE = 400
+    # Individual updates (safer than batches if any doc is missing)
     updated = 0
     failed = 0
 
-    for i in range(0, len(matched), BATCH_SIZE):
-        batch = db.batch()
-        chunk = matched[i:i + BATCH_SIZE]
-
-        for m in chunk:
-            doc_ref = db.collection('global_exercises').document(m['doc_id'])
-            batch.update(doc_ref, m['videos'])
-
+    for i, m in enumerate(matched, 1):
         try:
-            batch.commit()
-            updated += len(chunk)
-            print(f"  Batch {i // BATCH_SIZE + 1}: updated {len(chunk)} exercises ({updated}/{len(matched)} total)")
+            doc_ref = db.collection('global_exercises').document(m['doc_id'])
+            doc_ref.update(m['videos'])
+            updated += 1
         except Exception as e:
-            failed += len(chunk)
-            print(f"  Batch {i // BATCH_SIZE + 1}: FAILED — {e}")
+            failed += 1
+            print(f"  FAILED [{i}]: {m['name']} ({m['doc_id']}) — {e}")
+
+        if updated % 100 == 0:
+            print(f"  Progress: {updated} updated ({i}/{len(matched)})")
 
     # Summary
     short_count = sum(1 for m in matched if 'shortVideoUrl' in m['videos'])
@@ -174,7 +166,7 @@ def main():
         return
 
     db = firestore.client(app=app)
-    name_index = build_name_index_from_dump()
+    name_index = build_name_index_from_firestore(db)
 
     updated = match_and_update(excel_exercises, name_index, db, dry_run=args.dry_run)
 
