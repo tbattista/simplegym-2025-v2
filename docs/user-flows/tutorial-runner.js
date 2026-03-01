@@ -140,8 +140,10 @@ const TUTORIALS = {
         caption: 'Filter by muscle group'
       },
       {
-        action: 'click',
-        target: '.exercise-card:first-child, .exercise-item:first-child',
+        action: 'dismiss-then-click',
+        dismiss: '.offcanvas .btn:has-text("Cancel"), .offcanvas .btn-close',
+        dismissWait: 500,
+        target: '#exerciseTableContainer .card[data-exercise-id]',
         waitAfter: '#exerciseDetailModal.show, .modal.show, #exerciseDetailContent',
         caption: 'View exercise details'
       }
@@ -288,6 +290,28 @@ async function executeStep(page, step, viewportName, baseUrl) {
         await waitForSelector(page, step.waitAfter);
       }
       break;
+
+    case 'dismiss-then-click': {
+      // Close an overlay (offcanvas, modal) then click a target behind it
+      if (step.dismiss) {
+        const dismissSelectors = step.dismiss.split(',').map(s => s.trim());
+        for (const sel of dismissSelectors) {
+          try {
+            const btn = await page.$(sel);
+            if (btn) { await btn.click(); break; }
+          } catch (e) { /* try next selector */ }
+        }
+        await page.waitForTimeout(step.dismissWait || 500);
+      }
+      if (target) {
+        await waitForSelector(page, target);
+        await page.click(target);
+      }
+      if (step.waitAfter) {
+        await waitForSelector(page, step.waitAfter);
+      }
+      break;
+    }
 
     case 'fill-sets': {
       // Fill in the last exercise group's sets and reps fields
