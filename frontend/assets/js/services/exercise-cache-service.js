@@ -69,13 +69,16 @@ class ExerciseCacheService {
         }
         
         const cached = this.getFromLocalStorage();
-        if (cached && await this.isCacheValid(cached)) {
+        if (cached && cached.exercises && cached.exercises.length > 0 && await this.isCacheValid(cached)) {
             console.log(`[ExerciseCache] Using cached data: ${cached.exercises.length} exercises`);
             this.exercises = cached.exercises;
             this.buildFuseIndex(this.exercises);
             this.isFullDataLoaded = true;
             await this.loadCustomExercisesBackground();
             return this.exercises;
+        } else if (cached && (!cached.exercises || cached.exercises.length === 0)) {
+            console.warn('[ExerciseCache] Cached data has 0 exercises, removing stale cache');
+            localStorage.removeItem(ExerciseCacheService.CACHE_KEY);
         }
         
         if (window.EXERCISE_SEED_DATA && !this.seedDataUsed) {
@@ -138,11 +141,20 @@ class ExerciseCacheService {
                 const startTime = performance.now();
                 
                 const fullExercises = await this.fetchFromServer();
-                
+
+                if (fullExercises.length === 0) {
+                    console.warn('[ExerciseCache] API returned 0 exercises, falling back to seed data');
+                    if (window.EXERCISE_SEED_DATA && window.EXERCISE_SEED_DATA.length > 0) {
+                        this.exercises = window.EXERCISE_SEED_DATA;
+                        this.buildFuseIndex(this.exercises);
+                        return this.exercises;
+                    }
+                }
+
                 this.exercises = fullExercises;
                 this.buildFuseIndex(this.exercises);
                 this.isFullDataLoaded = true;
-                
+
                 this.saveToLocalStorage(fullExercises);
                 
                 const elapsed = (performance.now() - startTime).toFixed(0);
@@ -201,13 +213,16 @@ class ExerciseCacheService {
     async fetchFullDatabase() {
         // Check full-database localStorage cache first
         const cached = this._getFullFromLocalStorage();
-        if (cached && await this.isCacheValid(cached)) {
+        if (cached && cached.exercises && cached.exercises.length > 0 && await this.isCacheValid(cached)) {
             console.log(`[ExerciseCache] Using full DB cache: ${cached.exercises.length} exercises`);
             this.exercises = cached.exercises;
             this.buildFuseIndex(this.exercises);
             this.isFullDataLoaded = true;
             await this.loadCustomExercisesBackground();
             return this.exercises;
+        } else if (cached && (!cached.exercises || cached.exercises.length === 0)) {
+            console.warn('[ExerciseCache] Full DB cache has 0 exercises, removing stale cache');
+            localStorage.removeItem(ExerciseCacheService.FULL_CACHE_KEY);
         }
 
         const fullExercises = await this.fetchFromServer({ maxTier: null });
@@ -232,6 +247,10 @@ class ExerciseCacheService {
 
     _saveFullToLocalStorage(exercises) {
         try {
+            if (!exercises || exercises.length === 0) {
+                console.warn('[ExerciseCache] Refusing to cache empty full exercise list');
+                return;
+            }
             const data = {
                 exercises,
                 timestamp: Date.now(),
@@ -354,6 +373,10 @@ class ExerciseCacheService {
     
     saveToLocalStorage(exercises) {
         try {
+            if (!exercises || exercises.length === 0) {
+                console.warn('[ExerciseCache] Refusing to cache empty exercise list');
+                return;
+            }
             const data = {
                 exercises,
                 timestamp: Date.now(),

@@ -61,7 +61,12 @@ class ExerciseSearchCore {
             
         } catch (error) {
             console.error('❌ Error loading exercises:', error);
-            this.state.allExercises = [];
+            if (window.EXERCISE_SEED_DATA && window.EXERCISE_SEED_DATA.length > 0) {
+                console.log('[SearchCore] Using seed data as error fallback');
+                this.state.allExercises = window.EXERCISE_SEED_DATA;
+            } else {
+                this.state.allExercises = [];
+            }
         }
         
         this.state.isLoading = false;
