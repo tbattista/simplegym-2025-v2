@@ -338,9 +338,24 @@ function showExerciseDetails(exerciseId) {
 
     if (!exercise) return;
 
-    const modal = new bootstrap.Modal(document.getElementById('exerciseDetailModal'));
+    const modalEl = document.getElementById('exerciseDetailModal');
+    const modal = new bootstrap.Modal(modalEl);
     document.getElementById('exerciseDetailTitle').textContent = exercise.name;
     document.getElementById('exerciseDetailBody').innerHTML = _buildExerciseDetailHTML(exercise);
+
+    // Wire "Add to Workout" button if on workout builder page
+    const addBtn = modalEl.querySelector('#addToWorkoutFromDetailBtn');
+    if (addBtn) {
+        const handler = () => {
+            if (window.desktopSidebar && window.desktopSidebar.addExerciseToWorkout) {
+                window.desktopSidebar.addExerciseToWorkout(exercise.name);
+            }
+            modal.hide();
+        };
+        addBtn.replaceWith(addBtn.cloneNode(true));
+        modalEl.querySelector('#addToWorkoutFromDetailBtn').addEventListener('click', handler);
+    }
+
     modal.show();
 }
 
