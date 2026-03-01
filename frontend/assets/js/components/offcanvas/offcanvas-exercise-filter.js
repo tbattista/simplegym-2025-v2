@@ -211,21 +211,25 @@ export function createExerciseFilterOffcanvas(config, onApply) {
         // Position as popover near trigger button on desktop
         if (triggerEl && document.documentElement.classList.contains('desktop-view')) {
             const rect = triggerEl.getBoundingClientRect();
+            const popoverWidth = 340;
+            const popoverMaxHeight = window.innerHeight * 0.7;
+
+            // Position below the trigger button
             let top = rect.bottom + 8;
             let left = rect.left;
 
-            // Keep within viewport bounds
-            const popoverWidth = 360;
-            const popoverMaxHeight = window.innerHeight * 0.7;
+            // Keep within viewport bounds horizontally
             if (left + popoverWidth > window.innerWidth - 16) {
                 left = window.innerWidth - popoverWidth - 16;
             }
+            // If not enough room below, flip above the trigger
             if (top + popoverMaxHeight > window.innerHeight - 16) {
-                top = Math.max(16, window.innerHeight - popoverMaxHeight - 16);
+                top = Math.max(16, rect.top - popoverMaxHeight - 8);
             }
 
-            element.style.setProperty('--popover-top', `${top}px`);
-            element.style.setProperty('--popover-left', `${left}px`);
+            // Set inline styles directly (overrides Bootstrap positioning)
+            element.style.top = `${top}px`;
+            element.style.left = `${left}px`;
         }
 
         // Function to update preview count

@@ -1202,6 +1202,11 @@
                     sectionEl.appendChild(exercisesEl);
                     container.appendChild(sectionEl);
 
+                    // Register with Sortable so the new card is draggable
+                    if (window.SectionManager) {
+                        window.SectionManager.ensureSortable(container, exercisesEl, false);
+                    }
+
                     if (window.markEditorDirty) window.markEditorDirty();
 
                     // Auto-open the activity editor for the new card

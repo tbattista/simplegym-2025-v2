@@ -480,7 +480,23 @@ class DesktopSidebar {
         const index = existingCards.length;
 
         const cardHtml = window.createExerciseGroupCard(groupId, groupData, index + 1, index, index + 1);
-        container.insertAdjacentHTML('beforeend', cardHtml);
+
+        // Wrap in a section element so Sortable can manage it
+        const sectionId = `section-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`;
+        const sectionEl = document.createElement('div');
+        sectionEl.className = 'workout-section';
+        sectionEl.dataset.sectionId = sectionId;
+        sectionEl.dataset.sectionType = 'standard';
+        const exercisesEl = document.createElement('div');
+        exercisesEl.className = 'section-exercises';
+        exercisesEl.innerHTML = cardHtml;
+        sectionEl.appendChild(exercisesEl);
+        container.appendChild(sectionEl);
+
+        // Register with Sortable so the new card is draggable
+        if (window.SectionManager) {
+            window.SectionManager.ensureSortable(container, exercisesEl, false);
+        }
 
         if (window.markEditorDirty) window.markEditorDirty();
         if (window.updateMuscleSummary) window.updateMuscleSummary();
