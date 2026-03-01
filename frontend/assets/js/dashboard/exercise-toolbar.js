@@ -128,7 +128,8 @@ function initFilterButton() {
             window.UnifiedOffcanvasFactory.createExerciseFilterOffcanvas({
                 muscleGroups: window.getUniqueMuscleGroups ? window.getUniqueMuscleGroups() : [],
                 equipment: window.getUniqueEquipment ? window.getUniqueEquipment() : [],
-                currentFilters: window.currentFilters
+                currentFilters: window.currentFilters,
+                triggerEl: filterBtn
             }, (filters) => {
                 // Merge new filters with current state
                 Object.assign(window.currentFilters, filters);

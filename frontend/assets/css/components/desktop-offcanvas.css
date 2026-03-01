@@ -5,6 +5,7 @@
  * Tier 1 (default): Centered dialog (580px) — confirmations, menus, small forms
  * Tier 2 (.offcanvas-desktop-wide): Wide centered dialog (720px) — complex editors
  * Tier 3 (.offcanvas-desktop-side): Right side panel (480px) — detail/browse views
+ * Tier P (.offcanvas-desktop-popover): Anchored popover (360px) — filters, quick menus
  *
  * @version 1.0.0
  * @date 2026-02-17
@@ -96,6 +97,43 @@
 }
 
 /* ============================================
+   TIER P: ANCHORED POPOVER
+   Compact dropdown anchored near trigger button — filters, quick menus
+   Position set via --popover-top / --popover-left CSS vars from JS
+   ============================================ */
+
+.desktop-view .offcanvas.offcanvas-bottom.offcanvas-desktop-popover {
+    left: var(--popover-left, 50%);
+    top: var(--popover-top, 50%);
+    right: auto;
+    bottom: auto;
+    width: 360px;
+    max-width: calc(100vw - 32px);
+    max-height: 70vh;
+    height: auto;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.16);
+    transform: scale(0.95) translateY(-4px);
+    opacity: 0;
+    transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.desktop-view .offcanvas.offcanvas-bottom.offcanvas-desktop-popover.show:not(.hiding),
+.desktop-view .offcanvas.offcanvas-bottom.offcanvas-desktop-popover.showing {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+}
+
+.desktop-view .offcanvas.offcanvas-bottom.offcanvas-desktop-popover.hiding {
+    transform: scale(0.95) translateY(-4px);
+    opacity: 0;
+}
+
+.desktop-view .offcanvas.offcanvas-bottom.offcanvas-desktop-popover .offcanvas-body {
+    max-height: calc(70vh - 130px);
+}
+
+/* ============================================
    DARK MODE
    ============================================ */
 
@@ -108,13 +146,18 @@
     box-shadow: -8px 0 32px rgba(0, 0, 0, 0.4);
 }
 
+[data-bs-theme="dark"].desktop-view .offcanvas.offcanvas-bottom.offcanvas-desktop-popover {
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
 /* ============================================
    REDUCED MOTION
    ============================================ */
 
 @media (prefers-reduced-motion: reduce) {
     .desktop-view .offcanvas.offcanvas-bottom,
-    .desktop-view .offcanvas.offcanvas-bottom.offcanvas-desktop-side {
+    .desktop-view .offcanvas.offcanvas-bottom.offcanvas-desktop-side,
+    .desktop-view .offcanvas.offcanvas-bottom.offcanvas-desktop-popover {
         transition: none;
     }
 }

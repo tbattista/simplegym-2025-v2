@@ -244,7 +244,8 @@ class DesktopSidebar {
         window.UnifiedOffcanvasFactory.createExerciseFilterOffcanvas({
             muscleGroups,
             equipment,
-            currentFilters: { ...this.filters }
+            currentFilters: { ...this.filters },
+            triggerEl: document.getElementById('sidebarFilterBtn')
         }, (newFilters) => {
             // Apply returned filters
             if (newFilters.muscleGroup !== undefined) {
