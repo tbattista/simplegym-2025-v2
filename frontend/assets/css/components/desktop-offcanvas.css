@@ -135,6 +135,11 @@
     overflow-y: auto;
 }
 
+/* Hide backdrop for popover-tier offcanvas on desktop */
+body:has(.offcanvas-desktop-popover.show) > .offcanvas-backdrop {
+    opacity: 0 !important;
+}
+
 /* ============================================
    DARK MODE
    ============================================ */
