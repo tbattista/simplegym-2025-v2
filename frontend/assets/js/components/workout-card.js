@@ -284,7 +284,7 @@ class WorkoutCard {
         const archivedBadge = isArchived ? ' <span class="badge bg-label-secondary badge-sm ms-1"><i class="bx bx-archive bx-xs"></i> Archived</span>' : '';
 
         return `
-            <h5 class="card-title mb-2" style="padding-right: 30px; ${paddingLeft}">${this._escapeHtml(name)}${archivedBadge}</h5>
+            <h5 class="card-title mb-2" style="${paddingLeft}">${this._escapeHtml(name)}${archivedBadge}</h5>
         `;
     }
     

@@ -60,8 +60,17 @@
     <!-- Desktop View Detection (must load early to prevent FOUC) -->
     <script>
       (function() {
-        if (window.innerWidth >= 992) document.documentElement.classList.add('desktop-view');
-        else document.documentElement.classList.add('mobile-view');
+        function updateViewMode() {
+          var el = document.documentElement.classList;
+          if (window.innerWidth >= 992) { el.remove('mobile-view'); el.add('desktop-view'); }
+          else { el.remove('desktop-view'); el.add('mobile-view'); }
+        }
+        updateViewMode();
+        var resizeTimer;
+        window.addEventListener('resize', function() {
+          clearTimeout(resizeTimer);
+          resizeTimer = setTimeout(updateViewMode, 150);
+        });
       })();
     </script>
 

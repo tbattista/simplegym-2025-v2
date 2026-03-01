@@ -15,6 +15,7 @@
     display: flex;
     gap: 0;
     min-height: calc(100vh - 280px);
+    overflow: hidden;
 }
 
 /* Left panel: workout list (fixed narrow width) */
@@ -24,6 +25,7 @@
     max-width: 380px;
     flex-shrink: 0;
     padding-right: 1rem;
+    overflow: hidden;
 }
 
 /* Right panel: detail (takes remaining space) */
@@ -90,6 +92,8 @@
 .workout-detail-content .detail-header h5 {
     font-weight: 600;
     margin-bottom: 0.25rem;
+    overflow-wrap: break-word;
+    word-break: break-word;
 }
 
 .workout-detail-content .exercise-line {
