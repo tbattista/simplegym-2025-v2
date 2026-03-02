@@ -162,18 +162,39 @@ async function createNewWorkoutInEditor() {
             hour12: true
         });
 
-        const newWorkoutData = {
-            name: `New Workout - ${timestamp}`,
-            description: '',
-            tags: [],
-            exercise_groups: [{
+        // Check for exercises from exercise database cart
+        let cartExercises = [];
+        try {
+            const cartData = sessionStorage.getItem('exerciseCart');
+            if (cartData) {
+                cartExercises = JSON.parse(cartData);
+                sessionStorage.removeItem('exerciseCart');
+            }
+        } catch (e) { /* ignore */ }
+
+        const exerciseGroups = cartExercises.length > 0
+            ? cartExercises.map(ex => ({
+                exercises: { a: ex.name },
+                sets: '3',
+                reps: '8-12',
+                rest: '60s',
+                default_weight: null,
+                default_weight_unit: 'lbs'
+            }))
+            : [{
                 exercises: { a: 'Exercise Name' },
                 sets: '3',
                 reps: '8-12',
                 rest: '60s',
                 default_weight: null,
                 default_weight_unit: 'lbs'
-            }],
+            }];
+
+        const newWorkoutData = {
+            name: `New Workout - ${timestamp}`,
+            description: '',
+            tags: [],
+            exercise_groups: exerciseGroups,
             template_notes: []
         };
 

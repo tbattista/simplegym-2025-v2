@@ -969,6 +969,32 @@
                 }
             }
 
+            // Priority 1.75: Create workout from exercise cart (exercise database page)
+            if (urlParams.get('fromCart') === '1' && sessionStorage.getItem('exerciseCart')) {
+                console.log('🛒 Creating workout from exercise cart...');
+                loadingState.style.display = 'none';
+                emptyState.style.display = 'none';
+
+                if (window.createNewWorkoutInEditor) {
+                    await window.createNewWorkoutInEditor();
+                } else {
+                    setTimeout(() => {
+                        if (window.createNewWorkoutInEditor) window.createNewWorkoutInEditor();
+                    }, 500);
+                }
+
+                // Clean URL
+                window.history.replaceState({}, '', 'workout-builder.html');
+
+                // Focus name input for easy rename
+                setTimeout(() => {
+                    const nameInput = document.getElementById('workoutName');
+                    if (nameInput) { nameInput.focus(); nameInput.select(); }
+                }, 300);
+
+                return;
+            }
+
             // Priority 2a: URL param - direct load (explicit navigation from workout-database)
             if (urlWorkoutId) {
                 console.log('📝 Loading workout from URL param:', urlWorkoutId);
