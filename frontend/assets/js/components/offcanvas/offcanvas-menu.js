@@ -160,6 +160,13 @@ export function createWorkoutSelectionPrompt() {
                             <small class="d-block opacity-75">Browse community templates</small>
                         </div>
                     </button>
+                    <button type="button" class="btn btn-lg btn-outline-secondary" id="importWorkoutOption">
+                        <i class="bx bx-import me-2"></i>
+                        <div class="text-start">
+                            <div class="fw-bold">Import Workout</div>
+                            <small class="d-block opacity-75">Import from text or file</small>
+                        </div>
+                    </button>
                 </div>
             </div>
         </div>
@@ -186,6 +193,15 @@ export function createWorkoutSelectionPrompt() {
         
         document.getElementById('publicWorkoutsOption')?.addEventListener('click', () => {
             navigateTo('public-workouts.html');
+        });
+
+        document.getElementById('importWorkoutOption')?.addEventListener('click', () => {
+            offcanvas.hide();
+            setTimeout(() => {
+                if (window.UnifiedOffcanvasFactory?.createImportWizard) {
+                    window.UnifiedOffcanvasFactory.createImportWizard();
+                }
+            }, 250);
         });
     });
 }
