@@ -138,34 +138,26 @@ export function createWorkoutSelectionPrompt() {
                     <h5 class="mt-3">Let's get started!</h5>
                     <p class="text-muted">Choose how you'd like to proceed</p>
                 </div>
-                <div class="d-grid gap-3">
-                    <button type="button" class="btn btn-lg btn-primary" id="importWorkoutOption">
-                        <i class="bx bx-import me-2"></i>
-                        <div class="text-start">
-                            <div class="fw-bold">Import Workout</div>
-                            <small class="d-block opacity-75">Import from text or file</small>
-                        </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+                    <button type="button" class="btn btn-primary d-flex flex-column align-items-center text-center p-3" id="importWorkoutOption">
+                        <i class="bx bx-import" style="font-size: 1.75rem;"></i>
+                        <div class="fw-bold mt-1">Import</div>
+                        <small class="opacity-75">Text or file</small>
                     </button>
-                    <button type="button" class="btn btn-lg btn-outline-primary" id="createNewWorkoutOption">
-                        <i class="bx bx-plus-circle me-2"></i>
-                        <div class="text-start">
-                            <div class="fw-bold">Create New Workout</div>
-                            <small class="d-block opacity-75">Start with a blank template</small>
-                        </div>
+                    <button type="button" class="btn btn-outline-primary d-flex flex-column align-items-center text-center p-3" id="createNewWorkoutOption">
+                        <i class="bx bx-plus-circle" style="font-size: 1.75rem;"></i>
+                        <div class="fw-bold mt-1">Create New</div>
+                        <small class="opacity-75">Blank template</small>
                     </button>
-                    <button type="button" class="btn btn-lg btn-outline-primary" id="myWorkoutsOption">
-                        <i class="bx bx-list-ul me-2"></i>
-                        <div class="text-start">
-                            <div class="fw-bold">My Workouts</div>
-                            <small class="d-block opacity-75">Choose from your saved templates</small>
-                        </div>
+                    <button type="button" class="btn btn-outline-primary d-flex flex-column align-items-center text-center p-3" id="myWorkoutsOption">
+                        <i class="bx bx-list-ul" style="font-size: 1.75rem;"></i>
+                        <div class="fw-bold mt-1">My Workouts</div>
+                        <small class="opacity-75">Saved templates</small>
                     </button>
-                    <button type="button" class="btn btn-lg btn-outline-secondary" id="publicWorkoutsOption">
-                        <i class="bx bx-globe me-2"></i>
-                        <div class="text-start">
-                            <div class="fw-bold">Public Workouts</div>
-                            <small class="d-block opacity-75">Browse community templates</small>
-                        </div>
+                    <button type="button" class="btn btn-outline-secondary d-flex flex-column align-items-center text-center p-3" id="publicWorkoutsOption">
+                        <i class="bx bx-globe" style="font-size: 1.75rem;"></i>
+                        <div class="fw-bold mt-1">Public</div>
+                        <small class="opacity-75">Community</small>
                     </button>
                 </div>
             </div>

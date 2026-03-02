@@ -189,6 +189,11 @@ async function initializeExerciseDatabase(page) {
             window._exerciseDetailOffcanvas = new ExerciseDetailOffcanvas();
         }
 
+        // Initialize exercise cart tray (restore from sessionStorage)
+        if (window.ExerciseCart) {
+            window.ExerciseCart.init();
+        }
+
         console.log('✅ Exercise Database initialized with components');
 
     } catch (error) {
