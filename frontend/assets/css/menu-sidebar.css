@@ -79,12 +79,15 @@ body.menu-open {
 
 /* ============================================
    DESKTOP VIEW: HIDE HAMBURGER TOGGLE
-   Sidebar is always visible on desktop,
+   Sidebar is always visible above 1200px,
    so the hamburger button is not needed.
+   Must match the mobile menu breakpoint above.
    ============================================ */
 
-.desktop-view .layout-menu-toggle {
-    display: none !important;
+@media (min-width: 1200px) {
+    .layout-menu-toggle {
+        display: none !important;
+    }
 }
 
 /* ============================================

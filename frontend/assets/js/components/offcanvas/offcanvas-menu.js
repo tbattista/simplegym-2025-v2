@@ -139,7 +139,14 @@ export function createWorkoutSelectionPrompt() {
                     <p class="text-muted">Choose how you'd like to proceed</p>
                 </div>
                 <div class="d-grid gap-3">
-                    <button type="button" class="btn btn-lg btn-primary" id="createNewWorkoutOption">
+                    <button type="button" class="btn btn-lg btn-primary" id="importWorkoutOption">
+                        <i class="bx bx-import me-2"></i>
+                        <div class="text-start">
+                            <div class="fw-bold">Import Workout</div>
+                            <small class="d-block opacity-75">Import from text or file</small>
+                        </div>
+                    </button>
+                    <button type="button" class="btn btn-lg btn-outline-primary" id="createNewWorkoutOption">
                         <i class="bx bx-plus-circle me-2"></i>
                         <div class="text-start">
                             <div class="fw-bold">Create New Workout</div>
@@ -158,13 +165,6 @@ export function createWorkoutSelectionPrompt() {
                         <div class="text-start">
                             <div class="fw-bold">Public Workouts</div>
                             <small class="d-block opacity-75">Browse community templates</small>
-                        </div>
-                    </button>
-                    <button type="button" class="btn btn-lg btn-outline-secondary" id="importWorkoutOption">
-                        <i class="bx bx-import me-2"></i>
-                        <div class="text-start">
-                            <div class="fw-bold">Import Workout</div>
-                            <small class="d-block opacity-75">Import from text or file</small>
                         </div>
                     </button>
                 </div>

@@ -546,13 +546,119 @@ function revertFavoriteUI(button, icon, wasFavorited) {
 }
 
 /**
- * Add exercise to workout
+ * Exercise Cart — collect exercises, then navigate to workout builder.
+ * Cart state lives in sessionStorage so it survives page navigation
+ * but clears when the browser tab closes.
+ */
+const ExerciseCart = {
+    _key: 'exerciseCart',
+
+    _read() {
+        try {
+            return JSON.parse(sessionStorage.getItem(this._key)) || [];
+        } catch { return []; }
+    },
+
+    _write(items) {
+        sessionStorage.setItem(this._key, JSON.stringify(items));
+    },
+
+    has(name) {
+        return this._read().some(e => e.name === name);
+    },
+
+    toggle(exercise) {
+        const items = this._read();
+        const idx = items.findIndex(e => e.name === exercise.name);
+        if (idx >= 0) {
+            items.splice(idx, 1);
+        } else {
+            items.push({ id: exercise.id, name: exercise.name });
+        }
+        this._write(items);
+        this._renderTray();
+        return idx < 0; // true = added, false = removed
+    },
+
+    remove(name) {
+        const items = this._read().filter(e => e.name !== name);
+        this._write(items);
+        this._renderTray();
+    },
+
+    clear() {
+        sessionStorage.removeItem(this._key);
+        this._renderTray();
+    },
+
+    /** Build or update the floating tray at the bottom of the page */
+    _renderTray() {
+        const items = this._read();
+        let tray = document.getElementById('exerciseCartTray');
+
+        if (items.length === 0) {
+            if (tray) tray.remove();
+            return;
+        }
+
+        if (!tray) {
+            tray = document.createElement('div');
+            tray.id = 'exerciseCartTray';
+            tray.className = 'exercise-cart-tray';
+            document.body.appendChild(tray);
+        }
+
+        const chipHtml = items.map(e => `
+            <span class="exercise-cart-chip">
+                ${this._escapeHtml(e.name)}
+                <button type="button" class="exercise-cart-chip-remove" data-name="${this._escapeHtml(e.name)}">&times;</button>
+            </span>
+        `).join('');
+
+        tray.innerHTML = `
+            <div class="exercise-cart-header">
+                <span class="exercise-cart-count">${items.length} exercise${items.length !== 1 ? 's' : ''} selected</span>
+                <button type="button" class="btn btn-sm btn-link text-muted exercise-cart-clear">Clear</button>
+            </div>
+            <div class="exercise-cart-chips">${chipHtml}</div>
+            <a href="workout-builder.html?fromCart=1" class="btn btn-primary btn-sm w-100 mt-2">
+                <i class="bx bx-dumbbell me-1"></i>Build Workout with These
+            </a>
+        `;
+
+        // Wire remove buttons
+        tray.querySelectorAll('.exercise-cart-chip-remove').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.remove(btn.dataset.name);
+            });
+        });
+
+        // Wire clear button
+        const clearBtn = tray.querySelector('.exercise-cart-clear');
+        if (clearBtn) clearBtn.addEventListener('click', () => this.clear());
+    },
+
+    _escapeHtml(str) {
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+    },
+
+    /** Restore tray on page load if cart has items */
+    init() {
+        this._renderTray();
+    }
+};
+
+window.ExerciseCart = ExerciseCart;
+
+/**
+ * Add/remove exercise from the cart (toggle)
  * @param {Object} exercise - Exercise object with id and name
  */
 function addExerciseToWorkout(exercise) {
-    if (window.showAlert) {
-        window.showAlert(`Adding "${exercise.name}" to workout - This feature will be integrated with the workout builder!`, 'info');
-    }
+    ExerciseCart.toggle(exercise);
 }
 
 /**
