@@ -344,8 +344,9 @@
     align-items: center;
 }
 
-/* GIF sizing in panel */
-.exercise-detail-content img {
+/* GIF sizing in panel (desktop + mobile offcanvas) */
+.exercise-detail-content img,
+#exerciseOffcanvasContent img {
     max-width: 100%;
     max-height: 400px;
     border-radius: 8px;
@@ -397,6 +398,14 @@
 /* Mobile: single column layout */
 .mobile-view .exercise-split-layout {
     display: block;
+}
+
+/* Mobile: list panel fills full width */
+.mobile-view .exercise-list-panel {
+    width: 100%;
+    min-width: 0;
+    max-width: none;
+    padding-right: 0;
 }
 
 /* Mobile: cards are tappable, show chevron, hide dropdown */
@@ -467,7 +476,8 @@
     background: transparent;
 }
 
-[data-bs-theme="dark"] .exercise-detail-content img {
+[data-bs-theme="dark"] .exercise-detail-content img,
+[data-bs-theme="dark"] #exerciseOffcanvasContent img {
     background: #1a1b2e;
 }
 
