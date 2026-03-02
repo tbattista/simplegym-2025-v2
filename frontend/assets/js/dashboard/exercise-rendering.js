@@ -105,6 +105,12 @@ function _buildPairsWellWithHTML(exercise, escapeHtml) {
                      title="${escapeHtml(category.description)}">
                     <span class="pairing-exercise-name">${escapeHtml(ex.name)}</span>
                     <span class="badge bg-label-secondary pairing-exercise-meta">${escapeHtml(ex.targetMuscleGroup || '')}</span>
+                    <button type="button" class="pairing-add-btn"
+                            data-exercise-id="${ex.id}"
+                            data-exercise-name="${escapeHtml(ex.name)}"
+                            title="Add to workout builder">
+                        <i class="bx bx-plus"></i>
+                    </button>
                 </div>
             `;
         }
@@ -397,11 +403,19 @@ function showExerciseDetailsInPanel(exerciseId) {
         <div class="detail-header">
             <div class="d-flex justify-content-between align-items-start mb-2">
                 <h5 class="mb-0">${escapeHtml(exercise.name)}</h5>
-                <button class="btn btn-sm btn-icon detail-favorite-btn panel-favorite-btn ${isFavorited ? 'text-danger' : ''}"
-                        data-exercise-id="${exercise.id}"
-                        title="${isFavorited ? 'Remove from favorites' : 'Add to favorites'}">
-                    <i class="bx ${isFavorited ? 'bxs-heart' : 'bx-heart'}" style="font-size: 1.25rem;"></i>
-                </button>
+                <div class="d-flex gap-1">
+                    <button class="btn btn-sm btn-outline-primary detail-add-to-cart-btn"
+                            data-exercise-id="${exercise.id}"
+                            data-exercise-name="${escapeHtml(exercise.name)}"
+                            title="Add to workout builder">
+                        <i class="bx bx-plus me-1"></i>Add
+                    </button>
+                    <button class="btn btn-sm btn-icon detail-favorite-btn panel-favorite-btn ${isFavorited ? 'text-danger' : ''}"
+                            data-exercise-id="${exercise.id}"
+                            title="${isFavorited ? 'Remove from favorites' : 'Add to favorites'}">
+                        <i class="bx ${isFavorited ? 'bxs-heart' : 'bx-heart'}" style="font-size: 1.25rem;"></i>
+                    </button>
+                </div>
             </div>
             <div class="detail-meta">
                 ${exercise.targetMuscleGroup ? `<span class="badge bg-label-secondary">${escapeHtml(exercise.targetMuscleGroup)}</span>` : ''}
@@ -765,7 +779,9 @@ async function deleteExercise(exerciseId) {
 function _wirePairingChipClicks(container, navigateFn) {
     if (!container) return;
     container.querySelectorAll('.pairing-exercise-chip').forEach(chip => {
-        chip.addEventListener('click', () => {
+        chip.addEventListener('click', (e) => {
+            // Don't navigate if the add button was clicked
+            if (e.target.closest('.pairing-add-btn')) return;
             const targetId = chip.dataset.pairingExerciseId;
             if (targetId && navigateFn) navigateFn(targetId);
         });
@@ -777,6 +793,31 @@ function _wirePairingChipClicks(container, navigateFn) {
             }
         });
     });
+
+    // Wire "Add" buttons on pairing chips
+    container.querySelectorAll('.pairing-add-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const id = btn.dataset.exerciseId;
+            const name = btn.dataset.exerciseName;
+            if (window.ExerciseCart && id && name) {
+                window.ExerciseCart.toggle({ id, name });
+            }
+        });
+    });
+
+    // Wire "Add" button in detail header
+    const headerAddBtn = container.querySelector('.detail-add-to-cart-btn');
+    if (headerAddBtn) {
+        headerAddBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const id = headerAddBtn.dataset.exerciseId;
+            const name = headerAddBtn.dataset.exerciseName;
+            if (window.ExerciseCart && id && name) {
+                window.ExerciseCart.toggle({ id, name });
+            }
+        });
+    }
 }
 
 // Export for global access
