@@ -206,6 +206,44 @@ const TUTORIALS = {
         caption: 'Rest timer starts automatically'
       }
     ]
+  },
+
+  'exercise-cart': {
+    title: 'Build a Workout with the Exercise Cart',
+    startUrl: '/exercise-database.html',
+    steps: [
+      {
+        action: 'wait',
+        target: '#exerciseTableContainer',
+        waitTime: 2500,
+        caption: 'Browse 2,500+ exercises'
+      },
+      {
+        action: 'click',
+        target: '.card[data-exercise-id] .dropdown-toggle',
+        waitAfter: '.dropdown-menu.show',
+        waitTime: 400,
+        caption: 'Tap the card menu to add'
+      },
+      {
+        action: 'click',
+        target: '.dropdown-menu.show .add-to-workout-link',
+        waitTime: 800,
+        caption: 'Added to your workout cart'
+      },
+      {
+        action: 'wait',
+        target: '#exerciseCartBar',
+        waitTime: 300,
+        caption: 'Cart sticks to the bottom'
+      },
+      {
+        action: 'click',
+        target: '#exerciseCartBar .btn',
+        waitTime: 2000,
+        caption: 'Build your workout in one tap!'
+      }
+    ]
   }
 };
 
