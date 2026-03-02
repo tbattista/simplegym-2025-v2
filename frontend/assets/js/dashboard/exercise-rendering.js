@@ -591,7 +591,7 @@ const ExerciseCart = {
         this._renderTray();
     },
 
-    /** Build or update the floating tray at the bottom of the page */
+    /** Build or update the cart tray above the split view */
     _renderTray() {
         const items = this._read();
         let tray = document.getElementById('exerciseCartTray');
@@ -605,7 +605,12 @@ const ExerciseCart = {
             tray = document.createElement('div');
             tray.id = 'exerciseCartTray';
             tray.className = 'exercise-cart-tray';
-            document.body.appendChild(tray);
+            const splitLayout = document.getElementById('exerciseSplitLayout');
+            if (splitLayout) {
+                splitLayout.parentNode.insertBefore(tray, splitLayout);
+            } else {
+                document.body.appendChild(tray);
+            }
         }
 
         const chipHtml = items.map(e => `

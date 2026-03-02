@@ -737,27 +737,23 @@
 
 /* ============================================
    EXERCISE CART TRAY
-   Floating bottom tray for collecting exercises
-   before navigating to workout builder
+   Inline tray above split view for collecting
+   exercises before navigating to workout builder
    ============================================ */
 
 .exercise-cart-tray {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
     background: var(--bs-body-bg);
-    border-top: 1px solid var(--bs-border-color);
-    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--bs-border-color);
+    border-radius: 0.5rem;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
     padding: 0.75rem 1rem;
-    padding-bottom: calc(0.75rem + env(safe-area-inset-bottom));
-    z-index: 1050;
-    animation: cartSlideUp 0.25s ease-out;
+    margin-bottom: 0.75rem;
+    animation: cartFadeIn 0.2s ease-out;
 }
 
-@keyframes cartSlideUp {
-    from { transform: translateY(100%); }
-    to { transform: translateY(0); }
+@keyframes cartFadeIn {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 .exercise-cart-header {
@@ -821,20 +817,5 @@
 
 /* Dark mode */
 [data-bs-theme="dark"] .exercise-cart-tray {
-    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.4);
-}
-
-/* Desktop: constrain width and center */
-@media (min-width: 992px) {
-    .exercise-cart-tray {
-        left: 50%;
-        transform: translateX(-50%);
-        max-width: 480px;
-        border-radius: 0.75rem 0.75rem 0 0;
-    }
-
-    @keyframes cartSlideUp {
-        from { transform: translate(-50%, 100%); }
-        to { transform: translate(-50%, 0); }
-    }
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
 }
