@@ -547,8 +547,9 @@ function revertFavoriteUI(button, icon, wasFavorited) {
 
 /**
  * Exercise Cart — collect exercises, then navigate to workout builder.
- * Cart state lives in sessionStorage so it survives page navigation
- * but clears when the browser tab closes.
+ * Desktop: renders into the 3rd-column cart panel.
+ * Mobile: renders a compact sticky bottom bar.
+ * Cart state lives in sessionStorage (clears when tab closes).
  */
 const ExerciseCart = {
     _key: 'exerciseCart',
@@ -561,6 +562,10 @@ const ExerciseCart = {
 
     _write(items) {
         sessionStorage.setItem(this._key, JSON.stringify(items));
+    },
+
+    _isDesktop() {
+        return document.documentElement.classList.contains('desktop-view');
     },
 
     has(name) {
@@ -576,71 +581,110 @@ const ExerciseCart = {
             items.push({ id: exercise.id, name: exercise.name });
         }
         this._write(items);
-        this._renderTray();
-        return idx < 0; // true = added, false = removed
+        this._render();
+        return idx < 0;
     },
 
     remove(name) {
         const items = this._read().filter(e => e.name !== name);
         this._write(items);
-        this._renderTray();
+        this._render();
     },
 
     clear() {
         sessionStorage.removeItem(this._key);
-        this._renderTray();
+        this._render();
     },
 
-    /** Build or update the cart tray above the split view */
-    _renderTray() {
+    _render() {
+        if (this._isDesktop()) {
+            this._renderPanel();
+            this._removeMobileBar();
+        } else {
+            this._renderMobileBar();
+        }
+    },
+
+    /** Desktop: render cart content into the static panel column */
+    _renderPanel() {
+        const content = document.getElementById('exerciseCartContent');
+        const empty = document.getElementById('exerciseCartEmpty');
+        if (!content || !empty) return;
+
         const items = this._read();
-        let tray = document.getElementById('exerciseCartTray');
 
         if (items.length === 0) {
-            if (tray) tray.remove();
+            content.style.display = 'none';
+            content.innerHTML = '';
+            empty.style.display = '';
             return;
         }
 
-        if (!tray) {
-            tray = document.createElement('div');
-            tray.id = 'exerciseCartTray';
-            tray.className = 'exercise-cart-tray';
-            const splitLayout = document.getElementById('exerciseSplitLayout');
-            if (splitLayout) {
-                splitLayout.parentNode.insertBefore(tray, splitLayout);
-            } else {
-                document.body.appendChild(tray);
-            }
-        }
+        empty.style.display = 'none';
+        content.style.display = '';
 
         const chipHtml = items.map(e => `
-            <span class="exercise-cart-chip">
-                ${this._escapeHtml(e.name)}
+            <div class="exercise-cart-chip">
+                <span class="exercise-cart-chip-name">${this._escapeHtml(e.name)}</span>
                 <button type="button" class="exercise-cart-chip-remove" data-name="${this._escapeHtml(e.name)}">&times;</button>
-            </span>
+            </div>
         `).join('');
 
-        tray.innerHTML = `
+        content.innerHTML = `
             <div class="exercise-cart-header">
-                <span class="exercise-cart-count">${items.length} exercise${items.length !== 1 ? 's' : ''} selected</span>
+                <span class="exercise-cart-count">${items.length} exercise${items.length !== 1 ? 's' : ''}</span>
                 <button type="button" class="btn btn-sm btn-link text-muted exercise-cart-clear">Clear</button>
             </div>
             <div class="exercise-cart-chips">${chipHtml}</div>
-            <a href="workout-builder.html?fromCart=1" class="btn btn-primary btn-sm w-100 mt-2">
-                <i class="bx bx-dumbbell me-1"></i>Build Workout with These
+            <a href="workout-builder.html?fromCart=1" class="btn btn-primary btn-sm w-100">
+                <i class="bx bx-dumbbell me-1"></i>Build Workout
             </a>
         `;
 
-        // Wire remove buttons
-        tray.querySelectorAll('.exercise-cart-chip-remove').forEach(btn => {
+        this._wireEvents(content);
+    },
+
+    /** Mobile: render compact sticky bottom bar */
+    _renderMobileBar() {
+        const items = this._read();
+        let bar = document.getElementById('exerciseCartBar');
+
+        if (items.length === 0) {
+            if (bar) bar.remove();
+            return;
+        }
+
+        if (!bar) {
+            bar = document.createElement('div');
+            bar.id = 'exerciseCartBar';
+            bar.className = 'exercise-cart-bar';
+            document.body.appendChild(bar);
+        }
+
+        bar.innerHTML = `
+            <div class="exercise-cart-bar-info">
+                <i class="bx bx-cart"></i>
+                <span>${items.length} exercise${items.length !== 1 ? 's' : ''}</span>
+            </div>
+            <a href="workout-builder.html?fromCart=1" class="btn btn-primary btn-sm">
+                Build Workout <i class="bx bx-right-arrow-alt ms-1"></i>
+            </a>
+        `;
+    },
+
+    _removeMobileBar() {
+        const bar = document.getElementById('exerciseCartBar');
+        if (bar) bar.remove();
+    },
+
+    _wireEvents(container) {
+        container.querySelectorAll('.exercise-cart-chip-remove').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 this.remove(btn.dataset.name);
             });
         });
-
-        // Wire clear button
-        const clearBtn = tray.querySelector('.exercise-cart-clear');
+        const clearBtn = container.querySelector('.exercise-cart-clear');
         if (clearBtn) clearBtn.addEventListener('click', () => this.clear());
     },
 
@@ -650,9 +694,8 @@ const ExerciseCart = {
         return div.innerHTML;
     },
 
-    /** Restore tray on page load if cart has items */
     init() {
-        this._renderTray();
+        this._render();
     }
 };
 

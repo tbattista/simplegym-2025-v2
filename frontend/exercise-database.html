@@ -44,7 +44,7 @@
     <link rel="stylesheet" href="/static/assets/css/components.css?v=20260216" />
     
     <!-- Exercise Database CSS -->
-    <link rel="stylesheet" href="/static/assets/css/exercise-database.css?v=3.4.0" />
+    <link rel="stylesheet" href="/static/assets/css/exercise-database.css?v=4.0.0" />
     
     <!-- Unified Offcanvas CSS -->
     <link rel="stylesheet" href="/static/assets/css/components/unified-offcanvas.css" />
@@ -174,6 +174,17 @@
                       </div>
                       <!-- Detail content (hidden until exercise selected) -->
                       <div class="exercise-detail-content" id="exerciseDetailContent" style="display: none;"></div>
+                    </div>
+                  </div>
+
+                  <!-- Workout Cart Panel (desktop only) -->
+                  <div class="exercise-cart-panel" id="exerciseCartPanel" data-view="desktop">
+                    <div class="exercise-cart-panel-inner" id="exerciseCartPanelInner">
+                      <div class="exercise-cart-empty" id="exerciseCartEmpty">
+                        <i class="bx bx-cart"></i>
+                        <p>Add exercises to build a workout</p>
+                      </div>
+                      <div class="exercise-cart-content" id="exerciseCartContent" style="display: none;"></div>
                     </div>
                   </div>
                 </div>
@@ -314,7 +325,7 @@
     <script src="/static/assets/js/components/exercise-detail-offcanvas.js?v=1.0.0"></script>
 
     <!-- Exercise Database JS (Modular v3.0.0) -->
-    <script src="/static/assets/js/dashboard/exercise-rendering.js?v=3.5.0"></script>
+    <script src="/static/assets/js/dashboard/exercise-rendering.js?v=4.0.0"></script>
     <script src="/static/assets/js/dashboard/exercise-filters.js?v=3.0.0"></script>
     <script src="/static/assets/js/dashboard/exercise-toolbar.js?v=3.1.0"></script>
     <script src="/static/assets/js/dashboard/exercises.js?v=3.3.0"></script>
