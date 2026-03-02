@@ -302,11 +302,7 @@ async function handleTableClick(e) {
         return;
     }
 
-    // Ignore clicks on dropdown menus/buttons
-    if (e.target.closest('.dropdown-menu') || e.target.closest('.dropdown-toggle')) {
-        return;
-    }
-
+    // Handle dropdown menu item clicks before the generic dropdown guard
     const viewDetailsLink = e.target.closest('.view-details-link');
     if (viewDetailsLink) {
         e.preventDefault();
@@ -349,6 +345,11 @@ async function handleTableClick(e) {
         if (window.deleteExercise) {
             window.deleteExercise(exerciseId);
         }
+        return;
+    }
+
+    // Ignore other clicks on dropdown area (prevent card selection)
+    if (e.target.closest('.dropdown-toggle')) {
         return;
     }
 
