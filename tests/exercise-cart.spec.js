@@ -63,12 +63,14 @@ test.describe('Exercise Cart', () => {
 
         // First exercise
         await cards.nth(0).locator('.dropdown-toggle').click();
+        await expect(cards.nth(0).locator('.add-to-workout-link')).toBeVisible();
         await cards.nth(0).locator('.add-to-workout-link').click();
-        // Wait for dropdown to close
-        await page.waitForTimeout(300);
+        // Wait for dropdown to close and tray to render
+        await page.waitForTimeout(500);
 
         // Second exercise
         await cards.nth(1).locator('.dropdown-toggle').click();
+        await expect(cards.nth(1).locator('.add-to-workout-link')).toBeVisible();
         await cards.nth(1).locator('.add-to-workout-link').click();
 
         const tray = page.locator('#exerciseCartTray');
@@ -88,6 +90,7 @@ test.describe('Exercise Cart', () => {
         // Add an exercise
         const firstCard = page.locator('#exerciseTableContainer .card').first();
         await firstCard.locator('.dropdown-toggle').click();
+        await expect(firstCard.locator('.add-to-workout-link')).toBeVisible();
         await firstCard.locator('.add-to-workout-link').click();
 
         const tray = page.locator('#exerciseCartTray');
