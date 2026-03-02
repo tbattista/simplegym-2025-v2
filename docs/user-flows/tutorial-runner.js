@@ -220,16 +220,15 @@ const TUTORIALS = {
       },
       {
         action: 'click',
-        target: '.card[data-exercise-id] .dropdown-toggle',
-        waitAfter: '.dropdown-menu.show',
-        waitTime: 400,
-        caption: 'Tap the card menu to add'
+        target: '.card[data-exercise-id]',
+        waitAfter: '#exerciseDetailOffcanvas.show',
+        caption: 'Tap any card for details'
       },
       {
         action: 'click',
-        target: '.dropdown-menu.show .add-to-workout-link',
+        target: '.exercise-offcanvas-add-btn',
         waitTime: 800,
-        caption: 'Added to your workout cart'
+        caption: 'Add to your workout cart'
       },
       {
         action: 'wait',
@@ -240,7 +239,8 @@ const TUTORIALS = {
       {
         action: 'click',
         target: '#exerciseCartBar .btn',
-        waitTime: 2000,
+        waitAfter: '#workoutEditorForm, .container-xxl',
+        waitTime: 2500,
         caption: 'Build your workout in one tap!'
       }
     ]
