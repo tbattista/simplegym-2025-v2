@@ -131,10 +131,18 @@
                 </a>
 
                 <!-- Quick Log Section -->
-                <h6 class="text-uppercase text-muted small fw-semibold mb-3">
-                  <i class="bx bx-run me-1"></i>Quick Log an Activity
-                </h6>
-                <div class="card mb-4">
+                <button type="button"
+                        class="btn btn-link text-muted text-decoration-none p-0 mb-2 d-flex align-items-center w-100 text-start"
+                        data-bs-toggle="collapse" data-bs-target="#quickLogBody"
+                        aria-expanded="false" aria-controls="quickLogBody"
+                        id="quickLogToggleBtn">
+                  <span class="text-uppercase small fw-semibold flex-grow-1">
+                    <i class="bx bx-run me-1"></i>Quick Log an Activity
+                  </span>
+                  <i class="bx bx-chevron-down small" id="quickLogChevron" style="transition: transform 0.2s;"></i>
+                </button>
+                <div class="collapse mb-4" id="quickLogBody">
+                <div class="card">
                   <div class="card-body">
 
                     <!-- Activity Type Selector (rendered dynamically by activity-log.js) -->
@@ -324,6 +332,7 @@
 
                   </div>
                 </div>
+                </div><!-- /collapse#quickLogBody -->
 
                 <!-- Recent Sessions -->
                 <div class="mb-4">
@@ -499,6 +508,18 @@
                     }
                 }
             }, 3000);
+
+            // Rotate chevron on Quick Log collapse toggle
+            const quickLogBody = document.getElementById('quickLogBody');
+            const quickLogChevron = document.getElementById('quickLogChevron');
+            if (quickLogBody && quickLogChevron) {
+                quickLogBody.addEventListener('show.bs.collapse', () => {
+                    quickLogChevron.style.transform = 'rotate(180deg)';
+                });
+                quickLogBody.addEventListener('hide.bs.collapse', () => {
+                    quickLogChevron.style.transform = 'rotate(0deg)';
+                });
+            }
 
             // Wire up Universal Logger button
             document.getElementById('openUniversalLoggerBtn')?.addEventListener('click', () => {

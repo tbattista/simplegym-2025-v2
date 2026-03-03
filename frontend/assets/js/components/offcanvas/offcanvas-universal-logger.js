@@ -34,7 +34,7 @@ const CARDIO_ACTIVITY_TYPES = [
 // Wizard HTML template
 function buildHtml(id) {
     return `
-<div class="offcanvas offcanvas-bottom offcanvas-bottom-base offcanvas-desktop-wide" tabindex="-1"
+<div class="offcanvas offcanvas-bottom offcanvas-bottom-base offcanvas-bottom-full offcanvas-desktop-wide" tabindex="-1"
      id="${id}" data-bs-scroll="false">
     <div class="offcanvas-header border-bottom" id="ul-header">
         <h5 class="offcanvas-title">

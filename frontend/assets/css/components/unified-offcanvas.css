@@ -475,6 +475,17 @@ body.offcanvas-scroll-locked {
     max-height: calc(90vh - 140px);
 }
 
+/* Full: Extends to near the top of the screen — for multi-step wizards with many fields */
+.offcanvas-bottom-full {
+    height: auto !important;
+    max-height: calc(100dvh - 52px);
+}
+
+.offcanvas-bottom-full .offcanvas-body {
+    max-height: calc(100dvh - 52px - 68px); /* viewport - top gap - header height */
+    overflow-y: auto;
+}
+
 /* ============================================
    MOBILE RESPONSIVE
    ============================================ */
