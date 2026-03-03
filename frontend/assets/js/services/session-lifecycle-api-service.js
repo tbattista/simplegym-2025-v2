@@ -22,6 +22,24 @@ class SessionLifecycleApiService {
     }
 
     /**
+     * Extract a human-readable error message from API error responses.
+     * Handles FastAPI 422 validation errors where detail is an array of objects.
+     * @param {Object} errorData - Parsed JSON error response
+     * @param {string} fallback - Fallback message if detail is missing
+     * @returns {string} Human-readable error message
+     * @private
+     */
+    _extractErrorMessage(errorData, fallback) {
+        const detail = errorData?.detail;
+        if (!detail) return fallback;
+        if (typeof detail === 'string') return detail;
+        if (Array.isArray(detail)) {
+            return detail.map(e => e.msg || JSON.stringify(e)).join('; ');
+        }
+        return fallback;
+    }
+
+    /**
      * Start a new workout session
      * @param {string} workoutId - Workout ID
      * @param {string} workoutName - Workout name
@@ -57,7 +75,7 @@ class SessionLifecycleApiService {
 
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}));
-                throw new Error(errorData.detail || `Failed to create session: ${response.statusText}`);
+                throw new Error(this._extractErrorMessage(errorData, `Failed to create session: ${response.statusText}`));
             }
 
             const session = await response.json();
@@ -216,7 +234,7 @@ class SessionLifecycleApiService {
 
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}));
-                throw new Error(errorData.detail || `Failed to complete session: ${response.statusText}`);
+                throw new Error(this._extractErrorMessage(errorData, `Failed to complete session: ${response.statusText}`));
             }
 
             const completedSession = await response.json();
@@ -306,7 +324,7 @@ class SessionLifecycleApiService {
 
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({}));
-            throw new Error(errorData.detail || `Atomic endpoint failed: ${response.status}`);
+            throw new Error(this._extractErrorMessage(errorData, `Atomic endpoint failed: ${response.status}`));
         }
 
         const completedSession = await response.json();
@@ -353,7 +371,7 @@ class SessionLifecycleApiService {
 
         if (!createResponse.ok) {
             const errorData = await createResponse.json().catch(() => ({}));
-            throw new Error(errorData.detail || 'Failed to create recovery session');
+            throw new Error(this._extractErrorMessage(errorData, 'Failed to create recovery session'));
         }
 
         const newSession = await createResponse.json();
@@ -414,7 +432,7 @@ class SessionLifecycleApiService {
 
                 if (completeResponse.status !== 404) {
                     const errorData = await completeResponse.json().catch(() => ({}));
-                    throw new Error(errorData.detail || 'Failed to complete recovery session');
+                    throw new Error(this._extractErrorMessage(errorData, 'Failed to complete recovery session'));
                 }
 
                 console.warn(`\u26a0\ufe0f Complete attempt ${attempt + 1} got 404, retrying...`);

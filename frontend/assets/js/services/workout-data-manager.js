@@ -195,7 +195,6 @@ class WorkoutDataManager {
                 sets_completed: parseInt(finalSets) || 0,
                 target_sets: finalSets,
                 target_reps: finalReps,
-                rest: finalRest,
                 weight: finalWeight,  // Can be string or null
                 weight_unit: finalUnit,
                 previous_weight: previousWeight,
