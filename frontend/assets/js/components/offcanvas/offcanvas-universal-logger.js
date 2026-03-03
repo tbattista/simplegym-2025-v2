@@ -38,7 +38,7 @@ function buildHtml(id) {
      id="${id}" data-bs-scroll="false">
     <div class="offcanvas-header border-bottom" id="ul-header">
         <h5 class="offcanvas-title">
-            <i class="bx bx-camera me-2"></i><span id="ul-title">Log with AI</span>
+            <i class="bx bx-camera me-2"></i><span id="ul-title">Quick Log</span>
         </h5>
         <div class="d-flex align-items-center gap-2">
             <button type="button" class="btn btn-sm btn-outline-secondary d-none" id="ul-back-btn">
@@ -354,13 +354,13 @@ export function createUniversalLogger({ onSaveComplete, prefillText = null, pref
             backBtn.classList.toggle('d-none', name === 'step1' || name === 'loading' || name === 'success');
 
             const titles = {
-                step1: 'Log with AI',
+                step1: 'Quick Log',
                 loading: 'Analyzing…',
                 clarify: 'Quick Questions',
                 review: 'Review & Save',
                 success: 'Logged!',
             };
-            titleEl.textContent = titles[name] || 'Log with AI';
+            titleEl.textContent = titles[name] || 'Quick Log';
         }
 
         backBtn.addEventListener('click', () => {
