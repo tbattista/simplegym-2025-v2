@@ -115,6 +115,14 @@
               <!-- Main Content (shown when authenticated) -->
               <div id="activityLogContent" style="display: none;">
 
+                <!-- Universal Logger Button -->
+                <button type="button" id="openUniversalLoggerBtn"
+                        class="btn btn-outline-primary w-100 mb-2 py-2 d-flex align-items-center justify-content-center">
+                  <i class="bx bx-camera fs-4 me-2"></i>
+                  <span class="fw-semibold">Log with AI</span>
+                  <small class="opacity-75 ms-1">— photo, screenshot, or describe</small>
+                </button>
+
                 <!-- Focus Button -->
                 <a href="workout-database.html" class="btn btn-primary w-100 mb-4 py-2 d-flex align-items-center justify-content-center">
                   <i class="bx bx-dumbbell fs-4 me-2"></i>
@@ -412,6 +420,10 @@
     <script src="/static/assets/js/dashboard/activity-log.js?v=1.1.0"></script>
     <script src="/static/assets/js/dashboard/activity-log-history.js?v=1.1.0"></script>
 
+    <!-- Universal Logger (AI-powered session logging) -->
+    <script src="/static/assets/js/services/universal-log-service.js?v=1"></script>
+    <script type="module" src="/static/assets/js/components/offcanvas/offcanvas-universal-logger.js?v=1"></script>
+
     <!-- Menu Navigation System -->
     <script src="/static/assets/js/menu-navigation.js?v=20251020-04"></script>
 
@@ -487,6 +499,17 @@
                     }
                 }
             }, 3000);
+
+            // Wire up Universal Logger button
+            document.getElementById('openUniversalLoggerBtn')?.addEventListener('click', () => {
+                if (typeof window.createUniversalLogger === 'function') {
+                    window.createUniversalLogger({
+                        onSaveComplete: () => {
+                            if (window.loadRecentCardioSessions) window.loadRecentCardioSessions();
+                        }
+                    });
+                }
+            });
 
             console.log('✅ Activity Log page ready!');
         });

@@ -5,6 +5,28 @@
  */
 
 /* ============================================
+   SESSION ENTRY CLICK HANDLER
+   ============================================ */
+
+/**
+ * Handle clicks on session entries - toggles collapse unless click was on the dropdown menu
+ */
+function handleSessionEntryClick(event, collapseId) {
+  if (event.target.closest('.session-menu')) return;
+
+  const collapseEl = document.getElementById(collapseId);
+  if (!collapseEl) return;
+
+  const bsCollapse = bootstrap.Collapse.getOrCreateInstance(collapseEl, { toggle: false });
+  bsCollapse.toggle();
+
+  // Update aria-expanded (Bootstrap collapse fires asynchronously, so invert current state)
+  const entry = event.currentTarget;
+  const wasExpanded = entry.getAttribute('aria-expanded') === 'true';
+  entry.setAttribute('aria-expanded', String(!wasExpanded));
+}
+
+/* ============================================
    SESSION HISTORY RENDERING
    ============================================ */
 
@@ -236,8 +258,7 @@ function createSessionEntry(session) {
   // Normal mode: expandable session entry
   return `
     <div class="session-entry" id="session-entry-${session.id}"
-         data-bs-toggle="collapse"
-         data-bs-target="#${collapseId}"
+         onclick="handleSessionEntryClick(event, '${collapseId}')"
          role="button"
          aria-expanded="${isExpanded}"
          aria-controls="${collapseId}">
@@ -246,7 +267,7 @@ function createSessionEntry(session) {
         <span class="session-date">${dateStr}</span>
         <span class="session-meta">${duration}${hasNotes ? ' • <i class="bx bx-note"></i>' : ''}</span>
       </div>
-      <div class="dropdown session-menu" onclick="event.stopPropagation();">
+      <div class="dropdown session-menu">
         <button class="btn btn-sm btn-icon session-menu-btn"
                 type="button"
                 data-bs-toggle="dropdown"
@@ -315,12 +336,6 @@ function renderSessionDetails(session) {
         </table>
       </div>
 
-      <div class="text-end mt-2">
-        <button class="btn btn-sm btn-outline-primary"
-                onclick="event.stopPropagation(); createTemplateFromSession('${session.id}');">
-          <i class="bx bx-copy-alt me-1"></i>Save as Template
-        </button>
-      </div>
     </div>
   `;
 }

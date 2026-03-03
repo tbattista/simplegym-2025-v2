@@ -58,22 +58,22 @@
 
 /* Base FAB button */
 .wm-fab {
-    height: 44px;
-    min-width: 44px;
-    border-radius: 12px;
+    height: 52px;
+    min-width: 52px;
+    border-radius: 14px;
     border: none;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 6px;
-    font-size: 14px;
+    font-size: 15px;
     font-weight: 600;
     cursor: pointer;
     pointer-events: auto;
     box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
     transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
     white-space: nowrap;
-    padding: 0 14px;
+    padding: 0 16px;
     color: #fff;
 }
 
@@ -126,9 +126,9 @@
 /* Cancel button (red, icon-only) */
 .wm-fab-cancel {
     background: var(--bs-danger);
-    width: 44px;
+    width: 52px;
     padding: 0;
-    font-size: 20px;
+    font-size: 22px;
 }
 
 .wm-fab-cancel:hover {
@@ -511,23 +511,6 @@
    RESPONSIVE
    ============================================ */
 
-@media (max-width: 576px) {
-    /* Hide labels on very small screens, keep icons */
-    .wm-fab-quicklog span,
-    .wm-fab-start span,
-    .wm-fab-end span,
-    .wm-fab-save span {
-        display: none;
-    }
-
-    .wm-fab-quicklog,
-    .wm-fab-start,
-    .wm-fab-end,
-    .wm-fab-save {
-        width: 44px;
-        padding: 0;
-    }
-}
 
 /* ============================================
    ACCESSIBILITY
