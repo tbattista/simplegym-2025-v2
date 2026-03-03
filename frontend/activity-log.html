@@ -115,15 +115,14 @@
               <!-- Main Content (shown when authenticated) -->
               <div id="activityLogContent" style="display: none;">
 
-                <!-- Log with AI - collapse toggle + inline panel -->
+                <!-- Log with AI - mobile: offcanvas | desktop: inline collapse -->
                 <button type="button" id="logAiToggleBtn"
-                        class="btn btn-outline-primary w-100 mb-0 py-2 d-flex align-items-center px-3"
-                        data-bs-toggle="collapse" data-bs-target="#logAiBody"
-                        aria-expanded="false" aria-controls="logAiBody">
+                        class="btn btn-outline-primary w-100 mb-0 py-2 d-flex align-items-center px-3">
                   <i class="bx bx-camera fs-4 me-2 flex-shrink-0"></i>
                   <span class="fw-semibold flex-grow-1 text-start">Log with AI</span>
                   <small class="opacity-75 me-2 d-none d-sm-inline">photo, screenshot, or describe</small>
-                  <i class="bx bx-chevron-down flex-shrink-0" id="logAiChevron" style="transition: transform 0.2s;"></i>
+                  <i class="bx bx-chevron-right flex-shrink-0 d-md-none"></i>
+                  <i class="bx bx-chevron-down flex-shrink-0 d-none d-md-inline" id="logAiChevron" style="transition: transform 0.2s;"></i>
                 </button>
                 <div class="collapse" id="logAiBody">
                   <div class="card mb-2 border-top-0 rounded-top-0">
@@ -153,15 +152,13 @@
                   <i class="bx bx-chevron-right flex-shrink-0"></i>
                 </a>
 
-                <!-- Quick Log - collapse toggle -->
-                <button type="button"
-                        class="btn btn-outline-secondary w-100 mb-0 py-2 d-flex align-items-center px-3"
-                        data-bs-toggle="collapse" data-bs-target="#quickLogBody"
-                        aria-expanded="false" aria-controls="quickLogBody"
-                        id="quickLogToggleBtn">
+                <!-- Quick Log - mobile: offcanvas | desktop: inline collapse -->
+                <button type="button" id="quickLogToggleBtn"
+                        class="btn btn-outline-secondary w-100 mb-0 py-2 d-flex align-items-center px-3">
                   <i class="bx bx-run fs-4 me-2 flex-shrink-0"></i>
                   <span class="fw-semibold flex-grow-1 text-start">Quick Log an Activity</span>
-                  <i class="bx bx-chevron-down flex-shrink-0" id="quickLogChevron" style="transition: transform 0.2s;"></i>
+                  <i class="bx bx-chevron-right flex-shrink-0 d-md-none"></i>
+                  <i class="bx bx-chevron-down flex-shrink-0 d-none d-md-inline" id="quickLogChevron" style="transition: transform 0.2s;"></i>
                 </button>
                 <div class="collapse" id="quickLogBody">
                 <div class="card mb-4 border-top-0 rounded-top-0">
@@ -531,16 +528,81 @@
                 }
             }, 3000);
 
-            // Chevron rotation helpers
-            function wireChevron(collapseId, chevronId) {
+            // Desktop chevron rotation via collapse events
+            function wireDesktopChevron(collapseId, chevronId) {
                 const collapseEl = document.getElementById(collapseId);
                 const chevronEl  = document.getElementById(chevronId);
                 if (!collapseEl || !chevronEl) return;
                 collapseEl.addEventListener('show.bs.collapse', () => { chevronEl.style.transform = 'rotate(180deg)'; });
                 collapseEl.addEventListener('hide.bs.collapse', () => { chevronEl.style.transform = 'rotate(0deg)'; });
             }
-            wireChevron('quickLogBody', 'quickLogChevron');
-            wireChevron('logAiBody',    'logAiChevron');
+            wireDesktopChevron('quickLogBody', 'quickLogChevron');
+            wireDesktopChevron('logAiBody',    'logAiChevron');
+
+            // Responsive breakpoint helper (Bootstrap md = 768px)
+            function isMobile() { return window.innerWidth < 768; }
+
+            // ── Log with AI toggle (mobile: wizard offcanvas, desktop: inline collapse) ──
+            document.getElementById('logAiToggleBtn')?.addEventListener('click', () => {
+                if (isMobile()) {
+                    if (typeof window.createUniversalLogger === 'function') {
+                        window.createUniversalLogger({
+                            onSaveComplete: () => {
+                                if (window.loadRecentCardioSessions) window.loadRecentCardioSessions();
+                            },
+                        });
+                    }
+                } else {
+                    const collapseEl = document.getElementById('logAiBody');
+                    if (collapseEl) bootstrap.Collapse.getOrCreateInstance(collapseEl).toggle();
+                }
+            });
+
+            // ── Quick Log toggle (mobile: bottom sheet offcanvas, desktop: inline collapse) ──
+            document.getElementById('quickLogToggleBtn')?.addEventListener('click', () => {
+                if (isMobile()) {
+                    openQuickLogOffcanvas();
+                } else {
+                    const collapseEl = document.getElementById('quickLogBody');
+                    if (collapseEl) bootstrap.Collapse.getOrCreateInstance(collapseEl).toggle();
+                }
+            });
+
+            // Quick Log as bottom-sheet on mobile — moves the existing card DOM node
+            // into a temporary offcanvas so there's no form duplication.
+            function openQuickLogOffcanvas() {
+                const offcanvasId = 'quickLogMobileOffcanvas';
+                document.getElementById(offcanvasId)?.remove(); // remove any stale instance
+
+                document.body.insertAdjacentHTML('beforeend', `
+                    <div class="offcanvas offcanvas-bottom offcanvas-bottom-base offcanvas-bottom-full"
+                         tabindex="-1" id="${offcanvasId}" data-bs-scroll="false">
+                        <div class="offcanvas-header border-bottom">
+                            <h5 class="offcanvas-title">
+                                <i class="bx bx-run me-2"></i>Quick Log an Activity
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                        </div>
+                        <div class="offcanvas-body p-0" id="${offcanvasId}-body" style="overflow-y:auto;"></div>
+                    </div>`);
+
+                const offcanvasEl   = document.getElementById(offcanvasId);
+                const offcanvasBody = document.getElementById(`${offcanvasId}-body`);
+
+                // Move the card (with all its wired-up DOM nodes) into the offcanvas
+                const card           = document.querySelector('#quickLogBody .card');
+                const originalParent = card?.parentElement;
+                if (card) offcanvasBody.appendChild(card);
+
+                const bsOffcanvas = new bootstrap.Offcanvas(offcanvasEl, { backdrop: true, scroll: false });
+                bsOffcanvas.show();
+
+                // Return card to inline collapse on close, then clean up the offcanvas element
+                offcanvasEl.addEventListener('hidden.bs.offcanvas', () => {
+                    if (card && originalParent) originalParent.appendChild(card);
+                    offcanvasEl.remove();
+                }, { once: true });
+            }
 
             // ── Log with AI Inline Panel ──────────────────────────────────
             let logAiImages = [];

@@ -6,10 +6,16 @@
  *   npx playwright install chromium  (first time only)
  *   node docs/user-flows/tutorial-runner.js --tutorial create-workout --viewport mobile
  *   node docs/user-flows/tutorial-runner.js --tutorial browse-exercises --viewport desktop --base-url http://localhost:8001
+ *   node docs/user-flows/tutorial-runner.js --tutorial exercise-cart --no-clicks --default-duration 4
+ *
+ * Options:
+ *   --show-clicks          Show orange click indicator on tap/click steps (default: on)
+ *   --no-clicks            Disable click indicators
+ *   --default-duration N   Default seconds each slide shows in the video (default: 3)
  *
  * Output:
  *   - Screenshots saved to frontend/assets/img/tutorials/
- *   - JSON manifest printed to stdout
+ *   - JSON manifest printed to stdout (includes clickX/Y and duration per step)
  */
 
 const { chromium, devices } = require('playwright');
@@ -28,6 +34,9 @@ const VIEWPORTS = {
 };
 
 // --- Tutorial Definitions ---
+// Each step may include:
+//   duration: number  — seconds this slide shows in the video (default: 3)
+//   showClick: false  — set to explicitly disable click indicator for this step
 
 const TUTORIALS = {
   'create-workout': {
@@ -216,24 +225,28 @@ const TUTORIALS = {
         action: 'wait',
         target: '#exerciseTableContainer',
         waitTime: 2500,
+        duration: 3,
         caption: 'Browse 2,500+ exercises'
       },
       {
         action: 'click',
         target: '.card[data-exercise-id]',
         waitAfter: '#exerciseDetailOffcanvas.show',
+        duration: 2.5,
         caption: 'Tap any card for details'
       },
       {
         action: 'click',
         target: '.exercise-offcanvas-add-btn',
         waitTime: 800,
+        duration: 2.5,
         caption: 'Add to your workout cart'
       },
       {
         action: 'wait',
         target: '#exerciseCartBar',
         waitTime: 300,
+        duration: 4,
         caption: 'Cart sticks to the bottom'
       },
       {
@@ -241,6 +254,7 @@ const TUTORIALS = {
         target: '#exerciseCartBar .btn',
         waitAfter: '#workoutEditorForm, .container-xxl',
         waitTime: 2500,
+        duration: 3,
         caption: 'Build your workout in one tap!'
       }
     ]
@@ -284,8 +298,68 @@ async function waitForSelector(page, selector, timeout = 10000) {
   }
 }
 
+/**
+ * Get the center coordinates of the first matching element from a comma-separated selector list.
+ * Returns { clickX, clickY } or { clickX: null, clickY: null } if not found.
+ */
+async function getElementCenter(page, selector) {
+  const selectors = selector.split(',').map(s => s.trim());
+  for (const sel of selectors) {
+    try {
+      const el = await page.$(sel);
+      if (el) {
+        const bbox = await el.boundingBox();
+        if (bbox) {
+          return {
+            clickX: Math.round(bbox.x + bbox.width / 2),
+            clickY: Math.round(bbox.y + bbox.height / 2)
+          };
+        }
+      }
+    } catch (e) { /* try next */ }
+  }
+  return { clickX: null, clickY: null };
+}
+
+/**
+ * Inject an orange click indicator circle at the given page coordinates.
+ * Call removeClickIndicator() after taking the screenshot.
+ */
+async function injectClickIndicator(page, x, y) {
+  await page.evaluate(({ x, y }) => {
+    const el = document.createElement('div');
+    el.id = '__tutorial_click_dot__';
+    el.style.cssText = `
+      position: fixed;
+      left: ${x - 22}px;
+      top: ${y - 22}px;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: rgba(255, 80, 0, 0.35);
+      border: 3px solid rgba(255, 80, 0, 0.9);
+      box-shadow: 0 0 0 8px rgba(255, 80, 0, 0.15);
+      z-index: 2147483647;
+      pointer-events: none;
+    `;
+    document.body.appendChild(el);
+  }, { x, y });
+}
+
+async function removeClickIndicator(page) {
+  await page.evaluate(() => {
+    const el = document.getElementById('__tutorial_click_dot__');
+    if (el) el.remove();
+  });
+}
+
+/**
+ * Execute a step action. Returns { clickX, clickY } if a click happened (for indicator placement).
+ */
 async function executeStep(page, step, viewportName, baseUrl) {
   const target = step.target ? resolveTarget(step.target, viewportName) : null;
+  let clickX = null;
+  let clickY = null;
 
   switch (step.action) {
     case 'navigate':
@@ -299,6 +373,8 @@ async function executeStep(page, step, viewportName, baseUrl) {
 
     case 'click':
       if (target) {
+        // Get click position before clicking
+        ({ clickX, clickY } = await getElementCenter(page, target));
         await page.click(target);
       }
       if (step.waitAfter) {
@@ -312,6 +388,11 @@ async function executeStep(page, step, viewportName, baseUrl) {
         if (el) {
           await el.scrollIntoViewIfNeeded();
           await page.waitForTimeout(300);
+          const bbox = await el.boundingBox();
+          if (bbox) {
+            clickX = Math.round(bbox.x + bbox.width / 2);
+            clickY = Math.round(bbox.y + bbox.height / 2);
+          }
           await el.click();
         }
       }
@@ -344,6 +425,7 @@ async function executeStep(page, step, viewportName, baseUrl) {
       }
       if (target) {
         await waitForSelector(page, target);
+        ({ clickX, clickY } = await getElementCenter(page, target));
         await page.click(target);
       }
       if (step.waitAfter) {
@@ -373,11 +455,13 @@ async function executeStep(page, step, viewportName, baseUrl) {
 
   // Wait for animations
   await page.waitForTimeout(step.waitTime || 400);
+
+  return { clickX, clickY };
 }
 
 // --- Main ---
 
-async function runTutorial(tutorialSlug, viewportName, baseUrl) {
+async function runTutorial(tutorialSlug, viewportName, baseUrl, { showClicks = true, defaultDuration = 3 } = {}) {
   const tutorial = TUTORIALS[tutorialSlug];
   if (!tutorial) {
     console.error(`Unknown tutorial: ${tutorialSlug}`);
@@ -399,6 +483,8 @@ async function runTutorial(tutorialSlug, viewportName, baseUrl) {
   console.log(`Viewport: ${viewportName} (${viewport.width}x${viewport.height})`);
   console.log(`Base URL: ${baseUrl}`);
   console.log(`Steps: ${tutorial.steps.length}`);
+  console.log(`Click indicators: ${showClicks ? 'on' : 'off'}`);
+  console.log(`Default duration: ${defaultDuration}s`);
   console.log('---');
 
   const browser = await chromium.launch({ headless: true });
@@ -420,6 +506,8 @@ async function runTutorial(tutorialSlug, viewportName, baseUrl) {
     title: tutorial.title,
     viewport: viewportName,
     date: datePrefix,
+    showClicks,
+    defaultDuration,
     steps: []
   };
 
@@ -428,28 +516,50 @@ async function runTutorial(tutorialSlug, viewportName, baseUrl) {
     const stepNum = String(i + 1).padStart(2, '0');
     const filename = `${datePrefix}-tutorial-${tutorialSlug}-${stepNum}-${viewportName}.png`;
     const filepath = path.join(SCREENSHOT_DIR, filename);
+    const duration = step.duration !== undefined ? step.duration : defaultDuration;
+    const isClickStep = ['click', 'scroll-click', 'dismiss-then-click'].includes(step.action);
+    const wantClickDot = showClicks && isClickStep && step.showClick !== false;
 
     try {
-      // Execute the action
-      await executeStep(page, step, viewportName, baseUrl);
+      // Execute the action — returns click coordinates if a click occurred
+      const { clickX, clickY } = await executeStep(page, step, viewportName, baseUrl);
+
+      // Inject click indicator if this is a click step
+      let dotInjected = false;
+      if (wantClickDot && clickX !== null) {
+        await injectClickIndicator(page, clickX, clickY);
+        dotInjected = true;
+      }
 
       // Take screenshot
       await page.screenshot({ path: filepath, fullPage: false });
 
+      // Clean up indicator
+      if (dotInjected) {
+        await removeClickIndicator(page);
+      }
+
       manifest.steps.push({
         number: i + 1,
         caption: step.caption,
-        filename: filename,
+        duration,
+        filename,
         action: step.action,
+        ...(clickX !== null && { clickX, clickY }),
         success: true
       });
 
-      console.log(`  Step ${stepNum}: ${step.caption} -> ${filename}`);
+      const clickInfo = clickX !== null ? ` (click at ${clickX},${clickY})` : '';
+      console.log(`  Step ${stepNum}: ${step.caption} [${duration}s]${clickInfo} -> ${filename}`);
     } catch (e) {
+      // Ensure indicator is cleaned up on error
+      await removeClickIndicator(page).catch(() => {});
+
       console.error(`  Step ${stepNum}: FAILED - ${e.message}`);
       manifest.steps.push({
         number: i + 1,
         caption: step.caption,
+        duration,
         filename: null,
         action: step.action,
         success: false,
@@ -474,7 +584,9 @@ function parseArgs() {
   const parsed = {
     tutorial: 'create-workout',
     viewport: 'mobile',
-    baseUrl: DEFAULT_BASE_URL
+    baseUrl: DEFAULT_BASE_URL,
+    showClicks: true,
+    defaultDuration: 3
   };
 
   for (let i = 0; i < args.length; i++) {
@@ -484,6 +596,12 @@ function parseArgs() {
       parsed.viewport = args[++i];
     } else if (args[i] === '--base-url' && args[i + 1]) {
       parsed.baseUrl = args[++i];
+    } else if (args[i] === '--show-clicks') {
+      parsed.showClicks = true;
+    } else if (args[i] === '--no-clicks') {
+      parsed.showClicks = false;
+    } else if (args[i] === '--default-duration' && args[i + 1]) {
+      parsed.defaultDuration = parseFloat(args[++i]) || 3;
     } else if (args[i] === '--list') {
       console.log('Available tutorials:');
       for (const [slug, def] of Object.entries(TUTORIALS)) {
@@ -491,8 +609,14 @@ function parseArgs() {
       }
       process.exit(0);
     } else if (args[i] === '--help') {
-      console.log('Usage: node tutorial-runner.js --tutorial <slug> --viewport <mobile|desktop> [--base-url <url>]');
+      console.log('Usage: node tutorial-runner.js --tutorial <slug> --viewport <mobile|desktop> [options]');
       console.log('       node tutorial-runner.js --list');
+      console.log('');
+      console.log('Options:');
+      console.log('  --show-clicks           Show orange click indicator (default)');
+      console.log('  --no-clicks             Disable click indicators');
+      console.log('  --default-duration N    Seconds per slide in video (default: 3)');
+      console.log('  --base-url <url>        App base URL (default: http://localhost:8001)');
       process.exit(0);
     }
   }
@@ -501,4 +625,7 @@ function parseArgs() {
 }
 
 const args = parseArgs();
-runTutorial(args.tutorial, args.viewport, args.baseUrl).catch(console.error);
+runTutorial(args.tutorial, args.viewport, args.baseUrl, {
+  showClicks: args.showClicks,
+  defaultDuration: args.defaultDuration
+}).catch(console.error);
