@@ -145,6 +145,19 @@ async def export_workout_print(
         raise HTTPException(status_code=500, detail=f"Failed to generate PDF: {str(e)}")
 
 
+@router.get("/video-base64/{filename}")
+async def get_video_as_base64(filename: str):
+    """Return a tutorial video as base64 for n8n Twitter upload workflow."""
+    import base64
+    file_path = f"frontend/assets/img/tutorials/{filename}"
+    try:
+        with open(file_path, "rb") as f:
+            b64 = base64.b64encode(f.read()).decode("utf-8")
+        return {"media_data": b64}
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail=f"File not found: {filename}")
+
+
 @router.get("/status")
 async def get_export_status():
     """
