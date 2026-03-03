@@ -198,7 +198,7 @@ class SessionLifecycleApiService {
                     id: note.id,
                     content: note.content,
                     order_index: note.order_index,
-                    created_at: note.created_at,
+                    created_at: note.created_at || new Date().toISOString(),
                     modified_at: note.modified_at || null
                 }))
             };

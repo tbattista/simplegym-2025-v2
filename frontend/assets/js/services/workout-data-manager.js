@@ -189,7 +189,7 @@ class WorkoutDataManager {
             console.log(`  📊 Exercise data:`, exerciseData);
             
             // Backend expects Optional[str] for weight fields — coerce non-null values to strings
-            const toStr = v => (v != null ? String(v) : null);
+            const toStr = v => (v != null && !Number.isNaN(v) ? String(v) : null);
 
             exercisesPerformed.push({
                 exercise_name: mainExercise,

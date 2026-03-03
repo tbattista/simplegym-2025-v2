@@ -142,6 +142,9 @@ class FirestoreSessionOps:
 
             current_data = current_doc.to_dict()
 
+            # Always capture completed_at from the request (defaults to now)
+            completed_at = complete_request.completed_at
+
             # Calculate duration
             # For quick_log sessions, use manual duration if provided
             manual_duration = getattr(complete_request, 'duration_minutes', None)
@@ -152,17 +155,17 @@ class FirestoreSessionOps:
             else:
                 # Auto-calculate from timestamps (for timed sessions)
                 started_at = current_data.get('started_at')
-                completed_at = complete_request.completed_at
                 duration_minutes = None
 
                 if started_at and completed_at:
                     # Ensure both datetimes are timezone-naive for comparison
                     if hasattr(started_at, 'replace') and started_at.tzinfo is not None:
                         started_at = started_at.replace(tzinfo=None)
-                    if hasattr(completed_at, 'replace') and completed_at.tzinfo is not None:
-                        completed_at = completed_at.replace(tzinfo=None)
+                    calc_completed = completed_at
+                    if hasattr(calc_completed, 'replace') and calc_completed.tzinfo is not None:
+                        calc_completed = calc_completed.replace(tzinfo=None)
 
-                    duration = completed_at - started_at
+                    duration = calc_completed - started_at
                     duration_minutes = int(duration.total_seconds() / 60)
 
             # Prepare completion data
@@ -465,8 +468,18 @@ class FirestoreSessionOps:
                     'updated_at': firestore.SERVER_TIMESTAMP
                 }
 
-                # Update PR if applicable
-                if new_weight and (not best_weight or new_weight > best_weight):
+                # Update PR if applicable (compare numerically to avoid string ordering bugs)
+                def _is_new_pr(new_w, best_w):
+                    if not new_w:
+                        return False
+                    if not best_w:
+                        return True
+                    try:
+                        return float(new_w) > float(best_w)
+                    except (ValueError, TypeError):
+                        return False  # Skip PR check for text weights like "BW+25"
+
+                if _is_new_pr(new_weight, best_weight):
                     update_data['best_weight'] = new_weight
                     update_data['best_weight_date'] = session_data.get('date')
 

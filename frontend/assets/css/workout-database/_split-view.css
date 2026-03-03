@@ -163,6 +163,13 @@
     display: block;
 }
 
+.mobile-view .workout-list-panel {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    padding-right: 0;
+}
+
 /* ============================================
    RESPONSIVE LIST PANEL WIDTHS
    ============================================ */
