@@ -480,7 +480,7 @@ class WorkoutLifecycleManager {
             if (onDiscardComplete) onDiscardComplete();
             window.location.href = 'workout-database.html';
         },
-        () => {                                              // onCancel (NEW)
+        () => {                                              // onCancel
             // Show confirmation before canceling workout
             const modalManager = this.getModalManager();
             modalManager.confirm(
@@ -497,6 +497,10 @@ class WorkoutLifecycleManager {
                     cancelText: 'Go Back'
                 }
             );
+        },
+        async () => {                                        // onEnd
+            await this.resumeSession(sessionData);
+            this.handleCompleteWorkout();
         });
     }
     

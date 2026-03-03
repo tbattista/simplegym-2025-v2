@@ -379,7 +379,7 @@ export function createCompletionSummary(data) {
  * @param {Function} onCancel - Callback when user chooses to cancel workout
  * @returns {Object} Offcanvas instance
  */
-export function createResumeSession(data, onResume, onStartFresh, onCancel) {
+export function createResumeSession(data, onResume, onStartFresh, onCancel, onEnd) {
     const { workoutName, elapsedDisplay, exercisesWithWeights, totalExercises } = data;
 
     const offcanvasHtml = `
@@ -430,6 +430,9 @@ export function createResumeSession(data, onResume, onStartFresh, onCancel) {
                     <button type="button" class="btn btn-primary" id="resumeSessionBtn">
                         <i class="bx bx-play me-1"></i>Resume Workout
                     </button>
+                    <button type="button" class="btn btn-success" id="endSessionBtn">
+                        <i class="bx bx-check me-1"></i>End Workout
+                    </button>
                     <button type="button" class="btn btn-outline-secondary" id="startFreshBtn">
                         <i class="bx bx-refresh me-1"></i>Start Fresh
                     </button>
@@ -443,6 +446,7 @@ export function createResumeSession(data, onResume, onStartFresh, onCancel) {
 
     return createOffcanvas('resumeSessionOffcanvas', offcanvasHtml, (offcanvas) => {
         const resumeBtn = document.getElementById('resumeSessionBtn');
+        const endBtn = document.getElementById('endSessionBtn');
         const startFreshBtn = document.getElementById('startFreshBtn');
         const cancelBtn = document.getElementById('cancelWorkoutBtn');
 
@@ -459,6 +463,21 @@ export function createResumeSession(data, onResume, onStartFresh, onCancel) {
                 throw error;
             }
         });
+
+        if (endBtn && onEnd) {
+            endBtn.addEventListener('click', async () => {
+                endBtn.disabled = true;
+                endBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Ending...';
+                try {
+                    offcanvas.hide();
+                    await onEnd();
+                } catch (error) {
+                    endBtn.disabled = false;
+                    endBtn.innerHTML = '<i class="bx bx-check me-1"></i>End Workout';
+                    throw error;
+                }
+            });
+        }
 
         startFreshBtn.addEventListener('click', () => {
             onStartFresh();

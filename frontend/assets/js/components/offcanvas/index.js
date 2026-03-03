@@ -152,8 +152,8 @@ class UnifiedOffcanvasFactory {
         return createCompletionSummary(data);
     }
     
-    static createResumeSession(data, onResume, onStartFresh, onCancel) {
-        return createResumeSession(data, onResume, onStartFresh, onCancel);
+    static createResumeSession(data, onResume, onStartFresh, onCancel, onEnd) {
+        return createResumeSession(data, onResume, onStartFresh, onCancel, onEnd);
     }
     
     static createPlateSettings(onSave) {
