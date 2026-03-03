@@ -115,53 +115,59 @@
               <!-- Main Content (shown when authenticated) -->
               <div id="activityLogContent" style="display: none;">
 
-                <!-- Log with AI - mobile: offcanvas | desktop: inline collapse -->
-                <button type="button" id="logAiToggleBtn"
-                        class="btn btn-outline-primary w-100 mb-0 py-2 d-flex align-items-center px-3">
-                  <i class="bx bx-camera fs-4 me-2 flex-shrink-0"></i>
-                  <span class="fw-semibold flex-grow-1 text-start">Log with AI</span>
-                  <small class="opacity-75 me-2 d-none d-sm-inline">photo, screenshot, or describe</small>
-                  <i class="bx bx-chevron-right flex-shrink-0 d-md-none"></i>
-                  <i class="bx bx-chevron-down flex-shrink-0 d-none d-md-inline" id="logAiChevron" style="transition: transform 0.2s;"></i>
-                </button>
-                <div class="collapse" id="logAiBody">
-                  <div class="card mb-2 border-top-0 rounded-top-0">
-                    <div class="card-body py-3">
-                      <textarea class="form-control mb-2" id="logAiText" rows="3"
-                        placeholder="Describe your activity...&#10;&#10;e.g. 2.3 miles on the treadmill in 18:20, burned 340 cal&#10;   Bench Press 3×10 at 135lbs, Squats 4×8 at 185lbs&#10;&#10;Or add photos below"></textarea>
-                      <div id="logAiThumbnails" class="d-flex flex-wrap gap-2 mb-2"></div>
-                      <div class="d-flex gap-2">
-                        <label class="btn btn-sm btn-outline-secondary flex-shrink-0 mb-0" for="logAiFileInput">
-                          <i class="bx bx-image-add me-1"></i>Add Photos
-                          <input type="file" id="logAiFileInput"
-                                 accept="image/jpeg,image/png,image/webp,image/gif,.jpg,.jpeg,.png,.webp,.gif"
-                                 multiple class="d-none">
-                        </label>
-                        <button type="button" class="btn btn-sm btn-primary w-100" id="logAiAnalyzeBtn" disabled>
-                          <i class="bx bx-analyse me-1"></i>Analyze Activity
-                        </button>
+                <!-- Action buttons: mobile=offcanvas, desktop=inline collapse -->
+                <div class="d-grid gap-2 mb-4">
+
+                  <!-- Log with AI -->
+                  <div>
+                    <button type="button" id="logAiToggleBtn"
+                            class="btn btn-outline-primary w-100 py-2 d-flex align-items-center px-3">
+                      <i class="bx bx-camera fs-4 me-2 flex-shrink-0"></i>
+                      <span class="fw-semibold flex-grow-1 text-start">Log with AI</span>
+                      <small class="opacity-75 me-2 d-none d-sm-inline">photo, screenshot, or describe</small>
+                      <i class="bx bx-chevron-right flex-shrink-0 d-md-none"></i>
+                      <i class="bx bx-chevron-down flex-shrink-0 d-none d-md-inline" id="logAiChevron" style="transition: transform 0.2s;"></i>
+                    </button>
+                    <div class="collapse" id="logAiBody">
+                      <div class="card mt-1">
+                        <div class="card-body py-3">
+                          <textarea class="form-control mb-2" id="logAiText" rows="3"
+                            placeholder="Describe your activity...&#10;&#10;e.g. 2.3 miles on the treadmill in 18:20, burned 340 cal&#10;   Bench Press 3×10 at 135lbs, Squats 4×8 at 185lbs&#10;&#10;Or add photos below"></textarea>
+                          <div id="logAiThumbnails" class="d-flex flex-wrap gap-2 mb-2"></div>
+                          <div class="d-flex gap-2">
+                            <label class="btn btn-sm btn-outline-secondary flex-shrink-0 mb-0" for="logAiFileInput">
+                              <i class="bx bx-image-add me-1"></i>Add Photos
+                              <input type="file" id="logAiFileInput"
+                                     accept="image/jpeg,image/png,image/webp,image/gif,.jpg,.jpeg,.png,.webp,.gif"
+                                     multiple class="d-none">
+                            </label>
+                            <button type="button" class="btn btn-sm btn-primary w-100" id="logAiAnalyzeBtn" disabled>
+                              <i class="bx bx-analyse me-1"></i>Analyze Activity
+                            </button>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
 
-                <!-- Start a Workout -->
-                <a href="workout-database.html" class="btn btn-primary w-100 mb-2 py-2 d-flex align-items-center px-3">
-                  <i class="bx bx-dumbbell fs-4 me-2 flex-shrink-0"></i>
-                  <span class="fw-semibold flex-grow-1 text-start">Start a Workout</span>
-                  <i class="bx bx-chevron-right flex-shrink-0"></i>
-                </a>
+                  <!-- Start a Workout -->
+                  <a href="workout-database.html" class="btn btn-primary w-100 py-2 d-flex align-items-center px-3">
+                    <i class="bx bx-dumbbell fs-4 me-2 flex-shrink-0"></i>
+                    <span class="fw-semibold flex-grow-1 text-start">Start a Workout</span>
+                    <i class="bx bx-chevron-right flex-shrink-0"></i>
+                  </a>
 
-                <!-- Quick Log - mobile: offcanvas | desktop: inline collapse -->
-                <button type="button" id="quickLogToggleBtn"
-                        class="btn btn-outline-secondary w-100 mb-0 py-2 d-flex align-items-center px-3">
-                  <i class="bx bx-run fs-4 me-2 flex-shrink-0"></i>
-                  <span class="fw-semibold flex-grow-1 text-start">Quick Log an Activity</span>
-                  <i class="bx bx-chevron-right flex-shrink-0 d-md-none"></i>
-                  <i class="bx bx-chevron-down flex-shrink-0 d-none d-md-inline" id="quickLogChevron" style="transition: transform 0.2s;"></i>
-                </button>
-                <div class="collapse" id="quickLogBody">
-                <div class="card mb-4 border-top-0 rounded-top-0">
+                  <!-- Quick Log -->
+                  <div>
+                    <button type="button" id="quickLogToggleBtn"
+                            class="btn btn-outline-secondary w-100 py-2 d-flex align-items-center px-3">
+                      <i class="bx bx-run fs-4 me-2 flex-shrink-0"></i>
+                      <span class="fw-semibold flex-grow-1 text-start">Quick Log an Activity</span>
+                      <i class="bx bx-chevron-right flex-shrink-0 d-md-none"></i>
+                      <i class="bx bx-chevron-down flex-shrink-0 d-none d-md-inline" id="quickLogChevron" style="transition: transform 0.2s;"></i>
+                    </button>
+                    <div class="collapse" id="quickLogBody">
+                    <div class="card mt-1">
                   <div class="card-body">
 
                     <!-- Activity Type Selector (rendered dynamically by activity-log.js) -->
@@ -352,6 +358,9 @@
                   </div>
                 </div>
                 </div><!-- /collapse#quickLogBody -->
+                  </div><!-- /Quick Log wrapper -->
+
+                </div><!-- /d-grid action buttons -->
 
                 <!-- Recent Sessions -->
                 <div class="mb-4">
