@@ -188,25 +188,28 @@ class WorkoutDataManager {
             console.log(`  📝 Direction to save:`, directionToSave);
             console.log(`  📊 Exercise data:`, exerciseData);
             
+            // Backend expects Optional[str] for weight fields — coerce non-null values to strings
+            const toStr = v => (v != null ? String(v) : null);
+
             exercisesPerformed.push({
                 exercise_name: mainExercise,
                 exercise_id: null,
                 group_id: group.group_id || `group-${index}`,
                 sets_completed: parseInt(finalSets) || 0,
-                target_sets: finalSets,
-                target_reps: finalReps,
-                weight: finalWeight,  // Can be string or null
+                target_sets: String(finalSets),
+                target_reps: String(finalReps),
+                weight: toStr(finalWeight),
                 weight_unit: finalUnit,
-                previous_weight: previousWeight,
-                weight_change: weightChange,
+                previous_weight: toStr(previousWeight),
+                weight_change: toStr(weightChange),
                 order_index: orderIndex++,
                 is_modified: exerciseData?.is_modified || false,
                 is_skipped: exerciseData?.is_skipped || false,
                 skip_reason: exerciseData?.skip_reason || null,
                 next_weight_direction: directionToSave,  // Weight Progression Indicator
-                original_weight: exerciseData?.original_weight ?? null,
-                original_sets: exerciseData?.original_sets ?? null,
-                original_reps: exerciseData?.original_reps ?? null
+                original_weight: toStr(exerciseData?.original_weight ?? null),
+                original_sets: toStr(exerciseData?.original_sets ?? null),
+                original_reps: toStr(exerciseData?.original_reps ?? null)
             });
         });
         
