@@ -283,7 +283,7 @@ function buildHtml(id) {
  * @param {Function} [options.onSaveComplete] - Called after successful save (to refresh session list)
  * @returns {{ offcanvas, offcanvasElement }}
  */
-export function createUniversalLogger({ onSaveComplete } = {}) {
+export function createUniversalLogger({ onSaveComplete, prefillText = null, prefillImages = [], autoAnalyze = false } = {}) {
     const id = 'universalLoggerOffcanvas';
 
     const html = buildHtml(id);
@@ -496,7 +496,7 @@ export function createUniversalLogger({ onSaveComplete } = {}) {
         }
 
         // ── Analyze ───────────────────────────────────────────────────────
-        analyzeBtn.addEventListener('click', async () => {
+        async function runAnalyze() {
             hideError();
             showStep('loading');
             try {
@@ -522,7 +522,9 @@ export function createUniversalLogger({ onSaveComplete } = {}) {
                 showStep('step1');
                 showError(err.message || 'Analysis failed. Please try again.');
             }
-        });
+        }
+
+        analyzeBtn.addEventListener('click', runAnalyze);
 
         // ── Clarify ───────────────────────────────────────────────────────
         function renderQuestions(questions) {
@@ -764,12 +766,24 @@ export function createUniversalLogger({ onSaveComplete } = {}) {
         });
 
         // ── Init ──────────────────────────────────────────────────────────
-        showStep('step1');
+        if (autoAnalyze && (prefillText || prefillImages.length > 0)) {
+            if (prefillText) textInput.value = prefillText;
+            if (prefillImages.length > 0) {
+                selectedImages = [...prefillImages];
+                updateAnalyzeBtn();
+            }
+            showStep('loading');
+        } else {
+            showStep('step1');
+        }
         setSessionType('cardio');
 
-        // Focus textarea after open
         el.addEventListener('shown.bs.offcanvas', () => {
-            textInput.focus();
+            if (autoAnalyze && (prefillText || prefillImages.length > 0)) {
+                runAnalyze();
+            } else {
+                textInput.focus();
+            }
         });
 
         // Clean up object URLs on close

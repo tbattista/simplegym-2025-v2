@@ -32,10 +32,7 @@
       "name": "Update Notion (Video Posted)",
       "type": "n8n-nodes-base.notion",
       "typeVersion": 2.2,
-      "position": [
-        1552,
-        528
-      ],
+      "position": [1552, 528],
       "credentials": {
         "notionApi": {
           "id": "AgBTlffVso2wYwnY",
@@ -70,10 +67,7 @@
       "name": "Update Notion (Failed)1",
       "type": "n8n-nodes-base.notion",
       "typeVersion": 2.2,
-      "position": [
-        -352,
-        1440
-      ],
+      "position": [-352, 1440],
       "credentials": {
         "notionApi": {
           "id": "AgBTlffVso2wYwnY",
@@ -96,23 +90,17 @@
       "name": "Post Carousel Tweet1",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        304,
-        1136
-      ]
+      "position": [304, 1136]
     },
     {
       "parameters": {
-        "jsCode": "// Aggregate all media IDs into a single item for the tweet\nconst items = $input.all();\nconst mediaIds = items.map(item => item.json.media_id_string);\n\nconst queryNode = $('Query Tutorial Posts1').first();\nconst caption = queryNode.json.properties?.Caption?.rich_text\n  ?.map(t => t.plain_text).join('') || '';\nconst pageId = queryNode.json.id;\n\nreturn [{\n  json: {\n    mediaIds,\n    caption,\n    pageId\n  }\n}];"
+        "jsCode": "const items = $input.all();\nconst mediaIds = items.map(item => item.json.media_id_string);\n\nconst queryNode = $('Query Tutorial Posts1').first();\nconst caption = queryNode.json.properties?.Caption?.rich_text\n  ?.map(t => t.plain_text).join('') || '';\nconst pageId = queryNode.json.id;\n\nreturn [{\n  json: {\n    mediaIds,\n    caption,\n    pageId\n  }\n}];"
       },
       "id": "27dd344e-1645-43fc-b8c7-5a88a372b75c",
       "name": "Collect Media IDs1",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        96,
-        1136
-      ]
+      "position": [96, 1136]
     },
     {
       "parameters": {
@@ -137,10 +125,7 @@
       "name": "Upload to X Media1",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        -144,
-        1136
-      ]
+      "position": [-144, 1136]
     },
     {
       "parameters": {
@@ -157,23 +142,17 @@
       "name": "Download Images1",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        -352,
-        1136
-      ]
+      "position": [-352, 1136]
     },
     {
       "parameters": {
-        "jsCode": "// Collect all text from Notion page blocks\nconst blocks = $input.all();\nlet allText = '';\n\nfor (const item of blocks) {\n  const content = item.json.content;\n  if (content) {\n    allText += content + '\\n';\n  }\n}\n\n// Try to extract image URLs from page body\nconst urlPattern = /https:\\/\\/ghost-gym-v3-testing\\.up\\.railway\\.app\\/static\\/assets\\/img\\/(tutorials|build-in-public)\\/[^\\s\\n)]+\\.(png|jpg|jpeg)/gi;\nlet urls = (allText.match(urlPattern) || []).slice(0, 4);\n\n// Fallback: use the Image URL property from the Notion page\nif (urls.length === 0) {\n  const imageUrl = $('Query Tutorial Posts1').first().json.properties?.['Image URL']?.url;\n  if (imageUrl) {\n    urls = [imageUrl];\n  }\n}\n\nif (urls.length === 0) {\n  throw new Error('No image URLs found in page content or Image URL property');\n}\n\n// Output one item per image URL\nreturn urls.map((url, i) => ({\n  json: { url, index: i }\n}));"
+        "jsCode": "const blocks = $input.all();\nlet allText = '';\n\nfor (const item of blocks) {\n  const content = item.json.content;\n  if (content) {\n    allText += content + '\\n';\n  }\n}\n\nconst urlPattern = /https:\\/\\/ghost-gym-v3-testing\\.up\\.railway\\.app\\/static\\/assets\\/img\\/(tutorials|build-in-public)\\/[^\\s\\n)]+\\.(png|jpg|jpeg)/gi;\nlet urls = (allText.match(urlPattern) || []).slice(0, 4);\n\nif (urls.length === 0) {\n  const imageUrl = $('Query Tutorial Posts1').first().json.properties?.['Image URL']?.url;\n  if (imageUrl) {\n    urls = [imageUrl];\n  }\n}\n\nif (urls.length === 0) {\n  throw new Error('No image URLs found in page content or Image URL property');\n}\n\nreturn urls.map((url, i) => ({\n  json: { url, index: i }\n}));"
       },
       "id": "2631ce0d-9840-482a-973e-4e034f2caedd",
       "name": "Parse Image URLs1",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        -576,
-        1136
-      ]
+      "position": [-576, 1136]
     },
     {
       "parameters": {
@@ -190,10 +169,7 @@
       "name": "Get Page Content1",
       "type": "n8n-nodes-base.notion",
       "typeVersion": 2.2,
-      "position": [
-        -800,
-        1136
-      ],
+      "position": [-800, 1136],
       "credentials": {
         "notionApi": {
           "id": "AgBTlffVso2wYwnY",
@@ -229,10 +205,7 @@
       "name": "Has Tutorial Posts?1",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
-      "position": [
-        -1264,
-        848
-      ]
+      "position": [-1264, 848]
     },
     {
       "parameters": {
@@ -254,10 +227,7 @@
       "name": "Query Tutorial Posts1",
       "type": "n8n-nodes-base.notion",
       "typeVersion": 2.2,
-      "position": [
-        -1472,
-        848
-      ],
+      "position": [-1472, 848],
       "credentials": {
         "notionApi": {
           "id": "AgBTlffVso2wYwnY",
@@ -296,10 +266,7 @@
       "name": "Update Notion (Carousel Posted)",
       "type": "n8n-nodes-base.notion",
       "typeVersion": 2.2,
-      "position": [
-        528,
-        1136
-      ],
+      "position": [528, 1136],
       "credentials": {
         "notionApi": {
           "id": "AgBTlffVso2wYwnY",
@@ -315,17 +282,14 @@
         "nodeCredentialType": "twitterOAuth1Api",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ text: $('Query Tutorial Posts1').first().json.properties.Caption.rich_text.map(t => t.plain_text).join(''), media: { media_ids: [$('Prepare APPEND').item.json.media_id_string] } }) }}",
+        "jsonBody": "={{ JSON.stringify({ text: $('Query Tutorial Posts1').first().json.property_caption, media: { media_ids: [$('INIT Upload').first().json.media_id_string.trim()] } }) }}",
         "options": {}
       },
       "id": "56b0d680-1503-4b7a-85a8-2d2d0353ee7b",
       "name": "Post Video Tweet",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        1328,
-        528
-      ]
+      "position": [1328, 528]
     },
     {
       "parameters": {
@@ -335,16 +299,13 @@
       "name": "Wait 30s for Processing",
       "type": "n8n-nodes-base.wait",
       "typeVersion": 1.1,
-      "position": [
-        1104,
-        528
-      ],
+      "position": [1104, 528],
       "webhookId": "8aec889f-5af5-4fa6-b75b-f1937bfa25dd"
     },
     {
       "parameters": {
         "method": "POST",
-        "url": "https://upload.twitter.com/1.1/media/upload.json?command=FINALIZE&media_id={{ $('INIT Chunked Upload').first().json.media_id_string }}",
+        "url": "=https://upload.twitter.com/1.1/media/upload.json?command=FINALIZE&media_id={{ $('INIT Upload').first().json.media_id_string.trim() }}",
         "authentication": "predefinedCredentialType",
         "nodeCredentialType": "twitterOAuth1Api",
         "options": {}
@@ -353,10 +314,7 @@
       "name": "FINALIZE Upload",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        112,
-        672
-      ],
+      "position": [112, 672],
       "credentials": {
         "twitterOAuth1Api": {
           "id": "xPX5EX62QMMc88NP",
@@ -392,10 +350,7 @@
       "name": "Has Video?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
-      "position": [
-        -1040,
-        832
-      ]
+      "position": [-1040, 832]
     },
     {
       "parameters": {
@@ -424,10 +379,7 @@
       "name": "Update Notion (Failed)",
       "type": "n8n-nodes-base.notion",
       "typeVersion": 2.2,
-      "position": [
-        1168,
-        896
-      ],
+      "position": [1168, 896],
       "credentials": {
         "notionApi": {
           "id": "AgBTlffVso2wYwnY",
@@ -466,10 +418,7 @@
       "name": "Update Notion (Posted)",
       "type": "n8n-nodes-base.notion",
       "typeVersion": 2.2,
-      "position": [
-        656,
-        208
-      ],
+      "position": [656, 208],
       "credentials": {
         "notionApi": {
           "id": "AgBTlffVso2wYwnY",
@@ -492,23 +441,17 @@
       "name": "Post Carousel Tweet",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        432,
-        208
-      ]
+      "position": [432, 208]
     },
     {
       "parameters": {
-        "jsCode": "// Aggregate all media IDs into a single item for the tweet\nconst items = $input.all();\nconst mediaIds = items.map(item => item.json.media_id_string);\n\nconst queryNode = $('Query Tutorial Posts').first();\nconst caption = queryNode.json.properties.Caption?.rich_text?.map(t => t.plain_text).join('') || '';\nconst pageId = queryNode.json.id;\n\nreturn [{\n  json: {\n    mediaIds,\n    caption,\n    pageId\n  }\n}];"
+        "jsCode": "const items = $input.all();\nconst mediaIds = items.map(item => item.json.media_id_string);\n\nconst queryNode = $('Query Tutorial Posts').first();\nconst caption = queryNode.json.properties.Caption?.rich_text?.map(t => t.plain_text).join('') || '';\nconst pageId = queryNode.json.id;\n\nreturn [{\n  json: {\n    mediaIds,\n    caption,\n    pageId\n  }\n}];"
       },
       "id": "05ab0253-1faf-416f-b148-b93cd6ab3938",
       "name": "Collect Media IDs",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        208,
-        208
-      ]
+      "position": [208, 208]
     },
     {
       "parameters": {
@@ -533,10 +476,7 @@
       "name": "Upload to X Media",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        -16,
-        208
-      ],
+      "position": [-16, 208],
       "credentials": {
         "twitterOAuth1Api": {
           "id": "xPX5EX62QMMc88NP",
@@ -559,23 +499,17 @@
       "name": "Download Images",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        -240,
-        208
-      ]
+      "position": [-240, 208]
     },
     {
       "parameters": {
-        "jsCode": "// Collect all text from Notion page blocks (simplified output)\nconst blocks = $input.all();\nlet allText = '';\n\nfor (const item of blocks) {\n  const content = item.json.content;\n  if (content) {\n    allText += content + '\\n';\n  }\n}\n\n// Try to extract image URLs from page body\nconst urlPattern = /https:\\/\\/ghost-gym-v3-testing\\.up\\.railway\\.app\\/static\\/assets\\/img\\/(tutorials|build-in-public)\\/[^\\s\\n)]+\\.(png|jpg|jpeg)/gi;\nlet urls = (allText.match(urlPattern) || []).slice(0, 4);\n\n// Fallback: use the Image URL property from the Notion page\nif (urls.length === 0) {\n  const imageUrl = $('Query Tutorial Posts').first().json.property_image_url;\n  if (imageUrl) {\n    urls = [imageUrl];\n  }\n}\n\nif (urls.length === 0) {\n  throw new Error('No image URLs found in page content or Image URL property');\n}\n\n// Output one item per image URL\nreturn urls.map((url, i) => ({\n  json: { url, index: i }\n}));\n"
+        "jsCode": "const blocks = $input.all();\nlet allText = '';\n\nfor (const item of blocks) {\n  const content = item.json.content;\n  if (content) {\n    allText += content + '\\n';\n  }\n}\n\nconst urlPattern = /https:\\/\\/ghost-gym-v3-testing\\.up\\.railway\\.app\\/static\\/assets\\/img\\/(tutorials|build-in-public)\\/[^\\s\\n)]+\\.(png|jpg|jpeg)/gi;\nlet urls = (allText.match(urlPattern) || []).slice(0, 4);\n\nif (urls.length === 0) {\n  const imageUrl = $('Query Tutorial Posts').first().json.property_image_url;\n  if (imageUrl) {\n    urls = [imageUrl];\n  }\n}\n\nif (urls.length === 0) {\n  throw new Error('No image URLs found in page content or Image URL property');\n}\n\nreturn urls.map((url, i) => ({\n  json: { url, index: i }\n}));"
       },
       "id": "c1efd5f8-bcfd-431a-84c9-db0f032ec753",
       "name": "Parse Image URLs",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        -464,
-        208
-      ]
+      "position": [-464, 208]
     },
     {
       "parameters": {
@@ -592,10 +526,7 @@
       "name": "Get Page Content",
       "type": "n8n-nodes-base.notion",
       "typeVersion": 2.2,
-      "position": [
-        -672,
-        208
-      ],
+      "position": [-672, 208],
       "credentials": {
         "notionApi": {
           "id": "AgBTlffVso2wYwnY",
@@ -631,10 +562,7 @@
       "name": "Has Tutorial Posts?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
-      "position": [
-        -912,
-        224
-      ]
+      "position": [-912, 224]
     },
     {
       "parameters": {
@@ -656,10 +584,7 @@
       "name": "Query Tutorial Posts",
       "type": "n8n-nodes-base.notion",
       "typeVersion": 2.2,
-      "position": [
-        -1120,
-        224
-      ],
+      "position": [-1120, 224],
       "credentials": {
         "notionApi": {
           "id": "AgBTlffVso2wYwnY",
@@ -673,10 +598,7 @@
       "name": "When clicking Test workflow",
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
-      "position": [
-        -1328,
-        224
-      ]
+      "position": [-1328, 224]
     },
     {
       "parameters": {
@@ -694,7 +616,7 @@
             },
             {
               "name": "media_id",
-              "value": "={{ $('INIT Upload').first().json.media_id_string.replace(/\\s/g, '') }}"
+              "value": "={{ $('INIT Upload').first().json.media_id_string.trim() }}"
             },
             {
               "name": "segment_index",
@@ -702,7 +624,7 @@
             },
             {
               "name": "media_data",
-              "value": "={{ $('Get Video Base64').item.json.media_data }}"
+              "value": "={{ $json.media_data }}"
             }
           ]
         },
@@ -710,10 +632,7 @@
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.4,
-      "position": [
-        -256,
-        688
-      ],
+      "position": [-256, 688],
       "id": "65927782-ae3f-4c60-a544-6cee467a9cb8",
       "name": "Append Video",
       "credentials": {
@@ -739,7 +658,7 @@
             },
             {
               "name": "total_bytes",
-              "value": "266240"
+              "value": "254349"
             },
             {
               "name": "media_type",
@@ -755,10 +674,7 @@
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.4,
-      "position": [
-        -720,
-        688
-      ],
+      "position": [-720, 688],
       "id": "541553fe-ff8a-498d-930f-e7d497e8b162",
       "name": "INIT Upload",
       "credentials": {
@@ -770,19 +686,12 @@
     },
     {
       "parameters": {
-        "url": "=https://ghost-gym-v3-testing.up.railway.app/api/v3/export/video-base64/{{ $('Query Tutorial Posts1').first().json.property_video_url.split('/').pop() }}\n",
-        "options": {
-          "response": {
-            "response": {}
-          }
-        }
+        "url": "=https://ghost-gym-v3-testing.up.railway.app/api/v3/export/video-base64/{{ $('Query Tutorial Posts1').first().json.property_video_url.split('/').pop() }}",
+        "options": {}
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.4,
-      "position": [
-        -496,
-        688
-      ],
+      "position": [-496, 688],
       "id": "337ac543-7a08-4e91-9ba8-219136ac4ec0",
       "name": "Get Video Base64"
     }
@@ -790,275 +699,79 @@
   "pinData": {},
   "connections": {
     "Collect Media IDs1": {
-      "main": [
-        [
-          {
-            "node": "Post Carousel Tweet1",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
+      "main": [[{"node": "Post Carousel Tweet1", "type": "main", "index": 0}]]
     },
     "Upload to X Media1": {
-      "main": [
-        [
-          {
-            "node": "Collect Media IDs1",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
+      "main": [[{"node": "Collect Media IDs1", "type": "main", "index": 0}]]
     },
     "Download Images1": {
-      "main": [
-        [
-          {
-            "node": "Upload to X Media1",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
+      "main": [[{"node": "Upload to X Media1", "type": "main", "index": 0}]]
     },
     "Parse Image URLs1": {
-      "main": [
-        [
-          {
-            "node": "Download Images1",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
+      "main": [[{"node": "Download Images1", "type": "main", "index": 0}]]
     },
     "Get Page Content1": {
-      "main": [
-        [
-          {
-            "node": "Parse Image URLs1",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
+      "main": [[{"node": "Parse Image URLs1", "type": "main", "index": 0}]]
     },
     "Has Tutorial Posts?1": {
-      "main": [
-        [
-          {
-            "node": "Has Video?",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
+      "main": [[{"node": "Has Video?", "type": "main", "index": 0}]]
     },
     "Query Tutorial Posts1": {
-      "main": [
-        [
-          {
-            "node": "Has Tutorial Posts?1",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
+      "main": [[{"node": "Has Tutorial Posts?1", "type": "main", "index": 0}]]
     },
     "Post Carousel Tweet1": {
-      "main": [
-        [
-          {
-            "node": "Update Notion (Carousel Posted)",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
+      "main": [[{"node": "Update Notion (Carousel Posted)", "type": "main", "index": 0}]]
     },
     "Post Video Tweet": {
-      "main": [
-        [
-          {
-            "node": "Update Notion (Video Posted)",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
+      "main": [[{"node": "Update Notion (Video Posted)", "type": "main", "index": 0}]]
     },
     "Wait 30s for Processing": {
-      "main": [
-        [
-          {
-            "node": "Post Video Tweet",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
+      "main": [[{"node": "Post Video Tweet", "type": "main", "index": 0}]]
     },
     "FINALIZE Upload": {
-      "main": [
-        [
-          {
-            "node": "Wait 30s for Processing",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
+      "main": [[{"node": "Wait 30s for Processing", "type": "main", "index": 0}]]
     },
     "Has Video?": {
       "main": [
-        [
-          {
-            "node": "INIT Upload",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Get Page Content1",
-            "type": "main",
-            "index": 0
-          }
-        ]
+        [{"node": "INIT Upload", "type": "main", "index": 0}],
+        [{"node": "Get Page Content1", "type": "main", "index": 0}]
       ]
     },
     "Post Carousel Tweet": {
-      "main": [
-        [
-          {
-            "node": "Update Notion (Posted)",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
+      "main": [[{"node": "Update Notion (Posted)", "type": "main", "index": 0}]]
     },
     "Collect Media IDs": {
-      "main": [
-        [
-          {
-            "node": "Post Carousel Tweet",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
+      "main": [[{"node": "Post Carousel Tweet", "type": "main", "index": 0}]]
     },
     "Upload to X Media": {
-      "main": [
-        [
-          {
-            "node": "Collect Media IDs",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
+      "main": [[{"node": "Collect Media IDs", "type": "main", "index": 0}]]
     },
     "Download Images": {
-      "main": [
-        [
-          {
-            "node": "Upload to X Media",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
+      "main": [[{"node": "Upload to X Media", "type": "main", "index": 0}]]
     },
     "Parse Image URLs": {
-      "main": [
-        [
-          {
-            "node": "Download Images",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
+      "main": [[{"node": "Download Images", "type": "main", "index": 0}]]
     },
     "Get Page Content": {
-      "main": [
-        [
-          {
-            "node": "Parse Image URLs",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
+      "main": [[{"node": "Parse Image URLs", "type": "main", "index": 0}]]
     },
     "Has Tutorial Posts?": {
-      "main": [
-        [
-          {
-            "node": "Get Page Content",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
+      "main": [[{"node": "Get Page Content", "type": "main", "index": 0}]]
     },
     "Query Tutorial Posts": {
-      "main": [
-        [
-          {
-            "node": "Has Tutorial Posts?",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
+      "main": [[{"node": "Has Tutorial Posts?", "type": "main", "index": 0}]]
     },
     "When clicking Test workflow": {
-      "main": [
-        [
-          {
-            "node": "Query Tutorial Posts",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
+      "main": [[{"node": "Query Tutorial Posts", "type": "main", "index": 0}]]
     },
     "Append Video": {
-      "main": [
-        [
-          {
-            "node": "FINALIZE Upload",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
+      "main": [[{"node": "FINALIZE Upload", "type": "main", "index": 0}]]
     },
     "INIT Upload": {
-      "main": [
-        [
-          {
-            "node": "Get Video Base64",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
+      "main": [[{"node": "Get Video Base64", "type": "main", "index": 0}]]
     },
     "Get Video Base64": {
-      "main": [
-        [
-          {
-            "node": "Append Video",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
+      "main": [[{"node": "Append Video", "type": "main", "index": 0}]]
     }
   },
   "active": false,

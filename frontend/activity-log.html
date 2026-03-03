@@ -115,34 +115,56 @@
               <!-- Main Content (shown when authenticated) -->
               <div id="activityLogContent" style="display: none;">
 
-                <!-- Universal Logger Button -->
-                <button type="button" id="openUniversalLoggerBtn"
-                        class="btn btn-outline-primary w-100 mb-2 py-2 d-flex align-items-center justify-content-center">
-                  <i class="bx bx-camera fs-4 me-2"></i>
-                  <span class="fw-semibold">Log with AI</span>
-                  <small class="opacity-75 ms-1">— photo, screenshot, or describe</small>
+                <!-- Log with AI - collapse toggle + inline panel -->
+                <button type="button" id="logAiToggleBtn"
+                        class="btn btn-outline-primary w-100 mb-0 py-2 d-flex align-items-center px-3"
+                        data-bs-toggle="collapse" data-bs-target="#logAiBody"
+                        aria-expanded="false" aria-controls="logAiBody">
+                  <i class="bx bx-camera fs-4 me-2 flex-shrink-0"></i>
+                  <span class="fw-semibold flex-grow-1 text-start">Log with AI</span>
+                  <small class="opacity-75 me-2 d-none d-sm-inline">photo, screenshot, or describe</small>
+                  <i class="bx bx-chevron-down flex-shrink-0" id="logAiChevron" style="transition: transform 0.2s;"></i>
                 </button>
+                <div class="collapse" id="logAiBody">
+                  <div class="card mb-2 border-top-0 rounded-top-0">
+                    <div class="card-body py-3">
+                      <textarea class="form-control mb-2" id="logAiText" rows="3"
+                        placeholder="Describe your activity...&#10;&#10;e.g. 2.3 miles on the treadmill in 18:20, burned 340 cal&#10;   Bench Press 3×10 at 135lbs, Squats 4×8 at 185lbs&#10;&#10;Or add photos below"></textarea>
+                      <div id="logAiThumbnails" class="d-flex flex-wrap gap-2 mb-2"></div>
+                      <div class="d-flex gap-2">
+                        <label class="btn btn-sm btn-outline-secondary flex-shrink-0 mb-0" for="logAiFileInput">
+                          <i class="bx bx-image-add me-1"></i>Add Photos
+                          <input type="file" id="logAiFileInput"
+                                 accept="image/jpeg,image/png,image/webp,image/gif,.jpg,.jpeg,.png,.webp,.gif"
+                                 multiple class="d-none">
+                        </label>
+                        <button type="button" class="btn btn-sm btn-primary w-100" id="logAiAnalyzeBtn" disabled>
+                          <i class="bx bx-analyse me-1"></i>Analyze Activity
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
 
-                <!-- Focus Button -->
-                <a href="workout-database.html" class="btn btn-primary w-100 mb-4 py-2 d-flex align-items-center justify-content-center">
-                  <i class="bx bx-dumbbell fs-4 me-2"></i>
-                  <span class="fw-semibold">Start a Workout</span>
-                  <small class="opacity-75 ms-1">— Browse your library</small>
+                <!-- Start a Workout -->
+                <a href="workout-database.html" class="btn btn-primary w-100 mb-2 py-2 d-flex align-items-center px-3">
+                  <i class="bx bx-dumbbell fs-4 me-2 flex-shrink-0"></i>
+                  <span class="fw-semibold flex-grow-1 text-start">Start a Workout</span>
+                  <i class="bx bx-chevron-right flex-shrink-0"></i>
                 </a>
 
-                <!-- Quick Log Section -->
+                <!-- Quick Log - collapse toggle -->
                 <button type="button"
-                        class="btn btn-link text-muted text-decoration-none p-0 mb-2 d-flex align-items-center w-100 text-start"
+                        class="btn btn-outline-secondary w-100 mb-0 py-2 d-flex align-items-center px-3"
                         data-bs-toggle="collapse" data-bs-target="#quickLogBody"
                         aria-expanded="false" aria-controls="quickLogBody"
                         id="quickLogToggleBtn">
-                  <span class="text-uppercase small fw-semibold flex-grow-1">
-                    <i class="bx bx-run me-1"></i>Quick Log an Activity
-                  </span>
-                  <i class="bx bx-chevron-down small" id="quickLogChevron" style="transition: transform 0.2s;"></i>
+                  <i class="bx bx-run fs-4 me-2 flex-shrink-0"></i>
+                  <span class="fw-semibold flex-grow-1 text-start">Quick Log an Activity</span>
+                  <i class="bx bx-chevron-down flex-shrink-0" id="quickLogChevron" style="transition: transform 0.2s;"></i>
                 </button>
-                <div class="collapse mb-4" id="quickLogBody">
-                <div class="card">
+                <div class="collapse" id="quickLogBody">
+                <div class="card mb-4 border-top-0 rounded-top-0">
                   <div class="card-body">
 
                     <!-- Activity Type Selector (rendered dynamically by activity-log.js) -->
@@ -509,25 +531,102 @@
                 }
             }, 3000);
 
-            // Rotate chevron on Quick Log collapse toggle
-            const quickLogBody = document.getElementById('quickLogBody');
-            const quickLogChevron = document.getElementById('quickLogChevron');
-            if (quickLogBody && quickLogChevron) {
-                quickLogBody.addEventListener('show.bs.collapse', () => {
-                    quickLogChevron.style.transform = 'rotate(180deg)';
-                });
-                quickLogBody.addEventListener('hide.bs.collapse', () => {
-                    quickLogChevron.style.transform = 'rotate(0deg)';
-                });
+            // Chevron rotation helpers
+            function wireChevron(collapseId, chevronId) {
+                const collapseEl = document.getElementById(collapseId);
+                const chevronEl  = document.getElementById(chevronId);
+                if (!collapseEl || !chevronEl) return;
+                collapseEl.addEventListener('show.bs.collapse', () => { chevronEl.style.transform = 'rotate(180deg)'; });
+                collapseEl.addEventListener('hide.bs.collapse', () => { chevronEl.style.transform = 'rotate(0deg)'; });
+            }
+            wireChevron('quickLogBody', 'quickLogChevron');
+            wireChevron('logAiBody',    'logAiChevron');
+
+            // ── Log with AI Inline Panel ──────────────────────────────────
+            let logAiImages = [];
+
+            function updateLogAiBtn() {
+                const hasText   = document.getElementById('logAiText')?.value.trim().length > 0;
+                const hasPhotos = logAiImages.length > 0;
+                const btn = document.getElementById('logAiAnalyzeBtn');
+                if (btn) btn.disabled = !(hasText || hasPhotos);
             }
 
-            // Wire up Universal Logger button
-            document.getElementById('openUniversalLoggerBtn')?.addEventListener('click', () => {
+            function renderLogAiThumbnails() {
+                const container = document.getElementById('logAiThumbnails');
+                if (!container) return;
+                container.innerHTML = '';
+                logAiImages.forEach((file, idx) => {
+                    const url = URL.createObjectURL(file);
+                    const wrap = document.createElement('div');
+                    wrap.className = 'position-relative d-inline-flex';
+                    wrap.innerHTML = `
+                        <img src="${url}" alt="" class="rounded border"
+                             style="height:52px;width:52px;object-fit:cover;">
+                        <button type="button"
+                                class="btn-close btn-close-sm position-absolute bg-white rounded-circle shadow-sm"
+                                style="top:-4px;right:-4px;padding:3px;font-size:0.5rem;"
+                                data-ai-idx="${idx}" aria-label="Remove"></button>
+                    `;
+                    container.appendChild(wrap);
+                });
+                // "Add more" slot
+                if (logAiImages.length > 0 && logAiImages.length < 5) {
+                    const addMore = document.createElement('label');
+                    addMore.className = 'border rounded d-flex align-items-center justify-content-center text-muted';
+                    addMore.style.cssText = 'height:52px;width:52px;cursor:pointer;font-size:1.25rem;';
+                    addMore.innerHTML = '<i class="bx bx-plus"></i>';
+                    addMore.setAttribute('for', 'logAiFileInput');
+                    container.appendChild(addMore);
+                }
+            }
+
+            // Remove thumbnail on ✕ click (single delegated listener)
+            document.getElementById('logAiThumbnails')?.addEventListener('click', (e) => {
+                const btn = e.target.closest('[data-ai-idx]');
+                if (!btn) return;
+                const idx = parseInt(btn.dataset.aiIdx, 10);
+                if (!isNaN(idx)) {
+                    URL.revokeObjectURL(btn.closest('.position-relative')?.querySelector('img')?.src);
+                    logAiImages.splice(idx, 1);
+                    renderLogAiThumbnails();
+                    updateLogAiBtn();
+                }
+            });
+
+            document.getElementById('logAiFileInput')?.addEventListener('change', (e) => {
+                const files = Array.from(e.target.files);
+                const remaining = 5 - logAiImages.length;
+                logAiImages = logAiImages.concat(files.slice(0, remaining));
+                e.target.value = '';
+                renderLogAiThumbnails();
+                updateLogAiBtn();
+            });
+
+            document.getElementById('logAiText')?.addEventListener('input', updateLogAiBtn);
+
+            document.getElementById('logAiAnalyzeBtn')?.addEventListener('click', () => {
+                const text   = document.getElementById('logAiText')?.value.trim() || null;
+                const images = [...logAiImages];
+
+                // Collapse the inline panel
+                const logAiBody = document.getElementById('logAiBody');
+                if (logAiBody) bootstrap.Collapse.getOrCreateInstance(logAiBody).hide();
+
                 if (typeof window.createUniversalLogger === 'function') {
                     window.createUniversalLogger({
+                        prefillText:   text,
+                        prefillImages: images,
+                        autoAnalyze:   true,
                         onSaveComplete: () => {
                             if (window.loadRecentCardioSessions) window.loadRecentCardioSessions();
-                        }
+                            // Reset inline panel
+                            logAiImages = [];
+                            renderLogAiThumbnails();
+                            const logAiText = document.getElementById('logAiText');
+                            if (logAiText) logAiText.value = '';
+                            updateLogAiBtn();
+                        },
                     });
                 }
             });
