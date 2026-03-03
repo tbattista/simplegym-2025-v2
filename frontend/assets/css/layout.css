@@ -332,6 +332,12 @@
 
 /* Small screens - mobile */
 @media (max-width: 576px) {
+    /* Reduce container side padding so cards go near full-width */
+    .container-xxl.container-p-y {
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+    }
+
     #workoutsViewGrid {
         grid-template-columns: 1fr;
     }
