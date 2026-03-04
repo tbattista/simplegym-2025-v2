@@ -27,104 +27,307 @@ const VIEWPORT = { width: 390, height: 844 };
 const DEVICE_SCALE_FACTOR = 2; // Retina
 
 // --- Seed Data ---
-// Injected into localStorage so the app renders realistic content for anonymous users.
+// Uses the EXACT localStorage format the app expects (key: 'gym_workouts').
 
-const SEED_WORKOUTS = [
-  {
-    id: 'landing-push-day',
-    name: 'Push Day',
-    exercises: [
-      { name: 'Barbell Bench Press', sets: '4', reps: '6-8', rest: '90s', muscleGroup: 'chest' },
-      { name: 'Overhead Press', sets: '3', reps: '8-10', rest: '60s', muscleGroup: 'shoulders' },
-      { name: 'Incline Dumbbell Press', sets: '3', reps: '10-12', rest: '60s', muscleGroup: 'chest' },
-      { name: 'Lateral Raises', sets: '3', reps: '12-15', rest: '45s', muscleGroup: 'shoulders' },
-      { name: 'Tricep Pushdowns', sets: '3', reps: '12-15', rest: '45s', muscleGroup: 'triceps' }
-    ],
-    created: new Date().toISOString(),
-    isFavorite: true
-  },
-  {
-    id: 'landing-pull-day',
-    name: 'Pull Day',
-    exercises: [
-      { name: 'Barbell Rows', sets: '4', reps: '6-8', rest: '90s', muscleGroup: 'back' },
-      { name: 'Pull-Ups', sets: '3', reps: '8-10', rest: '60s', muscleGroup: 'back' },
-      { name: 'Face Pulls', sets: '3', reps: '12-15', rest: '45s', muscleGroup: 'shoulders' },
-      { name: 'Barbell Curls', sets: '3', reps: '10-12', rest: '45s', muscleGroup: 'biceps' }
-    ],
-    created: new Date().toISOString(),
-    isFavorite: false
-  }
-];
+function makeSeedWorkouts() {
+  const now = new Date().toISOString();
+  return [
+    {
+      id: 'landing-push-day',
+      name: 'Push Day',
+      description: 'Upper body push workout',
+      tags: ['push', 'upper'],
+      exercise_groups: [
+        {
+          group_id: 'group-lp-001',
+          exercises: { a: 'Barbell Bench Press' },
+          sets: '4', reps: '6-8', rest: '2min',
+          default_weight: 185, default_weight_unit: 'lbs',
+          group_type: 'standard', group_name: null,
+          cardio_config: null, interval_config: null, block_id: null
+        },
+        {
+          group_id: 'group-lp-002',
+          exercises: { a: 'Overhead Press' },
+          sets: '3', reps: '8-10', rest: '90s',
+          default_weight: 115, default_weight_unit: 'lbs',
+          group_type: 'standard', group_name: null,
+          cardio_config: null, interval_config: null, block_id: null
+        },
+        {
+          group_id: 'group-lp-003',
+          exercises: { a: 'Incline Dumbbell Press' },
+          sets: '3', reps: '10-12', rest: '60s',
+          default_weight: 60, default_weight_unit: 'lbs',
+          group_type: 'standard', group_name: null,
+          cardio_config: null, interval_config: null, block_id: null
+        },
+        {
+          group_id: 'group-lp-004',
+          exercises: { a: 'Lateral Raises' },
+          sets: '3', reps: '12-15', rest: '45s',
+          default_weight: 20, default_weight_unit: 'lbs',
+          group_type: 'standard', group_name: null,
+          cardio_config: null, interval_config: null, block_id: null
+        },
+        {
+          group_id: 'group-lp-005',
+          exercises: { a: 'Tricep Pushdowns' },
+          sets: '3', reps: '12-15', rest: '45s',
+          default_weight: 40, default_weight_unit: 'lbs',
+          group_type: 'standard', group_name: null,
+          cardio_config: null, interval_config: null, block_id: null
+        }
+      ],
+      sections: [],
+      template_notes: [],
+      is_template: true,
+      is_archived: false, archived_at: null,
+      is_favorite: true, favorited_at: now,
+      created_date: now, modified_date: now
+    },
+    {
+      id: 'landing-pull-day',
+      name: 'Pull Day',
+      description: 'Upper body pull workout',
+      tags: ['pull', 'upper'],
+      exercise_groups: [
+        {
+          group_id: 'group-lp-101',
+          exercises: { a: 'Barbell Rows' },
+          sets: '4', reps: '6-8', rest: '2min',
+          default_weight: 155, default_weight_unit: 'lbs',
+          group_type: 'standard', group_name: null,
+          cardio_config: null, interval_config: null, block_id: null
+        },
+        {
+          group_id: 'group-lp-102',
+          exercises: { a: 'Pull-Ups' },
+          sets: '3', reps: '8-10', rest: '90s',
+          default_weight: null, default_weight_unit: 'lbs',
+          group_type: 'standard', group_name: null,
+          cardio_config: null, interval_config: null, block_id: null
+        },
+        {
+          group_id: 'group-lp-103',
+          exercises: { a: 'Face Pulls' },
+          sets: '3', reps: '12-15', rest: '45s',
+          default_weight: 30, default_weight_unit: 'lbs',
+          group_type: 'standard', group_name: null,
+          cardio_config: null, interval_config: null, block_id: null
+        },
+        {
+          group_id: 'group-lp-104',
+          exercises: { a: 'Barbell Curls' },
+          sets: '3', reps: '10-12', rest: '45s',
+          default_weight: 65, default_weight_unit: 'lbs',
+          group_type: 'standard', group_name: null,
+          cardio_config: null, interval_config: null, block_id: null
+        }
+      ],
+      sections: [],
+      template_notes: [],
+      is_template: true,
+      is_archived: false, archived_at: null,
+      is_favorite: false, favorited_at: null,
+      created_date: now, modified_date: now
+    },
+    {
+      id: 'landing-leg-day',
+      name: 'Leg Day',
+      description: 'Lower body strength',
+      tags: ['legs', 'lower'],
+      exercise_groups: [
+        {
+          group_id: 'group-lp-201',
+          exercises: { a: 'Barbell Squat' },
+          sets: '4', reps: '5', rest: '3min',
+          default_weight: 225, default_weight_unit: 'lbs',
+          group_type: 'standard', group_name: null,
+          cardio_config: null, interval_config: null, block_id: null
+        },
+        {
+          group_id: 'group-lp-202',
+          exercises: { a: 'Romanian Deadlift' },
+          sets: '3', reps: '8-10', rest: '2min',
+          default_weight: 185, default_weight_unit: 'lbs',
+          group_type: 'standard', group_name: null,
+          cardio_config: null, interval_config: null, block_id: null
+        },
+        {
+          group_id: 'group-lp-203',
+          exercises: { a: 'Leg Press' },
+          sets: '3', reps: '10-12', rest: '90s',
+          default_weight: 360, default_weight_unit: 'lbs',
+          group_type: 'standard', group_name: null,
+          cardio_config: null, interval_config: null, block_id: null
+        }
+      ],
+      sections: [],
+      template_notes: [],
+      is_template: true,
+      is_archived: false, archived_at: null,
+      is_favorite: true, favorited_at: now,
+      created_date: now, modified_date: now
+    }
+  ];
+}
+
+// --- Helpers ---
+
+/** Inject seed workouts into localStorage on the current page. */
+async function seedWorkouts(page) {
+  const workouts = makeSeedWorkouts();
+  await page.evaluate((w) => {
+    localStorage.setItem('gym_workouts', JSON.stringify(w));
+    // Light theme
+    document.documentElement.setAttribute('data-bs-theme', 'light');
+    localStorage.setItem('theme', 'light');
+  }, workouts);
+}
+
+/** Force light theme after navigation. */
+async function forceLight(page) {
+  await page.evaluate(() => {
+    document.documentElement.setAttribute('data-bs-theme', 'light');
+  });
+}
+
+/** Wait for any of the given selectors (comma-separated). */
+async function waitForAny(page, selectorsStr, timeout = 6000) {
+  const selectors = selectorsStr.split(',').map(s => s.trim());
+  try {
+    await Promise.race(
+      selectors.map(sel =>
+        page.waitForSelector(sel, { timeout }).catch(() => null)
+      )
+    );
+  } catch (_) { /* ok */ }
+}
 
 // --- Scenario Definitions ---
 
 const SCENARIOS = [
   {
     name: 'landing-hero-workout-mode',
-    url: '/workout-mode.html',
-    description: 'Hero screenshot: Workout mode with exercises loaded',
-    setup: async (page) => {
-      // Inject a workout to display in workout mode
-      await page.evaluate((workouts) => {
-        localStorage.setItem('workouts', JSON.stringify(workouts));
-        // Set the active workout for workout mode
-        localStorage.setItem('ffn-active-workout-id', workouts[0].id);
-        localStorage.setItem('ffn-active-workout', JSON.stringify(workouts[0]));
-        // Set light theme
-        document.documentElement.setAttribute('data-bs-theme', 'light');
-        localStorage.setItem('theme', 'light');
-      }, SEED_WORKOUTS);
-    },
-    waitFor: '#exerciseCardsContainer, .exercise-card, .landing-page-content, .workout-landing',
-    waitTimeout: 8000,
-    delay: 2000
+    description: 'Hero: Workout mode with exercises loaded',
+    run: async (page, baseUrl) => {
+      // 1. Seed data on a blank page
+      await page.goto(baseUrl, { waitUntil: 'domcontentloaded', timeout: 10000 });
+      await seedWorkouts(page);
+
+      // 2. Navigate to workout mode with the Push Day workout ID
+      await page.goto(`${baseUrl}/workout-mode.html?id=landing-push-day`, {
+        waitUntil: 'networkidle', timeout: 15000
+      });
+      await forceLight(page);
+      await waitForAny(page, '.exercise-card, #exerciseCardsContainer, .workout-landing', 8000);
+      await page.waitForTimeout(2500);
+    }
   },
   {
     name: 'landing-feature-builder',
-    url: '/workout-builder.html',
-    description: 'Feature: Workout builder with exercises filled',
-    setup: async (page) => {
-      await page.evaluate((workouts) => {
-        localStorage.setItem('workouts', JSON.stringify(workouts));
-        document.documentElement.setAttribute('data-bs-theme', 'light');
-        localStorage.setItem('theme', 'light');
-      }, SEED_WORKOUTS);
-    },
-    waitFor: '#workoutEditorForm, .exercise-group, #exerciseGroups',
-    waitTimeout: 8000,
-    delay: 2000
+    description: 'Feature: Workout builder form with exercises (interactive)',
+    run: async (page, baseUrl) => {
+      // Navigate to new workout editor and fill it in via Playwright interactions
+      await page.goto(`${baseUrl}/workout-builder.html?new=true`, {
+        waitUntil: 'networkidle', timeout: 15000
+      });
+      await forceLight(page);
+      await waitForAny(page, '#workoutName, #workoutEditorForm', 8000);
+      await page.waitForTimeout(1500);
+
+      // Type workout name
+      const nameInput = await page.$('#workoutName');
+      if (nameInput) {
+        await nameInput.fill('Push Day');
+        await page.waitForTimeout(500);
+      }
+
+      // Click "Add Exercise" button to add exercise groups
+      const addBtn = await page.$('#addExerciseGroupBtnVisible');
+      if (addBtn) {
+        await addBtn.click();
+        await page.waitForTimeout(800);
+        // Type first exercise name
+        const exInput = await page.$('.exercise-name-input:last-of-type');
+        if (exInput) {
+          await exInput.fill('Barbell Bench Press');
+          await page.waitForTimeout(600);
+          // Click away to dismiss autocomplete
+          await page.click('#workoutName');
+          await page.waitForTimeout(300);
+        }
+
+        // Add second exercise
+        const addBtn2 = await page.$('#addExerciseGroupBtnVisible');
+        if (addBtn2) {
+          await addBtn2.click();
+          await page.waitForTimeout(800);
+          const exInput2 = await page.$('.exercise-name-input:last-of-type');
+          if (exInput2) {
+            await exInput2.fill('Overhead Press');
+            await page.waitForTimeout(600);
+            await page.click('#workoutName');
+            await page.waitForTimeout(300);
+          }
+        }
+
+        // Add third exercise
+        const addBtn3 = await page.$('#addExerciseGroupBtnVisible');
+        if (addBtn3) {
+          await addBtn3.click();
+          await page.waitForTimeout(800);
+          const exInput3 = await page.$('.exercise-name-input:last-of-type');
+          if (exInput3) {
+            await exInput3.fill('Incline Dumbbell Press');
+            await page.waitForTimeout(600);
+            await page.click('#workoutName');
+            await page.waitForTimeout(300);
+          }
+        }
+      }
+
+      await page.waitForTimeout(1000);
+    }
   },
   {
     name: 'landing-feature-session',
-    url: '/workout-mode.html',
-    description: 'Feature: Active workout session',
-    setup: async (page) => {
-      await page.evaluate((workouts) => {
-        localStorage.setItem('workouts', JSON.stringify(workouts));
-        localStorage.setItem('ffn-active-workout-id', workouts[0].id);
-        localStorage.setItem('ffn-active-workout', JSON.stringify(workouts[0]));
-        document.documentElement.setAttribute('data-bs-theme', 'light');
-        localStorage.setItem('theme', 'light');
-      }, SEED_WORKOUTS);
-    },
-    waitFor: '#exerciseCardsContainer, .exercise-card, .workout-landing',
-    waitTimeout: 8000,
-    delay: 2000
+    description: 'Feature: Workout mode with expanded exercise card',
+    run: async (page, baseUrl) => {
+      // Seed data then navigate to workout-mode with Pull Day for variety
+      await page.goto(baseUrl, { waitUntil: 'domcontentloaded', timeout: 10000 });
+      await seedWorkouts(page);
+
+      await page.goto(`${baseUrl}/workout-mode.html?id=landing-pull-day`, {
+        waitUntil: 'networkidle', timeout: 15000
+      });
+      await forceLight(page);
+      await waitForAny(page, '.exercise-card', 8000);
+      await page.waitForTimeout(1500);
+
+      // Try to expand the first exercise card (click the chevron/expand button)
+      const expandBtn = await page.$('.exercise-card:first-child .expand-toggle, .exercise-card:first-child [data-action="toggle-expand"], .exercise-card:first-child .card-expand-btn');
+      if (expandBtn) {
+        await expandBtn.click();
+        await page.waitForTimeout(1000);
+      }
+
+      await page.waitForTimeout(1000);
+    }
   },
   {
     name: 'landing-feature-ai-logger',
-    url: '/activity-log.html',
-    description: 'Feature: Activity log page (AI logger entry point)',
-    setup: async (page) => {
-      await page.evaluate(() => {
-        document.documentElement.setAttribute('data-bs-theme', 'light');
-        localStorage.setItem('theme', 'light');
+    description: 'Feature: Exercise database (publicly accessible)',
+    run: async (page, baseUrl) => {
+      // Exercise database loads from API — no auth needed, shows real content
+      await page.goto(`${baseUrl}/exercise-database.html`, {
+        waitUntil: 'networkidle', timeout: 15000
       });
-    },
-    waitFor: '.content-wrapper, #recentCardioSessions, .card',
-    waitTimeout: 8000,
-    delay: 2000
+      await forceLight(page);
+      await waitForAny(page, '.exercise-card, #exerciseTableContainer, .card', 8000);
+      await page.waitForTimeout(3000);
+    }
   }
 ];
 
@@ -156,43 +359,10 @@ async function main() {
 
   for (const scenario of SCENARIOS) {
     console.log(`📸 ${scenario.name}: ${scenario.description}`);
-
     const page = await context.newPage();
 
     try {
-      // Run setup (inject localStorage data) before navigation
-      await page.goto(baseUrl, { waitUntil: 'domcontentloaded', timeout: 10000 });
-      if (scenario.setup) {
-        await scenario.setup(page);
-      }
-
-      // Navigate to the target page
-      await page.goto(`${baseUrl}${scenario.url}`, { waitUntil: 'networkidle', timeout: 15000 });
-
-      // Set light theme after navigation too (some pages reset it)
-      await page.evaluate(() => {
-        document.documentElement.setAttribute('data-bs-theme', 'light');
-      });
-
-      // Wait for key content
-      if (scenario.waitFor) {
-        try {
-          // waitFor may be a comma-separated list of selectors — try the first one that exists
-          const selectors = scenario.waitFor.split(',').map(s => s.trim());
-          await Promise.race(
-            selectors.map(sel =>
-              page.waitForSelector(sel, { timeout: scenario.waitTimeout || 5000 }).catch(() => null)
-            )
-          );
-        } catch (e) {
-          console.log(`   ⚠️  Selector timeout (continuing anyway): ${scenario.waitFor}`);
-        }
-      }
-
-      // Extra delay for animations/rendering
-      if (scenario.delay) {
-        await page.waitForTimeout(scenario.delay);
-      }
+      await scenario.run(page, baseUrl);
 
       // Capture screenshot
       const filepath = path.join(SCREENSHOT_DIR, `${scenario.name}.png`);
@@ -209,12 +379,9 @@ async function main() {
   }
 
   await browser.close();
-
   console.log(`\n✨ Done! Captured ${captured}/${SCENARIOS.length} screenshots.`);
   console.log(`   Files saved to: ${SCREENSHOT_DIR}\n`);
 }
-
-// --- Helpers ---
 
 function getArg(args, flag) {
   const idx = args.indexOf(flag);
