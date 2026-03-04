@@ -29,6 +29,7 @@ const SCREENSHOT_DIR = path.join(__dirname, '..', '..', 'frontend', 'assets', 'i
 
 const VIEWPORTS = {
   mobile: { name: 'mobile', width: 390, height: 844 },
+  'mobile-pro': { name: 'mobile-pro', width: 430, height: 932 },   // iPhone 14 Pro Max
   'mobile-hd': { name: 'mobile-hd', width: 720, height: 1280 },
   desktop: { name: 'desktop', width: 1400, height: 900 }
 };
@@ -525,6 +526,8 @@ async function runTutorial(tutorialSlug, viewportName, baseUrl, { showClicks = t
   const browser = await chromium.launch({ headless: true });
   const contextOptions = viewportName === 'mobile'
     ? { ...devices['iPhone 14'], deviceScaleFactor: 2 }
+    : viewportName === 'mobile-pro'
+    ? { ...devices['iPhone 14 Pro Max'], deviceScaleFactor: 3 }
     : { viewport: { width: viewport.width, height: viewport.height }, deviceScaleFactor: 2, isMobile: viewportName.startsWith('mobile') };
 
   const context = await browser.newContext(contextOptions);
