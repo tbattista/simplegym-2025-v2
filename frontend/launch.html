@@ -1,478 +1,415 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-bs-theme="light">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fitness Field Notes - Your Gym Journal, Digitized</title>
-    <meta name="description" content="Your gym journal, digitized. Track workouts, build programs, share with friends. A minimalist workout tracker for intermediate lifters.">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fitness Field Notes - Your Gym Journal, Digitized</title>
+  <meta name="description" content="Track your workouts with a minimalist gym journal. Build custom programs, log sessions with AI, and share with friends. Free workout tracker for lifters.">
 
-    <!-- Canonical URL -->
-    <link rel="canonical" href="https://fitnessfieldnotes.com/launch" />
+  <!-- Canonical URL -->
+  <link rel="canonical" href="https://fitnessfieldnotes.com/launch">
 
-    <!-- Open Graph / Facebook -->
-    <meta property="og:type" content="website">
-    <meta property="og:site_name" content="Fitness Field Notes">
-    <meta property="og:title" content="Fitness Field Notes - Your Gym Journal, Digitized">
-    <meta property="og:description" content="Your gym journal, digitized. Track workouts, build programs, share with friends.">
-    <meta property="og:image" content="https://fitnessfieldnotes.com/static/assets/img/og-image.png">
-    <meta property="og:url" content="https://fitnessfieldnotes.com/launch">
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Fitness Field Notes">
+  <meta property="og:title" content="Fitness Field Notes - Your Gym Journal, Digitized">
+  <meta property="og:description" content="Track your workouts with a minimalist gym journal. Build custom programs, log sessions with AI, and share with friends.">
+  <meta property="og:image" content="https://fitnessfieldnotes.com/static/assets/img/og-image.png">
+  <meta property="og:url" content="https://fitnessfieldnotes.com/launch">
 
-    <!-- Twitter Card -->
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Fitness Field Notes - Your Gym Journal, Digitized">
-    <meta name="twitter:description" content="Your gym journal, digitized. Track workouts, build programs, share with friends.">
-    <meta name="twitter:image" content="https://fitnessfieldnotes.com/static/assets/img/og-image.png">
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Fitness Field Notes - Your Gym Journal, Digitized">
+  <meta name="twitter:description" content="Track your workouts with a minimalist gym journal. Build custom programs, log sessions with AI, and share with friends.">
+  <meta name="twitter:image" content="https://fitnessfieldnotes.com/static/assets/img/og-image.png">
 
-    <!-- Structured Data - WebSite -->
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "WebSite",
-      "name": "Fitness Field Notes",
-      "description": "Minimalist workout tracking and gym log application for intermediate lifters",
-      "url": "https://fitnessfieldnotes.com"
-    }
-    </script>
+  <!-- Structured Data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "Fitness Field Notes",
+    "description": "Minimalist workout tracking and gym log application for intermediate lifters",
+    "url": "https://fitnessfieldnotes.com"
+  }
+  </script>
 
-    <!-- Favicon -->
-    <link rel="icon" type="image/x-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%93%93</text></svg>">
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="/static/assets/img/favicon/favicon.svg">
 
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-    <style>
-        /* ============================================
-           CSS VARIABLES - Matches App Design System
-           ============================================ */
-        :root {
-            --gs-primary: #C97C5D;
-            --gs-primary-rgb: 201, 124, 93;
-            --gs-primary-hover: #b86f53;
-            --gs-secondary: #64748B;
-            --gs-success: #8CBF9F;
-            --gs-success-rgb: 140, 191, 159;
-            --gs-dark: #1F2937;
-            --gs-light: #FBFAF8;
-            --gs-gray-50: #f8fafc;
-            --gs-gray-100: #f1f5f9;
-            --gs-gray-200: #e2e8f0;
-            --gs-gray-300: #cbd5e1;
-            --gs-gray-400: #94a3b8;
-            --gs-gray-500: #64748b;
-            --gs-gray-600: #475569;
+  <!-- Design system tokens -->
+  <link rel="stylesheet" href="/static/assets/css/design-system.css">
 
-            --gs-font-sans: 'Public Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            --gs-shadow-md: 0 2px 6px rgba(67, 89, 113, 0.12);
-            --gs-shadow-lg: 0 4px 12px rgba(67, 89, 113, 0.16);
+  <!-- Icons (Boxicons) -->
+  <link rel="stylesheet" href="/static/assets/vendor/fonts/iconify-icons.css">
 
-            --bg-body: var(--gs-gray-50);
-            --bg-card: #ffffff;
-            --text-heading: var(--gs-dark);
-            --text-body: var(--gs-gray-600);
-            --text-muted: var(--gs-gray-500);
-            --border-color: var(--gs-gray-200);
-        }
+  <!-- Landing page styles -->
+  <link rel="stylesheet" href="/static/assets/css/landing-marketing.css">
 
-        /* Dark mode */
-        @media (prefers-color-scheme: dark) {
-            :root {
-                --bg-body: #1a1d21;
-                --bg-card: #232730;
-                --text-heading: #e4e6eb;
-                --text-body: #b0b3b8;
-                --text-muted: #8a8d91;
-                --border-color: #3a3f47;
-                --gs-shadow-md: 0 2px 6px rgba(0, 0, 0, 0.3);
-                --gs-shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.4);
-            }
-        }
-
-        /* ============================================
-           BASE STYLES
-           ============================================ */
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        html {
-            scroll-behavior: smooth;
-        }
-
-        body {
-            font-family: var(--gs-font-sans);
-            background: var(--bg-body);
-            color: var(--text-body);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 2rem 1rem;
-            line-height: 1.5;
-        }
-
-        /* ============================================
-           CONTAINER
-           ============================================ */
-        .container {
-            max-width: 480px;
-            width: 100%;
-        }
-
-        /* ============================================
-           HERO SECTION
-           ============================================ */
-        .hero {
-            text-align: center;
-            margin-bottom: 2rem;
-        }
-
-        .badge {
-            display: inline-block;
-            background: rgba(var(--gs-primary-rgb), 0.15);
-            color: var(--gs-primary);
-            padding: 0.375rem 0.875rem;
-            border-radius: 9999px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 1.5rem;
-        }
-
-        h1 {
-            font-size: 2rem;
-            font-weight: 700;
-            color: var(--text-heading);
-            margin-bottom: 0.75rem;
-            line-height: 1.2;
-        }
-
-        .tagline {
-            font-size: 1.125rem;
-            color: var(--text-muted);
-            max-width: 320px;
-            margin: 0 auto;
-        }
-
-        /* ============================================
-           FEATURES SECTION
-           ============================================ */
-        .features {
-            display: flex;
-            flex-direction: column;
-            gap: 0.75rem;
-            margin-bottom: 2rem;
-        }
-
-        .feature-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 0.75rem;
-            padding: 1.25rem;
-            box-shadow: var(--gs-shadow-md);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-
-        .feature-card:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--gs-shadow-lg);
-        }
-
-        .feature-screenshot {
-            width: 100%;
-            border-radius: 0.5rem;
-            overflow: hidden;
-            margin-bottom: 1rem;
-            background: var(--gs-gray-100);
-            aspect-ratio: 16 / 10;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .feature-screenshot img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: block;
-        }
-
-        .feature-screenshot .placeholder {
-            color: var(--text-muted);
-            font-size: 0.75rem;
-        }
-
-        .feature-text h3 {
-            font-size: 1rem;
-            font-weight: 600;
-            color: var(--text-heading);
-            margin-bottom: 0.25rem;
-        }
-
-        .feature-text p {
-            font-size: 0.875rem;
-            color: var(--text-muted);
-            margin: 0;
-        }
-
-        /* ============================================
-           SIGNUP SECTION
-           ============================================ */
-        .signup-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 0.75rem;
-            padding: 2rem 1.5rem;
-            text-align: center;
-            box-shadow: var(--gs-shadow-md);
-            margin-bottom: 2rem;
-        }
-
-        .signup-card h2 {
-            font-size: 1.25rem;
-            font-weight: 600;
-            color: var(--text-heading);
-            margin-bottom: 0.5rem;
-        }
-
-        .signup-card .subtitle {
-            font-size: 0.875rem;
-            color: var(--text-muted);
-            margin-bottom: 1.5rem;
-        }
-
-        /* Form styling */
-        .signup-form {
-            display: flex;
-            flex-direction: column;
-            gap: 0.75rem;
-        }
-
-        .signup-form input[type="email"] {
-            width: 100%;
-            padding: 0.875rem 1rem;
-            border: 1px solid var(--border-color);
-            border-radius: 0.5rem;
-            font-size: 1rem;
-            font-family: inherit;
-            background: var(--bg-body);
-            color: var(--text-heading);
-            transition: border-color 0.2s ease, box-shadow 0.2s ease;
-        }
-
-        .signup-form input[type="email"]:focus {
-            outline: none;
-            border-color: var(--gs-primary);
-            box-shadow: 0 0 0 3px rgba(var(--gs-primary-rgb), 0.15);
-        }
-
-        .signup-form input[type="email"]::placeholder {
-            color: var(--text-muted);
-        }
-
-        .signup-form button {
-            width: 100%;
-            padding: 0.875rem 1.5rem;
-            background: var(--gs-primary);
-            color: white;
-            border: none;
-            border-radius: 0.5rem;
-            font-size: 1rem;
-            font-weight: 600;
-            font-family: inherit;
-            cursor: pointer;
-            transition: background 0.2s ease, transform 0.2s ease;
-        }
-
-        .signup-form button:hover {
-            background: var(--gs-primary-hover);
-            transform: translateY(-1px);
-        }
-
-        .signup-form button:active {
-            transform: translateY(0);
-        }
-
-        .privacy-note {
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            margin-top: 0.75rem;
-        }
-
-        /* Success message (hidden by default) */
-        .success-message {
-            display: none;
-            padding: 1rem;
-            background: rgba(var(--gs-success-rgb), 0.1);
-            border-radius: 0.5rem;
-            color: var(--gs-success);
-            font-weight: 500;
-        }
-
-        .success-message.show {
-            display: block;
-        }
-
-        /* ============================================
-           FOOTER
-           ============================================ */
-        .footer {
-            text-align: center;
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            margin-top: auto;
-            padding-top: 2rem;
-        }
-
-        .footer a {
-            color: var(--gs-primary);
-            text-decoration: none;
-        }
-
-        .footer a:hover {
-            text-decoration: underline;
-        }
-
-        /* ============================================
-           RESPONSIVE
-           ============================================ */
-        @media (min-width: 480px) {
-            body {
-                padding: 3rem 1.5rem;
-            }
-
-            h1 {
-                font-size: 2.5rem;
-            }
-
-            .signup-form {
-                flex-direction: row;
-            }
-
-            .signup-form input[type="email"] {
-                flex: 1;
-            }
-
-            .signup-form button {
-                width: auto;
-                white-space: nowrap;
-            }
-        }
-    </style>
-
-    <!-- Matomo -->
-    <script>
-      var _paq = window._paq = window._paq || [];
-      _paq.push(['trackPageView']);
-      _paq.push(['enableLinkTracking']);
-      (function() {
-        var u="//matomo-production-72c8.up.railway.app/";
-        _paq.push(['setTrackerUrl', u+'matomo.php']);
-        _paq.push(['setSiteId', '2']);
-        var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
-        g.async=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
-      })();
-    </script>
-    <!-- End Matomo Code -->
+  <!-- Matomo -->
+  <script>
+    var _paq = window._paq = window._paq || [];
+    _paq.push(['trackPageView']);
+    _paq.push(['enableLinkTracking']);
+    (function() {
+      var u="//matomo-production-72c8.up.railway.app/";
+      _paq.push(['setTrackerUrl', u+'matomo.php']);
+      _paq.push(['setSiteId', '2']);
+      var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+      g.async=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
+    })();
+  </script>
 </head>
 <body>
-    <div class="container">
-        <!-- Hero Section -->
-        <section class="hero">
-            <span class="badge">Coming Soon</span>
-            <h1>Fitness Field Notes</h1>
-            <p class="tagline">Your gym journal, digitized. Track workouts, build programs, share with friends.</p>
-        </section>
 
-        <!-- Features Preview -->
-        <section class="features">
-            <div class="feature-card">
-                <div class="feature-screenshot">
-                    <!-- Replace with: <img src="/static/assets/img/launch/workout-builder.png" alt="Workout Builder screenshot"> -->
-                    <span class="placeholder">Screenshot: Workout Builder</span>
-                </div>
-                <div class="feature-text">
-                    <h3>Build Custom Workouts</h3>
-                    <p>Create workout templates with exercises, sets, and reps</p>
-                </div>
-            </div>
+  <!-- ============================================
+       NAVIGATION
+       ============================================ -->
+  <nav class="lp-nav" role="navigation" aria-label="Main navigation">
+    <div class="lp-nav-inner">
+      <a href="/launch" class="lp-nav-logo">
+        <img src="/static/assets/img/favicon/favicon.svg" alt="" width="28" height="28">
+        <span>Fitness Field Notes</span>
+      </a>
 
-            <div class="feature-card">
-                <div class="feature-screenshot">
-                    <!-- Replace with: <img src="/static/assets/img/launch/workout-mode.png" alt="Workout Mode screenshot"> -->
-                    <span class="placeholder">Screenshot: Workout Mode</span>
-                </div>
-                <div class="feature-text">
-                    <h3>Track Your Progress</h3>
-                    <p>Log every session and see your gains over time</p>
-                </div>
-            </div>
+      <ul class="lp-nav-links">
+        <li><a href="#features">Features</a></li>
+        <li><a href="#how-it-works">How It Works</a></li>
+        <li><a href="/exercise-database">Exercises</a></li>
+      </ul>
 
-            <div class="feature-card">
-                <div class="feature-screenshot">
-                    <!-- Replace with: <img src="/static/assets/img/launch/share.png" alt="Share Workouts screenshot"> -->
-                    <span class="placeholder">Screenshot: Share</span>
-                </div>
-                <div class="feature-text">
-                    <h3>Share With Friends</h3>
-                    <p>Export and share workouts with your training partners</p>
-                </div>
-            </div>
-        </section>
-
-        <!-- Email Signup -->
-        <section class="signup-card">
-            <h2>Get Notified When We Launch</h2>
-            <p class="subtitle">Be the first to know. No spam, just one email.</p>
-
-            <form
-                class="signup-form"
-                action="https://gmail.us8.list-manage.com/subscribe/post?u=5bfacf9fb5eaf11769dd7ccf6&amp;id=a0c1653af0&amp;f_id=00ed7ce0f0"
-                method="post"
-                target="_blank"
-                id="mc-embedded-subscribe-form"
-                name="mc-embedded-subscribe-form"
-            >
-                <input
-                    type="email"
-                    name="EMAIL"
-                    placeholder="Enter your email"
-                    required
-                    autocomplete="email"
-                >
-                <!-- Anti-bot field (hidden) -->
-                <div style="position: absolute; left: -5000px;" aria-hidden="true">
-                    <input type="text" name="b_5bfacf9fb5eaf11769dd7ccf6_a0c1653af0" tabindex="-1" value="">
-                </div>
-                <button type="submit">Notify Me</button>
-            </form>
-
-            <p class="privacy-note">We respect your privacy. Unsubscribe anytime.</p>
-
-            <!-- Success message (shown via JS or Mailchimp redirect) -->
-            <div class="success-message" id="successMessage">
-                Thanks for signing up! We'll let you know when we launch.
-            </div>
-        </section>
-
-        <!-- Footer -->
-        <footer class="footer">
-            <p>&copy; 2026 Fitness Field Notes. All rights reserved.</p>
-        </footer>
+      <div class="lp-nav-actions">
+        <button class="lp-nav-theme-toggle" id="themeToggle" aria-label="Toggle dark mode">
+          <i class="bx bx-moon" id="themeToggleIcon"></i>
+        </button>
+        <a href="/" class="lp-btn lp-btn-primary lp-btn-sm">Get Started Free</a>
+        <button class="lp-nav-mobile-toggle" id="mobileMenuToggle" aria-label="Open menu" aria-expanded="false">
+          <i class="bx bx-menu"></i>
+        </button>
+      </div>
     </div>
 
-    <script>
-        // Simple form enhancement (optional)
-        // Shows success message if URL contains ?subscribed=true
-        if (window.location.search.includes('subscribed=true')) {
-            document.querySelector('.signup-form').style.display = 'none';
-            document.querySelector('.subtitle').style.display = 'none';
-            document.getElementById('successMessage').classList.add('show');
-        }
-    </script>
+    <!-- Mobile menu -->
+    <div class="lp-mobile-menu" id="mobileMenu">
+      <a href="#features">Features</a>
+      <a href="#how-it-works">How It Works</a>
+      <a href="/exercise-database">Exercise Database</a>
+      <a href="/">Get Started Free</a>
+    </div>
+  </nav>
+
+  <!-- ============================================
+       HERO
+       ============================================ -->
+  <section class="lp-hero">
+    <div class="lp-container">
+      <div class="lp-hero-inner">
+
+        <div class="lp-hero-content" data-reveal>
+          <span class="lp-hero-badge">Free Workout Tracker</span>
+          <h1>Your Gym Journal, Digitized</h1>
+          <p class="lp-hero-subtitle">
+            Track workouts, build programs, share with friends. A minimalist tracker for lifters who want to focus on training.
+          </p>
+          <div class="lp-hero-buttons">
+            <a href="/" class="lp-btn lp-btn-primary lp-btn-lg">
+              <i class="bx bx-play"></i> Start Training
+            </a>
+            <a href="#how-it-works" class="lp-btn lp-btn-ghost lp-btn-lg">
+              See How It Works
+            </a>
+          </div>
+        </div>
+
+        <div class="lp-hero-mockup" data-reveal data-reveal-delay="200">
+          <div class="lp-phone-frame">
+            <div class="lp-phone-screen">
+              <img src="/static/assets/img/landing/landing-hero-workout-mode.png"
+                   alt="Fitness Field Notes workout mode screenshot"
+                   loading="eager"
+                   onerror="this.parentElement.innerHTML='<div class=lp-screenshot-placeholder>Workout Mode</div>'">
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================
+       STATS BAR
+       ============================================ -->
+  <section class="lp-stats">
+    <div class="lp-container">
+      <div class="lp-stats-grid" data-reveal>
+        <div class="lp-stat-item">
+          <span class="lp-stat-number">2,583</span>
+          <span class="lp-stat-label">Exercises</span>
+        </div>
+        <div class="lp-stat-item">
+          <span class="lp-stat-number">100%</span>
+          <span class="lp-stat-label">Free</span>
+        </div>
+        <div class="lp-stat-item">
+          <span class="lp-stat-number">0</span>
+          <span class="lp-stat-label">Account Required</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================
+       FEATURE GRID
+       ============================================ -->
+  <section class="lp-section lp-section-light" id="features">
+    <div class="lp-container">
+      <div class="lp-section-heading" data-reveal>
+        <h2>Everything you need to train smarter</h2>
+        <p>Simple tools that stay out of your way so you can focus on what matters — the workout.</p>
+      </div>
+
+      <div class="lp-feature-grid">
+        <div class="lp-feature-card" data-reveal data-reveal-delay="100">
+          <div class="lp-feature-icon lp-feature-icon-clay">
+            <i class="bx bx-edit-alt"></i>
+          </div>
+          <h3>Workout Builder</h3>
+          <p>Create custom workout templates with exercises, sets, reps, and rest times. Flexible format — numbers, ranges, or AMRAP.</p>
+        </div>
+
+        <div class="lp-feature-card" data-reveal data-reveal-delay="200">
+          <div class="lp-feature-icon lp-feature-icon-sage">
+            <i class="bx bx-timer"></i>
+          </div>
+          <h3>Live Session Tracking</h3>
+          <p>Track every rep in real time with built-in rest timers, weight progression indicators, and auto-complete sets.</p>
+        </div>
+
+        <div class="lp-feature-card" data-reveal data-reveal-delay="300">
+          <div class="lp-feature-icon lp-feature-icon-amber">
+            <i class="bx bx-brain"></i>
+          </div>
+          <h3>AI-Powered Logging</h3>
+          <p>Snap a photo of your gym whiteboard or watch screen. AI turns it into a structured workout log instantly.</p>
+        </div>
+
+        <div class="lp-feature-card" data-reveal data-reveal-delay="100">
+          <div class="lp-feature-icon lp-feature-icon-slate">
+            <i class="bx bx-search-alt"></i>
+          </div>
+          <h3>Exercise Database</h3>
+          <p>Browse 2,583 exercises filterable by muscle group, equipment, and difficulty. Or create your own custom exercises.</p>
+        </div>
+
+        <div class="lp-feature-card" data-reveal data-reveal-delay="200">
+          <div class="lp-feature-icon lp-feature-icon-clay">
+            <i class="bx bx-folder"></i>
+          </div>
+          <h3>Programs</h3>
+          <p>Organize workouts into structured training programs. Follow a plan, track completion, and stay consistent.</p>
+        </div>
+
+        <div class="lp-feature-card" data-reveal data-reveal-delay="300">
+          <div class="lp-feature-icon lp-feature-icon-sage">
+            <i class="bx bx-share-alt"></i>
+          </div>
+          <h3>Export &amp; Share</h3>
+          <p>Share workouts as PDF reference sheets, printable 4-week gym logs, social media images, or plain text.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================
+       SHOWCASE 1: WORKOUT BUILDER
+       ============================================ -->
+  <section class="lp-showcase lp-section-subtle">
+    <div class="lp-container">
+      <div class="lp-showcase-inner" data-reveal>
+        <div class="lp-showcase-image">
+          <div class="lp-phone-frame">
+            <div class="lp-phone-screen">
+              <img src="/static/assets/img/landing/landing-feature-builder.png"
+                   alt="Workout builder showing exercises and sets"
+                   loading="lazy"
+                   onerror="this.parentElement.innerHTML='<div class=lp-screenshot-placeholder>Workout Builder</div>'">
+            </div>
+          </div>
+        </div>
+        <div class="lp-showcase-text">
+          <h3>Build your perfect workout</h3>
+          <p>Create workout templates your way. Add exercises from our database or your own custom movements, then configure sets and reps in any format you prefer.</p>
+          <ul class="lp-showcase-list">
+            <li><i class="bx bx-check"></i> Flexible sets/reps — numbers, ranges, or "AMRAP"</li>
+            <li><i class="bx bx-check"></i> Exercise groups with alternates for equipment swaps</li>
+            <li><i class="bx bx-check"></i> Bonus exercises for supplemental work</li>
+            <li><i class="bx bx-check"></i> Drag-to-reorder exercises</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================
+       SHOWCASE 2: WORKOUT MODE (Reversed)
+       ============================================ -->
+  <section class="lp-showcase lp-section-light lp-showcase-reversed">
+    <div class="lp-container">
+      <div class="lp-showcase-inner" data-reveal>
+        <div class="lp-showcase-image">
+          <div class="lp-phone-frame">
+            <div class="lp-phone-screen">
+              <img src="/static/assets/img/landing/landing-feature-session.png"
+                   alt="Live workout session with timer and weight tracking"
+                   loading="lazy"
+                   onerror="this.parentElement.innerHTML='<div class=lp-screenshot-placeholder>Workout Mode</div>'">
+            </div>
+          </div>
+        </div>
+        <div class="lp-showcase-text">
+          <h3>Track every rep in real time</h3>
+          <p>Start a session and log weights, reps, and rest times as you go. See your last performance to know exactly what to beat.</p>
+          <ul class="lp-showcase-list">
+            <li><i class="bx bx-check"></i> Built-in rest timer between sets</li>
+            <li><i class="bx bx-check"></i> Weight progression color indicators</li>
+            <li><i class="bx bx-check"></i> Quick log mode for rapid data entry</li>
+            <li><i class="bx bx-check"></i> Session history and performance tracking</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================
+       SHOWCASE 3: AI LOGGER
+       ============================================ -->
+  <section class="lp-showcase lp-section-subtle">
+    <div class="lp-container">
+      <div class="lp-showcase-inner" data-reveal>
+        <div class="lp-showcase-image">
+          <div class="lp-phone-frame">
+            <div class="lp-phone-screen">
+              <img src="/static/assets/img/landing/landing-feature-ai-logger.png"
+                   alt="AI-powered workout logging from photo"
+                   loading="lazy"
+                   onerror="this.parentElement.innerHTML='<div class=lp-screenshot-placeholder>AI Logger</div>'">
+            </div>
+          </div>
+        </div>
+        <div class="lp-showcase-text">
+          <h3>Log workouts with AI</h3>
+          <p>Take a photo of your gym whiteboard, Apple Watch, or handwritten notes. Our AI parses it into structured workout data — strength or cardio.</p>
+          <ul class="lp-showcase-list">
+            <li><i class="bx bx-check"></i> Upload photos or describe your session in text</li>
+            <li><i class="bx bx-check"></i> Supports both strength and cardio activities</li>
+            <li><i class="bx bx-check"></i> Clarifying questions when data is ambiguous</li>
+            <li><i class="bx bx-check"></i> Optionally save as a reusable template</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================
+       HOW IT WORKS
+       ============================================ -->
+  <section class="lp-section lp-section-light" id="how-it-works">
+    <div class="lp-container">
+      <div class="lp-section-heading" data-reveal>
+        <h2>Start logging in 3 steps</h2>
+        <p>No setup required. Open the app and start training.</p>
+      </div>
+
+      <div class="lp-steps-grid">
+        <div class="lp-step-connector" aria-hidden="true"></div>
+        <div class="lp-step-connector" aria-hidden="true"></div>
+
+        <div class="lp-step" data-reveal data-reveal-delay="100">
+          <div class="lp-step-number">
+            <i class="bx bx-dumbbell"></i>
+          </div>
+          <h3>Create a workout</h3>
+          <p>Build a template with your exercises, sets, and reps — or import one.</p>
+        </div>
+
+        <div class="lp-step" data-reveal data-reveal-delay="200">
+          <div class="lp-step-number">
+            <i class="bx bx-play-circle"></i>
+          </div>
+          <h3>Hit the gym</h3>
+          <p>Start a session and log your weights and reps in real time.</p>
+        </div>
+
+        <div class="lp-step" data-reveal data-reveal-delay="300">
+          <div class="lp-step-number">
+            <i class="bx bx-line-chart"></i>
+          </div>
+          <h3>Track your progress</h3>
+          <p>Review your history, see streaks, and share workouts with friends.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================
+       CTA
+       ============================================ -->
+  <section class="lp-cta">
+    <div class="lp-container" data-reveal>
+      <h2>Start tracking your workouts today</h2>
+      <p>Free forever. No credit card required.</p>
+      <a href="/" class="lp-btn lp-btn-primary lp-btn-lg">
+        <i class="bx bx-play"></i> Get Started Free
+      </a>
+      <div class="lp-cta-secondary">
+        Already have an account? <a href="/">Sign in</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================
+       FOOTER
+       ============================================ -->
+  <footer class="lp-footer">
+    <div class="lp-container">
+      <div class="lp-footer-grid">
+        <div class="lp-footer-brand">
+          <div class="lp-footer-brand-name">
+            <img src="/static/assets/img/favicon/favicon.svg" alt="" width="24" height="24">
+            Fitness Field Notes
+          </div>
+          <p>Your gym journal, digitized. A minimalist workout tracker for lifters who want to focus on training.</p>
+        </div>
+        <div class="lp-footer-links">
+          <h4>App</h4>
+          <ul>
+            <li><a href="/">Dashboard</a></li>
+            <li><a href="/exercise-database">Exercise Database</a></li>
+            <li><a href="/public-workouts">Public Workouts</a></li>
+          </ul>
+        </div>
+        <div class="lp-footer-links">
+          <h4>Links</h4>
+          <ul>
+            <li><a href="#features">Features</a></li>
+            <li><a href="#how-it-works">How It Works</a></li>
+            <li><a href="/feedback-voting">Feature Requests</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="lp-footer-bottom">
+        &copy; 2026 Fitness Field Notes. All rights reserved.
+      </div>
+    </div>
+  </footer>
+
+  <!-- Animations JS (deferred) -->
+  <script defer src="/static/assets/js/pages/landing-page-animations.js"></script>
+
 </body>
 </html>

@@ -58,26 +58,26 @@ const TUTORIALS = {
       {
         action: 'click',
         target: { mobile: '#addExerciseGroupBtnVisible', desktop: '#addExerciseGroupBtnVisible' },
-        waitAfter: '.exercise-name-input',
+        waitAfter: '#exerciseGroupEditorOffcanvas.show',
         caption: 'Add your first exercise'
       },
       {
         action: 'type',
-        target: '.exercise-name-input:last-of-type',
+        target: '#primaryExerciseInput',
         value: 'Bench Press',
-        waitAfter: '.autocomplete-dropdown, .tt-menu',
-        caption: 'Search for an exercise'
+        caption: 'Enter an exercise name'
+      },
+      {
+        action: 'type',
+        target: '#editorProtocol',
+        value: '3x10',
+        caption: 'Set your reps'
       },
       {
         action: 'click',
-        target: '.autocomplete-dropdown .autocomplete-item:first-child, .tt-suggestion:first-child',
-        caption: 'Exercise added with default sets'
-      },
-      {
-        action: 'fill-sets',
-        sets: '3',
-        reps: '8-12',
-        caption: 'Customize your sets and reps'
+        target: '#saveExerciseGroupEditorBtn',
+        waitTime: 1000,
+        caption: 'Exercise added!'
       },
       {
         action: 'click',
