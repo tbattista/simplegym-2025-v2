@@ -299,8 +299,8 @@ async function waitForSelector(page, selector, timeout = 10000) {
 }
 
 /**
- * Get the center coordinates of the first matching element from a comma-separated selector list.
- * Returns { clickX, clickY } or { clickX: null, clickY: null } if not found.
+ * Get the center coordinates and bounding box of the first matching element.
+ * Returns { clickX, clickY, bbox } or { clickX: null, clickY: null, bbox: null } if not found.
  */
 async function getElementCenter(page, selector) {
   const selectors = selector.split(',').map(s => s.trim());
@@ -312,13 +312,14 @@ async function getElementCenter(page, selector) {
         if (bbox) {
           return {
             clickX: Math.round(bbox.x + bbox.width / 2),
-            clickY: Math.round(bbox.y + bbox.height / 2)
+            clickY: Math.round(bbox.y + bbox.height / 2),
+            bbox
           };
         }
       }
     } catch (e) { /* try next */ }
   }
-  return { clickX: null, clickY: null };
+  return { clickX: null, clickY: null, bbox: null };
 }
 
 /**
@@ -354,12 +355,45 @@ async function removeClickIndicator(page) {
 }
 
 /**
- * Execute a step action. Returns { clickX, clickY } if a click happened (for indicator placement).
+ * Inject an orange rectangle around the full bounding box of the clicked element.
+ * Call removeHighlightBox() after taking the screenshot.
+ */
+async function injectHighlightBox(page, bbox) {
+  await page.evaluate(({ x, y, w, h }) => {
+    const el = document.createElement('div');
+    el.id = '__tutorial_highlight_box__';
+    el.style.cssText = `
+      position: fixed;
+      left: ${x - 4}px;
+      top: ${y - 4}px;
+      width: ${w + 8}px;
+      height: ${h + 8}px;
+      border: 3px solid rgba(255, 80, 0, 0.9);
+      border-radius: 8px;
+      background: rgba(255, 80, 0, 0.06);
+      box-shadow: 0 0 0 3px rgba(255, 80, 0, 0.2);
+      z-index: 2147483646;
+      pointer-events: none;
+    `;
+    document.body.appendChild(el);
+  }, { x: bbox.x, y: bbox.y, w: bbox.width, h: bbox.height });
+}
+
+async function removeHighlightBox(page) {
+  await page.evaluate(() => {
+    const el = document.getElementById('__tutorial_highlight_box__');
+    if (el) el.remove();
+  });
+}
+
+/**
+ * Execute a step action. Returns { clickX, clickY, bbox } if a click happened (for indicator placement).
  */
 async function executeStep(page, step, viewportName, baseUrl) {
   const target = step.target ? resolveTarget(step.target, viewportName) : null;
   let clickX = null;
   let clickY = null;
+  let bbox = null;
 
   switch (step.action) {
     case 'navigate':
@@ -374,7 +408,7 @@ async function executeStep(page, step, viewportName, baseUrl) {
     case 'click':
       if (target) {
         // Get click position before clicking
-        ({ clickX, clickY } = await getElementCenter(page, target));
+        ({ clickX, clickY, bbox } = await getElementCenter(page, target));
         await page.click(target);
       }
       if (step.waitAfter) {
@@ -388,7 +422,7 @@ async function executeStep(page, step, viewportName, baseUrl) {
         if (el) {
           await el.scrollIntoViewIfNeeded();
           await page.waitForTimeout(300);
-          const bbox = await el.boundingBox();
+          bbox = await el.boundingBox();
           if (bbox) {
             clickX = Math.round(bbox.x + bbox.width / 2);
             clickY = Math.round(bbox.y + bbox.height / 2);
@@ -425,7 +459,7 @@ async function executeStep(page, step, viewportName, baseUrl) {
       }
       if (target) {
         await waitForSelector(page, target);
-        ({ clickX, clickY } = await getElementCenter(page, target));
+        ({ clickX, clickY, bbox } = await getElementCenter(page, target));
         await page.click(target);
       }
       if (step.waitAfter) {
@@ -456,12 +490,12 @@ async function executeStep(page, step, viewportName, baseUrl) {
   // Wait for animations
   await page.waitForTimeout(step.waitTime || 400);
 
-  return { clickX, clickY };
+  return { clickX, clickY, bbox };
 }
 
 // --- Main ---
 
-async function runTutorial(tutorialSlug, viewportName, baseUrl, { showClicks = true, defaultDuration = 3 } = {}) {
+async function runTutorial(tutorialSlug, viewportName, baseUrl, { showClicks = true, showHighlightBox = true, defaultDuration = 3 } = {}) {
   const tutorial = TUTORIALS[tutorialSlug];
   if (!tutorial) {
     console.error(`Unknown tutorial: ${tutorialSlug}`);
@@ -484,6 +518,7 @@ async function runTutorial(tutorialSlug, viewportName, baseUrl, { showClicks = t
   console.log(`Base URL: ${baseUrl}`);
   console.log(`Steps: ${tutorial.steps.length}`);
   console.log(`Click indicators: ${showClicks ? 'on' : 'off'}`);
+  console.log(`Highlight box: ${showHighlightBox ? 'on' : 'off'}`);
   console.log(`Default duration: ${defaultDuration}s`);
   console.log('---');
 
@@ -507,6 +542,7 @@ async function runTutorial(tutorialSlug, viewportName, baseUrl, { showClicks = t
     viewport: viewportName,
     date: datePrefix,
     showClicks,
+    showHighlightBox,
     defaultDuration,
     steps: []
   };
@@ -519,25 +555,22 @@ async function runTutorial(tutorialSlug, viewportName, baseUrl, { showClicks = t
     const duration = step.duration !== undefined ? step.duration : defaultDuration;
     const isClickStep = ['click', 'scroll-click', 'dismiss-then-click'].includes(step.action);
     const wantClickDot = showClicks && isClickStep && step.showClick !== false;
+    const wantHighlight = showHighlightBox && isClickStep && step.showClick !== false;
 
     try {
-      // Execute the action — returns click coordinates if a click occurred
-      const { clickX, clickY } = await executeStep(page, step, viewportName, baseUrl);
+      // Execute the action — returns click coordinates and element bbox if a click occurred
+      const { clickX, clickY, bbox } = await executeStep(page, step, viewportName, baseUrl);
 
-      // Inject click indicator if this is a click step
-      let dotInjected = false;
-      if (wantClickDot && clickX !== null) {
-        await injectClickIndicator(page, clickX, clickY);
-        dotInjected = true;
-      }
+      // Inject overlays before screenshot (highlight box behind click dot)
+      if (wantHighlight && bbox) await injectHighlightBox(page, bbox);
+      if (wantClickDot && clickX !== null) await injectClickIndicator(page, clickX, clickY);
 
       // Take screenshot
       await page.screenshot({ path: filepath, fullPage: false });
 
-      // Clean up indicator
-      if (dotInjected) {
-        await removeClickIndicator(page);
-      }
+      // Clean up overlays
+      await removeHighlightBox(page).catch(() => {});
+      await removeClickIndicator(page).catch(() => {});
 
       manifest.steps.push({
         number: i + 1,
@@ -546,13 +579,15 @@ async function runTutorial(tutorialSlug, viewportName, baseUrl, { showClicks = t
         filename,
         action: step.action,
         ...(clickX !== null && { clickX, clickY }),
+        ...(bbox && { elementBbox: { x: Math.round(bbox.x), y: Math.round(bbox.y), width: Math.round(bbox.width), height: Math.round(bbox.height) } }),
         success: true
       });
 
       const clickInfo = clickX !== null ? ` (click at ${clickX},${clickY})` : '';
       console.log(`  Step ${stepNum}: ${step.caption} [${duration}s]${clickInfo} -> ${filename}`);
     } catch (e) {
-      // Ensure indicator is cleaned up on error
+      // Ensure overlays are cleaned up on error
+      await removeHighlightBox(page).catch(() => {});
       await removeClickIndicator(page).catch(() => {});
 
       console.error(`  Step ${stepNum}: FAILED - ${e.message}`);
@@ -586,6 +621,7 @@ function parseArgs() {
     viewport: 'mobile',
     baseUrl: DEFAULT_BASE_URL,
     showClicks: true,
+    showHighlightBox: true,
     defaultDuration: 3
   };
 
@@ -600,6 +636,10 @@ function parseArgs() {
       parsed.showClicks = true;
     } else if (args[i] === '--no-clicks') {
       parsed.showClicks = false;
+    } else if (args[i] === '--show-highlight') {
+      parsed.showHighlightBox = true;
+    } else if (args[i] === '--no-highlight') {
+      parsed.showHighlightBox = false;
     } else if (args[i] === '--default-duration' && args[i + 1]) {
       parsed.defaultDuration = parseFloat(args[++i]) || 3;
     } else if (args[i] === '--list') {
@@ -615,6 +655,8 @@ function parseArgs() {
       console.log('Options:');
       console.log('  --show-clicks           Show orange click indicator (default)');
       console.log('  --no-clicks             Disable click indicators');
+      console.log('  --show-highlight        Show rectangle around clicked element (default)');
+      console.log('  --no-highlight          Disable element highlight box');
       console.log('  --default-duration N    Seconds per slide in video (default: 3)');
       console.log('  --base-url <url>        App base URL (default: http://localhost:8001)');
       process.exit(0);
@@ -627,5 +669,6 @@ function parseArgs() {
 const args = parseArgs();
 runTutorial(args.tutorial, args.viewport, args.baseUrl, {
   showClicks: args.showClicks,
+  showHighlightBox: args.showHighlightBox,
   defaultDuration: args.defaultDuration
 }).catch(console.error);
