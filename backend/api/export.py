@@ -160,8 +160,9 @@ async def get_video_as_base64(filename: str):
     file_path = f"frontend/assets/img/tutorials/{filename}"
     try:
         with open(file_path, "rb") as f:
-            b64 = base64.b64encode(f.read()).decode("utf-8")
-        return {"media_data": b64}
+            raw = f.read()
+            b64 = base64.b64encode(raw).decode("utf-8")
+        return {"media_data": b64, "total_bytes": len(raw)}
     except FileNotFoundError:
         raise HTTPException(status_code=404, detail=f"File not found: {filename}")
 
