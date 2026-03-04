@@ -227,9 +227,9 @@ const SCENARIOS = [
   },
   {
     name: 'landing-feature-builder',
-    description: 'Feature: Workout builder form with exercises (interactive)',
+    description: 'Feature: Workout builder editor with exercise group offcanvas',
     run: async (page, baseUrl) => {
-      // Navigate to new workout editor and fill it in via Playwright interactions
+      // Navigate to new workout editor
       await page.goto(`${baseUrl}/workout-builder.html?new=true`, {
         waitUntil: 'networkidle', timeout: 15000
       });
@@ -237,58 +237,28 @@ const SCENARIOS = [
       await waitForAny(page, '#workoutName, #workoutEditorForm', 8000);
       await page.waitForTimeout(1500);
 
-      // Type workout name
+      // Type a workout name
       const nameInput = await page.$('#workoutName');
       if (nameInput) {
         await nameInput.fill('Push Day');
         await page.waitForTimeout(500);
       }
 
-      // Click "Add Exercise" button to add exercise groups
+      // Click "Add Exercise" to open the exercise group editor offcanvas
       const addBtn = await page.$('#addExerciseGroupBtnVisible');
       if (addBtn) {
         await addBtn.click();
-        await page.waitForTimeout(800);
-        // Type first exercise name
-        const exInput = await page.$('.exercise-name-input:last-of-type');
+        await page.waitForTimeout(1200);
+
+        // Type into the exercise search input inside the offcanvas
+        const exInput = await page.$('#primaryExerciseInput');
         if (exInput) {
-          await exInput.fill('Barbell Bench Press');
-          await page.waitForTimeout(600);
-          // Click away to dismiss autocomplete
-          await page.click('#workoutName');
-          await page.waitForTimeout(300);
-        }
-
-        // Add second exercise
-        const addBtn2 = await page.$('#addExerciseGroupBtnVisible');
-        if (addBtn2) {
-          await addBtn2.click();
-          await page.waitForTimeout(800);
-          const exInput2 = await page.$('.exercise-name-input:last-of-type');
-          if (exInput2) {
-            await exInput2.fill('Overhead Press');
-            await page.waitForTimeout(600);
-            await page.click('#workoutName');
-            await page.waitForTimeout(300);
-          }
-        }
-
-        // Add third exercise
-        const addBtn3 = await page.$('#addExerciseGroupBtnVisible');
-        if (addBtn3) {
-          await addBtn3.click();
-          await page.waitForTimeout(800);
-          const exInput3 = await page.$('.exercise-name-input:last-of-type');
-          if (exInput3) {
-            await exInput3.fill('Incline Dumbbell Press');
-            await page.waitForTimeout(600);
-            await page.click('#workoutName');
-            await page.waitForTimeout(300);
-          }
+          await exInput.fill('Bench Press');
+          await page.waitForTimeout(1500);
         }
       }
 
-      await page.waitForTimeout(1000);
+      await page.waitForTimeout(500);
     }
   },
   {
