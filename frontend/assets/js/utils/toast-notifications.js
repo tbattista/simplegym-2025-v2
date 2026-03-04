@@ -33,9 +33,14 @@
      * @param {number} options.delay - Auto-hide delay in ms (default: 3000)
      * @param {string} options.icon - Boxicon class (optional, auto-selected based on type)
      */
-    function showToast(options) {
+    function showToast(options, type) {
         // Initialize container if needed
         initToastContainer();
+
+        // Support shorthand: showToast('message', 'type')
+        if (typeof options === 'string') {
+            options = { message: options, type: type || 'info' };
+        }
 
         // Default options
         const defaults = {
