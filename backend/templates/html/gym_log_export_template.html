@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gym Log - {{ workout_name }}</title>
+    <style>
+        @page {
+            size: letter;
+            margin: 0.5in 0.4in 0.5in 0.4in;
+        }
+
+        body {
+            font-family: Calibri, -apple-system, BlinkMacSystemFont, sans-serif;
+            font-size: 10pt;
+            line-height: 1.0;
+            margin: 0;
+            padding: 0;
+            color: #000;
+        }
+
+        .page-container {
+            width: 100%;
+        }
+
+        /* Main workout table styles */
+        .workout-section {
+            width: 100%;
+            page-break-after: always;
+        }
+
+        .workout-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 10pt;
+        }
+
+        .workout-table td,
+        .workout-table th {
+            border: 1px solid #000;
+            padding: 5px 6px;
+            vertical-align: top;
+            text-align: left;
+        }
+
+        .workout-table th {
+            background-color: #D0CECE;
+            font-weight: bold;
+            text-align: center;
+            height: 24px;
+        }
+
+        .header-row {
+            background-color: #F2F2F2;
+            font-weight: bold;
+            text-align: center;
+            height: 24px;
+        }
+
+        .warm-up-header {
+            background-color: #D0CECE;
+            font-weight: bold;
+            color: black;
+            text-align: left;
+            height: 24px;
+        }
+
+        .workout-name-header {
+            background-color: #D0CECE;
+            font-weight: bold;
+            color: black;
+            text-align: left;
+            height: 24px;
+        }
+
+        .date-cell {
+            background-color: #F2F2F2;
+            text-align: right;
+            font-size: 10pt;
+            color: black;
+        }
+
+        .exercise-cell {
+            width: 200px;
+            padding: 5px;
+            line-height: 1.2;
+            font-size: 9pt;
+        }
+
+        .sets-cell {
+            width: 35px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 9pt;
+        }
+
+        .reps-cell {
+            width: 55px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 9pt;
+        }
+
+        .rest-cell {
+            width: 35px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 9pt;
+        }
+
+        .wt-cell {
+            width: 50px;
+            text-align: center;
+            font-size: 9pt;
+        }
+
+        .reps-track-cell {
+            width: 50px;
+            text-align: center;
+            font-size: 9pt;
+        }
+
+        .exercise-list {
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+
+        .exercise-list li {
+            margin-bottom: 2px;
+        }
+
+        .block-section-header {
+            background-color: #E8E8E8;
+            font-weight: bold;
+            font-size: 9pt;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .mets-row {
+            background-color: #D0CECE;
+            text-align: right;
+            font-size: 10pt;
+            color: black;
+            height: 24px;
+        }
+
+        .notes-row {
+            background-color: #F2F2F2;
+            height: 70px;
+            vertical-align: top;
+            padding: 6px;
+        }
+
+        /* Progress tracking table styles */
+        .progress-section {
+            width: 100%;
+        }
+
+        .progress-header-info {
+            margin-bottom: 10px;
+            padding: 8px;
+            background-color: #F2F2F2;
+            border-left: 4px solid #000;
+            font-weight: bold;
+            font-size: 11pt;
+        }
+
+        .progress-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 10pt;
+            margin-top: 10px;
+        }
+
+        .progress-table td,
+        .progress-table th {
+            border: 1px solid #000;
+            padding: 4px;
+            vertical-align: top;
+            text-align: center;
+        }
+
+        .progress-table th {
+            background-color: #F2F2F2;
+            font-weight: bold;
+            height: 24px;
+        }
+
+        .week-cell {
+            width: 25%;
+            height: 22px;
+            background-color: #F2F2F2;
+            font-weight: bold;
+            font-size: 10pt;
+        }
+
+        .progress-cell {
+            height: 24px;
+            background-color: white;
+        }
+
+        .abc-row {
+            height: 22px;
+            background-color: white;
+            border-bottom: 1px solid #D9D9D9;
+            color: #D9D9D9;
+            font-size: 8pt;
+        }
+
+        .empty-row {
+            height: 24px;
+            background-color: white;
+        }
+
+        .final-notes {
+            height: 70px;
+            background-color: #F2F2F2;
+            vertical-align: top;
+        }
+
+        .footer {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 8pt;
+            color: #999;
+        }
+
+        @media print {
+            body {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            .page-container {
+                height: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="page-container">
+
+        <!-- Page 1: Workout Log Table -->
+        <div class="workout-section">
+            <table class="workout-table">
+                <!-- Warm Up Section -->
+                <tr>
+                    <td colspan="6" class="warm-up-header">Warm Up</td>
+                </tr>
+                <tr>
+                    <td colspan="4" class="exercise-cell">foam rolling, yoga, body priming - 5+ minutes</td>
+                    <td class="wt-cell">&nbsp;</td>
+                    <td class="reps-track-cell">&nbsp;</td>
+                </tr>
+
+                <!-- Workout Name Header -->
+                <tr>
+                    <td colspan="6" class="workout-name-header">{{ workout_name }}</td>
+                </tr>
+
+                <!-- Column Headers -->
+                <tr class="header-row">
+                    <td class="exercise-cell">exercise</td>
+                    <td class="sets-cell">sets</td>
+                    <td class="reps-cell">reps</td>
+                    <td class="rest-cell">rest</td>
+                    <td class="wt-cell">wt</td>
+                    <td class="reps-track-cell">reps</td>
+                </tr>
+
+                <!-- Date Row -->
+                <tr>
+                    <td colspan="6" class="date-cell">today's date:</td>
+                </tr>
+
+                <!-- Dynamic Exercise Rows -->
+                {% for section in sections %}
+                    {% if section.is_block %}
+                    <tr>
+                        <td colspan="6" class="block-section-header">
+                            {{ section.display_label }}{% if section.name %}: {{ section.name }}{% endif %}
+                        </td>
+                    </tr>
+                    {% endif %}
+
+                    {% for exercise in section.exercises %}
+                    <tr>
+                        <td class="exercise-cell">
+                            {% if exercise.all_names|length == 1 %}
+                                {{ exercise.all_names[0] }}
+                            {% else %}
+                            <ul class="exercise-list">
+                                {% for name in exercise.all_names %}
+                                <li>{{ "abcdefghij"[loop.index0:loop.index0+1] }}) {{ name }}</li>
+                                {% endfor %}
+                            </ul>
+                            {% endif %}
+                        </td>
+                        <td class="sets-cell">{{ exercise.sets }}</td>
+                        <td class="reps-cell">{{ exercise.reps }}</td>
+                        <td class="rest-cell">{{ exercise.rest }}</td>
+                        <td class="wt-cell">{% if exercise.weight %}{{ exercise.weight }}{% else %}&nbsp;{% endif %}</td>
+                        <td class="reps-track-cell">&nbsp;</td>
+                    </tr>
+                    {% endfor %}
+                {% endfor %}
+
+                <!-- Mets Row -->
+                <tr>
+                    <td colspan="6" class="mets-row">Mets (Time/Cals):</td>
+                </tr>
+
+                <!-- Notes Row -->
+                <tr>
+                    <td colspan="6" class="notes-row"><strong>Notes:</strong></td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- Page 2: 4-Week Progress Tracking -->
+        <div class="progress-section">
+            <div class="progress-header-info">
+                {{ workout_name }} - 4 Week Progress Tracking
+            </div>
+
+            <table class="progress-table">
+                <!-- Week Headers -->
+                <tr>
+                    <td class="week-cell">Week 1</td>
+                    <td class="week-cell">Week 2</td>
+                    <td class="week-cell">Week 3</td>
+                    <td class="week-cell">Week 4</td>
+                </tr>
+
+                <!-- Progress tracking rows for each section -->
+                {% for row in progress_rows %}
+                <tr>
+                    <td class="progress-cell">&nbsp;</td>
+                    <td class="progress-cell">&nbsp;</td>
+                    <td class="progress-cell">&nbsp;</td>
+                    <td class="progress-cell">&nbsp;</td>
+                </tr>
+                <tr class="abc-row">
+                    <td>{{ row.label }}</td>
+                    <td>{{ row.label }}</td>
+                    <td>{{ row.label }}</td>
+                    <td>{{ row.label }}</td>
+                </tr>
+                {% endfor %}
+
+                <!-- Filler empty rows -->
+                {% for i in range(filler_rows) %}
+                <tr>
+                    <td class="empty-row">&nbsp;</td>
+                    <td class="empty-row">&nbsp;</td>
+                    <td class="empty-row">&nbsp;</td>
+                    <td class="empty-row">&nbsp;</td>
+                </tr>
+                {% endfor %}
+
+                <!-- Final notes row -->
+                <tr>
+                    <td colspan="4" class="final-notes"><strong>Notes:</strong></td>
+                </tr>
+            </table>
+
+            <div class="footer">
+                Generated by Fitness Field Notes | fitnessfieldnotes.com
+            </div>
+        </div>
+
+    </div>
+</body>
+</html>

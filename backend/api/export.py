@@ -105,11 +105,12 @@ async def export_workout_image(
 async def export_workout_print(
     workout_id: str,
     include_weights: bool = Query(False, description="Include exercise weights in the PDF"),
+    format: str = Query("simple", description="PDF format: 'simple' (reference sheet) or 'log' (4-week gym log)"),
     current_user: Optional[dict] = Depends(get_current_user_optional)
 ):
     """
     Export workout as printable PDF.
-    Returns a clean, black & white PDF optimized for printing.
+    format=simple: Clean reference sheet. format=log: Gym log with 4-week progress tracking.
     """
     user_id = extract_user_id(current_user)
     if not user_id:
@@ -125,13 +126,20 @@ async def export_workout_print(
     if include_weights:
         exercise_weights = await firestore_data_service.get_exercise_history_for_workout(user_id, workout_id)
 
-    # Generate printable PDF
+    # Generate PDF based on format
     try:
-        pdf_path = export_service.generate_printable_pdf(
-            workout,
-            include_weights=include_weights,
-            exercise_weights=exercise_weights
-        )
+        if format == "log":
+            pdf_path = export_service.generate_gym_log_pdf(
+                workout,
+                include_weights=include_weights,
+                exercise_weights=exercise_weights
+            )
+        else:
+            pdf_path = export_service.generate_printable_pdf(
+                workout,
+                include_weights=include_weights,
+                exercise_weights=exercise_weights
+            )
         if not pdf_path:
             raise HTTPException(status_code=500, detail="Failed to generate PDF")
 

@@ -156,6 +156,7 @@ const TUTORIALS = {
         dismissWait: 500,
         target: '#exerciseTableContainer .card[data-exercise-id]',
         waitAfter: '#exerciseDetailModal.show, .modal.show, #exerciseDetailContent',
+        waitForImages: 'img[alt*="demonstration"]',
         caption: 'View exercise details'
       }
     ]
@@ -490,6 +491,29 @@ async function executeStep(page, step, viewportName, baseUrl) {
 
   // Wait for animations
   await page.waitForTimeout(step.waitTime || 400);
+
+  // Wait for images to load (e.g. exercise GIFs that use loading="lazy")
+  if (step.waitForImages) {
+    try {
+      const imgSelector = typeof step.waitForImages === 'string' ? step.waitForImages : 'img';
+      await page.waitForSelector(imgSelector, { state: 'visible', timeout: 3000 });
+      await page.evaluate(async (sel) => {
+        const imgs = document.querySelectorAll(sel);
+        await Promise.all([...imgs].map(img => {
+          if (img.complete) return Promise.resolve();
+          return new Promise(resolve => {
+            img.addEventListener('load', resolve, { once: true });
+            img.addEventListener('error', resolve, { once: true });
+            setTimeout(resolve, 5000); // safety timeout
+          });
+        }));
+      }, imgSelector);
+      // Extra settle time for GIF rendering
+      await page.waitForTimeout(300);
+    } catch (e) {
+      console.error(`  Warning: waitForImages "${step.waitForImages}" timed out`);
+    }
+  }
 
   return { clickX, clickY, bbox };
 }

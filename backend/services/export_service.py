@@ -10,7 +10,7 @@ import os
 import tempfile
 import time
 
-from backend.models import WorkoutTemplate
+from backend.models import WorkoutTemplate, migrate_exercise_groups_to_sections
 
 try:
     from docxtpl import DocxTemplate
@@ -26,6 +26,68 @@ class ExportService:
         # Set up Jinja2 environment for templates
         template_dir = Path(__file__).parent.parent / "templates" / "html"
         self.jinja_env = Environment(loader=FileSystemLoader(str(template_dir)))
+
+    def _resolve_weight(self, exercise_name: str, default_weight, default_weight_unit,
+                        include_weights: bool, exercise_weights: dict = None) -> Optional[str]:
+        """Resolve weight for an exercise: history first, then template default."""
+        if not include_weights:
+            return None
+        weight = None
+        weight_unit = "lbs"
+        if exercise_weights and exercise_name in exercise_weights:
+            history = exercise_weights[exercise_name]
+            weight = history.last_weight if hasattr(history, 'last_weight') else history.get('last_weight')
+            weight_unit = (history.last_weight_unit if hasattr(history, 'last_weight_unit')
+                          else history.get('last_weight_unit', 'lbs'))
+        if not weight and default_weight:
+            weight = default_weight
+            weight_unit = default_weight_unit or "lbs"
+        return f"{weight} {weight_unit}" if weight else None
+
+    def _prepare_sections_data(
+        self,
+        workout: WorkoutTemplate,
+        include_weights: bool = False,
+        exercise_weights: dict = None
+    ) -> list:
+        """Convert workout sections into a template-friendly list with block info and weights."""
+        sections = workout.sections
+        if not sections:
+            sections = migrate_exercise_groups_to_sections(workout.exercise_groups)
+
+        result = []
+        for section in sections:
+            is_block = section.type != "standard"
+            exercises = []
+            for ex in section.exercises:
+                all_names = [ex.name] + [a for a in ex.alternates if a]
+                weight = None
+                # Try each name for weight resolution
+                if include_weights:
+                    for name in all_names:
+                        weight = self._resolve_weight(
+                            name, ex.default_weight, ex.default_weight_unit,
+                            include_weights, exercise_weights
+                        )
+                        if weight:
+                            break
+                exercises.append({
+                    "name": ex.name,
+                    "alternates": ex.alternates,
+                    "all_names": all_names,
+                    "sets": ex.sets,
+                    "reps": ex.reps,
+                    "rest": ex.rest,
+                    "weight": weight,
+                })
+            result.append({
+                "type": section.type,
+                "name": section.name,
+                "display_label": section.type.upper() if is_block else "",
+                "is_block": is_block,
+                "exercises": exercises,
+            })
+        return result
 
     def generate_text_export(
         self,
@@ -57,44 +119,38 @@ class ExportService:
             lines.append(workout.description)
             lines.append("")
 
-        # Exercise groups
-        for i, group in enumerate(workout.exercise_groups, 1):
-            # Get exercise names joined with " / "
-            exercise_names_list = [name for name in group.exercises.values() if name]
-            exercise_names = " / ".join(exercise_names_list)
+        # Section-aware exercise listing
+        sections = self._prepare_sections_data(workout, include_weights, exercise_weights)
+        group_num = 1
 
-            if not exercise_names:
+        for section in sections:
+            if not section["exercises"]:
                 continue
 
-            lines.append(f"{i}. {exercise_names}")
+            # Block header for non-standard sections
+            if section["is_block"]:
+                label = section["display_label"]
+                if section["name"]:
+                    label += f": {section['name']}"
+                lines.append(f"-- {label} --")
 
-            # Build detail line with optional weight
-            detail_parts = [f"{group.sets} sets x {group.reps} reps", f"{group.rest} rest"]
+            for j, ex in enumerate(section["exercises"]):
+                # Numbering: 1a/1b for blocks, plain 1 for standard
+                if section["is_block"] and len(section["exercises"]) > 1:
+                    num_label = f"{group_num}{chr(97 + j)}"
+                else:
+                    num_label = str(group_num)
 
-            # Get weight from history first, then fall back to template default
-            if include_weights:
-                weight = None
-                weight_unit = "lbs"
+                exercise_names = " / ".join(ex["all_names"])
+                indent = "   " if not section["is_block"] else "    "
+                lines.append(f"{num_label}. {exercise_names}")
 
-                # Try to get weight from exercise history (use first exercise in group)
-                if exercise_weights and exercise_names_list:
-                    for name in exercise_names_list:
-                        if name in exercise_weights:
-                            history = exercise_weights[name]
-                            weight = history.last_weight if hasattr(history, 'last_weight') else history.get('last_weight')
-                            weight_unit = (history.last_weight_unit if hasattr(history, 'last_weight_unit')
-                                          else history.get('last_weight_unit', 'lbs'))
-                            break
+                detail_parts = [f"{ex['sets']} sets x {ex['reps']} reps", f"{ex['rest']} rest"]
+                if ex["weight"]:
+                    detail_parts.append(ex["weight"])
+                lines.append(f"{indent}{' | '.join(detail_parts)}")
 
-                # Fall back to template default
-                if not weight and group.default_weight:
-                    weight = group.default_weight
-                    weight_unit = group.default_weight_unit or "lbs"
-
-                if weight:
-                    detail_parts.append(f"{weight} {weight_unit}")
-
-            lines.append(f"   {' | '.join(detail_parts)}")
+            group_num += 1
             lines.append("")
 
         # Tags
@@ -158,63 +214,44 @@ class ExportService:
         exercise_weights: dict = None
     ) -> dict:
         """Prepare data for the shareable image template"""
-        # Count total exercises
-        total_exercises = sum(
-            len([e for e in group.exercises.values() if e])
-            for group in workout.exercise_groups
-        )
+        sections = self._prepare_sections_data(workout, include_weights, exercise_weights)
 
-        # Count total sets
+        # Count totals from sections
+        total_exercises = sum(len(s["exercises"]) for s in sections)
         total_sets = 0
-        for group in workout.exercise_groups:
-            try:
-                # Handle ranges like "3-4" by taking the first number
-                sets_str = group.sets.split("-")[0].strip()
-                sets_num = int(sets_str)
-                num_exercises = len([e for e in group.exercises.values() if e])
-                total_sets += sets_num * num_exercises
-            except (ValueError, AttributeError):
-                pass
+        for s in sections:
+            for ex in s["exercises"]:
+                try:
+                    sets_num = int(ex["sets"].split("-")[0].strip())
+                    total_sets += sets_num
+                except (ValueError, AttributeError):
+                    pass
 
-        # Get exercise preview (first 8 exercises)
+        # Build exercise preview (first 8 exercises) with block flags
         exercise_preview = []
-        for group in workout.exercise_groups:
-            for letter, name in sorted(group.exercises.items()):
-                if name and len(exercise_preview) < 8:
-                    exercise_data = {
-                        "name": name,
-                        "sets": group.sets,
-                        "reps": group.reps,
-                        "rest": group.rest
-                    }
-                    # Include weight if requested - check history first, then template default
-                    if include_weights:
-                        weight = None
-                        weight_unit = "lbs"
-
-                        # Try to get weight from exercise history
-                        if exercise_weights and name in exercise_weights:
-                            history = exercise_weights[name]
-                            weight = history.last_weight if hasattr(history, 'last_weight') else history.get('last_weight')
-                            weight_unit = (history.last_weight_unit if hasattr(history, 'last_weight_unit')
-                                          else history.get('last_weight_unit', 'lbs'))
-
-                        # Fall back to template default
-                        if not weight and group.default_weight:
-                            weight = group.default_weight
-                            weight_unit = group.default_weight_unit or "lbs"
-
-                        if weight:
-                            exercise_data["weight"] = f"{weight} {weight_unit}"
-
-                    exercise_preview.append(exercise_data)
+        for section in sections:
+            for i, ex in enumerate(section["exercises"]):
+                if len(exercise_preview) >= 8:
+                    break
+                exercise_preview.append({
+                    "name": ex["name"],
+                    "sets": ex["sets"],
+                    "reps": ex["reps"],
+                    "rest": ex["rest"],
+                    "weight": ex["weight"],
+                    "in_block": section["is_block"],
+                    "block_start": section["is_block"] and i == 0,
+                    "block_end": section["is_block"] and i == len(section["exercises"]) - 1,
+                    "section_type": section["type"],
+                    "section_name": section["name"] or section["display_label"],
+                })
 
         return {
             "workout_name": workout.name,
             "description": workout.description or "",
             "total_exercises": total_exercises,
             "total_sets": total_sets,
-            "tags": workout.tags[:4] if workout.tags else [],  # Max 4 tags
+            "tags": workout.tags[:4] if workout.tags else [],
             "exercise_preview": exercise_preview,
             "include_weights": include_weights,
         }
@@ -269,50 +306,70 @@ class ExportService:
         exercise_weights: dict = None
     ) -> dict:
         """Prepare data for the printable PDF template"""
-        # Build exercise list with all details
-        exercises = []
-        group_num = 1
-
-        for group in workout.exercise_groups:
-            exercise_names = [name for name in group.exercises.values() if name]
-            if exercise_names:
-                exercise_data = {
-                    "group_num": group_num,
-                    "names": exercise_names,
-                    "sets": group.sets,
-                    "reps": group.reps,
-                    "rest": group.rest
-                }
-                # Include weight if requested - check history first, then template default
-                if include_weights:
-                    weight = None
-                    weight_unit = "lbs"
-
-                    # Try to get weight from exercise history (use first exercise in group)
-                    if exercise_weights and exercise_names:
-                        for name in exercise_names:
-                            if name in exercise_weights:
-                                history = exercise_weights[name]
-                                weight = history.last_weight if hasattr(history, 'last_weight') else history.get('last_weight')
-                                weight_unit = (history.last_weight_unit if hasattr(history, 'last_weight_unit')
-                                              else history.get('last_weight_unit', 'lbs'))
-                                break
-
-                    # Fall back to template default
-                    if not weight and group.default_weight:
-                        weight = group.default_weight
-                        weight_unit = group.default_weight_unit or "lbs"
-
-                    if weight:
-                        exercise_data["weight"] = f"{weight} {weight_unit}"
-
-                exercises.append(exercise_data)
-                group_num += 1
+        sections = self._prepare_sections_data(workout, include_weights, exercise_weights)
 
         return {
             "workout_name": workout.name,
             "description": workout.description or "",
-            "exercises": exercises,
+            "sections": sections,
+            "tags": workout.tags if workout.tags else [],
+            "include_weights": include_weights,
+        }
+
+    def generate_gym_log_pdf(
+        self,
+        workout: WorkoutTemplate,
+        include_weights: bool = False,
+        exercise_weights: dict = None
+    ) -> Optional[Path]:
+        """Generate a gym-log-style PDF with exercise table and 4-week progress tracking."""
+        from backend.services.v2.gotenberg_client import GotenbergClient
+
+        try:
+            template = self.jinja_env.get_template("gym_log_export_template.html")
+        except Exception as e:
+            raise Exception(f"Failed to load gym log template: {str(e)}")
+
+        template_data = self._prepare_gym_log_data(workout, include_weights, exercise_weights)
+        html_content = template.render(**template_data)
+
+        client = GotenbergClient()
+        if not client.is_available():
+            raise Exception("Gotenberg service is not available")
+
+        filename = f"gymlog_{workout.id}_{workout.name.replace(' ', '_')[:20]}.pdf"
+        return client.html_to_pdf(html_content, filename)
+
+    def _prepare_gym_log_data(
+        self,
+        workout: WorkoutTemplate,
+        include_weights: bool = False,
+        exercise_weights: dict = None
+    ) -> dict:
+        """Prepare data for the gym log PDF template including progress tracking rows."""
+        sections = self._prepare_sections_data(workout, include_weights, exercise_weights)
+
+        # Build progress tracking rows: one row per section with exercise letter labels
+        progress_rows = []
+        for section in sections:
+            letters = [chr(97 + i) for i in range(len(section["exercises"]))]
+            progress_rows.append({
+                "label": " ".join(letters),
+            })
+
+        # Cap progress rows and calculate filler
+        max_rows = 10
+        progress_rows = progress_rows[:max_rows]
+        # Each section uses 2 rows (progress + abc), aim for ~12 total visual rows
+        used_rows = len(progress_rows) * 2
+        filler_rows = max(0, 12 - used_rows)
+
+        return {
+            "workout_name": workout.name,
+            "description": workout.description or "",
+            "sections": sections,
+            "progress_rows": progress_rows,
+            "filler_rows": filler_rows,
             "tags": workout.tags if workout.tags else [],
             "include_weights": include_weights,
         }

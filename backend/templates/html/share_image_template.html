@@ -75,6 +75,15 @@
             overflow: hidden;
         }
 
+        .block-label {
+            font-size: 20px;
+            font-weight: 700;
+            color: #4f46e5;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            padding: 16px 0 8px 0;
+        }
+
         .exercise-item {
             padding: 28px 0;
             border-bottom: 1px solid #f1f1f1;
@@ -82,6 +91,16 @@
 
         .exercise-item:last-child {
             border-bottom: none;
+        }
+
+        .exercise-item.in-block {
+            border-left: 4px solid #4f46e5;
+            padding-left: 20px;
+            margin-left: 8px;
+        }
+
+        .exercise-item.in-block.block-last {
+            border-bottom-left-radius: 8px;
         }
 
         .exercise-name {
@@ -192,18 +211,21 @@
 <body>
     <div class="card">
         <div class="header">
-            <div class="workout-icon">🏋️</div>
+            <div class="workout-icon">&#127947;&#65039;</div>
             <h1 class="workout-name">{{ workout_name }}</h1>
             {% if description %}
             <p class="workout-meta">{{ description }}</p>
             {% endif %}
         </div>
 
-        <div class="section-title">Exercise Groups</div>
+        <div class="section-title">Exercises</div>
 
         <div class="exercise-list">
             {% for exercise in exercise_preview %}
-            <div class="exercise-item">
+            {% if exercise.block_start and exercise.in_block %}
+            <div class="block-label">{{ exercise.section_name }}</div>
+            {% endif %}
+            <div class="exercise-item{% if exercise.in_block %} in-block{% endif %}{% if exercise.block_end and exercise.in_block %} block-last{% endif %}">
                 <div class="exercise-name">{{ exercise.name }}</div>
                 <div class="exercise-details">
                     <span class="exercise-detail">

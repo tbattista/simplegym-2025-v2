@@ -113,6 +113,21 @@
             width: 80pt;
             white-space: nowrap;
         }
+
+        .block-header-row td {
+            background: #e8e8e8;
+            font-weight: 700;
+            font-size: 11pt;
+            text-transform: uppercase;
+            letter-spacing: 0.5pt;
+            padding: 6pt 12pt;
+            border: 1pt solid #ddd;
+        }
+
+        .block-exercise .exercise-names {
+            padding-left: 8pt;
+        }
+
         .tags {
             margin-top: 20pt;
             padding-top: 12pt;
@@ -186,26 +201,44 @@
             </tr>
         </thead>
         <tbody>
-            {% for group in exercises %}
-            <tr>
-                <td class="group-num">{{ group.group_num }}</td>
-                <td class="exercise-names">
-                    {% if group.names|length == 1 %}
-                    {{ group.names[0] }}
-                    {% else %}
-                    <ul>
-                        {% for name in group.names %}
-                        <li>{{ name }}</li>
-                        {% endfor %}
-                    </ul>
-                    {% endif %}
-                </td>
-                <td class="sets-reps">{{ group.sets }} x {{ group.reps }}</td>
-                <td class="rest">{{ group.rest }}</td>
-                {% if include_weights %}
-                <td class="weight">{{ group.weight or '-' }}</td>
+            {% set ns = namespace(group_num=1) %}
+            {% for section in sections %}
+                {% if section.is_block %}
+                <tr class="block-header-row">
+                    <td colspan="{{ 5 if include_weights else 4 }}">
+                        {{ section.display_label }}{% if section.name %}: {{ section.name }}{% endif %}
+                    </td>
+                </tr>
                 {% endif %}
-            </tr>
+
+                {% for exercise in section.exercises %}
+                <tr{% if section.is_block %} class="block-exercise"{% endif %}>
+                    <td class="group-num">
+                        {% if section.is_block and section.exercises|length > 1 %}
+                            {{ ns.group_num }}{{ "abcdefghij"[loop.index0:loop.index0+1] }}
+                        {% else %}
+                            {{ ns.group_num }}
+                        {% endif %}
+                    </td>
+                    <td class="exercise-names">
+                        {% if exercise.all_names|length == 1 %}
+                        {{ exercise.all_names[0] }}
+                        {% else %}
+                        <ul>
+                            {% for name in exercise.all_names %}
+                            <li>{{ name }}</li>
+                            {% endfor %}
+                        </ul>
+                        {% endif %}
+                    </td>
+                    <td class="sets-reps">{{ exercise.sets }} x {{ exercise.reps }}</td>
+                    <td class="rest">{{ exercise.rest }}</td>
+                    {% if include_weights %}
+                    <td class="weight">{{ exercise.weight or '-' }}</td>
+                    {% endif %}
+                </tr>
+                {% endfor %}
+                {% set ns.group_num = ns.group_num + 1 %}
             {% endfor %}
         </tbody>
     </table>

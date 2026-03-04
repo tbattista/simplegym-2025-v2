@@ -247,12 +247,18 @@
                                         Printable PDF
                                     </label>
                                     <p class="text-muted small mb-2">
-                                        Download a clean, printer-friendly PDF of your workout.
+                                        Download a printer-friendly PDF of your workout.
                                     </p>
-                                    <button type="button" class="btn btn-outline-secondary w-100" id="exportPrintBtn">
-                                        <i class="bx bx-download me-1"></i>
-                                        Download PDF
-                                    </button>
+                                    <div class="d-flex gap-2">
+                                        <button type="button" class="btn btn-outline-secondary flex-fill" id="exportPrintBtn">
+                                            <i class="bx bx-file me-1"></i>
+                                            Reference Sheet
+                                        </button>
+                                        <button type="button" class="btn btn-outline-secondary flex-fill" id="exportGymLogBtn">
+                                            <i class="bx bx-notepad me-1"></i>
+                                            4-Week Log
+                                        </button>
+                                    </div>
                                 </div>
 
                                 <!-- Export Status Message -->
@@ -314,6 +320,11 @@
             const exportPrintBtn = document.getElementById('exportPrintBtn');
             if (exportPrintBtn) {
                 exportPrintBtn.addEventListener('click', () => this.handlePrintExport());
+            }
+
+            const exportGymLogBtn = document.getElementById('exportGymLogBtn');
+            if (exportGymLogBtn) {
+                exportGymLogBtn.addEventListener('click', () => this.handleGymLogExport());
             }
 
             // Public share button
@@ -684,6 +695,52 @@
 
             } catch (error) {
                 console.error('❌ Error exporting PDF:', error);
+                this.showExportStatus(error.message, 'danger');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalHTML;
+            }
+        }
+
+        async handleGymLogExport() {
+            const btn = document.getElementById('exportGymLogBtn');
+            const originalHTML = btn.innerHTML;
+            const includeWeights = document.getElementById('includeWeightsCheckbox')?.checked || false;
+
+            try {
+                btn.disabled = true;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Generating...';
+
+                const token = await this.getAuthToken();
+
+                const response = await fetch(`/api/v3/export/print/${this.currentWorkoutId}?include_weights=${includeWeights}&format=log`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Failed to generate PDF');
+                }
+
+                // Download the PDF
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${this.currentWorkout?.name || 'workout'}_log.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                a.remove();
+
+                this.showExportStatus('Gym log PDF downloaded!', 'success');
+                console.log('✅ Gym log PDF exported');
+
+            } catch (error) {
+                console.error('❌ Error exporting gym log:', error);
                 this.showExportStatus(error.message, 'danger');
             } finally {
                 btn.disabled = false;
