@@ -146,7 +146,7 @@ export function setupWeightEditListeners(offcanvasElement, offcanvas, exerciseNa
  * @returns {Object} Offcanvas instance
  */
 export function createCompleteWorkout(data, onConfirm) {
-    const { workoutName, minutes, totalExercises, isQuickLog = false } = data;
+    const { workoutName, minutes, totalExercises, isQuickLog = false, isBuildMode = false } = data;
 
     // Format current date/time for display
     const now = new Date();
@@ -196,6 +196,23 @@ export function createCompleteWorkout(data, onConfirm) {
                     </div>
                 </div>
 
+                ${isBuildMode ? `
+                <!-- Build & Log: Save as Template option -->
+                <div class="mb-3">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="saveAsTemplateToggle">
+                        <label class="form-check-label" for="saveAsTemplateToggle">
+                            Save as reusable template
+                        </label>
+                    </div>
+                    <div id="templateNameGroup" class="mt-2" style="display: none;">
+                        <input type="text" class="form-control form-control-sm" id="templateNameInput"
+                               value="${escapeHtml(workoutName)}" placeholder="Workout name" maxlength="50">
+                        <small class="text-muted">This workout will appear in your library</small>
+                    </div>
+                </div>
+                ` : ''}
+
                 <!-- Primary action - Save Session (first and prominent) -->
                 <button type="button" class="btn btn-primary w-100 mb-3" id="confirmCompleteBtn">
                     <i class="bx bx-save me-1"></i>Save Session
@@ -223,6 +240,15 @@ export function createCompleteWorkout(data, onConfirm) {
         const confirmBtn = document.getElementById('confirmCompleteBtn');
         const cancelDiscardBtn = document.getElementById('cancelDiscardBtn');
 
+        // Build & Log: wire up "Save as Template" toggle
+        const saveToggle = document.getElementById('saveAsTemplateToggle');
+        const nameGroup = document.getElementById('templateNameGroup');
+        if (saveToggle && nameGroup) {
+            saveToggle.addEventListener('change', () => {
+                nameGroup.style.display = saveToggle.checked ? 'block' : 'none';
+            });
+        }
+
         // Handle save session button
         confirmBtn.addEventListener('click', async () => {
             confirmBtn.disabled = true;
@@ -239,7 +265,16 @@ export function createCompleteWorkout(data, onConfirm) {
                         durationMinutes = null;
                     }
                 }
-                await onConfirm(durationMinutes);
+
+                // Build & Log: collect template save preference
+                const templateOpts = {};
+                if (isBuildMode && saveToggle?.checked) {
+                    const nameInput = document.getElementById('templateNameInput');
+                    templateOpts.saveAsTemplate = true;
+                    templateOpts.templateName = nameInput?.value?.trim() || workoutName;
+                }
+
+                await onConfirm(durationMinutes, templateOpts);
                 offcanvas.hide();
             } catch (error) {
                 confirmBtn.disabled = false;

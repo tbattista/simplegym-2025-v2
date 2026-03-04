@@ -151,6 +151,15 @@
                     </div>
                   </div>
 
+                  <!-- Build & Log -->
+                  <button type="button" id="buildAndLogBtn"
+                          class="btn btn-outline-primary w-100 py-2 d-flex align-items-center px-3">
+                    <i class="bx bx-plus-circle fs-4 me-2 flex-shrink-0"></i>
+                    <span class="fw-semibold flex-grow-1 text-start">Build & Log</span>
+                    <small class="opacity-75 me-2 d-none d-sm-inline">add exercises as you go</small>
+                    <i class="bx bx-chevron-right flex-shrink-0"></i>
+                  </button>
+
                   <!-- Start a Workout -->
                   <a href="workout-database.html" class="btn btn-primary w-100 py-2 d-flex align-items-center px-3">
                     <i class="bx bx-dumbbell fs-4 me-2 flex-shrink-0"></i>
@@ -460,7 +469,7 @@
 
     <!-- Universal Logger (AI-powered session logging) -->
     <script src="/static/assets/js/services/universal-log-service.js?v=1"></script>
-    <script type="module" src="/static/assets/js/components/offcanvas/offcanvas-universal-logger.js?v=1"></script>
+    <script type="module" src="/static/assets/js/components/offcanvas/offcanvas-universal-logger.js?v=1.1"></script>
 
     <!-- Menu Navigation System -->
     <script src="/static/assets/js/menu-navigation.js?v=20251020-04"></script>
@@ -565,6 +574,32 @@
                 } else {
                     const collapseEl = document.getElementById('logAiBody');
                     if (collapseEl) bootstrap.Collapse.getOrCreateInstance(collapseEl).toggle();
+                }
+            });
+
+            // ── Build & Log (create ad-hoc workout, navigate to workout mode) ──
+            document.getElementById('buildAndLogBtn')?.addEventListener('click', async () => {
+                const user = window.firebaseAuth?.currentUser;
+                if (!user) {
+                    window.toastNotifications?.warning('Sign in to use Build & Log');
+                    window.authService?.showLoginModal();
+                    return;
+                }
+                const btn = document.getElementById('buildAndLogBtn');
+                try {
+                    btn.disabled = true;
+                    const today = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                    const workout = await window.dataManager.createWorkout({
+                        name: `Workout - ${today}`,
+                        exercise_groups: [],
+                        is_archived: true
+                    });
+                    if (!workout?.id) throw new Error('No workout ID returned');
+                    window.location.href = `workout-mode.html?id=${workout.id}&mode=build`;
+                } catch (err) {
+                    console.error('Build & Log failed:', err);
+                    window.toastNotifications?.error('Failed to start Build & Log');
+                    btn.disabled = false;
                 }
             });
 
@@ -677,22 +712,57 @@
 
             document.getElementById('logAiText')?.addEventListener('input', updateLogAiBtn);
 
-            document.getElementById('logAiAnalyzeBtn')?.addEventListener('click', () => {
+            // Save original card body HTML for inline mode restore
+            const logAiCardBody = document.querySelector('#logAiBody .card-body');
+            const logAiOriginalHtml = logAiCardBody ? logAiCardBody.innerHTML : '';
+
+            function restoreLogAiInlinePanel() {
+                if (logAiCardBody) {
+                    logAiCardBody.innerHTML = logAiOriginalHtml;
+                    // Re-wire the inline panel event listeners
+                    logAiImages = [];
+                    document.getElementById('logAiFileInput')?.addEventListener('change', (e) => {
+                        const files = Array.from(e.target.files);
+                        const remaining = 5 - logAiImages.length;
+                        logAiImages = logAiImages.concat(files.slice(0, remaining));
+                        e.target.value = '';
+                        renderLogAiThumbnails();
+                        updateLogAiBtn();
+                    });
+                    document.getElementById('logAiText')?.addEventListener('input', updateLogAiBtn);
+                    document.getElementById('logAiAnalyzeBtn')?.addEventListener('click', handleAnalyzeClick);
+                    document.getElementById('logAiThumbnails')?.addEventListener('click', (e) => {
+                        const btn = e.target.closest('[data-ai-idx]');
+                        if (!btn) return;
+                        const idx = parseInt(btn.dataset.aiIdx, 10);
+                        if (!isNaN(idx)) {
+                            URL.revokeObjectURL(btn.closest('.position-relative')?.querySelector('img')?.src);
+                            logAiImages.splice(idx, 1);
+                            renderLogAiThumbnails();
+                            updateLogAiBtn();
+                        }
+                    });
+                    updateLogAiBtn();
+                }
+            }
+
+            function handleAnalyzeClick() {
                 const text   = document.getElementById('logAiText')?.value.trim() || null;
                 const images = [...logAiImages];
 
-                // Collapse the inline panel
-                const logAiBody = document.getElementById('logAiBody');
-                if (logAiBody) bootstrap.Collapse.getOrCreateInstance(logAiBody).hide();
+                if (typeof window.createUniversalLogger !== 'function') return;
 
-                if (typeof window.createUniversalLogger === 'function') {
+                if (isMobile()) {
+                    // Mobile: collapse inline panel, open offcanvas
+                    const logAiBody = document.getElementById('logAiBody');
+                    if (logAiBody) bootstrap.Collapse.getOrCreateInstance(logAiBody).hide();
+
                     window.createUniversalLogger({
                         prefillText:   text,
                         prefillImages: images,
                         autoAnalyze:   true,
                         onSaveComplete: () => {
                             if (window.loadRecentCardioSessions) window.loadRecentCardioSessions();
-                            // Reset inline panel
                             logAiImages = [];
                             renderLogAiThumbnails();
                             const logAiText = document.getElementById('logAiText');
@@ -700,8 +770,24 @@
                             updateLogAiBtn();
                         },
                     });
+                } else {
+                    // Desktop: render wizard inline inside the card body
+                    window.createUniversalLogger({
+                        prefillText:   text,
+                        prefillImages: images,
+                        autoAnalyze:   true,
+                        inlineContainer: logAiCardBody,
+                        onSaveComplete: () => {
+                            if (window.loadRecentCardioSessions) window.loadRecentCardioSessions();
+                        },
+                        onReset: () => {
+                            restoreLogAiInlinePanel();
+                        },
+                    });
                 }
-            });
+            }
+
+            document.getElementById('logAiAnalyzeBtn')?.addEventListener('click', handleAnalyzeClick);
 
             console.log('✅ Activity Log page ready!');
         });

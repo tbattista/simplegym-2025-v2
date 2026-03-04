@@ -136,6 +136,7 @@ class WorkoutModeController {
         // State
         this.currentWorkout = null;
         this.autoSaveTimer = null;
+        this.isBuildMode = new URLSearchParams(window.location.search).get('mode') === 'build';
 
         console.log('🎮 Workout Mode Controller initialized');
     }
@@ -223,6 +224,12 @@ class WorkoutModeController {
             );
 
             await this.loadWorkout(workoutId);
+
+            // Build & Log: auto-start timed session immediately
+            if (this.isBuildMode && !this.sessionService.isSessionActive()) {
+                console.log('🏗️ Build & Log mode - auto-starting timed session');
+                await this.lifecycleManager.handleStartWorkout();
+            }
 
             console.log('✅ Workout Mode Controller ready');
         } catch (error) {

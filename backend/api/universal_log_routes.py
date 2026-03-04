@@ -8,6 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from typing import Dict, Any
 from datetime import datetime
 import logging
+import os
 
 from ..models import (
     UniversalLogParseRequest,
@@ -43,6 +44,16 @@ def _check_ai_rate_limit(user_id: str):
         )
 
 
+@router.get("/status")
+async def universal_log_status():
+    """Health check for universal log AI parser."""
+    parser = get_universal_log_parser()
+    return {
+        "available": parser.is_available(),
+        "gemini_key_set": bool(os.getenv("GEMINI_API_KEY")),
+    }
+
+
 @router.post("/parse", response_model=UniversalLogParseResponse)
 async def parse_activity(
     request: UniversalLogParseRequest,
@@ -66,6 +77,7 @@ async def parse_activity(
 
     parser = get_universal_log_parser()
     if not parser.is_available():
+        logger.warning(f"Universal log parser unavailable. GEMINI_API_KEY set: {bool(os.getenv('GEMINI_API_KEY'))}")
         raise HTTPException(status_code=503, detail="AI analysis is not available — please try again later")
 
     try:

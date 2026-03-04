@@ -187,6 +187,20 @@
                     </div>
                   </a>
 
+                  <!-- Build & Log -->
+                  <div class="card landing-action-card text-decoration-none mb-3" id="landingBuildAndLogCard" style="cursor: pointer;">
+                    <div class="card-body d-flex align-items-center py-3 px-3">
+                      <div class="landing-card-icon me-3">
+                        <i class="bx bx-plus-circle text-warning"></i>
+                      </div>
+                      <div class="landing-card-content">
+                        <h6 class="card-title mb-0">Build & Log</h6>
+                        <small class="text-muted">Add exercises as you go</small>
+                      </div>
+                      <i class="bx bx-chevron-right text-muted ms-auto"></i>
+                    </div>
+                  </div>
+
                   <!-- Create a Workout -->
                   <a href="workout-builder.html?new=true" class="card landing-action-card text-decoration-none mb-3">
                     <div class="card-body d-flex align-items-center py-3 px-3">
@@ -497,6 +511,34 @@
             }
         });
         
+        // ── Build & Log landing card ──
+        document.getElementById('landingBuildAndLogCard')?.addEventListener('click', async () => {
+            const user = window.firebaseAuth?.currentUser;
+            if (!user) {
+                window.toastNotifications?.warning('Sign in to use Build & Log');
+                window.authService?.showLoginModal();
+                return;
+            }
+            const card = document.getElementById('landingBuildAndLogCard');
+            try {
+                card.style.pointerEvents = 'none';
+                card.style.opacity = '0.6';
+                const today = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                const workout = await window.dataManager.createWorkout({
+                    name: `Workout - ${today}`,
+                    exercise_groups: [],
+                    is_archived: true
+                });
+                if (!workout?.id) throw new Error('No workout ID returned');
+                window.location.href = `workout-mode.html?id=${workout.id}&mode=build`;
+            } catch (err) {
+                console.error('Build & Log failed:', err);
+                window.toastNotifications?.error('Failed to start Build & Log');
+                card.style.pointerEvents = '';
+                card.style.opacity = '';
+            }
+        });
+
         console.log('✅ Workout Mode page script loaded - controller will auto-initialize');
     </script>
   </body>

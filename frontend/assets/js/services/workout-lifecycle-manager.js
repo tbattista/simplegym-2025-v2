@@ -270,12 +270,14 @@ class WorkoutLifecycleManager {
         }
 
         // Use unified factory to create offcanvas
+        const isBuildMode = window.workoutModeController?.isBuildMode || false;
         window.UnifiedOffcanvasFactory.createCompleteWorkout({
             workoutName: this.currentWorkout.name,
             minutes,
             totalExercises,
-            isQuickLog  // Pass Quick Log flag for mode-aware UI
-        }, async (durationMinutes) => {
+            isQuickLog,
+            isBuildMode
+        }, async (durationMinutes, templateOpts = {}) => {
             try {
                 // Collect exercise data
                 const exercisesPerformed = this.onCollectExerciseData();
@@ -288,6 +290,19 @@ class WorkoutLifecycleManager {
 
                 // Update template weights
                 await this.onUpdateTemplateWeights(exercisesPerformed);
+
+                // Build & Log: unarchive workout if user chose "Save as Template"
+                if (isBuildMode && templateOpts.saveAsTemplate && this.currentWorkout?.id) {
+                    try {
+                        await window.dataManager.updateWorkout(this.currentWorkout.id, {
+                            name: templateOpts.templateName || this.currentWorkout.name,
+                            is_archived: false
+                        });
+                        console.log('✅ Workout saved as template:', templateOpts.templateName);
+                    } catch (err) {
+                        console.error('⚠️ Failed to save workout as template:', err);
+                    }
+                }
 
                 // NOW hide floating controls after workout is actually completed
                 this.showFloatingControls(false);

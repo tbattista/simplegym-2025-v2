@@ -81,12 +81,22 @@ class WorkoutRenderManager {
             exerciseIndex++;
         });
 
+        // Build & Log empty state: show prompt when no exercises yet
+        const isBuildMode = window.workoutModeController?.isBuildMode;
+        if (allItems.length === 0 && isBuildMode) {
+            html = `<div class="text-center py-5" id="buildModeEmptyState">
+                <i class="bx bx-plus-circle" style="font-size: 3rem; opacity: 0.3;"></i>
+                <h6 class="mt-3 text-muted">No exercises yet</h6>
+                <p class="text-muted small mb-0">Tap <strong>Add Exercise</strong> below to start building</p>
+            </div>`;
+        }
+
         container.innerHTML = html;
 
-        // Show inline add buttons when exercises are rendered
+        // Show inline add buttons (always visible in build mode, otherwise when exercises exist)
         const addButtons = document.getElementById('workoutModeAddButtons');
         if (addButtons) {
-            addButtons.style.display = allItems.length > 0 ? 'block' : 'none';
+            addButtons.style.display = (allItems.length > 0 || isBuildMode) ? 'block' : 'none';
         }
 
         // Apply visual block grouping for sectioned workouts

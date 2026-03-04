@@ -9,12 +9,15 @@
  *   3. Review    — Editable session form (cardio or strength)
  *   4. Success   — Confirmation with close button
  *
+ * Supports two modes:
+ *   - Offcanvas (mobile): full-screen bottom sheet wizard
+ *   - Inline (desktop): renders wizard steps inside a provided container element
+ *
  * Reuses: createOffcanvas + escapeHtml from offcanvas-helpers.js
  * Reuses: window.universalLogService for API calls
- * Reuses: window.importService.compressImage for image compression
  *
  * @module offcanvas-universal-logger
- * @version 1.0.0
+ * @version 1.1.0
  */
 
 import { createOffcanvas, escapeHtml } from './offcanvas-helpers.js';
@@ -31,25 +34,14 @@ const CARDIO_ACTIVITY_TYPES = [
     { value: 'other',        label: 'Other',        icon: 'bx-dumbbell' },
 ];
 
-// Wizard HTML template
-function buildHtml(id) {
+// ── Wizard body HTML (shared between offcanvas and inline modes) ─────────
+
+function buildBodyHtml({ isInline = false } = {}) {
+    const closeBtnHtml = isInline
+        ? '<button type="button" class="btn btn-outline-primary" id="ul-close-btn"><i class="bx bx-x me-1"></i>Close</button>'
+        : '<button type="button" class="btn btn-outline-primary" data-bs-dismiss="offcanvas"><i class="bx bx-x me-1"></i>Close</button>';
+
     return `
-<div class="offcanvas offcanvas-bottom offcanvas-bottom-base offcanvas-bottom-full offcanvas-desktop-wide" tabindex="-1"
-     id="${id}" data-bs-scroll="false">
-    <div class="offcanvas-header border-bottom" id="ul-header">
-        <h5 class="offcanvas-title">
-            <i class="bx bx-camera me-2"></i><span id="ul-title">Quick Log</span>
-        </h5>
-        <div class="d-flex align-items-center gap-2">
-            <button type="button" class="btn btn-sm btn-outline-secondary d-none" id="ul-back-btn">
-                <i class="bx bx-arrow-back me-1"></i>Back
-            </button>
-            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-        </div>
-    </div>
-
-    <div class="offcanvas-body p-0" style="overflow-y: auto;">
-
         <!-- ── STEP 1: Input ─────────────────────────── -->
         <div id="ul-step1" class="p-3">
             <!-- Tab selector -->
@@ -268,91 +260,102 @@ function buildHtml(id) {
             <i class="bx bx-check-circle text-success" style="font-size: 3rem;"></i>
             <h5 class="mt-3 mb-1">Session Logged!</h5>
             <p class="text-muted mb-3" id="ul-success-text">Your activity has been saved.</p>
-            <button type="button" class="btn btn-outline-primary" data-bs-dismiss="offcanvas">
-                <i class="bx bx-x me-1"></i>Close
-            </button>
-        </div>
+            ${closeBtnHtml}
+        </div>`;
+}
 
+// ── Offcanvas wrapper HTML ───────────────────────────────────────────────
+
+function buildOffcanvasHtml(id) {
+    return `
+<div class="offcanvas offcanvas-bottom offcanvas-bottom-base offcanvas-bottom-full offcanvas-desktop-wide" tabindex="-1"
+     id="${id}" data-bs-scroll="false">
+    <div class="offcanvas-header border-bottom" id="ul-header">
+        <h5 class="offcanvas-title">
+            <i class="bx bx-camera me-2"></i><span id="ul-title">Quick Log</span>
+        </h5>
+        <div class="d-flex align-items-center gap-2">
+            <button type="button" class="btn btn-sm btn-outline-secondary d-none" id="ul-back-btn">
+                <i class="bx bx-arrow-back me-1"></i>Back
+            </button>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+    </div>
+
+    <div class="offcanvas-body p-0" style="overflow-y: auto;">
+        ${buildBodyHtml({ isInline: false })}
     </div>
 </div>`;
 }
 
-/**
- * Create and show the Universal Logger offcanvas.
- * @param {Object} [options]
- * @param {Function} [options.onSaveComplete] - Called after successful save (to refresh session list)
- * @returns {{ offcanvas, offcanvasElement }}
- */
-export function createUniversalLogger({ onSaveComplete, prefillText = null, prefillImages = [], autoAnalyze = false } = {}) {
-    const id = 'universalLoggerOffcanvas';
+// ── Shared wizard logic ──────────────────────────────────────────────────
 
-    const html = buildHtml(id);
+function setupWizardLogic(el, { onSaveComplete, prefillText, prefillImages, autoAnalyze, isInline, onReset }) {
 
     // State
-    let selectedImages = [];           // File[] — multi-image array
-    let currentParsedResult = null;    // Last AI parse result
-    let currentSessionType = 'cardio'; // 'cardio' | 'strength'
-    let pendingQuestions = [];         // UniversalLogQuestion[] from AI
-    let activeTab = 'describe';        // 'describe' | 'photos'
+    let selectedImages = [];
+    let currentParsedResult = null;
+    let currentSessionType = 'cardio';
+    let pendingQuestions = [];
+    let activeTab = 'describe';
 
-    const STEPS = ['step1', 'loading', 'clarify', 'review', 'success'];
+    // ── Element refs ─────────────────────────────────────────────────
+    const titleEl       = el.querySelector('#ul-title');
+    const backBtn       = el.querySelector('#ul-back-btn');
 
-    return createOffcanvas(id, html, (offcanvas, el) => {
+    const step1         = el.querySelector('#ul-step1');
+    const loadingEl     = el.querySelector('#ul-loading');
+    const clarifyEl     = el.querySelector('#ul-clarify');
+    const reviewEl      = el.querySelector('#ul-review');
+    const successEl     = el.querySelector('#ul-success');
 
-        // ── Element refs ─────────────────────────────────────────────────
-        const titleEl       = el.querySelector('#ul-title');
-        const backBtn       = el.querySelector('#ul-back-btn');
+    const tabDescribe   = el.querySelector('#ul-tab-describe');
+    const tabPhotos     = el.querySelector('#ul-tab-photos');
+    const describeContent = el.querySelector('#ul-describe-content');
+    const photosContent = el.querySelector('#ul-photos-content');
+    const textInput     = el.querySelector('#ul-text-input');
 
-        const step1         = el.querySelector('#ul-step1');
-        const loadingEl     = el.querySelector('#ul-loading');
-        const clarifyEl     = el.querySelector('#ul-clarify');
-        const reviewEl      = el.querySelector('#ul-review');
-        const successEl     = el.querySelector('#ul-success');
+    const dropzone      = el.querySelector('#ul-dropzone');
+    const fileInput     = el.querySelector('#ul-file-input');
+    const thumbnailsEl  = el.querySelector('#ul-thumbnails');
+    const photoBadge    = el.querySelector('#ul-photo-badge');
+    const photoCountEl  = el.querySelector('#ul-photo-count');
 
-        const tabDescribe   = el.querySelector('#ul-tab-describe');
-        const tabPhotos     = el.querySelector('#ul-tab-photos');
-        const describeContent = el.querySelector('#ul-describe-content');
-        const photosContent = el.querySelector('#ul-photos-content');
-        const textInput     = el.querySelector('#ul-text-input');
+    const analyzeBtn    = el.querySelector('#ul-analyze-btn');
+    const errorDiv      = el.querySelector('#ul-error');
+    const errorText     = el.querySelector('#ul-error-text');
 
-        const dropzone      = el.querySelector('#ul-dropzone');
-        const fileInput     = el.querySelector('#ul-file-input');
-        const thumbnailsEl  = el.querySelector('#ul-thumbnails');
-        const photoBadge    = el.querySelector('#ul-photo-badge');
-        const photoCountEl  = el.querySelector('#ul-photo-count');
+    const questionsContainer = el.querySelector('#ul-questions-container');
+    const continueBtn   = el.querySelector('#ul-continue-btn');
 
-        const analyzeBtn    = el.querySelector('#ul-analyze-btn');
-        const errorDiv      = el.querySelector('#ul-error');
-        const errorText     = el.querySelector('#ul-error-text');
+    const typeCardioBtn = el.querySelector('#ul-type-cardio');
+    const typeStrengthBtn = el.querySelector('#ul-type-strength');
+    const cardioFields  = el.querySelector('#ul-cardio-fields');
+    const strengthFields = el.querySelector('#ul-strength-fields');
 
-        const questionsContainer = el.querySelector('#ul-questions-container');
-        const continueBtn   = el.querySelector('#ul-continue-btn');
+    const sessionDateEl = el.querySelector('#ul-session-date');
+    const saveBtn       = el.querySelector('#ul-save-btn');
+    const saveErrorDiv  = el.querySelector('#ul-save-error');
+    const saveErrorText = el.querySelector('#ul-save-error-text');
+    const successText   = el.querySelector('#ul-success-text');
 
-        const typeCardioBtn = el.querySelector('#ul-type-cardio');
-        const typeStrengthBtn = el.querySelector('#ul-type-strength');
-        const cardioFields  = el.querySelector('#ul-cardio-fields');
-        const strengthFields = el.querySelector('#ul-strength-fields');
+    const exerciseList  = el.querySelector('#ul-exercise-list');
+    const addExerciseBtn = el.querySelector('#ul-add-exercise-btn');
+    const saveTemplateToggle = el.querySelector('#ul-save-template');
 
-        const sessionDateEl = el.querySelector('#ul-session-date');
-        const saveBtn       = el.querySelector('#ul-save-btn');
-        const saveErrorDiv  = el.querySelector('#ul-save-error');
-        const saveErrorText = el.querySelector('#ul-save-error-text');
-        const successText   = el.querySelector('#ul-success-text');
+    const closeBtn      = el.querySelector('#ul-close-btn'); // inline mode only
 
-        const exerciseList  = el.querySelector('#ul-exercise-list');
-        const addExerciseBtn = el.querySelector('#ul-add-exercise-btn');
-        const saveTemplateToggle = el.querySelector('#ul-save-template');
+    // ── Step navigation ───────────────────────────────────────────────
+    function showStep(name) {
+        step1.classList.toggle('d-none',    name !== 'step1');
+        loadingEl.classList.toggle('d-none', name !== 'loading');
+        clarifyEl.classList.toggle('d-none', name !== 'clarify');
+        reviewEl.classList.toggle('d-none',  name !== 'review');
+        successEl.classList.toggle('d-none', name !== 'success');
 
-        // ── Step navigation ───────────────────────────────────────────────
-        function showStep(name) {
-            step1.classList.toggle('d-none',    name !== 'step1');
-            loadingEl.classList.toggle('d-none', name !== 'loading');
-            clarifyEl.classList.toggle('d-none', name !== 'clarify');
-            reviewEl.classList.toggle('d-none',  name !== 'review');
-            successEl.classList.toggle('d-none', name !== 'success');
+        if (backBtn) backBtn.classList.toggle('d-none', name === 'step1' || name === 'loading' || name === 'success');
 
-            backBtn.classList.toggle('d-none', name === 'step1' || name === 'loading' || name === 'success');
-
+        if (titleEl) {
             const titles = {
                 step1: 'Quick Log',
                 loading: 'Analyzing…',
@@ -362,435 +365,500 @@ export function createUniversalLogger({ onSaveComplete, prefillText = null, pref
             };
             titleEl.textContent = titles[name] || 'Quick Log';
         }
+    }
 
-        backBtn.addEventListener('click', () => {
-            if (!clarifyEl.classList.contains('d-none')) showStep('step1');
-            else showStep('step1');
+    if (backBtn) {
+        backBtn.addEventListener('click', () => showStep('step1'));
+    }
+
+    // ── Inline close button (resets wizard) ───────────────────────────
+    if (closeBtn) {
+        closeBtn.addEventListener('click', () => {
+            cleanupObjectUrls();
+            if (onReset) onReset();
+        });
+    }
+
+    // ── Tab switching ─────────────────────────────────────────────────
+    function switchTab(tab) {
+        activeTab = tab;
+        tabDescribe.classList.toggle('active', tab === 'describe');
+        tabPhotos.classList.toggle('active',   tab === 'photos');
+        describeContent.classList.toggle('d-none', tab !== 'describe');
+        photosContent.classList.toggle('d-none',   tab !== 'photos');
+        updatePhotoBadge();
+        updateAnalyzeBtn();
+        hideError();
+    }
+
+    tabDescribe.addEventListener('click', () => switchTab('describe'));
+    tabPhotos.addEventListener('click',   () => switchTab('photos'));
+    textInput.addEventListener('input',   () => { updateAnalyzeBtn(); hideError(); });
+
+    // ── Photo badge ──────────────────────────────────────────────────
+    function updatePhotoBadge() {
+        const hasPhotos = selectedImages.length > 0;
+        photoBadge.classList.toggle('d-none', !hasPhotos || activeTab !== 'describe');
+        if (hasPhotos) photoCountEl.textContent = selectedImages.length;
+    }
+
+    // ── Image upload & thumbnails ─────────────────────────────────────
+    dropzone.addEventListener('click', () => fileInput.click());
+
+    fileInput.addEventListener('change', () => {
+        addFiles(Array.from(fileInput.files));
+        fileInput.value = '';
+    });
+
+    dropzone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropzone.classList.add('border-primary', 'bg-light');
+    });
+    dropzone.addEventListener('dragleave', () => {
+        dropzone.classList.remove('border-primary', 'bg-light');
+    });
+    dropzone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropzone.classList.remove('border-primary', 'bg-light');
+        addFiles(Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/')));
+    });
+
+    function addFiles(files) {
+        const remaining = 5 - selectedImages.length;
+        const toAdd = files.slice(0, remaining);
+        selectedImages = selectedImages.concat(toAdd);
+        renderThumbnails();
+        updateAnalyzeBtn();
+        updatePhotoBadge();
+    }
+
+    function renderThumbnails() {
+        thumbnailsEl.querySelectorAll('img').forEach(img => {
+            if (img._objectUrl) URL.revokeObjectURL(img._objectUrl);
+        });
+        thumbnailsEl.innerHTML = '';
+
+        selectedImages.forEach((file, idx) => {
+            const url = URL.createObjectURL(file);
+            const wrapper = document.createElement('div');
+            wrapper.className = 'position-relative d-inline-flex';
+            wrapper.innerHTML = `
+                <img src="${escapeHtml(url)}" alt="${escapeHtml(file.name)}"
+                     class="rounded border"
+                     style="height:64px;width:64px;object-fit:cover;">
+                <button type="button"
+                        class="btn-close btn-close-sm position-absolute bg-white rounded-circle shadow-sm"
+                        style="top:-4px;right:-4px;padding:3px;font-size:0.5rem;"
+                        aria-label="Remove photo"
+                        data-idx="${idx}"></button>
+            `;
+            const img = wrapper.querySelector('img');
+            img._objectUrl = url;
+            thumbnailsEl.appendChild(wrapper);
         });
 
-        // ── Tab switching ─────────────────────────────────────────────────
-        function switchTab(tab) {
-            activeTab = tab;
-            tabDescribe.classList.toggle('active', tab === 'describe');
-            tabPhotos.classList.toggle('active',   tab === 'photos');
-            describeContent.classList.toggle('d-none', tab !== 'describe');
-            photosContent.classList.toggle('d-none',   tab !== 'photos');
-            updatePhotoBadge();
-            updateAnalyzeBtn();
-            hideError();
+        if (selectedImages.length > 0 && selectedImages.length < 5) {
+            const addMore = document.createElement('div');
+            addMore.className = 'border rounded d-flex align-items-center justify-content-center text-muted';
+            addMore.style = 'height:64px;width:64px;cursor:pointer;font-size:1.5rem;';
+            addMore.innerHTML = '<i class="bx bx-plus"></i>';
+            addMore.addEventListener('click', () => fileInput.click());
+            thumbnailsEl.appendChild(addMore);
         }
 
-        tabDescribe.addEventListener('click', () => switchTab('describe'));
-        tabPhotos.addEventListener('click',   () => switchTab('photos'));
-        textInput.addEventListener('input',   () => { updateAnalyzeBtn(); hideError(); });
-
-        // ── Photo badge (visible on Describe tab when photos are present) ─
-        function updatePhotoBadge() {
-            const hasPhotos = selectedImages.length > 0;
-            photoBadge.classList.toggle('d-none', !hasPhotos || activeTab !== 'describe');
-            if (hasPhotos) photoCountEl.textContent = selectedImages.length;
-        }
-
-        // ── Image upload & thumbnails ─────────────────────────────────────
-        dropzone.addEventListener('click', () => fileInput.click());
-
-        fileInput.addEventListener('change', () => {
-            addFiles(Array.from(fileInput.files));
-            fileInput.value = ''; // reset so same files can be re-added
-        });
-
-        dropzone.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            dropzone.classList.add('border-primary', 'bg-light');
-        });
-        dropzone.addEventListener('dragleave', () => {
-            dropzone.classList.remove('border-primary', 'bg-light');
-        });
-        dropzone.addEventListener('drop', (e) => {
-            e.preventDefault();
-            dropzone.classList.remove('border-primary', 'bg-light');
-            addFiles(Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/')));
-        });
-
-        function addFiles(files) {
-            const remaining = 5 - selectedImages.length;
-            const toAdd = files.slice(0, remaining);
-            selectedImages = selectedImages.concat(toAdd);
-            renderThumbnails();
-            updateAnalyzeBtn();
-            updatePhotoBadge();
-        }
-
-        function renderThumbnails() {
-            // Revoke previous object URLs
-            thumbnailsEl.querySelectorAll('img').forEach(img => {
-                if (img._objectUrl) URL.revokeObjectURL(img._objectUrl);
-            });
-            thumbnailsEl.innerHTML = '';
-
-            selectedImages.forEach((file, idx) => {
-                const url = URL.createObjectURL(file);
-                const wrapper = document.createElement('div');
-                wrapper.className = 'position-relative d-inline-flex';
-                wrapper.innerHTML = `
-                    <img src="${escapeHtml(url)}" alt="${escapeHtml(file.name)}"
-                         class="rounded border"
-                         style="height:64px;width:64px;object-fit:cover;">
-                    <button type="button"
-                            class="btn-close btn-close-sm position-absolute bg-white rounded-circle shadow-sm"
-                            style="top:-4px;right:-4px;padding:3px;font-size:0.5rem;"
-                            aria-label="Remove photo"
-                            data-idx="${idx}"></button>
-                `;
-                const img = wrapper.querySelector('img');
-                img._objectUrl = url;
-                img.onload = () => {}; // revoke on next render
-                thumbnailsEl.appendChild(wrapper);
-            });
-
-            // Add more button if < 5 photos
-            if (selectedImages.length > 0 && selectedImages.length < 5) {
-                const addMore = document.createElement('div');
-                addMore.className = 'border rounded d-flex align-items-center justify-content-center text-muted';
-                addMore.style = 'height:64px;width:64px;cursor:pointer;font-size:1.5rem;';
-                addMore.innerHTML = '<i class="bx bx-plus"></i>';
-                addMore.addEventListener('click', () => fileInput.click());
-                thumbnailsEl.appendChild(addMore);
+        thumbnailsEl.addEventListener('click', (e) => {
+            const btn = e.target.closest('[data-idx]');
+            if (!btn) return;
+            const idx = parseInt(btn.dataset.idx, 10);
+            if (!isNaN(idx)) {
+                selectedImages.splice(idx, 1);
+                renderThumbnails();
+                updateAnalyzeBtn();
+                updatePhotoBadge();
             }
+        });
+    }
 
-            // Remove buttons
-            thumbnailsEl.addEventListener('click', (e) => {
-                const btn = e.target.closest('[data-idx]');
-                if (!btn) return;
-                const idx = parseInt(btn.dataset.idx, 10);
-                if (!isNaN(idx)) {
-                    selectedImages.splice(idx, 1);
-                    renderThumbnails();
-                    updateAnalyzeBtn();
-                    updatePhotoBadge();
-                }
-            });
-        }
+    // ── Analyze button state ──────────────────────────────────────────
+    function updateAnalyzeBtn() {
+        const hasText   = textInput.value.trim().length > 0;
+        const hasPhotos = selectedImages.length > 0;
+        analyzeBtn.disabled = !(hasText || hasPhotos);
+    }
 
-        // ── Analyze button state ──────────────────────────────────────────
-        function updateAnalyzeBtn() {
-            const hasText   = textInput.value.trim().length > 0;
-            const hasPhotos = selectedImages.length > 0;
-            analyzeBtn.disabled = !(hasText || hasPhotos);
-        }
+    // ── Error helpers ─────────────────────────────────────────────────
+    function showError(msg) {
+        errorText.textContent = msg;
+        errorDiv.classList.remove('d-none');
+    }
+    function hideError() {
+        errorDiv.classList.add('d-none');
+    }
+    function showSaveError(msg) {
+        saveErrorText.textContent = msg;
+        saveErrorDiv.classList.remove('d-none');
+    }
+    function hideSaveError() {
+        saveErrorDiv.classList.add('d-none');
+    }
 
-        // ── Error helpers ─────────────────────────────────────────────────
-        function showError(msg) {
-            errorText.textContent = msg;
-            errorDiv.classList.remove('d-none');
-        }
-        function hideError() {
-            errorDiv.classList.add('d-none');
-        }
-        function showSaveError(msg) {
-            saveErrorText.textContent = msg;
-            saveErrorDiv.classList.remove('d-none');
-        }
-        function hideSaveError() {
-            saveErrorDiv.classList.add('d-none');
-        }
+    // ── Analyze ───────────────────────────────────────────────────────
+    async function runAnalyze() {
+        hideError();
+        showStep('loading');
+        try {
+            const text = textInput.value.trim() || null;
+            const result = await window.universalLogService.parse(text, selectedImages, null);
+            currentParsedResult = result;
 
-        // ── Analyze ───────────────────────────────────────────────────────
-        async function runAnalyze() {
-            hideError();
-            showStep('loading');
-            try {
-                const text = textInput.value.trim() || null;
-                const result = await window.universalLogService.parse(text, selectedImages, null);
-                currentParsedResult = result;
-
-                if (!result.success) {
-                    showStep('step1');
-                    showError(result.errors?.[0] || 'Could not analyze activity. Please try again.');
-                    return;
-                }
-
-                if (result.needs_clarification && result.questions?.length > 0) {
-                    pendingQuestions = result.questions;
-                    renderQuestions(result.questions);
-                    showStep('clarify');
-                } else {
-                    populateReview(result);
-                    showStep('review');
-                }
-            } catch (err) {
+            if (!result.success) {
                 showStep('step1');
-                showError(err.message || 'Analysis failed. Please try again.');
+                showError(result.errors?.[0] || 'Could not analyze activity. Please try again.');
+                return;
             }
-        }
 
-        analyzeBtn.addEventListener('click', runAnalyze);
-
-        // ── Clarify ───────────────────────────────────────────────────────
-        function renderQuestions(questions) {
-            questionsContainer.innerHTML = '';
-            questions.forEach(q => {
-                const wrapper = document.createElement('div');
-                wrapper.className = 'mb-3';
-                const label = `<label class="form-label fw-semibold">${escapeHtml(q.question)}</label>`;
-                let input = '';
-                if (q.type === 'select' && q.options?.length) {
-                    input = `<select class="form-select" data-qid="${escapeHtml(q.id)}">
-                        <option value="">— Select —</option>
-                        ${q.options.map(o => `<option value="${escapeHtml(o)}">${escapeHtml(o)}</option>`).join('')}
-                    </select>`;
-                } else if (q.type === 'number') {
-                    input = `<input type="number" class="form-control" data-qid="${escapeHtml(q.id)}" placeholder="Enter a number">`;
-                } else {
-                    input = `<input type="text" class="form-control" data-qid="${escapeHtml(q.id)}" placeholder="Your answer…">`;
-                }
-                wrapper.innerHTML = label + input;
-                questionsContainer.appendChild(wrapper);
-            });
-        }
-
-        continueBtn.addEventListener('click', async () => {
-            // Collect answers
-            const answers = {};
-            questionsContainer.querySelectorAll('[data-qid]').forEach(input => {
-                const val = input.value.trim();
-                if (val) answers[input.dataset.qid] = val;
-            });
-
-            showStep('loading');
-            try {
-                const text = textInput.value.trim() || null;
-                const result = await window.universalLogService.parse(text, selectedImages, answers);
-                currentParsedResult = result;
-
-                if (!result.success) {
-                    showStep('clarify');
-                    return;
-                }
-
+            if (result.needs_clarification && result.questions?.length > 0) {
+                pendingQuestions = result.questions;
+                renderQuestions(result.questions);
+                showStep('clarify');
+            } else {
                 populateReview(result);
                 showStep('review');
-            } catch (err) {
-                showStep('clarify');
             }
-        });
-
-        // ── Review ────────────────────────────────────────────────────────
-        function setSessionType(type) {
-            currentSessionType = type;
-            typeCardioBtn.classList.toggle('btn-primary', type === 'cardio');
-            typeCardioBtn.classList.toggle('btn-outline-secondary', type !== 'cardio');
-            typeStrengthBtn.classList.toggle('btn-primary', type === 'strength');
-            typeStrengthBtn.classList.toggle('btn-outline-secondary', type !== 'strength');
-            cardioFields.classList.toggle('d-none', type !== 'cardio');
-            strengthFields.classList.toggle('d-none', type !== 'strength');
-        }
-
-        typeCardioBtn.addEventListener('click',   () => setSessionType('cardio'));
-        typeStrengthBtn.addEventListener('click', () => setSessionType('strength'));
-
-        function populateReview(result) {
-            hideSaveError();
-
-            // Default date to now
-            const now = new Date();
-            now.setSeconds(0, 0);
-            sessionDateEl.value = now.toISOString().slice(0, 16);
-
-            const type = result.session_type === 'strength' ? 'strength' : 'cardio';
-            setSessionType(type);
-
-            if (type === 'cardio' && result.cardio_data) {
-                populateCardioFields(result.cardio_data);
-            } else if (type === 'strength' && result.strength_data) {
-                populateStrengthFields(result.strength_data);
-            }
-        }
-
-        function populateCardioFields(cd) {
-            el.querySelector('#ul-activity-type').value = cd.activity_type || 'other';
-
-            const totalMins = cd.duration_minutes || 0;
-            el.querySelector('#ul-duration-hours').value = Math.floor(totalMins / 60) || 0;
-            el.querySelector('#ul-duration-mins').value  = Math.round(totalMins % 60) || 0;
-
-            el.querySelector('#ul-calories').value      = cd.calories || '';
-            el.querySelector('#ul-distance').value      = cd.distance || '';
-            el.querySelector('#ul-distance-unit').value = cd.distance_unit || 'mi';
-            el.querySelector('#ul-avg-hr').value        = cd.avg_heart_rate || '';
-            el.querySelector('#ul-max-hr').value        = cd.max_heart_rate || '';
-            el.querySelector('#ul-notes-cardio').value  = cd.notes || '';
-        }
-
-        function populateStrengthFields(sd) {
-            el.querySelector('#ul-workout-name').value = sd.workout_name || 'Ad-Hoc Workout';
-            el.querySelector('#ul-notes-strength').value = sd.notes || '';
-            el.querySelector('#ul-strength-duration').value = '';
-            saveTemplateToggle.checked = false;
-            renderExerciseList(sd.exercise_groups || []);
-        }
-
-        // ── Exercise list (strength review) ──────────────────────────────
-        function renderExerciseList(groups) {
-            exerciseList.innerHTML = '';
-            groups.forEach((g, idx) => {
-                addExerciseRow(
-                    list(g.exercises) || '',
-                    g.sets || '3',
-                    g.reps || '8-12',
-                    g.default_weight || '',
-                    g.default_weight_unit || 'lbs',
-                    idx
-                );
-            });
-        }
-
-        function addExerciseRow(name = '', sets = '3', reps = '8-12', weight = '', weightUnit = 'lbs') {
-            const row = document.createElement('div');
-            row.className = 'exercise-row d-flex align-items-center gap-1 mb-2';
-            row.innerHTML = `
-                <input class="form-control form-control-sm ex-name" value="${escapeHtml(name)}"
-                       placeholder="Exercise name" style="flex:2;min-width:0;">
-                <input class="form-control form-control-sm ex-sets text-center" value="${escapeHtml(sets)}"
-                       placeholder="Sets" style="width:46px;flex-shrink:0;">
-                <span class="text-muted small">×</span>
-                <input class="form-control form-control-sm ex-reps text-center" value="${escapeHtml(reps)}"
-                       placeholder="Reps" style="width:60px;flex-shrink:0;">
-                <input class="form-control form-control-sm ex-weight text-center" value="${escapeHtml(weight)}"
-                       placeholder="Wt" style="width:52px;flex-shrink:0;">
-                <select class="form-select form-select-sm ex-weight-unit" style="width:56px;flex-shrink:0;padding-right:1.5rem;">
-                    <option value="lbs" ${weightUnit === 'lbs' ? 'selected' : ''}>lbs</option>
-                    <option value="kg"  ${weightUnit === 'kg'  ? 'selected' : ''}>kg</option>
-                </select>
-                <button type="button" class="btn btn-sm btn-link text-danger p-0 remove-ex-btn" aria-label="Remove">
-                    <i class="bx bx-x fs-5"></i>
-                </button>
-            `;
-            row.querySelector('.remove-ex-btn').addEventListener('click', () => row.remove());
-            exerciseList.appendChild(row);
-        }
-
-        /** Get the first exercise name from an exercises dict {"a": "Bench Press"} */
-        function list(exercises) {
-            if (!exercises) return '';
-            return Object.values(exercises)[0] || '';
-        }
-
-        addExerciseBtn.addEventListener('click', () => addExerciseRow());
-
-        // ── Collect review data ───────────────────────────────────────────
-        function collectCardioData() {
-            const hours = parseFloat(el.querySelector('#ul-duration-hours').value) || 0;
-            const mins  = parseFloat(el.querySelector('#ul-duration-mins').value)  || 0;
-            return {
-                activity_type:  el.querySelector('#ul-activity-type').value,
-                duration_minutes: hours * 60 + mins,
-                calories:       parseIntOrNull('#ul-calories'),
-                distance:       parseFloatOrNull('#ul-distance'),
-                distance_unit:  el.querySelector('#ul-distance-unit').value,
-                avg_heart_rate: parseIntOrNull('#ul-avg-hr'),
-                max_heart_rate: parseIntOrNull('#ul-max-hr'),
-                notes:          el.querySelector('#ul-notes-cardio').value.trim() || null,
-                sessionDate:    sessionDateEl.value ? new Date(sessionDateEl.value).toISOString() : null,
-            };
-        }
-
-        function collectStrengthData() {
-            const rows = exerciseList.querySelectorAll('.exercise-row');
-            const exercise_groups = [];
-            rows.forEach(row => {
-                const name = row.querySelector('.ex-name').value.trim();
-                if (!name) return;
-                exercise_groups.push({
-                    exercises: { a: name },
-                    sets: row.querySelector('.ex-sets').value.trim() || '3',
-                    reps: row.querySelector('.ex-reps').value.trim() || '8-12',
-                    rest: '60s',
-                    default_weight: row.querySelector('.ex-weight').value.trim() || null,
-                    default_weight_unit: row.querySelector('.ex-weight-unit').value,
-                });
-            });
-
-            const durationMins = parseFloat(el.querySelector('#ul-strength-duration').value) || null;
-
-            return {
-                workout_name:     el.querySelector('#ul-workout-name').value.trim() || 'Ad-Hoc Workout',
-                exercise_groups,
-                duration_minutes: durationMins,
-                notes:            el.querySelector('#ul-notes-strength').value.trim() || null,
-                started_at:       sessionDateEl.value ? new Date(sessionDateEl.value).toISOString() : null,
-            };
-        }
-
-        function parseIntOrNull(selector) {
-            const val = parseInt(el.querySelector(selector).value, 10);
-            return isNaN(val) ? null : val;
-        }
-        function parseFloatOrNull(selector) {
-            const val = parseFloat(el.querySelector(selector).value);
-            return isNaN(val) ? null : val;
-        }
-
-        // ── Save ──────────────────────────────────────────────────────────
-        saveBtn.addEventListener('click', async () => {
-            hideSaveError();
-            saveBtn.disabled = true;
-            saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Saving…';
-
-            try {
-                if (currentSessionType === 'cardio') {
-                    const data = collectCardioData();
-                    if (!data.duration_minutes || data.duration_minutes < 1) {
-                        throw new Error('Please enter a duration greater than 0');
-                    }
-                    await window.universalLogService.saveCardio(data);
-                    successText.textContent = `${CARDIO_ACTIVITY_TYPES.find(t => t.value === data.activity_type)?.label || 'Activity'} session saved!`;
-                } else {
-                    const data = collectStrengthData();
-                    if (data.exercise_groups.length === 0) {
-                        throw new Error('Please add at least one exercise');
-                    }
-                    await window.universalLogService.saveStrength(data, saveTemplateToggle.checked);
-                    successText.textContent = saveTemplateToggle.checked
-                        ? `"${escapeHtml(data.workout_name)}" saved and added to your library!`
-                        : `"${escapeHtml(data.workout_name)}" logged successfully!`;
-                }
-
-                showStep('success');
-                onSaveComplete?.();
-            } catch (err) {
-                showSaveError(err.message || 'Save failed. Please try again.');
-                saveBtn.disabled = false;
-                saveBtn.innerHTML = '<i class="bx bx-save me-1"></i>Save Session';
-            }
-        });
-
-        // ── Init ──────────────────────────────────────────────────────────
-        if (autoAnalyze && (prefillText || prefillImages.length > 0)) {
-            if (prefillText) textInput.value = prefillText;
-            if (prefillImages.length > 0) {
-                selectedImages = [...prefillImages];
-                updateAnalyzeBtn();
-            }
-            showStep('loading');
-        } else {
+        } catch (err) {
             showStep('step1');
+            showError(err.message || 'Analysis failed. Please try again.');
         }
-        setSessionType('cardio');
+    }
+
+    analyzeBtn.addEventListener('click', runAnalyze);
+
+    // ── Clarify ───────────────────────────────────────────────────────
+    function renderQuestions(questions) {
+        questionsContainer.innerHTML = '';
+        questions.forEach(q => {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'mb-3';
+            const label = `<label class="form-label fw-semibold">${escapeHtml(q.question)}</label>`;
+            let input = '';
+            if (q.type === 'select' && q.options?.length) {
+                input = `<select class="form-select" data-qid="${escapeHtml(q.id)}">
+                    <option value="">— Select —</option>
+                    ${q.options.map(o => `<option value="${escapeHtml(o)}">${escapeHtml(o)}</option>`).join('')}
+                </select>`;
+            } else if (q.type === 'number') {
+                input = `<input type="number" class="form-control" data-qid="${escapeHtml(q.id)}" placeholder="Enter a number">`;
+            } else {
+                input = `<input type="text" class="form-control" data-qid="${escapeHtml(q.id)}" placeholder="Your answer…">`;
+            }
+            wrapper.innerHTML = label + input;
+            questionsContainer.appendChild(wrapper);
+        });
+    }
+
+    continueBtn.addEventListener('click', async () => {
+        const answers = {};
+        questionsContainer.querySelectorAll('[data-qid]').forEach(input => {
+            const val = input.value.trim();
+            if (val) answers[input.dataset.qid] = val;
+        });
+
+        showStep('loading');
+        try {
+            const text = textInput.value.trim() || null;
+            const result = await window.universalLogService.parse(text, selectedImages, answers);
+            currentParsedResult = result;
+
+            if (!result.success) {
+                showStep('clarify');
+                return;
+            }
+
+            populateReview(result);
+            showStep('review');
+        } catch (err) {
+            showStep('clarify');
+        }
+    });
+
+    // ── Review ────────────────────────────────────────────────────────
+    function setSessionType(type) {
+        currentSessionType = type;
+        typeCardioBtn.classList.toggle('btn-primary', type === 'cardio');
+        typeCardioBtn.classList.toggle('btn-outline-secondary', type !== 'cardio');
+        typeStrengthBtn.classList.toggle('btn-primary', type === 'strength');
+        typeStrengthBtn.classList.toggle('btn-outline-secondary', type !== 'strength');
+        cardioFields.classList.toggle('d-none', type !== 'cardio');
+        strengthFields.classList.toggle('d-none', type !== 'strength');
+    }
+
+    typeCardioBtn.addEventListener('click',   () => setSessionType('cardio'));
+    typeStrengthBtn.addEventListener('click', () => setSessionType('strength'));
+
+    function populateReview(result) {
+        hideSaveError();
+
+        const now = new Date();
+        now.setSeconds(0, 0);
+        sessionDateEl.value = now.toISOString().slice(0, 16);
+
+        const type = result.session_type === 'strength' ? 'strength' : 'cardio';
+        setSessionType(type);
+
+        if (type === 'cardio' && result.cardio_data) {
+            populateCardioFields(result.cardio_data);
+        } else if (type === 'strength' && result.strength_data) {
+            populateStrengthFields(result.strength_data);
+        }
+    }
+
+    function populateCardioFields(cd) {
+        el.querySelector('#ul-activity-type').value = cd.activity_type || 'other';
+
+        const totalMins = cd.duration_minutes || 0;
+        el.querySelector('#ul-duration-hours').value = Math.floor(totalMins / 60) || 0;
+        el.querySelector('#ul-duration-mins').value  = Math.round(totalMins % 60) || 0;
+
+        el.querySelector('#ul-calories').value      = cd.calories || '';
+        el.querySelector('#ul-distance').value      = cd.distance || '';
+        el.querySelector('#ul-distance-unit').value = cd.distance_unit || 'mi';
+        el.querySelector('#ul-avg-hr').value        = cd.avg_heart_rate || '';
+        el.querySelector('#ul-max-hr').value        = cd.max_heart_rate || '';
+        el.querySelector('#ul-notes-cardio').value  = cd.notes || '';
+    }
+
+    function populateStrengthFields(sd) {
+        el.querySelector('#ul-workout-name').value = sd.workout_name || 'Ad-Hoc Workout';
+        el.querySelector('#ul-notes-strength').value = sd.notes || '';
+        el.querySelector('#ul-strength-duration').value = '';
+        saveTemplateToggle.checked = false;
+        renderExerciseList(sd.exercise_groups || []);
+    }
+
+    // ── Exercise list (strength review) ──────────────────────────────
+    function renderExerciseList(groups) {
+        exerciseList.innerHTML = '';
+        groups.forEach((g, idx) => {
+            addExerciseRow(
+                listFirst(g.exercises) || '',
+                g.sets || '3',
+                g.reps || '8-12',
+                g.default_weight || '',
+                g.default_weight_unit || 'lbs',
+                idx
+            );
+        });
+    }
+
+    function addExerciseRow(name = '', sets = '3', reps = '8-12', weight = '', weightUnit = 'lbs') {
+        const row = document.createElement('div');
+        row.className = 'exercise-row d-flex align-items-center gap-1 mb-2';
+        row.innerHTML = `
+            <input class="form-control form-control-sm ex-name" value="${escapeHtml(name)}"
+                   placeholder="Exercise name" style="flex:2;min-width:0;">
+            <input class="form-control form-control-sm ex-sets text-center" value="${escapeHtml(sets)}"
+                   placeholder="Sets" style="width:46px;flex-shrink:0;">
+            <span class="text-muted small">×</span>
+            <input class="form-control form-control-sm ex-reps text-center" value="${escapeHtml(reps)}"
+                   placeholder="Reps" style="width:60px;flex-shrink:0;">
+            <input class="form-control form-control-sm ex-weight text-center" value="${escapeHtml(weight)}"
+                   placeholder="Wt" style="width:52px;flex-shrink:0;">
+            <select class="form-select form-select-sm ex-weight-unit" style="width:56px;flex-shrink:0;padding-right:1.5rem;">
+                <option value="lbs" ${weightUnit === 'lbs' ? 'selected' : ''}>lbs</option>
+                <option value="kg"  ${weightUnit === 'kg'  ? 'selected' : ''}>kg</option>
+            </select>
+            <button type="button" class="btn btn-sm btn-link text-danger p-0 remove-ex-btn" aria-label="Remove">
+                <i class="bx bx-x fs-5"></i>
+            </button>
+        `;
+        row.querySelector('.remove-ex-btn').addEventListener('click', () => row.remove());
+        exerciseList.appendChild(row);
+    }
+
+    function listFirst(exercises) {
+        if (!exercises) return '';
+        return Object.values(exercises)[0] || '';
+    }
+
+    addExerciseBtn.addEventListener('click', () => addExerciseRow());
+
+    // ── Collect review data ───────────────────────────────────────────
+    function collectCardioData() {
+        const hours = parseFloat(el.querySelector('#ul-duration-hours').value) || 0;
+        const mins  = parseFloat(el.querySelector('#ul-duration-mins').value)  || 0;
+        return {
+            activity_type:  el.querySelector('#ul-activity-type').value,
+            duration_minutes: hours * 60 + mins,
+            calories:       parseIntOrNull('#ul-calories'),
+            distance:       parseFloatOrNull('#ul-distance'),
+            distance_unit:  el.querySelector('#ul-distance-unit').value,
+            avg_heart_rate: parseIntOrNull('#ul-avg-hr'),
+            max_heart_rate: parseIntOrNull('#ul-max-hr'),
+            notes:          el.querySelector('#ul-notes-cardio').value.trim() || null,
+            sessionDate:    sessionDateEl.value ? new Date(sessionDateEl.value).toISOString() : null,
+        };
+    }
+
+    function collectStrengthData() {
+        const rows = exerciseList.querySelectorAll('.exercise-row');
+        const exercise_groups = [];
+        rows.forEach(row => {
+            const name = row.querySelector('.ex-name').value.trim();
+            if (!name) return;
+            exercise_groups.push({
+                exercises: { a: name },
+                sets: row.querySelector('.ex-sets').value.trim() || '3',
+                reps: row.querySelector('.ex-reps').value.trim() || '8-12',
+                rest: '60s',
+                default_weight: row.querySelector('.ex-weight').value.trim() || null,
+                default_weight_unit: row.querySelector('.ex-weight-unit').value,
+            });
+        });
+
+        const durationMins = parseFloat(el.querySelector('#ul-strength-duration').value) || null;
+
+        return {
+            workout_name:     el.querySelector('#ul-workout-name').value.trim() || 'Ad-Hoc Workout',
+            exercise_groups,
+            duration_minutes: durationMins,
+            notes:            el.querySelector('#ul-notes-strength').value.trim() || null,
+            started_at:       sessionDateEl.value ? new Date(sessionDateEl.value).toISOString() : null,
+        };
+    }
+
+    function parseIntOrNull(selector) {
+        const val = parseInt(el.querySelector(selector).value, 10);
+        return isNaN(val) ? null : val;
+    }
+    function parseFloatOrNull(selector) {
+        const val = parseFloat(el.querySelector(selector).value);
+        return isNaN(val) ? null : val;
+    }
+
+    // ── Save ──────────────────────────────────────────────────────────
+    saveBtn.addEventListener('click', async () => {
+        hideSaveError();
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Saving…';
+
+        try {
+            if (currentSessionType === 'cardio') {
+                const data = collectCardioData();
+                if (!data.duration_minutes || data.duration_minutes < 1) {
+                    throw new Error('Please enter a duration greater than 0');
+                }
+                await window.universalLogService.saveCardio(data);
+                successText.textContent = `${CARDIO_ACTIVITY_TYPES.find(t => t.value === data.activity_type)?.label || 'Activity'} session saved!`;
+            } else {
+                const data = collectStrengthData();
+                if (data.exercise_groups.length === 0) {
+                    throw new Error('Please add at least one exercise');
+                }
+                await window.universalLogService.saveStrength(data, saveTemplateToggle.checked);
+                successText.textContent = saveTemplateToggle.checked
+                    ? `"${escapeHtml(data.workout_name)}" saved and added to your library!`
+                    : `"${escapeHtml(data.workout_name)}" logged successfully!`;
+            }
+
+            showStep('success');
+            onSaveComplete?.();
+        } catch (err) {
+            showSaveError(err.message || 'Save failed. Please try again.');
+            saveBtn.disabled = false;
+            saveBtn.innerHTML = '<i class="bx bx-save me-1"></i>Save Session';
+        }
+    });
+
+    // ── Cleanup helper ────────────────────────────────────────────────
+    function cleanupObjectUrls() {
+        thumbnailsEl.querySelectorAll('img').forEach(img => {
+            if (img._objectUrl) URL.revokeObjectURL(img._objectUrl);
+        });
+    }
+
+    // ── Init ──────────────────────────────────────────────────────────
+    if (prefillText) textInput.value = prefillText;
+    if (prefillImages && prefillImages.length > 0) {
+        selectedImages = [...prefillImages];
+        updateAnalyzeBtn();
+    }
+
+    if (autoAnalyze && (prefillText || (prefillImages && prefillImages.length > 0))) {
+        showStep('loading');
+    } else {
+        showStep('step1');
+    }
+    setSessionType('cardio');
+
+    // Return control functions for the caller
+    return { runAnalyze, cleanupObjectUrls, focusInput: () => textInput.focus() };
+}
+
+// ── Public API ───────────────────────────────────────────────────────────
+
+/**
+ * Create and show the Universal Logger.
+ * @param {Object} [options]
+ * @param {Function} [options.onSaveComplete] - Called after successful save
+ * @param {string|null} [options.prefillText] - Pre-fill the text input
+ * @param {File[]} [options.prefillImages] - Pre-fill with image files
+ * @param {boolean} [options.autoAnalyze] - Immediately start analysis
+ * @param {HTMLElement|null} [options.inlineContainer] - If provided, renders inline into this element (desktop mode)
+ * @param {Function|null} [options.onReset] - Called when inline wizard "Close" is clicked (to restore original content)
+ * @returns {{ offcanvas?, offcanvasElement?, destroy? }}
+ */
+export function createUniversalLogger({ onSaveComplete, prefillText = null, prefillImages = [], autoAnalyze = false, inlineContainer = null, onReset = null } = {}) {
+
+    // ── Inline mode (desktop) ────────────────────────────────────────
+    if (inlineContainer) {
+        inlineContainer.innerHTML = buildBodyHtml({ isInline: true });
+        const controls = setupWizardLogic(inlineContainer, {
+            onSaveComplete,
+            prefillText,
+            prefillImages,
+            autoAnalyze,
+            isInline: true,
+            onReset,
+        });
+
+        // Auto-analyze immediately (no offcanvas show event to wait for)
+        if (autoAnalyze && (prefillText || prefillImages.length > 0)) {
+            controls.runAnalyze();
+        } else {
+            controls.focusInput();
+        }
+
+        return {
+            destroy: () => {
+                controls.cleanupObjectUrls();
+                inlineContainer.innerHTML = '';
+            },
+        };
+    }
+
+    // ── Offcanvas mode (mobile) ──────────────────────────────────────
+    const id = 'universalLoggerOffcanvas';
+    const html = buildOffcanvasHtml(id);
+
+    return createOffcanvas(id, html, (offcanvas, el) => {
+        const controls = setupWizardLogic(el, {
+            onSaveComplete,
+            prefillText,
+            prefillImages,
+            autoAnalyze,
+            isInline: false,
+        });
 
         el.addEventListener('shown.bs.offcanvas', () => {
             if (autoAnalyze && (prefillText || prefillImages.length > 0)) {
-                runAnalyze();
+                controls.runAnalyze();
             } else {
-                textInput.focus();
+                controls.focusInput();
             }
         });
 
-        // Clean up object URLs on close
         el.addEventListener('hidden.bs.offcanvas', () => {
-            thumbnailsEl.querySelectorAll('img').forEach(img => {
-                if (img._objectUrl) URL.revokeObjectURL(img._objectUrl);
-            });
+            controls.cleanupObjectUrls();
         });
     });
 }

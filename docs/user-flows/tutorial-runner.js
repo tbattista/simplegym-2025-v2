@@ -219,6 +219,57 @@ const TUTORIALS = {
     ]
   },
 
+  'browse-exercises-v2': {
+    title: 'Browsing the Exercise Database',
+    startUrl: '/exercise-database.html',
+    steps: [
+      {
+        action: 'wait',
+        target: '#exerciseTableContainer',
+        waitTime: 2500,
+        caption: 'Browse 2,500+ exercises'
+      },
+      {
+        action: 'type',
+        target: '#exerciseSearchInput',
+        value: 'squat',
+        waitTime: 1200,
+        caption: 'Search by name'
+      },
+      {
+        action: 'click',
+        target: '#exerciseTableContainer .card[data-exercise-id]',
+        waitAfter: '#exerciseDetailOffcanvas.show',
+        waitTime: 1000,
+        caption: 'Tap to see exercise details'
+      },
+      {
+        action: 'scroll-to-within',
+        container: '#exerciseDetailOffcanvas .offcanvas-body, #exerciseOffcanvasContent',
+        target: '.pairs-well-with-section',
+        waitTime: 800,
+        caption: 'See suggested pairings'
+      },
+      {
+        action: 'dismiss-then-type',
+        dismiss: '#exerciseDetailOffcanvas .btn-close',
+        dismissWait: 600,
+        clearTarget: '#exerciseSearchInput',
+        target: '#exerciseSearchInput',
+        value: 'bench press',
+        waitTime: 1200,
+        caption: 'Search for another exercise'
+      },
+      {
+        action: 'click',
+        target: '#exerciseTableContainer .card[data-exercise-id]',
+        waitAfter: '#exerciseDetailOffcanvas.show',
+        waitTime: 1000,
+        caption: 'Explore more exercises'
+      }
+    ]
+  },
+
   'exercise-cart': {
     title: 'Build a Workout with the Exercise Cart',
     startUrl: '/exercise-database.html',
@@ -463,6 +514,60 @@ async function executeStep(page, step, viewportName, baseUrl) {
         await waitForSelector(page, target);
         ({ clickX, clickY, bbox } = await getElementCenter(page, target));
         await page.click(target);
+      }
+      if (step.waitAfter) {
+        await waitForSelector(page, step.waitAfter);
+      }
+      break;
+    }
+
+    case 'scroll-to-within': {
+      // Scroll within a container to reveal a target element
+      const containers = (step.container || '').split(',').map(s => s.trim());
+      let scrolled = false;
+      for (const containerSel of containers) {
+        try {
+          const container = await page.$(containerSel);
+          if (container) {
+            const targetEl = await page.$(target);
+            if (targetEl) {
+              await targetEl.scrollIntoViewIfNeeded();
+              scrolled = true;
+              break;
+            }
+          }
+        } catch (e) { /* try next */ }
+      }
+      if (!scrolled && target) {
+        try {
+          const el = await page.$(target);
+          if (el) await el.scrollIntoViewIfNeeded();
+        } catch (e) {
+          console.error(`  Warning: could not scroll to "${target}"`);
+        }
+      }
+      break;
+    }
+
+    case 'dismiss-then-type': {
+      // Close an overlay, then clear and type into a field
+      if (step.dismiss) {
+        const dismissSelectors = step.dismiss.split(',').map(s => s.trim());
+        for (const sel of dismissSelectors) {
+          try {
+            const btn = await page.$(sel);
+            if (btn) { await btn.click(); break; }
+          } catch (e) { /* try next */ }
+        }
+        await page.waitForTimeout(step.dismissWait || 500);
+      }
+      if (step.clearTarget) {
+        try { await page.fill(step.clearTarget, ''); } catch (e) { /* ignore */ }
+        await page.waitForTimeout(200);
+      }
+      if (target) {
+        await page.click(target);
+        await page.fill(target, step.value || '');
       }
       if (step.waitAfter) {
         await waitForSelector(page, step.waitAfter);
