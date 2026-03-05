@@ -37,43 +37,63 @@
         'index.html': {
             title: 'Dashboard',
             icon: 'bx-home',
+            subtitle: 'Your fitness overview at a glance',
             showSearch: false
         },
         'workout-mode.html': {
             title: 'Workout Mode',
             icon: 'bx-play-circle',
+            subtitle: 'Track your active workout session',
             showSearch: false
         },
         'workout-builder.html': {
             title: 'Workout Builder',
             icon: 'bx-dumbbell',
+            subtitle: 'Create and customize your workouts',
             showSearch: false
         },
         'exercise-database.html': {
             title: 'Exercise Database',
             icon: 'bx-book-content',
+            subtitle: 'Browse and manage exercises',
             showSearch: false
         },
         'workout-database.html': {
-            title: 'Workout Database',
+            title: 'Workout Library',
             icon: 'bx-library',
+            subtitle: 'Your saved workout collection',
             showSearch: false
         },
         'programs.html': {
             title: 'My Programs',
             icon: 'bx-folder',
+            subtitle: 'Organize workouts into training programs',
             showSearch: false
         },
         'public-workouts.html': {
             title: 'Public Workouts',
             icon: 'bx-globe',
+            subtitle: 'Discover workouts shared by others',
             showSearch: false
         },
-        
+        'activity-log.html': {
+            title: 'Activity Log',
+            icon: 'bx-edit-alt',
+            subtitle: 'Quick log your daily activities',
+            showSearch: false
+        },
+        'workout-history.html': {
+            title: 'Workout History',
+            icon: 'bx-history',
+            subtitle: 'Review your past workout sessions',
+            showSearch: false
+        },
+
         // Fallback for unknown pages
         'default': {
             title: 'Fitness Field Notes',
             icon: 'bx-home',
+            subtitle: '',
             showSearch: false
         }
     };
@@ -136,7 +156,8 @@
         // Generate navbar HTML with search options
         const navbarHTML = window.getNavbarHTML(pageConfig.title, pageConfig.icon, {
             showSearch: pageConfig.showSearch || false,
-            searchPlaceholder: pageConfig.searchPlaceholder || 'Search...'
+            searchPlaceholder: pageConfig.searchPlaceholder || 'Search...',
+            subtitle: pageConfig.subtitle || ''
         });
 
         // Create a temporary container to parse the HTML

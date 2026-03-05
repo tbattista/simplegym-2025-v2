@@ -764,3 +764,64 @@ body.mobile-search-active {
         transition: none;
     }
 }
+
+/* ============================================
+   DESKTOP NAVBAR — Page Title + Subtitle
+   OpenClaw-inspired top bar with page info
+   Only applies at ≥1200px
+   ============================================ */
+
+/* Page info container (title + subtitle) */
+.navbar-page-info {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+}
+
+.navbar-page-title {
+    margin: 0;
+    font-size: 1.0625rem;
+    font-weight: 600;
+    color: var(--bs-heading-color);
+}
+
+.navbar-page-subtitle {
+    display: none;
+}
+
+/* Show subtitle only on desktop */
+@media (min-width: 1200px) {
+    .navbar-page-subtitle {
+        display: block;
+        font-size: 0.8125rem;
+        color: var(--gs-gray-400);
+        font-weight: 400;
+        margin-top: 0.125rem;
+    }
+
+    /* Cleaner shadow on desktop */
+    .layout-navbar[class] {
+        box-shadow: 0 1px 0 0 var(--bs-border-color);
+    }
+
+    [data-bs-theme="dark"] .layout-navbar[class] {
+        box-shadow: 0 1px 0 0 var(--gs-gray-700);
+    }
+}
+
+/* Mobile: just show the title inline */
+@media (max-width: 1199.98px) {
+    .navbar-page-title {
+        font-size: 0.95rem;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .navbar-page-title {
+        font-size: 0.875rem;
+        max-width: 180px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+}

@@ -16,6 +16,7 @@
 function getNavbarHTML(pageTitle = 'Fitness Field Notes', pageIcon = 'bx-home', options = {}) {
     const showSearch = options.showSearch || false;
     const searchPlaceholder = options.searchPlaceholder || 'Search...';
+    const subtitle = options.subtitle || '';
     return `
         <nav class="layout-navbar navbar navbar-expand-xl align-items-center bg-navbar-theme"
              id="layout-navbar">
@@ -28,6 +29,11 @@ function getNavbarHTML(pageTitle = 'Fitness Field Notes', pageIcon = 'bx-home', 
                        aria-label="Toggle navigation menu">
                         <i class="bx bx-menu bx-sm"></i>
                     </a>
+                    <!-- Page Info (title + subtitle on desktop) -->
+                    <div class="navbar-page-info">
+                        <h5 class="navbar-page-title">${pageTitle}</h5>
+                        ${subtitle ? `<span class="navbar-page-subtitle">${subtitle}</span>` : ''}
+                    </div>
                 </div>
                 
                 <!-- Center Section: Search (responsive) -->
