@@ -791,5 +791,32 @@ body.mobile-search-active {
     .layout-menu-fixed-offcanvas .layout-menu {
         inset-block-start: 60px;
         inset-block-end: 0;
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Content area: smooth transition when sidebar collapses */
+    .layout-menu-fixed:not(.layout-menu-collapsed) .layout-page,
+    .layout-menu-fixed-offcanvas:not(.layout-menu-collapsed) .layout-page {
+        transition: padding-inline-start 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* --- Desktop Sidebar Collapsed State --- */
+    html.desktop-menu-collapsed .layout-menu-fixed .layout-menu,
+    html.desktop-menu-collapsed .layout-menu-fixed-offcanvas .layout-menu {
+        transform: translateX(-100%);
+    }
+
+    html.desktop-menu-collapsed .layout-menu-fixed:not(.layout-menu-collapsed) .layout-page,
+    html.desktop-menu-collapsed .layout-menu-fixed-offcanvas:not(.layout-menu-collapsed) .layout-page {
+        padding-inline-start: 0 !important;
+    }
+
+    /* Hamburger icon: subtle rotate when sidebar is hidden */
+    .layout-menu-toggle i {
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    html.desktop-menu-collapsed .layout-menu-toggle i {
+        transform: rotate(90deg);
     }
 }

@@ -78,15 +78,15 @@ body.menu-open {
 }
 
 /* ============================================
-   DESKTOP VIEW: HIDE HAMBURGER TOGGLE
-   Sidebar is always visible above 1200px,
-   so the hamburger button is not needed.
-   Must match the mobile menu breakpoint above.
+   DESKTOP VIEW: HAMBURGER TOGGLE
+   On desktop the hamburger sits in the top navbar
+   and toggles the sidebar open/closed.
    ============================================ */
 
 @media (min-width: 1200px) {
+    /* Show the hamburger on desktop (in the navbar) */
     .layout-menu-toggle {
-        display: none !important;
+        display: flex !important;
     }
 }
 

@@ -101,11 +101,9 @@ class MenuInjectionService {
                                 document.body.style.overflow = 'hidden';
                             }
                         }
-                    } else if (window.Helpers && window.Helpers.toggleCollapsed) {
-                        // Desktop behavior
-                        window.Helpers.toggleCollapsed();
                     } else {
-                        console.warn('⚠️ Helpers not available');
+                        // Desktop behavior: toggle sidebar via CSS class
+                        document.documentElement.classList.toggle('desktop-menu-collapsed');
                     }
                 });
             });

@@ -77,8 +77,8 @@ document.addEventListener('DOMContentLoaded', function () {
           }
         }
       } else {
-        // Desktop behavior (no desktop-view class)
-        window.Helpers.toggleCollapsed();
+        // Desktop behavior: toggle sidebar visibility via CSS class
+        document.documentElement.classList.toggle('desktop-menu-collapsed');
       }
     });
   });
