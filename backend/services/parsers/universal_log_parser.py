@@ -23,66 +23,67 @@ CONTENT MAY INCLUDE:
 - Apple Fitness or Garmin session screenshots
 - Whiteboard workouts from gyms (OrangeTheory, F45, CrossFit, etc.)
 - Text descriptions like "2.3 miles on the treadmill in 18:20, burned 340 cals"
+- Strength workout descriptions like "bench press 3x10 at 135lbs, squats 4x8 at 185lbs"
 - Mixed content: e.g., a treadmill photo PLUS a watch summary photo
 
-STEP 1 — Identify session type:
-- "cardio": running, cycling, rowing, swimming, elliptical, stair climbing, walking, hiking, or any aerobic machine session with distance/time/calories data
-- "strength": exercises with sets/reps, weightlifting, bodyweight circuits, class workouts (OrangeTheory, F45, HIIT with exercises listed)
-- "unknown": cannot determine from the content
+ALL sessions are logged as a unified activity. Extract the data into cardio_data regardless of whether it is cardio, strength, or any other activity type.
 
-STEP 2 — Extract data:
+STEP 1 — Choose activity_type. MUST be one of these values:
+  Cardio: "running", "cycling", "rowing", "swimming", "elliptical", "stair_climber", "walking", "jump_rope", "hiit"
+  Outdoor: "hiking", "trail_running", "surfing", "skiing", "snowboarding", "kayaking", "rock_climbing", "paddleboard"
+  Mind & Body: "yoga", "pilates", "stretching", "meditation"
+  Sports: "basketball", "soccer", "tennis", "martial_arts", "boxing", "golf"
+  Other: "dance", "crossfit", "other"
 
-FOR CARDIO sessions, extract all available fields:
-- activity_type: MUST be one of: "running", "cycling", "rowing", "swimming", "elliptical", "stair_climber", "walking", "hiking", "other"
-  - Treadmill → "running" (unless at 0° and very slow → "walking")
-  - Bike/spin → "cycling"
-  - Rower → "rowing"
+Mapping rules:
+  - Treadmill → "running" (unless very slow → "walking")
+  - Bike/spin/Peloton → "cycling"
+  - Rower/erg → "rowing"
   - Stair master/step mill → "stair_climber"
-- activity_name: display name if given (e.g., "Morning Run", "Peloton Ride")
+  - Strength training, weightlifting, gym class with exercises → "crossfit" (or "hiit" if high-intensity intervals)
+  - OrangeTheory, F45, boot camp → "hiit"
+  - Yoga class → "yoga", Pilates → "pilates"
+  - Any unrecognized activity → "other"
+
+STEP 2 — Extract all available fields into cardio_data:
+- activity_type: one of the values listed above
+- activity_name: display name if given (e.g., "Morning Run", "OrangeTheory Power Day", "Push Day")
 - duration_minutes: total time as a decimal number (e.g., 18.5 for 18:30)
-- distance: numeric value only
-- distance_unit: "mi" or "km" — infer from context (mph → mi, kph → km, treadmill in US → mi)
+- distance: numeric value only (null if not applicable)
+- distance_unit: "mi" or "km" — infer from context (mph → mi, kph → km)
 - avg_heart_rate: average BPM as integer
 - max_heart_rate: maximum BPM as integer
-- calories: total calories burned as integer (Active Calories or Total Calories — use whichever is visible)
-- pace_per_unit: pace in "MM:SS" format per mile or km (e.g., "8:30")
+- calories: total calories burned as integer
+- pace_per_unit: pace in "MM:SS" format per mile or km (null if not applicable)
 - rpe: rate of perceived exertion 1-10 if mentioned
-
-FOR STRENGTH sessions, extract:
-- workout_name: name of the workout or class (e.g., "OrangeTheory Power Day", "F45 Foxtrot", "Push Day")
-- exercise_groups: array of exercises. Each has:
-  - exercises: {"a": "Exercise Name"} — use {"a": "Exercise A", "b": "Exercise B"} ONLY for true alternates (pick one)
-  - sets: number as string (default "3")
-  - reps: reps as string (e.g., "10", "8-12", "AMRAP", "45s")
-  - rest: rest period (default "60s")
-  - default_weight: weight number as string or null
-  - default_weight_unit: "lbs" or "kg"
-- notes: any class notes, coach instructions, or general notes
+- elevation_gain: elevation gain as integer (null if not applicable)
+- elevation_unit: "ft" or "m"
+- notes: any additional details. For STRENGTH/EXERCISE workouts, format the exercises here like:
+  "Bench Press 3×10 @ 135lbs\\nSquats 4×8 @ 185lbs\\nRows 3×12 @ 95lbs"
 
 STEP 3 — Decide if clarification is needed:
 Set needs_clarification: true ONLY if ALL of these are true:
-1. You have some data but a critical field is genuinely ambiguous (e.g., can't tell if distance is miles or km, can't read a blurry number)
+1. You have some data but a critical field is genuinely ambiguous
 2. Your confidence would be below 0.55 without clarification
 3. A simple question would resolve the ambiguity
 
-Keep questions minimal — max 3 questions. Do NOT ask about optional fields (heart rate, RPE, etc.).
+Keep questions minimal — max 3 questions. Do NOT ask about optional fields.
 
 RULES:
 - Extract numbers as numbers (not strings with units)
 - For time: convert "18:20" → 18.33 minutes, "1:05:30" → 65.5 minutes
 - For pace: preserve "MM:SS" format (e.g., "8:30" per mile)
 - If multiple images show the same session from different angles, combine all data
-- Default exercise sets/reps only if not visible: sets="3", reps="8-12", rest="60s"
-- Maximum 20 exercise groups for strength sessions
+- Always populate cardio_data, never populate strength_data (deprecated)
 - Translate exercise names to English if needed
 
 OUTPUT SCHEMA (respond with ONLY this JSON, no other text):
 {
-  "session_type": "cardio" | "strength" | "unknown",
+  "session_type": "cardio",
   "needs_clarification": false,
   "questions": [],
   "confidence": 0.0,
-  "cardio_data": null | {
+  "cardio_data": {
     "activity_type": "running",
     "activity_name": null,
     "duration_minutes": null,
@@ -93,28 +94,17 @@ OUTPUT SCHEMA (respond with ONLY this JSON, no other text):
     "calories": null,
     "pace_per_unit": null,
     "rpe": null,
+    "elevation_gain": null,
+    "elevation_unit": "ft",
     "notes": null
   },
-  "strength_data": null | {
-    "workout_name": "Ad-Hoc Workout",
-    "exercise_groups": [
-      {
-        "exercises": {"a": "Exercise Name"},
-        "sets": "3",
-        "reps": "8-12",
-        "rest": "60s",
-        "default_weight": null,
-        "default_weight_unit": "lbs"
-      }
-    ],
-    "notes": null
-  }
+  "strength_data": null
 }
 
 When needs_clarification is true, populate questions like:
 "questions": [
   {"id": "distance_unit", "question": "Is the distance in miles or kilometers?", "type": "select", "options": ["miles (mi)", "kilometers (km)"]},
-  {"id": "activity_type", "question": "What type of activity was this?", "type": "select", "options": ["running", "cycling", "rowing", "elliptical", "other"]}
+  {"id": "activity_type", "question": "What type of activity was this?", "type": "select", "options": ["running", "cycling", "hiit", "yoga", "crossfit", "other"]}
 ]
 """
 
@@ -233,14 +223,13 @@ class UniversalLogParser:
 
     def _normalize_response(self, parsed: dict) -> dict:
         """Validate and normalize the AI response to match our schema."""
-        session_type = parsed.get("session_type", "unknown")
         needs_clarification = bool(parsed.get("needs_clarification", False))
         questions = parsed.get("questions", [])
         confidence = float(parsed.get("confidence", 0.5))
 
-        # Normalize cardio_data
+        # Always normalize into cardio_data (unified activity format)
         cardio_data = None
-        if session_type == "cardio" and parsed.get("cardio_data"):
+        if parsed.get("cardio_data"):
             cd = parsed["cardio_data"]
             cardio_data = {
                 "activity_type": cd.get("activity_type", "other"),
@@ -253,43 +242,64 @@ class UniversalLogParser:
                 "calories": _to_int(cd.get("calories")),
                 "pace_per_unit": cd.get("pace_per_unit"),
                 "rpe": _to_int(cd.get("rpe")),
+                "elevation_gain": _to_int(cd.get("elevation_gain")),
+                "elevation_unit": cd.get("elevation_unit", "ft"),
                 "notes": cd.get("notes"),
             }
-
-        # Normalize strength_data
-        strength_data = None
-        if session_type == "strength" and parsed.get("strength_data"):
+        elif parsed.get("strength_data"):
+            # Legacy: convert strength response to unified cardio format
             sd = parsed["strength_data"]
-            groups = []
+            exercise_lines = []
             for g in (sd.get("exercise_groups") or [])[:20]:
                 exercises = g.get("exercises", {})
-                if not exercises:
+                name = next(iter(exercises.values()), "") if exercises else ""
+                if not name:
                     continue
-                groups.append({
-                    "exercises": exercises,
-                    "sets": str(g.get("sets", "3")),
-                    "reps": str(g.get("reps", "8-12")),
-                    "rest": str(g.get("rest", "60s")),
-                    "default_weight": g.get("default_weight"),
-                    "default_weight_unit": g.get("default_weight_unit", "lbs"),
-                })
-            strength_data = {
-                "workout_name": sd.get("workout_name") or "Ad-Hoc Workout",
-                "exercise_groups": groups,
-                "notes": sd.get("notes"),
+                line = name
+                sets = g.get("sets", "3")
+                reps = g.get("reps", "8-12")
+                if sets and reps:
+                    line += f" {sets}×{reps}"
+                weight = g.get("default_weight")
+                if weight:
+                    line += f" @ {weight}{g.get('default_weight_unit', 'lbs')}"
+                exercise_lines.append(line)
+
+            notes_parts = []
+            workout_name = sd.get("workout_name") or "Ad-Hoc Workout"
+            if workout_name != "Ad-Hoc Workout":
+                notes_parts.append(workout_name)
+            notes_parts.extend(exercise_lines)
+            if sd.get("notes"):
+                notes_parts.append(sd["notes"])
+
+            cardio_data = {
+                "activity_type": "crossfit",
+                "activity_name": workout_name if workout_name != "Ad-Hoc Workout" else None,
+                "duration_minutes": None,
+                "distance": None,
+                "distance_unit": "mi",
+                "avg_heart_rate": None,
+                "max_heart_rate": None,
+                "calories": None,
+                "pace_per_unit": None,
+                "rpe": None,
+                "elevation_gain": None,
+                "elevation_unit": "ft",
+                "notes": "\n".join(notes_parts) if notes_parts else None,
             }
 
         # Recalculate confidence from actual data presence
         if not needs_clarification:
-            confidence = self._calculate_confidence(session_type, cardio_data, strength_data, confidence)
+            confidence = self._calculate_confidence("cardio", cardio_data, None, confidence)
 
         return {
             "success": True,
-            "session_type": session_type,
+            "session_type": "cardio",
             "needs_clarification": needs_clarification,
             "questions": questions,
             "cardio_data": cardio_data,
-            "strength_data": strength_data,
+            "strength_data": None,
             "confidence": confidence,
             "errors": [],
         }
@@ -304,22 +314,15 @@ class UniversalLogParser:
         """Calculate confidence based on data completeness."""
         score = 0.5
 
-        if session_type in ("cardio", "strength"):
+        if cardio_data:
             score += 0.2
-
-        if session_type == "cardio" and cardio_data:
             if cardio_data.get("duration_minutes"):
                 score += 0.1
             if cardio_data.get("distance"):
                 score += 0.1
             if cardio_data.get("avg_heart_rate") or cardio_data.get("calories"):
                 score += 0.05
-
-        elif session_type == "strength" and strength_data:
-            groups = strength_data.get("exercise_groups", [])
-            if len(groups) >= 3:
-                score += 0.1
-            if len(groups) >= 1:
+            if cardio_data.get("notes"):
                 score += 0.05
 
         # Blend with AI's own reported confidence if reasonable

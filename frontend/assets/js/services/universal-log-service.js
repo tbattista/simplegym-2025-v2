@@ -62,6 +62,8 @@ window.universalLogService = {
             calories: cardioData.calories || null,
             pace_per_unit: cardioData.pace_per_unit || null,
             rpe: cardioData.rpe || null,
+            elevation_gain: cardioData.elevation_gain || null,
+            elevation_unit: cardioData.elevation_unit || 'ft',
             notes: cardioData.notes || null,
         };
 

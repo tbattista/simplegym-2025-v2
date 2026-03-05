@@ -573,20 +573,31 @@ function setupWizardLogic(el, { onSaveComplete, prefillText, prefillImages, auto
         }
     });
 
-    // ── Review ────────────────────────────────────────────────────────
-    function setSessionType(type) {
-        currentSessionType = type;
-        typeCardioBtn.classList.toggle('btn-primary', type === 'cardio');
-        typeCardioBtn.classList.toggle('btn-outline-secondary', type !== 'cardio');
-        typeStrengthBtn.classList.toggle('btn-primary', type === 'strength');
-        typeStrengthBtn.classList.toggle('btn-outline-secondary', type !== 'strength');
-        cardioFields.classList.toggle('d-none', type !== 'cardio');
-        strengthFields.classList.toggle('d-none', type !== 'strength');
+    // ── RPE selector ─────────────────────────────────────────────────
+    if (rpeSelector) {
+        rpeSelector.addEventListener('click', (e) => {
+            const btn = e.target.closest('.ul-rpe-btn');
+            if (!btn) return;
+            const rpe = parseInt(btn.dataset.rpe, 10);
+            // Toggle off if same button clicked again
+            if (selectedRpe === rpe) {
+                selectedRpe = null;
+                rpeSelector.querySelectorAll('.ul-rpe-btn').forEach(b => {
+                    b.classList.remove('btn-primary');
+                    b.classList.add('btn-outline-secondary');
+                });
+            } else {
+                selectedRpe = rpe;
+                rpeSelector.querySelectorAll('.ul-rpe-btn').forEach(b => {
+                    const val = parseInt(b.dataset.rpe, 10);
+                    b.classList.toggle('btn-primary', val === rpe);
+                    b.classList.toggle('btn-outline-secondary', val !== rpe);
+                });
+            }
+        });
     }
 
-    typeCardioBtn.addEventListener('click',   () => setSessionType('cardio'));
-    typeStrengthBtn.addEventListener('click', () => setSessionType('strength'));
-
+    // ── Review ────────────────────────────────────────────────────────
     function populateReview(result) {
         hideSaveError();
 
@@ -594,17 +605,24 @@ function setupWizardLogic(el, { onSaveComplete, prefillText, prefillImages, auto
         now.setSeconds(0, 0);
         sessionDateEl.value = now.toISOString().slice(0, 16);
 
-        const type = result.session_type === 'strength' ? 'strength' : 'cardio';
-        setSessionType(type);
+        // Reset RPE
+        selectedRpe = null;
+        if (rpeSelector) {
+            rpeSelector.querySelectorAll('.ul-rpe-btn').forEach(b => {
+                b.classList.remove('btn-primary');
+                b.classList.add('btn-outline-secondary');
+            });
+        }
 
-        if (type === 'cardio' && result.cardio_data) {
-            populateCardioFields(result.cardio_data);
-        } else if (type === 'strength' && result.strength_data) {
-            populateStrengthFields(result.strength_data);
+        if (result.session_type === 'strength' && result.strength_data) {
+            // Convert strength data to unified activity form
+            populateFromStrength(result.strength_data);
+        } else if (result.cardio_data) {
+            populateFields(result.cardio_data);
         }
     }
 
-    function populateCardioFields(cd) {
+    function populateFields(cd) {
         el.querySelector('#ul-activity-type').value = cd.activity_type || 'other';
 
         const totalMins = cd.duration_minutes || 0;
@@ -616,105 +634,68 @@ function setupWizardLogic(el, { onSaveComplete, prefillText, prefillImages, auto
         el.querySelector('#ul-distance-unit').value = cd.distance_unit || 'mi';
         el.querySelector('#ul-avg-hr').value        = cd.avg_heart_rate || '';
         el.querySelector('#ul-max-hr').value        = cd.max_heart_rate || '';
-        el.querySelector('#ul-notes-cardio').value  = cd.notes || '';
+        el.querySelector('#ul-elevation').value     = cd.elevation_gain || '';
+        el.querySelector('#ul-elevation-unit').value = cd.elevation_unit || 'ft';
+        el.querySelector('#ul-notes').value         = cd.notes || '';
+
+        // Set RPE if present
+        if (cd.rpe) {
+            selectedRpe = cd.rpe;
+            if (rpeSelector) {
+                rpeSelector.querySelectorAll('.ul-rpe-btn').forEach(b => {
+                    const val = parseInt(b.dataset.rpe, 10);
+                    b.classList.toggle('btn-primary', val === cd.rpe);
+                    b.classList.toggle('btn-outline-secondary', val !== cd.rpe);
+                });
+            }
+        }
     }
 
-    function populateStrengthFields(sd) {
-        el.querySelector('#ul-workout-name').value = sd.workout_name || 'Ad-Hoc Workout';
-        el.querySelector('#ul-notes-strength').value = sd.notes || '';
-        el.querySelector('#ul-strength-duration').value = '';
-        saveTemplateToggle.checked = false;
-        renderExerciseList(sd.exercise_groups || []);
-    }
+    function populateFromStrength(sd) {
+        // Map strength data into the unified activity form
+        el.querySelector('#ul-activity-type').value = 'crossfit';
+        el.querySelector('#ul-duration-hours').value = 0;
+        el.querySelector('#ul-duration-mins').value  = 0;
+        el.querySelector('#ul-calories').value       = '';
+        el.querySelector('#ul-distance').value       = '';
+        el.querySelector('#ul-avg-hr').value         = '';
+        el.querySelector('#ul-max-hr').value         = '';
+        el.querySelector('#ul-elevation').value      = '';
 
-    // ── Exercise list (strength review) ──────────────────────────────
-    function renderExerciseList(groups) {
-        exerciseList.innerHTML = '';
-        groups.forEach((g, idx) => {
-            addExerciseRow(
-                listFirst(g.exercises) || '',
-                g.sets || '3',
-                g.reps || '8-12',
-                g.default_weight || '',
-                g.default_weight_unit || 'lbs',
-                idx
-            );
+        // Build notes from exercise details
+        const lines = [];
+        if (sd.workout_name && sd.workout_name !== 'Ad-Hoc Workout') {
+            lines.push(sd.workout_name);
+        }
+        (sd.exercise_groups || []).forEach(g => {
+            const name = g.exercises ? (Object.values(g.exercises)[0] || '') : '';
+            if (!name) return;
+            let line = name;
+            if (g.sets && g.reps) line += ` ${g.sets}×${g.reps}`;
+            if (g.default_weight) line += ` @ ${g.default_weight}${g.default_weight_unit || 'lbs'}`;
+            lines.push(line);
         });
+        if (sd.notes) lines.push(sd.notes);
+        el.querySelector('#ul-notes').value = lines.join('\n');
     }
-
-    function addExerciseRow(name = '', sets = '3', reps = '8-12', weight = '', weightUnit = 'lbs') {
-        const row = document.createElement('div');
-        row.className = 'exercise-row d-flex align-items-center gap-1 mb-2';
-        row.innerHTML = `
-            <input class="form-control form-control-sm ex-name" value="${escapeHtml(name)}"
-                   placeholder="Exercise name" style="flex:2;min-width:0;">
-            <input class="form-control form-control-sm ex-sets text-center" value="${escapeHtml(sets)}"
-                   placeholder="Sets" style="width:46px;flex-shrink:0;">
-            <span class="text-muted small">×</span>
-            <input class="form-control form-control-sm ex-reps text-center" value="${escapeHtml(reps)}"
-                   placeholder="Reps" style="width:60px;flex-shrink:0;">
-            <input class="form-control form-control-sm ex-weight text-center" value="${escapeHtml(weight)}"
-                   placeholder="Wt" style="width:52px;flex-shrink:0;">
-            <select class="form-select form-select-sm ex-weight-unit" style="width:56px;flex-shrink:0;padding-right:1.5rem;">
-                <option value="lbs" ${weightUnit === 'lbs' ? 'selected' : ''}>lbs</option>
-                <option value="kg"  ${weightUnit === 'kg'  ? 'selected' : ''}>kg</option>
-            </select>
-            <button type="button" class="btn btn-sm btn-link text-danger p-0 remove-ex-btn" aria-label="Remove">
-                <i class="bx bx-x fs-5"></i>
-            </button>
-        `;
-        row.querySelector('.remove-ex-btn').addEventListener('click', () => row.remove());
-        exerciseList.appendChild(row);
-    }
-
-    function listFirst(exercises) {
-        if (!exercises) return '';
-        return Object.values(exercises)[0] || '';
-    }
-
-    addExerciseBtn.addEventListener('click', () => addExerciseRow());
 
     // ── Collect review data ───────────────────────────────────────────
-    function collectCardioData() {
+    function collectFormData() {
         const hours = parseFloat(el.querySelector('#ul-duration-hours').value) || 0;
         const mins  = parseFloat(el.querySelector('#ul-duration-mins').value)  || 0;
         return {
-            activity_type:  el.querySelector('#ul-activity-type').value,
+            activity_type:   el.querySelector('#ul-activity-type').value,
             duration_minutes: hours * 60 + mins,
-            calories:       parseIntOrNull('#ul-calories'),
-            distance:       parseFloatOrNull('#ul-distance'),
-            distance_unit:  el.querySelector('#ul-distance-unit').value,
-            avg_heart_rate: parseIntOrNull('#ul-avg-hr'),
-            max_heart_rate: parseIntOrNull('#ul-max-hr'),
-            notes:          el.querySelector('#ul-notes-cardio').value.trim() || null,
-            sessionDate:    sessionDateEl.value ? new Date(sessionDateEl.value).toISOString() : null,
-        };
-    }
-
-    function collectStrengthData() {
-        const rows = exerciseList.querySelectorAll('.exercise-row');
-        const exercise_groups = [];
-        rows.forEach(row => {
-            const name = row.querySelector('.ex-name').value.trim();
-            if (!name) return;
-            exercise_groups.push({
-                exercises: { a: name },
-                sets: row.querySelector('.ex-sets').value.trim() || '3',
-                reps: row.querySelector('.ex-reps').value.trim() || '8-12',
-                rest: '60s',
-                default_weight: row.querySelector('.ex-weight').value.trim() || null,
-                default_weight_unit: row.querySelector('.ex-weight-unit').value,
-            });
-        });
-
-        const durationMins = parseFloat(el.querySelector('#ul-strength-duration').value) || null;
-
-        return {
-            workout_name:     el.querySelector('#ul-workout-name').value.trim() || 'Ad-Hoc Workout',
-            exercise_groups,
-            duration_minutes: durationMins,
-            notes:            el.querySelector('#ul-notes-strength').value.trim() || null,
-            started_at:       sessionDateEl.value ? new Date(sessionDateEl.value).toISOString() : null,
+            calories:        parseIntOrNull('#ul-calories'),
+            distance:        parseFloatOrNull('#ul-distance'),
+            distance_unit:   el.querySelector('#ul-distance-unit').value,
+            avg_heart_rate:  parseIntOrNull('#ul-avg-hr'),
+            max_heart_rate:  parseIntOrNull('#ul-max-hr'),
+            rpe:             selectedRpe,
+            elevation_gain:  parseIntOrNull('#ul-elevation'),
+            elevation_unit:  el.querySelector('#ul-elevation-unit').value,
+            notes:           el.querySelector('#ul-notes').value.trim() || null,
+            sessionDate:     sessionDateEl.value ? new Date(sessionDateEl.value).toISOString() : null,
         };
     }
 
@@ -734,23 +715,12 @@ function setupWizardLogic(el, { onSaveComplete, prefillText, prefillImages, auto
         saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Saving…';
 
         try {
-            if (currentSessionType === 'cardio') {
-                const data = collectCardioData();
-                if (!data.duration_minutes || data.duration_minutes < 1) {
-                    throw new Error('Please enter a duration greater than 0');
-                }
-                await window.universalLogService.saveCardio(data);
-                successText.textContent = `${CARDIO_ACTIVITY_TYPES.find(t => t.value === data.activity_type)?.label || 'Activity'} session saved!`;
-            } else {
-                const data = collectStrengthData();
-                if (data.exercise_groups.length === 0) {
-                    throw new Error('Please add at least one exercise');
-                }
-                await window.universalLogService.saveStrength(data, saveTemplateToggle.checked);
-                successText.textContent = saveTemplateToggle.checked
-                    ? `"${escapeHtml(data.workout_name)}" saved and added to your library!`
-                    : `"${escapeHtml(data.workout_name)}" logged successfully!`;
+            const data = collectFormData();
+            if (!data.duration_minutes || data.duration_minutes < 1) {
+                throw new Error('Please enter a duration greater than 0');
             }
+            await window.universalLogService.saveCardio(data);
+            successText.textContent = `${getActivityName(data.activity_type)} session saved!`;
 
             showStep('success');
             onSaveComplete?.();
@@ -780,7 +750,6 @@ function setupWizardLogic(el, { onSaveComplete, prefillText, prefillImages, auto
     } else {
         showStep('step1');
     }
-    setSessionType('cardio');
 
     // Return control functions for the caller
     return { runAnalyze, cleanupObjectUrls, focusInput: () => textInput.focus() };

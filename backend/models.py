@@ -1570,7 +1570,7 @@ class UniversalLogQuestion(BaseModel):
 
 class ParsedCardioData(BaseModel):
     """Cardio session data extracted by AI"""
-    activity_type: str = Field(default="other", description="Activity type matching CardioSession enum")
+    activity_type: str = Field(default="other", description="Activity type from ActivityTypeRegistry")
     activity_name: Optional[str] = None
     duration_minutes: Optional[float] = None
     distance: Optional[float] = None
@@ -1580,6 +1580,8 @@ class ParsedCardioData(BaseModel):
     calories: Optional[int] = None
     pace_per_unit: Optional[str] = None
     rpe: Optional[int] = None
+    elevation_gain: Optional[int] = None
+    elevation_unit: str = "ft"
     notes: Optional[str] = None
 
 class ParsedExerciseGroup(BaseModel):
