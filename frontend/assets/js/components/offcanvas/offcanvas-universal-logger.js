@@ -1,12 +1,12 @@
 /**
  * Universal Logger Offcanvas Wizard
- * AI-powered session logging: photos + text → structured cardio or strength session.
+ * AI-powered session logging: photos + text → structured activity session.
  *
  * Steps:
  *   1. Input     — Describe tab (text) + Photos tab (multi-image), combinable
  *   2. Loading   — AI analysis spinner
  *   2b. Clarify  — AI follow-up questions (optional)
- *   3. Review    — Editable session form (cardio or strength)
+ *   3. Review    — Editable session form (unified activity logging)
  *   4. Success   — Confirmation with close button
  *
  * Supports two modes:
@@ -15,24 +15,43 @@
  *
  * Reuses: createOffcanvas + escapeHtml from offcanvas-helpers.js
  * Reuses: window.universalLogService for API calls
+ * Reuses: window.ActivityTypeRegistry for activity types
  *
  * @module offcanvas-universal-logger
- * @version 1.1.0
+ * @version 2.0.0
  */
 
 import { createOffcanvas, escapeHtml } from './offcanvas-helpers.js';
 
-const CARDIO_ACTIVITY_TYPES = [
-    { value: 'running',      label: 'Running',      icon: 'bx-run' },
-    { value: 'cycling',      label: 'Cycling',      icon: 'bx-cycling' },
-    { value: 'walking',      label: 'Walking',      icon: 'bx-walk' },
-    { value: 'rowing',       label: 'Rowing',       icon: 'bx-swim' },
-    { value: 'swimming',     label: 'Swimming',     icon: 'bx-swim' },
-    { value: 'elliptical',   label: 'Elliptical',   icon: 'bx-run' },
-    { value: 'stair_climber',label: 'Stair Climber',icon: 'bx-trending-up' },
-    { value: 'hiking',       label: 'Hiking',       icon: 'bx-landscape' },
-    { value: 'other',        label: 'Other',        icon: 'bx-dumbbell' },
-];
+/**
+ * Build activity type <option> elements grouped by category from the registry.
+ * Falls back to a basic list if the registry is not loaded.
+ */
+function buildActivityOptions() {
+    const registry = window.ActivityTypeRegistry;
+    if (registry) {
+        const categories = registry.getCategories();
+        return categories.map(cat => {
+            const types = registry.getByCategory(cat.id);
+            const options = types.map(t =>
+                `<option value="${t.id}">${t.name}</option>`
+            ).join('');
+            return `<optgroup label="${cat.name}">${options}</optgroup>`;
+        }).join('');
+    }
+    // Fallback if registry not loaded
+    return ['running','cycling','walking','rowing','swimming','elliptical','stair_climber','hiking','yoga','hiit','crossfit','other']
+        .map(v => `<option value="${v}">${v.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase())}</option>`).join('');
+}
+
+/**
+ * Get the display name for an activity type.
+ */
+function getActivityName(activityType) {
+    const registry = window.ActivityTypeRegistry;
+    if (registry) return registry.getName(activityType) || activityType;
+    return activityType.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+}
 
 // ── Wizard body HTML (shared between offcanvas and inline modes) ─────────
 
@@ -125,124 +144,105 @@ function buildBodyHtml({ isInline = false } = {}) {
         <!-- ── STEP 3: Review & Edit ──────────────────── -->
         <div id="ul-review" class="d-none p-3">
 
-            <!-- Session type toggle -->
-            <div class="mb-3">
-                <label class="form-label fw-semibold text-muted small text-uppercase">Session Type</label>
-                <div class="d-flex gap-2">
-                    <button type="button" class="btn btn-sm session-type-btn" id="ul-type-cardio" data-type="cardio">
-                        <i class="bx bx-run me-1"></i>Cardio
-                    </button>
-                    <button type="button" class="btn btn-sm session-type-btn" id="ul-type-strength" data-type="strength">
-                        <i class="bx bx-dumbbell me-1"></i>Strength Workout
-                    </button>
-                </div>
-            </div>
-
-            <!-- Date & Time (shared) -->
+            <!-- Date & Time -->
             <div class="mb-3">
                 <label for="ul-session-date" class="form-label fw-semibold">Date & Time</label>
                 <input type="datetime-local" class="form-control" id="ul-session-date">
             </div>
 
-            <!-- ── CARDIO FIELDS ── -->
-            <div id="ul-cardio-fields">
-                <div class="mb-3">
-                    <label for="ul-activity-type" class="form-label fw-semibold">Activity</label>
-                    <select class="form-select" id="ul-activity-type">
-                        ${CARDIO_ACTIVITY_TYPES.map(t =>
-                            `<option value="${t.value}">${t.label}</option>`
-                        ).join('')}
-                    </select>
-                </div>
-                <div class="row mb-3">
-                    <div class="col-6">
-                        <label class="form-label fw-semibold">Duration</label>
-                        <div class="input-group">
-                            <input type="number" class="form-control" id="ul-duration-hours" min="0" max="23" value="0" placeholder="h">
-                            <span class="input-group-text">h</span>
-                            <input type="number" class="form-control" id="ul-duration-mins" min="0" max="59" value="0" placeholder="min">
-                            <span class="input-group-text">min</span>
-                        </div>
-                    </div>
-                    <div class="col-6">
-                        <label class="form-label fw-semibold">Calories</label>
-                        <div class="input-group">
-                            <input type="number" class="form-control" id="ul-calories" min="0" placeholder="—">
-                            <span class="input-group-text">cal</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="row mb-3">
-                    <div class="col-8">
-                        <label for="ul-distance" class="form-label fw-semibold">Distance</label>
-                        <input type="number" class="form-control" id="ul-distance" step="0.01" min="0" placeholder="—">
-                    </div>
-                    <div class="col-4">
-                        <label for="ul-distance-unit" class="form-label fw-semibold">Unit</label>
-                        <select class="form-select" id="ul-distance-unit">
-                            <option value="mi">mi</option>
-                            <option value="km">km</option>
-                            <option value="m">m</option>
-                            <option value="yd">yd</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="row mb-3">
-                    <div class="col-6">
-                        <label for="ul-avg-hr" class="form-label fw-semibold">Avg Heart Rate</label>
-                        <div class="input-group">
-                            <input type="number" class="form-control" id="ul-avg-hr" min="30" max="250" placeholder="—">
-                            <span class="input-group-text">bpm</span>
-                        </div>
-                    </div>
-                    <div class="col-6">
-                        <label for="ul-max-hr" class="form-label fw-semibold">Max Heart Rate</label>
-                        <div class="input-group">
-                            <input type="number" class="form-control" id="ul-max-hr" min="30" max="250" placeholder="—">
-                            <span class="input-group-text">bpm</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="mb-3">
-                    <label for="ul-notes-cardio" class="form-label fw-semibold">Notes <small class="text-muted fw-normal">(optional)</small></label>
-                    <textarea class="form-control" id="ul-notes-cardio" rows="2" placeholder="Any extra details…"></textarea>
-                </div>
+            <!-- Activity (all types from registry) -->
+            <div class="mb-3">
+                <label for="ul-activity-type" class="form-label fw-semibold">Activity</label>
+                <select class="form-select" id="ul-activity-type">
+                    ${buildActivityOptions()}
+                </select>
             </div>
 
-            <!-- ── STRENGTH FIELDS ── -->
-            <div id="ul-strength-fields" class="d-none">
-                <div class="mb-3">
-                    <label for="ul-workout-name" class="form-label fw-semibold">Workout Name</label>
-                    <input type="text" class="form-control" id="ul-workout-name" maxlength="50" placeholder="e.g. OrangeTheory Power Day">
-                </div>
-                <div class="mb-2">
-                    <label class="form-label fw-semibold">Duration <small class="text-muted fw-normal">(optional)</small></label>
-                    <div class="input-group" style="max-width: 220px;">
-                        <input type="number" class="form-control" id="ul-strength-duration" min="1" max="600" placeholder="—">
+            <!-- Duration + Calories -->
+            <div class="row mb-3">
+                <div class="col-6">
+                    <label class="form-label fw-semibold">Duration</label>
+                    <div class="input-group">
+                        <input type="number" class="form-control" id="ul-duration-hours" min="0" max="23" value="0" placeholder="h">
+                        <span class="input-group-text">h</span>
+                        <input type="number" class="form-control" id="ul-duration-mins" min="0" max="59" value="0" placeholder="min">
                         <span class="input-group-text">min</span>
                     </div>
                 </div>
-
-                <!-- Exercise list -->
-                <label class="form-label fw-semibold mt-2">Exercises</label>
-                <div id="ul-exercise-list" class="mb-2"></div>
-                <button type="button" class="btn btn-sm btn-outline-secondary mb-3" id="ul-add-exercise-btn">
-                    <i class="bx bx-plus me-1"></i>Add Exercise
-                </button>
-
-                <div class="mb-3">
-                    <label for="ul-notes-strength" class="form-label fw-semibold">Notes <small class="text-muted fw-normal">(optional)</small></label>
-                    <textarea class="form-control" id="ul-notes-strength" rows="2" placeholder="Any extra details…"></textarea>
+                <div class="col-6">
+                    <label class="form-label fw-semibold">Calories</label>
+                    <div class="input-group">
+                        <input type="number" class="form-control" id="ul-calories" min="0" placeholder="—">
+                        <span class="input-group-text">cal</span>
+                    </div>
                 </div>
+            </div>
 
-                <!-- Save as template toggle -->
-                <div class="form-check form-switch mb-3">
-                    <input class="form-check-input" type="checkbox" role="switch" id="ul-save-template">
-                    <label class="form-check-label" for="ul-save-template">
-                        Save as reusable template
-                        <small class="text-muted d-block">Adds to your workout library for future sessions</small>
-                    </label>
+            <!-- Distance + Unit -->
+            <div class="row mb-3">
+                <div class="col-8">
+                    <label for="ul-distance" class="form-label fw-semibold">Distance</label>
+                    <input type="number" class="form-control" id="ul-distance" step="0.01" min="0" placeholder="—">
                 </div>
+                <div class="col-4">
+                    <label for="ul-distance-unit" class="form-label fw-semibold">Unit</label>
+                    <select class="form-select" id="ul-distance-unit">
+                        <option value="mi">mi</option>
+                        <option value="km">km</option>
+                        <option value="m">m</option>
+                        <option value="yd">yd</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Heart Rate -->
+            <div class="row mb-3">
+                <div class="col-6">
+                    <label for="ul-avg-hr" class="form-label fw-semibold">Avg Heart Rate</label>
+                    <div class="input-group">
+                        <input type="number" class="form-control" id="ul-avg-hr" min="30" max="250" placeholder="—">
+                        <span class="input-group-text">bpm</span>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <label for="ul-max-hr" class="form-label fw-semibold">Max Heart Rate</label>
+                    <div class="input-group">
+                        <input type="number" class="form-control" id="ul-max-hr" min="30" max="250" placeholder="—">
+                        <span class="input-group-text">bpm</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RPE -->
+            <div class="mb-3">
+                <label class="form-label fw-semibold">RPE <small class="text-muted fw-normal">(perceived effort)</small></label>
+                <div class="d-flex gap-1" id="ul-rpe-selector">
+                    ${[1,2,3,4,5,6,7,8,9,10].map(n =>
+                        `<button type="button" class="btn btn-sm btn-outline-secondary ul-rpe-btn" data-rpe="${n}" style="min-width:32px;padding:2px 6px;">${n}</button>`
+                    ).join('')}
+                </div>
+                <div class="d-flex justify-content-between mt-1">
+                    <small class="text-muted">Easy</small>
+                    <small class="text-muted">Max Effort</small>
+                </div>
+            </div>
+
+            <!-- Elevation Gain -->
+            <div class="mb-3">
+                <label for="ul-elevation" class="form-label fw-semibold">Elevation Gain</label>
+                <div class="input-group">
+                    <input type="number" class="form-control" id="ul-elevation" min="0" placeholder="—">
+                    <select class="form-select" id="ul-elevation-unit" style="max-width: 70px;">
+                        <option value="ft">ft</option>
+                        <option value="m">m</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Notes -->
+            <div class="mb-3">
+                <label for="ul-notes" class="form-label fw-semibold">Notes <small class="text-muted fw-normal">(optional)</small></label>
+                <textarea class="form-control" id="ul-notes" rows="2" placeholder="Any extra details…"></textarea>
             </div>
 
             <!-- Save button + error -->
@@ -295,7 +295,7 @@ function setupWizardLogic(el, { onSaveComplete, prefillText, prefillImages, auto
     // State
     let selectedImages = [];
     let currentParsedResult = null;
-    let currentSessionType = 'cardio';
+    let selectedRpe = null;
     let pendingQuestions = [];
     let activeTab = 'describe';
 
@@ -328,20 +328,12 @@ function setupWizardLogic(el, { onSaveComplete, prefillText, prefillImages, auto
     const questionsContainer = el.querySelector('#ul-questions-container');
     const continueBtn   = el.querySelector('#ul-continue-btn');
 
-    const typeCardioBtn = el.querySelector('#ul-type-cardio');
-    const typeStrengthBtn = el.querySelector('#ul-type-strength');
-    const cardioFields  = el.querySelector('#ul-cardio-fields');
-    const strengthFields = el.querySelector('#ul-strength-fields');
-
     const sessionDateEl = el.querySelector('#ul-session-date');
     const saveBtn       = el.querySelector('#ul-save-btn');
     const saveErrorDiv  = el.querySelector('#ul-save-error');
     const saveErrorText = el.querySelector('#ul-save-error-text');
     const successText   = el.querySelector('#ul-success-text');
-
-    const exerciseList  = el.querySelector('#ul-exercise-list');
-    const addExerciseBtn = el.querySelector('#ul-add-exercise-btn');
-    const saveTemplateToggle = el.querySelector('#ul-save-template');
+    const rpeSelector   = el.querySelector('#ul-rpe-selector');
 
     const closeBtn      = el.querySelector('#ul-close-btn'); // inline mode only
 
