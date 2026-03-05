@@ -160,7 +160,9 @@
 
     /**
      * Inject navbar into the page
-     * Finds the navbar container and injects the HTML
+     * On desktop, the navbar sits ABOVE the layout-container (full-width).
+     * We inject it as the first child of .layout-wrapper so it spans
+     * both the sidebar and the content area.
      */
     function injectNavbar() {
         console.log('🔧 Injecting navbar...');
@@ -171,38 +173,34 @@
             return false;
         }
 
-        // Find the navbar container
-        // The navbar should be injected right after .layout-page opens
-        const layoutPage = document.querySelector('.layout-page');
-        if (!layoutPage) {
-            console.error('❌ .layout-page element not found');
-            return false;
-        }
-
         // Check if navbar already exists
         if (document.getElementById('layout-navbar')) {
             console.log('ℹ️ Navbar already exists, skipping injection');
             return true;
         }
 
-        // Get page configuration
-        const pageConfig = getCurrentPageConfig();
-        console.log('📄 Page config:', pageConfig);
+        // Find injection target — .layout-wrapper is the outermost container
+        const layoutWrapper = document.querySelector('.layout-wrapper');
+        if (!layoutWrapper) {
+            console.error('❌ .layout-wrapper element not found');
+            return false;
+        }
 
-        // Generate navbar HTML with search options
+        // Get page configuration (still used for search settings)
+        const pageConfig = getCurrentPageConfig();
+
+        // Generate navbar HTML
         const navbarHTML = window.getNavbarHTML(pageConfig.title, pageConfig.icon, {
             showSearch: pageConfig.showSearch || false,
-            searchPlaceholder: pageConfig.searchPlaceholder || 'Search...',
-            subtitle: pageConfig.subtitle || ''
+            searchPlaceholder: pageConfig.searchPlaceholder || 'Search...'
         });
 
-        // Create a temporary container to parse the HTML
+        // Create element and insert as first child of layout-wrapper
         const tempDiv = document.createElement('div');
         tempDiv.innerHTML = navbarHTML.trim();
         const navbarElement = tempDiv.firstChild;
 
-        // Insert navbar as the first child of layout-page
-        layoutPage.insertBefore(navbarElement, layoutPage.firstChild);
+        layoutWrapper.insertBefore(navbarElement, layoutWrapper.firstChild);
 
         console.log('✅ Navbar injected successfully');
         return true;

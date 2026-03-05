@@ -82,7 +82,7 @@
     line-height: 1;
 }
 
-/* Page Title — now rendered inside .navbar-page-info */
+/* Boxicon alignment inside nav-left */
 .navbar-nav-left .bx {
     font-size: 1.25rem;
     flex-shrink: 0;
@@ -437,19 +437,6 @@
     gap: 0.75rem;
 }
 
-/* Max-width for page title at various breakpoints */
-@media (min-width: 992px) {
-    .navbar-page-title {
-        max-width: 400px;
-    }
-}
-
-@media (min-width: 768px) and (max-width: 991.98px) {
-    .navbar-page-title {
-        max-width: 250px;
-    }
-}
-
 /* ============================================
    NAVBAR SEARCH CONTAINER
    ============================================ */
@@ -745,66 +732,64 @@ body.mobile-search-active {
 }
 
 /* ============================================
-   DESKTOP NAVBAR — Page Title + Subtitle
-   OpenClaw-inspired top bar with page info
-   Only applies at ≥1200px
+   NAVBAR BRAND (Site Name)
    ============================================ */
 
-/* Page info container (title + subtitle) */
-.navbar-page-info {
+.navbar-brand-link {
+    text-decoration: none;
     display: flex;
-    flex-direction: column;
-    line-height: 1.2;
-    min-width: 0; /* Allow flex child to shrink for truncation */
+    align-items: center;
 }
 
-.navbar-page-title {
-    margin: 0;
+.navbar-brand-text {
     font-size: 1.125rem;
-    font-weight: 600;
+    font-weight: 700;
     color: var(--bs-heading-color);
     white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    letter-spacing: -0.01em;
 }
 
-.navbar-page-subtitle {
-    display: none;
+.navbar-brand-link:hover .navbar-brand-text {
+    color: var(--gs-primary);
 }
 
-/* Desktop: show subtitle, cleaner top bar */
-@media (min-width: 1200px) {
-    .navbar-page-subtitle {
-        display: block;
-        font-size: 0.8125rem;
-        color: var(--gs-gray-400);
-        font-weight: 400;
-        margin-top: 0.125rem;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
+@media (max-width: 575.98px) {
+    .navbar-brand-text {
+        font-size: 0.95rem;
     }
+}
 
-    /* Cleaner shadow on desktop — single border line */
+/* ============================================
+   DESKTOP: FULL-WIDTH NAVBAR ABOVE SIDEBAR
+   Navbar spans the entire page width.
+   Sidebar and content sit below it.
+   Only applies at ≥1200px.
+   ============================================ */
+
+@media (min-width: 1200px) {
+    /* Navbar: fixed full-width bar at the very top */
     .layout-navbar[class] {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 1200;
         box-shadow: 0 1px 0 0 var(--bs-border-color);
     }
 
     [data-bs-theme="dark"] .layout-navbar[class] {
         box-shadow: 0 1px 0 0 var(--gs-gray-700);
     }
-}
 
-/* Tablet/mobile: slightly smaller title */
-@media (max-width: 1199.98px) {
-    .navbar-page-title {
-        font-size: 0.95rem;
+    /* Push the layout-container down below the navbar */
+    .layout-wrapper .layout-container {
+        padding-top: 60px; /* matches navbar height */
     }
-}
 
-@media (max-width: 575.98px) {
-    .navbar-page-title {
-        font-size: 0.875rem;
-        max-width: 180px;
+    /* Sidebar: starts below the navbar (overrides Sneat's inset-block: 0) */
+    .layout-menu-fixed .layout-menu,
+    .layout-menu-fixed-offcanvas .layout-menu {
+        inset-block-start: 60px;
+        inset-block-end: 0;
     }
 }

@@ -16,24 +16,22 @@
 function getNavbarHTML(pageTitle = 'Fitness Field Notes', pageIcon = 'bx-home', options = {}) {
     const showSearch = options.showSearch || false;
     const searchPlaceholder = options.searchPlaceholder || 'Search...';
-    const subtitle = options.subtitle || '';
     return `
         <nav class="layout-navbar navbar navbar-expand-xl align-items-center bg-navbar-theme"
              id="layout-navbar">
             <div class="container-xxl">
-                <!-- Left Section: Hamburger + Page Title -->
+                <!-- Left Section: Hamburger + Site Brand -->
                 <div class="navbar-nav-left d-flex align-items-center flex-grow-1">
-                    <!-- Hamburger Menu Toggle (always visible on mobile, hidden on desktop when sidebar is expanded) -->
+                    <!-- Hamburger Menu Toggle (mobile only) -->
                     <a class="nav-item nav-link px-0 me-3 me-xl-4 layout-menu-toggle"
                        href="javascript:void(0)"
                        aria-label="Toggle navigation menu">
                         <i class="bx bx-menu bx-sm"></i>
                     </a>
-                    <!-- Page Info (title + subtitle on desktop) -->
-                    <div class="navbar-page-info">
-                        <h5 class="navbar-page-title">${pageTitle}</h5>
-                        ${subtitle ? `<span class="navbar-page-subtitle">${subtitle}</span>` : ''}
-                    </div>
+                    <!-- Site Brand -->
+                    <a href="/" class="navbar-brand-link">
+                        <span class="navbar-brand-text">Fitness Field Notes</span>
+                    </a>
                 </div>
                 
                 <!-- Center Section: Search (responsive) -->
