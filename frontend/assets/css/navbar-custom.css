@@ -396,6 +396,27 @@
     width: 100%;
 }
 
+/*
+ * Fix: When navbar is injected into .layout-wrapper (a flex row),
+ * it must not push .layout-container off-screen.
+ * Make the wrapper a column so navbar stacks above the container.
+ */
+.layout-wrapper {
+    flex-direction: column;
+}
+
+/* The navbar should not shrink or grow in the flex column */
+.layout-wrapper > .layout-navbar {
+    flex: 0 0 auto;
+    width: 100%;
+}
+
+/* The layout-container should fill remaining space */
+.layout-wrapper > .layout-container {
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
 /* Smooth transitions when menu toggles */
 .layout-navbar,
 .layout-menu-toggle {
@@ -801,13 +822,13 @@ body.mobile-search-active {
     }
 
     /* --- Desktop Sidebar Collapsed State --- */
-    html.desktop-menu-collapsed .layout-menu-fixed .layout-menu,
-    html.desktop-menu-collapsed .layout-menu-fixed-offcanvas .layout-menu {
+    html.desktop-menu-collapsed.layout-menu-fixed .layout-menu,
+    html.desktop-menu-collapsed.layout-menu-fixed-offcanvas .layout-menu {
         transform: translateX(-100%);
     }
 
-    html.desktop-menu-collapsed .layout-menu-fixed:not(.layout-menu-collapsed) .layout-page,
-    html.desktop-menu-collapsed .layout-menu-fixed-offcanvas:not(.layout-menu-collapsed) .layout-page {
+    html.desktop-menu-collapsed.layout-menu-fixed:not(.layout-menu-collapsed) .layout-page,
+    html.desktop-menu-collapsed.layout-menu-fixed-offcanvas:not(.layout-menu-collapsed) .layout-page {
         padding-inline-start: 0 !important;
     }
 

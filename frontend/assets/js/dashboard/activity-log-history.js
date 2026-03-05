@@ -111,7 +111,9 @@ function renderCardioHistory(sessions) {
         const groupHtml = `
             <div class="session-group">
                 <div class="time-period-header">${group.label}</div>
-                ${group.sessions.map(s => renderCardioSessionEntry(s)).join('')}
+                <div class="session-group-card">
+                    ${group.sessions.map(s => renderCardioSessionEntry(s)).join('')}
+                </div>
             </div>
         `;
         container.insertAdjacentHTML('beforeend', groupHtml);
