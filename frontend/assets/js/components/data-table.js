@@ -57,7 +57,8 @@ class FFNDataTable {
         
         // DOM elements
         this.elements = {};
-        
+        this._isFirstRender = true;
+
         this.initialize();
     }
     
@@ -70,21 +71,30 @@ class FFNDataTable {
     createStructure() {
         this.container.innerHTML = `
             <div class="datatable-wrapper">
-                <!-- Loading State -->
+                <!-- Loading State (skeleton cards) -->
                 <div class="datatable-loading" style="display: none;">
-                    <div class="text-center py-5">
-                        <div class="spinner-border text-primary" role="status">
-                            <span class="visually-hidden">${this.options.loadingMessage}</span>
-                        </div>
-                        <p class="mt-3 text-muted">${this.options.loadingMessage}</p>
+                    <div class="datatable-skeleton-list">
+                        ${Array.from({ length: 6 }, () => `
+                            <div class="datatable-skeleton-card">
+                                <div class="datatable-skeleton-row">
+                                    <div class="datatable-skeleton-line" style="width: 55%;"></div>
+                                </div>
+                                <div class="datatable-skeleton-row" style="margin-top: 0.5rem;">
+                                    <div class="datatable-skeleton-line datatable-skeleton-sm" style="width: 18%;"></div>
+                                    <div class="datatable-skeleton-line datatable-skeleton-sm" style="width: 22%;"></div>
+                                    <div class="datatable-skeleton-line datatable-skeleton-sm" style="width: 16%;"></div>
+                                </div>
+                            </div>
+                        `).join('')}
                     </div>
                 </div>
                 
                 <!-- Empty State -->
                 <div class="datatable-empty" style="display: none;">
-                    <div class="text-center py-5">
-                        <i class="bx bx-search-alt display-1 text-muted"></i>
-                        <h5 class="mt-3">${this.options.emptyMessage}</h5>
+                    <div class="text-center py-4">
+                        <i class="bx bx-search-alt text-muted"></i>
+                        <h5 class="mt-2 mb-1">${this.options.emptyMessage}</h5>
+                        <p>Try adjusting your filters or search query.</p>
                     </div>
                 </div>
                 
@@ -143,6 +153,23 @@ class FFNDataTable {
         this.filteredData = [...data];
         this.currentPage = 1; // Reset to page 1 when data changes
         this.applySort();
+        this.updatePagination();
+        this.render();
+    }
+
+    /**
+     * Update data without resetting page (for background refreshes).
+     * Clamps current page to valid range if dataset shrinks.
+     */
+    updateData(data) {
+        this.options.data = data;
+        this.filteredData = [...data];
+        this.applySort();
+        // Clamp page to valid range
+        const totalPages = Math.max(1, Math.ceil(this.filteredData.length / this.pageSize));
+        if (this.currentPage > totalPages) {
+            this.currentPage = totalPages;
+        }
         this.updatePagination();
         this.render();
     }
@@ -265,6 +292,17 @@ class FFNDataTable {
     }
     
     renderBody() {
+        // Trigger entrance animation only on first render or page changes
+        const table = this.container.querySelector('.datatable-table');
+        if (table) {
+            if (this._isFirstRender) {
+                table.classList.add('datatable-animate');
+                this._isFirstRender = false;
+                // Remove class after animations complete
+                setTimeout(() => table.classList.remove('datatable-animate'), 400);
+            }
+        }
+
         if (this.options.rowRenderer) {
             // Use custom row renderer
             this.elements.tbody.innerHTML = this.displayedData
@@ -422,6 +460,7 @@ class FFNDataTable {
     
     goToPage(page) {
         this.currentPage = page;
+        this._isFirstRender = true; // Animate on page change
         this.updatePagination();
         this.render();
         

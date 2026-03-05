@@ -35,24 +35,32 @@
     display: none;
 }
 
-/* Exercise cards with white fill and no borders */
+/* Exercise cards with white fill and subtle separation */
 #exerciseTableContainer .card {
     background-color: #fff;
     border: none;
+    border-bottom: 1px solid var(--bs-border-color);
+    border-radius: 0;
     box-shadow: none;
     width: 100%;
     max-width: 100%;
     overflow: visible;
+    margin-bottom: 0;
+}
+
+#exerciseTableContainer .card:last-child {
+    border-bottom: none;
 }
 
 #exerciseTableContainer .card .card-body {
     overflow: visible;
-    padding: 1rem;
+    padding: 0.875rem 1rem;
 }
 
 /* Dark mode support */
 [data-bs-theme="dark"] #exerciseTableContainer .card {
     background-color: #2b2c40;
+    border-bottom-color: rgba(255, 255, 255, 0.08);
 }
 
 /* Exercise card title styling - stretch full width over buttons */
@@ -791,30 +799,45 @@
 
 /* ============================================
    PAGINATION - NARROW PANEL OVERRIDES
-   Force stacked layout within the exercise list panel
+   Force stacked centered layout within the exercise list panel
    ============================================ */
+
+#exerciseTableContainer .datatable-pagination {
+    padding: 0.75rem 0;
+}
 
 #exerciseTableContainer .datatable-pagination .row {
     flex-direction: column;
+    align-items: center;
     text-align: center;
+    gap: 0.5rem;
 }
 
 #exerciseTableContainer .datatable-pagination .col-sm-6 {
-    width: 100%;
+    width: auto;
+    flex: none;
 }
 
 #exerciseTableContainer .datatable-pagination .pagination {
     justify-content: center;
     flex-wrap: wrap;
+    gap: 0.125rem;
+}
+
+#exerciseTableContainer .datatable-pagination .datatable-pagination-controls {
+    justify-content: center;
 }
 
 #exerciseTableContainer .datatable-pagination .page-link {
-    padding: 0.25rem 0.5rem;
-    font-size: 0.75rem;
+    padding: 0.3rem 0.6rem;
+    font-size: 0.8125rem;
+    min-width: 2rem;
+    text-align: center;
 }
 
 #exerciseTableContainer .datatable-pagination .datatable-page-info {
-    margin-bottom: 0.375rem;
+    margin-bottom: 0;
+    font-size: 0.75rem;
 }
 
 /* ============================================

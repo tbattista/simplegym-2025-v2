@@ -214,8 +214,8 @@ function renderExerciseCard(row) {
         ? window.getDifficultyBadgeWithPopover(row.difficultyLevel) : '';
 
     return `
-        <div class="card mb-0" style="margin-bottom: 0.375rem !important;" data-exercise-id="${row.id}">
-            <div class="card-body p-3">
+        <div class="card" data-exercise-id="${row.id}">
+            <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center">
                     <div class="flex-grow-1">
                         <div class="fw-semibold mb-2">
@@ -438,9 +438,9 @@ function fetchFullDatabaseInBackground(cacheService) {
         window.ffn.exercises.all = fullExercises;
         updateExerciseCount();
 
-        // Re-apply current filters with new data
+        // Re-apply current filters with new data (soft refresh preserves page)
         if (window.applyFiltersAndRender && window.currentFilters) {
-            window.applyFiltersAndRender(window.currentFilters);
+            window.applyFiltersAndRender({ ...window.currentFilters, _softRefresh: true });
         }
 
         console.log(`[ExerciseDB] Background load complete: ${fullExercises.length} exercises`);

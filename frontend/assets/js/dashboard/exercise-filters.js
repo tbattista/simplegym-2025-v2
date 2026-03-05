@@ -60,9 +60,13 @@ function applyFiltersAndRender(filters) {
     // Apply sorting
     allExercises = sortExercises(allExercises, filters.sortBy || 'name');
 
-    // Update table
+    // Update table (use updateData for soft refreshes, setData for filter changes)
     if (window.exerciseTable) {
-        window.exerciseTable.setData(allExercises);
+        if (filters._softRefresh) {
+            window.exerciseTable.updateData(allExercises);
+        } else {
+            window.exerciseTable.setData(allExercises);
+        }
     }
 
     // Update filter feedback

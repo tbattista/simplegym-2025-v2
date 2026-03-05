@@ -102,9 +102,12 @@
    LOADING & EMPTY STATES
    ============================================================================ */
 
-.datatable-loading,
+.datatable-loading {
+    min-height: 200px;
+}
+
 .datatable-empty {
-    min-height: 400px;
+    min-height: 300px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -112,14 +115,74 @@
 }
 
 .datatable-empty i {
-    font-size: 4rem;
+    font-size: 2.5rem;
     opacity: 0.3;
     color: var(--bs-secondary);
 }
 
-.datatable-loading .spinner-border {
-    width: 3rem;
-    height: 3rem;
+.datatable-empty h5 {
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--bs-secondary);
+}
+
+.datatable-empty p {
+    font-size: 0.8125rem;
+    color: var(--bs-secondary);
+    opacity: 0.7;
+    margin: 0;
+}
+
+/* Skeleton loading cards */
+.datatable-skeleton-list {
+    padding: 0;
+}
+
+.datatable-skeleton-card {
+    padding: 0.875rem 1rem;
+    border-bottom: 1px solid var(--bs-border-color);
+}
+
+.datatable-skeleton-card:last-child {
+    border-bottom: none;
+}
+
+.datatable-skeleton-row {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.datatable-skeleton-line {
+    height: 1rem;
+    border-radius: 0.25rem;
+    background: linear-gradient(90deg,
+        var(--bs-gray-200) 25%,
+        var(--bs-gray-100) 50%,
+        var(--bs-gray-200) 75%);
+    background-size: 200% 100%;
+    animation: skeletonShimmer 1.5s ease-in-out infinite;
+}
+
+.datatable-skeleton-line.datatable-skeleton-sm {
+    height: 0.75rem;
+}
+
+@keyframes skeletonShimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+[data-bs-theme=dark] .datatable-skeleton-line {
+    background: linear-gradient(90deg,
+        rgba(255, 255, 255, 0.06) 25%,
+        rgba(255, 255, 255, 0.10) 50%,
+        rgba(255, 255, 255, 0.06) 75%);
+    background-size: 200% 100%;
+    animation: skeletonShimmer 1.5s ease-in-out infinite;
+}
+
+[data-bs-theme=dark] .datatable-skeleton-card {
+    border-bottom-color: rgba(255, 255, 255, 0.08);
 }
 
 /* ============================================================================
@@ -245,7 +308,7 @@
 @keyframes fadeIn {
     from {
         opacity: 0;
-        transform: translateY(10px);
+        transform: translateY(6px);
     }
     to {
         opacity: 1;
@@ -253,16 +316,16 @@
     }
 }
 
-.datatable-table tbody tr {
-    animation: fadeIn 0.3s ease;
+/* Only animate rows on initial load (class added once, then removed) */
+.datatable-animate tbody tr {
+    animation: fadeIn 0.25s ease both;
 }
 
-/* Stagger animation for rows */
-.datatable-table tbody tr:nth-child(1) { animation-delay: 0.02s; }
-.datatable-table tbody tr:nth-child(2) { animation-delay: 0.04s; }
-.datatable-table tbody tr:nth-child(3) { animation-delay: 0.06s; }
-.datatable-table tbody tr:nth-child(4) { animation-delay: 0.08s; }
-.datatable-table tbody tr:nth-child(5) { animation-delay: 0.10s; }
+.datatable-animate tbody tr:nth-child(1) { animation-delay: 0.02s; }
+.datatable-animate tbody tr:nth-child(2) { animation-delay: 0.04s; }
+.datatable-animate tbody tr:nth-child(3) { animation-delay: 0.06s; }
+.datatable-animate tbody tr:nth-child(4) { animation-delay: 0.08s; }
+.datatable-animate tbody tr:nth-child(5) { animation-delay: 0.10s; }
 
 /* ============================================================================
    ACCESSIBILITY
