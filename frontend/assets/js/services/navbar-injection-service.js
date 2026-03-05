@@ -88,6 +88,42 @@
             subtitle: 'Review your past workout sessions',
             showSearch: false
         },
+        'profile.html': {
+            title: 'My Profile',
+            icon: 'bx-user',
+            subtitle: 'Manage your account details',
+            showSearch: false
+        },
+        'settings.html': {
+            title: 'Settings',
+            icon: 'bx-cog',
+            subtitle: 'Configure your preferences',
+            showSearch: false
+        },
+        'share.html': {
+            title: 'Shared Workout',
+            icon: 'bx-share-alt',
+            subtitle: 'View a shared workout',
+            showSearch: false
+        },
+        'exercise-edit.html': {
+            title: 'Edit Exercise',
+            icon: 'bx-edit',
+            subtitle: 'Modify exercise details',
+            showSearch: false
+        },
+        'feedback-admin.html': {
+            title: 'Admin Dashboard',
+            icon: 'bx-shield',
+            subtitle: 'Manage feedback and feature requests',
+            showSearch: false
+        },
+        'dashboard.html': {
+            title: 'Dashboard',
+            icon: 'bx-home',
+            subtitle: 'Your fitness overview at a glance',
+            showSearch: false
+        },
 
         // Fallback for unknown pages
         'default': {

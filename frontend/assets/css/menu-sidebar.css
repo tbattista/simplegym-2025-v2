@@ -156,74 +156,11 @@ body.menu-open {
 
 /* ============================================
    DARK MODE - SIDEBAR MENU
+   NOTE: Base dark mode sidebar styles live in
+   components/dark-mode.css (the canonical source).
+   Only desktop-specific dark mode overrides go here
+   inside the @media (min-width: 1200px) block below.
    ============================================ */
-
-[data-bs-theme="dark"] .layout-menu {
-    background: var(--gs-gray-50);
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
-}
-
-[data-bs-theme="dark"] .app-brand {
-    border-bottom-color: var(--gs-gray-200);
-}
-
-[data-bs-theme="dark"] .app-brand-text {
-    background: linear-gradient(135deg, var(--gs-primary-dark), var(--gs-primary));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-}
-
-/* Menu divider dark mode - use attribute selector for specificity */
-[data-bs-theme="dark"] .layout-menu .menu-divider {
-    border-color: var(--gs-gray-200);
-}
-
-[data-bs-theme="dark"] .menu-inner-shadow {
-    background: linear-gradient(var(--gs-gray-50) 5%, rgba(30, 41, 59, 0.8) 95%, rgba(30, 41, 59, 0.4));
-}
-
-[data-bs-theme="dark"] .menu-header {
-    color: var(--gs-gray-400);
-}
-
-[data-bs-theme="dark"] .menu-item .menu-link {
-    color: var(--gs-gray-500);
-}
-
-[data-bs-theme="dark"] .menu-item .menu-link:hover {
-    background: var(--gs-gray-100);
-    color: var(--gs-gray-800);
-}
-
-[data-bs-theme="dark"] .menu-item.active > .menu-link {
-    background: rgba(var(--gs-primary-rgb), 0.15);
-    color: var(--gs-primary-dark);
-}
-
-[data-bs-theme="dark"] .menu-item.active > .menu-link::before {
-    background: linear-gradient(135deg, var(--gs-primary-dark), var(--gs-primary));
-}
-
-[data-bs-theme="dark"] .menu-sub .menu-link {
-    color: var(--gs-gray-400);
-}
-
-[data-bs-theme="dark"] .menu-sub .menu-link:hover {
-    background: var(--gs-gray-100);
-    color: var(--gs-gray-800);
-}
-
-[data-bs-theme="dark"] .menu-icon {
-    color: var(--gs-gray-400);
-}
-
-[data-bs-theme="dark"] .menu-item.active .menu-icon {
-    color: var(--gs-primary-dark);
-}
-
-/* NOTE: Badge dark mode styles are defined in components/badges.css
-   and components/dark-mode.css - DO NOT duplicate here */
 
 /* ============================================
    DARK MODE - FOOTER
@@ -242,24 +179,32 @@ body.menu-open {
    Only applies at ≥1200px (desktop).
    ============================================ */
 
+/* Slimmer sidebar width on desktop (overrides Sneat's 16.25rem default) */
 @media (min-width: 1200px) {
-
-    /* Override Sneat's menu width variable for a slightly slimmer sidebar */
-    :root {
-        --bs-menu-width: 15.625rem; /* 250px */
+    .layout-menu-fixed .layout-menu,
+    .layout-menu-fixed-offcanvas .layout-menu {
+        inline-size: 15.625rem; /* 250px */
     }
 
-    /* Sidebar container */
+    .layout-menu-fixed:not(.layout-menu-collapsed) .layout-page,
+    .layout-menu-fixed-offcanvas:not(.layout-menu-collapsed) .layout-page {
+        padding-inline-start: 15.625rem;
+    }
+}
+
+@media (min-width: 1200px) {
+
+    /* --- Base sidebar container --- */
     .layout-menu {
         border-right: 1px solid var(--bs-border-color);
         box-shadow: none;
-        background: var(--bs-body-bg);
+        background: #ffffff;
     }
 
     /* App brand / logo area */
     .layout-menu .app-brand {
         padding: 1.25rem 1.25rem 1rem;
-        border-bottom: 1px solid var(--bs-border-color);
+        border-bottom: 1px solid var(--gs-gray-200);
         margin-bottom: 0.5rem;
     }
 
@@ -273,7 +218,7 @@ body.menu-open {
         padding: 0.25rem 0.75rem;
     }
 
-    /* Section headers — small, uppercase, muted */
+    /* --- Section headers — small, uppercase, muted --- */
     .layout-menu .menu-header {
         padding: 1rem 0.75rem 0.375rem;
         margin-top: 0.25rem;
@@ -284,13 +229,12 @@ body.menu-open {
         color: var(--gs-gray-400);
     }
 
-    /* First section header doesn't need top margin */
     .layout-menu .menu-header:first-child {
         margin-top: 0;
         padding-top: 0.5rem;
     }
 
-    /* Menu items — compact, clean */
+    /* --- Menu items — compact, clean --- */
     .layout-menu .menu-item {
         margin-bottom: 1px;
     }
@@ -320,7 +264,7 @@ body.menu-open {
         color: var(--gs-primary);
     }
 
-    /* Menu icons — slightly smaller, muted */
+    /* --- Menu icons — slightly smaller, muted --- */
     .layout-menu .menu-icon {
         width: 1.25rem;
         height: 1.25rem;
@@ -334,30 +278,12 @@ body.menu-open {
         color: var(--gs-gray-600);
     }
 
-}
-
-/* ============================================
-   DESKTOP SIDEBAR — LIGHT MODE Polish
-   ============================================ */
-
-@media (min-width: 1200px) {
-    [data-bs-theme="light"] .layout-menu,
-    :root:not([data-bs-theme="dark"]) .layout-menu {
-        background: #ffffff;
+    /* --- Light mode specifics --- */
+    .layout-menu {
         border-right-color: var(--gs-gray-200);
     }
 
-    [data-bs-theme="light"] .layout-menu .app-brand,
-    :root:not([data-bs-theme="dark"]) .layout-menu .app-brand {
-        border-bottom-color: var(--gs-gray-200);
-    }
-}
-
-/* ============================================
-   DESKTOP SIDEBAR — DARK MODE Polish
-   ============================================ */
-
-@media (min-width: 1200px) {
+    /* --- Dark mode overrides --- */
     [data-bs-theme="dark"] .layout-menu {
         background: var(--gs-gray-900);
         border-right-color: var(--gs-gray-700);
