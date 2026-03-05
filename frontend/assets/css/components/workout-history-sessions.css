@@ -9,19 +9,24 @@
    ============================================ */
 
 .session-list {
-  background: var(--bs-card-bg);
-  border: 1px solid var(--bs-border-color);
-  border-radius: 0.5rem;
   overflow: visible;
 }
 
-/* Preserve rounded corners on first/last children */
-.session-list > :first-child {
-  border-radius: 0.5rem 0.5rem 0 0;
+/* Card wrapper for each time-period group */
+.session-group-card {
+  background: var(--bs-card-bg);
+  border: 1px solid var(--bs-border-color);
+  border-radius: 0.5rem;
+  overflow: hidden;
 }
 
-.session-list > :last-child {
-  border-radius: 0 0 0.5rem 0.5rem;
+/* Remove bottom border on last entry in each group card */
+.session-group-card > :last-child {
+  border-bottom: none;
+}
+
+.session-group-card > .session-details-collapse:last-child {
+  border-bottom: none;
 }
 
 /* ============================================
@@ -62,8 +67,8 @@
   background: var(--bs-card-bg);
 }
 
-/* Last collapse in each list shouldn't have bottom border */
-.session-list .session-details-collapse:last-child {
+/* Last collapse in each group card shouldn't have bottom border */
+.session-group-card .session-details-collapse:last-child {
   border-bottom: none;
 }
 
@@ -351,7 +356,7 @@
    DARK MODE
    ============================================ */
 
-[data-bs-theme="dark"] .session-list {
+[data-bs-theme="dark"] .session-group-card {
   background: var(--bs-gray-900);
 }
 
