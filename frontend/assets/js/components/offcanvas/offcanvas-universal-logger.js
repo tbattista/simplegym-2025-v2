@@ -63,49 +63,26 @@ function buildBodyHtml({ isInline = false } = {}) {
     return `
         <!-- ── STEP 1: Input ─────────────────────────── -->
         <div id="ul-step1" class="p-3">
-            <!-- Tab selector -->
-            <div class="btn-group w-100 mb-3" role="group">
-                <button type="button" class="btn btn-outline-primary btn-sm active" id="ul-tab-describe">
-                    <i class="bx bx-edit me-1"></i>Describe
-                </button>
-                <button type="button" class="btn btn-outline-primary btn-sm" id="ul-tab-photos">
-                    <i class="bx bx-camera me-1"></i>Photos
-                </button>
-            </div>
-
-            <!-- Describe tab -->
+            <!-- Text input -->
             <div id="ul-describe-content">
-                <textarea id="ul-text-input" class="form-control mb-2" rows="6"
-                    placeholder="Describe your activity...&#10;&#10;Examples:&#10;• 2.3 miles on the treadmill in 18:20, burned 340 cals&#10;• OrangeTheory class: bench press 3x10, squats 4x8, rows 3x12&#10;• 45 min spin class, avg HR 158&#10;&#10;Or switch to Photos to upload screenshots."
+                <textarea id="ul-text-input" class="form-control mb-3" rows="4"
+                    placeholder="Describe your activity...&#10;&#10;Examples:&#10;• 2.3 miles on the treadmill in 18:20, burned 340 cals&#10;• Bench press 3x10, squats 4x8, rows 3x12&#10;• 45 min spin class, avg HR 158"
                     style="font-size: 14px; line-height: 1.6;"></textarea>
-                <small class="text-muted d-block mb-3">
-                    <i class="bx bx-info-circle me-1"></i>You can also add photos alongside your description
-                </small>
             </div>
 
-            <!-- Photos tab -->
-            <div id="ul-photos-content" class="d-none">
+            <!-- Photo upload -->
+            <div id="ul-photos-content">
                 <!-- Drop zone -->
-                <div id="ul-dropzone" class="border border-2 border-dashed rounded p-4 text-center mb-2"
-                     style="cursor: pointer; min-height: 110px; display: flex; flex-direction: column; align-items: center; justify-content: center;">
-                    <i class="bx bx-image-add text-primary" style="font-size: 2rem;"></i>
-                    <p class="mb-1 mt-2">Tap to add photos</p>
+                <div id="ul-dropzone" class="border border-2 border-dashed rounded p-3 text-center mb-2"
+                     style="cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                    <i class="bx bx-image-add text-primary" style="font-size: 1.5rem;"></i>
+                    <p class="mb-0 mt-1" style="font-size: 14px;">Tap to add photos</p>
                     <small class="text-muted">Treadmill screen · Watch · Whiteboard · Screenshot</small>
                     <input type="file" id="ul-file-input" accept="image/jpeg,image/png,image/webp,image/gif,.jpg,.jpeg,.png,.webp,.gif"
                            multiple class="d-none" />
                 </div>
                 <!-- Thumbnail strip -->
                 <div id="ul-thumbnails" class="d-flex flex-wrap gap-2 mb-2" style="min-height: 0;"></div>
-                <small class="text-muted d-block mb-1">
-                    <i class="bx bx-info-circle me-1"></i>Up to 5 photos — combine with a description for best results
-                </small>
-            </div>
-
-            <!-- Photo count badge (shown when photos exist while on Describe tab) -->
-            <div id="ul-photo-badge" class="d-none mb-2">
-                <span class="badge bg-label-primary">
-                    <i class="bx bx-camera me-1"></i><span id="ul-photo-count">0</span> photo(s) added
-                </span>
             </div>
 
             <!-- Analyze button -->
@@ -297,7 +274,6 @@ function setupWizardLogic(el, { onSaveComplete, prefillText, prefillImages, auto
     let currentParsedResult = null;
     let selectedRpe = null;
     let pendingQuestions = [];
-    let activeTab = 'describe';
 
     // ── Element refs ─────────────────────────────────────────────────
     const titleEl       = el.querySelector('#ul-title');
@@ -309,18 +285,11 @@ function setupWizardLogic(el, { onSaveComplete, prefillText, prefillImages, auto
     const reviewEl      = el.querySelector('#ul-review');
     const successEl     = el.querySelector('#ul-success');
 
-    const tabDescribe   = el.querySelector('#ul-tab-describe');
-    const tabPhotos     = el.querySelector('#ul-tab-photos');
-    const describeContent = el.querySelector('#ul-describe-content');
-    const photosContent = el.querySelector('#ul-photos-content');
     const textInput     = el.querySelector('#ul-text-input');
 
     const dropzone      = el.querySelector('#ul-dropzone');
     const fileInput     = el.querySelector('#ul-file-input');
     const thumbnailsEl  = el.querySelector('#ul-thumbnails');
-    const photoBadge    = el.querySelector('#ul-photo-badge');
-    const photoCountEl  = el.querySelector('#ul-photo-count');
-
     const analyzeBtn    = el.querySelector('#ul-analyze-btn');
     const errorDiv      = el.querySelector('#ul-error');
     const errorText     = el.querySelector('#ul-error-text');
@@ -371,28 +340,7 @@ function setupWizardLogic(el, { onSaveComplete, prefillText, prefillImages, auto
         });
     }
 
-    // ── Tab switching ─────────────────────────────────────────────────
-    function switchTab(tab) {
-        activeTab = tab;
-        tabDescribe.classList.toggle('active', tab === 'describe');
-        tabPhotos.classList.toggle('active',   tab === 'photos');
-        describeContent.classList.toggle('d-none', tab !== 'describe');
-        photosContent.classList.toggle('d-none',   tab !== 'photos');
-        updatePhotoBadge();
-        updateAnalyzeBtn();
-        hideError();
-    }
-
-    tabDescribe.addEventListener('click', () => switchTab('describe'));
-    tabPhotos.addEventListener('click',   () => switchTab('photos'));
-    textInput.addEventListener('input',   () => { updateAnalyzeBtn(); hideError(); });
-
-    // ── Photo badge ──────────────────────────────────────────────────
-    function updatePhotoBadge() {
-        const hasPhotos = selectedImages.length > 0;
-        photoBadge.classList.toggle('d-none', !hasPhotos || activeTab !== 'describe');
-        if (hasPhotos) photoCountEl.textContent = selectedImages.length;
-    }
+    textInput.addEventListener('input', () => { updateAnalyzeBtn(); hideError(); });
 
     // ── Image upload & thumbnails ─────────────────────────────────────
     dropzone.addEventListener('click', () => fileInput.click());
@@ -421,7 +369,6 @@ function setupWizardLogic(el, { onSaveComplete, prefillText, prefillImages, auto
         selectedImages = selectedImages.concat(toAdd);
         renderThumbnails();
         updateAnalyzeBtn();
-        updatePhotoBadge();
     }
 
     function renderThumbnails() {
@@ -466,7 +413,6 @@ function setupWizardLogic(el, { onSaveComplete, prefillText, prefillImages, auto
                 selectedImages.splice(idx, 1);
                 renderThumbnails();
                 updateAnalyzeBtn();
-                updatePhotoBadge();
             }
         });
     }

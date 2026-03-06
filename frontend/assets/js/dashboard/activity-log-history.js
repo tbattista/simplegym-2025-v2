@@ -316,9 +316,24 @@ function renderWorkoutSessionEntry(session) {
     const exercises = session.exercises_performed || [];
     if (exercises.length > 0) {
         exercises.forEach(ex => {
-            const setCount = ex.sets_completed || 0;
-            let setInfo = `${setCount} set${setCount !== 1 ? 's' : ''}`;
-            detailRows.push(`<div><i class="bx bx-check-circle me-1"></i>${escapeHtml(ex.exercise_name)} - ${setInfo}</div>`);
+            // Check if this is a cardio/activity exercise (known activity type in registry)
+            // Try exact ID, lowercase, and match by display name/shortName
+            const matchedType = findActivityType(ex.exercise_name);
+
+            if (matchedType) {
+                detailRows.push(`<div><i class="bx ${matchedType.icon} me-1"></i>${escapeHtml(matchedType.name)}</div>`);
+            } else {
+                const parts = [];
+                const setCount = ex.sets_completed || 0;
+                if (setCount > 0) parts.push(`${setCount} set${setCount !== 1 ? 's' : ''}`);
+                if (ex.target_reps) parts.push(`${ex.target_reps} reps`);
+                if (ex.weight) {
+                    const unit = ex.weight_unit || 'lbs';
+                    parts.push(`${ex.weight} ${unit}`);
+                }
+                const info = parts.length > 0 ? parts.join(' x ') : 'completed';
+                detailRows.push(`<div><i class="bx bx-check-circle me-1"></i>${escapeHtml(ex.exercise_name)} - ${info}</div>`);
+            }
         });
     }
     if (session.notes) detailRows.push(`<div class="mt-2 fst-italic text-muted">"${escapeHtml(session.notes)}"</div>`);
@@ -360,6 +375,32 @@ function renderWorkoutSessionEntry(session) {
             </div>
         ` : ''}
     `;
+}
+
+/**
+ * Find a matching activity type from the registry by ID, name, or shortName
+ * Handles variations like "Run", "running", "Running" all matching the "running" type
+ */
+function findActivityType(exerciseName) {
+    const registry = window.ActivityTypeRegistry;
+    if (!registry) return null;
+
+    // Try exact ID match
+    const byId = registry.getById(exerciseName);
+    if (byId && byId.name !== exerciseName) return byId;
+
+    // Try lowercase ID match (e.g., "Running" → "running")
+    const lower = exerciseName.toLowerCase();
+    const byLowerId = registry.getById(lower);
+    if (byLowerId && byLowerId.name !== lower) return byLowerId;
+
+    // Try matching against display names and shortNames (e.g., "Run" → shortName of "running")
+    const allTypes = registry.getAll();
+    const match = allTypes.find(t =>
+        t.name.toLowerCase() === lower ||
+        t.shortName.toLowerCase() === lower
+    );
+    return match || null;
 }
 
 /**
