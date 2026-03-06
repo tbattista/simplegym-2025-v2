@@ -242,7 +242,7 @@
 .eg-weight-row {
     display: flex;
     gap: 0;
-    align-items: center;
+    align-items: stretch;
 }
 
 .eg-weight-value {
@@ -251,6 +251,7 @@
     border-bottom-right-radius: 0 !important;
     border-right: none !important;
     text-align: right;
+    height: auto;
 }
 
 .eg-weight-unit-select {
@@ -266,6 +267,8 @@
     color: var(--bs-secondary-color);
     cursor: pointer;
     transition: border-color 0.2s ease;
+    box-sizing: border-box;
+    height: auto;
 }
 
 .eg-weight-unit-select:focus {
