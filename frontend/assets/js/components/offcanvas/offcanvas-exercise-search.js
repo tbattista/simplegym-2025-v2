@@ -9,6 +9,7 @@
 
 import { createOffcanvas, escapeHtml } from './offcanvas-helpers.js';
 import { createExerciseFilterOffcanvas } from './offcanvas-exercise-filter.js';
+import { createExerciseDetailView } from './offcanvas-exercise-detail-view.js';
 
 /**
  * Create standalone exercise search offcanvas
@@ -156,7 +157,10 @@ export function createExerciseSearchOffcanvas(config = {}, onSelectExercise) {
                                         ${equipment ? `<span class="text-muted small">• ${escapeHtml(equipment)}</span>` : ''}
                                     </div>
                                 </div>
-                                <div class="flex-shrink-0 ms-3">
+                                <div class="flex-shrink-0 ms-3 d-flex gap-1">
+                                    <button class="btn btn-sm btn-outline-secondary" data-detail-id="${escapeHtml(exercise.id || exercise.name)}" title="View details">
+                                        <i class="bx bx-info-circle"></i>
+                                    </button>
                                     <button class="btn btn-sm btn-primary" data-exercise-id="${escapeHtml(exercise.id || exercise.name)}">
                                         <i class="bx ${buttonIcon} me-1"></i>${buttonText}
                                     </button>
@@ -311,6 +315,32 @@ export function createExerciseSearchOffcanvas(config = {}, onSelectExercise) {
         // Filter button handler
         filterBtn?.addEventListener('click', () => {
             openFiltersOffcanvas();
+        });
+
+        // Exercise detail view handler
+        exerciseListContainer.addEventListener('click', (e) => {
+            const detailBtn = e.target.closest('button[data-detail-id]');
+            if (!detailBtn) return;
+
+            const exerciseId = detailBtn.dataset.detailId;
+            const exercise = searchCore.state.filteredExercises.find(ex =>
+                (ex.id || ex.name) === exerciseId
+            );
+            if (!exercise) return;
+
+            createExerciseDetailView(exercise, {
+                showAddButton: true,
+                onAdd: async (ex) => {
+                    // Auto-create custom exercise if needed
+                    if (window.exerciseCacheService && window.dataManager?.isUserAuthenticated()) {
+                        const currentUser = window.dataManager.getCurrentUser();
+                        const userId = currentUser?.uid || null;
+                        await window.exerciseCacheService.autoCreateIfNeeded(ex.name, userId);
+                    }
+                    onSelectExercise(ex);
+                    offcanvas.hide();
+                }
+            });
         });
 
         // Exercise selection handler

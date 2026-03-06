@@ -21,9 +21,11 @@ class OffcanvasManager {
     create(id, html, setupCallback = null) {
         // Clean up existing instance if present
         this.destroy(id);
-        
-        // Clean up orphaned backdrops
-        this.cleanupBackdrops();
+
+        // Only clean up orphaned backdrops if no other offcanvases are active
+        if (this.instances.size === 0) {
+            this.cleanupBackdrops();
+        }
 
         // Insert HTML into DOM
         document.body.insertAdjacentHTML('beforeend', html);
@@ -130,8 +132,12 @@ class OffcanvasManager {
             orphaned.remove();
         }
         
-        // Clean up backdrops
-        setTimeout(() => this.cleanupBackdrops(), 50);
+        // Only clean up backdrops if no other offcanvases remain active
+        setTimeout(() => {
+            if (this.instances.size === 0) {
+                this.cleanupBackdrops();
+            }
+        }, 50);
     }
 
     /**

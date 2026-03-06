@@ -43,12 +43,14 @@ export function createOffcanvas(id, html, setupCallback = null) {
         existing.remove();
     }
     
-    // CRITICAL FIX: Clean up any orphaned backdrops before creating new offcanvas
-    // This prevents backdrop accumulation from previous instances
-    const orphanedBackdrops = document.querySelectorAll('.offcanvas-backdrop');
-    orphanedBackdrops.forEach(backdrop => {
-        backdrop.remove();
-    });
+    // Clean up orphaned backdrops only if no other offcanvases are showing
+    const activeOffcanvases = document.querySelectorAll('.offcanvas.show, .offcanvas.showing');
+    if (activeOffcanvases.length === 0) {
+        const orphanedBackdrops = document.querySelectorAll('.offcanvas-backdrop');
+        orphanedBackdrops.forEach(backdrop => {
+            backdrop.remove();
+        });
+    }
 
     document.body.insertAdjacentHTML('beforeend', html);
 
@@ -87,14 +89,16 @@ export function createOffcanvas(id, html, setupCallback = null) {
         // Remove the offcanvas element
         offcanvasElement.remove();
         
-        // CRITICAL FIX: Explicitly remove any lingering backdrops
-        // This fixes the gray screen issue when closing offcanvas
+        // Clean up lingering backdrops only if no other offcanvases remain
         setTimeout(() => {
-            const backdrops = document.querySelectorAll('.offcanvas-backdrop');
-            backdrops.forEach(backdrop => {
-                backdrop.remove();
-            });
-        }, 50); // Small delay to ensure Bootstrap's cleanup has attempted
+            const remaining = document.querySelectorAll('.offcanvas.show, .offcanvas.showing');
+            if (remaining.length === 0) {
+                const backdrops = document.querySelectorAll('.offcanvas-backdrop');
+                backdrops.forEach(backdrop => {
+                    backdrop.remove();
+                });
+            }
+        }, 50);
     });
 
     // CRITICAL FIX: Use double requestAnimationFrame + setTimeout for maximum stability

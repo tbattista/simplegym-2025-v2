@@ -456,6 +456,15 @@ body.offcanvas-scroll-locked {
    Use these with offcanvas-bottom-base for different content needs
    ============================================ */
 
+/* Stacked: For offcanvases that open above another offcanvas */
+.offcanvas-stacked {
+    z-index: 1060 !important;
+}
+
+.offcanvas-stacked ~ .offcanvas-backdrop {
+    z-index: 1055 !important;
+}
+
 /* Compact: For simple filters/menus (60vh) */
 .offcanvas-bottom-compact {
     max-height: 60vh;
