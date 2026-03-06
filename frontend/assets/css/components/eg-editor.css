@@ -49,7 +49,7 @@
     border: none;
     border-bottom: 2px solid var(--bs-border-color);
     border-radius: 0;
-    padding: 0.5rem 2.25rem 0.5rem 2.25rem;
+    padding: 0.5rem 6.5rem 0.5rem 0.5rem;
     width: 100%;
     background: transparent;
     color: var(--bs-body-color);
@@ -67,22 +67,32 @@
     box-shadow: none;
 }
 
-.eg-search-icon {
+.eg-match-btn {
     position: absolute;
-    left: 0.25rem;
+    right: 1.75rem;
     top: 50%;
     transform: translateY(-50%);
-    color: var(--bs-secondary-color);
-    font-size: 1.125rem;
+    background: rgba(var(--bs-primary-rgb), 0.08);
+    border: 1px solid rgba(var(--bs-primary-rgb), 0.2);
+    border-radius: 999px;
+    padding: 0.125rem 0.625rem;
+    font-size: 0.75rem;
+    color: var(--bs-primary);
     cursor: pointer;
-    padding: 0.25rem;
-    background: none;
-    border: none;
-    transition: color 0.15s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    transition: background 0.15s ease, border-color 0.15s ease;
+    white-space: nowrap;
 }
 
-.eg-search-icon:hover {
-    color: var(--bs-primary);
+.eg-match-btn:hover {
+    background: rgba(var(--bs-primary-rgb), 0.15);
+    border-color: var(--bs-primary);
+}
+
+.eg-match-btn i {
+    font-size: 0.8125rem;
 }
 
 .eg-clear-btn {
@@ -200,25 +210,8 @@
 }
 
 /* ============================================
-   PROTOCOL (Side-by-Side Sets x Reps)
+   FIELD INPUT (shared by protocol, weight, rest)
    ============================================ */
-
-.eg-protocol-row {
-    display: flex;
-    align-items: flex-end;
-    gap: 0.5rem;
-}
-
-.eg-field-group {
-    flex: 1;
-}
-
-.eg-field-label {
-    font-size: 0.75rem;
-    color: var(--bs-secondary-color);
-    margin-bottom: 0.25rem;
-    display: block;
-}
 
 .eg-field-input {
     border: 1px solid var(--bs-border-color);
@@ -240,13 +233,6 @@
     outline: none;
     border-color: var(--bs-primary);
     box-shadow: 0 0 0 2px rgba(var(--bs-primary-rgb), 0.1);
-}
-
-.eg-protocol-separator {
-    font-size: 1rem;
-    color: var(--bs-secondary-color);
-    padding-bottom: 0.625rem;
-    user-select: none;
 }
 
 /* ============================================

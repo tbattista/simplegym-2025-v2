@@ -69,15 +69,9 @@ const TUTORIALS = {
       },
       {
         action: 'type',
-        target: '#editorSets',
-        value: '3',
-        caption: 'Set the number of sets'
-      },
-      {
-        action: 'type',
-        target: '#editorReps',
-        value: '10',
-        caption: 'Set your reps'
+        target: '#editorProtocol',
+        value: '3x10',
+        caption: 'Set your protocol'
       },
       {
         action: 'click',

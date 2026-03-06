@@ -332,6 +332,9 @@ export function createExerciseGroupEditor(config, onSave, onDelete, onSearchClic
         'kettlebell 35lbs'
     ];
     
+    // Combine sets+reps into protocol for display
+    const protocol = sets && reps ? `${sets}×${reps}` : (sets || reps || '3×10');
+
     // Track selected exercises in state
     const state = {
         exercises: { ...exercises },
@@ -363,14 +366,14 @@ export function createExerciseGroupEditor(config, onSave, onDelete, onSearchClic
                 <div class="eg-section eg-section-exercise">
                     <div class="exercise-slot ${exercises.a ? 'filled' : ''}" id="primaryExerciseSlot" data-slot="a">
                         <div class="eg-exercise-input-wrap">
-                            <button type="button" class="eg-search-icon" id="searchPrimaryBtn" title="Search library">
-                                <i class="bx bx-search"></i>
-                            </button>
                             <input type="text" class="eg-exercise-name-input"
                                    id="primaryExerciseInput"
                                    value="${escapeHtml(exercises.a || '')}"
                                    placeholder="Exercise name"
                                    autocomplete="off">
+                            <button type="button" class="eg-match-btn" id="searchPrimaryBtn" title="Search exercise library">
+                                <i class="bx bx-search"></i> Match
+                            </button>
                             <button type="button" class="eg-clear-btn ${exercises.a ? '' : 'd-none'}" id="clearPrimaryBtn" title="Clear">
                                 <i class="bx bx-x"></i>
                             </button>
@@ -393,24 +396,13 @@ export function createExerciseGroupEditor(config, onSave, onDelete, onSearchClic
                     </div>
                 </div>
 
-                <!-- Protocol (Side-by-Side Sets x Reps) -->
+                <!-- Protocol (open format) -->
                 <div class="eg-section eg-section-protocol">
                     <div class="eg-section-label">Protocol</div>
-                    <div class="eg-protocol-row">
-                        <div class="eg-field-group">
-                            <label class="eg-field-label" for="editorSets">Sets</label>
-                            <input type="text" class="eg-field-input"
-                                   id="editorSets" value="${escapeHtml(sets || '3')}"
-                                   placeholder="3">
-                        </div>
-                        <span class="eg-protocol-separator">&times;</span>
-                        <div class="eg-field-group">
-                            <label class="eg-field-label" for="editorReps">Reps</label>
-                            <input type="text" class="eg-field-input"
-                                   id="editorReps" value="${escapeHtml(reps || '8-12')}"
-                                   placeholder="8-12">
-                        </div>
-                    </div>
+                    <input type="text" class="eg-field-input"
+                           id="editorProtocol" value="${escapeHtml(protocol)}"
+                           placeholder="e.g. 3x10, AMRAP, 5,4,3,2,1 reps">
+                    <div class="eg-field-hint">Sets, reps, or any format</div>
                 </div>
 
                 <!-- Default Weight (Input + Dropdown) -->
@@ -481,8 +473,7 @@ export function createExerciseGroupEditor(config, onSave, onDelete, onSearchClic
         const chipList = alternateContainer?.querySelector('.eg-chip-list');
         const addAltBtn = element.querySelector('#addAlternateSlotBtn');
         const addAltContainer = element.querySelector('#addAltButtonContainer');
-        const setsInput = element.querySelector('#editorSets');
-        const repsInput = element.querySelector('#editorReps');
+        const protocolInput = element.querySelector('#editorProtocol');
         const restInput = element.querySelector('#editorRest');
         const toggleRestBtn = element.querySelector('#toggleRestBtn');
         const restInputContainer = element.querySelector('#restInputContainer');
@@ -696,11 +687,14 @@ export function createExerciseGroupEditor(config, onSave, onDelete, onSearchClic
                     }
                 }
                 
+                const protocolValue = protocolInput.value.trim() || '3×10';
+                const { sets: parsedSets, reps: parsedReps } = parseProtocol(protocolValue);
+
                 const groupData = {
                     groupId,
                     exercises: cleanExercises,
-                    sets: setsInput.value.trim() || '3',
-                    reps: repsInput.value.trim() || '8-12',
+                    sets: parsedSets,
+                    reps: parsedReps,
                     rest: restInput.value || '60s',
                     default_weight: weightInput.value || '',
                     default_weight_unit: state.weightUnit
