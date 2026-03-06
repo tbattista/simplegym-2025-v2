@@ -321,7 +321,12 @@ function renderWorkoutSessionEntry(session) {
             const matchedType = findActivityType(ex.exercise_name);
 
             if (matchedType) {
-                detailRows.push(`<div><i class="bx ${matchedType.icon} me-1"></i>${escapeHtml(matchedType.name)}</div>`);
+                // Show activity name with duration if available from weight field
+                const durationStr = formatCardioExerciseDuration(ex);
+                const label = durationStr
+                    ? `${escapeHtml(matchedType.name)} - ${durationStr}`
+                    : escapeHtml(matchedType.name);
+                detailRows.push(`<div><i class="bx ${matchedType.icon} me-1"></i>${label}</div>`);
             } else {
                 const parts = [];
                 const setCount = ex.sets_completed || 0;
@@ -401,6 +406,31 @@ function findActivityType(exerciseName) {
         t.shortName.toLowerCase() === lower
     );
     return match || null;
+}
+
+/**
+ * Extract duration info from a cardio exercise stored in ExercisePerformance
+ * Duration may be in the weight field (e.g., "15 minutes", "30", "15 min")
+ */
+function formatCardioExerciseDuration(ex) {
+    if (!ex.weight) return null;
+
+    const w = String(ex.weight).trim();
+
+    // Check if weight contains time-related text (e.g., "15 minutes", "30 min", "1 hour")
+    const timeMatch = w.match(/^(\d+)\s*(min|minute|minutes|hr|hour|hours|h|m)s?$/i);
+    if (timeMatch) {
+        const num = parseInt(timeMatch[1]);
+        return formatDuration(num);
+    }
+
+    // Plain number with non-weight unit (e.g., weight="15", unit="other" or "minutes")
+    const unit = (ex.weight_unit || '').toLowerCase();
+    if (/^(\d+)$/.test(w) && (unit === 'other' || unit === 'minutes' || unit === 'min')) {
+        return formatDuration(parseInt(w));
+    }
+
+    return null;
 }
 
 /**
