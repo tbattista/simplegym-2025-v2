@@ -29,6 +29,28 @@ git add . && git commit -m "type: brief description of changes"
 - `style:` - Formatting, whitespace (no code change)
 - `test:` - Adding or updating tests
 
+## Playwright Testing Requirement
+
+After completing any feature or bug fix that modifies frontend behavior, you MUST write or update a Playwright end-to-end test to verify the change works correctly. This should be done **before** providing the Task Completion Summary and git commit message.
+
+**Guidelines:**
+- Test files go in `tests/` using the naming convention `{feature-name}.spec.js`
+- Each test should cover the core user flow affected by the change
+- Run the test with `npx playwright test tests/{test-file}.spec.js` to confirm it passes
+- If a relevant test file already exists, update it rather than creating a new one
+- Keep tests focused and minimal — test the feature, not the entire app
+- If the change is purely backend, CSS-only, or documentation, Playwright tests can be skipped
+
+**Example test structure:**
+```js
+import { test, expect } from '@playwright/test';
+
+test('feature description', async ({ page }) => {
+  await page.goto('http://localhost:8001/relevant-page.html');
+  // Interact and assert
+});
+```
+
 ---
 
 ## Build & Run Commands

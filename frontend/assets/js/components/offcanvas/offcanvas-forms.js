@@ -390,7 +390,7 @@ export function createExerciseGroupEditor(config, onSave, onDelete, onSearchClic
                         ${exercises.c ? renderAlternateSlot('c', exercises.c) : ''}
                         <span id="addAltButtonContainer" style="${mode === 'single' || state.alternateCount >= 2 ? 'display: none;' : ''}">
                             <button type="button" class="eg-add-chip-btn" id="addAlternateSlotBtn">
-                                <i class="bx bx-plus"></i> Add
+                                <i class="bx bx-plus"></i> Add Alternate
                             </button>
                         </span>
                     </div>
@@ -401,8 +401,8 @@ export function createExerciseGroupEditor(config, onSave, onDelete, onSearchClic
                     <div class="eg-section-label">Protocol</div>
                     <input type="text" class="eg-field-input"
                            id="editorProtocol" value="${escapeHtml(protocol)}"
-                           placeholder="e.g. 3x10, AMRAP, 5,4,3,2,1 reps">
-                    <div class="eg-field-hint">Sets, reps, or any format</div>
+                           placeholder="Enter sets and reps (e.g. 3x8-12)">
+                    <div class="eg-field-hint">Example: 3x10, 5x5, AMRAP, 5,4,3,2,1</div>
                 </div>
 
                 <!-- Default Weight (Input + Dropdown) -->
@@ -433,7 +433,7 @@ export function createExerciseGroupEditor(config, onSave, onDelete, onSearchClic
                         <span class="eg-section-label" style="margin-bottom: 0;">Rest</span>
                         <span class="eg-rest-value" id="restDisplayValue">${escapeHtml(rest || '60s')}</span>
                         <button type="button" class="eg-rest-edit-btn" id="toggleRestBtn" title="Edit rest">
-                            <i class="bx bx-pencil"></i>
+                            <i class="bx bx-pencil"></i> Edit
                         </button>
                     </div>
                     <div class="eg-rest-edit" id="restInputContainer" style="display: none;">
