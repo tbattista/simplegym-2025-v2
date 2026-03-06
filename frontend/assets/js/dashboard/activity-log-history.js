@@ -316,8 +316,7 @@ function renderWorkoutSessionEntry(session) {
     const exercises = session.exercises_performed || [];
     if (exercises.length > 0) {
         exercises.forEach(ex => {
-            const sets = ex.sets_completed || ex.sets || [];
-            const setCount = sets.length;
+            const setCount = ex.sets_completed || 0;
             let setInfo = `${setCount} set${setCount !== 1 ? 's' : ''}`;
             detailRows.push(`<div><i class="bx bx-check-circle me-1"></i>${escapeHtml(ex.exercise_name)} - ${setInfo}</div>`);
         });
@@ -376,8 +375,11 @@ function formatSessionDate(dateStr) {
         return 'Today at ' + date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
     } else if (diffDays === 1) {
         return 'Yesterday at ' + date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+    } else if (diffDays < 7) {
+        const dayName = date.toLocaleDateString([], { weekday: 'long' });
+        return dayName + ' at ' + date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
     } else {
-        return date.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' });
+        return date.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
     }
 }
 
