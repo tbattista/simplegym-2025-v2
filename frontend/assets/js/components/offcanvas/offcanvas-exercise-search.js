@@ -9,7 +9,7 @@
 
 import { createOffcanvas, escapeHtml } from './offcanvas-helpers.js';
 import { createExerciseFilterOffcanvas } from './offcanvas-exercise-filter.js';
-import { createExerciseDetailView } from './offcanvas-exercise-detail-view.js';
+import { showExerciseDetailInSearch } from './offcanvas-exercise-detail-view.js';
 
 /**
  * Create standalone exercise search offcanvas
@@ -317,7 +317,7 @@ export function createExerciseSearchOffcanvas(config = {}, onSelectExercise) {
             openFiltersOffcanvas();
         });
 
-        // Exercise detail view handler
+        // Exercise detail view handler (inline push/pop within this offcanvas)
         exerciseListContainer.addEventListener('click', (e) => {
             const detailBtn = e.target.closest('button[data-detail-id]');
             if (!detailBtn) return;
@@ -328,7 +328,8 @@ export function createExerciseSearchOffcanvas(config = {}, onSelectExercise) {
             );
             if (!exercise) return;
 
-            createExerciseDetailView(exercise, {
+            showExerciseDetailInSearch(exercise, {
+                offcanvasElement: element,
                 showAddButton: true,
                 onAdd: async (ex) => {
                     // Auto-create custom exercise if needed

@@ -1,38 +1,38 @@
 /**
- * Ghost Gym - Exercise Detail View Offcanvas
- * Lightweight detail view that stacks on top of the exercise search offcanvas
- * Reuses window._buildExerciseDetailHTML from exercise-rendering.js
- *
- * Uses manual Bootstrap initialization (not createOffcanvas) to support
- * stacking on top of an already-open offcanvas without closing it.
+ * Ghost Gym - Exercise Detail View (Inline Push/Pop)
+ * Shows exercise details inside the search offcanvas by hiding existing
+ * children and appending a detail panel. Back button restores the search.
+ * Preserves all event listeners on search elements.
  *
  * @module offcanvas-exercise-detail-view
- * @version 1.1.0
+ * @version 2.1.0
  */
 
 import { escapeHtml } from './offcanvas-helpers.js';
 
-const DETAIL_ID = 'exerciseDetailViewOffcanvas';
-const BACKDROP_ID = 'exerciseDetailViewBackdrop';
+const DETAIL_PANEL_ID = 'exerciseDetailInlinePanel';
 
 /**
- * Show exercise detail view offcanvas (stacks above search offcanvas)
- * @param {Object} exercise - Exercise object with full details
+ * Show exercise detail inside the search offcanvas (push/pop pattern)
+ * @param {Object} exercise - Exercise object from search results
  * @param {Object} options - Configuration
+ * @param {HTMLElement} options.offcanvasElement - The search offcanvas DOM element
  * @param {Function} options.onAdd - Callback when "Add to Workout" is clicked
  * @param {boolean} options.showAddButton - Whether to show the add button (default: true)
- * @returns {Object} { offcanvas, offcanvasElement }
  */
-export function createExerciseDetailView(exercise, options = {}) {
+export function showExerciseDetailInSearch(exercise, options = {}) {
     const {
+        offcanvasElement,
         onAdd = null,
         showAddButton = true
     } = options;
 
-    // Clean up any existing detail view
-    _destroyDetailView();
+    if (!offcanvasElement) {
+        console.error('showExerciseDetailInSearch: offcanvasElement required');
+        return;
+    }
 
-    // Look up full exercise data from cache if we only have partial data
+    // Look up full exercise data from cache
     const fullExercise = [...(window.ffn?.exercises?.all || []), ...(window.ffn?.exercises?.custom || [])]
         .find(e => e.id === (exercise.id || exercise.name)) || exercise;
 
@@ -42,87 +42,99 @@ export function createExerciseDetailView(exercise, options = {}) {
         ? window._buildExerciseDetailHTML(fullExercise)
         : '<p class="text-muted">Exercise details unavailable.</p>';
 
-    // Create a manual backdrop that sits above the existing offcanvas
-    const backdropEl = document.createElement('div');
-    backdropEl.id = BACKDROP_ID;
-    backdropEl.className = 'offcanvas-backdrop fade';
-    backdropEl.style.zIndex = '1055';
-    document.body.appendChild(backdropEl);
-    // Trigger reflow then add 'show'
-    void backdropEl.offsetHeight;
-    backdropEl.classList.add('show');
+    const header = offcanvasElement.querySelector('.offcanvas-header');
+    const body = offcanvasElement.querySelector('.offcanvas-body');
 
-    const offcanvasHtml = `
-        <div class="offcanvas offcanvas-bottom offcanvas-bottom-base offcanvas-bottom-tall offcanvas-desktop-side offcanvas-stacked"
-             tabindex="-1" id="${DETAIL_ID}"
-             data-bs-scroll="false" data-bs-backdrop="false">
-            <div class="offcanvas-header border-bottom">
-                <h5 class="offcanvas-title">
-                    <i class="bx bx-info-circle me-2"></i>
-                    <span>${escapeHtml(fullExercise.name || 'Exercise Details')}</span>
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    // --- PUSH: Hide search content, show detail ---
+
+    // Save original header children (as DOM nodes, preserving listeners)
+    const savedHeaderNodes = Array.from(header.childNodes).map(n => {
+        const clone = n;
+        return clone;
+    });
+
+    // Hide all body children (don't remove — preserves listeners)
+    Array.from(body.children).forEach(child => {
+        child.dataset.detailHidden = 'true';
+        child.style.display = 'none';
+    });
+
+    // Replace header content
+    header.innerHTML = '';
+    header.insertAdjacentHTML('beforeend', `
+        <button type="button" class="btn btn-sm btn-outline-secondary me-2" id="detailBackBtn">
+            <i class="bx bx-arrow-back"></i>
+        </button>
+        <h5 class="offcanvas-title text-truncate mb-0">
+            <i class="bx bx-info-circle me-2"></i>${escapeHtml(fullExercise.name || 'Exercise Details')}
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    `);
+
+    // Create detail panel and append to body
+    const detailPanel = document.createElement('div');
+    detailPanel.id = DETAIL_PANEL_ID;
+    detailPanel.className = 'p-3';
+    detailPanel.style.overflowY = 'auto';
+    detailPanel.style.flexGrow = '1';
+    detailPanel.innerHTML = `
+        <div class="exercise-detail-view-content">
+            ${detailHTML}
+        </div>
+        <div class="exercise-detail-view-actions border-top pt-3 mt-3">
+            <div class="d-flex gap-2 mb-2">
+                <button type="button" class="btn btn-outline-${isFavorited ? 'danger' : 'secondary'} flex-fill" id="detailViewFavBtn">
+                    <i class="bx ${isFavorited ? 'bxs-heart' : 'bx-heart'} me-1"></i>
+                    ${isFavorited ? 'Unfavorite' : 'Favorite'}
+                </button>
             </div>
-            <div class="offcanvas-body">
-                ${detailHTML}
+            ${showAddButton && onAdd ? `
+            <div class="d-flex gap-2">
+                <button type="button" class="btn btn-primary flex-fill" id="detailViewAddBtn">
+                    <i class="bx bx-plus me-1"></i>Add to Workout
+                </button>
             </div>
-            <div class="offcanvas-footer border-top p-3">
-                <div class="d-flex gap-2 mb-2">
-                    <button type="button" class="btn btn-outline-${isFavorited ? 'danger' : 'secondary'} flex-fill" id="detailViewFavBtn"
-                            data-exercise-id="${escapeHtml(fullExercise.id || '')}">
-                        <i class="bx ${isFavorited ? 'bxs-heart' : 'bx-heart'} me-1"></i>
-                        ${isFavorited ? 'Unfavorite' : 'Favorite'}
-                    </button>
-                </div>
-                ${showAddButton && onAdd ? `
-                <div class="d-flex gap-2">
-                    <button type="button" class="btn btn-primary flex-fill" id="detailViewAddBtn">
-                        <i class="bx bx-plus me-1"></i>Add to Workout
-                    </button>
-                </div>
-                ` : ''}
-            </div>
+            ` : ''}
         </div>
     `;
+    body.appendChild(detailPanel);
 
-    document.body.insertAdjacentHTML('beforeend', offcanvasHtml);
-    const element = document.getElementById(DETAIL_ID);
+    // --- POP: Restore search content ---
+    const restoreSearch = () => {
+        // Remove detail panel
+        detailPanel.remove();
 
-    // Force layout reflow
-    void element.offsetHeight;
+        // Show all previously hidden body children
+        Array.from(body.children).forEach(child => {
+            if (child.dataset.detailHidden === 'true') {
+                child.style.display = '';
+                delete child.dataset.detailHidden;
+            }
+        });
 
-    // Initialize Bootstrap with backdrop disabled (we manage our own)
-    const bsOffcanvas = new window.bootstrap.Offcanvas(element, {
-        scroll: false,
-        backdrop: false
-    });
+        // Restore header (put original nodes back)
+        header.innerHTML = '';
+        savedHeaderNodes.forEach(node => header.appendChild(node));
+    };
 
-    // Clean up on hide
-    element.addEventListener('hidden.bs.offcanvas', () => {
-        _destroyDetailView();
-    });
+    // Back button
+    header.querySelector('#detailBackBtn')?.addEventListener('click', restoreSearch);
 
-    // Dismiss when clicking our manual backdrop
-    backdropEl.addEventListener('click', () => {
-        bsOffcanvas.hide();
-    });
-
-    // Wire pairing chip clicks to navigate within this offcanvas
+    // Wire pairing chip clicks to navigate to another exercise detail
     if (window._wirePairingChipClicks) {
-        window._wirePairingChipClicks(element, (targetId) => {
-            bsOffcanvas.hide();
+        window._wirePairingChipClicks(detailPanel, (targetId) => {
             const targetExercise = [...(window.ffn?.exercises?.all || []), ...(window.ffn?.exercises?.custom || [])]
                 .find(e => e.id === targetId);
             if (targetExercise) {
-                setTimeout(() => {
-                    createExerciseDetailView(targetExercise, options);
-                }, 300);
+                // Pop current, then push new detail
+                restoreSearch();
+                showExerciseDetailInSearch(targetExercise, options);
             }
         });
     }
 
     // Favorite button
-    const favBtn = element.querySelector('#detailViewFavBtn');
+    const favBtn = detailPanel.querySelector('#detailViewFavBtn');
     if (favBtn) {
         favBtn.addEventListener('click', async () => {
             if (window.toggleExerciseFavorite) {
@@ -135,14 +147,13 @@ export function createExerciseDetailView(exercise, options = {}) {
     }
 
     // Add to Workout button
-    const addBtn = element.querySelector('#detailViewAddBtn');
+    const addBtn = detailPanel.querySelector('#detailViewAddBtn');
     if (addBtn && onAdd) {
         addBtn.addEventListener('click', async () => {
             addBtn.disabled = true;
             addBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
             try {
                 await onAdd(fullExercise);
-                bsOffcanvas.hide();
             } catch (error) {
                 console.error('Error adding exercise from detail view:', error);
                 addBtn.disabled = false;
@@ -150,33 +161,6 @@ export function createExerciseDetailView(exercise, options = {}) {
             }
         });
     }
-
-    // Show with slight delay for DOM stability
-    requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-            if (element.isConnected) {
-                bsOffcanvas.show();
-            }
-        });
-    });
-
-    return { offcanvas: bsOffcanvas, offcanvasElement: element };
-}
-
-/**
- * Clean up detail view DOM elements and Bootstrap instance
- */
-function _destroyDetailView() {
-    const existing = document.getElementById(DETAIL_ID);
-    if (existing) {
-        try {
-            const bsInstance = window.bootstrap.Offcanvas.getInstance(existing);
-            if (bsInstance) bsInstance.dispose();
-        } catch (e) { /* ignore */ }
-        existing.remove();
-    }
-    const backdrop = document.getElementById(BACKDROP_ID);
-    if (backdrop) backdrop.remove();
 }
 
 console.log('offcanvas-exercise-detail-view loaded');
