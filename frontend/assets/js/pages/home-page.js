@@ -181,7 +181,7 @@
         try {
             const token = await window.dataManager.getAuthToken();
             const [workoutResponse, cardioResponse] = await Promise.all([
-                fetch('/api/v3/workout-sessions?page_size=100&sort=desc', {
+                fetch('/api/v3/workout-sessions?status=completed&page_size=100&sort=desc', {
                     headers: { 'Authorization': `Bearer ${token}` }
                 }),
                 fetch('/api/v3/cardio-sessions?page_size=100', {
@@ -390,10 +390,7 @@
 
         if (!container) return;
 
-        // Only show completed sessions (exclude in-progress)
-        const completedSessions = sessions.filter(s => s.completed_at);
-
-        if (completedSessions.length === 0) {
+        if (sessions.length === 0) {
             container.innerHTML = `
                 <div class="text-center text-muted py-4">
                     <i class="bx bx-history mb-2" style="font-size: 2rem;"></i>
@@ -403,7 +400,7 @@
             return;
         }
 
-        const recentSessions = completedSessions.slice(0, window._homeConfig.maxRecentSessions);
+        const recentSessions = sessions.slice(0, window._homeConfig.maxRecentSessions);
         const cardRenderer = window.renderActivityCard || renderActivityCard;
         container.innerHTML = recentSessions.map(session => cardRenderer(session)).join('');
     }
@@ -418,9 +415,7 @@
         const total = exercises.length;
 
         let badge = '';
-        if (!session.completed_at) {
-            badge = '<span class="badge bg-label-secondary">In Progress</span>';
-        } else if (total > 0) {
+        if (total > 0) {
             if (completed === total) {
                 badge = '<span class="badge bg-success">Complete</span>';
             } else if (completed > 0) {

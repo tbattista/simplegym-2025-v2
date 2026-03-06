@@ -123,7 +123,7 @@ async function loadAllSessions(scrollToSessionId = null) {
 
     // Fetch workout sessions and cardio sessions in parallel
     const [workoutResponse, cardioResponse] = await Promise.all([
-      fetch('/api/v3/workout-sessions?page_size=100&sort=desc', {
+      fetch('/api/v3/workout-sessions?status=completed&page_size=100&sort=desc', {
         headers: { 'Authorization': `Bearer ${token}` }
       }),
       fetch('/api/v3/cardio-sessions?page_size=100', {
@@ -246,7 +246,7 @@ async function fetchWorkoutSessions(workoutId) {
 
     const token = await window.dataManager.getAuthToken();
     const response = await fetch(
-      `/api/v3/workout-sessions?workout_id=${workoutId}&page_size=50`,
+      `/api/v3/workout-sessions?workout_id=${workoutId}&status=completed&page_size=50`,
       {
         headers: {
           'Authorization': `Bearer ${token}`
