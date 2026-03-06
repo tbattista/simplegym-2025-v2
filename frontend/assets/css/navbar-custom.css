@@ -14,7 +14,7 @@
     box-shadow: 0 2px 6px 0 rgba(67, 89, 113, 0.12);
     z-index: 1000;
     position: relative;
-    background-color: var(--bs-body-bg);
+    background-color: #ffffff;
     transition: background-color 0.2s ease;
     width: 100%;
     max-width: 100%;
@@ -350,6 +350,7 @@
    ============================================ */
 
 [data-bs-theme="dark"] .layout-navbar {
+    background-color: var(--gs-gray-900);
     box-shadow: 0 2px 6px 0 rgba(0, 0, 0, 0.3);
 }
 

@@ -390,7 +390,10 @@
 
         if (!container) return;
 
-        if (sessions.length === 0) {
+        // Only show completed sessions (exclude in-progress)
+        const completedSessions = sessions.filter(s => s.completed_at);
+
+        if (completedSessions.length === 0) {
             container.innerHTML = `
                 <div class="text-center text-muted py-4">
                     <i class="bx bx-history mb-2" style="font-size: 2rem;"></i>
@@ -400,7 +403,7 @@
             return;
         }
 
-        const recentSessions = sessions.slice(0, window._homeConfig.maxRecentSessions);
+        const recentSessions = completedSessions.slice(0, window._homeConfig.maxRecentSessions);
         const cardRenderer = window.renderActivityCard || renderActivityCard;
         container.innerHTML = recentSessions.map(session => cardRenderer(session)).join('');
     }

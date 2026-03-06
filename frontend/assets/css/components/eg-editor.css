@@ -1,0 +1,512 @@
+/**
+ * Exercise Group Editor - Modern Redesign
+ * Scoped styles for the exercise group editor offcanvas
+ * All classes prefixed with eg- to avoid collisions
+ */
+
+/* ============================================
+   HEADER
+   ============================================ */
+
+.eg-editor-header {
+    border-bottom: none !important;
+    padding: 0.75rem 1rem 0 1rem !important;
+    justify-content: flex-end;
+}
+
+/* ============================================
+   SECTIONS
+   ============================================ */
+
+.eg-section {
+    padding: 0;
+}
+
+.eg-section + .eg-section {
+    margin-top: 1.25rem;
+}
+
+.eg-section-label {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--bs-secondary-color);
+    margin-bottom: 0.375rem;
+}
+
+/* ============================================
+   EXERCISE NAME (Hero Input)
+   ============================================ */
+
+.eg-exercise-input-wrap {
+    position: relative;
+}
+
+.eg-exercise-name-input {
+    font-size: 1.25rem;
+    font-weight: 500;
+    border: none;
+    border-bottom: 2px solid var(--bs-border-color);
+    border-radius: 0;
+    padding: 0.5rem 2.25rem 0.5rem 2.25rem;
+    width: 100%;
+    background: transparent;
+    color: var(--bs-body-color);
+    transition: border-color 0.2s ease;
+}
+
+.eg-exercise-name-input::placeholder {
+    color: var(--bs-secondary-color);
+    font-weight: 400;
+}
+
+.eg-exercise-name-input:focus {
+    outline: none;
+    border-bottom-color: var(--bs-primary);
+    box-shadow: none;
+}
+
+.eg-search-icon {
+    position: absolute;
+    left: 0.25rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--bs-secondary-color);
+    font-size: 1.125rem;
+    cursor: pointer;
+    padding: 0.25rem;
+    background: none;
+    border: none;
+    transition: color 0.15s ease;
+}
+
+.eg-search-icon:hover {
+    color: var(--bs-primary);
+}
+
+.eg-clear-btn {
+    position: absolute;
+    right: 0.25rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: var(--bs-secondary-color);
+    cursor: pointer;
+    padding: 0.25rem;
+    font-size: 1.125rem;
+    line-height: 1;
+    transition: color 0.15s ease;
+}
+
+.eg-clear-btn:hover {
+    color: var(--bs-danger);
+}
+
+/* ============================================
+   ALTERNATE CHIPS
+   ============================================ */
+
+.eg-chip-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.eg-alt-chip {
+    display: inline-flex;
+    align-items: center;
+    background: rgba(var(--bs-primary-rgb), 0.06);
+    border: 1px solid rgba(var(--bs-primary-rgb), 0.18);
+    border-radius: 999px;
+    padding: 0.25rem 0.375rem 0.25rem 0.75rem;
+    animation: egChipSlideIn 0.2s ease-out;
+}
+
+.eg-chip-input-wrap {
+    display: flex;
+    align-items: center;
+    gap: 0.125rem;
+}
+
+.eg-chip-input {
+    border: none;
+    background: transparent;
+    font-size: 0.8125rem;
+    width: auto;
+    min-width: 80px;
+    max-width: 180px;
+    padding: 0.125rem 0;
+    outline: none;
+    color: var(--bs-body-color);
+}
+
+.eg-chip-input::placeholder {
+    color: var(--bs-secondary-color);
+}
+
+.eg-chip-search,
+.eg-chip-remove {
+    background: none;
+    border: none;
+    padding: 0.125rem 0.25rem;
+    cursor: pointer;
+    color: var(--bs-secondary-color);
+    font-size: 0.875rem;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    transition: color 0.15s ease;
+}
+
+.eg-chip-search:hover {
+    color: var(--bs-primary);
+}
+
+.eg-chip-remove:hover {
+    color: var(--bs-danger);
+}
+
+.eg-add-chip-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    background: none;
+    border: 1px dashed var(--bs-border-color);
+    border-radius: 999px;
+    padding: 0.3rem 0.75rem;
+    font-size: 0.8125rem;
+    color: var(--bs-secondary-color);
+    cursor: pointer;
+    transition: border-color 0.2s ease, color 0.2s ease;
+}
+
+.eg-add-chip-btn:hover {
+    border-color: var(--bs-primary);
+    color: var(--bs-primary);
+}
+
+@keyframes egChipSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-6px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ============================================
+   PROTOCOL (Side-by-Side Sets x Reps)
+   ============================================ */
+
+.eg-protocol-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 0.5rem;
+}
+
+.eg-field-group {
+    flex: 1;
+}
+
+.eg-field-label {
+    font-size: 0.75rem;
+    color: var(--bs-secondary-color);
+    margin-bottom: 0.25rem;
+    display: block;
+}
+
+.eg-field-input {
+    border: 1px solid var(--bs-border-color);
+    border-radius: 6px;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.9375rem;
+    width: 100%;
+    text-align: center;
+    background: transparent;
+    color: var(--bs-body-color);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.eg-field-input::placeholder {
+    color: var(--bs-secondary-color);
+}
+
+.eg-field-input:focus {
+    outline: none;
+    border-color: var(--bs-primary);
+    box-shadow: 0 0 0 2px rgba(var(--bs-primary-rgb), 0.1);
+}
+
+.eg-protocol-separator {
+    font-size: 1rem;
+    color: var(--bs-secondary-color);
+    padding-bottom: 0.625rem;
+    user-select: none;
+}
+
+/* ============================================
+   WEIGHT (Input + Select Dropdown)
+   ============================================ */
+
+.eg-weight-row {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.eg-weight-value {
+    flex: 1;
+}
+
+.eg-weight-unit-select {
+    width: auto;
+    min-width: 72px;
+    border: 1px solid var(--bs-border-color);
+    border-radius: 6px;
+    padding: 0.5rem 0.5rem;
+    font-size: 0.9375rem;
+    background: transparent;
+    color: var(--bs-body-color);
+    cursor: pointer;
+    transition: border-color 0.2s ease;
+}
+
+.eg-weight-unit-select:focus {
+    outline: none;
+    border-color: var(--bs-primary);
+    box-shadow: 0 0 0 2px rgba(var(--bs-primary-rgb), 0.1);
+}
+
+.eg-diy-hint {
+    font-size: 0.75rem;
+    margin-top: 0.375rem;
+    padding: 0.375rem 0.625rem;
+    background: rgba(var(--bs-info-rgb), 0.08);
+    border-radius: 4px;
+    border-left: 2px solid var(--bs-info);
+    color: var(--bs-secondary-color);
+    animation: egDiyFadeIn 0.2s ease-in-out;
+}
+
+@keyframes egDiyFadeIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.eg-field-hint {
+    font-size: 0.6875rem;
+    margin-top: 0.375rem;
+    color: var(--bs-secondary-color);
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+/* ============================================
+   REST (Inline Display + Edit)
+   ============================================ */
+
+.eg-rest-display {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.eg-rest-value {
+    font-size: 0.9375rem;
+    font-weight: 500;
+    color: var(--bs-body-color);
+}
+
+.eg-rest-edit-btn {
+    background: none;
+    border: none;
+    color: var(--bs-secondary-color);
+    cursor: pointer;
+    padding: 0.125rem 0.25rem;
+    font-size: 0.875rem;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    transition: color 0.15s ease;
+}
+
+.eg-rest-edit-btn:hover {
+    color: var(--bs-primary);
+}
+
+.eg-rest-edit {
+    margin-top: 0.375rem;
+    animation: egDiyFadeIn 0.2s ease-in-out;
+}
+
+.eg-rest-edit .eg-field-hint {
+    margin-top: 0.25rem;
+}
+
+/* ============================================
+   FOOTER
+   ============================================ */
+
+.eg-editor-footer {
+    padding: 0.75rem 1rem !important;
+    border-top: 1px solid var(--bs-border-color) !important;
+}
+
+.eg-footer-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.eg-footer-actions {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.eg-btn-save {
+    background: var(--bs-primary);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 0.5rem 1.25rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: filter 0.15s ease, transform 0.15s ease;
+}
+
+.eg-btn-save:hover {
+    filter: brightness(1.1);
+    transform: translateY(-1px);
+}
+
+.eg-btn-save:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.eg-btn-cancel {
+    background: none;
+    border: 1px solid var(--bs-border-color);
+    border-radius: 6px;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    color: var(--bs-body-color);
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+
+.eg-btn-cancel:hover {
+    background: rgba(var(--bs-secondary-rgb), 0.08);
+}
+
+.eg-btn-delete {
+    background: none;
+    border: none;
+    color: var(--bs-secondary-color);
+    font-size: 0.8125rem;
+    cursor: pointer;
+    padding: 0.25rem 0;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    transition: color 0.15s ease;
+}
+
+.eg-btn-delete:hover {
+    color: var(--bs-danger);
+}
+
+.eg-btn-delete:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* ============================================
+   DARK MODE
+   ============================================ */
+
+[data-bs-theme="dark"] .eg-exercise-name-input {
+    color: #f1f5f9;
+    border-bottom-color: var(--bs-gray-600);
+}
+
+[data-bs-theme="dark"] .eg-exercise-name-input:focus {
+    border-bottom-color: var(--bs-primary);
+}
+
+[data-bs-theme="dark"] .eg-field-input,
+[data-bs-theme="dark"] .eg-weight-unit-select,
+[data-bs-theme="dark"] .eg-chip-input {
+    color: #f1f5f9;
+    border-color: var(--bs-gray-600);
+}
+
+[data-bs-theme="dark"] .eg-field-input:focus,
+[data-bs-theme="dark"] .eg-weight-unit-select:focus {
+    border-color: var(--bs-primary);
+}
+
+[data-bs-theme="dark"] .eg-alt-chip {
+    background: rgba(var(--bs-primary-rgb), 0.12);
+    border-color: rgba(var(--bs-primary-rgb), 0.25);
+}
+
+[data-bs-theme="dark"] .eg-btn-cancel {
+    border-color: var(--bs-gray-600);
+    color: #f1f5f9;
+}
+
+[data-bs-theme="dark"] .eg-editor-footer {
+    border-top-color: var(--bs-gray-700) !important;
+}
+
+[data-bs-theme="dark"] .eg-diy-hint {
+    background: rgba(var(--bs-info-rgb), 0.12);
+}
+
+/* ============================================
+   MOBILE RESPONSIVE
+   ============================================ */
+
+@media (max-width: 576px) {
+    .eg-exercise-name-input {
+        font-size: 1.125rem;
+        padding: 0.375rem 2rem 0.375rem 2rem;
+    }
+
+    .eg-protocol-row {
+        gap: 0.375rem;
+    }
+
+    .eg-field-input {
+        padding: 0.4375rem 0.5rem;
+        font-size: 0.875rem;
+    }
+
+    .eg-weight-unit-select {
+        padding: 0.4375rem 0.375rem;
+        font-size: 0.875rem;
+        min-width: 64px;
+    }
+
+    .eg-chip-input {
+        min-width: 60px;
+        max-width: 140px;
+    }
+
+    .eg-btn-save {
+        padding: 0.4375rem 1rem;
+    }
+
+    .eg-btn-cancel {
+        padding: 0.4375rem 0.75rem;
+    }
+}

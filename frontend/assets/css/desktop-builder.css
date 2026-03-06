@@ -544,10 +544,8 @@
   font-size: 0.9375rem;
 }
 
-/* Row edit button - visible on hover */
+/* Row edit button - always visible */
 .desktop-exercise-row .row-edit-btn {
-  opacity: 0;
-  transition: opacity 0.15s ease;
   border: none;
   background: transparent;
   color: var(--bs-secondary-color);
@@ -558,10 +556,8 @@
   align-items: center;
   justify-content: center;
   font-size: 1rem;
-}
-
-.desktop-exercise-row:hover .row-edit-btn {
-  opacity: 0.6;
+  opacity: 0.5;
+  transition: opacity 0.15s ease, background-color 0.15s ease;
 }
 
 .desktop-exercise-row .row-edit-btn:hover {

@@ -332,13 +332,9 @@ export function createExerciseGroupEditor(config, onSave, onDelete, onSearchClic
         'kettlebell 35lbs'
     ];
     
-    // Combine sets+reps into protocol for display
-    const protocol = sets && reps ? `${sets}×${reps}` : (sets || reps || '3×10');
-
     // Track selected exercises in state
     const state = {
         exercises: { ...exercises },
-        protocol,
         rest,
         weight,
         weightUnit,
@@ -350,115 +346,126 @@ export function createExerciseGroupEditor(config, onSave, onDelete, onSearchClic
              id="exerciseGroupEditorOffcanvas"
              aria-labelledby="exerciseGroupEditorLabel"
              data-bs-scroll="false">
-            
-            <!-- Header -->
-            <div class="offcanvas-header border-bottom">
-                <h5 class="offcanvas-title" id="exerciseGroupEditorLabel">
-                    <i class="bx bx-dumbbell me-2"></i>
+
+            <!-- Header (minimal) -->
+            <div class="offcanvas-header eg-editor-header">
+                <span class="visually-hidden" id="exerciseGroupEditorLabel">
                     <span id="exerciseGroupEditorTitle">${escapeHtml(title)}</span>
-                </h5>
+                </span>
                 <button type="button" class="btn-close"
                         data-bs-dismiss="offcanvas" aria-label="Close"></button>
             </div>
-            
-            <!-- Body - Scrollable -->
+
+            <!-- Body -->
             <div class="offcanvas-body" id="exerciseGroupEditorBody">
-                <!-- Primary Exercise Slot -->
-                <div class="mb-3">
-                    <label class="form-label">Primary Exercise *</label>
+
+                <!-- Exercise Name (Hero Input) -->
+                <div class="eg-section eg-section-exercise">
                     <div class="exercise-slot ${exercises.a ? 'filled' : ''}" id="primaryExerciseSlot" data-slot="a">
-                        <div class="input-group" style="gap: 0.375rem;">
-                            <input type="text" class="form-control exercise-slot-input"
-                                   id="primaryExerciseInput"
-                                   value="${escapeHtml(exercises.a || '')}"
-                                   placeholder="Enter exercise name"
-                                   autocomplete="off"
-                                   style="padding-right: 0.75rem;">
-                            <button type="button" class="btn btn-outline-secondary" id="searchPrimaryBtn" title="Search library">
+                        <div class="eg-exercise-input-wrap">
+                            <button type="button" class="eg-search-icon" id="searchPrimaryBtn" title="Search library">
                                 <i class="bx bx-search"></i>
                             </button>
-                            <button type="button" class="btn btn-outline-secondary" id="clearPrimaryBtn" title="Clear">
+                            <input type="text" class="eg-exercise-name-input"
+                                   id="primaryExerciseInput"
+                                   value="${escapeHtml(exercises.a || '')}"
+                                   placeholder="Exercise name"
+                                   autocomplete="off">
+                            <button type="button" class="eg-clear-btn ${exercises.a ? '' : 'd-none'}" id="clearPrimaryBtn" title="Clear">
                                 <i class="bx bx-x"></i>
                             </button>
                         </div>
                     </div>
                 </div>
-                
-                <!-- Alternate Exercises Container (hidden in single mode) -->
-                <div id="alternateExercisesContainer" style="${mode === 'single' ? 'display: none;' : ''}">
-                    ${exercises.b ? renderAlternateSlot('b', exercises.b) : ''}
-                    ${exercises.c ? renderAlternateSlot('c', exercises.c) : ''}
-                </div>
-                
-                <!-- Add Alternate Button (max 2, hidden in single mode) -->
-                <div class="mb-3" id="addAltButtonContainer" style="${mode === 'single' || state.alternateCount >= 2 ? 'display: none;' : ''}">
-                    <button type="button" class="btn btn-outline-secondary btn-sm w-100" id="addAlternateSlotBtn">
-                        <i class="bx bx-plus me-1"></i>Add Alternate
-                    </button>
-                </div>
-                
-                <!-- Protocol -->
-                <div class="mb-3">
-                    <label class="form-label"><i class="bx bx-list-ol me-1"></i>Protocol</label>
-                    <input type="text" class="form-control text-center"
-                           id="editorProtocol" value="${escapeHtml(protocol)}"
-                           placeholder="e.g., 3×10, AMRAP, 3 sets to failure">
-                    <small class="text-muted">Sets and reps in any format</small>
-                </div>
-                
-                <!-- Weight -->
-                <div class="mb-3">
-                    <label class="form-label">
-                        <i class="bx bx-dumbbell me-1"></i>Default Weight
-                    </label>
-                    <div class="weight-input-container ${weightUnit === 'other' ? 'diy-mode' : ''}">
-                        <input type="text" class="form-control weight-input text-center"
-                               id="editorWeight" value="${escapeHtml(weight)}"
-                               placeholder="${weightUnit === 'other' ? otherWeightExamples[Math.floor(Math.random() * otherWeightExamples.length)] : (weightUnit === 'kg' ? '60' : '135')}">
-                        <div class="btn-group w-100" role="group">
-                            <button type="button" class="btn btn-outline-secondary weight-unit-btn ${weightUnit === 'lbs' ? 'active' : ''}"
-                                    data-unit="lbs">lbs</button>
-                            <button type="button" class="btn btn-outline-secondary weight-unit-btn ${weightUnit === 'kg' ? 'active' : ''}"
-                                    data-unit="kg">kg</button>
-                            <button type="button" class="btn btn-outline-secondary weight-unit-btn ${weightUnit === 'other' ? 'active' : ''}"
-                                    data-unit="other">DIY</button>
-                        </div>
-                        <div class="diy-hint text-muted small mt-2" style="display: ${weightUnit === 'other' ? 'block' : 'none'};">
-                            <i class="bx bx-info-circle me-1"></i>
-                            e.g., "Body weight", "20lb Medball", "Cable #7"
-                        </div>
-                    </div>
-                    <div class="form-text">
-                        <i class="bx bx-info-circle me-1"></i>
-                        This weight auto-syncs from your workout history
+
+                <!-- Alternates (Chip List) -->
+                <div class="eg-section eg-section-alternates" id="alternateExercisesContainer"
+                     style="${mode === 'single' ? 'display: none;' : ''}">
+                    <div class="eg-section-label">Alternates</div>
+                    <div class="eg-chip-list">
+                        ${exercises.b ? renderAlternateSlot('b', exercises.b) : ''}
+                        ${exercises.c ? renderAlternateSlot('c', exercises.c) : ''}
+                        <span id="addAltButtonContainer" style="${mode === 'single' || state.alternateCount >= 2 ? 'display: none;' : ''}">
+                            <button type="button" class="eg-add-chip-btn" id="addAlternateSlotBtn">
+                                <i class="bx bx-plus"></i> Add
+                            </button>
+                        </span>
                     </div>
                 </div>
 
-                <!-- Rest (collapsible) -->
-                <div class="mb-3" id="restToggleContainer">
-                    <button type="button" class="btn btn-outline-secondary btn-sm w-100" id="toggleRestBtn">
-                        <i class="bx bx-timer me-1"></i>Modify Rest
-                    </button>
-                    <div id="restInputContainer" style="display: none;" class="mt-2">
-                        <input type="text" class="form-control rest-input text-center"
+                <!-- Protocol (Side-by-Side Sets x Reps) -->
+                <div class="eg-section eg-section-protocol">
+                    <div class="eg-section-label">Protocol</div>
+                    <div class="eg-protocol-row">
+                        <div class="eg-field-group">
+                            <label class="eg-field-label" for="editorSets">Sets</label>
+                            <input type="text" class="eg-field-input"
+                                   id="editorSets" value="${escapeHtml(sets || '3')}"
+                                   placeholder="3">
+                        </div>
+                        <span class="eg-protocol-separator">&times;</span>
+                        <div class="eg-field-group">
+                            <label class="eg-field-label" for="editorReps">Reps</label>
+                            <input type="text" class="eg-field-input"
+                                   id="editorReps" value="${escapeHtml(reps || '8-12')}"
+                                   placeholder="8-12">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Default Weight (Input + Dropdown) -->
+                <div class="eg-section eg-section-weight">
+                    <div class="eg-section-label">Default Weight</div>
+                    <div class="eg-weight-row">
+                        <input type="text" class="eg-field-input eg-weight-value"
+                               id="editorWeight" value="${escapeHtml(weight)}"
+                               placeholder="${weightUnit === 'other' ? otherWeightExamples[Math.floor(Math.random() * otherWeightExamples.length)] : (weightUnit === 'kg' ? '60' : '135')}">
+                        <select class="eg-weight-unit-select" id="editorWeightUnit">
+                            <option value="lbs" ${weightUnit === 'lbs' ? 'selected' : ''}>lbs</option>
+                            <option value="kg" ${weightUnit === 'kg' ? 'selected' : ''}>kg</option>
+                            <option value="other" ${weightUnit === 'other' ? 'selected' : ''}>DIY</option>
+                        </select>
+                    </div>
+                    <div class="eg-diy-hint" id="diyWeightHint"
+                         style="display: ${weightUnit === 'other' ? 'block' : 'none'};">
+                        e.g., "Body weight", "20lb Medball", "Cable #7"
+                    </div>
+                    <div class="eg-field-hint">
+                        <i class="bx bx-info-circle"></i> Auto-syncs from workout history
+                    </div>
+                </div>
+
+                <!-- Rest (Inline Display + Edit) -->
+                <div class="eg-section eg-section-rest">
+                    <div class="eg-rest-display">
+                        <span class="eg-section-label" style="margin-bottom: 0;">Rest</span>
+                        <span class="eg-rest-value" id="restDisplayValue">${escapeHtml(rest || '60s')}</span>
+                        <button type="button" class="eg-rest-edit-btn" id="toggleRestBtn" title="Edit rest">
+                            <i class="bx bx-pencil"></i>
+                        </button>
+                    </div>
+                    <div class="eg-rest-edit" id="restInputContainer" style="display: none;">
+                        <input type="text" class="eg-field-input"
                                id="editorRest" value="${escapeHtml(rest)}" placeholder="60s">
-                        <small class="text-muted">e.g., 60s, 2min, 90s</small>
+                        <div class="eg-field-hint">e.g., 60s, 2min, 90s</div>
                     </div>
                 </div>
             </div>
 
-            <!-- Footer - Action Buttons -->
-            <div class="offcanvas-footer border-top p-3">
-                <div class="d-flex gap-2 workout-builder-buttons">
-                    <button type="button" class="btn btn-primary flex-fill" id="saveExerciseGroupEditorBtn">
-                        <i class="bx bx-save me-1"></i>Save
-                    </button>
-                    <button type="button" class="btn btn-label-secondary flex-fill"
-                            data-bs-dismiss="offcanvas">Cancel</button>
-                    <button type="button" class="btn btn-outline-danger flex-fill" id="deleteExerciseGroupEditorBtn"
+            <!-- Footer -->
+            <div class="offcanvas-footer eg-editor-footer">
+                <div class="eg-footer-row">
+                    <button type="button" class="eg-btn-delete" id="deleteExerciseGroupEditorBtn"
                             ${isNew || mode === 'single' ? 'style="display: none;"' : ''}>
-                        <i class="bx bx-trash me-1"></i>Delete
+                        Delete
                     </button>
+                    <div class="eg-footer-actions">
+                        <button type="button" class="eg-btn-cancel"
+                                data-bs-dismiss="offcanvas">Cancel</button>
+                        <button type="button" class="eg-btn-save" id="saveExerciseGroupEditorBtn">
+                            Save Changes
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -471,14 +478,17 @@ export function createExerciseGroupEditor(config, onSave, onDelete, onSearchClic
         const clearPrimaryBtn = element.querySelector('#clearPrimaryBtn');
         const primarySlot = element.querySelector('#primaryExerciseSlot');
         const alternateContainer = element.querySelector('#alternateExercisesContainer');
+        const chipList = alternateContainer?.querySelector('.eg-chip-list');
         const addAltBtn = element.querySelector('#addAlternateSlotBtn');
         const addAltContainer = element.querySelector('#addAltButtonContainer');
-        const protocolInput = element.querySelector('#editorProtocol');
+        const setsInput = element.querySelector('#editorSets');
+        const repsInput = element.querySelector('#editorReps');
         const restInput = element.querySelector('#editorRest');
         const toggleRestBtn = element.querySelector('#toggleRestBtn');
         const restInputContainer = element.querySelector('#restInputContainer');
+        const restDisplayValue = element.querySelector('#restDisplayValue');
         const weightInput = element.querySelector('#editorWeight');
-        const weightUnitBtns = element.querySelectorAll('.weight-unit-btn');
+        const weightUnitSelect = element.querySelector('#editorWeightUnit');
         const saveBtn = element.querySelector('#saveExerciseGroupEditorBtn');
         const deleteBtn = element.querySelector('#deleteExerciseGroupEditorBtn');
 
@@ -491,6 +501,13 @@ export function createExerciseGroupEditor(config, onSave, onDelete, onSearchClic
             const isHidden = restInputContainer.style.display === 'none';
             restInputContainer.style.display = isHidden ? '' : 'none';
             if (isHidden) restInput.focus();
+        });
+
+        // Sync rest display value when input changes
+        restInput?.addEventListener('input', () => {
+            if (restDisplayValue) {
+                restDisplayValue.textContent = restInput.value || '60s';
+            }
         });
 
         // Populate exercise slot helper
@@ -586,7 +603,12 @@ export function createExerciseGroupEditor(config, onSave, onDelete, onSearchClic
             state.alternateCount++;
             
             const slotHtml = renderAlternateSlot(nextKey, '');
-            alternateContainer.insertAdjacentHTML('beforeend', slotHtml);
+            // Insert chip before the "+ Add" button
+            if (addAltContainer) {
+                addAltContainer.insertAdjacentHTML('beforebegin', slotHtml);
+            } else if (chipList) {
+                chipList.insertAdjacentHTML('beforeend', slotHtml);
+            }
             
             // Hide add button if at max
             if (state.alternateCount >= 2) {
@@ -623,46 +645,26 @@ export function createExerciseGroupEditor(config, onSave, onDelete, onSearchClic
             setupSlotInputHandlers(key, slotInput, searchBtn, clearBtn);
         });
         
-        // Weight unit buttons with layout transition
-        weightUnitBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                // Update button states
-                weightUnitBtns.forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                state.weightUnit = btn.dataset.unit;
+        // Weight unit dropdown
+        weightUnitSelect?.addEventListener('change', () => {
+            state.weightUnit = weightUnitSelect.value;
 
-                // Toggle DIY mode layout - query fresh each time to ensure element is found
-                const weightContainer = element.querySelector('.weight-input-container');
-                if (weightContainer) {
-                    if (state.weightUnit === 'other') {
-                        weightContainer.classList.add('diy-mode');
-                    } else {
-                        weightContainer.classList.remove('diy-mode');
-                    }
-                    console.log(`💡 Weight unit changed to ${state.weightUnit}, DIY mode: ${weightContainer.classList.contains('diy-mode')}`);
+            // Show/hide DIY hint
+            const diyHint = element.querySelector('#diyWeightHint');
+            if (diyHint) {
+                diyHint.style.display = state.weightUnit === 'other' ? 'block' : 'none';
+            }
 
-                    // Show/hide DIY hint
-                    const diyHint = weightContainer.querySelector('.diy-hint');
-                    if (diyHint) {
-                        diyHint.style.display = state.weightUnit === 'other' ? 'block' : 'none';
-                    }
-                } else {
-                    console.warn('⚠️ Weight container not found!');
+            // Update placeholder based on selected unit
+            if (weightInput) {
+                if (state.weightUnit === 'other') {
+                    weightInput.placeholder = otherWeightExamples[Math.floor(Math.random() * otherWeightExamples.length)];
+                } else if (state.weightUnit === 'lbs') {
+                    weightInput.placeholder = '135';
+                } else if (state.weightUnit === 'kg') {
+                    weightInput.placeholder = '60';
                 }
-
-                // Update placeholder based on selected unit
-                if (weightInput) {
-                    if (state.weightUnit === 'other') {
-                        // Pick a random example from the array
-                        const randomExample = otherWeightExamples[Math.floor(Math.random() * otherWeightExamples.length)];
-                        weightInput.placeholder = randomExample;
-                    } else if (state.weightUnit === 'lbs') {
-                        weightInput.placeholder = '135';
-                    } else if (state.weightUnit === 'kg') {
-                        weightInput.placeholder = '60';
-                    }
-                }
-            });
+            }
         });
         
         // Save button
@@ -694,14 +696,11 @@ export function createExerciseGroupEditor(config, onSave, onDelete, onSearchClic
                     }
                 }
                 
-                const protocolValue = protocolInput.value.trim() || '3×10';
-                const { sets: parsedSets, reps: parsedReps } = parseProtocol(protocolValue);
-
                 const groupData = {
                     groupId,
                     exercises: cleanExercises,
-                    sets: parsedSets,
-                    reps: parsedReps,
+                    sets: setsInput.value.trim() || '3',
+                    reps: repsInput.value.trim() || '8-12',
                     rest: restInput.value || '60s',
                     default_weight: weightInput.value || '',
                     default_weight_unit: state.weightUnit
@@ -713,7 +712,7 @@ export function createExerciseGroupEditor(config, onSave, onDelete, onSearchClic
             } catch (error) {
                 console.error('❌ Error saving exercise group:', error);
                 saveBtn.disabled = false;
-                saveBtn.innerHTML = '<i class="bx bx-save me-1"></i>Save';
+                saveBtn.textContent = 'Save Changes';
             }
         });
         
@@ -730,7 +729,7 @@ export function createExerciseGroupEditor(config, onSave, onDelete, onSearchClic
             } catch (error) {
                 console.error('❌ Error deleting exercise group:', error);
                 deleteBtn.disabled = false;
-                deleteBtn.innerHTML = '<i class="bx bx-trash me-1"></i>Delete';
+                deleteBtn.textContent = 'Delete';
             }
         });
     });
@@ -744,26 +743,21 @@ export function createExerciseGroupEditor(config, onSave, onDelete, onSearchClic
  */
 export function renderAlternateSlot(slotKey, exerciseName) {
     const keyUpper = slotKey.toUpperCase();
-    const filled = exerciseName ? 'filled' : '';
-    
+
     return `
-        <div class="mb-3 alternate-exercise-slot-container" data-alt-key="${slotKey}">
-            <label class="form-label">Alternate Exercise</label>
-            <div class="exercise-slot ${filled}" data-slot="${slotKey}">
-                <div class="input-group" style="gap: 0.375rem;">
-                    <input type="text" class="form-control exercise-slot-input"
-                           id="alternateExercise${keyUpper}Input"
-                           value="${escapeHtml(exerciseName || '')}"
-                           placeholder="Enter exercise name"
-                           autocomplete="off"
-                           style="padding-right: 0.75rem;">
-                    <button type="button" class="btn btn-outline-secondary" id="searchAlternate${keyUpper}Btn" title="Search library">
-                        <i class="bx bx-search"></i>
-                    </button>
-                    <button type="button" class="btn btn-outline-secondary" id="clearAlternate${keyUpper}Btn" title="Clear">
-                        <i class="bx bx-x"></i>
-                    </button>
-                </div>
+        <div class="eg-alt-chip" data-alt-key="${slotKey}">
+            <div class="eg-chip-input-wrap" data-slot="${slotKey}">
+                <input type="text" class="eg-chip-input"
+                       id="alternateExercise${keyUpper}Input"
+                       value="${escapeHtml(exerciseName || '')}"
+                       placeholder="Alternate"
+                       autocomplete="off">
+                <button type="button" class="eg-chip-search" id="searchAlternate${keyUpper}Btn" title="Search">
+                    <i class="bx bx-search"></i>
+                </button>
+                <button type="button" class="eg-chip-remove" id="clearAlternate${keyUpper}Btn" title="Remove">
+                    <i class="bx bx-x"></i>
+                </button>
             </div>
         </div>
     `;
