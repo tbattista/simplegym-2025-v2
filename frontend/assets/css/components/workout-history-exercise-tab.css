@@ -1,0 +1,257 @@
+/**
+ * Workout History - Exercise Tab Styles
+ * Exercise group list, variants, and timeline for All Sessions mode
+ * @version 1.0.0
+ */
+
+/* ============================================
+   TOOLBAR (SEARCH + SORT)
+   ============================================ */
+
+.exercise-tab-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.exercise-tab-search-wrapper {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+
+.exercise-tab-search-icon {
+  position: absolute;
+  left: 0.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.875rem;
+  color: var(--bs-secondary-color);
+  pointer-events: none;
+}
+
+.exercise-tab-search {
+  padding-left: 1.75rem;
+  font-size: 0.8125rem;
+}
+
+/* ============================================
+   GROUP LIST
+   ============================================ */
+
+.exercise-group-list {
+  background: transparent;
+}
+
+/* ============================================
+   GROUP ITEM
+   ============================================ */
+
+.exercise-group-item {
+  border-bottom: 1px solid var(--bs-border-color);
+}
+
+.exercise-group-item:last-child {
+  border-bottom: none;
+}
+
+/* ============================================
+   GROUP HEADER
+   ============================================ */
+
+.exercise-group-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 0;
+  cursor: pointer;
+  gap: 0.5rem;
+}
+
+.exercise-group-header:active {
+  opacity: 0.8;
+}
+
+.exercise-group-header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.exercise-group-name {
+  font-weight: 600;
+  font-size: 0.9375rem;
+  color: var(--bs-heading-color);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.exercise-group-variant-count {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: var(--bs-secondary-color);
+  background: var(--bs-gray-100);
+  padding: 0.0625rem 0.375rem;
+  border-radius: 0.25rem;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.exercise-group-header-right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.exercise-group-count {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--bs-secondary-color);
+}
+
+.exercise-group-date {
+  font-size: 0.75rem;
+  color: var(--bs-secondary-color);
+}
+
+.exercise-group-chevron {
+  font-size: 1rem;
+  color: var(--bs-secondary-color);
+  transition: transform 0.2s ease;
+}
+
+.exercise-group-chevron.rotated {
+  transform: rotate(180deg);
+}
+
+/* ============================================
+   GROUP BODY (COLLAPSE)
+   ============================================ */
+
+.exercise-group-body {
+  padding: 0 0 0.75rem 0;
+}
+
+/* ============================================
+   VARIANT
+   ============================================ */
+
+.exercise-variant {
+  padding: 0.5rem 0 0.5rem 0.75rem;
+  border-left: 2px solid var(--bs-border-color);
+  margin-left: 0.25rem;
+}
+
+.exercise-variant + .exercise-variant {
+  margin-top: 0.375rem;
+}
+
+.variant-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.375rem;
+}
+
+.variant-equipment {
+  font-weight: 500;
+  font-size: 0.8125rem;
+  color: var(--bs-primary);
+}
+
+.variant-stats {
+  font-size: 0.8125rem;
+  color: var(--bs-body-color);
+  font-weight: 500;
+}
+
+/* ============================================
+   VARIANT TIMELINE
+   ============================================ */
+
+.variant-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.variant-entry {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.875rem;
+  color: var(--bs-body-color);
+}
+
+.variant-entry-weight {
+  font-weight: 500;
+}
+
+.variant-entry-date {
+  font-size: 0.75rem;
+  color: var(--bs-secondary-color);
+}
+
+/* Reuse existing fade pattern for older entries */
+.variant-entry.history-row-faded {
+  opacity: 0.65;
+}
+
+/* ============================================
+   DESKTOP SIDEBAR
+   ============================================ */
+
+.desktop-exercise-overview-body {
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+/* ============================================
+   RESPONSIVE - MOBILE
+   ============================================ */
+
+@media (max-width: 767.98px) {
+  .exercise-group-header {
+    padding: 0.625rem 0;
+  }
+
+  .exercise-group-name {
+    font-size: 0.875rem;
+  }
+
+  .exercise-variant {
+    padding-left: 0.625rem;
+  }
+
+  .variant-entry {
+    font-size: 0.8125rem;
+  }
+}
+
+/* ============================================
+   DARK MODE
+   ============================================ */
+
+[data-bs-theme="dark"] .exercise-group-variant-count {
+  background: var(--bs-gray-800);
+}
+
+[data-bs-theme="dark"] .exercise-variant {
+  border-left-color: var(--bs-gray-700);
+}
+
+/* ============================================
+   REDUCED MOTION
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .exercise-group-chevron {
+    transition: none;
+  }
+}

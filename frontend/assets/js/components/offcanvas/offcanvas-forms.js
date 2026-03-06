@@ -397,20 +397,13 @@ export function createExerciseGroupEditor(config, onSave, onDelete, onSearchClic
                     </button>
                 </div>
                 
-                <!-- Protocol, Rest -->
-                <div class="row g-2 mb-3">
-                    <div class="col-7">
-                        <label class="form-label"><i class="bx bx-list-ol me-1"></i>Protocol</label>
-                        <input type="text" class="form-control text-center"
-                               id="editorProtocol" value="${escapeHtml(protocol)}"
-                               placeholder="e.g., 3×10, AMRAP, 3 sets to failure">
-                        <small class="text-muted">Sets and reps in any format</small>
-                    </div>
-                    <div class="col-5">
-                        <label class="form-label">Rest</label>
-                        <input type="text" class="form-control rest-input text-center"
-                               id="editorRest" value="${escapeHtml(rest)}" placeholder="60s">
-                    </div>
+                <!-- Protocol -->
+                <div class="mb-3">
+                    <label class="form-label"><i class="bx bx-list-ol me-1"></i>Protocol</label>
+                    <input type="text" class="form-control text-center"
+                           id="editorProtocol" value="${escapeHtml(protocol)}"
+                           placeholder="e.g., 3×10, AMRAP, 3 sets to failure">
+                    <small class="text-muted">Sets and reps in any format</small>
                 </div>
                 
                 <!-- Weight -->
@@ -440,8 +433,20 @@ export function createExerciseGroupEditor(config, onSave, onDelete, onSearchClic
                         This weight auto-syncs from your workout history
                     </div>
                 </div>
+
+                <!-- Rest (collapsible) -->
+                <div class="mb-3" id="restToggleContainer">
+                    <button type="button" class="btn btn-outline-secondary btn-sm w-100" id="toggleRestBtn">
+                        <i class="bx bx-timer me-1"></i>Modify Rest
+                    </button>
+                    <div id="restInputContainer" style="display: none;" class="mt-2">
+                        <input type="text" class="form-control rest-input text-center"
+                               id="editorRest" value="${escapeHtml(rest)}" placeholder="60s">
+                        <small class="text-muted">e.g., 60s, 2min, 90s</small>
+                    </div>
+                </div>
             </div>
-            
+
             <!-- Footer - Action Buttons -->
             <div class="offcanvas-footer border-top p-3">
                 <div class="d-flex gap-2 workout-builder-buttons">
@@ -470,11 +475,24 @@ export function createExerciseGroupEditor(config, onSave, onDelete, onSearchClic
         const addAltContainer = element.querySelector('#addAltButtonContainer');
         const protocolInput = element.querySelector('#editorProtocol');
         const restInput = element.querySelector('#editorRest');
+        const toggleRestBtn = element.querySelector('#toggleRestBtn');
+        const restInputContainer = element.querySelector('#restInputContainer');
         const weightInput = element.querySelector('#editorWeight');
         const weightUnitBtns = element.querySelectorAll('.weight-unit-btn');
         const saveBtn = element.querySelector('#saveExerciseGroupEditorBtn');
         const deleteBtn = element.querySelector('#deleteExerciseGroupEditorBtn');
-        
+
+        // Rest toggle - auto-expand if custom value exists
+        const hasCustomRest = rest && rest !== '60s';
+        if (hasCustomRest) {
+            restInputContainer.style.display = '';
+        }
+        toggleRestBtn.addEventListener('click', () => {
+            const isHidden = restInputContainer.style.display === 'none';
+            restInputContainer.style.display = isHidden ? '' : 'none';
+            if (isHidden) restInput.focus();
+        });
+
         // Populate exercise slot helper
         const populateSlot = (slotKey, exerciseName) => {
             state.exercises[slotKey] = exerciseName;

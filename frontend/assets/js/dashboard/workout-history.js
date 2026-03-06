@@ -55,6 +55,12 @@ window.ffn.workoutHistory = {
   // Date filter (calendar click)
   dateFilter: null,  // null or 'YYYY-MM-DD' string
 
+  // Exercise Tab (All Sessions mode)
+  allExerciseGroups: [],
+  exerciseTabSort: 'frequency', // 'frequency', 'name', 'recent'
+  exerciseTabSearch: '',
+  expandedExerciseGroups: new Set(),
+
   // Statistics
   statistics: {
     totalWorkouts: 0,

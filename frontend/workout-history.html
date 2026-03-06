@@ -48,6 +48,7 @@
     <link rel="stylesheet" href="/static/assets/css/components/workout-history-sessions.css" />
     <link rel="stylesheet" href="/static/assets/css/components/workout-history-exercises.css" />
     <link rel="stylesheet" href="/static/assets/css/components/workout-history-toolbar.css" />
+    <link rel="stylesheet" href="/static/assets/css/components/workout-history-exercise-tab.css" />
 
     <!-- Calendar View CSS -->
     <link rel="stylesheet" href="/static/assets/css/components/calendar-view.css" />
@@ -174,6 +175,13 @@
                           <i class="bx bx-calendar me-1"></i>Calendar
                         </button>
                       </li>
+                      <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="exercises-tab" data-bs-toggle="tab"
+                                data-bs-target="#exercisesTabPane" type="button" role="tab"
+                                aria-controls="exercisesTabPane" aria-selected="false">
+                          <i class="bx bx-dumbbell me-1"></i>Exercises
+                        </button>
+                      </li>
                     </ul>
                   </div>
 
@@ -206,6 +214,14 @@
                             </div>
                           </div>
                         </div>
+                      </div>
+                    </div>
+
+                    <!-- Exercises Tab -->
+                    <div class="tab-pane fade" id="exercisesTabPane" role="tabpanel"
+                         aria-labelledby="exercises-tab" tabindex="0">
+                      <div id="exerciseTabContainer" class="mt-3">
+                        <!-- Exercise groups rendered by JS -->
                       </div>
                     </div>
                   </div>
@@ -348,6 +364,20 @@
                           </div>
                         </div>
 
+                        <!-- Exercise Overview Card (all sessions mode only) -->
+                        <div class="card desktop-exercise-overview-card mb-4" id="desktopExerciseOverviewCardWrapper" style="display: none;">
+                          <div class="card-header py-3 px-4">
+                            <h6 class="mb-0 fw-semibold">
+                              <i class="bx bx-dumbbell me-2"></i>Exercises
+                            </h6>
+                          </div>
+                          <div class="card-body py-3 px-4 desktop-exercise-overview-body">
+                            <div id="desktopExerciseTabContainer">
+                              <!-- Exercise groups rendered by JS -->
+                            </div>
+                          </div>
+                        </div>
+
                         <!-- Exercise Performance Card (single workout mode only) -->
                         <div class="card desktop-exercise-perf-card mb-4" id="desktopExercisePerfCardWrapper" style="display: none;">
                           <div class="card-header py-3 px-4">
@@ -411,6 +441,8 @@
           ['historyCalendarCard',    'desktopHistoryCalendarCard'],
           ['statisticsCards',        'desktopStatisticsCards'],
           ['exercisePerformanceContainer', 'desktopExercisePerformanceContainer'],
+          ['exerciseTabContainer',   'desktopExerciseTabContainer'],
+          ['exerciseOverviewCardWrapper', 'desktopExerciseOverviewCardWrapper'],
           ['historyTabs',            'desktopHistoryTabs']
         ];
         _swaps.forEach(function(pair) {
@@ -478,6 +510,10 @@
     <script src="/static/assets/js/dashboard/workout-history-workout-filter.js?v=1.0.0"></script>
     <script src="/static/assets/js/dashboard/workout-history-sessions.js?v=1.2.0"></script>
     <script src="/static/assets/js/dashboard/workout-history-loader.js?v=1.0.0"></script>
+
+    <!-- Exercise Tab (All Sessions mode) -->
+    <script src="/static/assets/js/dashboard/workout-history-exercise-aggregator.js?v=1.0.0"></script>
+    <script src="/static/assets/js/dashboard/workout-history-exercise-tab.js?v=1.0.0"></script>
 
     <!-- Desktop History Adapter (must load after all workout-history modules) -->
     <script src="/static/assets/js/pages/desktop-history-adapter.js?v=20260226"></script>
@@ -557,6 +593,11 @@
                     }
                 }
             }, 3000);
+
+            // Initialize exercise tab visibility toggling
+            if (window.initExerciseTabVisibility) {
+                window.initExerciseTabVisibility();
+            }
 
             // Activate calendar tab if ?view=calendar is in URL
             const viewParam = new URLSearchParams(window.location.search).get('view');

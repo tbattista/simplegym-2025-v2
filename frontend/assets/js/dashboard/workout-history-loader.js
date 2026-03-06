@@ -205,6 +205,28 @@ function renderAllModeUI() {
   renderWorkoutInfo();
   renderStatistics();
   renderSessionHistory();
+
+  // Aggregate and render exercise overview (All Sessions mode)
+  aggregateAndRenderExercises();
+}
+
+/**
+ * Aggregate exercise data from sessions and render the exercise tab
+ */
+function aggregateAndRenderExercises() {
+  const sessions = window.ffn.workoutHistory.sessions;
+  // Only aggregate strength sessions (exclude cardio)
+  const strengthSessions = sessions.filter(s => s._sessionType !== 'cardio');
+
+  window.ffn.workoutHistory.allExerciseGroups = aggregateExercisesFromSessions(strengthSessions);
+
+  renderExerciseTab();
+
+  // Show the desktop card wrapper
+  const wrapper = document.getElementById('exerciseOverviewCardWrapper');
+  if (wrapper) {
+    wrapper.style.display = '';
+  }
 }
 
 /* ============================================
@@ -324,6 +346,7 @@ window.initWorkoutHistory = initWorkoutHistory;
 window.loadWorkoutHistory = loadWorkoutHistory;
 window.loadAllSessions = loadAllSessions;
 window.renderAllModeUI = renderAllModeUI;
+window.aggregateAndRenderExercises = aggregateAndRenderExercises;
 window.fetchWorkoutSessions = fetchWorkoutSessions;
 window.fetchExerciseHistory = fetchExerciseHistory;
 window.extractUniqueWorkouts = extractUniqueWorkouts;
