@@ -32,8 +32,9 @@
         buildActivityMap() {
             this.activityMap.clear();
             this.sessions.forEach(session => {
-                if (!session.completed_at) return;
-                const date = new Date(session.completed_at);
+                const dateStr = session.completed_at || session.started_at || session.created_at;
+                if (!dateStr) return;
+                const date = new Date(dateStr);
                 const key = this.formatDateKey(date);
                 if (!this.activityMap.has(key)) {
                     this.activityMap.set(key, []);

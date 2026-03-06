@@ -180,17 +180,32 @@
     async function loadSessions() {
         try {
             const token = await window.dataManager.getAuthToken();
-            const response = await fetch('/api/v3/workout-sessions?page_size=100&sort=desc', {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
+            const [workoutResponse, cardioResponse] = await Promise.all([
+                fetch('/api/v3/workout-sessions?page_size=100&sort=desc', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                }),
+                fetch('/api/v3/cardio-sessions?page_size=100', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                }).catch(() => null)
+            ]);
 
-            if (!response.ok) {
-                console.warn('Could not load sessions');
-                return [];
+            let workoutSessions = [];
+            if (workoutResponse && workoutResponse.ok) {
+                const workoutData = await workoutResponse.json();
+                workoutSessions = (workoutData.sessions || []).map(s => ({ ...s, _sessionType: 'strength' }));
             }
 
-            const data = await response.json();
-            return data.sessions || [];
+            let cardioSessions = [];
+            if (cardioResponse && cardioResponse.ok) {
+                const cardioData = await cardioResponse.json();
+                cardioSessions = (cardioData.sessions || []).map(s => ({ ...s, _sessionType: 'cardio' }));
+            }
+
+            return [...workoutSessions, ...cardioSessions].sort((a, b) => {
+                const dateA = new Date(a.completed_at || a.started_at || a.created_at);
+                const dateB = new Date(b.completed_at || b.started_at || b.created_at);
+                return dateB - dateA;
+            });
         } catch (err) {
             console.warn('Error loading sessions:', err);
             return [];
@@ -203,7 +218,10 @@
         weekStart.setDate(now.getDate() - now.getDay());
         weekStart.setHours(0, 0, 0, 0);
 
-        const weekSessions = sessions.filter(s => new Date(s.completed_at) >= weekStart);
+        const weekSessions = sessions.filter(s => {
+            const date = new Date(s.completed_at || s.started_at || s.created_at);
+            return date >= weekStart;
+        });
         const completed = weekSessions.length;
         const goal = 7;
         const percentage = Math.min(Math.round((completed / goal) * 100), 100);
@@ -211,7 +229,7 @@
 
         const statEl = document.getElementById('weeklyStatText');
         if (statEl) {
-            statEl.textContent = `This Week: ${completed}/${goal} Workouts`;
+            statEl.textContent = `This Week: ${completed}/${goal} Activities`;
         }
 
         const streakBadge = document.getElementById('weeklyStreakBadge');
@@ -247,7 +265,9 @@
 
         const workoutDays = new Set();
         sessions.forEach(s => {
-            const date = new Date(s.completed_at);
+            const dateStr = s.completed_at || s.started_at || s.created_at;
+            if (!dateStr) return;
+            const date = new Date(dateStr);
             date.setHours(0, 0, 0, 0);
             workoutDays.add(date.getTime());
         });
@@ -386,6 +406,10 @@
     }
 
     function renderActivityCard(session) {
+        if (session._sessionType === 'cardio') {
+            return renderCardioActivityCard(session);
+        }
+
         const exercises = session.exercises_performed || [];
         const completed = exercises.filter(ex => !ex.is_skipped).length;
         const total = exercises.length;
@@ -423,6 +447,36 @@
                         ${volume ? `<span><i class="bx bx-trending-up me-1"></i>${volume}</span>` : ''}
                     </div>
                     ${total > 0 ? `<small class="text-muted"><i class="bx bx-check-circle me-1"></i>${completed}/${total} exercises completed</small>` : ''}
+                </div>
+            </div>
+        `;
+    }
+
+    function renderCardioActivityCard(session) {
+        const registry = window.ActivityTypeRegistry;
+        const icon = registry ? registry.getIcon(session.activity_type) : 'bx-run';
+        const name = session.activity_name || (registry ? registry.getName(session.activity_type) : session.activity_type) || 'Activity';
+        const date = formatRelativeDate(session.completed_at || session.started_at || session.created_at);
+        const duration = session.duration_minutes ? `${session.duration_minutes} min` : '';
+        const distance = session.distance ? `${session.distance} ${session.distance_unit || 'mi'}` : '';
+
+        return `
+            <div class="card recent-activity-card" onclick="viewSessionDetails('${session.id}')">
+                <div class="card-body py-3 px-3">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="bg-label-success rounded p-2">
+                                <i class="bx ${icon}"></i>
+                            </div>
+                            <span class="fw-medium">${escapeHtml(name)}</span>
+                        </div>
+                        <span class="badge bg-success">Complete</span>
+                    </div>
+                    <div class="d-flex gap-3 text-muted small mb-1">
+                        <span><i class="bx bx-calendar me-1"></i>${date}</span>
+                        ${duration ? `<span><i class="bx bx-time me-1"></i>${duration}</span>` : ''}
+                        ${distance ? `<span><i class="bx bx-map me-1"></i>${distance}</span>` : ''}
+                    </div>
                 </div>
             </div>
         `;

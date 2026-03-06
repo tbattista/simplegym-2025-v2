@@ -55,6 +55,9 @@ class DesktopCardRenderer {
                     <i class="bx bx-grid-vertical"></i>
                 </div>
                 ${columnsHtml}
+                <button class="row-edit-btn" type="button" data-action="row-edit" data-group-id="${groupId}" title="Edit">
+                    <i class="bx bx-pencil"></i>
+                </button>
                 <div class="dropdown">
                     <button class="row-menu-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                         <i class="bx bx-dots-vertical"></i>
