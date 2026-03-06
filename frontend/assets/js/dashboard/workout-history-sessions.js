@@ -540,7 +540,7 @@ function renderCardioHistoryEntry(session) {
   if (hrParts.length > 0) {
     detailRows.push(`<div><i class="bx bx-heart me-1"></i>${hrParts.join(' · ')} bpm</div>`);
   }
-  if (session.calories) detailRows.push(`<div><i class="bx bx-flame me-1"></i>${session.calories} kcal</div>`);
+  if (session.calories) detailRows.push(`<div><i class="bx bxs-flame me-1"></i>${session.calories} kcal</div>`);
   if (session.rpe) detailRows.push(`<div><i class="bx bx-bar-chart me-1"></i>RPE: ${session.rpe}/10</div>`);
   if (session.elevation_gain) detailRows.push(`<div><i class="bx bx-trending-up me-1"></i>${session.elevation_gain} ${session.elevation_unit || 'ft'} gain</div>`);
   if (session.activity_details && typeof session.activity_details === 'object') {

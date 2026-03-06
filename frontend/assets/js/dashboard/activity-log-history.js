@@ -1,11 +1,11 @@
 /**
  * Activity Log - Recent Sessions History
- * Loads, renders, and manages the recent cardio sessions list
- * @version 1.0.0
+ * Loads, renders, and manages recent sessions (cardio + workout)
+ * @version 2.0.0
  */
 
 /**
- * Load recent cardio sessions from the API
+ * Load all recent sessions (cardio + workout) from the API
  */
 async function loadRecentCardioSessions() {
     const loadingEl = document.getElementById('recentSessionsLoading');
@@ -18,14 +18,34 @@ async function loadRecentCardioSessions() {
 
     try {
         const token = await window.dataManager.getAuthToken();
-        const response = await fetch('/api/v3/cardio-sessions?page_size=50', {
-            headers: { 'Authorization': `Bearer ${token}` }
+
+        // Fetch cardio and workout sessions in parallel
+        const [cardioResponse, workoutResponse] = await Promise.all([
+            fetch('/api/v3/cardio-sessions?page_size=50', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            }),
+            fetch('/api/v3/workout-sessions?status=completed&page_size=50', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            }).catch(() => null)
+        ]);
+
+        if (!cardioResponse.ok) throw new Error('Failed to load sessions');
+
+        const cardioData = await cardioResponse.json();
+        const cardioSessions = (cardioData.sessions || []).map(s => ({ ...s, _sessionType: 'cardio' }));
+
+        let workoutSessions = [];
+        if (workoutResponse && workoutResponse.ok) {
+            const workoutData = await workoutResponse.json();
+            workoutSessions = (workoutData.sessions || []).map(s => ({ ...s, _sessionType: 'strength' }));
+        }
+
+        // Merge and sort by date descending
+        const sessions = [...cardioSessions, ...workoutSessions].sort((a, b) => {
+            const dateA = new Date(a.started_at || a.created_at);
+            const dateB = new Date(b.started_at || b.created_at);
+            return dateB - dateA;
         });
-
-        if (!response.ok) throw new Error('Failed to load sessions');
-
-        const data = await response.json();
-        const sessions = data.sessions || [];
 
         window.ffn.activityLog.sessions = sessions;
 
@@ -37,10 +57,10 @@ async function loadRecentCardioSessions() {
         }
 
         buildFilterChips(sessions);
-        renderCardioHistory(sessions);
+        renderSessionHistory(sessions);
 
     } catch (error) {
-        console.error('Failed to load cardio sessions:', error);
+        console.error('Failed to load sessions:', error);
         if (loadingEl) loadingEl.style.display = 'none';
         if (emptyEl) {
             emptyEl.style.display = 'block';
@@ -56,17 +76,30 @@ function buildFilterChips(sessions) {
     const container = document.getElementById('activityFilterChips');
     if (!container) return;
 
-    // Get unique activity types
-    const types = [...new Set(sessions.map(s => s.activity_type))];
+    // Get unique activity types from cardio sessions
+    const cardioTypes = [...new Set(sessions.filter(s => s._sessionType === 'cardio').map(s => s.activity_type))];
+    const hasStrength = sessions.some(s => s._sessionType === 'strength');
 
-    // Keep the "All" chip, add type-specific chips
+    // Build chips: All + Strength (if any) + cardio types
+    const chips = [];
+
+    if (hasStrength) {
+        chips.push(`<button type="button" class="btn btn-sm btn-outline-secondary activity-filter-chip" data-filter="strength">
+            <i class="bx bx-dumbbell me-1"></i>Strength
+        </button>`);
+    }
+
+    cardioTypes.forEach(type => {
+        const icon = window.ActivityTypeRegistry ? window.ActivityTypeRegistry.getIcon(type) : 'bx-dots-horizontal-rounded';
+        const name = window.ActivityTypeRegistry ? window.ActivityTypeRegistry.getName(type) : type;
+        chips.push(`<button type="button" class="btn btn-sm btn-outline-secondary activity-filter-chip" data-filter="${type}">
+            <i class="bx ${icon} me-1"></i>${name}
+        </button>`);
+    });
+
     container.innerHTML = `
         <button type="button" class="btn btn-sm btn-primary activity-filter-chip active" data-filter="all">All</button>
-        ${types.map(type => `
-            <button type="button" class="btn btn-sm btn-outline-secondary activity-filter-chip" data-filter="${type}">
-                <i class="bx ${window.ActivityTypeRegistry ? window.ActivityTypeRegistry.getIcon(type) : 'bx-dots-horizontal-rounded'} me-1"></i>${window.ActivityTypeRegistry ? window.ActivityTypeRegistry.getName(type) : type}
-            </button>
-        `).join('')}
+        ${chips.join('')}
     `;
 
     // Click handlers
@@ -85,15 +118,22 @@ function buildFilterChips(sessions) {
         // Filter
         const filter = chip.dataset.filter;
         const sessions = window.ffn.activityLog.sessions;
-        const filtered = filter === 'all' ? sessions : sessions.filter(s => s.activity_type === filter);
-        renderCardioHistory(filtered);
+        let filtered;
+        if (filter === 'all') {
+            filtered = sessions;
+        } else if (filter === 'strength') {
+            filtered = sessions.filter(s => s._sessionType === 'strength');
+        } else {
+            filtered = sessions.filter(s => s.activity_type === filter);
+        }
+        renderSessionHistory(filtered);
     });
 }
 
 /**
- * Render cardio sessions grouped by time period
+ * Render sessions grouped by time period
  */
-function renderCardioHistory(sessions) {
+function renderSessionHistory(sessions) {
     const container = document.getElementById('recentCardioSessions');
     if (!container) return;
 
@@ -112,7 +152,7 @@ function renderCardioHistory(sessions) {
             <div class="session-group">
                 <div class="time-period-header">${group.label}</div>
                 <div class="session-group-card">
-                    ${group.sessions.map(s => renderCardioSessionEntry(s)).join('')}
+                    ${group.sessions.map(s => s._sessionType === 'strength' ? renderWorkoutSessionEntry(s) : renderCardioSessionEntry(s)).join('')}
                 </div>
             </div>
         `;
@@ -132,7 +172,7 @@ function groupSessionsByTimePeriod(sessions) {
     const groupMap = {};
 
     sessions.forEach(session => {
-        const sessionDate = new Date(session.started_at);
+        const sessionDate = new Date(session.started_at || session.created_at);
         const label = getTimePeriodLabel(sessionDate, now);
 
         if (!groupMap[label]) {
@@ -204,7 +244,7 @@ function renderCardioSessionEntry(session) {
     if (hrParts.length > 0) {
         detailRows.push(`<div><i class="bx bx-heart me-1"></i>${hrParts.join(' · ')} bpm</div>`);
     }
-    if (session.calories) detailRows.push(`<div><i class="bx bx-flame me-1"></i>${session.calories} kcal</div>`);
+    if (session.calories) detailRows.push(`<div><i class="bx bxs-flame me-1"></i>${session.calories} kcal</div>`);
     if (session.rpe) detailRows.push(`<div><i class="bx bx-bar-chart me-1"></i>RPE: ${session.rpe}/10</div>`);
     if (session.elevation_gain) detailRows.push(`<div><i class="bx bx-trending-up me-1"></i>${session.elevation_gain} ${session.elevation_unit || 'ft'} gain</div>`);
     if (session.activity_details && typeof session.activity_details === 'object') {
@@ -257,6 +297,73 @@ function renderCardioSessionEntry(session) {
 }
 
 /**
+ * Render a single workout (strength) session entry
+ */
+function renderWorkoutSessionEntry(session) {
+    const date = formatSessionDate(session.started_at || session.completed_at || session.created_at);
+    const duration = formatDuration(session.duration_minutes);
+    const name = session.workout_name || 'Workout';
+    const exerciseCount = (session.exercises_performed || []).length;
+
+    // Build meta info
+    const metaParts = [duration];
+    if (exerciseCount > 0) {
+        metaParts.push(`${exerciseCount} exercise${exerciseCount !== 1 ? 's' : ''}`);
+    }
+
+    // Build details section
+    const detailRows = [];
+    const exercises = session.exercises_performed || [];
+    if (exercises.length > 0) {
+        exercises.forEach(ex => {
+            const sets = ex.sets_completed || ex.sets || [];
+            const setCount = sets.length;
+            let setInfo = `${setCount} set${setCount !== 1 ? 's' : ''}`;
+            detailRows.push(`<div><i class="bx bx-check-circle me-1"></i>${escapeHtml(ex.exercise_name)} - ${setInfo}</div>`);
+        });
+    }
+    if (session.notes) detailRows.push(`<div class="mt-2 fst-italic text-muted">"${escapeHtml(session.notes)}"</div>`);
+
+    const hasDetails = detailRows.length > 0;
+    const collapseId = `workout-details-${session.id}`;
+
+    return `
+        <div class="session-entry ${hasDetails ? '' : 'no-details'}" data-session-id="${session.id}"
+             ${hasDetails ? `role="button" data-bs-toggle="collapse" data-bs-target="#${collapseId}" aria-expanded="false"` : ''}>
+            <div class="session-status">
+                <span class="session-status-icon cardio-icon">
+                    <i class="bx bx-dumbbell"></i>
+                </span>
+            </div>
+            <div class="session-info">
+                <span class="session-workout-name">${escapeHtml(name)}</span>
+                <span class="session-date">${date}</span>
+                <span class="session-meta">
+                    ${metaParts.map(p => `<span>${p}</span>`).join('<span class="mx-1">·</span>')}
+                </span>
+            </div>
+            ${hasDetails ? `
+                <span class="session-chevron">
+                    <i class="bx bx-chevron-down"></i>
+                </span>
+            ` : ''}
+        </div>
+        ${hasDetails ? `
+            <div class="collapse session-details-collapse" id="${collapseId}">
+                <div class="session-details-wrapper p-3">
+                    ${detailRows.join('')}
+                    <div class="mt-2">
+                        <button class="btn btn-sm btn-outline-danger delete-workout-btn" data-session-id="${session.id}">
+                            <i class="bx bx-trash me-1"></i>Delete
+                        </button>
+                    </div>
+                </div>
+            </div>
+        ` : ''}
+    `;
+}
+
+/**
  * Format session date for display
  */
 function formatSessionDate(dateStr) {
@@ -291,7 +398,7 @@ function formatDuration(minutes) {
  * Set up click handlers for session expand/collapse and delete
  */
 function setupSessionInteractions() {
-    // Delete buttons
+    // Delete cardio session buttons
     document.querySelectorAll('.delete-cardio-btn').forEach(btn => {
         btn.addEventListener('click', async (e) => {
             e.stopPropagation();
@@ -310,12 +417,40 @@ function setupSessionInteractions() {
                 if (window.toastNotifications) {
                     window.toastNotifications.success('Session deleted');
                 }
-
-                // Reload
                 await loadRecentCardioSessions();
 
             } catch (error) {
                 console.error('Failed to delete cardio session:', error);
+                if (window.toastNotifications) {
+                    window.toastNotifications.error('Failed to delete session');
+                }
+            }
+        });
+    });
+
+    // Delete workout session buttons
+    document.querySelectorAll('.delete-workout-btn').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            const sessionId = btn.dataset.sessionId;
+            if (!confirm('Delete this workout session?')) return;
+
+            try {
+                const token = await window.dataManager.getAuthToken();
+                const response = await fetch(`/api/v3/workout-sessions/${sessionId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (!response.ok) throw new Error('Delete failed');
+
+                if (window.toastNotifications) {
+                    window.toastNotifications.success('Workout session deleted');
+                }
+                await loadRecentCardioSessions();
+
+            } catch (error) {
+                console.error('Failed to delete workout session:', error);
                 if (window.toastNotifications) {
                     window.toastNotifications.error('Failed to delete session');
                 }
