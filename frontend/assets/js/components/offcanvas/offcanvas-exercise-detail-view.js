@@ -3,11 +3,17 @@
  * Lightweight detail view that stacks on top of the exercise search offcanvas
  * Reuses window._buildExerciseDetailHTML from exercise-rendering.js
  *
+ * Uses manual Bootstrap initialization (not createOffcanvas) to support
+ * stacking on top of an already-open offcanvas without closing it.
+ *
  * @module offcanvas-exercise-detail-view
- * @version 1.0.0
+ * @version 1.1.0
  */
 
-import { createOffcanvas, escapeHtml } from './offcanvas-helpers.js';
+import { escapeHtml } from './offcanvas-helpers.js';
+
+const DETAIL_ID = 'exerciseDetailViewOffcanvas';
+const BACKDROP_ID = 'exerciseDetailViewBackdrop';
 
 /**
  * Show exercise detail view offcanvas (stacks above search offcanvas)
@@ -15,13 +21,16 @@ import { createOffcanvas, escapeHtml } from './offcanvas-helpers.js';
  * @param {Object} options - Configuration
  * @param {Function} options.onAdd - Callback when "Add to Workout" is clicked
  * @param {boolean} options.showAddButton - Whether to show the add button (default: true)
- * @returns {Object} Offcanvas instance
+ * @returns {Object} { offcanvas, offcanvasElement }
  */
 export function createExerciseDetailView(exercise, options = {}) {
     const {
         onAdd = null,
         showAddButton = true
     } = options;
+
+    // Clean up any existing detail view
+    _destroyDetailView();
 
     // Look up full exercise data from cache if we only have partial data
     const fullExercise = [...(window.ffn?.exercises?.all || []), ...(window.ffn?.exercises?.custom || [])]
@@ -33,10 +42,20 @@ export function createExerciseDetailView(exercise, options = {}) {
         ? window._buildExerciseDetailHTML(fullExercise)
         : '<p class="text-muted">Exercise details unavailable.</p>';
 
+    // Create a manual backdrop that sits above the existing offcanvas
+    const backdropEl = document.createElement('div');
+    backdropEl.id = BACKDROP_ID;
+    backdropEl.className = 'offcanvas-backdrop fade';
+    backdropEl.style.zIndex = '1055';
+    document.body.appendChild(backdropEl);
+    // Trigger reflow then add 'show'
+    void backdropEl.offsetHeight;
+    backdropEl.classList.add('show');
+
     const offcanvasHtml = `
         <div class="offcanvas offcanvas-bottom offcanvas-bottom-base offcanvas-bottom-tall offcanvas-desktop-side offcanvas-stacked"
-             tabindex="-1" id="exerciseDetailViewOffcanvas"
-             data-bs-scroll="false">
+             tabindex="-1" id="${DETAIL_ID}"
+             data-bs-scroll="false" data-bs-backdrop="false">
             <div class="offcanvas-header border-bottom">
                 <h5 class="offcanvas-title">
                     <i class="bx bx-info-circle me-2"></i>
@@ -66,53 +85,98 @@ export function createExerciseDetailView(exercise, options = {}) {
         </div>
     `;
 
-    return createOffcanvas('exerciseDetailViewOffcanvas', offcanvasHtml, (offcanvas, element) => {
-        // Wire pairing chip clicks to navigate within this offcanvas
-        if (window._wirePairingChipClicks) {
-            window._wirePairingChipClicks(element, (targetId) => {
-                // Close current and open new detail for the target exercise
-                offcanvas.hide();
-                const targetExercise = [...(window.ffn?.exercises?.all || []), ...(window.ffn?.exercises?.custom || [])]
-                    .find(e => e.id === targetId);
-                if (targetExercise) {
-                    setTimeout(() => {
-                        createExerciseDetailView(targetExercise, options);
-                    }, 300);
-                }
-            });
-        }
+    document.body.insertAdjacentHTML('beforeend', offcanvasHtml);
+    const element = document.getElementById(DETAIL_ID);
 
-        // Favorite button
-        const favBtn = element.querySelector('#detailViewFavBtn');
-        if (favBtn) {
-            favBtn.addEventListener('click', async () => {
-                if (window.toggleExerciseFavorite) {
-                    await window.toggleExerciseFavorite(fullExercise.id);
-                    // Update button state
-                    const nowFav = window.ffn?.exercises?.favorites?.has(fullExercise.id);
-                    favBtn.className = `btn btn-outline-${nowFav ? 'danger' : 'secondary'} flex-fill`;
-                    favBtn.innerHTML = `<i class="bx ${nowFav ? 'bxs-heart' : 'bx-heart'} me-1"></i>${nowFav ? 'Unfavorite' : 'Favorite'}`;
-                }
-            });
-        }
+    // Force layout reflow
+    void element.offsetHeight;
 
-        // Add to Workout button
-        const addBtn = element.querySelector('#detailViewAddBtn');
-        if (addBtn && onAdd) {
-            addBtn.addEventListener('click', async () => {
-                addBtn.disabled = true;
-                addBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
-                try {
-                    await onAdd(fullExercise);
-                    offcanvas.hide();
-                } catch (error) {
-                    console.error('Error adding exercise from detail view:', error);
-                    addBtn.disabled = false;
-                    addBtn.innerHTML = '<i class="bx bx-plus me-1"></i>Add to Workout';
-                }
-            });
-        }
+    // Initialize Bootstrap with backdrop disabled (we manage our own)
+    const bsOffcanvas = new window.bootstrap.Offcanvas(element, {
+        scroll: false,
+        backdrop: false
     });
+
+    // Clean up on hide
+    element.addEventListener('hidden.bs.offcanvas', () => {
+        _destroyDetailView();
+    });
+
+    // Dismiss when clicking our manual backdrop
+    backdropEl.addEventListener('click', () => {
+        bsOffcanvas.hide();
+    });
+
+    // Wire pairing chip clicks to navigate within this offcanvas
+    if (window._wirePairingChipClicks) {
+        window._wirePairingChipClicks(element, (targetId) => {
+            bsOffcanvas.hide();
+            const targetExercise = [...(window.ffn?.exercises?.all || []), ...(window.ffn?.exercises?.custom || [])]
+                .find(e => e.id === targetId);
+            if (targetExercise) {
+                setTimeout(() => {
+                    createExerciseDetailView(targetExercise, options);
+                }, 300);
+            }
+        });
+    }
+
+    // Favorite button
+    const favBtn = element.querySelector('#detailViewFavBtn');
+    if (favBtn) {
+        favBtn.addEventListener('click', async () => {
+            if (window.toggleExerciseFavorite) {
+                await window.toggleExerciseFavorite(fullExercise.id);
+                const nowFav = window.ffn?.exercises?.favorites?.has(fullExercise.id);
+                favBtn.className = `btn btn-outline-${nowFav ? 'danger' : 'secondary'} flex-fill`;
+                favBtn.innerHTML = `<i class="bx ${nowFav ? 'bxs-heart' : 'bx-heart'} me-1"></i>${nowFav ? 'Unfavorite' : 'Favorite'}`;
+            }
+        });
+    }
+
+    // Add to Workout button
+    const addBtn = element.querySelector('#detailViewAddBtn');
+    if (addBtn && onAdd) {
+        addBtn.addEventListener('click', async () => {
+            addBtn.disabled = true;
+            addBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+            try {
+                await onAdd(fullExercise);
+                bsOffcanvas.hide();
+            } catch (error) {
+                console.error('Error adding exercise from detail view:', error);
+                addBtn.disabled = false;
+                addBtn.innerHTML = '<i class="bx bx-plus me-1"></i>Add to Workout';
+            }
+        });
+    }
+
+    // Show with slight delay for DOM stability
+    requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+            if (element.isConnected) {
+                bsOffcanvas.show();
+            }
+        });
+    });
+
+    return { offcanvas: bsOffcanvas, offcanvasElement: element };
+}
+
+/**
+ * Clean up detail view DOM elements and Bootstrap instance
+ */
+function _destroyDetailView() {
+    const existing = document.getElementById(DETAIL_ID);
+    if (existing) {
+        try {
+            const bsInstance = window.bootstrap.Offcanvas.getInstance(existing);
+            if (bsInstance) bsInstance.dispose();
+        } catch (e) { /* ignore */ }
+        existing.remove();
+    }
+    const backdrop = document.getElementById(BACKDROP_ID);
+    if (backdrop) backdrop.remove();
 }
 
 console.log('offcanvas-exercise-detail-view loaded');
