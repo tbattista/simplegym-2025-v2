@@ -560,6 +560,19 @@ class DesktopCardRenderer {
             const groupId = actionEl.dataset.groupId;
 
             switch (action) {
+                case 'row-edit': {
+                    const row = actionEl.closest('.desktop-activity-row');
+                    const cardType = row?.dataset.cardType;
+                    if (cardType === 'note') {
+                        if (window.openNoteEditor) window.openNoteEditor(groupId);
+                        else if (window.handleEditTemplateNote) window.handleEditTemplateNote(groupId);
+                    } else if (cardType === 'cardio') {
+                        if (window.openCardioEditor) window.openCardioEditor(groupId);
+                    } else {
+                        if (window.openExerciseGroupEditor) window.openExerciseGroupEditor(groupId);
+                    }
+                    break;
+                }
                 case 'full-edit':
                     if (window.openExerciseGroupEditor) window.openExerciseGroupEditor(groupId);
                     break;
