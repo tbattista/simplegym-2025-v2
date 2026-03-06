@@ -2,12 +2,14 @@
  * Landing Page Animations & Interactions
  * - Scroll-triggered reveal animations (IntersectionObserver)
  * - Sticky nav background transition
- * - Standalone dark mode toggle
  * - Mobile menu toggle
  */
 
 (function () {
   'use strict';
+
+  // Force light mode on the landing page
+  document.documentElement.setAttribute('data-bs-theme', 'light');
 
   // --- Scroll Reveal ---
   const revealElements = document.querySelectorAll('[data-reveal]');
@@ -37,31 +39,6 @@
     };
     window.addEventListener('scroll', onScroll, { passive: true });
     onScroll();
-  }
-
-  // --- Dark Mode Toggle ---
-  const themeToggle = document.getElementById('themeToggle');
-  if (themeToggle) {
-    // Read saved preference or system default
-    const saved = localStorage.getItem('lp-theme');
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    const isDark = saved ? saved === 'dark' : prefersDark;
-    setTheme(isDark ? 'dark' : 'light');
-
-    themeToggle.addEventListener('click', () => {
-      const current = document.documentElement.getAttribute('data-bs-theme');
-      const next = current === 'dark' ? 'light' : 'dark';
-      setTheme(next);
-      localStorage.setItem('lp-theme', next);
-    });
-  }
-
-  function setTheme(theme) {
-    document.documentElement.setAttribute('data-bs-theme', theme);
-    const icon = document.getElementById('themeToggleIcon');
-    if (icon) {
-      icon.className = theme === 'dark' ? 'bx bx-sun' : 'bx bx-moon';
-    }
   }
 
   // --- Mobile Menu Toggle ---

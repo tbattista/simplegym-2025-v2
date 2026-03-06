@@ -5,26 +5,6 @@
  */
 
 /* ============================================
-   PAGE HEADER - Simplified
-   ============================================ */
-
-.feedback-header {
-    padding-top: 0.5rem;
-}
-
-.page-title {
-    font-size: 22px;
-    font-weight: 600;
-    color: var(--bs-heading-color);
-    margin: 0;
-}
-
-.page-subtitle {
-    font-size: 14px;
-    margin: 0;
-}
-
-/* ============================================
    HERO SUBMIT BUTTON - Primary Action
    ============================================ */
 
@@ -476,10 +456,6 @@
    ============================================ */
 
 @media (max-width: 575.98px) {
-    .page-title {
-        font-size: 20px;
-    }
-
     .submit-hero-btn {
         min-height: 52px;
         padding: 14px 20px;
@@ -557,11 +533,6 @@
         max-width: 300px;
     }
 
-    .feedback-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-    }
 }
 
 /* ============================================

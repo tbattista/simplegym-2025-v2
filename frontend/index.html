@@ -245,88 +245,152 @@
 
               <!-- Unauthenticated Landing Page -->
               <div id="unauthenticatedWelcome" style="display: none;">
-                
-                <!-- Hero Card -->
-                <div class="card landing-hero-card mb-4">
-                  <div class="card-body text-center py-5">
-                    <h1 class="mb-2">
-                      <i class="bx bx-dumbbell me-2"></i>
-                      Fitness Field Notes
-                    </h1>
-                    <p class="text-muted mb-0">Create and manage your workout programs</p>
+
+                <!-- Hero -->
+                <div class="text-center mb-4 pt-3">
+                  <span class="badge rounded-pill bg-label-primary landing-hero-badge mb-3 px-3 py-2">Your Digital Gym Notebook</span>
+                  <h1 class="fw-bold mb-2" style="font-size: 1.75rem;">Track Workouts Like You Would on Paper</h1>
+                  <p class="text-muted mb-4 px-2">A minimalist workout log for lifters who just want to write down what they did. Build programs, track sessions, and see your progress over time.</p>
+                  <div class="d-flex gap-2 justify-content-center flex-wrap">
+                    <button class="btn btn-primary btn-lg" onclick="showAuthModal('signup')">
+                      <i class="bx bx-play me-1"></i> Get Started Free
+                    </button>
+                    <a href="workout-builder.html" class="btn btn-outline-secondary btn-lg">Try It Out</a>
                   </div>
                 </div>
 
-                <!-- Feature Steps Section -->
-                <div class="row g-4 mb-4">
-                  
-                  <!-- Step 1: Start with a workout (Clickable) -->
-                  <div class="col-12">
-                    <a href="workout-builder.html" class="card landing-feature-card landing-feature-link">
-                      <div class="card-body">
-                        <div class="landing-feature-content">
-                          <div class="landing-feature-text">
-                            <h5 class="mb-1">Start with a workout</h5>
-                            <p class="text-muted small mb-0">Create your first workout template with exercises, sets, and reps</p>
-                          </div>
-                          <div class="landing-feature-icon">
-                            <i class="bx bx-dumbbell"></i>
-                          </div>
-                        </div>
+                <!-- Stats Bar -->
+                <div class="card mb-4">
+                  <div class="card-body py-3">
+                    <div class="row text-center g-0">
+                      <div class="col-4">
+                        <div class="fw-bold fs-5">1,600+</div>
+                        <small class="text-muted">Exercises</small>
                       </div>
-                    </a>
-                  </div>
-
-                  <!-- Step 2: Build into programs (Clickable) -->
-                  <div class="col-12">
-                    <a href="programs.html" class="card landing-feature-card landing-feature-link">
-                      <div class="card-body">
-                        <div class="landing-feature-content">
-                          <div class="landing-feature-text">
-                            <h5 class="mb-1">Build into programs</h5>
-                            <p class="text-muted small mb-0">Combine multiple workouts to create complete training programs</p>
-                          </div>
-                          <div class="landing-feature-icon">
-                            <i class="bx bx-folder"></i>
-                          </div>
-                        </div>
+                      <div class="col-4 border-start border-end">
+                        <div class="fw-bold fs-5">100%</div>
+                        <small class="text-muted">Free Forever</small>
                       </div>
-                    </a>
+                      <div class="col-4">
+                        <div class="fw-bold fs-5">No</div>
+                        <small class="text-muted">Account Needed</small>
+                      </div>
+                    </div>
                   </div>
+                </div>
 
-                  <!-- Step 3: Share with friends (Not clickable) -->
+                <!-- Feature Grid -->
+                <h5 class="text-center fw-bold mb-3">Everything you need to train smarter</h5>
+                <div class="row g-3 mb-4">
                   <div class="col-12">
-                    <div class="card landing-feature-card">
-                      <div class="card-body">
-                        <div class="landing-feature-content">
-                          <div class="landing-feature-text">
-                            <h5 class="mb-1">Share with friends</h5>
-                            <p class="text-muted small mb-0">Export and share your programs with training partners</p>
-                          </div>
-                          <div class="landing-feature-icon">
-                            <i class="bx bx-share-alt"></i>
+                    <div class="card landing-inline-feature">
+                      <div class="card-body py-3 px-3">
+                        <div class="d-flex align-items-center gap-3">
+                          <div class="landing-icon-badge landing-icon-badge-clay"><i class="bx bx-edit-alt"></i></div>
+                          <div>
+                            <h6 class="mb-1 fw-semibold">Workout Builder</h6>
+                            <p class="text-muted small mb-0">Create custom templates with exercises, sets, reps, and rest times.</p>
                           </div>
                         </div>
                       </div>
                     </div>
                   </div>
-
+                  <div class="col-12">
+                    <div class="card landing-inline-feature">
+                      <div class="card-body py-3 px-3">
+                        <div class="d-flex align-items-center gap-3">
+                          <div class="landing-icon-badge landing-icon-badge-sage"><i class="bx bx-timer"></i></div>
+                          <div>
+                            <h6 class="mb-1 fw-semibold">Live Session Tracking</h6>
+                            <p class="text-muted small mb-0">Track every rep with rest timers, weight progression, and auto-complete.</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-12">
+                    <div class="card landing-inline-feature">
+                      <div class="card-body py-3 px-3">
+                        <div class="d-flex align-items-center gap-3">
+                          <div class="landing-icon-badge landing-icon-badge-amber"><i class="bx bx-brain"></i></div>
+                          <div>
+                            <h6 class="mb-1 fw-semibold">AI-Powered Logging</h6>
+                            <p class="text-muted small mb-0">Snap a photo and AI turns it into a structured workout log.</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-12">
+                    <div class="card landing-inline-feature">
+                      <div class="card-body py-3 px-3">
+                        <div class="d-flex align-items-center gap-3">
+                          <div class="landing-icon-badge landing-icon-badge-slate"><i class="bx bx-search-alt"></i></div>
+                          <div>
+                            <h6 class="mb-1 fw-semibold">Exercise Database</h6>
+                            <p class="text-muted small mb-0">Browse 1,600+ exercises by muscle group, equipment, and difficulty.</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-12">
+                    <div class="card landing-inline-feature">
+                      <div class="card-body py-3 px-3">
+                        <div class="d-flex align-items-center gap-3">
+                          <div class="landing-icon-badge landing-icon-badge-clay"><i class="bx bx-folder"></i></div>
+                          <div>
+                            <h6 class="mb-1 fw-semibold">Programs</h6>
+                            <p class="text-muted small mb-0">Organize workouts into structured training programs.</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-12">
+                    <div class="card landing-inline-feature">
+                      <div class="card-body py-3 px-3">
+                        <div class="d-flex align-items-center gap-3">
+                          <div class="landing-icon-badge landing-icon-badge-sage"><i class="bx bx-share-alt"></i></div>
+                          <div>
+                            <h6 class="mb-1 fw-semibold">Export & Share</h6>
+                            <p class="text-muted small mb-0">Share as PDF, printable logs, social images, or plain text.</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
-                <!-- CTA Card -->
+                <!-- How It Works -->
+                <h5 class="text-center fw-bold mb-3">Start logging in 3 steps</h5>
+                <div class="row g-3 mb-4">
+                  <div class="col-4 text-center">
+                    <div class="landing-step-number mx-auto"><i class="bx bx-dumbbell"></i></div>
+                    <h6 class="fw-semibold mb-1 small">Create a workout</h6>
+                  </div>
+                  <div class="col-4 text-center">
+                    <div class="landing-step-number mx-auto"><i class="bx bx-play-circle"></i></div>
+                    <h6 class="fw-semibold mb-1 small">Hit the gym</h6>
+                  </div>
+                  <div class="col-4 text-center">
+                    <div class="landing-step-number mx-auto"><i class="bx bx-line-chart"></i></div>
+                    <h6 class="fw-semibold mb-1 small">Track progress</h6>
+                  </div>
+                </div>
+
+                <!-- Final CTA -->
                 <div class="card landing-cta-card">
                   <div class="card-body text-center py-4">
-                    <h5 class="mb-3">Ready to start?</h5>
-                    <p class="text-muted mb-4">Sign in to save your workouts and access them anywhere</p>
-                    <button class="btn btn-primary" onclick="showAuthModal('signin')">
-                      <i class="bx bx-log-in me-2"></i>Sign In
+                    <h5 class="fw-bold mb-2">Start tracking your workouts today</h5>
+                    <p class="text-muted mb-3">Free forever. No credit card required.</p>
+                    <button class="btn btn-primary btn-lg" onclick="showAuthModal('signup')">
+                      <i class="bx bx-play me-1"></i> Get Started Free
                     </button>
                     <div class="mt-3">
                       <small class="text-muted">
-                        Don't have an account?
-                        <a href="#" onclick="showAuthModal('signup'); return false;" class="text-decoration-none">
-                          <strong>Sign up free</strong>
-                        </a>
+                        Already have an account?
+                        <a href="#" onclick="showAuthModal('signin'); return false;" class="text-decoration-none fw-semibold">Sign in</a>
                       </small>
                     </div>
                   </div>
@@ -492,70 +556,138 @@
                 <!-- Desktop Unauthenticated Landing -->
                 <div id="desktopUnauthWelcome" style="display: none;">
 
-                  <!-- Wider Hero -->
-                  <div class="card landing-hero-card desktop-hero mb-4">
-                    <div class="card-body text-center py-5">
-                      <h1 class="mb-2">
-                        <i class="bx bx-dumbbell me-2"></i>
-                        Fitness Field Notes
-                      </h1>
-                      <p class="text-muted mb-0 fs-5">Create and manage your workout programs</p>
+                  <!-- Hero -->
+                  <div class="text-center mb-5 pt-4" style="max-width: 700px; margin-left: auto; margin-right: auto;">
+                    <span class="badge rounded-pill bg-label-primary landing-hero-badge mb-3 px-3 py-2">Your Digital Gym Notebook</span>
+                    <h1 class="fw-bold mb-3" style="font-size: 2.5rem;">Track Workouts Like You Would on Paper</h1>
+                    <p class="text-muted mb-4 fs-5">A minimalist workout log for lifters who just want to write down what they did. Build programs, track sessions, and see your progress over time.</p>
+                    <div class="d-flex gap-2 justify-content-center">
+                      <button class="btn btn-primary btn-lg" onclick="showAuthModal('signup')">
+                        <i class="bx bx-play me-1"></i> Get Started Free
+                      </button>
+                      <a href="workout-builder.html" class="btn btn-outline-secondary btn-lg">Try It Out</a>
                     </div>
                   </div>
 
-                  <!-- 3-Column Feature Cards -->
-                  <div class="row g-4 mb-4">
-                    <div class="col-lg-4">
-                      <a href="workout-builder.html" class="card landing-feature-card landing-feature-link h-100">
-                        <div class="card-body text-center py-4">
-                          <div class="landing-feature-icon mx-auto mb-3">
-                            <i class="bx bx-dumbbell"></i>
-                          </div>
-                          <h5 class="mb-1">Start with a workout</h5>
-                          <p class="text-muted small mb-0">Create your first workout template with exercises, sets, and reps</p>
+                  <!-- Stats Bar -->
+                  <div class="card mb-5">
+                    <div class="card-body py-3">
+                      <div class="row text-center g-0">
+                        <div class="col-4">
+                          <div class="fw-bold fs-4">1,600+</div>
+                          <small class="text-muted">Exercises</small>
                         </div>
-                      </a>
-                    </div>
-                    <div class="col-lg-4">
-                      <a href="programs.html" class="card landing-feature-card landing-feature-link h-100">
-                        <div class="card-body text-center py-4">
-                          <div class="landing-feature-icon mx-auto mb-3">
-                            <i class="bx bx-folder"></i>
-                          </div>
-                          <h5 class="mb-1">Build into programs</h5>
-                          <p class="text-muted small mb-0">Combine multiple workouts to create complete training programs</p>
+                        <div class="col-4 border-start border-end">
+                          <div class="fw-bold fs-4">100%</div>
+                          <small class="text-muted">Free Forever</small>
                         </div>
-                      </a>
-                    </div>
-                    <div class="col-lg-4">
-                      <div class="card landing-feature-card h-100">
-                        <div class="card-body text-center py-4">
-                          <div class="landing-feature-icon mx-auto mb-3">
-                            <i class="bx bx-share-alt"></i>
-                          </div>
-                          <h5 class="mb-1">Share with friends</h5>
-                          <p class="text-muted small mb-0">Export and share your programs with training partners</p>
+                        <div class="col-4">
+                          <div class="fw-bold fs-4">No</div>
+                          <small class="text-muted">Account Needed</small>
                         </div>
                       </div>
                     </div>
                   </div>
 
-                  <!-- CTA Section (centered) -->
-                  <div class="row justify-content-center">
+                  <!-- Feature Grid -->
+                  <div class="text-center mb-3">
+                    <h3 class="fw-bold mb-1">Everything you need to train smarter</h3>
+                    <p class="text-muted">Simple tools that stay out of your way so you can focus on what matters.</p>
+                  </div>
+                  <div class="row g-4 mb-5">
+                    <div class="col-lg-4">
+                      <div class="card landing-inline-feature h-100">
+                        <div class="card-body py-4 text-center">
+                          <div class="landing-icon-badge landing-icon-badge-clay mx-auto mb-3"><i class="bx bx-edit-alt"></i></div>
+                          <h6 class="fw-semibold mb-1">Workout Builder</h6>
+                          <p class="text-muted small mb-0">Create custom templates with exercises, sets, reps, and rest times.</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-lg-4">
+                      <div class="card landing-inline-feature h-100">
+                        <div class="card-body py-4 text-center">
+                          <div class="landing-icon-badge landing-icon-badge-sage mx-auto mb-3"><i class="bx bx-timer"></i></div>
+                          <h6 class="fw-semibold mb-1">Live Session Tracking</h6>
+                          <p class="text-muted small mb-0">Track every rep with rest timers, weight progression, and auto-complete.</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-lg-4">
+                      <div class="card landing-inline-feature h-100">
+                        <div class="card-body py-4 text-center">
+                          <div class="landing-icon-badge landing-icon-badge-amber mx-auto mb-3"><i class="bx bx-brain"></i></div>
+                          <h6 class="fw-semibold mb-1">AI-Powered Logging</h6>
+                          <p class="text-muted small mb-0">Snap a photo and AI turns it into a structured workout log.</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-lg-4">
+                      <div class="card landing-inline-feature h-100">
+                        <div class="card-body py-4 text-center">
+                          <div class="landing-icon-badge landing-icon-badge-slate mx-auto mb-3"><i class="bx bx-search-alt"></i></div>
+                          <h6 class="fw-semibold mb-1">Exercise Database</h6>
+                          <p class="text-muted small mb-0">Browse 1,600+ exercises by muscle group, equipment, and difficulty.</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-lg-4">
+                      <div class="card landing-inline-feature h-100">
+                        <div class="card-body py-4 text-center">
+                          <div class="landing-icon-badge landing-icon-badge-clay mx-auto mb-3"><i class="bx bx-folder"></i></div>
+                          <h6 class="fw-semibold mb-1">Programs</h6>
+                          <p class="text-muted small mb-0">Organize workouts into structured training programs.</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-lg-4">
+                      <div class="card landing-inline-feature h-100">
+                        <div class="card-body py-4 text-center">
+                          <div class="landing-icon-badge landing-icon-badge-sage mx-auto mb-3"><i class="bx bx-share-alt"></i></div>
+                          <h6 class="fw-semibold mb-1">Export & Share</h6>
+                          <p class="text-muted small mb-0">Share as PDF, printable logs, social images, or plain text.</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- How It Works -->
+                  <div class="text-center mb-3">
+                    <h3 class="fw-bold mb-1">Start logging in 3 steps</h3>
+                    <p class="text-muted">No setup required. Open the app and start training.</p>
+                  </div>
+                  <div class="row g-4 mb-5">
+                    <div class="col-lg-4 text-center landing-step-connector">
+                      <div class="landing-step-number mx-auto"><i class="bx bx-dumbbell"></i></div>
+                      <h6 class="fw-semibold mb-1">Create a workout</h6>
+                      <p class="text-muted small mb-0">Build a template with exercises, sets, and reps.</p>
+                    </div>
+                    <div class="col-lg-4 text-center landing-step-connector">
+                      <div class="landing-step-number mx-auto"><i class="bx bx-play-circle"></i></div>
+                      <h6 class="fw-semibold mb-1">Hit the gym</h6>
+                      <p class="text-muted small mb-0">Start a session and log weights and reps in real time.</p>
+                    </div>
+                    <div class="col-lg-4 text-center">
+                      <div class="landing-step-number mx-auto"><i class="bx bx-line-chart"></i></div>
+                      <h6 class="fw-semibold mb-1">Track your progress</h6>
+                      <p class="text-muted small mb-0">Review history, see streaks, and share with friends.</p>
+                    </div>
+                  </div>
+
+                  <!-- Final CTA -->
+                  <div class="row justify-content-center mb-4">
                     <div class="col-lg-6">
                       <div class="card landing-cta-card">
-                        <div class="card-body text-center py-4">
-                          <h5 class="mb-3">Ready to start?</h5>
-                          <p class="text-muted mb-4">Sign in to save your workouts and access them anywhere</p>
-                          <button class="btn btn-primary btn-lg" onclick="showAuthModal('signin')">
-                            <i class="bx bx-log-in me-2"></i>Sign In
+                        <div class="card-body text-center py-5">
+                          <h4 class="fw-bold mb-2">Start tracking your workouts today</h4>
+                          <p class="text-muted mb-4">Free forever. No credit card required.</p>
+                          <button class="btn btn-primary btn-lg" onclick="showAuthModal('signup')">
+                            <i class="bx bx-play me-1"></i> Get Started Free
                           </button>
                           <div class="mt-3">
                             <small class="text-muted">
-                              Don't have an account?
-                              <a href="#" onclick="showAuthModal('signup'); return false;" class="text-decoration-none">
-                                <strong>Sign up free</strong>
-                              </a>
+                              Already have an account?
+                              <a href="#" onclick="showAuthModal('signin'); return false;" class="text-decoration-none fw-semibold">Sign in</a>
                             </small>
                           </div>
                         </div>
