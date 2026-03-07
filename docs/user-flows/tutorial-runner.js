@@ -270,6 +270,110 @@ const TUTORIALS = {
     ]
   },
 
+  'build-workout-3ex': {
+    title: 'Build a Workout with 3 Exercises',
+    startUrl: '/workout-builder.html?new=true',
+    steps: [
+      {
+        action: 'wait',
+        target: { mobile: '#workoutEditorForm', desktop: '#desktopEditorForm' },
+        waitTime: 1500,
+        caption: 'Start a new workout'
+      },
+      {
+        action: 'type',
+        target: { mobile: '#workoutName', desktop: '#desktopWorkoutName' },
+        value: 'Upper Body',
+        caption: 'Name your workout'
+      },
+      {
+        action: 'type',
+        target: { mobile: '#mobileDescInline', desktop: '#desktopDescInline' },
+        value: 'Stretch before starting',
+        caption: 'Add a note to stretch'
+      },
+      {
+        action: 'click',
+        target: { mobile: '#addExerciseGroupBtnVisible', desktop: '#desktopAddGroupBtn' },
+        waitAfter: '#exerciseGroupEditorOffcanvas.show',
+        caption: 'Add your first exercise'
+      },
+      {
+        action: 'type',
+        target: '#primaryExerciseInput',
+        value: 'Bench Press',
+        caption: 'Search for Bench Press'
+      },
+      {
+        action: 'type',
+        target: '#editorProtocol',
+        value: '3x10',
+        caption: 'Set the protocol'
+      },
+      {
+        action: 'click',
+        target: '#saveExerciseGroupEditorBtn',
+        waitTime: 1000,
+        caption: 'First exercise added!'
+      },
+      {
+        action: 'click',
+        target: { mobile: '#addExerciseGroupBtnVisible', desktop: '#desktopAddGroupBtn' },
+        waitAfter: '#exerciseGroupEditorOffcanvas.show',
+        caption: 'Add a second exercise'
+      },
+      {
+        action: 'type',
+        target: '#primaryExerciseInput',
+        value: 'Overhead Press',
+        caption: 'Search for Overhead Press'
+      },
+      {
+        action: 'type',
+        target: '#editorProtocol',
+        value: '3x8',
+        caption: 'Set the protocol'
+      },
+      {
+        action: 'click',
+        target: '#saveExerciseGroupEditorBtn',
+        waitTime: 1000,
+        caption: 'Second exercise added!'
+      },
+      {
+        action: 'click',
+        target: { mobile: '#addExerciseGroupBtnVisible', desktop: '#desktopAddGroupBtn' },
+        waitAfter: '#exerciseGroupEditorOffcanvas.show',
+        caption: 'Add a third exercise'
+      },
+      {
+        action: 'type',
+        target: '#primaryExerciseInput',
+        value: 'Lateral Raise',
+        caption: 'Search for Lateral Raise'
+      },
+      {
+        action: 'type',
+        target: '#editorProtocol',
+        value: '3x15',
+        caption: 'Set the protocol'
+      },
+      {
+        action: 'click',
+        target: '#saveExerciseGroupEditorBtn',
+        waitTime: 1000,
+        caption: 'Third exercise added!'
+      },
+      {
+        action: 'click',
+        target: { mobile: '#mobileSaveFab', desktop: '#desktopSaveBtn' },
+        waitAfter: '.toast-success, .alert-success, .save-confirmation',
+        waitTime: 1500,
+        caption: 'Workout saved!'
+      }
+    ]
+  },
+
   'exercise-cart': {
     title: 'Build a Workout with the Exercise Cart',
     startUrl: '/exercise-database.html',

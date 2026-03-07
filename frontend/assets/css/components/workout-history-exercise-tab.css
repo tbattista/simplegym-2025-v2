@@ -33,7 +33,7 @@
   pointer-events: none;
 }
 
-.exercise-tab-search {
+.exercise-tab-search-wrapper .exercise-tab-search {
   padding-left: 2rem;
   font-size: 0.8125rem;
   height: calc(1.5em + 0.5rem + 2px);

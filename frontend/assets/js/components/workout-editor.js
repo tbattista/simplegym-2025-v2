@@ -182,7 +182,7 @@ async function createNewWorkoutInEditor() {
                 default_weight_unit: 'lbs'
             }))
             : [{
-                exercises: { a: 'Exercise Name' },
+                exercises: { a: '' },
                 sets: '3',
                 reps: '8-12',
                 rest: '60s',

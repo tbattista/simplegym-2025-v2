@@ -239,11 +239,9 @@ export function createExerciseSearchOffcanvas(config = {}, onSelectExercise) {
                 emptyState.style.display = 'none';
             } else if (event === 'loadingEnd') {
                 loadingState.style.display = 'none';
-            } else if (event === 'filtered' || event === 'paginated') {
+            } else if (event === 'paginated') {
                 renderExerciseList();
-                if (event === 'paginated') {
-                    renderPagination(data);
-                }
+                renderPagination(data);
             }
         });
 

@@ -268,6 +268,10 @@ export function showExerciseSearchInEditor(config, onSelectExercise) {
     };
 
     // Search core events
+    // Only render on 'paginated' — filterExercises() always calls applyPagination()
+    // which fires 'paginated' with freshly-set paginatedExercises. Rendering on
+    // both 'filtered' AND 'paginated' caused a double-render race where the second
+    // call could see stale/empty paginatedExercises and show the empty state.
     searchCore.addListener((event, data) => {
         if (event === 'loadingStart') {
             loadingState.style.display = 'block';
@@ -275,9 +279,9 @@ export function showExerciseSearchInEditor(config, onSelectExercise) {
             emptyState.style.display = 'none';
         } else if (event === 'loadingEnd') {
             loadingState.style.display = 'none';
-        } else if (event === 'filtered' || event === 'paginated') {
+        } else if (event === 'paginated') {
             renderExerciseList();
-            if (event === 'paginated') renderPagination(data);
+            renderPagination(data);
         }
     });
 
@@ -285,6 +289,12 @@ export function showExerciseSearchInEditor(config, onSelectExercise) {
     searchCore.loadExercises().then(() => {
         if (initialQuery) {
             searchCore.setSearchQuery(initialQuery);
+            // If the initial query produces no results, clear it to show all exercises
+            if (searchCore.state.filteredExercises.length === 0) {
+                searchInput.value = '';
+                if (clearBtn) clearBtn.style.display = 'none';
+                searchCore.setSearchQuery('');
+            }
         }
     });
 
