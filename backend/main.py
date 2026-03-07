@@ -16,7 +16,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Import routers
-from .api import health, documents, workouts, programs, exercises, favorites, auth, data, migration, workout_sessions, sharing, user_profile, export, cardio_sessions, import_routes, universal_log_routes
+from .api import health, documents, workouts, programs, exercises, favorites, personal_records, auth, data, migration, workout_sessions, sharing, user_profile, export, cardio_sessions, import_routes, universal_log_routes
 from .services.sharing_service import sharing_service
 import re
 import html
@@ -51,6 +51,7 @@ app.include_router(programs.router)
 app.include_router(programs.firebase_router)  # Firebase-specific program endpoints
 app.include_router(exercises.router)
 app.include_router(favorites.router)
+app.include_router(personal_records.router)  # Personal records (PR) management
 app.include_router(auth.router)
 app.include_router(data.router)
 app.include_router(migration.router)

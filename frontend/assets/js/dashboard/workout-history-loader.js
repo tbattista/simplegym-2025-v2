@@ -310,6 +310,52 @@ async function fetchExerciseHistory(workoutId) {
 }
 
 /* ============================================
+   PERSONAL RECORDS LOADING
+   ============================================ */
+
+/**
+ * Fetch personal records from API and populate state indexes
+ */
+async function fetchPersonalRecords() {
+  try {
+    if (!window.dataManager) return;
+
+    const token = await window.dataManager.getAuthToken();
+    const response = await fetch('/api/v3/users/me/personal-records', {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+
+    if (!response.ok) {
+      console.warn('Failed to fetch personal records:', response.status);
+      return;
+    }
+
+    const data = await response.json();
+    const state = window.ffn.workoutHistory;
+
+    // Clear and rebuild indexes
+    state.personalRecords.clear();
+    state.prExerciseNames.clear();
+    state.prSessionIndex.clear();
+
+    (data.records || []).forEach(pr => {
+      state.personalRecords.set(pr.id, pr);
+      state.prExerciseNames.add(pr.exercise_name.toLowerCase());
+
+      // Build session index
+      if (!state.prSessionIndex.has(pr.session_id)) {
+        state.prSessionIndex.set(pr.session_id, new Set());
+      }
+      state.prSessionIndex.get(pr.session_id).add(pr.exercise_name.toLowerCase());
+    });
+
+    console.log(`📊 Loaded ${state.personalRecords.size} personal records`);
+  } catch (error) {
+    console.warn('Could not load personal records:', error.message);
+  }
+}
+
+/* ============================================
    HELPER FUNCTIONS
    ============================================ */
 

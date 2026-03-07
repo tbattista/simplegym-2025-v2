@@ -9,6 +9,7 @@ from ..services.data_service import DataService
 from ..services.firestore_data_service import firestore_data_service
 from ..services.exercise_service import exercise_service
 from ..services.favorites_service import favorites_service
+from ..services.personal_records_service import personal_records_service
 from ..services.firebase_service import firebase_service
 from ..services.auth_service import auth_service
 from ..services.v2.document_service_v2 import DocumentServiceV2
@@ -50,6 +51,16 @@ def get_favorites_service():
             detail="Favorites service not available - Firebase not initialized"
         )
     return favorites_service
+
+
+def get_personal_records_service():
+    """Get personal records service instance"""
+    if not personal_records_service.is_available():
+        raise HTTPException(
+            status_code=503,
+            detail="Personal records service not available - Firebase not initialized"
+        )
+    return personal_records_service
 
 
 # Firebase Dual-Mode Helper

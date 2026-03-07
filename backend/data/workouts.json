@@ -253,6 +253,1734 @@
       "modified_date": "2026-02-22 00:08:16.802376",
       "is_favorite": false,
       "favorited_at": null
+    },
+    {
+      "id": "workout-dd90e389",
+      "name": "Fetch Test Workout",
+      "description": "",
+      "exercise_groups": [],
+      "sections": null,
+      "template_notes": [],
+      "is_template": true,
+      "tags": [],
+      "created_date": "2026-03-07 13:57:39.454167",
+      "modified_date": "2026-03-07 13:57:39.454169",
+      "is_favorite": false,
+      "favorited_at": null,
+      "is_archived": false,
+      "archived_at": null
+    },
+    {
+      "id": "workout-c9f2cd96",
+      "name": "Delete Test Workout",
+      "description": "",
+      "exercise_groups": [],
+      "sections": null,
+      "template_notes": [],
+      "is_template": true,
+      "tags": [],
+      "created_date": "2026-03-07 13:57:40.907796",
+      "modified_date": "2026-03-07T13:57:40.938013",
+      "is_favorite": false,
+      "favorited_at": null,
+      "is_archived": true,
+      "archived_at": "2026-03-07T13:57:40.938004"
+    },
+    {
+      "id": "workout-15b98f4d",
+      "name": "API Test Workout",
+      "description": "Created by Playwright test",
+      "exercise_groups": [
+        {
+          "group_id": "api-test-group",
+          "exercises": {
+            "a": "Test Exercise"
+          },
+          "sets": "3",
+          "reps": "10",
+          "rest": "60s",
+          "default_weight": null,
+          "default_weight_unit": "lbs",
+          "group_type": "standard",
+          "group_name": null,
+          "cardio_config": null,
+          "interval_config": null,
+          "block_id": null
+        }
+      ],
+      "sections": [
+        {
+          "section_id": "section-api-test-group",
+          "type": "standard",
+          "name": null,
+          "description": null,
+          "config": null,
+          "exercises": [
+            {
+              "exercise_id": "api-test-group",
+              "name": "Test Exercise",
+              "alternates": [],
+              "sets": "3",
+              "reps": "10",
+              "rest": "60s",
+              "default_weight": null,
+              "default_weight_unit": "lbs",
+              "group_type": "standard",
+              "cardio_config": null,
+              "interval_config": null
+            }
+          ]
+        }
+      ],
+      "template_notes": [],
+      "is_template": true,
+      "tags": [
+        "api-test"
+      ],
+      "created_date": "2026-03-07 13:57:40.910014",
+      "modified_date": "2026-03-07 13:57:40.910015",
+      "is_favorite": false,
+      "favorited_at": null,
+      "is_archived": false,
+      "archived_at": null
+    },
+    {
+      "id": "workout-de740de1",
+      "name": "Updated Workout Name",
+      "description": "",
+      "exercise_groups": [],
+      "sections": null,
+      "template_notes": [],
+      "is_template": true,
+      "tags": [
+        "updated"
+      ],
+      "created_date": "2026-03-07 13:57:40.921041",
+      "modified_date": "2026-03-07 13:57:40.951253",
+      "is_favorite": false,
+      "favorited_at": null,
+      "is_archived": false,
+      "archived_at": null
+    },
+    {
+      "id": "workout-6c378402",
+      "name": "API Test Workout",
+      "description": "Created by Playwright test",
+      "exercise_groups": [
+        {
+          "group_id": "api-test-group",
+          "exercises": {
+            "a": "Test Exercise"
+          },
+          "sets": "3",
+          "reps": "10",
+          "rest": "60s",
+          "default_weight": null,
+          "default_weight_unit": "lbs",
+          "group_type": "standard",
+          "group_name": null,
+          "cardio_config": null,
+          "interval_config": null,
+          "block_id": null
+        }
+      ],
+      "sections": [
+        {
+          "section_id": "section-api-test-group",
+          "type": "standard",
+          "name": null,
+          "description": null,
+          "config": null,
+          "exercises": [
+            {
+              "exercise_id": "api-test-group",
+              "name": "Test Exercise",
+              "alternates": [],
+              "sets": "3",
+              "reps": "10",
+              "rest": "60s",
+              "default_weight": null,
+              "default_weight_unit": "lbs",
+              "group_type": "standard",
+              "cardio_config": null,
+              "interval_config": null
+            }
+          ]
+        }
+      ],
+      "template_notes": [],
+      "is_template": true,
+      "tags": [
+        "api-test"
+      ],
+      "created_date": "2026-03-07 14:01:58.434766",
+      "modified_date": "2026-03-07 14:01:58.434769",
+      "is_favorite": false,
+      "favorited_at": null,
+      "is_archived": false,
+      "archived_at": null
+    },
+    {
+      "id": "workout-e95974ba",
+      "name": "Delete Test Workout",
+      "description": "",
+      "exercise_groups": [],
+      "sections": null,
+      "template_notes": [],
+      "is_template": true,
+      "tags": [],
+      "created_date": "2026-03-07 14:01:58.448458",
+      "modified_date": "2026-03-07T14:01:59.469758",
+      "is_favorite": false,
+      "favorited_at": null,
+      "is_archived": true,
+      "archived_at": "2026-03-07T14:01:59.469748"
+    },
+    {
+      "id": "workout-99bf626f",
+      "name": "Updated Workout Name",
+      "description": "",
+      "exercise_groups": [],
+      "sections": null,
+      "template_notes": [],
+      "is_template": true,
+      "tags": [
+        "updated"
+      ],
+      "created_date": "2026-03-07 14:01:58.458330",
+      "modified_date": "2026-03-07 14:01:59.493159",
+      "is_favorite": false,
+      "favorited_at": null,
+      "is_archived": false,
+      "archived_at": null
+    },
+    {
+      "id": "workout-5609bbe9",
+      "name": "Fetch Test Workout",
+      "description": "",
+      "exercise_groups": [],
+      "sections": null,
+      "template_notes": [],
+      "is_template": true,
+      "tags": [],
+      "created_date": "2026-03-07 14:01:59.472567",
+      "modified_date": "2026-03-07 14:01:59.472569",
+      "is_favorite": false,
+      "favorited_at": null,
+      "is_archived": false,
+      "archived_at": null
+    },
+    {
+      "id": "workout-e4ab96fc",
+      "name": "Delete Test Workout",
+      "description": "",
+      "exercise_groups": [],
+      "sections": null,
+      "template_notes": [],
+      "is_template": true,
+      "tags": [],
+      "created_date": "2026-03-07 14:08:15.755917",
+      "modified_date": "2026-03-07T14:08:15.771198",
+      "is_favorite": false,
+      "favorited_at": null,
+      "is_archived": true,
+      "archived_at": "2026-03-07T14:08:15.771190"
+    },
+    {
+      "id": "workout-1c81d9cd",
+      "name": "API Test Workout",
+      "description": "Created by Playwright test",
+      "exercise_groups": [
+        {
+          "group_id": "api-test-group",
+          "exercises": {
+            "a": "Test Exercise"
+          },
+          "sets": "3",
+          "reps": "10",
+          "rest": "60s",
+          "default_weight": null,
+          "default_weight_unit": "lbs",
+          "group_type": "standard",
+          "group_name": null,
+          "cardio_config": null,
+          "interval_config": null,
+          "block_id": null
+        }
+      ],
+      "sections": [
+        {
+          "section_id": "section-api-test-group",
+          "type": "standard",
+          "name": null,
+          "description": null,
+          "config": null,
+          "exercises": [
+            {
+              "exercise_id": "api-test-group",
+              "name": "Test Exercise",
+              "alternates": [],
+              "sets": "3",
+              "reps": "10",
+              "rest": "60s",
+              "default_weight": null,
+              "default_weight_unit": "lbs",
+              "group_type": "standard",
+              "cardio_config": null,
+              "interval_config": null
+            }
+          ]
+        }
+      ],
+      "template_notes": [],
+      "is_template": true,
+      "tags": [
+        "api-test"
+      ],
+      "created_date": "2026-03-07 14:08:16.694272",
+      "modified_date": "2026-03-07 14:08:16.694274",
+      "is_favorite": false,
+      "favorited_at": null,
+      "is_archived": false,
+      "archived_at": null
+    },
+    {
+      "id": "workout-2abc9be2",
+      "name": "Updated Workout Name",
+      "description": "",
+      "exercise_groups": [],
+      "sections": null,
+      "template_notes": [],
+      "is_template": true,
+      "tags": [
+        "updated"
+      ],
+      "created_date": "2026-03-07 14:08:16.713108",
+      "modified_date": "2026-03-07 14:08:16.736245",
+      "is_favorite": false,
+      "favorited_at": null,
+      "is_archived": false,
+      "archived_at": null
+    },
+    {
+      "id": "workout-703456de",
+      "name": "Fetch Test Workout",
+      "description": "",
+      "exercise_groups": [],
+      "sections": null,
+      "template_notes": [],
+      "is_template": true,
+      "tags": [],
+      "created_date": "2026-03-07 14:08:16.715547",
+      "modified_date": "2026-03-07 14:08:16.715549",
+      "is_favorite": false,
+      "favorited_at": null,
+      "is_archived": false,
+      "archived_at": null
+    },
+    {
+      "id": "workout-2c8d0155",
+      "name": "Delete Test Workout",
+      "description": "",
+      "exercise_groups": [],
+      "sections": null,
+      "template_notes": [],
+      "is_template": true,
+      "tags": [],
+      "created_date": "2026-03-07 14:11:26.171539",
+      "modified_date": "2026-03-07T14:11:26.209496",
+      "is_favorite": false,
+      "favorited_at": null,
+      "is_archived": true,
+      "archived_at": "2026-03-07T14:11:26.209488"
+    },
+    {
+      "id": "workout-13b5c455",
+      "name": "Fetch Test Workout",
+      "description": "",
+      "exercise_groups": [],
+      "sections": null,
+      "template_notes": [],
+      "is_template": true,
+      "tags": [],
+      "created_date": "2026-03-07 14:11:26.173314",
+      "modified_date": "2026-03-07 14:11:26.173316",
+      "is_favorite": false,
+      "favorited_at": null,
+      "is_archived": false,
+      "archived_at": null
+    },
+    {
+      "id": "workout-dd2c4848",
+      "name": "API Test Workout",
+      "description": "Created by Playwright test",
+      "exercise_groups": [
+        {
+          "group_id": "api-test-group",
+          "exercises": {
+            "a": "Test Exercise"
+          },
+          "sets": "3",
+          "reps": "10",
+          "rest": "60s",
+          "default_weight": null,
+          "default_weight_unit": "lbs",
+          "group_type": "standard",
+          "group_name": null,
+          "cardio_config": null,
+          "interval_config": null,
+          "block_id": null
+        }
+      ],
+      "sections": [
+        {
+          "section_id": "section-api-test-group",
+          "type": "standard",
+          "name": null,
+          "description": null,
+          "config": null,
+          "exercises": [
+            {
+              "exercise_id": "api-test-group",
+              "name": "Test Exercise",
+              "alternates": [],
+              "sets": "3",
+              "reps": "10",
+              "rest": "60s",
+              "default_weight": null,
+              "default_weight_unit": "lbs",
+              "group_type": "standard",
+              "cardio_config": null,
+              "interval_config": null
+            }
+          ]
+        }
+      ],
+      "template_notes": [],
+      "is_template": true,
+      "tags": [
+        "api-test"
+      ],
+      "created_date": "2026-03-07 14:11:26.185827",
+      "modified_date": "2026-03-07 14:11:26.185830",
+      "is_favorite": false,
+      "favorited_at": null,
+      "is_archived": false,
+      "archived_at": null
+    },
+    {
+      "id": "workout-efb3ff55",
+      "name": "Updated Workout Name",
+      "description": "",
+      "exercise_groups": [],
+      "sections": null,
+      "template_notes": [],
+      "is_template": true,
+      "tags": [
+        "updated"
+      ],
+      "created_date": "2026-03-07 14:11:26.211878",
+      "modified_date": "2026-03-07 14:11:26.234860",
+      "is_favorite": false,
+      "favorited_at": null,
+      "is_archived": false,
+      "archived_at": null
+    },
+    {
+      "id": "workout-3034c4e9",
+      "name": "Delete Test Workout",
+      "description": "",
+      "exercise_groups": [],
+      "sections": null,
+      "template_notes": [],
+      "is_template": true,
+      "tags": [],
+      "created_date": "2026-03-07 14:12:16.093264",
+      "modified_date": "2026-03-07T14:12:16.107767",
+      "is_favorite": false,
+      "favorited_at": null,
+      "is_archived": true,
+      "archived_at": "2026-03-07T14:12:16.107760"
+    },
+    {
+      "id": "workout-843e761b",
+      "name": "Fetch Test Workout",
+      "description": "",
+      "exercise_groups": [],
+      "sections": null,
+      "template_notes": [],
+      "is_template": true,
+      "tags": [],
+      "created_date": "2026-03-07 14:12:16.111104",
+      "modified_date": "2026-03-07 14:12:16.111106",
+      "is_favorite": false,
+      "favorited_at": null,
+      "is_archived": false,
+      "archived_at": null
+    },
+    {
+      "id": "workout-f5aa10d6",
+      "name": "Updated Workout Name",
+      "description": "",
+      "exercise_groups": [],
+      "sections": null,
+      "template_notes": [],
+      "is_template": true,
+      "tags": [
+        "updated"
+      ],
+      "created_date": "2026-03-07 14:12:17.198940",
+      "modified_date": "2026-03-07 14:12:17.231549",
+      "is_favorite": false,
+      "favorited_at": null,
+      "is_archived": false,
+      "archived_at": null
+    },
+    {
+      "id": "workout-895d85c9",
+      "name": "API Test Workout",
+      "description": "Created by Playwright test",
+      "exercise_groups": [
+        {
+          "group_id": "api-test-group",
+          "exercises": {
+            "a": "Test Exercise"
+          },
+          "sets": "3",
+          "reps": "10",
+          "rest": "60s",
+          "default_weight": null,
+          "default_weight_unit": "lbs",
+          "group_type": "standard",
+          "group_name": null,
+          "cardio_config": null,
+          "interval_config": null,
+          "block_id": null
+        }
+      ],
+      "sections": [
+        {
+          "section_id": "section-api-test-group",
+          "type": "standard",
+          "name": null,
+          "description": null,
+          "config": null,
+          "exercises": [
+            {
+              "exercise_id": "api-test-group",
+              "name": "Test Exercise",
+              "alternates": [],
+              "sets": "3",
+              "reps": "10",
+              "rest": "60s",
+              "default_weight": null,
+              "default_weight_unit": "lbs",
+              "group_type": "standard",
+              "cardio_config": null,
+              "interval_config": null
+            }
+          ]
+        }
+      ],
+      "template_notes": [],
+      "is_template": true,
+      "tags": [
+        "api-test"
+      ],
+      "created_date": "2026-03-07 14:12:17.212215",
+      "modified_date": "2026-03-07 14:12:17.212218",
+      "is_favorite": false,
+      "favorited_at": null,
+      "is_archived": false,
+      "archived_at": null
+    },
+    {
+      "id": "workout-d5256eb9",
+      "name": "Updated Workout Name",
+      "description": "",
+      "exercise_groups": [],
+      "sections": null,
+      "template_notes": [],
+      "is_template": true,
+      "tags": [
+        "updated"
+      ],
+      "created_date": "2026-03-07 14:13:34.520717",
+      "modified_date": "2026-03-07 14:13:34.536395",
+      "is_favorite": false,
+      "favorited_at": null,
+      "is_archived": false,
+      "archived_at": null
+    },
+    {
+      "id": "workout-38fc844d",
+      "name": "Fetch Test Workout",
+      "description": "",
+      "exercise_groups": [],
+      "sections": null,
+      "template_notes": [],
+      "is_template": true,
+      "tags": [],
+      "created_date": "2026-03-07 14:13:35.515204",
+      "modified_date": "2026-03-07 14:13:35.515207",
+      "is_favorite": false,
+      "favorited_at": null,
+      "is_archived": false,
+      "archived_at": null
+    },
+    {
+      "id": "workout-ac02ad9b",
+      "name": "Delete Test Workout",
+      "description": "",
+      "exercise_groups": [],
+      "sections": null,
+      "template_notes": [],
+      "is_template": true,
+      "tags": [],
+      "created_date": "2026-03-07 14:13:35.534883",
+      "modified_date": "2026-03-07T14:13:35.557713",
+      "is_favorite": false,
+      "favorited_at": null,
+      "is_archived": true,
+      "archived_at": "2026-03-07T14:13:35.557705"
+    },
+    {
+      "id": "workout-7b8e42a1",
+      "name": "API Test Workout",
+      "description": "Created by Playwright test",
+      "exercise_groups": [
+        {
+          "group_id": "api-test-group",
+          "exercises": {
+            "a": "Test Exercise"
+          },
+          "sets": "3",
+          "reps": "10",
+          "rest": "60s",
+          "default_weight": null,
+          "default_weight_unit": "lbs",
+          "group_type": "standard",
+          "group_name": null,
+          "cardio_config": null,
+          "interval_config": null,
+          "block_id": null
+        }
+      ],
+      "sections": [
+        {
+          "section_id": "section-api-test-group",
+          "type": "standard",
+          "name": null,
+          "description": null,
+          "config": null,
+          "exercises": [
+            {
+              "exercise_id": "api-test-group",
+              "name": "Test Exercise",
+              "alternates": [],
+              "sets": "3",
+              "reps": "10",
+              "rest": "60s",
+              "default_weight": null,
+              "default_weight_unit": "lbs",
+              "group_type": "standard",
+              "cardio_config": null,
+              "interval_config": null
+            }
+          ]
+        }
+      ],
+      "template_notes": [],
+      "is_template": true,
+      "tags": [
+        "api-test"
+      ],
+      "created_date": "2026-03-07 14:13:35.537997",
+      "modified_date": "2026-03-07 14:13:35.537999",
+      "is_favorite": false,
+      "favorited_at": null,
+      "is_archived": false,
+      "archived_at": null
+    },
+    {
+      "id": "workout-70c30b99",
+      "name": "API Test Workout",
+      "description": "Created by Playwright test",
+      "exercise_groups": [
+        {
+          "group_id": "api-test-group",
+          "exercises": {
+            "a": "Test Exercise"
+          },
+          "sets": "3",
+          "reps": "10",
+          "rest": "60s",
+          "default_weight": null,
+          "default_weight_unit": "lbs",
+          "group_type": "standard",
+          "group_name": null,
+          "cardio_config": null,
+          "interval_config": null,
+          "block_id": null
+        }
+      ],
+      "sections": [
+        {
+          "section_id": "section-api-test-group",
+          "type": "standard",
+          "name": null,
+          "description": null,
+          "config": null,
+          "exercises": [
+            {
+              "exercise_id": "api-test-group",
+              "name": "Test Exercise",
+              "alternates": [],
+              "sets": "3",
+              "reps": "10",
+              "rest": "60s",
+              "default_weight": null,
+              "default_weight_unit": "lbs",
+              "group_type": "standard",
+              "cardio_config": null,
+              "interval_config": null
+            }
+          ]
+        }
+      ],
+      "template_notes": [],
+      "is_template": true,
+      "tags": [
+        "api-test"
+      ],
+      "created_date": "2026-03-07 14:15:36.282804",
+      "modified_date": "2026-03-07 14:15:36.282806",
+      "is_favorite": false,
+      "favorited_at": null,
+      "is_archived": false,
+      "archived_at": null
+    },
+    {
+      "id": "workout-2d67981a",
+      "name": "Updated Workout Name",
+      "description": "",
+      "exercise_groups": [],
+      "sections": null,
+      "template_notes": [],
+      "is_template": true,
+      "tags": [
+        "updated"
+      ],
+      "created_date": "2026-03-07 14:15:36.305884",
+      "modified_date": "2026-03-07 14:15:38.205885",
+      "is_favorite": false,
+      "favorited_at": null,
+      "is_archived": false,
+      "archived_at": null
+    },
+    {
+      "id": "workout-dccfabf1",
+      "name": "Fetch Test Workout",
+      "description": "",
+      "exercise_groups": [],
+      "sections": null,
+      "template_notes": [],
+      "is_template": true,
+      "tags": [],
+      "created_date": "2026-03-07 14:15:38.208319",
+      "modified_date": "2026-03-07 14:15:38.208321",
+      "is_favorite": false,
+      "favorited_at": null,
+      "is_archived": false,
+      "archived_at": null
+    },
+    {
+      "id": "workout-7efc4977",
+      "name": "Delete Test Workout",
+      "description": "",
+      "exercise_groups": [],
+      "sections": null,
+      "template_notes": [],
+      "is_template": true,
+      "tags": [],
+      "created_date": "2026-03-07 14:15:38.220308",
+      "modified_date": "2026-03-07T14:15:38.245242",
+      "is_favorite": false,
+      "favorited_at": null,
+      "is_archived": true,
+      "archived_at": "2026-03-07T14:15:38.245235"
+    },
+    {
+      "id": "workout-ac39674b",
+      "name": "Fetch Test Workout",
+      "description": "",
+      "exercise_groups": [],
+      "sections": null,
+      "template_notes": [],
+      "is_template": true,
+      "tags": [],
+      "created_date": "2026-03-07 14:16:15.471569",
+      "modified_date": "2026-03-07 14:16:15.471571",
+      "is_favorite": false,
+      "favorited_at": null,
+      "is_archived": false,
+      "archived_at": null
+    },
+    {
+      "id": "workout-b1fa095b",
+      "name": "Delete Test Workout",
+      "description": "",
+      "exercise_groups": [],
+      "sections": null,
+      "template_notes": [],
+      "is_template": true,
+      "tags": [],
+      "created_date": "2026-03-07 14:16:15.508725",
+      "modified_date": "2026-03-07T14:16:15.521227",
+      "is_favorite": false,
+      "favorited_at": null,
+      "is_archived": true,
+      "archived_at": "2026-03-07T14:16:15.521221"
+    },
+    {
+      "id": "workout-b5cf010c",
+      "name": "Updated Workout Name",
+      "description": "",
+      "exercise_groups": [],
+      "sections": null,
+      "template_notes": [],
+      "is_template": true,
+      "tags": [
+        "updated"
+      ],
+      "created_date": "2026-03-07 14:16:15.541165",
+      "modified_date": "2026-03-07 14:16:15.563484",
+      "is_favorite": false,
+      "favorited_at": null,
+      "is_archived": false,
+      "archived_at": null
+    },
+    {
+      "id": "workout-880744ba",
+      "name": "API Test Workout",
+      "description": "Created by Playwright test",
+      "exercise_groups": [
+        {
+          "group_id": "api-test-group",
+          "exercises": {
+            "a": "Test Exercise"
+          },
+          "sets": "3",
+          "reps": "10",
+          "rest": "60s",
+          "default_weight": null,
+          "default_weight_unit": "lbs",
+          "group_type": "standard",
+          "group_name": null,
+          "cardio_config": null,
+          "interval_config": null,
+          "block_id": null
+        }
+      ],
+      "sections": [
+        {
+          "section_id": "section-api-test-group",
+          "type": "standard",
+          "name": null,
+          "description": null,
+          "config": null,
+          "exercises": [
+            {
+              "exercise_id": "api-test-group",
+              "name": "Test Exercise",
+              "alternates": [],
+              "sets": "3",
+              "reps": "10",
+              "rest": "60s",
+              "default_weight": null,
+              "default_weight_unit": "lbs",
+              "group_type": "standard",
+              "cardio_config": null,
+              "interval_config": null
+            }
+          ]
+        }
+      ],
+      "template_notes": [],
+      "is_template": true,
+      "tags": [
+        "api-test"
+      ],
+      "created_date": "2026-03-07 14:16:16.599431",
+      "modified_date": "2026-03-07 14:16:16.599434",
+      "is_favorite": false,
+      "favorited_at": null,
+      "is_archived": false,
+      "archived_at": null
+    },
+    {
+      "id": "workout-aff0915e",
+      "name": "API Test Workout",
+      "description": "Created by Playwright test",
+      "exercise_groups": [
+        {
+          "group_id": "api-test-group",
+          "exercises": {
+            "a": "Test Exercise"
+          },
+          "sets": "3",
+          "reps": "10",
+          "rest": "60s",
+          "default_weight": null,
+          "default_weight_unit": "lbs",
+          "group_type": "standard",
+          "group_name": null,
+          "cardio_config": null,
+          "interval_config": null,
+          "block_id": null
+        }
+      ],
+      "sections": [
+        {
+          "section_id": "section-api-test-group",
+          "type": "standard",
+          "name": null,
+          "description": null,
+          "config": null,
+          "exercises": [
+            {
+              "exercise_id": "api-test-group",
+              "name": "Test Exercise",
+              "alternates": [],
+              "sets": "3",
+              "reps": "10",
+              "rest": "60s",
+              "default_weight": null,
+              "default_weight_unit": "lbs",
+              "group_type": "standard",
+              "cardio_config": null,
+              "interval_config": null
+            }
+          ]
+        }
+      ],
+      "template_notes": [],
+      "is_template": true,
+      "tags": [
+        "api-test"
+      ],
+      "created_date": "2026-03-07 14:17:13.760168",
+      "modified_date": "2026-03-07 14:17:13.760170",
+      "is_favorite": false,
+      "favorited_at": null,
+      "is_archived": false,
+      "archived_at": null
+    },
+    {
+      "id": "workout-ed5621fc",
+      "name": "Delete Test Workout",
+      "description": "",
+      "exercise_groups": [],
+      "sections": null,
+      "template_notes": [],
+      "is_template": true,
+      "tags": [],
+      "created_date": "2026-03-07 14:17:13.790260",
+      "modified_date": "2026-03-07T14:17:13.815922",
+      "is_favorite": false,
+      "favorited_at": null,
+      "is_archived": true,
+      "archived_at": "2026-03-07T14:17:13.815913"
+    },
+    {
+      "id": "workout-e746d50c",
+      "name": "Updated Workout Name",
+      "description": "",
+      "exercise_groups": [],
+      "sections": null,
+      "template_notes": [],
+      "is_template": true,
+      "tags": [
+        "updated"
+      ],
+      "created_date": "2026-03-07 14:17:13.798164",
+      "modified_date": "2026-03-07 14:17:14.912079",
+      "is_favorite": false,
+      "favorited_at": null,
+      "is_archived": false,
+      "archived_at": null
+    },
+    {
+      "id": "workout-8a5d29d8",
+      "name": "Fetch Test Workout",
+      "description": "",
+      "exercise_groups": [],
+      "sections": null,
+      "template_notes": [],
+      "is_template": true,
+      "tags": [],
+      "created_date": "2026-03-07 14:17:14.894095",
+      "modified_date": "2026-03-07 14:17:14.894098",
+      "is_favorite": false,
+      "favorited_at": null,
+      "is_archived": false,
+      "archived_at": null
+    },
+    {
+      "id": "workout-0dc2166d",
+      "name": "Fetch Test Workout",
+      "description": "",
+      "exercise_groups": [],
+      "sections": null,
+      "template_notes": [],
+      "is_template": true,
+      "tags": [],
+      "created_date": "2026-03-07 14:17:50.909532",
+      "modified_date": "2026-03-07 14:17:50.909535",
+      "is_favorite": false,
+      "favorited_at": null,
+      "is_archived": false,
+      "archived_at": null
+    },
+    {
+      "id": "workout-23b398e4",
+      "name": "Delete Test Workout",
+      "description": "",
+      "exercise_groups": [],
+      "sections": null,
+      "template_notes": [],
+      "is_template": true,
+      "tags": [],
+      "created_date": "2026-03-07 14:17:50.926760",
+      "modified_date": "2026-03-07T14:17:50.943745",
+      "is_favorite": false,
+      "favorited_at": null,
+      "is_archived": true,
+      "archived_at": "2026-03-07T14:17:50.943738"
+    },
+    {
+      "id": "workout-5d66c35d",
+      "name": "Updated Workout Name",
+      "description": "",
+      "exercise_groups": [],
+      "sections": null,
+      "template_notes": [],
+      "is_template": true,
+      "tags": [
+        "updated"
+      ],
+      "created_date": "2026-03-07 14:17:50.946593",
+      "modified_date": "2026-03-07 14:17:50.966993",
+      "is_favorite": false,
+      "favorited_at": null,
+      "is_archived": false,
+      "archived_at": null
+    },
+    {
+      "id": "workout-78266f76",
+      "name": "API Test Workout",
+      "description": "Created by Playwright test",
+      "exercise_groups": [
+        {
+          "group_id": "api-test-group",
+          "exercises": {
+            "a": "Test Exercise"
+          },
+          "sets": "3",
+          "reps": "10",
+          "rest": "60s",
+          "default_weight": null,
+          "default_weight_unit": "lbs",
+          "group_type": "standard",
+          "group_name": null,
+          "cardio_config": null,
+          "interval_config": null,
+          "block_id": null
+        }
+      ],
+      "sections": [
+        {
+          "section_id": "section-api-test-group",
+          "type": "standard",
+          "name": null,
+          "description": null,
+          "config": null,
+          "exercises": [
+            {
+              "exercise_id": "api-test-group",
+              "name": "Test Exercise",
+              "alternates": [],
+              "sets": "3",
+              "reps": "10",
+              "rest": "60s",
+              "default_weight": null,
+              "default_weight_unit": "lbs",
+              "group_type": "standard",
+              "cardio_config": null,
+              "interval_config": null
+            }
+          ]
+        }
+      ],
+      "template_notes": [],
+      "is_template": true,
+      "tags": [
+        "api-test"
+      ],
+      "created_date": "2026-03-07 14:17:51.081937",
+      "modified_date": "2026-03-07 14:17:51.081940",
+      "is_favorite": false,
+      "favorited_at": null,
+      "is_archived": false,
+      "archived_at": null
+    },
+    {
+      "id": "workout-e027579a",
+      "name": "Updated Workout Name",
+      "description": "",
+      "exercise_groups": [],
+      "sections": null,
+      "template_notes": [],
+      "is_template": true,
+      "tags": [
+        "updated"
+      ],
+      "created_date": "2026-03-07 14:18:49.374188",
+      "modified_date": "2026-03-07 14:18:49.420743",
+      "is_favorite": false,
+      "favorited_at": null,
+      "is_archived": false,
+      "archived_at": null
+    },
+    {
+      "id": "workout-153b4ec9",
+      "name": "Fetch Test Workout",
+      "description": "",
+      "exercise_groups": [],
+      "sections": null,
+      "template_notes": [],
+      "is_template": true,
+      "tags": [],
+      "created_date": "2026-03-07 14:18:49.377776",
+      "modified_date": "2026-03-07 14:18:49.377778",
+      "is_favorite": false,
+      "favorited_at": null,
+      "is_archived": false,
+      "archived_at": null
+    },
+    {
+      "id": "workout-fd18bfa4",
+      "name": "API Test Workout",
+      "description": "Created by Playwright test",
+      "exercise_groups": [
+        {
+          "group_id": "api-test-group",
+          "exercises": {
+            "a": "Test Exercise"
+          },
+          "sets": "3",
+          "reps": "10",
+          "rest": "60s",
+          "default_weight": null,
+          "default_weight_unit": "lbs",
+          "group_type": "standard",
+          "group_name": null,
+          "cardio_config": null,
+          "interval_config": null,
+          "block_id": null
+        }
+      ],
+      "sections": [
+        {
+          "section_id": "section-api-test-group",
+          "type": "standard",
+          "name": null,
+          "description": null,
+          "config": null,
+          "exercises": [
+            {
+              "exercise_id": "api-test-group",
+              "name": "Test Exercise",
+              "alternates": [],
+              "sets": "3",
+              "reps": "10",
+              "rest": "60s",
+              "default_weight": null,
+              "default_weight_unit": "lbs",
+              "group_type": "standard",
+              "cardio_config": null,
+              "interval_config": null
+            }
+          ]
+        }
+      ],
+      "template_notes": [],
+      "is_template": true,
+      "tags": [
+        "api-test"
+      ],
+      "created_date": "2026-03-07 14:18:49.389901",
+      "modified_date": "2026-03-07 14:18:49.389904",
+      "is_favorite": false,
+      "favorited_at": null,
+      "is_archived": false,
+      "archived_at": null
+    },
+    {
+      "id": "workout-194a1aa6",
+      "name": "Delete Test Workout",
+      "description": "",
+      "exercise_groups": [],
+      "sections": null,
+      "template_notes": [],
+      "is_template": true,
+      "tags": [],
+      "created_date": "2026-03-07 14:18:49.401627",
+      "modified_date": "2026-03-07T14:18:49.432335",
+      "is_favorite": false,
+      "favorited_at": null,
+      "is_archived": true,
+      "archived_at": "2026-03-07T14:18:49.432324"
+    },
+    {
+      "id": "workout-dae6a5cd",
+      "name": "API Test Workout",
+      "description": "Created by Playwright test",
+      "exercise_groups": [
+        {
+          "group_id": "api-test-group",
+          "exercises": {
+            "a": "Test Exercise"
+          },
+          "sets": "3",
+          "reps": "10",
+          "rest": "60s",
+          "default_weight": null,
+          "default_weight_unit": "lbs",
+          "group_type": "standard",
+          "group_name": null,
+          "cardio_config": null,
+          "interval_config": null,
+          "block_id": null
+        }
+      ],
+      "sections": [
+        {
+          "section_id": "section-api-test-group",
+          "type": "standard",
+          "name": null,
+          "description": null,
+          "config": null,
+          "exercises": [
+            {
+              "exercise_id": "api-test-group",
+              "name": "Test Exercise",
+              "alternates": [],
+              "sets": "3",
+              "reps": "10",
+              "rest": "60s",
+              "default_weight": null,
+              "default_weight_unit": "lbs",
+              "group_type": "standard",
+              "cardio_config": null,
+              "interval_config": null
+            }
+          ]
+        }
+      ],
+      "template_notes": [],
+      "is_template": true,
+      "tags": [
+        "api-test"
+      ],
+      "created_date": "2026-03-07 14:19:24.560876",
+      "modified_date": "2026-03-07 14:19:24.560879",
+      "is_favorite": false,
+      "favorited_at": null,
+      "is_archived": false,
+      "archived_at": null
+    },
+    {
+      "id": "workout-eb1afb7c",
+      "name": "Fetch Test Workout",
+      "description": "",
+      "exercise_groups": [],
+      "sections": null,
+      "template_notes": [],
+      "is_template": true,
+      "tags": [],
+      "created_date": "2026-03-07 14:19:24.579423",
+      "modified_date": "2026-03-07 14:19:24.579426",
+      "is_favorite": false,
+      "favorited_at": null,
+      "is_archived": false,
+      "archived_at": null
+    },
+    {
+      "id": "workout-2c310671",
+      "name": "Delete Test Workout",
+      "description": "",
+      "exercise_groups": [],
+      "sections": null,
+      "template_notes": [],
+      "is_template": true,
+      "tags": [],
+      "created_date": "2026-03-07 14:19:24.616451",
+      "modified_date": "2026-03-07T14:19:24.628884",
+      "is_favorite": false,
+      "favorited_at": null,
+      "is_archived": true,
+      "archived_at": "2026-03-07T14:19:24.628878"
+    },
+    {
+      "id": "workout-cbf6d2bb",
+      "name": "Updated Workout Name",
+      "description": "",
+      "exercise_groups": [],
+      "sections": null,
+      "template_notes": [],
+      "is_template": true,
+      "tags": [
+        "updated"
+      ],
+      "created_date": "2026-03-07 14:19:24.645166",
+      "modified_date": "2026-03-07 14:19:24.663897",
+      "is_favorite": false,
+      "favorited_at": null,
+      "is_archived": false,
+      "archived_at": null
+    },
+    {
+      "id": "workout-bf5abfba",
+      "name": "Delete Test Workout",
+      "description": "",
+      "exercise_groups": [],
+      "sections": null,
+      "template_notes": [],
+      "is_template": true,
+      "tags": [],
+      "created_date": "2026-03-07 14:20:55.050922",
+      "modified_date": "2026-03-07T14:20:55.067311",
+      "is_favorite": false,
+      "favorited_at": null,
+      "is_archived": true,
+      "archived_at": "2026-03-07T14:20:55.067305"
+    },
+    {
+      "id": "workout-3e62a29b",
+      "name": "API Test Workout",
+      "description": "Created by Playwright test",
+      "exercise_groups": [
+        {
+          "group_id": "api-test-group",
+          "exercises": {
+            "a": "Test Exercise"
+          },
+          "sets": "3",
+          "reps": "10",
+          "rest": "60s",
+          "default_weight": null,
+          "default_weight_unit": "lbs",
+          "group_type": "standard",
+          "group_name": null,
+          "cardio_config": null,
+          "interval_config": null,
+          "block_id": null
+        }
+      ],
+      "sections": [
+        {
+          "section_id": "section-api-test-group",
+          "type": "standard",
+          "name": null,
+          "description": null,
+          "config": null,
+          "exercises": [
+            {
+              "exercise_id": "api-test-group",
+              "name": "Test Exercise",
+              "alternates": [],
+              "sets": "3",
+              "reps": "10",
+              "rest": "60s",
+              "default_weight": null,
+              "default_weight_unit": "lbs",
+              "group_type": "standard",
+              "cardio_config": null,
+              "interval_config": null
+            }
+          ]
+        }
+      ],
+      "template_notes": [],
+      "is_template": true,
+      "tags": [
+        "api-test"
+      ],
+      "created_date": "2026-03-07 14:20:55.080351",
+      "modified_date": "2026-03-07 14:20:55.080352",
+      "is_favorite": false,
+      "favorited_at": null,
+      "is_archived": false,
+      "archived_at": null
+    },
+    {
+      "id": "workout-a4d6a773",
+      "name": "Updated Workout Name",
+      "description": "",
+      "exercise_groups": [],
+      "sections": null,
+      "template_notes": [],
+      "is_template": true,
+      "tags": [
+        "updated"
+      ],
+      "created_date": "2026-03-07 14:20:56.156418",
+      "modified_date": "2026-03-07 14:20:56.189409",
+      "is_favorite": false,
+      "favorited_at": null,
+      "is_archived": false,
+      "archived_at": null
+    },
+    {
+      "id": "workout-2da63ed3",
+      "name": "Fetch Test Workout",
+      "description": "",
+      "exercise_groups": [],
+      "sections": null,
+      "template_notes": [],
+      "is_template": true,
+      "tags": [],
+      "created_date": "2026-03-07 14:20:56.168265",
+      "modified_date": "2026-03-07 14:20:56.168268",
+      "is_favorite": false,
+      "favorited_at": null,
+      "is_archived": false,
+      "archived_at": null
+    },
+    {
+      "id": "workout-84afc5a1",
+      "name": "API Test Workout",
+      "description": "Created by Playwright test",
+      "exercise_groups": [
+        {
+          "group_id": "api-test-group",
+          "exercises": {
+            "a": "Test Exercise"
+          },
+          "sets": "3",
+          "reps": "10",
+          "rest": "60s",
+          "default_weight": null,
+          "default_weight_unit": "lbs",
+          "group_type": "standard",
+          "group_name": null,
+          "cardio_config": null,
+          "interval_config": null,
+          "block_id": null
+        }
+      ],
+      "sections": [
+        {
+          "section_id": "section-api-test-group",
+          "type": "standard",
+          "name": null,
+          "description": null,
+          "config": null,
+          "exercises": [
+            {
+              "exercise_id": "api-test-group",
+              "name": "Test Exercise",
+              "alternates": [],
+              "sets": "3",
+              "reps": "10",
+              "rest": "60s",
+              "default_weight": null,
+              "default_weight_unit": "lbs",
+              "group_type": "standard",
+              "cardio_config": null,
+              "interval_config": null
+            }
+          ]
+        }
+      ],
+      "template_notes": [],
+      "is_template": true,
+      "tags": [
+        "api-test"
+      ],
+      "created_date": "2026-03-07 14:21:29.849414",
+      "modified_date": "2026-03-07 14:21:29.849417",
+      "is_favorite": false,
+      "favorited_at": null,
+      "is_archived": false,
+      "archived_at": null
+    },
+    {
+      "id": "workout-7f5cc2fb",
+      "name": "Fetch Test Workout",
+      "description": "",
+      "exercise_groups": [],
+      "sections": null,
+      "template_notes": [],
+      "is_template": true,
+      "tags": [],
+      "created_date": "2026-03-07 14:21:29.866403",
+      "modified_date": "2026-03-07 14:21:29.866405",
+      "is_favorite": false,
+      "favorited_at": null,
+      "is_archived": false,
+      "archived_at": null
+    },
+    {
+      "id": "workout-a07cc0d9",
+      "name": "Delete Test Workout",
+      "description": "",
+      "exercise_groups": [],
+      "sections": null,
+      "template_notes": [],
+      "is_template": true,
+      "tags": [],
+      "created_date": "2026-03-07 14:21:29.902466",
+      "modified_date": "2026-03-07T14:21:29.915006",
+      "is_favorite": false,
+      "favorited_at": null,
+      "is_archived": true,
+      "archived_at": "2026-03-07T14:21:29.914999"
+    },
+    {
+      "id": "workout-2e33d17f",
+      "name": "Updated Workout Name",
+      "description": "",
+      "exercise_groups": [],
+      "sections": null,
+      "template_notes": [],
+      "is_template": true,
+      "tags": [
+        "updated"
+      ],
+      "created_date": "2026-03-07 14:21:29.931848",
+      "modified_date": "2026-03-07 14:21:29.952756",
+      "is_favorite": false,
+      "favorited_at": null,
+      "is_archived": false,
+      "archived_at": null
+    },
+    {
+      "id": "workout-60df3bb2",
+      "name": "Updated Workout Name",
+      "description": "",
+      "exercise_groups": [],
+      "sections": null,
+      "template_notes": [],
+      "is_template": true,
+      "tags": [
+        "updated"
+      ],
+      "created_date": "2026-03-07 14:22:29.963369",
+      "modified_date": "2026-03-07 14:22:30.014684",
+      "is_favorite": false,
+      "favorited_at": null,
+      "is_archived": false,
+      "archived_at": null
+    },
+    {
+      "id": "workout-a2a821c6",
+      "name": "API Test Workout",
+      "description": "Created by Playwright test",
+      "exercise_groups": [
+        {
+          "group_id": "api-test-group",
+          "exercises": {
+            "a": "Test Exercise"
+          },
+          "sets": "3",
+          "reps": "10",
+          "rest": "60s",
+          "default_weight": null,
+          "default_weight_unit": "lbs",
+          "group_type": "standard",
+          "group_name": null,
+          "cardio_config": null,
+          "interval_config": null,
+          "block_id": null
+        }
+      ],
+      "sections": [
+        {
+          "section_id": "section-api-test-group",
+          "type": "standard",
+          "name": null,
+          "description": null,
+          "config": null,
+          "exercises": [
+            {
+              "exercise_id": "api-test-group",
+              "name": "Test Exercise",
+              "alternates": [],
+              "sets": "3",
+              "reps": "10",
+              "rest": "60s",
+              "default_weight": null,
+              "default_weight_unit": "lbs",
+              "group_type": "standard",
+              "cardio_config": null,
+              "interval_config": null
+            }
+          ]
+        }
+      ],
+      "template_notes": [],
+      "is_template": true,
+      "tags": [
+        "api-test"
+      ],
+      "created_date": "2026-03-07 14:22:29.977579",
+      "modified_date": "2026-03-07 14:22:29.977581",
+      "is_favorite": false,
+      "favorited_at": null,
+      "is_archived": false,
+      "archived_at": null
+    },
+    {
+      "id": "workout-47722c53",
+      "name": "Fetch Test Workout",
+      "description": "",
+      "exercise_groups": [],
+      "sections": null,
+      "template_notes": [],
+      "is_template": true,
+      "tags": [],
+      "created_date": "2026-03-07 14:22:29.980750",
+      "modified_date": "2026-03-07 14:22:29.980751",
+      "is_favorite": false,
+      "favorited_at": null,
+      "is_archived": false,
+      "archived_at": null
+    },
+    {
+      "id": "workout-578c89ca",
+      "name": "Delete Test Workout",
+      "description": "",
+      "exercise_groups": [],
+      "sections": null,
+      "template_notes": [],
+      "is_template": true,
+      "tags": [],
+      "created_date": "2026-03-07 14:22:29.992470",
+      "modified_date": "2026-03-07T14:22:30.027040",
+      "is_favorite": false,
+      "favorited_at": null,
+      "is_archived": true,
+      "archived_at": "2026-03-07T14:22:30.027034"
+    },
+    {
+      "id": "workout-27572670",
+      "name": "API Test Workout",
+      "description": "Created by Playwright test",
+      "exercise_groups": [
+        {
+          "group_id": "api-test-group",
+          "exercises": {
+            "a": "Test Exercise"
+          },
+          "sets": "3",
+          "reps": "10",
+          "rest": "60s",
+          "default_weight": null,
+          "default_weight_unit": "lbs",
+          "group_type": "standard",
+          "group_name": null,
+          "cardio_config": null,
+          "interval_config": null,
+          "block_id": null
+        }
+      ],
+      "sections": [
+        {
+          "section_id": "section-api-test-group",
+          "type": "standard",
+          "name": null,
+          "description": null,
+          "config": null,
+          "exercises": [
+            {
+              "exercise_id": "api-test-group",
+              "name": "Test Exercise",
+              "alternates": [],
+              "sets": "3",
+              "reps": "10",
+              "rest": "60s",
+              "default_weight": null,
+              "default_weight_unit": "lbs",
+              "group_type": "standard",
+              "cardio_config": null,
+              "interval_config": null
+            }
+          ]
+        }
+      ],
+      "template_notes": [],
+      "is_template": true,
+      "tags": [
+        "api-test"
+      ],
+      "created_date": "2026-03-07 14:23:04.680546",
+      "modified_date": "2026-03-07 14:23:04.680549",
+      "is_favorite": false,
+      "favorited_at": null,
+      "is_archived": false,
+      "archived_at": null
+    },
+    {
+      "id": "workout-954a4580",
+      "name": "Fetch Test Workout",
+      "description": "",
+      "exercise_groups": [],
+      "sections": null,
+      "template_notes": [],
+      "is_template": true,
+      "tags": [],
+      "created_date": "2026-03-07 14:23:04.700032",
+      "modified_date": "2026-03-07 14:23:04.700035",
+      "is_favorite": false,
+      "favorited_at": null,
+      "is_archived": false,
+      "archived_at": null
+    },
+    {
+      "id": "workout-170712ec",
+      "name": "Delete Test Workout",
+      "description": "",
+      "exercise_groups": [],
+      "sections": null,
+      "template_notes": [],
+      "is_template": true,
+      "tags": [],
+      "created_date": "2026-03-07 14:23:04.739814",
+      "modified_date": "2026-03-07T14:23:04.754067",
+      "is_favorite": false,
+      "favorited_at": null,
+      "is_archived": true,
+      "archived_at": "2026-03-07T14:23:04.754060"
+    },
+    {
+      "id": "workout-4f801300",
+      "name": "Updated Workout Name",
+      "description": "",
+      "exercise_groups": [],
+      "sections": null,
+      "template_notes": [],
+      "is_template": true,
+      "tags": [
+        "updated"
+      ],
+      "created_date": "2026-03-07 14:23:04.772816",
+      "modified_date": "2026-03-07 14:23:04.793266",
+      "is_favorite": false,
+      "favorited_at": null,
+      "is_archived": false,
+      "archived_at": null
     }
   ]
 }
