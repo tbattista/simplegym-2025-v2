@@ -46,6 +46,9 @@ export function showExerciseSearchInEditor(config, onSelectExercise) {
     // Save original header children (preserve DOM nodes + listeners)
     const savedHeaderNodes = Array.from(header.childNodes);
 
+    // Save original body inline styles
+    const savedBodyStyle = body.getAttribute('style') || '';
+
     // Hide all body children with d-none
     Array.from(body.children).forEach(child => {
         child.dataset.searchHidden = 'true';
@@ -65,6 +68,12 @@ export function showExerciseSearchInEditor(config, onSelectExercise) {
     `);
 
     // Create search panel
+    // Make body flex column so the search panel fills it
+    body.style.display = 'flex';
+    body.style.flexDirection = 'column';
+    body.style.padding = '0';
+    body.style.overflow = 'hidden';
+
     const searchPanel = document.createElement('div');
     searchPanel.id = SEARCH_PANEL_ID;
     searchPanel.className = 'd-flex flex-column';
@@ -261,6 +270,13 @@ export function showExerciseSearchInEditor(config, onSelectExercise) {
     // --- POP: Restore editor content ---
     const restoreEditor = () => {
         searchPanel.remove();
+
+        // Restore body inline styles
+        if (savedBodyStyle) {
+            body.setAttribute('style', savedBodyStyle);
+        } else {
+            body.removeAttribute('style');
+        }
 
         Array.from(body.children).forEach(child => {
             if (child.dataset.searchHidden === 'true') {

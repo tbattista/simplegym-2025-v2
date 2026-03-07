@@ -422,9 +422,6 @@ export function createExerciseGroupEditor(config, onSave, onDelete, onSearchClic
                          style="display: ${weightUnit === 'other' ? 'block' : 'none'};">
                         e.g., "Body weight", "20lb Medball", "Cable #7"
                     </div>
-                    <div class="eg-field-hint">
-                        <i class="bx bx-info-circle"></i> Auto-syncs from workout history
-                    </div>
                 </div>
 
                 <!-- Rest -->

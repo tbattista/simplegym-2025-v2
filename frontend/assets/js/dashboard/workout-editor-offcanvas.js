@@ -4,8 +4,6 @@
  * Extracted from workouts.js
  */
 
-import { showExerciseSearchInEditor } from '../components/offcanvas/offcanvas-exercise-search-inline.js';
-
 const WorkoutEditorOffcanvas = {
 
     /**
@@ -115,7 +113,7 @@ const WorkoutEditorOffcanvas = {
 
                 const offcanvasEl = editorElement || document.getElementById('exerciseGroupEditorOffcanvas');
 
-                showExerciseSearchInEditor(
+                window.UnifiedOffcanvasFactory.showExerciseSearchInEditor(
                     {
                         offcanvasElement: offcanvasEl,
                         title: slotKey === 'a' ? 'Select Primary Exercise' : 'Select Alternate Exercise',

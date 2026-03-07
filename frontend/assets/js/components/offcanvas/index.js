@@ -26,6 +26,7 @@ import {
 import { createExerciseSearchOffcanvas } from './offcanvas-exercise-search.js';
 import { createExerciseFilterOffcanvas } from './offcanvas-exercise-filter.js';
 import { showExerciseDetailInSearch } from './offcanvas-exercise-detail-view.js';
+import { showExerciseSearchInEditor } from './offcanvas-exercise-search-inline.js';
 
 // Import workout session components
 import {
@@ -135,6 +136,10 @@ class UnifiedOffcanvasFactory {
 
     static showExerciseDetailInSearch(exercise, options) {
         return showExerciseDetailInSearch(exercise, options);
+    }
+
+    static showExerciseSearchInEditor(config, onSelectExercise) {
+        return showExerciseSearchInEditor(config, onSelectExercise);
     }
     
     /* ============================================
@@ -342,6 +347,7 @@ export {
     createExerciseSearchOffcanvas,
     createExerciseFilterOffcanvas,
     showExerciseDetailInSearch,
+    showExerciseSearchInEditor,
     
     // Workout
     createWeightEdit,

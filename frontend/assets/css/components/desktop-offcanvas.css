@@ -158,6 +158,19 @@ body:has(.offcanvas-desktop-popover.show) > .offcanvas-backdrop {
 }
 
 /* ============================================
+   SIDEBAR DIM WHEN OFFCANVAS IS OPEN
+   Ensure the sidebar doesn't sit on top of the backdrop
+   ============================================ */
+
+@media (min-width: 1200px) {
+    body:has(.offcanvas-backdrop.show) #layout-menu {
+        opacity: 0.3;
+        pointer-events: none;
+        transition: opacity 0.2s ease;
+    }
+}
+
+/* ============================================
    REDUCED MOTION
    ============================================ */
 
