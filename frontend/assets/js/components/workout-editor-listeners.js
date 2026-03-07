@@ -359,17 +359,24 @@ function setupWorkoutEditorListeners() {
         });
     }
 
+    function handleStartWorkout() {
+        const workoutId = window.ffn?.workoutBuilder?.selectedWorkoutId ||
+                        window.ffn?.workoutBuilder?.currentWorkout?.id;
+        if (workoutId) {
+            window.location.href = `workout-mode.html?id=${workoutId}`;
+        } else {
+            alert('Please save the workout first before starting workout mode');
+        }
+    }
+
     const mobileGoFab = document.getElementById('mobileGoFab');
     if (mobileGoFab) {
-        mobileGoFab.addEventListener('click', () => {
-            const workoutId = window.ffn?.workoutBuilder?.selectedWorkoutId ||
-                            window.ffn?.workoutBuilder?.currentWorkout?.id;
-            if (workoutId) {
-                window.location.href = `workout-mode.html?id=${workoutId}`;
-            } else {
-                alert('Please save the workout first before starting workout mode');
-            }
-        });
+        mobileGoFab.addEventListener('click', handleStartWorkout);
+    }
+
+    const desktopStartBtn = document.getElementById('desktopStartWorkoutBtn');
+    if (desktopStartBtn) {
+        desktopStartBtn.addEventListener('click', handleStartWorkout);
     }
 
     // ── Mobile More Options button ──
