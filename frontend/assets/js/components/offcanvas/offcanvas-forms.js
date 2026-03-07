@@ -680,19 +680,19 @@ export function createExerciseGroupEditor(config, onSave, onDelete, onSearchClic
         
         // Delete button
         deleteBtn?.addEventListener('click', async () => {
-            if (!confirm('Are you sure you want to delete this exercise?')) return;
-            
-            deleteBtn.disabled = true;
-            deleteBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Deleting...';
-            
-            try {
-                await onDelete();
-                offcanvas.hide();
-            } catch (error) {
-                console.error('❌ Error deleting exercise group:', error);
-                deleteBtn.disabled = false;
-                deleteBtn.textContent = 'Delete';
-            }
+            ffnModalManager.confirm('Delete Exercise', 'Are you sure you want to delete this exercise?', async () => {
+                deleteBtn.disabled = true;
+                deleteBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Deleting...';
+
+                try {
+                    await onDelete();
+                    offcanvas.hide();
+                } catch (error) {
+                    console.error('❌ Error deleting exercise group:', error);
+                    deleteBtn.disabled = false;
+                    deleteBtn.textContent = 'Delete';
+                }
+            }, { confirmText: 'Delete', confirmClass: 'btn-danger', size: 'sm' });
         });
     });
 }
