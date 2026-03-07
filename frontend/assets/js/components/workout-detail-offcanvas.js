@@ -195,7 +195,7 @@ class WorkoutDetailOffcanvas {
         const items = this._buildMergedItems(workoutData);
         if (items.length > 0) {
             html += '<h6 class="mb-3">Exercises</h6>';
-            items.forEach(item => { html += this._renderDetailItem(item); });
+            html += this._renderItemsWithBlocks(items);
         }
         
         return html;
@@ -231,6 +231,87 @@ class WorkoutDetailOffcanvas {
         };
         const renderer = renderers[item._itemType] || renderers.default;
         return renderer(item);
+    }
+
+    /**
+     * Render items with block grouping — consecutive items sharing a block_id
+     * are wrapped in a visual block container with a header.
+     */
+    _renderItemsWithBlocks(items) {
+        let html = '';
+        let i = 0;
+
+        while (i < items.length) {
+            const item = items[i];
+
+            if (item.block_id) {
+                const blockId = item.block_id;
+                const blockItems = [];
+                while (i < items.length && items[i].block_id === blockId) {
+                    blockItems.push(items[i]);
+                    i++;
+                }
+                html += this._renderBlockGroup(blockItems);
+            } else {
+                html += this._renderDetailItem(item);
+                i++;
+            }
+        }
+
+        return html;
+    }
+
+    /**
+     * Render a group of block exercises with header and teal chain styling.
+     */
+    _renderBlockGroup(blockItems) {
+        if (blockItems.length === 0) return '';
+
+        const blockName = blockItems[0].group_name || 'Superset';
+
+        let html = `
+            <div class="detail-block-group mb-2">
+                <div style="display:flex;align-items:center;padding:5px 10px;background:rgba(45,212,191,0.04);border:1px solid var(--bs-border-color,#e0e0e0);border-left:3px solid #2dd4bf;border-bottom:none;border-radius:0.375rem 0.375rem 0 0;">
+                    <i class="bx bx-layer me-1" style="color:#2dd4bf;"></i>
+                    <span style="font-size:0.85rem;font-weight:600;color:#2dd4bf;">${this._escapeHtml(blockName)}</span>
+                </div>
+        `;
+
+        blockItems.forEach((item, idx) => {
+            const isLast = idx === blockItems.length - 1;
+            const borderRadius = isLast ? '0 0 0.375rem 0.375rem' : '0';
+            const borderBottom = isLast ? '' : 'border-bottom:none;';
+
+            const exercises = [];
+            if (item.exercises) {
+                if (item.exercises.a) exercises.push({ label: '', name: item.exercises.a });
+                if (item.exercises.b) exercises.push({ label: 'Alt: ', name: item.exercises.b });
+                if (item.exercises.c) exercises.push({ label: 'Alt2: ', name: item.exercises.c });
+            }
+
+            const exercisesHtml = exercises.length > 0
+                ? exercises.map(ex =>
+                    `<div class="exercise-line">${ex.label ? `<span class="text-muted">${ex.label}</span>` : ''}${this._escapeHtml(ex.name)}</div>`
+                ).join('')
+                : '<div class="exercise-line text-muted">No exercises</div>';
+
+            const parts = [`${item.sets || '3'} sets`, `${item.reps || '8-12'} reps`, `${item.rest || '60s'} rest`];
+            if (item.default_weight) {
+                parts.push(`${item.default_weight} ${item.default_weight_unit || 'lbs'}`);
+            }
+
+            html += `
+                <div class="card" style="border-left:3px solid #2dd4bf !important;border-radius:${borderRadius};${borderBottom}margin-bottom:0;">
+                    <div class="card-body py-2 px-3">
+                        <div class="exercise-list mb-1">${exercisesHtml}</div>
+                        <div class="exercise-meta-text text-muted small">${parts.join(' • ')}</div>
+                    </div>
+                </div>
+            `;
+        });
+
+        html += '</div>';
+        return html;
     }
 
     /** Render an exercise group card */

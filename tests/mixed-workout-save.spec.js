@@ -162,3 +162,71 @@ test('sectionsToExerciseGroups preserves empty strings for cardio groups', async
   expect(result.cardioGroup.group_type).toBe('cardio');
   expect(result.cardioGroup.hasCardioConfig).toBe(true);
 });
+
+test('sectionsToExerciseGroups preserves block_id and group_name for block exercises', async ({ page }) => {
+  await page.goto(`${BASE}/workout-builder.html`);
+  await page.waitForLoadState('domcontentloaded');
+  await page.waitForTimeout(1000);
+
+  const result = await page.evaluate(() => {
+    if (!window.ExerciseDataUtils) {
+      return { error: 'ExerciseDataUtils not loaded' };
+    }
+
+    const sections = [
+      {
+        section_id: 'section-superset-1',
+        type: 'superset',
+        name: 'Chest Superset',
+        exercises: [
+          {
+            exercise_id: 'ex-1',
+            name: 'Bench Press',
+            alternates: [],
+            sets: '3',
+            reps: '10',
+            rest: '60s',
+            group_type: 'standard'
+          },
+          {
+            exercise_id: 'ex-2',
+            name: 'Dumbbell Flyes',
+            alternates: [],
+            sets: '3',
+            reps: '12',
+            rest: '30s',
+            group_type: 'standard'
+          }
+        ]
+      }
+    ];
+
+    const groups = ExerciseDataUtils.sectionsToExerciseGroups(sections);
+    return {
+      groupCount: groups.length,
+      group1: {
+        group_type: groups[0].group_type,
+        block_id: groups[0].block_id,
+        group_name: groups[0].group_name,
+        name: groups[0].exercises?.a
+      },
+      group2: {
+        group_type: groups[1].group_type,
+        block_id: groups[1].block_id,
+        group_name: groups[1].group_name,
+        name: groups[1].exercises?.a
+      }
+    };
+  });
+
+  expect(result.groupCount).toBe(2);
+
+  // Both exercises should belong to the same block (block_id links them)
+  expect(result.group1.block_id).toBe('section-superset-1');
+  expect(result.group1.group_name).toBe('Chest Superset');
+  expect(result.group1.name).toBe('Bench Press');
+
+  expect(result.group2.block_id).toBe('section-superset-1');
+  expect(result.group2.group_name).toBe('Chest Superset');
+  expect(result.group2.name).toBe('Dumbbell Flyes');
+});
