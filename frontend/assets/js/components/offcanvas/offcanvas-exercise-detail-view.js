@@ -54,9 +54,10 @@ export function showExerciseDetailInSearch(exercise, options = {}) {
     });
 
     // Hide all body children (don't remove — preserves listeners)
+    // Use d-none class because d-flex !important beats inline display:none
     Array.from(body.children).forEach(child => {
         child.dataset.detailHidden = 'true';
-        child.style.display = 'none';
+        child.classList.add('d-none');
     });
 
     // Replace header content
@@ -107,7 +108,7 @@ export function showExerciseDetailInSearch(exercise, options = {}) {
         // Show all previously hidden body children
         Array.from(body.children).forEach(child => {
             if (child.dataset.detailHidden === 'true') {
-                child.style.display = '';
+                child.classList.remove('d-none');
                 delete child.dataset.detailHidden;
             }
         });

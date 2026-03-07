@@ -4,6 +4,8 @@
  * Extracted from workouts.js
  */
 
+import { showExerciseSearchInEditor } from '../components/offcanvas/offcanvas-exercise-search-inline.js';
+
 const WorkoutEditorOffcanvas = {
 
     /**
@@ -107,17 +109,19 @@ const WorkoutEditorOffcanvas = {
                     window.showToast('Exercise deleted', 'success');
                 }
             },
-            // onSearchClick callback
-            (slotKey, populateCallback, initialQuery = '') => {
-                console.log('🔍 Opening exercise search for slot:', slotKey, 'with initial query:', initialQuery);
+            // onSearchClick callback - inline push/pop within editor offcanvas
+            (slotKey, populateCallback, initialQuery = '', editorElement = null) => {
+                console.log('🔍 Opening inline exercise search for slot:', slotKey);
 
-                window.UnifiedOffcanvasFactory.createExerciseSearchOffcanvas(
+                const offcanvasEl = editorElement || document.getElementById('exerciseGroupEditorOffcanvas');
+
+                showExerciseSearchInEditor(
                     {
+                        offcanvasElement: offcanvasEl,
                         title: slotKey === 'a' ? 'Select Primary Exercise' : 'Select Alternate Exercise',
-                        showFilters: true,
+                        initialQuery: initialQuery,
                         buttonText: 'Select',
-                        buttonIcon: 'bx-check',
-                        initialQuery: initialQuery
+                        buttonIcon: 'bx-check'
                     },
                     (selectedExercise) => {
                         console.log('✅ Exercise selected:', selectedExercise.name);
