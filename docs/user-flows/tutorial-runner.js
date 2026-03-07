@@ -273,103 +273,73 @@ const TUTORIALS = {
   'build-workout-3ex': {
     title: 'Build a Workout with 3 Exercises',
     startUrl: '/workout-builder.html?new=true',
+    // NOTE: On desktop, the ID swap renames desktop* → canonical mobile IDs.
+    // Desktop uses sidebar + inline editing (no offcanvas).
     steps: [
       {
         action: 'wait',
-        target: { mobile: '#workoutEditorForm', desktop: '#desktopEditorForm' },
-        waitTime: 1500,
+        target: '#workoutEditorForm',
+        waitTime: 2500,
         caption: 'Start a new workout'
       },
       {
         action: 'type',
-        target: { mobile: '#workoutName', desktop: '#desktopWorkoutName' },
+        target: '#workoutName',
         value: 'Upper Body',
         caption: 'Name your workout'
       },
       {
         action: 'type',
-        target: { mobile: '#mobileDescInline', desktop: '#desktopDescInline' },
+        target: '#desktopDescInline',
         value: 'Stretch before starting',
         caption: 'Add a note to stretch'
       },
       {
-        action: 'click',
-        target: { mobile: '#addExerciseGroupBtnVisible', desktop: '#desktopAddGroupBtn' },
-        waitAfter: '#exerciseGroupEditorOffcanvas.show',
-        caption: 'Add your first exercise'
-      },
-      {
         action: 'type',
-        target: '#primaryExerciseInput',
-        value: 'Bench Press',
-        caption: 'Search for Bench Press'
-      },
-      {
-        action: 'type',
-        target: '#editorProtocol',
-        value: '3x10',
-        caption: 'Set the protocol'
+        target: '#sidebarSearch',
+        value: 'bench press',
+        waitTime: 800,
+        caption: 'Search the exercise library'
       },
       {
         action: 'click',
-        target: '#saveExerciseGroupEditorBtn',
-        waitTime: 1000,
-        caption: 'First exercise added!'
+        target: '.sidebar-add-btn',
+        waitTime: 800,
+        caption: 'Add Bench Press'
+      },
+      {
+        action: 'dismiss-then-type',
+        clearTarget: '#sidebarSearch',
+        target: '#sidebarSearch',
+        value: 'shoulder press',
+        waitTime: 800,
+        caption: 'Search for another exercise'
       },
       {
         action: 'click',
-        target: { mobile: '#addExerciseGroupBtnVisible', desktop: '#desktopAddGroupBtn' },
-        waitAfter: '#exerciseGroupEditorOffcanvas.show',
-        caption: 'Add a second exercise'
+        target: '.sidebar-add-btn',
+        waitTime: 800,
+        caption: 'Add Shoulder Press'
       },
       {
-        action: 'type',
-        target: '#primaryExerciseInput',
-        value: 'Overhead Press',
-        caption: 'Search for Overhead Press'
-      },
-      {
-        action: 'type',
-        target: '#editorProtocol',
-        value: '3x8',
-        caption: 'Set the protocol'
+        action: 'dismiss-then-type',
+        clearTarget: '#sidebarSearch',
+        target: '#sidebarSearch',
+        value: 'lateral raise',
+        waitTime: 800,
+        caption: 'Search for a third exercise'
       },
       {
         action: 'click',
-        target: '#saveExerciseGroupEditorBtn',
-        waitTime: 1000,
-        caption: 'Second exercise added!'
+        target: '.sidebar-add-btn',
+        waitTime: 800,
+        caption: 'Add Lateral Raise'
       },
       {
         action: 'click',
-        target: { mobile: '#addExerciseGroupBtnVisible', desktop: '#desktopAddGroupBtn' },
-        waitAfter: '#exerciseGroupEditorOffcanvas.show',
-        caption: 'Add a third exercise'
-      },
-      {
-        action: 'type',
-        target: '#primaryExerciseInput',
-        value: 'Lateral Raise',
-        caption: 'Search for Lateral Raise'
-      },
-      {
-        action: 'type',
-        target: '#editorProtocol',
-        value: '3x15',
-        caption: 'Set the protocol'
-      },
-      {
-        action: 'click',
-        target: '#saveExerciseGroupEditorBtn',
-        waitTime: 1000,
-        caption: 'Third exercise added!'
-      },
-      {
-        action: 'click',
-        target: { mobile: '#mobileSaveFab', desktop: '#desktopSaveBtn' },
-        waitAfter: '.toast-success, .alert-success, .save-confirmation',
+        target: '#saveWorkoutBtn',
         waitTime: 1500,
-        caption: 'Workout saved!'
+        caption: 'Save your workout!'
       }
     ]
   },

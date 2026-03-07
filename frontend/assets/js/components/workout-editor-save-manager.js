@@ -179,10 +179,12 @@ async function saveWorkoutFromEditor(silent = false) {
                 validationErrors.push(`Group ${index + 1}: Invalid or missing exercises object`);
             }
 
-            // Check for required fields
-            if (!group.sets) validationErrors.push(`Group ${index + 1}: Missing sets`);
-            if (!group.reps) validationErrors.push(`Group ${index + 1}: Missing reps`);
-            if (!group.rest) validationErrors.push(`Group ${index + 1}: Missing rest`);
+            // Check for required fields (skip for cardio groups which don't use sets/reps/rest)
+            if (group.group_type !== 'cardio') {
+                if (!group.sets) validationErrors.push(`Group ${index + 1}: Missing sets`);
+                if (!group.reps) validationErrors.push(`Group ${index + 1}: Missing reps`);
+                if (!group.rest) validationErrors.push(`Group ${index + 1}: Missing rest`);
+            }
         });
 
         if (validationErrors.length > 0) {
