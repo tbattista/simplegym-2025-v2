@@ -30,20 +30,8 @@
     margin-top: 0.5rem;
 }
 
-.eg-section-alternates {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
 .eg-section-alternates .eg-section-label {
-    margin-bottom: 0;
-    white-space: nowrap;
-}
-
-.eg-section-alternates .eg-chip-list {
-    flex: 1;
-    min-width: 0;
+    display: none;
 }
 
 .eg-section-label {
