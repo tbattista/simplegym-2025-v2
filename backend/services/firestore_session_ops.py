@@ -5,7 +5,7 @@ Mixin providing session lifecycle, exercise tracking, and history management
 
 import logging
 from typing import Dict, List, Optional, Any
-from datetime import datetime
+from datetime import datetime, timezone
 
 try:
     from firebase_admin import firestore
@@ -229,7 +229,7 @@ class FirestoreSessionOps:
                 logger.info(f"Using manual duration: {duration_minutes} minutes")
             else:
                 started_at = request.started_at
-                completed_at = request.completed_at or datetime.now()
+                completed_at = request.completed_at or datetime.now(timezone.utc)
 
                 # Ensure both datetimes are timezone-naive for comparison
                 if hasattr(started_at, 'replace') and started_at.tzinfo is not None:

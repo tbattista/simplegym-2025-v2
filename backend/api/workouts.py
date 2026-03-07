@@ -166,9 +166,9 @@ async def create_workout_firebase(
                 logger.info(f"✅ Workout created in Firestore: {workout.name} with ID: {workout.id}")
                 return workout
             else:
-                # Fallback to local storage
-                logger.warning("Firebase workout creation failed, falling back to local storage")
-        
+                logger.error("Firebase workout creation returned None for authenticated user")
+                raise HTTPException(status_code=500, detail="Failed to save workout. Please try again.")
+
         # Anonymous user or Firebase unavailable - use local storage
         logger.info("Using local storage for workout creation")
         data_service = DataService()

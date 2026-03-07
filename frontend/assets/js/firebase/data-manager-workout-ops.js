@@ -180,7 +180,10 @@ const DataManagerWorkoutOps = {
             }
         } catch (error) {
             console.error('❌ Error creating workout:', error);
-            // Fallback to localStorage
+            // Only fall back to localStorage for anonymous users
+            if (this.getFirebaseUser()) {
+                throw error;
+            }
             return this.createLocalStorageWorkout(workoutData);
         }
     },

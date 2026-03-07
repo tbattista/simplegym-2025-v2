@@ -23,25 +23,37 @@ function escapeHtml(text) {
 }
 
 /**
+ * Calculate calendar days between now and a date string.
+ * Uses calendar day boundaries (midnight) in the user's local timezone,
+ * NOT elapsed time. 11pm yesterday and 1am today are 1 day apart.
+ * @param {string} dateString - ISO date string or any Date-parseable string
+ * @returns {number} Number of calendar days ago (0 = today, 1 = yesterday, etc.)
+ */
+function getCalendarDaysAgo(dateString) {
+    const date = new Date(dateString);
+    const now = new Date();
+    const dateDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    return Math.round((today - dateDay) / (1000 * 60 * 60 * 24));
+}
+
+/**
  * Format date for display with relative time
  * @param {string} dateString - ISO date string
  * @returns {string} Formatted date string
  */
 function formatDate(dateString) {
     if (!dateString) return 'N/A';
-    
+
     try {
-        const date = new Date(dateString);
-        const now = new Date();
-        const diffTime = Math.abs(now - date);
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-        
+        const diffDays = getCalendarDaysAgo(dateString);
+
         if (diffDays === 0) return 'Today';
         if (diffDays === 1) return 'Yesterday';
         if (diffDays < 7) return `${diffDays} days ago`;
         if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
-        
-        return date.toLocaleDateString();
+
+        return new Date(dateString).toLocaleDateString();
     } catch (error) {
         console.error('Error formatting date:', error);
         return dateString;
@@ -216,6 +228,7 @@ function getCurrentUserId() {
 // Make all functions globally available for backward compatibility
 if (typeof window !== 'undefined') {
     window.escapeHtml = escapeHtml;
+    window.getCalendarDaysAgo = getCalendarDaysAgo;
     window.formatDate = formatDate;
     window.debounce = debounce;
     window.truncateText = truncateText;
@@ -232,6 +245,7 @@ if (typeof window !== 'undefined') {
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = {
         escapeHtml,
+        getCalendarDaysAgo,
         formatDate,
         debounce,
         truncateText,

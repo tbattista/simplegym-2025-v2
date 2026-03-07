@@ -184,11 +184,7 @@ class DashboardWorkoutCard {
    * @private
    */
   _getDaysAgo(dateString) {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffTime = Math.abs(now - date);
-    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays;
+    return getCalendarDaysAgo(dateString);
   }
   
   /**

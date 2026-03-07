@@ -6,7 +6,7 @@ Supports cardio sessions (treadmill, bike, watch data) and strength workout logs
 
 from fastapi import APIRouter, Depends, HTTPException
 from typing import Dict, Any
-from datetime import datetime
+from datetime import datetime, timezone
 import logging
 import os
 
@@ -113,7 +113,7 @@ async def save_strength_session(
         raise HTTPException(status_code=400, detail="At least one exercise is required")
 
     try:
-        started_at = request.started_at or datetime.utcnow()
+        started_at = request.started_at or datetime.now(timezone.utc)
 
         # 1. Convert ParsedExerciseGroup → ExerciseGroup (adds auto-generated group_id)
         exercise_groups = [

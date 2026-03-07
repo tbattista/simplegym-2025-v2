@@ -451,11 +451,8 @@ function formatDate(dateString, format = 'full') {
  * Format relative date
  */
 function formatRelativeDate(dateString) {
-  const date = new Date(dateString);
-  const now = new Date();
-  const diffMs = now - date;
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-  
+  const diffDays = getCalendarDaysAgo(dateString);
+
   if (diffDays === 0) return 'Today';
   if (diffDays === 1) return 'Yesterday';
   if (diffDays < 7) return `${diffDays} days ago`;

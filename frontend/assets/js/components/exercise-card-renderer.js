@@ -731,13 +731,11 @@ class ExerciseCardRenderer {
         // Helper to format date - relative within 2 weeks, absolute otherwise
         const formatDate = (dateStr) => {
             if (!dateStr) return '';
-            const date = new Date(dateStr);
-            const now = new Date();
-            const diffDays = Math.floor((now - date) / (1000 * 60 * 60 * 24));
+            const diffDays = getCalendarDaysAgo(dateStr);
             if (diffDays === 0) return 'today';
             if (diffDays === 1) return 'yesterday';
             if (diffDays < 14) return `${diffDays} days ago`;
-            return 'on ' + date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            return 'on ' + new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
         };
         
         // Show up to 3 additional sessions (4 total including primary)

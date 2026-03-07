@@ -174,13 +174,10 @@ class RecentSessionCard {
    */
   _formatDate(dateString) {
     if (!dateString) return 'N/A';
-    
+
     try {
-      const date = new Date(dateString);
-      const now = new Date();
-      const diffTime = Math.abs(now - date);
-      const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-      
+      const diffDays = getCalendarDaysAgo(dateString);
+
       if (diffDays === 0) {
         return 'Today';
       } else if (diffDays === 1) {
@@ -188,8 +185,8 @@ class RecentSessionCard {
       } else if (diffDays < 7) {
         return `${diffDays} days ago`;
       } else {
-        return date.toLocaleDateString('en-US', { 
-          month: 'short', 
+        return new Date(dateString).toLocaleDateString('en-US', {
+          month: 'short',
           day: 'numeric'
         });
       }

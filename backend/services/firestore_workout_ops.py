@@ -92,7 +92,8 @@ class FirestoreWorkoutOps:
                         workout.sections = migrate_exercise_groups_to_sections(workout.exercise_groups)
                     workouts.append(workout)
                 except Exception as e:
-                    logger.warning(f"Failed to parse workout {doc.id}: {str(e)}")
+                    logger.error(f"Failed to parse workout {doc.id}: {str(e)}, "
+                                 f"group_types: {[g.get('group_type') for g in workout_data.get('exercise_groups', [])]}")
                     continue
 
             logger.info(f"Retrieved {len(workouts)} workouts for user {user_id}")

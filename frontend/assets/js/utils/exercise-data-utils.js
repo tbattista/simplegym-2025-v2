@@ -29,9 +29,9 @@ const ExerciseDataUtils = {
                     group_id: exercise.exercise_id,
                     group_type: exercise.group_type || (isNamed ? 'block' : 'standard'),
                     exercises: exercises,
-                    sets: exercise.sets || '3',
-                    reps: exercise.reps || '8-12',
-                    rest: exercise.rest || '60s',
+                    sets: (exercise.group_type === 'cardio') ? '' : (exercise.sets || '3'),
+                    reps: (exercise.group_type === 'cardio') ? '' : (exercise.reps || '8-12'),
+                    rest: (exercise.group_type === 'cardio') ? '' : (exercise.rest || '60s'),
                     default_weight: exercise.default_weight || null,
                     default_weight_unit: exercise.default_weight_unit || 'lbs'
                 };

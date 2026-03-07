@@ -178,12 +178,9 @@ class RecentWorkoutsManager {
 
   formatDate(timestamp) {
     if (!timestamp) return 'Recently';
-    
-    const date = new Date(timestamp);
-    const now = new Date();
-    const diffMs = now - date;
-    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-    
+
+    const diffDays = getCalendarDaysAgo(timestamp);
+
     if (diffDays === 0) return 'Today';
     if (diffDays === 1) return 'Yesterday';
     if (diffDays < 7) return `${diffDays} days ago`;
@@ -191,8 +188,8 @@ class RecentWorkoutsManager {
       const weeks = Math.floor(diffDays / 7);
       return `${weeks} week${weeks !== 1 ? 's' : ''} ago`;
     }
-    
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+    return new Date(timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   }
 
   escapeHtml(text) {

@@ -438,9 +438,7 @@ function formatCardioExerciseDuration(ex) {
  */
 function formatSessionDate(dateStr) {
     const date = new Date(dateStr);
-    const now = new Date();
-    const diffMs = now - date;
-    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    const diffDays = getCalendarDaysAgo(dateStr);
 
     if (diffDays === 0) {
         return 'Today at ' + date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });

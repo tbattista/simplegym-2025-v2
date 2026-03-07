@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field, field_validator
 from typing import Any, Dict, Optional, List
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 from uuid import uuid4
 
 class WorkoutData(BaseModel):
@@ -1211,8 +1211,8 @@ class CreateSessionRequest(BaseModel):
     workout_id: str = Field(..., description="ID of the workout template")
     workout_name: str = Field(..., description="Name of the workout")
     started_at: Optional[datetime] = Field(
-        default_factory=datetime.now,
-        description="Start time (defaults to now)"
+        default_factory=lambda: datetime.now(timezone.utc),
+        description="Start time (defaults to now UTC)"
     )
     session_mode: str = Field(
         default="timed",
@@ -1231,10 +1231,10 @@ class UpdateSessionRequest(BaseModel):
 
 class CompleteSessionRequest(BaseModel):
     """Request to finalize a workout session"""
-    
+
     completed_at: Optional[datetime] = Field(
-        default_factory=datetime.now,
-        description="Completion time (defaults to now)"
+        default_factory=lambda: datetime.now(timezone.utc),
+        description="Completion time (defaults to now UTC)"
     )
     exercises_performed: List[ExercisePerformance] = Field(
         ...,
@@ -1278,8 +1278,8 @@ class CreateAndCompleteSessionRequest(BaseModel):
     workout_name: str = Field(..., description="Name of the workout")
     started_at: datetime = Field(..., description="When the workout started")
     completed_at: Optional[datetime] = Field(
-        default_factory=datetime.now,
-        description="Completion time (defaults to now)"
+        default_factory=lambda: datetime.now(timezone.utc),
+        description="Completion time (defaults to now UTC)"
     )
     exercises_performed: List[ExercisePerformance] = Field(
         ...,
@@ -1417,8 +1417,8 @@ class CreateCardioSessionRequest(BaseModel):
     activity_type: str = Field(..., description="Type of cardio activity")
     activity_name: Optional[str] = Field(None, max_length=100, description="Custom session name")
     started_at: Optional[datetime] = Field(
-        default_factory=datetime.now,
-        description="Start time (defaults to now)"
+        default_factory=lambda: datetime.now(timezone.utc),
+        description="Start time (defaults to now UTC)"
     )
     completed_at: Optional[datetime] = Field(None, description="End time")
     duration_minutes: int = Field(..., ge=1, le=1440, description="Total duration in minutes")
