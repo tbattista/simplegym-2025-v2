@@ -537,6 +537,39 @@ function renderCardioHistoryEntry(session) {
     metaParts.push(`${session.avg_heart_rate} bpm`);
   }
 
+  // Delete mode: show checkbox instead of menu
+  const state = window.ffn.workoutHistory;
+  const deleteMode = state.deleteMode;
+  const isSelected = state.selectedSessionIds.has(session.id);
+
+  if (deleteMode) {
+    return `
+      <div class="session-entry delete-mode ${isSelected ? 'selected' : ''}"
+           id="session-entry-${session.id}"
+           onclick="toggleSessionSelection('${session.id}')"
+           role="checkbox"
+           aria-checked="${isSelected}">
+        <div class="session-select-checkbox">
+          <input type="checkbox"
+                 class="form-check-input session-checkbox"
+                 id="select-session-${session.id}"
+                 ${isSelected ? 'checked' : ''}
+                 onclick="event.stopPropagation(); toggleSessionSelection('${session.id}');">
+        </div>
+        <div class="session-status">
+          <span class="session-status-icon cardio-icon">
+            <i class="bx ${icon}"></i>
+          </span>
+        </div>
+        <div class="session-info flex-grow-1">
+          <span class="session-workout-name">${escapeHtml(name)}</span>
+          <span class="session-date">${dateStr}</span>
+          <span class="session-meta">${metaParts.join(' · ')}</span>
+        </div>
+      </div>
+    `;
+  }
+
   // Build detail rows (comprehensive view of all optional data)
   const detailRows = [];
   if (session.distance) {
@@ -566,9 +599,10 @@ function renderCardioHistoryEntry(session) {
   const hasDetails = detailRows.length > 0;
   const collapseId = `cardio-hist-${session.id}`;
 
+  // Normal mode: expandable with 3-dot menu
   return `
     <div class="session-entry" id="session-entry-${session.id}"
-         ${hasDetails ? `data-bs-toggle="collapse" data-bs-target="#${collapseId}" role="button" aria-expanded="false"` : ''}
+         ${hasDetails ? `onclick="handleSessionEntryClick(event, '${collapseId}')" role="button" aria-expanded="false" aria-controls="${collapseId}"` : ''}
          data-session-id="${session.id}">
       <div class="session-status">
         <span class="session-status-icon cardio-icon">
@@ -580,7 +614,24 @@ function renderCardioHistoryEntry(session) {
         <span class="session-date">${dateStr}</span>
         <span class="session-meta">${metaParts.join(' · ')}</span>
       </div>
-      ${hasDetails ? `<span class="session-chevron"><i class="bx bx-chevron-down"></i></span>` : ''}
+      <div class="dropdown session-menu">
+        <button class="btn btn-sm btn-icon session-menu-btn"
+                type="button"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+                title="Session options">
+          <i class="bx bx-dots-vertical-rounded"></i>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end">
+          <li>
+            <a class="dropdown-item text-danger" href="javascript:void(0);"
+               onclick="enterDeleteModeWithSelection('${session.id}');">
+              <i class="bx bx-trash me-2"></i>Delete
+            </a>
+          </li>
+        </ul>
+      </div>
+      ${hasDetails ? `<i class="bx bx-chevron-down session-chevron"></i>` : ''}
     </div>
     ${hasDetails ? `
       <div class="collapse session-details-collapse" id="${collapseId}">

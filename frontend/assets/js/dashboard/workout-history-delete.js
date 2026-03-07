@@ -179,8 +179,12 @@ async function confirmBatchDeleteSessions() {
   const sessionDates = [...selected].map(id => {
     const session = window.ffn.workoutHistory.sessions.find(s => s.id === id);
     if (session) {
-      const date = formatDate(session.completed_at, { short: true });
-      const name = session.workout_name || 'Workout';
+      const isCardio = session._sessionType === 'cardio';
+      const date = formatDate(isCardio ? (session.started_at || session.created_at) : session.completed_at, { short: true });
+      const registry = window.ActivityTypeRegistry;
+      const name = isCardio
+        ? (session.activity_name || (registry ? registry.getName(session.activity_type) : session.activity_type) || 'Activity')
+        : (session.workout_name || 'Workout');
       return `${name} - ${date}`;
     }
     return 'Unknown session';
@@ -220,10 +224,15 @@ async function batchDeleteSessions(sessionIds) {
     const token = await window.dataManager.getAuthToken();
     let deletedCount = 0;
 
-    // Delete each session
+    // Delete each session (route to correct endpoint by type)
     for (const id of sessionIds) {
       try {
-        const response = await fetch(`/api/v3/workout-sessions/${id}`, {
+        const session = window.ffn.workoutHistory.sessions.find(s => s.id === id);
+        const endpoint = (session && session._sessionType === 'cardio')
+          ? `/api/v3/cardio-sessions/${id}`
+          : `/api/v3/workout-sessions/${id}`;
+
+        const response = await fetch(endpoint, {
           method: 'DELETE',
           headers: { 'Authorization': `Bearer ${token}` }
         });
