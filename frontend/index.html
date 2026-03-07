@@ -182,7 +182,23 @@
                   </div>
                 </div>
 
-                <!-- Section 4: Favorites (Primary Launcher) -->
+                <!-- Section 4: Action Buttons -->
+                <div class="home-nav-buttons mb-2">
+                  <a href="workout-builder.html" class="btn btn-outline-secondary w-100">
+                    <i class="bx bx-plus me-2"></i>Create New Workout
+                  </a>
+                </div>
+
+                <div class="d-flex gap-2 mb-4">
+                  <button id="homePrimaryCTA" class="btn btn-primary flex-fill py-3 home-primary-cta" onclick="handlePrimaryCTA()">
+                    Start Training
+                  </button>
+                  <a href="activity-log.html" class="btn btn-outline-primary flex-fill py-3">
+                    <i class="bx bx-edit me-1"></i>Quick Log
+                  </a>
+                </div>
+
+                <!-- Section 5: Favorites -->
                 <div id="favoritesSection" class="mb-4">
                   <div class="d-flex justify-content-between align-items-center mb-3">
                     <span class="d-flex align-items-center gap-2">
@@ -203,18 +219,6 @@
                     <p class="mb-0 small">No favorites yet. Heart a workout to add it here!</p>
                   </div>
                 </div>
-
-                <!-- Section 5: Workout Navigation (Secondary) -->
-                <div class="home-nav-buttons mb-4">
-                  <a href="workout-builder.html" class="btn btn-outline-secondary w-100">
-                    <i class="bx bx-plus me-2"></i>Create New Workout
-                  </a>
-                </div>
-
-                <!-- Section 6: Primary CTA -->
-                <button id="homePrimaryCTA" class="btn btn-primary w-100 py-3 mb-4 home-primary-cta" onclick="handlePrimaryCTA()">
-                  Start Training
-                </button>
 
                 <!-- Section 7: Recent Activity -->
                 <div id="recentActivitySection" class="mb-4">
