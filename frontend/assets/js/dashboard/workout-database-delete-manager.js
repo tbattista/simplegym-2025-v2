@@ -458,52 +458,51 @@ async function confirmBatchPermanentDelete() {
     const count = selected.size;
     if (count === 0) return;
 
-    const confirmed = confirm(`Permanently delete ${count} workout${count > 1 ? 's' : ''}?\n\nThis cannot be undone.`);
-    if (!confirmed) return;
+    ffnModalManager.confirm('Delete Permanently', `Permanently delete ${count} workout${count > 1 ? 's' : ''}?\n\nThis cannot be undone.`, async () => {
+        const deleteBtn = document.querySelector('.btn-batch-delete');
+        if (deleteBtn) {
+            deleteBtn.innerHTML = '<i class="bx bx-loader-alt bx-spin"></i> Deleting...';
+            deleteBtn.disabled = true;
+        }
 
-    const deleteBtn = document.querySelector('.btn-batch-delete');
-    if (deleteBtn) {
-        deleteBtn.innerHTML = '<i class="bx bx-loader-alt bx-spin"></i> Deleting...';
-        deleteBtn.disabled = true;
-    }
+        try {
+            let deletedCount = 0;
+            for (const id of [...selected]) {
+                try {
+                    await window.dataManager.permanentDeleteWorkout(id);
+                    deletedCount++;
+                } catch (error) {
+                    console.error(`Failed to permanently delete workout ${id}:`, error);
+                }
+            }
 
-    try {
-        let deletedCount = 0;
-        for (const id of [...selected]) {
-            try {
-                await window.dataManager.permanentDeleteWorkout(id);
-                deletedCount++;
-            } catch (error) {
-                console.error(`Failed to permanently delete workout ${id}:`, error);
+            // Remove from local state entirely
+            const idsToRemove = [...selected];
+            window.ffn.workoutDatabase.all = window.ffn.workoutDatabase.all.filter(
+                w => !idsToRemove.includes(w.id)
+            );
+            window.ffn.workouts = (window.ffn.workouts || []).filter(
+                w => !idsToRemove.includes(w.id)
+            );
+
+            const activeCount = window.ffn.workoutDatabase.all.filter(w => !w.is_archived).length;
+            window.ffn.workoutDatabase.stats.total = activeCount;
+            const totalCountEl = document.getElementById('totalWorkoutsCount');
+            if (totalCountEl) totalCountEl.textContent = activeCount;
+
+            if (window.showToast) {
+                window.showToast(`Permanently deleted ${deletedCount} workout${deletedCount > 1 ? 's' : ''}`, 'success');
+            }
+
+            exitDeleteMode();
+            window.filterWorkouts();
+        } catch (error) {
+            console.error('Batch permanent delete failed:', error);
+            if (window.showToast) {
+                window.showToast('Failed to delete some workouts', 'error');
             }
         }
-
-        // Remove from local state entirely
-        const idsToRemove = [...selected];
-        window.ffn.workoutDatabase.all = window.ffn.workoutDatabase.all.filter(
-            w => !idsToRemove.includes(w.id)
-        );
-        window.ffn.workouts = (window.ffn.workouts || []).filter(
-            w => !idsToRemove.includes(w.id)
-        );
-
-        const activeCount = window.ffn.workoutDatabase.all.filter(w => !w.is_archived).length;
-        window.ffn.workoutDatabase.stats.total = activeCount;
-        const totalCountEl = document.getElementById('totalWorkoutsCount');
-        if (totalCountEl) totalCountEl.textContent = activeCount;
-
-        if (window.showToast) {
-            window.showToast(`Permanently deleted ${deletedCount} workout${deletedCount > 1 ? 's' : ''}`, 'success');
-        }
-
-        exitDeleteMode();
-        window.filterWorkouts();
-    } catch (error) {
-        console.error('Batch permanent delete failed:', error);
-        if (window.showToast) {
-            window.showToast('Failed to delete some workouts', 'error');
-        }
-    }
+    }, { confirmText: 'Delete Permanently', confirmClass: 'btn-danger', size: 'sm' });
 }
 
 /**

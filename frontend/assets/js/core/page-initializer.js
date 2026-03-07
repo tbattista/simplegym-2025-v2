@@ -167,6 +167,8 @@ class PageInitializer {
         // Try to show alert if showAlert function exists
         if (typeof window.showAlert === 'function') {
             window.showAlert(`Error initializing page: ${message}`, 'danger');
+        } else if (window.ffnModalManager) {
+            ffnModalManager.alert('Error', `${message}<br><br>Please refresh the page and try again.`, 'danger');
         } else {
             // Fallback to browser alert
             alert(`Error: ${message}\n\nPlease refresh the page and try again.`);

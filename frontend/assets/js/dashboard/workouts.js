@@ -517,15 +517,15 @@ function deleteWorkout(id) {
     const workout = window.ffn.workouts.find(w => w.id === id);
     if (!workout) return;
     
-    if (confirm(`Are you sure you want to delete "${workout.name}"? This action cannot be undone.`)) {
+    ffnModalManager.confirm('Delete Workout', `Are you sure you want to delete "${workout.name}"? This action cannot be undone.`, () => {
         // Remove from local state
         window.ffn.workouts = window.ffn.workouts.filter(w => w.id !== id);
-        
+
         renderWorkouts();
         renderWorkoutsView();
         updateStats();
         showAlert(`Workout "${workout.name}" deleted`, 'success');
-    }
+    }, { confirmText: 'Delete', confirmClass: 'btn-danger', size: 'sm' });
 }
 
 /**

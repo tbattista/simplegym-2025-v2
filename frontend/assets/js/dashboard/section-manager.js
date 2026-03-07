@@ -407,18 +407,22 @@ const SectionManager = {
         if (!sectionEl) return;
 
         const exerciseCount = sectionEl.querySelectorAll('.exercise-group-card').length;
-        if (exerciseCount > 0 && !confirm(`Delete this section and its ${exerciseCount} exercise(s)?`)) {
-            return;
+        const doDelete = () => {
+            // Remove exercise data from global store
+            sectionEl.querySelectorAll('.exercise-group-card').forEach(card => {
+                const groupId = card.dataset.groupId;
+                if (groupId) delete window.exerciseGroupsData[groupId];
+            });
+
+            sectionEl.remove();
+            if (window.markEditorDirty) window.markEditorDirty();
+        };
+
+        if (exerciseCount > 0) {
+            ffnModalManager.confirm('Delete Section', `Delete this section and its ${exerciseCount} exercise(s)?`, doDelete, { confirmText: 'Delete', confirmClass: 'btn-danger', size: 'sm' });
+        } else {
+            doDelete();
         }
-
-        // Remove exercise data from global store
-        sectionEl.querySelectorAll('.exercise-group-card').forEach(card => {
-            const groupId = card.dataset.groupId;
-            if (groupId) delete window.exerciseGroupsData[groupId];
-        });
-
-        sectionEl.remove();
-        if (window.markEditorDirty) window.markEditorDirty();
     },
 
     // ─── Move Exercise Between Sections ──────────────────────────

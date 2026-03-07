@@ -51,9 +51,16 @@ export function showExerciseSearchInEditor(config, onSelectExercise) {
 
     // Hide all body children with d-none
     Array.from(body.children).forEach(child => {
-        child.dataset.searchHidden = 'true';
+        child.setAttribute('data-search-hidden', 'true');
         child.classList.add('d-none');
     });
+
+    // Also hide sibling elements like the editor footer
+    const footer = offcanvasElement.querySelector('.offcanvas-footer, .eg-editor-footer');
+    if (footer) {
+        footer.setAttribute('data-search-hidden', 'true');
+        footer.classList.add('d-none');
+    }
 
     // Replace header
     header.innerHTML = '';
@@ -303,11 +310,10 @@ export function showExerciseSearchInEditor(config, onSelectExercise) {
             body.removeAttribute('style');
         }
 
-        Array.from(body.children).forEach(child => {
-            if (child.dataset.searchHidden === 'true') {
-                child.classList.remove('d-none');
-                delete child.dataset.searchHidden;
-            }
+        // Restore body children and any other hidden elements (footer, etc.)
+        offcanvasElement.querySelectorAll('[data-search-hidden="true"]').forEach(el => {
+            el.classList.remove('d-none');
+            el.removeAttribute('data-search-hidden');
         });
 
         header.innerHTML = '';

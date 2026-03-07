@@ -315,47 +315,46 @@ async function saveExercise(page) {
 async function deleteExercise(page) {
     if (!editState.exercise) return;
 
-    const confirmed = confirm(`Are you sure you want to delete "${editState.exercise.name}"? This cannot be undone.`);
-    if (!confirmed) return;
-
-    const user = window.firebaseAuth?.currentUser;
-    if (!user) {
-        if (window.showAlert) window.showAlert('Please sign in to delete.', 'warning');
-        return;
-    }
-
-    const deleteBtn = document.getElementById('deleteExerciseBtn');
-    deleteBtn.disabled = true;
-    deleteBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Deleting...';
-
-    try {
-        const token = await user.getIdToken();
-        const url = page.getApiUrl(`/api/v3/users/me/exercises/${editState.exerciseId}`);
-
-        const response = await fetch(url, {
-            method: 'DELETE',
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-
-        if (!response.ok) {
-            throw new Error('Failed to delete exercise');
+    ffnModalManager.confirm('Delete Exercise', `Are you sure you want to delete "${editState.exercise.name}"? This cannot be undone.`, async () => {
+        const user = window.firebaseAuth?.currentUser;
+        if (!user) {
+            if (window.showAlert) window.showAlert('Please sign in to delete.', 'warning');
+            return;
         }
 
-        if (window.showAlert) {
-            window.showAlert(`Exercise "${editState.exercise.name}" deleted.`, 'success');
+        const deleteBtn = document.getElementById('deleteExerciseBtn');
+        deleteBtn.disabled = true;
+        deleteBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Deleting...';
+
+        try {
+            const token = await user.getIdToken();
+            const url = page.getApiUrl(`/api/v3/users/me/exercises/${editState.exerciseId}`);
+
+            const response = await fetch(url, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to delete exercise');
+            }
+
+            if (window.showAlert) {
+                window.showAlert(`Exercise "${editState.exercise.name}" deleted.`, 'success');
+            }
+
+            // Navigate back
+            setTimeout(() => {
+                window.location.href = 'exercise-database.html';
+            }, 1000);
+
+        } catch (error) {
+            console.error('Error deleting exercise:', error);
+            if (window.showAlert) window.showAlert('Failed to delete exercise. Please try again.', 'danger');
+            deleteBtn.disabled = false;
+            deleteBtn.innerHTML = '<i class="bx bx-trash me-1"></i>Delete Exercise';
         }
-
-        // Navigate back
-        setTimeout(() => {
-            window.location.href = 'exercise-database.html';
-        }, 1000);
-
-    } catch (error) {
-        console.error('Error deleting exercise:', error);
-        if (window.showAlert) window.showAlert('Failed to delete exercise. Please try again.', 'danger');
-        deleteBtn.disabled = false;
-        deleteBtn.innerHTML = '<i class="bx bx-trash me-1"></i>Delete Exercise';
-    }
+    }, { confirmText: 'Delete', confirmClass: 'btn-danger', size: 'sm' });
 }
 
 /**

@@ -524,24 +524,22 @@
      * Handle delete single program
      */
     async function handleDeleteProgram(programId, programName) {
-        if (!confirm(`Are you sure you want to delete "${programName}"?\n\nThis action cannot be undone.`)) {
-            return;
-        }
+        ffnModalManager.confirm('Delete Program', `Are you sure you want to delete "${programName}"?\n\nThis action cannot be undone.`, async () => {
+            try {
+                if (window.dataManager?.deleteProgram) {
+                    await window.dataManager.deleteProgram(programId);
+                }
 
-        try {
-            if (window.dataManager?.deleteProgram) {
-                await window.dataManager.deleteProgram(programId);
+                // Remove from state
+                state.all = state.all.filter(p => p.id !== programId);
+                filterPrograms();
+
+                showSuccess(`Program "${programName}" deleted`);
+            } catch (error) {
+                console.error('❌ Error deleting program:', error);
+                showError('Failed to delete program');
             }
-
-            // Remove from state
-            state.all = state.all.filter(p => p.id !== programId);
-            filterPrograms();
-
-            showSuccess(`Program "${programName}" deleted`);
-        } catch (error) {
-            console.error('❌ Error deleting program:', error);
-            showError('Failed to delete program');
-        }
+        }, { confirmText: 'Delete', confirmClass: 'btn-danger', size: 'sm' });
     }
 
     /**
@@ -549,19 +547,16 @@
      */
     async function handleBatchDelete(programIds) {
         const count = programIds.length;
-        if (!confirm(`Delete ${count} program${count !== 1 ? 's' : ''}?\n\nThis action cannot be undone.`)) {
-            return;
-        }
-
-        try {
-            // Delete each program
-            for (const id of programIds) {
-                if (window.dataManager?.deleteProgram) {
-                    await window.dataManager.deleteProgram(id);
+        ffnModalManager.confirm('Delete Programs', `Delete ${count} program${count !== 1 ? 's' : ''}?\n\nThis action cannot be undone.`, async () => {
+            try {
+                // Delete each program
+                for (const id of programIds) {
+                    if (window.dataManager?.deleteProgram) {
+                        await window.dataManager.deleteProgram(id);
+                    }
                 }
-            }
 
-            // Remove from state
+                // Remove from state
             const idsToRemove = new Set(programIds);
             state.all = state.all.filter(p => !idsToRemove.has(p.id));
 
@@ -574,10 +569,11 @@
 
             filterPrograms();
             showSuccess(`${count} program${count !== 1 ? 's' : ''} deleted`);
-        } catch (error) {
-            console.error('❌ Error deleting programs:', error);
-            showError('Failed to delete programs');
-        }
+            } catch (error) {
+                console.error('❌ Error deleting programs:', error);
+                showError('Failed to delete programs');
+            }
+        }, { confirmText: 'Delete', confirmClass: 'btn-danger', size: 'sm' });
     }
 
     /**

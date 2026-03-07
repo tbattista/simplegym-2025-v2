@@ -413,22 +413,20 @@ class ProgramDetailOffcanvas {
         const workout = this.config.workouts.find(w => w.id === workoutId);
         const workoutName = workout?.name || 'this workout';
 
-        if (!confirm(`Remove "${workoutName}" from this program?`)) {
-            return;
-        }
+        ffnModalManager.confirm('Remove Workout', `Remove "${workoutName}" from this program?`, () => {
+            // Remove from local program data
+            this.currentProgram.workouts = this.currentProgram.workouts.filter(
+                pw => pw.workout_id !== workoutId
+            );
 
-        // Remove from local program data
-        this.currentProgram.workouts = this.currentProgram.workouts.filter(
-            pw => pw.workout_id !== workoutId
-        );
+            // Re-render the program details
+            this.renderProgramDetails(this.currentProgram);
 
-        // Re-render the program details
-        this.renderProgramDetails(this.currentProgram);
-
-        // Trigger callback
-        if (this.config.onRemoveWorkout) {
-            this.config.onRemoveWorkout(this.currentProgram.id, workoutId);
-        }
+            // Trigger callback
+            if (this.config.onRemoveWorkout) {
+                this.config.onRemoveWorkout(this.currentProgram.id, workoutId);
+            }
+        }, { confirmText: 'Remove', confirmClass: 'btn-warning', size: 'sm' });
     }
 
     /**

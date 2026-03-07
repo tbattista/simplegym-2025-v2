@@ -314,47 +314,49 @@ async function createNewWorkoutInEditor() {
  * Cancel editing and return to empty state
  */
 function cancelEditWorkout() {
-    if (window.ffn.workoutBuilder.isDirty) {
-        if (!confirm('You have unsaved changes. Are you sure you want to cancel?')) {
-            return;
+    const doCancel = () => {
+        // Clear localStorage when user intentionally cancels
+        try {
+            localStorage.removeItem('currentEditingWorkoutId');
+            console.log('🗑️ Cleared workout ID from localStorage (cancelled)');
+        } catch (error) {
+            console.warn('⚠️ Could not clear localStorage:', error);
         }
+
+        // Reset state
+        window.ffn.workoutBuilder.selectedWorkoutId = null;
+        window.ffn.workoutBuilder.isEditing = false;
+        window.ffn.workoutBuilder.isDirty = false;
+
+        // Hide "Hide Workouts" button
+        const hideWorkoutsBtn = document.getElementById('hideWorkoutsBtn');
+        if (hideWorkoutsBtn) {
+            hideWorkoutsBtn.style.display = 'none';
+        }
+
+        // Expand workout library using the same function as the button
+        const expandedContent = document.getElementById('workoutLibraryExpandedContent');
+        if (expandedContent && expandedContent.style.display === 'none') {
+            toggleWorkoutLibraryContent();
+        }
+
+        // Hide editor, show empty state
+        document.getElementById('workoutEditorForm').style.display = 'none';
+        document.getElementById('workoutEditorEmptyState').style.display = 'block';
+
+        // Clear selection in library
+        document.querySelectorAll('.workout-card-compact').forEach(card => {
+            card.classList.remove('selected');
+        });
+
+        console.log('✅ Edit cancelled');
+    };
+
+    if (window.ffn.workoutBuilder.isDirty) {
+        ffnModalManager.confirm('Unsaved Changes', 'You have unsaved changes. Are you sure you want to cancel?', doCancel, { confirmText: 'Discard Changes', confirmClass: 'btn-danger', size: 'sm' });
+    } else {
+        doCancel();
     }
-
-    // Clear localStorage when user intentionally cancels
-    try {
-        localStorage.removeItem('currentEditingWorkoutId');
-        console.log('🗑️ Cleared workout ID from localStorage (cancelled)');
-    } catch (error) {
-        console.warn('⚠️ Could not clear localStorage:', error);
-    }
-
-    // Reset state
-    window.ffn.workoutBuilder.selectedWorkoutId = null;
-    window.ffn.workoutBuilder.isEditing = false;
-    window.ffn.workoutBuilder.isDirty = false;
-
-    // Hide "Hide Workouts" button
-    const hideWorkoutsBtn = document.getElementById('hideWorkoutsBtn');
-    if (hideWorkoutsBtn) {
-        hideWorkoutsBtn.style.display = 'none';
-    }
-
-    // Expand workout library using the same function as the button
-    const expandedContent = document.getElementById('workoutLibraryExpandedContent');
-    if (expandedContent && expandedContent.style.display === 'none') {
-        toggleWorkoutLibraryContent();
-    }
-
-    // Hide editor, show empty state
-    document.getElementById('workoutEditorForm').style.display = 'none';
-    document.getElementById('workoutEditorEmptyState').style.display = 'block';
-
-    // Clear selection in library
-    document.querySelectorAll('.workout-card-compact').forEach(card => {
-        card.classList.remove('selected');
-    });
-
-    console.log('✅ Edit cancelled');
 }
 
 /**
@@ -367,52 +369,50 @@ async function deleteWorkoutFromEditor() {
     const workout = window.ffn.workouts.find(w => w.id === workoutId);
     if (!workout) return;
 
-    if (!confirm(`Are you sure you want to delete "${workout.name}"? This action cannot be undone.`)) {
-        return;
-    }
-
-    try {
-        // Show deleting status
-        const deleteBtn = document.getElementById('deleteWorkoutBtn');
-        const originalText = deleteBtn.innerHTML;
-        deleteBtn.innerHTML = '<i class="bx bx-loader-alt bx-spin me-1"></i>Deleting...';
-        deleteBtn.disabled = true;
-
-        // Delete from database
-        await window.dataManager.deleteWorkout(workoutId);
-
-        // Remove from local state
-        window.ffn.workouts = window.ffn.workouts.filter(w => w.id !== workoutId);
-
-        // Refresh library
-        if (window.renderWorkoutsView) {
-            window.renderWorkoutsView();
-        }
-
-        // Clear localStorage before canceling (workout no longer exists)
+    ffnModalManager.confirm('Delete Workout', `Are you sure you want to delete "${workout.name}"? This action cannot be undone.`, async () => {
         try {
-            localStorage.removeItem('currentEditingWorkoutId');
-            console.log('🗑️ Cleared workout ID from localStorage (deleted)');
+            // Show deleting status
+            const deleteBtn = document.getElementById('deleteWorkoutBtn');
+            const originalText = deleteBtn.innerHTML;
+            deleteBtn.innerHTML = '<i class="bx bx-loader-alt bx-spin me-1"></i>Deleting...';
+            deleteBtn.disabled = true;
+
+            // Delete from database
+            await window.dataManager.deleteWorkout(workoutId);
+
+            // Remove from local state
+            window.ffn.workouts = window.ffn.workouts.filter(w => w.id !== workoutId);
+
+            // Refresh library
+            if (window.renderWorkoutsView) {
+                window.renderWorkoutsView();
+            }
+
+            // Clear localStorage before canceling (workout no longer exists)
+            try {
+                localStorage.removeItem('currentEditingWorkoutId');
+                console.log('🗑️ Cleared workout ID from localStorage (deleted)');
+            } catch (error) {
+                console.warn('⚠️ Could not clear localStorage:', error);
+            }
+
+            // Return to empty state
+            cancelEditWorkout();
+
+            showAlert(`Workout "${workout.name}" deleted successfully`, 'success');
+
+            console.log('✅ Workout deleted');
+
         } catch (error) {
-            console.warn('⚠️ Could not clear localStorage:', error);
+            console.error('❌ Error deleting workout:', error);
+            showAlert('Failed to delete workout: ' + error.message, 'danger');
+
+            // Reset button on error
+            const deleteBtn = document.getElementById('deleteWorkoutBtn');
+            deleteBtn.innerHTML = '<i class="bx bx-trash me-1"></i>Delete';
+            deleteBtn.disabled = false;
         }
-
-        // Return to empty state
-        cancelEditWorkout();
-
-        showAlert(`Workout "${workout.name}" deleted successfully`, 'success');
-
-        console.log('✅ Workout deleted');
-
-    } catch (error) {
-        console.error('❌ Error deleting workout:', error);
-        showAlert('Failed to delete workout: ' + error.message, 'danger');
-
-        // Reset button on error
-        const deleteBtn = document.getElementById('deleteWorkoutBtn');
-        deleteBtn.innerHTML = '<i class="bx bx-trash me-1"></i>Delete';
-        deleteBtn.disabled = false;
-    }
+    }, { confirmText: 'Delete', confirmClass: 'btn-danger', size: 'sm' });
 }
 
 /**

@@ -584,23 +584,7 @@ class WorkoutExerciseOperationsManager {
      */
     getModalManager() {
         if (!window.ffnModalManager) {
-            console.warn('⚠️ Modal manager not available, using fallback');
-            return {
-                confirm: (title, message, onConfirm, onCancel) => {
-                    // Strip HTML tags for plain text
-                    const plainMessage = this.stripHtml(message);
-                    if (confirm(`${title}\n\n${plainMessage}`)) {
-                        onConfirm();
-                    } else if (onCancel) {
-                        onCancel();
-                    }
-                },
-                alert: (title, message, type) => {
-                    // Strip HTML tags for plain text
-                    const plainMessage = this.stripHtml(message);
-                    alert(`${title}\n\n${plainMessage}`);
-                }
-            };
+            console.warn('⚠️ Modal manager not available');
         }
         return window.ffnModalManager;
     }

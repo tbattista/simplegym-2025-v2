@@ -537,13 +537,14 @@ class MigrationUIManager {
     }
     
     promptClearLocalStorage() {
-        const shouldClear = confirm(
-            'Migration completed successfully! Would you like to clear your local storage to avoid duplicates?\n\n' +
-            'Your data is now safely stored in the cloud and will sync across all your devices.'
-        );
-        
-        if (shouldClear) {
-            this.clearLocalStorage();
+        if (window.ffnModalManager) {
+            ffnModalManager.confirm('Clear Local Storage', 'Migration completed successfully! Would you like to clear your local storage to avoid duplicates?\n\nYour data is now safely stored in the cloud and will sync across all your devices.', () => {
+                this.clearLocalStorage();
+            }, { confirmText: 'Clear', confirmClass: 'btn-primary', size: 'sm' });
+        } else {
+            if (confirm('Migration completed successfully! Would you like to clear your local storage to avoid duplicates?\n\nYour data is now safely stored in the cloud and will sync across all your devices.')) {
+                this.clearLocalStorage();
+            }
         }
     }
     

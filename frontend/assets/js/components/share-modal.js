@@ -496,7 +496,7 @@
 
             } catch (error) {
                 console.error('❌ Error creating private link:', error);
-                alert('Failed to create private link: ' + error.message);
+                ffnModalManager.alert('Error', 'Failed to create private link: ' + error.message, 'danger');
                 
                 // Reset button
                 btn.disabled = false;
@@ -505,17 +505,15 @@
         }
 
         async handleDeletePrivateShare() {
-            if (!confirm('Are you sure you want to delete this private link? It will no longer be accessible.')) {
-                return;
-            }
-
             const btn = document.getElementById('deletePrivateShareBtn');
             const token = this.currentPrivateToken;
 
             if (!token) {
-                alert('No private link to delete');
+                ffnModalManager.alert('No Link', 'No private link to delete.', 'warning');
                 return;
             }
+
+            ffnModalManager.confirm('Delete Link', 'Are you sure you want to delete this private link? It will no longer be accessible.', async () => {
 
             try {
                 // Show loading state
@@ -550,12 +548,13 @@
 
             } catch (error) {
                 console.error('❌ Error deleting private link:', error);
-                alert('Failed to delete link: ' + error.message);
-                
+                ffnModalManager.alert('Error', 'Failed to delete link: ' + error.message, 'danger');
+
                 // Reset button
                 btn.disabled = false;
                 btn.innerHTML = '<i class="bx bx-trash me-1"></i>Delete Link';
             }
+            }, { confirmText: 'Delete', confirmClass: 'btn-danger', size: 'sm' });
         }
 
         // Export handlers

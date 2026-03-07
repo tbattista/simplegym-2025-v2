@@ -278,51 +278,49 @@ function showEmptyState() {
  * @param {string} workoutName - Workout name for confirmation message
  */
 async function deleteSession(sessionId, workoutName) {
-  // Confirmation
-  const confirmed = confirm(`Delete this ${workoutName} session? This cannot be undone.`);
-  if (!confirmed) return;
+  ffnModalManager.confirm('Delete Session', `Delete this ${workoutName} session? This cannot be undone.`, async () => {
+    try {
+      // Check authentication
+      if (!window.dataManager || !window.dataManager.isUserAuthenticated()) {
+        throw new Error('Authentication required');
+      }
 
-  try {
-    // Check authentication
-    if (!window.dataManager || !window.dataManager.isUserAuthenticated()) {
-      throw new Error('Authentication required');
+      const token = await window.dataManager.getAuthToken();
+      const response = await fetch(`/api/v3/workout-sessions/${sessionId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.detail || 'Failed to delete session');
+      }
+
+      // Remove from local state
+      window.ffn.workoutHistory.sessions =
+        window.ffn.workoutHistory.sessions.filter(s => s.id !== sessionId);
+
+      // Re-render
+      if (typeof renderSessionHistory === 'function') {
+        renderSessionHistory();
+      }
+      calculateStatistics();
+      renderStatistics();
+
+      // Update calendar if visible
+      if (window.ffn.workoutHistory.calendarView) {
+        window.ffn.workoutHistory.calendarView.setSessionData(
+          window.ffn.workoutHistory.sessions
+        );
+      }
+
+      console.log('✅ Session deleted:', sessionId);
+
+    } catch (error) {
+      console.error('❌ Error deleting session:', error);
+      ffnModalManager.alert('Error', 'Failed to delete session. Please try again.', 'danger');
     }
-
-    const token = await window.dataManager.getAuthToken();
-    const response = await fetch(`/api/v3/workout-sessions/${sessionId}`, {
-      method: 'DELETE',
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.detail || 'Failed to delete session');
-    }
-
-    // Remove from local state
-    window.ffn.workoutHistory.sessions =
-      window.ffn.workoutHistory.sessions.filter(s => s.id !== sessionId);
-
-    // Re-render
-    if (typeof renderSessionHistory === 'function') {
-      renderSessionHistory();
-    }
-    calculateStatistics();
-    renderStatistics();
-
-    // Update calendar if visible
-    if (window.ffn.workoutHistory.calendarView) {
-      window.ffn.workoutHistory.calendarView.setSessionData(
-        window.ffn.workoutHistory.sessions
-      );
-    }
-
-    console.log('✅ Session deleted:', sessionId);
-
-  } catch (error) {
-    console.error('❌ Error deleting session:', error);
-    alert('Failed to delete session. Please try again.');
-  }
+  }, { confirmText: 'Delete', confirmClass: 'btn-danger', size: 'sm' });
 }
 
 /* ============================================

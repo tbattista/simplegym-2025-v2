@@ -272,21 +272,21 @@ function deleteProgram(id) {
     const program = window.ffn.programs.find(p => p.id === id);
     if (!program) return;
     
-    if (confirm(`Are you sure you want to delete "${program.name}"? This action cannot be undone.`)) {
+    ffnModalManager.confirm('Delete Program', `Are you sure you want to delete "${program.name}"? This action cannot be undone.`, () => {
         // Remove from local state
         window.ffn.programs = window.ffn.programs.filter(p => p.id !== id);
-        
+
         // Clear selection if this was the current program
         if (window.ffn.currentProgram?.id === id) {
             window.ffn.currentProgram = null;
             showEmptyStatePanel();
         }
-        
+
         renderPrograms();
         renderProgramsView();
         updateStats();
         showAlert(`Program "${program.name}" deleted`, 'success');
-    }
+    }, { confirmText: 'Delete', confirmClass: 'btn-danger', size: 'sm' });
 }
 
 /**
@@ -500,16 +500,16 @@ function removeWorkoutFromProgram(programId, workoutId) {
     const workout = window.ffn.workouts.find(w => w.id === workoutId);
     const workoutName = workout ? workout.name : 'Workout';
     
-    if (confirm(`Remove "${workoutName}" from this program?`)) {
+    ffnModalManager.confirm('Remove Workout', `Remove "${workoutName}" from this program?`, () => {
         program.workouts = program.workouts.filter(w => w.workout_id !== workoutId);
-        
+
         // Update UI
         if (window.ffn.currentProgram?.id === programId) {
             renderProgramWorkouts(program);
         }
-        
+
         showAlert(`"${workoutName}" removed from program`, 'success');
-    }
+    }, { confirmText: 'Remove', confirmClass: 'btn-warning', size: 'sm' });
 }
 
 /**

@@ -64,12 +64,12 @@ const ExerciseGroupManager = {
         }
         confirmMessage += '\n\nThis action cannot be undone.';
 
-        if (confirm(confirmMessage)) {
+        ffnModalManager.confirm('Delete Exercise', confirmMessage, () => {
             group.remove();
             ExerciseGroupManager.renumber();
             if (window.markEditorDirty) window.markEditorDirty();
             showAlert('Exercise deleted', 'success');
-        }
+        }, { confirmText: 'Delete', confirmClass: 'btn-danger', size: 'sm' });
     },
 
     /**

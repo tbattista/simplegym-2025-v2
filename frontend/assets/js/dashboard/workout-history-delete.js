@@ -193,11 +193,9 @@ async function confirmBatchDeleteSessions() {
   }
   message += '\n\nThis action cannot be undone.';
 
-  const confirmed = confirm(message);
-
-  if (confirmed) {
+  ffnModalManager.confirm('Delete Sessions', message, async () => {
     await batchDeleteSessions([...selected]);
-  }
+  }, { confirmText: 'Delete', confirmClass: 'btn-danger', size: 'sm' });
 }
 
 /**

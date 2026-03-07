@@ -499,7 +499,7 @@
                             });
                         } else {
                             console.error('❌ UnifiedOffcanvasFactory not loaded');
-                            alert('More options is loading. Please try again in a moment.');
+                            if (window.ffnModalManager) ffnModalManager.alert('Loading', 'More options is loading. Please try again in a moment.', 'info');
                         }
                     }
                 }
@@ -659,7 +659,7 @@
                             }, { once: true });
                         } else {
                             console.error('❌ UnifiedOffcanvasFactory or filterBarConfig not loaded');
-                            alert('Filter feature is loading. Please try again in a moment.');
+                            if (window.ffnModalManager) ffnModalManager.alert('Loading', 'Filter feature is loading. Please try again in a moment.', 'info');
                         }
                     }
                 },
@@ -746,7 +746,7 @@
                             }, { once: true });
                         } else {
                             console.error('❌ UnifiedOffcanvasFactory or filterBarConfig not loaded');
-                            alert('Sort feature is loading. Please try again in a moment.');
+                            if (window.ffnModalManager) ffnModalManager.alert('Loading', 'Sort feature is loading. Please try again in a moment.', 'info');
                         }
                     }
                 },
@@ -785,7 +785,7 @@
                             });
                         } else {
                             console.error('❌ UnifiedOffcanvasFactory not loaded');
-                            alert('More options is loading. Please try again in a moment.');
+                            if (window.ffnModalManager) ffnModalManager.alert('Loading', 'More options is loading. Please try again in a moment.', 'info');
                         }
                     }
                 }
@@ -955,7 +955,7 @@
                             });
                         } else {
                             console.error('❌ UnifiedOffcanvasFactory not loaded');
-                            alert('More options is loading. Please try again in a moment.');
+                            if (window.ffnModalManager) ffnModalManager.alert('Loading', 'More options is loading. Please try again in a moment.', 'info');
                         }
                     }
                 }

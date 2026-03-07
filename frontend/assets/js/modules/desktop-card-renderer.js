@@ -416,38 +416,58 @@ class DesktopCardRenderer {
         let newHtml = '';
 
         if (fromType === 'exercise' && toType === 'cardio') {
-            if (data.exercises.a && !confirm('Converting to Activity will replace sets, reps, rest, and weight with activity fields. Continue?')) return;
+            const doConvertToCardio = () => {
+                const name = data.exercises.a || '';
+                let activityType = '';
+                if (name && window.ActivityTypeRegistry) {
+                    const allTypes = window.ActivityTypeRegistry.getAll();
+                    const match = allTypes.find(t => t.name.toLowerCase() === name.toLowerCase() || t.id === name.toLowerCase());
+                    if (match) activityType = match.id;
+                }
 
-            const name = data.exercises.a || '';
-            let activityType = '';
-            if (name && window.ActivityTypeRegistry) {
-                const allTypes = window.ActivityTypeRegistry.getAll();
-                const match = allTypes.find(t => t.name.toLowerCase() === name.toLowerCase() || t.id === name.toLowerCase());
-                if (match) activityType = match.id;
-            }
-
-            data.group_type = 'cardio';
-            data.exercises = { a: '' };
-            data.sets = ''; data.reps = ''; data.rest = '';
-            data.default_weight = ''; data.default_weight_unit = 'lbs';
-            data.note_content = undefined;
-            data.cardio_config = {
-                activity_type: activityType || name,
-                duration_minutes: null, distance: null,
-                distance_unit: 'mi', target_pace: '',
-                activity_details: {}, notes: ''
+                data.group_type = 'cardio';
+                data.exercises = { a: '' };
+                data.sets = ''; data.reps = ''; data.rest = '';
+                data.default_weight = ''; data.default_weight_unit = 'lbs';
+                data.note_content = undefined;
+                data.cardio_config = {
+                    activity_type: activityType || name,
+                    duration_minutes: null, distance: null,
+                    distance_unit: 'mi', target_pace: '',
+                    activity_details: {}, notes: ''
+                };
+                const html = this.createCardioRow(groupId, data);
+                row.outerHTML = html;
+                if (window.markEditorDirty) window.markEditorDirty();
+                if (window.applyBlockGrouping) window.applyBlockGrouping();
             };
-            newHtml = this.createCardioRow(groupId, data);
+
+            if (data.exercises.a) {
+                ffnModalManager.confirm('Convert to Activity', 'Converting to Activity will replace sets, reps, rest, and weight with activity fields. Continue?', doConvertToCardio, { confirmText: 'Convert', confirmClass: 'btn-warning', size: 'sm' });
+                return;
+            }
+            doConvertToCardio();
+            return;
 
         } else if (fromType === 'exercise' && toType === 'note') {
-            if (data.exercises.a && !confirm('Converting to Note will remove all exercise data. Continue?')) return;
+            const doConvertExToNote = () => {
+                data.group_type = 'note';
+                data.note_content = data.exercises.a || '';
+                data.exercises = { a: '' };
+                data.sets = ''; data.reps = ''; data.rest = '';
+                data.default_weight = ''; data.default_weight_unit = 'lbs';
+                const html = this.createNoteRow(groupId, data);
+                row.outerHTML = html;
+                if (window.markEditorDirty) window.markEditorDirty();
+                if (window.applyBlockGrouping) window.applyBlockGrouping();
+            };
 
-            data.group_type = 'note';
-            data.note_content = data.exercises.a || '';
-            data.exercises = { a: '' };
-            data.sets = ''; data.reps = ''; data.rest = '';
-            data.default_weight = ''; data.default_weight_unit = 'lbs';
-            newHtml = this.createNoteRow(groupId, data);
+            if (data.exercises.a) {
+                ffnModalManager.confirm('Convert to Note', 'Converting to Note will remove all exercise data. Continue?', doConvertExToNote, { confirmText: 'Convert', confirmClass: 'btn-warning', size: 'sm' });
+                return;
+            }
+            doConvertExToNote();
+            return;
 
         } else if (fromType === 'cardio' && toType === 'exercise') {
             const activityName = data.cardio_config?.activity_type || '';
@@ -466,20 +486,24 @@ class DesktopCardRenderer {
             newHtml = this.createExerciseGroupRow(groupId, data);
 
         } else if (fromType === 'cardio' && toType === 'note') {
-            if (!confirm('Converting to Note will remove all activity data. Continue?')) return;
+            ffnModalManager.confirm('Convert to Note', 'Converting to Note will remove all activity data. Continue?', () => {
+                const activityName = data.cardio_config?.activity_type || '';
+                let content = activityName;
+                if (activityName && window.ActivityTypeRegistry) {
+                    content = window.ActivityTypeRegistry.getName(activityName) || activityName;
+                }
 
-            const activityName = data.cardio_config?.activity_type || '';
-            let content = activityName;
-            if (activityName && window.ActivityTypeRegistry) {
-                content = window.ActivityTypeRegistry.getName(activityName) || activityName;
-            }
-
-            data.group_type = 'note';
-            data.note_content = content;
-            data.exercises = { a: '' };
-            data.sets = ''; data.reps = ''; data.rest = '';
-            data.cardio_config = null;
-            newHtml = this.createNoteRow(groupId, data);
+                data.group_type = 'note';
+                data.note_content = content;
+                data.exercises = { a: '' };
+                data.sets = ''; data.reps = ''; data.rest = '';
+                data.cardio_config = null;
+                const html = this.createNoteRow(groupId, data);
+                row.outerHTML = html;
+                if (window.markEditorDirty) window.markEditorDirty();
+                if (window.applyBlockGrouping) window.applyBlockGrouping();
+            }, { confirmText: 'Convert', confirmClass: 'btn-warning', size: 'sm' });
+            return;
 
         } else if (fromType === 'note' && toType === 'exercise') {
             const content = data.note_content || '';

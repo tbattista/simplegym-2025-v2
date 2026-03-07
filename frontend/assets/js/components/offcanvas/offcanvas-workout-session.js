@@ -310,12 +310,12 @@ export function createCompleteWorkout(data, onConfirm) {
                             }
                         });
                     } else {
-                        // Fallback: just call the reset directly with browser confirm
-                        if (confirm('Are you sure you want to discard this session? All progress will be lost.')) {
+                        // Fallback: use modal manager confirm
+                        ffnModalManager.confirm('Discard Session', 'Are you sure you want to discard this session? All progress will be lost.', () => {
                             if (window.workoutModeController?.resetToFreshState) {
                                 window.workoutModeController.resetToFreshState();
                             }
-                        }
+                        }, { confirmText: 'Discard', confirmClass: 'btn-danger', size: 'sm' });
                     }
                 }, 300); // Small delay to let the first offcanvas hide
             });

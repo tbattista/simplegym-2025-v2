@@ -730,44 +730,43 @@ async function deleteExercise(exerciseId) {
     const exercise = window.ffn.exercises.custom.find(e => e.id === exerciseId);
     if (!exercise) return;
 
-    const confirmed = confirm(`Are you sure you want to delete "${exercise.name}"? This cannot be undone.`);
-    if (!confirmed) return;
-
-    const user = window.firebaseAuth?.currentUser;
-    if (!user) {
-        if (window.showAlert) window.showAlert('Please sign in to delete exercises.', 'warning');
-        return;
-    }
-
-    try {
-        const token = await user.getIdToken();
-        const url = window.exercisePage.getApiUrl(`/api/v3/users/me/exercises/${exerciseId}`);
-
-        const response = await fetch(url, {
-            method: 'DELETE',
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-
-        if (!response.ok) {
-            throw new Error('Failed to delete exercise');
+    ffnModalManager.confirm('Delete Exercise', `Are you sure you want to delete "${exercise.name}"? This cannot be undone.`, async () => {
+        const user = window.firebaseAuth?.currentUser;
+        if (!user) {
+            if (window.showAlert) window.showAlert('Please sign in to delete exercises.', 'warning');
+            return;
         }
 
-        // Remove from local state
-        window.ffn.exercises.custom = window.ffn.exercises.custom.filter(e => e.id !== exerciseId);
+        try {
+            const token = await user.getIdToken();
+            const url = window.exercisePage.getApiUrl(`/api/v3/users/me/exercises/${exerciseId}`);
 
-        // Refresh table
-        if (window.applyFiltersAndRender && window.currentFilters) {
-            window.applyFiltersAndRender(window.currentFilters);
+            const response = await fetch(url, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to delete exercise');
+            }
+
+            // Remove from local state
+            window.ffn.exercises.custom = window.ffn.exercises.custom.filter(e => e.id !== exerciseId);
+
+            // Refresh table
+            if (window.applyFiltersAndRender && window.currentFilters) {
+                window.applyFiltersAndRender(window.currentFilters);
+            }
+
+            if (window.showAlert) {
+                window.showAlert(`Exercise "${exercise.name}" deleted.`, 'success');
+            }
+
+        } catch (error) {
+            console.error('Error deleting exercise:', error);
+            if (window.showAlert) window.showAlert('Failed to delete exercise. Please try again.', 'danger');
         }
-
-        if (window.showAlert) {
-            window.showAlert(`Exercise "${exercise.name}" deleted.`, 'success');
-        }
-
-    } catch (error) {
-        console.error('Error deleting exercise:', error);
-        if (window.showAlert) window.showAlert('Failed to delete exercise. Please try again.', 'danger');
-    }
+    }, { confirmText: 'Delete', confirmClass: 'btn-danger', size: 'sm' });
 }
 
 /**

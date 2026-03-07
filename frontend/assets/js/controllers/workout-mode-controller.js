@@ -145,20 +145,10 @@ class WorkoutModeController {
     // CORE ORCHESTRATION
     // ========================================================================
 
-    /** Get modal manager with native fallback */
+    /** Get modal manager */
     getModalManager() {
         if (!window.ffnModalManager) {
-            console.warn('⚠️ Modal manager not available, using fallback');
-            return {
-                confirm: (title, message, onConfirm) => {
-                    const plainMessage = WorkoutUtils.stripHtml(message);
-                    if (confirm(`${title}\n\n${plainMessage}`)) onConfirm();
-                },
-                alert: (title, message, type) => {
-                    const plainMessage = WorkoutUtils.stripHtml(message);
-                    alert(`${title}\n\n${plainMessage}`);
-                }
-            };
+            console.warn('⚠️ Modal manager not available');
         }
         return window.ffnModalManager;
     }

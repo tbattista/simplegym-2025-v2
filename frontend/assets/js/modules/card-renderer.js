@@ -401,7 +401,7 @@ class CardRenderer {
             exerciseName = groupData.cardio_config?.activity_type || 'this activity';
         }
 
-        if (confirm(`Are you sure you want to delete "${exerciseName}"?\n\nThis action cannot be undone.`)) {
+        ffnModalManager.confirm('Delete Exercise', `Are you sure you want to delete "${exerciseName}"?\n\nThis action cannot be undone.`, () => {
             // Capture parent section BEFORE removing card from DOM
             const parentSection = card.closest('.workout-section');
 
@@ -431,7 +431,7 @@ class CardRenderer {
             }
 
             console.log('✅ Exercise group deleted:', groupId);
-        }
+        }, { confirmText: 'Delete', confirmClass: 'btn-danger', size: 'sm' });
     }
     
     /**

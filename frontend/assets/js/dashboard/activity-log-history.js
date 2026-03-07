@@ -476,28 +476,28 @@ function setupSessionInteractions() {
         btn.addEventListener('click', async (e) => {
             e.stopPropagation();
             const sessionId = btn.dataset.sessionId;
-            if (!confirm('Delete this session?')) return;
+            ffnModalManager.confirm('Delete Session', 'Delete this session?', async () => {
+                try {
+                    const token = await window.dataManager.getAuthToken();
+                    const response = await fetch(`/api/v3/cardio-sessions/${sessionId}`, {
+                        method: 'DELETE',
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
 
-            try {
-                const token = await window.dataManager.getAuthToken();
-                const response = await fetch(`/api/v3/cardio-sessions/${sessionId}`, {
-                    method: 'DELETE',
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
+                    if (!response.ok) throw new Error('Delete failed');
 
-                if (!response.ok) throw new Error('Delete failed');
+                    if (window.toastNotifications) {
+                        window.toastNotifications.success('Session deleted');
+                    }
+                    await loadRecentCardioSessions();
 
-                if (window.toastNotifications) {
-                    window.toastNotifications.success('Session deleted');
+                } catch (error) {
+                    console.error('Failed to delete cardio session:', error);
+                    if (window.toastNotifications) {
+                        window.toastNotifications.error('Failed to delete session');
+                    }
                 }
-                await loadRecentCardioSessions();
-
-            } catch (error) {
-                console.error('Failed to delete cardio session:', error);
-                if (window.toastNotifications) {
-                    window.toastNotifications.error('Failed to delete session');
-                }
-            }
+            }, { confirmText: 'Delete', confirmClass: 'btn-danger', size: 'sm' });
         });
     });
 
@@ -506,16 +506,15 @@ function setupSessionInteractions() {
         btn.addEventListener('click', async (e) => {
             e.stopPropagation();
             const sessionId = btn.dataset.sessionId;
-            if (!confirm('Delete this workout session?')) return;
+            ffnModalManager.confirm('Delete Session', 'Delete this workout session?', async () => {
+                try {
+                    const token = await window.dataManager.getAuthToken();
+                    const response = await fetch(`/api/v3/workout-sessions/${sessionId}`, {
+                        method: 'DELETE',
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
 
-            try {
-                const token = await window.dataManager.getAuthToken();
-                const response = await fetch(`/api/v3/workout-sessions/${sessionId}`, {
-                    method: 'DELETE',
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-
-                if (!response.ok) throw new Error('Delete failed');
+                    if (!response.ok) throw new Error('Delete failed');
 
                 if (window.toastNotifications) {
                     window.toastNotifications.success('Workout session deleted');
@@ -528,6 +527,7 @@ function setupSessionInteractions() {
                     window.toastNotifications.error('Failed to delete session');
                 }
             }
+            }, { confirmText: 'Delete', confirmClass: 'btn-danger', size: 'sm' });
         });
     });
 }

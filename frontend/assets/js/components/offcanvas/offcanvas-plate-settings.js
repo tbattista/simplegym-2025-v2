@@ -177,7 +177,7 @@ function setupPlateSettingsListeners(offcanvas, onSave) {
 
     // Reset to defaults
     resetBtn.addEventListener('click', () => {
-        if (confirm('Reset all plate settings to defaults?')) {
+        ffnModalManager.confirm('Reset Settings', 'Reset all plate settings to defaults?', () => {
             window.plateCalculatorService?.resetToDefaults();
             offcanvas.hide();
 
@@ -189,7 +189,7 @@ function setupPlateSettingsListeners(offcanvas, onSave) {
             if (window.showAlert) {
                 window.showAlert('Settings reset to defaults', 'info');
             }
-        }
+        }, { confirmText: 'Reset to Defaults', confirmClass: 'btn-warning', size: 'sm' });
     });
 
     // Save settings
