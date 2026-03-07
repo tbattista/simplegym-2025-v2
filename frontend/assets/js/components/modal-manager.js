@@ -234,7 +234,8 @@ class FFNModalManager {
      */
     confirm(title, message, onConfirm, options = {}) {
         const id = `confirm-modal-${this.modalCounter++}`;
-        
+        let pendingConfirm = null;
+
         const modal = this.create(id, {
             title: title || 'Confirm',
             body: `<p>${message}</p>`,
@@ -250,19 +251,20 @@ class FFNModalManager {
                     class: options.confirmClass || 'btn-primary',
                     icon: options.confirmIcon || null,
                     onClick: (modal) => {
-                        if (onConfirm) {
-                            onConfirm();
-                        }
+                        pendingConfirm = onConfirm;
                         this.hide(id);
-                        setTimeout(() => this.destroy(id), 300);
                     }
                 }
-            ],
-            onHide: () => {
-                setTimeout(() => this.destroy(id), 300);
-            }
+            ]
         });
-        
+
+        // Single cleanup point: wait for Bootstrap transition to fully complete
+        modal.element.addEventListener('hidden.bs.modal', () => {
+            const callback = pendingConfirm;
+            this.destroy(id);
+            if (callback) callback();
+        }, { once: true });
+
         this.show(id);
         return modal;
     }
