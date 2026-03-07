@@ -301,12 +301,13 @@ class FFNModalManager {
                     class: 'btn-primary',
                     dismiss: true
                 }
-            ],
-            onHide: () => {
-                setTimeout(() => this.destroy(id), 300);
-            }
+            ]
         });
-        
+
+        modal.element.addEventListener('hidden.bs.modal', () => {
+            this.destroy(id);
+        }, { once: true });
+
         this.show(id);
         return modal;
     }
@@ -351,7 +352,6 @@ class FFNModalManager {
                                 // If onSubmit returns false, don't close modal
                                 if (result !== false) {
                                     this.hide(id);
-                                    setTimeout(() => this.destroy(id), 300);
                                 }
                             }
                         } else {
@@ -359,12 +359,13 @@ class FFNModalManager {
                         }
                     }
                 }
-            ],
-            onHide: () => {
-                setTimeout(() => this.destroy(id), 300);
-            }
+            ]
         });
-        
+
+        modal.element.addEventListener('hidden.bs.modal', () => {
+            this.destroy(id);
+        }, { once: true });
+
         this.show(id);
         return modal;
     }

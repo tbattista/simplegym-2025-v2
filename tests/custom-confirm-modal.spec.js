@@ -68,12 +68,14 @@ test.describe('Custom Confirm Modal', () => {
         // Click the confirm button
         await modal.locator('button:has-text("Yes")').click();
 
-        // Callback should have fired
-        const result = await page.evaluate(() => window._testConfirmResult);
-        expect(result).toBe('confirmed');
-
-        // Modal should close
+        // Modal should close and callback fires after hide transition completes
         await expect(modal).not.toBeVisible({ timeout: 3000 });
+
+        // Callback fires asynchronously after hidden.bs.modal event
+        await expect(async () => {
+            const result = await page.evaluate(() => window._testConfirmResult);
+            expect(result).toBe('confirmed');
+        }).toPass({ timeout: 3000 });
     });
 
     test('Clicking cancel button closes modal without triggering callback', async ({ page }) => {
