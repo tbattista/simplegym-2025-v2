@@ -246,6 +246,11 @@ function createSessionEntry(session) {
                  ${isSelected ? 'checked' : ''}
                  onclick="event.stopPropagation(); toggleSessionSelection('${session.id}');">
         </div>
+        <div class="session-status">
+          <span class="session-status-icon strength-icon">
+            <i class="bx bx-dumbbell"></i>
+          </span>
+        </div>
         <div class="session-info flex-grow-1">
           ${workoutNameHtml}
           <span class="session-date">${dateStr}</span>
@@ -262,6 +267,11 @@ function createSessionEntry(session) {
          role="button"
          aria-expanded="${isExpanded}"
          aria-controls="${collapseId}">
+      <div class="session-status">
+        <span class="session-status-icon strength-icon">
+          <i class="bx bx-dumbbell"></i>
+        </span>
+      </div>
       <div class="session-info">
         ${workoutNameHtml}
         <span class="session-date">${dateStr}</span>

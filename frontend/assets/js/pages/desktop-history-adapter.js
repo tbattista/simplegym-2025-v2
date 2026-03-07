@@ -136,6 +136,11 @@
             '     role="button"' +
             '     aria-expanded="' + isExpanded + '"' +
             '     aria-controls="' + collapseId + '">' +
+            '  <div class="session-status">' +
+            '    <span class="session-status-icon strength-icon">' +
+            '      <i class="bx bx-dumbbell"></i>' +
+            '    </span>' +
+            '  </div>' +
             '  <div class="session-info">' +
                  workoutNameHtml +
             '    <div class="d-flex align-items-center gap-2">' +

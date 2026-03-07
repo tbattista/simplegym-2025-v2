@@ -505,12 +505,11 @@
 }
 
 /* ============================================
-   CARDIO SESSION ICON (Unified History)
+   SESSION TYPE ICONS (Unified History)
    ============================================ */
 
-.session-status-icon.cardio-icon {
-  background-color: rgba(var(--bs-primary-rgb), 0.12);
-  color: var(--bs-primary);
+.session-status-icon.cardio-icon,
+.session-status-icon.strength-icon {
   width: 1.5rem;
   height: 1.5rem;
   border-radius: 50%;
@@ -518,4 +517,14 @@
   align-items: center;
   justify-content: center;
   font-size: 0.875rem;
+}
+
+.session-status-icon.cardio-icon {
+  background-color: rgba(var(--bs-primary-rgb), 0.12);
+  color: var(--bs-primary);
+}
+
+.session-status-icon.strength-icon {
+  background-color: rgba(var(--bs-primary-rgb), 0.12);
+  color: var(--bs-primary);
 }
