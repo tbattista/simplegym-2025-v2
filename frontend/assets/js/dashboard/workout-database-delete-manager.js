@@ -204,11 +204,9 @@ async function confirmBatchDelete() {
     }
     message += '\n\nYou can restore archived workouts later.';
 
-    const confirmed = confirm(message);
-
-    if (confirmed) {
+    ffnModalManager.confirm('Archive Workouts', message, async () => {
         await batchDeleteWorkouts([...selected]);
-    }
+    }, { confirmText: 'Archive', confirmClass: 'btn-warning', size: 'sm' });
 }
 
 /**
@@ -287,57 +285,49 @@ async function batchDeleteWorkouts(workoutIds) {
 async function deleteWorkoutFromDatabase(workoutId, workoutName) {
     console.log('📦 Archive requested for workout:', workoutId, workoutName);
 
-    // Show confirmation dialog
-    const confirmed = confirm(`Archive "${workoutName}"?\n\nYou can restore it later from the archived workouts filter.`);
+    ffnModalManager.confirm('Archive Workout', `Archive "${workoutName}"?\n\nYou can restore it later from the archived workouts filter.`, async () => {
+        try {
+            console.log('🔄 Archiving workout...');
 
-    if (!confirmed) {
-        console.log('❌ Archive cancelled by user');
-        return;
-    }
+            // Archive via data manager (soft-delete)
+            await window.dataManager.deleteWorkout(workoutId);
 
-    try {
-        console.log('🔄 Archiving workout...');
+            // Update local state: mark as archived (don't remove)
+            const workout = window.ffn.workoutDatabase.all.find(w => w.id === workoutId);
+            if (workout) {
+                workout.is_archived = true;
+                workout.archived_at = new Date().toISOString();
+            }
 
-        // Archive via data manager (soft-delete)
-        await window.dataManager.deleteWorkout(workoutId);
+            // Update stats (count non-archived only)
+            const activeCount = window.ffn.workoutDatabase.all.filter(w => !w.is_archived).length;
+            window.ffn.workoutDatabase.stats.total = activeCount;
 
-        // Update local state: mark as archived (don't remove)
-        const workout = window.ffn.workoutDatabase.all.find(w => w.id === workoutId);
-        if (workout) {
-            workout.is_archived = true;
-            workout.archived_at = new Date().toISOString();
+            const totalCountEl = document.getElementById('totalWorkoutsCount');
+            if (totalCountEl) {
+                totalCountEl.textContent = activeCount;
+            }
+
+            // Re-apply filters and render
+            window.filterWorkouts();
+
+            // Re-render Favorites section
+            window.renderFavoritesSection?.();
+
+            console.log('✅ Workout archived successfully');
+
+            if (window.showAlert) {
+                window.showAlert(`"${workoutName}" archived. Use the filter to view archived workouts.`, 'success');
+            }
+
+        } catch (error) {
+            console.error('❌ Failed to archive workout:', error);
+
+            if (window.showAlert) {
+                window.showAlert('Failed to archive workout: ' + error.message, 'danger');
+            }
         }
-
-        // Update stats (count non-archived only)
-        const activeCount = window.ffn.workoutDatabase.all.filter(w => !w.is_archived).length;
-        window.ffn.workoutDatabase.stats.total = activeCount;
-
-        const totalCountEl = document.getElementById('totalWorkoutsCount');
-        if (totalCountEl) {
-            totalCountEl.textContent = activeCount;
-        }
-
-        // Re-apply filters and render
-        window.filterWorkouts();
-
-        // Re-render Favorites section
-        window.renderFavoritesSection?.();
-
-        console.log('✅ Workout archived successfully');
-
-        if (window.showAlert) {
-            window.showAlert(`"${workoutName}" archived. Use the filter to view archived workouts.`, 'success');
-        }
-
-    } catch (error) {
-        console.error('❌ Failed to archive workout:', error);
-
-        if (window.showAlert) {
-            window.showAlert('Failed to archive workout: ' + error.message, 'danger');
-        } else {
-            alert('Failed to archive workout: ' + error.message);
-        }
-    }
+    }, { confirmText: 'Archive', confirmClass: 'btn-warning', size: 'sm' });
 }
 
 /**
@@ -379,34 +369,33 @@ async function restoreWorkoutFromArchive(workoutId, workoutName) {
  * Permanently delete a workout (from archived view)
  */
 async function permanentDeleteWorkout(workoutId, workoutName) {
-    const confirmed = confirm(`Permanently delete "${workoutName}"?\n\nThis cannot be undone.`);
-    if (!confirmed) return;
+    ffnModalManager.confirm('Delete Permanently', `Permanently delete "${workoutName}"?\n\nThis cannot be undone.`, async () => {
+        try {
+            console.log('🗑️ Permanently deleting workout:', workoutId);
+            await window.dataManager.permanentDeleteWorkout(workoutId);
 
-    try {
-        console.log('🗑️ Permanently deleting workout:', workoutId);
-        await window.dataManager.permanentDeleteWorkout(workoutId);
+            // Remove from local state entirely
+            window.ffn.workoutDatabase.all = window.ffn.workoutDatabase.all.filter(w => w.id !== workoutId);
+            window.ffn.workouts = (window.ffn.workouts || []).filter(w => w.id !== workoutId);
 
-        // Remove from local state entirely
-        window.ffn.workoutDatabase.all = window.ffn.workoutDatabase.all.filter(w => w.id !== workoutId);
-        window.ffn.workouts = (window.ffn.workouts || []).filter(w => w.id !== workoutId);
+            // Update stats
+            const activeCount = window.ffn.workoutDatabase.all.filter(w => !w.is_archived).length;
+            window.ffn.workoutDatabase.stats.total = activeCount;
+            const totalCountEl = document.getElementById('totalWorkoutsCount');
+            if (totalCountEl) totalCountEl.textContent = activeCount;
 
-        // Update stats
-        const activeCount = window.ffn.workoutDatabase.all.filter(w => !w.is_archived).length;
-        window.ffn.workoutDatabase.stats.total = activeCount;
-        const totalCountEl = document.getElementById('totalWorkoutsCount');
-        if (totalCountEl) totalCountEl.textContent = activeCount;
+            window.filterWorkouts();
 
-        window.filterWorkouts();
-
-        if (window.showToast) {
-            window.showToast(`"${workoutName}" permanently deleted`, 'success');
+            if (window.showToast) {
+                window.showToast(`"${workoutName}" permanently deleted`, 'success');
+            }
+        } catch (error) {
+            console.error('❌ Failed to permanently delete workout:', error);
+            if (window.showToast) {
+                window.showToast('Failed to delete workout', 'error');
+            }
         }
-    } catch (error) {
-        console.error('❌ Failed to permanently delete workout:', error);
-        if (window.showToast) {
-            window.showToast('Failed to delete workout', 'error');
-        }
-    }
+    }, { confirmText: 'Delete Permanently', confirmClass: 'btn-danger', size: 'sm' });
 }
 
 /**
@@ -417,10 +406,8 @@ async function confirmBatchRestore() {
     const count = selected.size;
     if (count === 0) return;
 
-    const confirmed = confirm(`Restore ${count} workout${count > 1 ? 's' : ''}?`);
-    if (!confirmed) return;
-
-    const restoreBtn = document.querySelector('.btn-batch-restore');
+    ffnModalManager.confirm('Restore Workouts', `Restore ${count} workout${count > 1 ? 's' : ''}?`, async () => {
+        const restoreBtn = document.querySelector('.btn-batch-restore');
     if (restoreBtn) {
         restoreBtn.innerHTML = '<i class="bx bx-loader-alt bx-spin"></i> Restoring...';
         restoreBtn.disabled = true;
@@ -460,6 +447,7 @@ async function confirmBatchRestore() {
             window.showToast('Failed to restore some workouts', 'error');
         }
     }
+    }, { confirmText: 'Restore', confirmClass: 'btn-primary', size: 'sm' });
 }
 
 /**

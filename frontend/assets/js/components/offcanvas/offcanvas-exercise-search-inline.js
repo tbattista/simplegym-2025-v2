@@ -135,7 +135,21 @@ export function showExerciseSearchInEditor(config, onSelectExercise) {
 
     // --- Wire up search functionality ---
 
-    const searchCore = new window.ExerciseSearchCore(config);
+    let searchCore;
+    try {
+        searchCore = new window.ExerciseSearchCore(config);
+    } catch (error) {
+        console.error('Failed to initialize ExerciseSearchCore:', error);
+        searchPanel.querySelector('#inlineLoadingState').style.display = 'none';
+        searchPanel.querySelector('#inlineEmptyState').style.display = 'block';
+        searchPanel.querySelector('#inlineEmptyState').innerHTML = `
+            <i class="bx bx-error-circle display-1 text-danger"></i>
+            <p class="text-muted mt-3">Failed to load exercise search</p>
+            <small class="text-muted d-block">Please close and try again</small>
+        `;
+        return;
+    }
+
     const searchInput = searchPanel.querySelector('#inlineSearchInput');
     const filterBtn = searchPanel.querySelector('#inlineFilterBtn');
     const clearBtn = searchPanel.querySelector('#inlineClearSearchBtn');
@@ -269,6 +283,17 @@ export function showExerciseSearchInEditor(config, onSelectExercise) {
 
     // --- POP: Restore editor content ---
     const restoreEditor = () => {
+        // Remove any lingering detail panel from nested push (Editor → Search → Detail → Add)
+        body.querySelector('#exerciseDetailInlinePanel')?.remove();
+
+        // Clean up detailHidden flags left by showExerciseDetailInSearch
+        Array.from(body.children).forEach(child => {
+            if (child.dataset.detailHidden === 'true') {
+                child.classList.remove('d-none');
+                delete child.dataset.detailHidden;
+            }
+        });
+
         searchPanel.remove();
 
         // Restore body inline styles
