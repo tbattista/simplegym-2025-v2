@@ -289,12 +289,6 @@ export function showExerciseSearchInEditor(config, onSelectExercise) {
     searchCore.loadExercises().then(() => {
         if (initialQuery) {
             searchCore.setSearchQuery(initialQuery);
-            // If the initial query produces no results, clear it to show all exercises
-            if (searchCore.state.filteredExercises.length === 0) {
-                searchInput.value = '';
-                if (clearBtn) clearBtn.style.display = 'none';
-                searchCore.setSearchQuery('');
-            }
         }
     });
 
