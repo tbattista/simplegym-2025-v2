@@ -427,20 +427,12 @@ export function createExerciseGroupEditor(config, onSave, onDelete, onSearchClic
                     </div>
                 </div>
 
-                <!-- Rest (Inline Display + Edit) -->
+                <!-- Rest -->
                 <div class="eg-section eg-section-rest">
-                    <div class="eg-rest-display">
-                        <span class="eg-section-label" style="margin-bottom: 0;">Rest</span>
-                        <span class="eg-rest-value" id="restDisplayValue">${escapeHtml(rest || '60s')}</span>
-                        <button type="button" class="eg-rest-edit-btn" id="toggleRestBtn" title="Edit rest">
-                            <i class="bx bx-pencil"></i> Edit
-                        </button>
-                    </div>
-                    <div class="eg-rest-edit" id="restInputContainer" style="display: none;">
-                        <input type="text" class="eg-field-input"
-                               id="editorRest" value="${escapeHtml(rest)}" placeholder="60s">
-                        <div class="eg-field-hint">e.g., 60s, 2min, 90s</div>
-                    </div>
+                    <div class="eg-section-label">Rest</div>
+                    <input type="text" class="eg-field-input"
+                           id="editorRest" value="${escapeHtml(rest)}" placeholder="60s">
+                    <div class="eg-field-hint">e.g., 60s, 2min, 90s</div>
                 </div>
             </div>
 
@@ -475,31 +467,10 @@ export function createExerciseGroupEditor(config, onSave, onDelete, onSearchClic
         const addAltContainer = element.querySelector('#addAltButtonContainer');
         const protocolInput = element.querySelector('#editorProtocol');
         const restInput = element.querySelector('#editorRest');
-        const toggleRestBtn = element.querySelector('#toggleRestBtn');
-        const restInputContainer = element.querySelector('#restInputContainer');
-        const restDisplayValue = element.querySelector('#restDisplayValue');
         const weightInput = element.querySelector('#editorWeight');
         const weightUnitSelect = element.querySelector('#editorWeightUnit');
         const saveBtn = element.querySelector('#saveExerciseGroupEditorBtn');
         const deleteBtn = element.querySelector('#deleteExerciseGroupEditorBtn');
-
-        // Rest toggle - auto-expand if custom value exists
-        const hasCustomRest = rest && rest !== '60s';
-        if (hasCustomRest) {
-            restInputContainer.style.display = '';
-        }
-        toggleRestBtn.addEventListener('click', () => {
-            const isHidden = restInputContainer.style.display === 'none';
-            restInputContainer.style.display = isHidden ? '' : 'none';
-            if (isHidden) restInput.focus();
-        });
-
-        // Sync rest display value when input changes
-        restInput?.addEventListener('input', () => {
-            if (restDisplayValue) {
-                restDisplayValue.textContent = restInput.value || '60s';
-            }
-        });
 
         // Populate exercise slot helper
         const populateSlot = (slotKey, exerciseName) => {
