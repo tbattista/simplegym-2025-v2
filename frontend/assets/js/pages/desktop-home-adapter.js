@@ -54,6 +54,10 @@
     // ============================================
 
     window.renderActivityCard = function(session) {
+        if (session._sessionType === 'cardio') {
+            return renderDesktopCardioCard(session);
+        }
+
         const exercises = session.exercises_performed || [];
         const completed = exercises.filter(ex => !ex.is_skipped).length;
         const total = exercises.length;
@@ -108,6 +112,38 @@
             </div>
         `;
     };
+
+    function renderDesktopCardioCard(session) {
+        const esc = window.escapeHtml || function(t) { return t || ''; };
+        const fmtDate = window.formatRelativeDate || function() { return ''; };
+        const registry = window.ActivityTypeRegistry;
+        const icon = registry ? registry.getIcon(session.activity_type) : 'bx-run';
+        const name = session.activity_name || (registry ? registry.getName(session.activity_type) : session.activity_type) || 'Activity';
+        const date = fmtDate(session.completed_at || session.started_at || session.created_at);
+        const duration = session.duration_minutes ? `${session.duration_minutes} min` : '';
+        const distance = session.distance ? `${session.distance} ${session.distance_unit || 'mi'}` : '';
+
+        return `
+            <div class="desktop-activity-item d-flex align-items-center px-4 py-3"
+                 style="border-bottom: 1px solid var(--bs-border-color); cursor: pointer;"
+                 onclick="viewSessionDetails('${session.id}')">
+                <div class="bg-label-success rounded p-2 me-3 flex-shrink-0">
+                    <i class="bx ${icon}"></i>
+                </div>
+                <div class="flex-grow-1" style="min-width: 0;">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="fw-medium">${esc(name)}</span>
+                        <span class="badge bg-success">Complete</span>
+                    </div>
+                    <div class="d-flex gap-3 text-muted small">
+                        <span><i class="bx bx-calendar me-1"></i>${date}</span>
+                        ${duration ? `<span><i class="bx bx-time me-1"></i>${duration}</span>` : ''}
+                        ${distance ? `<span><i class="bx bx-map me-1"></i>${distance}</span>` : ''}
+                    </div>
+                </div>
+            </div>
+        `;
+    }
 
     // ============================================
     // PATCH: checkActiveSession for desktop CTA icon

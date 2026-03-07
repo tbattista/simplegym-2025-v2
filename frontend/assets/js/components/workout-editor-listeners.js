@@ -34,13 +34,19 @@ function setupWorkoutEditorListeners() {
     // Cancel button
     const cancelBtn = document.getElementById('cancelEditBtn');
     if (cancelBtn) {
-        cancelBtn.addEventListener('click', window.cancelEditWorkout);
+        cancelBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            window.cancelEditWorkout();
+        });
     }
 
     // Delete button
     const deleteBtn = document.getElementById('deleteWorkoutBtn');
     if (deleteBtn) {
-        deleteBtn.addEventListener('click', window.deleteWorkoutFromEditor);
+        deleteBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            window.deleteWorkoutFromEditor();
+        });
     }
 
     // New workout button
