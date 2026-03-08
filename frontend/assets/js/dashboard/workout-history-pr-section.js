@@ -30,6 +30,17 @@ async function _initExerciseCacheForPR() {
 }
 
 /**
+ * Check if `haystack` contains `needle` as a whole word (bounded by non-letter chars or string edges).
+ * Prevents "run" matching inside "crunch", while still allowing "Bench Press" inside "Barbell Bench Press".
+ */
+function _containsWholeWord(haystack, needle) {
+  if (!haystack || !needle) return false;
+  const escaped = needle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const re = new RegExp('(?:^|[^a-z])' + escaped + '(?:$|[^a-z])');
+  return re.test(haystack);
+}
+
+/**
  * Look up a GIF URL for an exercise name
  */
 function _lookupGifUrl(exerciseName) {
@@ -48,8 +59,9 @@ function _lookupGifUrl(exerciseName) {
   for (const match of results) {
     if (!match || !match.gifUrl || !match.name) continue;
     const matchLower = match.name.toLowerCase();
-    // Accept: exact match, or PR name is contained in DB name (e.g. "Bench Press" in "Barbell Bench Press")
-    if (matchLower === nameLower || matchLower.includes(nameLower) || nameLower.includes(matchLower)) {
+    // Accept: exact match, or one name contains the other as a whole word
+    // (e.g. "Bench Press" in "Barbell Bench Press", but NOT "run" in "crunch")
+    if (matchLower === nameLower || _containsWholeWord(matchLower, nameLower) || _containsWholeWord(nameLower, matchLower)) {
       const proxied = _proxyGifUrl(match.gifUrl);
       _prGifCache[exerciseName] = proxied;
       return proxied;
