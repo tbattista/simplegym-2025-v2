@@ -245,8 +245,8 @@
 }
 
 .sidebar-card-actions .sidebar-fav-btn {
-  font-size: 1.1rem;
-  padding: 0.25rem;
+  font-size: 1.35rem;
+  padding: 0.375rem;
   opacity: 0.5;
   transition: opacity 0.15s ease;
 }
@@ -257,10 +257,10 @@
 }
 
 .sidebar-card-actions .sidebar-add-btn {
-  font-size: 1.1rem;
+  font-size: 1.35rem;
   opacity: 0;
   transition: opacity 0.15s ease;
-  padding: 0.25rem;
+  padding: 0.375rem;
 }
 
 .sidebar-exercise-card:hover .sidebar-add-btn {
@@ -549,13 +549,13 @@
   border: none;
   background: transparent;
   color: var(--bs-secondary-color);
-  padding: 4px;
+  padding: 6px;
   border-radius: 4px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1rem;
+  font-size: 1.25rem;
   opacity: 0.5;
   transition: opacity 0.15s ease, background-color 0.15s ease;
 }
@@ -573,12 +573,13 @@
   border: none;
   background: transparent;
   color: var(--bs-secondary-color);
-  padding: 4px;
+  padding: 6px;
   border-radius: 4px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
+  font-size: 1.25rem;
 }
 
 .desktop-exercise-row:hover .row-menu-btn {
