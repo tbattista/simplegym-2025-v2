@@ -50,25 +50,27 @@ test('Tutorial: Add a public workout and edit it', async ({ page }) => {
   await page.screenshot({ path: path.join(TUTORIAL_DIR, screenshotName(3)), fullPage: false });
   console.log('Step 3: Save button visible - done');
 
-  // Close offcanvas and use the card dropdown "Copy and Edit" instead
-  // First close the offcanvas
-  const closeBtn = page.locator('.offcanvas.show .btn-close, .offcanvas .btn-close').first();
-  if (await closeBtn.isVisible().catch(() => false)) {
-    await closeBtn.click();
-    await page.waitForTimeout(500);
-  }
+  // Close offcanvas programmatically via Bootstrap API
+  await page.evaluate(() => {
+    const offcanvasEl = document.querySelector('#workoutDetailOffcanvas');
+    if (offcanvasEl) {
+      const bsOffcanvas = bootstrap.Offcanvas.getInstance(offcanvasEl);
+      if (bsOffcanvas) bsOffcanvas.hide();
+    }
+  });
+  await page.waitForTimeout(800);
+  // Ensure backdrop is gone
+  await page.evaluate(() => {
+    document.querySelectorAll('.offcanvas-backdrop').forEach(el => el.remove());
+  });
+  await page.waitForTimeout(300);
 
-  // Step 4: Open the dropdown menu on a card
-  const dropdownToggle = page.locator('.workout-list-card .dropdown-toggle, .workout-list-card [data-bs-toggle="dropdown"]').first();
-  if (await dropdownToggle.isVisible().catch(() => false)) {
-    await dropdownToggle.click();
-    await page.waitForTimeout(400);
-    await page.screenshot({ path: path.join(TUTORIAL_DIR, screenshotName(4)), fullPage: false });
-    console.log('Step 4: Card dropdown menu open - done');
-  } else {
-    console.log('Step 4: No dropdown toggle found, taking screenshot anyway');
-    await page.screenshot({ path: path.join(TUTORIAL_DIR, screenshotName(4)), fullPage: false });
-  }
+  // Step 4: Open the dropdown menu on a card to show "Copy and Edit"
+  const dropdownToggle = page.locator('.workout-list-card [data-bs-toggle="dropdown"]').first();
+  await dropdownToggle.click({ force: true });
+  await page.waitForTimeout(400);
+  await page.screenshot({ path: path.join(TUTORIAL_DIR, screenshotName(4)), fullPage: false });
+  console.log('Step 4: Card dropdown menu open - done');
 
   // Step 5: Navigate to workout builder (simulating "Copy and Edit" result)
   // Since we don't have auth, navigate directly to workout-builder with a new workout

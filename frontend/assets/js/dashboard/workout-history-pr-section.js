@@ -35,12 +35,18 @@ function _lookupGifUrl(exerciseName) {
     return null;
   }
 
-  const results = cacheService.searchExercises(exerciseName, { limit: 1 });
-  const match = results[0];
-  // Only use if name is a close match
-  if (match && match.gifUrl && match.name && match.name.toLowerCase() === exerciseName.toLowerCase()) {
-    _prGifCache[exerciseName] = match.gifUrl;
-    return match.gifUrl;
+  // Search with more results to find a good match
+  const results = cacheService.searchExercises(exerciseName, { limit: 5 });
+  const nameLower = exerciseName.toLowerCase();
+
+  for (const match of results) {
+    if (!match || !match.gifUrl || !match.name) continue;
+    const matchLower = match.name.toLowerCase();
+    // Accept: exact match, or PR name is contained in DB name (e.g. "Bench Press" in "Barbell Bench Press")
+    if (matchLower === nameLower || matchLower.includes(nameLower) || nameLower.includes(matchLower)) {
+      _prGifCache[exerciseName] = match.gifUrl;
+      return match.gifUrl;
+    }
   }
   _prGifCache[exerciseName] = null;
   return null;
@@ -85,11 +91,11 @@ async function renderPRSection() {
 
     return `
       <div class="pr-chip" onclick="editPRValue('${escapeHtml(prId)}')" role="button" title="Click to edit PR value">
-        ${gifUrl ? `<img src="${escapeHtml(gifUrl)}" alt="" class="pr-chip-gif" onerror="this.style.display='none'" loading="lazy">` : ''}
         <div class="pr-chip-top">
           <i class="bx bxs-trophy text-warning"></i>
           <span class="pr-chip-name">${escapeHtml(pr.exercise_name)}</span>
         </div>
+        ${gifUrl ? `<img src="${escapeHtml(gifUrl)}" alt="" class="pr-chip-gif" onerror="this.style.display='none'" loading="lazy">` : ''}
         <span class="pr-chip-value">${escapeHtml(pr.value)} ${escapeHtml(pr.value_unit)}</span>
         ${dateStr ? `<span class="pr-chip-date">${dateStr}</span>` : ''}
       </div>
