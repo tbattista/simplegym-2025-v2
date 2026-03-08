@@ -15,6 +15,75 @@ let _prGifCache = {};
 let _exerciseCacheReady = false;
 
 /**
+ * Alias map: maps common user exercise names to seed-data exercise names
+ * so the GIF lookup finds the right image. Keys must be lowercase.
+ */
+const PR_EXERCISE_ALIASES = {
+  // Squat variants
+  'back squat':           'Barbell Full Squat',
+  'squat':                'Barbell Full Squat',
+  'front squat':          'Barbell Front Squat',
+  'goblet squat':         'Dumbbell Goblet Squat',
+  'overhead squat':       'Barbell Overhead Squat',
+  'zercher squat':        'Barbell Zercher Squat',
+  'hack squat':           'Sled Hack Squat',
+  'split squat':          'Dumbbell Single Leg Split Squat',
+  'jump squat':           'Jump Squat',
+  'sissy squat':          'Sissy Squat',
+  // Bench variants
+  'bench press':          'Barbell Bench Press - Medium Grip',
+  'bench':                'Barbell Bench Press - Medium Grip',
+  'incline bench':        'Barbell Incline Bench Press',
+  'incline bench press':  'Barbell Incline Bench Press',
+  'decline bench':        'Barbell Decline Bench Press',
+  'decline bench press':  'Barbell Decline Bench Press',
+  // Deadlift variants
+  'deadlift':             'Barbell Deadlift',
+  'sumo deadlift':        'Barbell Sumo Deadlift',
+  'romanian deadlift':    'Barbell Romanian Deadlift',
+  'rdl':                  'Barbell Romanian Deadlift',
+  // Common shorthand
+  'ohp':                  'Barbell Standing Military Press',
+  'military press':       'Barbell Standing Military Press',
+  'pull up':              'Pull Up',
+  'pullup':               'Pull Up',
+  'chin up':              'Chin-Up',
+  'chinup':               'Chin-Up',
+  'lat pulldown':         'Cable Lat Pulldown',
+  'row':                  'Barbell Bent Over Row',
+  'barbell row':          'Barbell Bent Over Row',
+  'bent over row':        'Barbell Bent Over Row',
+  'dip':                  'Chest Dip',
+  'dips':                 'Chest Dip',
+  'curl':                 'Barbell Curl',
+  'bicep curl':           'Barbell Curl',
+  'tricep extension':     'Dumbbell Triceps Extension',
+  'leg press':            'Lever Seated Leg Press',
+  'leg curl':             'Lever Lying Leg Curl',
+  'leg extension':        'Lever Leg Extension',
+  'calf raise':           'Lever Seated Calf Raise',
+};
+
+/**
+ * Look up an activity icon from the activity-type-registry.
+ * Matches by id, name, or shortName (case-insensitive).
+ * Returns a "bx bx-*" class string or null.
+ */
+function _lookupActivityIcon(exerciseName) {
+  const registry = window.activityTypeRegistry;
+  if (!registry) return null;
+  const all = registry.getAll();
+  if (!all) return null;
+  const lower = exerciseName.toLowerCase().trim();
+  for (const act of all) {
+    if (lower === act.id || lower === (act.name || '').toLowerCase() || lower === (act.shortName || '').toLowerCase()) {
+      return 'bx ' + act.icon;
+    }
+  }
+  return null;
+}
+
+/**
  * Initialize the exercise cache for GIF lookups (called once)
  */
 async function _initExerciseCacheForPR() {
@@ -41,30 +110,47 @@ function _containsWholeWord(haystack, needle) {
 }
 
 /**
- * Look up a GIF URL for an exercise name
+ * Look up a GIF URL for an exercise name.
+ * Returns { type: 'gif', url } | { type: 'icon', className } | null
  */
 function _lookupGifUrl(exerciseName) {
   if (!exerciseName) return null;
   if (_prGifCache[exerciseName] !== undefined) return _prGifCache[exerciseName];
+
+  const nameLower = exerciseName.toLowerCase().trim();
+
+  // 1. Check activity icon overrides first (cardio, etc.) via registry
+  const iconClass = _lookupActivityIcon(exerciseName);
+  if (iconClass) {
+    const result = { type: 'icon', className: iconClass };
+    _prGifCache[exerciseName] = result;
+    return result;
+  }
 
   const cacheService = window.exerciseCacheService;
   if (!cacheService || !_exerciseCacheReady) {
     return null;
   }
 
+  // 2. Check alias map — search using the mapped name instead
+  const aliasName = PR_EXERCISE_ALIASES[nameLower];
+  const searchName = aliasName || exerciseName;
+  const searchLower = searchName.toLowerCase();
+
   // Search with more results to find a good match
-  const results = cacheService.searchExercises(exerciseName, { limit: 5 });
-  const nameLower = exerciseName.toLowerCase();
+  const results = cacheService.searchExercises(searchName, { limit: 5 });
 
   for (const match of results) {
     if (!match || !match.gifUrl || !match.name) continue;
     const matchLower = match.name.toLowerCase();
-    // Accept: exact match, or one name contains the other as a whole word
-    // (e.g. "Bench Press" in "Barbell Bench Press", but NOT "run" in "crunch")
-    if (matchLower === nameLower || _containsWholeWord(matchLower, nameLower) || _containsWholeWord(nameLower, matchLower)) {
+    // Accept: exact match, alias match, or one name contains the other as a whole word
+    if (matchLower === searchLower || matchLower === nameLower
+      || _containsWholeWord(matchLower, searchLower) || _containsWholeWord(searchLower, matchLower)
+      || _containsWholeWord(matchLower, nameLower) || _containsWholeWord(nameLower, matchLower)) {
       const proxied = _proxyGifUrl(match.gifUrl);
-      _prGifCache[exerciseName] = proxied;
-      return proxied;
+      const result = { type: 'gif', url: proxied };
+      _prGifCache[exerciseName] = result;
+      return result;
     }
   }
   _prGifCache[exerciseName] = null;
@@ -106,7 +192,14 @@ async function renderPRSection() {
   const chips = records.map(pr => {
     const dateStr = _formatPRDate(pr.session_date || pr.marked_at);
     const prId = pr.id;
-    const gifUrl = _lookupGifUrl(pr.exercise_name);
+    const media = _lookupGifUrl(pr.exercise_name);
+
+    let mediaHtml = '';
+    if (media && media.type === 'gif') {
+      mediaHtml = `<img src="${escapeHtml(media.url)}" alt="" class="pr-chip-gif" onerror="this.style.display='none'" loading="lazy">`;
+    } else if (media && media.type === 'icon') {
+      mediaHtml = `<div class="pr-chip-activity-icon"><i class="${escapeHtml(media.className)}"></i></div>`;
+    }
 
     return `
       <div class="pr-chip" onclick="editPRValue('${escapeHtml(prId)}')" role="button" title="Click to edit PR value">
@@ -114,7 +207,7 @@ async function renderPRSection() {
           <i class="bx bxs-trophy text-warning"></i>
           <span class="pr-chip-name">${escapeHtml(pr.exercise_name)}</span>
         </div>
-        ${gifUrl ? `<img src="${escapeHtml(gifUrl)}" alt="" class="pr-chip-gif" onerror="this.style.display='none'" loading="lazy">` : ''}
+        ${mediaHtml}
         <span class="pr-chip-value">${escapeHtml(pr.value)} ${escapeHtml(pr.value_unit)}</span>
         ${dateStr ? `<span class="pr-chip-date">${dateStr}</span>` : ''}
       </div>
