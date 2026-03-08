@@ -65,6 +65,13 @@
     word-break: break-word;
 }
 
+/* Creator badge - Instagram-style @username */
+.creator-badge {
+    font-size: var(--gs-text-sm, 0.75rem);
+    font-weight: 500;
+    color: var(--bs-secondary);
+}
+
 /* Meta line styling - replaces badge row */
 .workout-list-card .workout-meta {
     font-size: var(--wdb-card-meta-size);

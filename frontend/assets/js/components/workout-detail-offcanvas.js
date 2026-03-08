@@ -46,7 +46,7 @@ class WorkoutDetailOffcanvas {
         }
         
         const offcanvasHTML = `
-            <div class="offcanvas offcanvas-bottom offcanvas-bottom-base offcanvas-desktop-side" tabindex="-1" id="${this.offcanvasId}" aria-labelledby="${this.offcanvasId}Label" data-bs-scroll="false">
+            <div class="offcanvas offcanvas-bottom offcanvas-bottom-base offcanvas-desktop-wide" tabindex="-1" id="${this.offcanvasId}" aria-labelledby="${this.offcanvasId}Label" data-bs-scroll="false">
                 <div class="offcanvas-header border-bottom">
                     <h5 class="offcanvas-title" id="${this.offcanvasId}Label">
                         <i class="bx bx-dumbbell me-2"></i>
@@ -146,11 +146,10 @@ class WorkoutDetailOffcanvas {
         
         // Creator (for public workouts)
         if (this.config.showCreator && workout.creator_name) {
+            const creatorName = this._escapeHtml(workout.creator_name);
+            const displayName = creatorName.startsWith('@') ? creatorName : `@${creatorName}`;
             html += `
-                <p class="text-muted mb-2">
-                    <i class="bx bx-user me-1"></i>
-                    ${this._escapeHtml(workout.creator_name)}
-                </p>
+                <p class="creator-badge mb-2">${displayName}</p>
             `;
         }
         

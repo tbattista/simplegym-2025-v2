@@ -57,7 +57,7 @@ class ProgramDetailOffcanvas {
         }
 
         const offcanvasHTML = `
-            <div class="offcanvas offcanvas-bottom offcanvas-bottom-base offcanvas-desktop-side" tabindex="-1" id="${this.offcanvasId}" aria-labelledby="${this.offcanvasId}Label" data-bs-scroll="false">
+            <div class="offcanvas offcanvas-bottom offcanvas-bottom-base offcanvas-desktop-wide" tabindex="-1" id="${this.offcanvasId}" aria-labelledby="${this.offcanvasId}Label" data-bs-scroll="false">
                 <div class="offcanvas-header">
                     <h5 class="offcanvas-title" id="${this.offcanvasId}Label">
                         <i class="bx bx-folder me-2"></i>

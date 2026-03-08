@@ -197,6 +197,23 @@ class ProfileManager {
                 displayName: newDisplayName
             });
 
+            // Persist display name to Firestore users collection (for sharing attribution)
+            try {
+                const authToken = await window.dataManager?.getAuthToken();
+                if (authToken) {
+                    await fetch('/api/user/profile', {
+                        method: 'PUT',
+                        headers: {
+                            'Authorization': `Bearer ${authToken}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ display_name: newDisplayName })
+                    });
+                }
+            } catch (err) {
+                console.warn('⚠️ Failed to sync display name to Firestore:', err);
+            }
+
             // Update local reference
             this.originalDisplayName = newDisplayName;
 

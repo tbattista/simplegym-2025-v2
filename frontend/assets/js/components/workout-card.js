@@ -304,11 +304,10 @@ class WorkoutCard {
 
         // Show creator for public workouts
         if (this.config.showCreator && this.workout.creator_name) {
+            const creatorName = this._escapeHtml(this.workout.creator_name);
+            const displayName = creatorName.startsWith('@') ? creatorName : `@${creatorName}`;
             html += `
-                <p class="text-muted small mb-2">
-                    <i class="bx bx-user me-1"></i>
-                    ${this._escapeHtml(this.workout.creator_name)}
-                </p>
+                <p class="creator-badge mb-2">${displayName}</p>
             `;
         }
 

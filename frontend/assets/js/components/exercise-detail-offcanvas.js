@@ -25,7 +25,7 @@ class ExerciseDetailOffcanvas {
         if (existing) existing.remove();
 
         const html = `
-            <div class="offcanvas offcanvas-bottom offcanvas-bottom-base offcanvas-bottom-tall offcanvas-desktop-side"
+            <div class="offcanvas offcanvas-bottom offcanvas-bottom-base offcanvas-bottom-tall offcanvas-desktop-wide"
                  tabindex="-1" id="${this.offcanvasId}"
                  aria-labelledby="${this.offcanvasId}Label"
                  data-bs-scroll="false">

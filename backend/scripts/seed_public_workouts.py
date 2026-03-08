@@ -355,8 +355,18 @@ def build_workouts():
     return workouts
 
 
+FAKE_CREATORS = [
+    'ironmike_lifts', 'sarah_squats', 'coach_dan', 'fitgirl_amy',
+    'barbell_brad', 'gym_rat_99', 'liftqueen', 'the_pump_king',
+    'natty_nate', 'deadlift_diana', 'muscle_maria', 'bench_boss',
+    'cardio_carl', 'power_pete', 'flexy_lexi', 'swole_sam',
+    'gains_guru', 'rep_queen', 'iron_will', 'fit_for_life',
+]
+
+
 def seed_public_workouts(dry_run=False):
     """Seed public workouts into Firestore."""
+    import random
     from backend.config.firebase_config import get_firebase_app
     from firebase_admin import firestore
 
@@ -371,26 +381,31 @@ def seed_public_workouts(dry_run=False):
     collection = db.collection('public_workouts')
 
     workouts = build_workouts()
+    creators = FAKE_CREATORS[:]
+    random.shuffle(creators)
     print(f"Built {len(workouts)} workout templates")
 
     created = 0
     for i, workout_data in enumerate(workouts, 1):
         doc_id = generate_id('public')
+        creator = creators[i % len(creators)]
+        fake_uid = f'fake-user-{i:03d}'
 
         doc = {
             'workout_data': workout_data,
-            'creator_id': 'system-seed',
-            'creator_name': 'Fitness Field Notes',
+            'creator_id': fake_uid,
+            'creator_name': creator,
             'source_workout_id': workout_data['id'],
             'created_at': firestore.SERVER_TIMESTAMP,
             'is_moderated': False,
             'stats': {
-                'view_count': 0,
-                'save_count': 0,
+                'view_count': random.randint(3, 15),
+                'save_count': random.randint(1, 8),
             }
         }
 
         print(f"  [{i:2d}/{len(workouts)}] {workout_data['name']}"
+              f" by @{creator}"
               f" ({len(workout_data['exercise_groups'])} exercises,"
               f" tags: {', '.join(workout_data['tags'])})")
 

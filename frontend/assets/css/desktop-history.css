@@ -61,7 +61,7 @@
 
 /* Exercise pane needs tight sides for long names */
 .desktop-cal-exercise-card #desktopExercisePane {
-    padding: 0.25rem 0.5rem;
+    padding: 0.25rem 0;
 }
 
 .desktop-cal-exercise-card .card-header {

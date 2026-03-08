@@ -145,27 +145,39 @@ async def update_user_profile(
 ) -> Dict[str, Any]:
     """
     Update user profile information
-    
-    Currently supports updating:
-    - displayName
-    
-    Note: Most profile updates happen via Firebase Auth on the frontend
-    This endpoint is for future extensibility
+
+    Persists display_name to Firestore users collection
+    so it can be used for public workout attribution.
     """
     try:
         user_id = current_user.get('uid')
         if not user_id:
             raise HTTPException(status_code=401, detail="User ID not found")
-        
+
         logger.info(f"📝 Updating profile for user: {user_id}")
-        
-        # For now, just return success
-        # Profile updates happen via Firebase Auth on frontend
+
+        display_name = profile_data.get('display_name', '').strip()
+        if not display_name:
+            raise HTTPException(status_code=400, detail="Display name cannot be empty")
+
+        if len(display_name) > 50:
+            raise HTTPException(status_code=400, detail="Display name must be 50 characters or less")
+
+        # Persist to Firestore users collection
+        if firebase_service.is_available():
+            db = firebase_service.get_firestore()
+            if db:
+                user_ref = db.collection('users').document(user_id)
+                user_ref.set({'displayName': display_name}, merge=True)
+                logger.info(f"✅ Display name saved to Firestore: {display_name}")
+
         return {
             "success": True,
             "message": "Profile updated successfully"
         }
-        
+
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"❌ Error updating user profile: {e}")
         raise HTTPException(status_code=500, detail=str(e))

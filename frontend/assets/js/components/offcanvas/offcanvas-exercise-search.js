@@ -32,7 +32,7 @@ export function createExerciseSearchOffcanvas(config = {}, onSelectExercise) {
     } = config;
 
     const offcanvasHtml = `
-        <div class="offcanvas offcanvas-bottom offcanvas-bottom-base offcanvas-desktop-side"
+        <div class="offcanvas offcanvas-bottom offcanvas-bottom-base offcanvas-desktop-wide"
              tabindex="-1" id="exerciseSearchOffcanvas"
              data-bs-scroll="false" style="height: 85vh;">
             <div class="offcanvas-header border-bottom">
