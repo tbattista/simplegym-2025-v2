@@ -51,7 +51,17 @@
 
 /* Tabbed calendar + exercises card */
 .desktop-cal-exercise-card > .card-body {
-    padding: 0.75rem 0.75rem;
+    padding: 0;
+}
+
+/* Calendar pane needs more breathing room */
+.desktop-cal-exercise-card #desktopCalendarPane {
+    padding: 0.75rem 1rem;
+}
+
+/* Exercise pane needs tight sides for long names */
+.desktop-cal-exercise-card #desktopExercisePane {
+    padding: 0.25rem 0.5rem;
 }
 
 .desktop-cal-exercise-card .card-header {
