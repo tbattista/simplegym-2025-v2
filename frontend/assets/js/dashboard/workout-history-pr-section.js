@@ -1,14 +1,56 @@
 /**
  * Workout History - Personal Records Section
  * Renders horizontal scrolling PR chips at the top of the history page
- * @version 2.0.0
+ * @version 2.1.0
  */
+
+/** Cache of exercise name -> gifUrl lookups */
+let _prGifCache = {};
+let _exerciseCacheReady = false;
+
+/**
+ * Initialize the exercise cache for GIF lookups (called once)
+ */
+async function _initExerciseCacheForPR() {
+  if (_exerciseCacheReady) return;
+  const cacheService = window.exerciseCacheService;
+  if (!cacheService) return;
+  try {
+    await cacheService.getExercisesWithInstantFallback();
+    _exerciseCacheReady = true;
+  } catch (e) {
+    console.warn('[PR] Could not init exercise cache for GIFs:', e);
+  }
+}
+
+/**
+ * Look up a GIF URL for an exercise name
+ */
+function _lookupGifUrl(exerciseName) {
+  if (!exerciseName) return null;
+  if (_prGifCache[exerciseName] !== undefined) return _prGifCache[exerciseName];
+
+  const cacheService = window.exerciseCacheService;
+  if (!cacheService || !_exerciseCacheReady) {
+    return null;
+  }
+
+  const results = cacheService.searchExercises(exerciseName, { limit: 1 });
+  const match = results[0];
+  // Only use if name is a close match
+  if (match && match.gifUrl && match.name && match.name.toLowerCase() === exerciseName.toLowerCase()) {
+    _prGifCache[exerciseName] = match.gifUrl;
+    return match.gifUrl;
+  }
+  _prGifCache[exerciseName] = null;
+  return null;
+}
 
 /**
  * Render the PR chips section at the top of the history page
  * Called on page load and whenever PRs change
  */
-function renderPRSection() {
+async function renderPRSection() {
   const container = document.getElementById('prSectionContainer');
   if (!container) return;
 
@@ -30,15 +72,20 @@ function renderPRSection() {
     return dateB - dateA;
   });
 
+  // Initialize exercise cache for GIF lookups
+  await _initExerciseCacheForPR();
+
   // Check stored visibility preference
   const isCollapsed = localStorage.getItem('ffn_pr_section_visible') === 'false';
 
   const chips = records.map(pr => {
     const dateStr = _formatPRDate(pr.session_date || pr.marked_at);
     const prId = pr.id;
+    const gifUrl = _lookupGifUrl(pr.exercise_name);
 
     return `
       <div class="pr-chip" onclick="editPRValue('${escapeHtml(prId)}')" role="button" title="Click to edit PR value">
+        ${gifUrl ? `<img src="${escapeHtml(gifUrl)}" alt="" class="pr-chip-gif" onerror="this.style.display='none'" loading="lazy">` : ''}
         <div class="pr-chip-top">
           <i class="bx bxs-trophy text-warning"></i>
           <span class="pr-chip-name">${escapeHtml(pr.exercise_name)}</span>
@@ -158,4 +205,4 @@ window.renderPRSection = renderPRSection;
 window.editPRValue = editPRValue;
 window.togglePRSection = togglePRSection;
 
-console.log('Workout History PR Section module loaded (v2.0.0)');
+console.log('Workout History PR Section module loaded (v2.1.0)');

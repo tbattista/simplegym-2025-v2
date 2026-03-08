@@ -84,7 +84,7 @@
 
 /* Collapsible chips wrapper */
 .pr-chips-collapsible {
-  max-height: 200px;
+  max-height: 300px;
   overflow: hidden;
   transition: max-height 0.3s ease, opacity 0.3s ease;
   opacity: 1;
@@ -167,6 +167,16 @@
 .pr-chip .pr-chip-date {
   color: var(--bs-secondary-color, #6c757d);
   font-size: 0.7rem;
+}
+
+/* GIF thumbnail inside PR chip */
+.pr-chip-gif {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  border-radius: 0.25rem;
+  background: var(--bs-tertiary-bg, #f5f5f5);
+  align-self: center;
 }
 
 /* ============================================
