@@ -41,6 +41,9 @@
         // Set up event listeners
         setupEventListeners();
 
+        // Initialize category chips
+        initCategoryChips();
+
         // Check for direct workout ID in URL (from share link)
         const urlParams = new URLSearchParams(window.location.search);
         const workoutId = urlParams.get('id');
@@ -331,6 +334,43 @@
     }
 
     /**
+     * Initialize category filter chips
+     */
+    function initCategoryChips() {
+        const container = document.getElementById('categoryChips');
+        if (!container) return;
+
+        const chips = container.querySelectorAll('.category-chip');
+        chips.forEach(chip => {
+            chip.addEventListener('click', () => {
+                const tag = chip.dataset.tag;
+                const isActive = chip.classList.contains('active');
+
+                // Deactivate all chips
+                chips.forEach(c => c.classList.remove('active'));
+
+                if (isActive) {
+                    // Toggle off - remove tag filter
+                    currentFilters.tags = currentFilters.tags.filter(t => t !== tag);
+                } else {
+                    // Activate this chip - set tag as sole filter
+                    chip.classList.add('active');
+                    currentFilters.tags = [tag];
+                    // Sync the tags input in offcanvas
+                    const tagsInput = document.getElementById('tagsInput');
+                    if (tagsInput) tagsInput.value = tag;
+                }
+
+                currentPage = 1;
+                updateFilterBadge();
+                loadPublicWorkouts();
+            });
+        });
+
+        console.log('✅ Category chips initialized');
+    }
+
+    /**
      * Initialize toolbar search with debounce
      */
     function initToolbarSearch() {
@@ -547,6 +587,10 @@
             tags: [],
             sortBy: 'created_at'
         };
+
+        // Clear active category chips
+        const chips = document.querySelectorAll('.category-chip');
+        chips.forEach(c => c.classList.remove('active'));
 
         currentPage = 1;
         loadPublicWorkouts();

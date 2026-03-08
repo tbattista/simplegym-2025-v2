@@ -81,7 +81,23 @@ function renderExerciseTab() {
     html += `</div>`;
   }
 
+  // Save search input focus/cursor state before replacing DOM
+  const searchInput = container.querySelector('.exercise-tab-search');
+  const hadFocus = searchInput && document.activeElement === searchInput;
+  const cursorPos = hadFocus ? searchInput.selectionStart : null;
+
   container.innerHTML = html;
+
+  // Restore focus and cursor position after re-render
+  if (hadFocus) {
+    const newInput = container.querySelector('.exercise-tab-search');
+    if (newInput) {
+      newInput.focus();
+      if (cursorPos !== null) {
+        newInput.setSelectionRange(cursorPos, cursorPos);
+      }
+    }
+  }
 }
 
 /* ============================================
