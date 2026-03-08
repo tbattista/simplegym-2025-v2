@@ -64,7 +64,7 @@ class FFNModalManager {
         
         const modalHtml = `
             <div class="modal fade" id="${id}" tabindex="-1" aria-labelledby="${id}Label" aria-hidden="true">
-                <div class="modal-dialog ${sizeClass}">
+                <div class="modal-dialog modal-dialog-centered ${sizeClass}">
                     <div class="modal-content">
                         <div class="modal-header">
                             <h5 class="modal-title" id="${id}Label">${options.title}</h5>

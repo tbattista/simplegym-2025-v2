@@ -1041,13 +1041,21 @@ class MarkPersonalRecordRequest(BaseModel):
 
     pr_type: str = Field(..., description="Type: 'weight', 'distance', 'duration', 'pace'")
     exercise_name: str = Field(..., description="Exercise or activity name")
-    activity_type: Optional[str] = Field(None, description="Cardio activity type")
+    activity_type: Optional[str] = Field(default=None, description="Cardio activity type")
     value: str = Field(..., description="The PR value")
     value_unit: str = Field(default="lbs", description="Unit for the value")
-    session_id: Optional[str] = Field(None, description="Session ID where PR was achieved")
-    session_date: Optional[datetime] = Field(None, description="Date of the session")
-    workout_name: Optional[str] = Field(None, description="Workout name")
-    sets_reps: Optional[str] = Field(None, description="Sets x Reps context")
+    session_id: Optional[str] = Field(default=None, description="Session ID where PR was achieved")
+    session_date: Optional[datetime] = Field(default=None, description="Date of the session")
+    workout_name: Optional[str] = Field(default=None, description="Workout name")
+    sets_reps: Optional[str] = Field(default=None, description="Sets x Reps context")
+
+    @field_validator('value', mode='before')
+    @classmethod
+    def convert_value_to_string(cls, v):
+        """Convert numeric values to strings (frontend may send numbers)"""
+        if v is not None and not isinstance(v, str):
+            return str(v)
+        return v
 
 
 class UpdatePersonalRecordRequest(BaseModel):

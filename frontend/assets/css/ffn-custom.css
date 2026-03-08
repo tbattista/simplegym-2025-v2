@@ -202,6 +202,14 @@
    MODAL ENHANCEMENTS
    ============================================ */
 
+.modal {
+    z-index: 1300;
+}
+
+.modal-backdrop {
+    z-index: 1250;
+}
+
 .modal-content {
     border: none;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);

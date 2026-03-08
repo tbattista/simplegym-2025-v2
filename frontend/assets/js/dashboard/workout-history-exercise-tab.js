@@ -101,13 +101,14 @@ function renderExerciseGroup(group) {
 
   // PR tracking: check if this exercise has a PR
   const isPR = state.prExerciseNames.has(group.baseName.toLowerCase());
-  // Get best weight across all variants for pre-fill
-  const bestVariant = group.variants.reduce((best, v) => {
-    const bw = parseFloat(v.bestWeight) || 0;
-    return bw > (parseFloat(best.bestWeight) || 0) ? v : best;
+  // Get most recent variant for pre-fill (user expects "last weight I did")
+  const mostRecentVariant = group.variants.reduce((best, v) => {
+    const bestDate = best.lastDate ? new Date(best.lastDate) : new Date(0);
+    const vDate = v.lastDate ? new Date(v.lastDate) : new Date(0);
+    return vDate > bestDate ? v : best;
   }, group.variants[0]);
-  const bestWeight = bestVariant?.bestWeight || '';
-  const bestUnit = bestVariant?.lastWeightUnit || 'lbs';
+  const prefillWeight = mostRecentVariant?.lastWeight || mostRecentVariant?.bestWeight || '';
+  const bestUnit = mostRecentVariant?.lastWeightUnit || 'lbs';
 
   let html = `
     <div class="exercise-group-item">
@@ -121,7 +122,7 @@ function renderExerciseGroup(group) {
           <div class="exercise-group-header-right">
             ${hasMultipleVariants ? `<span class="exercise-group-variant-count">${group.variants.length} variants</span>` : ''}
             <button class="pr-toggle-btn ${isPR ? 'active' : ''}"
-                    onclick="event.stopPropagation(); toggleExercisePRTracking('${escapeHtml(group.baseName)}', ${bestWeight || 0}, '${escapeHtml(bestUnit)}')"
+                    onclick="event.stopPropagation(); toggleExercisePRTracking('${escapeHtml(group.baseName)}', '${escapeHtml(String(prefillWeight))}', '${escapeHtml(bestUnit)}')"
                     title="${isPR ? 'Remove PR tracking' : 'Track PR for this exercise'}">
               <i class="bx ${isPR ? 'bxs-trophy' : 'bx-trophy'} ${isPR ? 'text-warning' : ''}"></i>
             </button>
@@ -357,11 +358,13 @@ async function toggleExercisePRTracking(baseName, bestWeight, bestUnit) {
       }
     } else {
       // Enable PR tracking — prompt for initial value
-      const prefill = bestWeight || '';
-      const userValue = await _promptPRValue(baseName, prefill, bestUnit);
+      const userValue = await _promptPRValue(baseName, bestWeight || '', bestUnit);
       if (userValue === null) return; // Cancelled
 
-      const value = userValue.trim() || String(bestWeight || 0);
+      const value = String(userValue.trim() || bestWeight || 0);
+      const unit = String(bestUnit || 'lbs');
+      const payload = { pr_type: 'weight', exercise_name: baseName, value, value_unit: unit };
+      console.log('[PR] Creating PR:', payload);
 
       const response = await fetch('/api/v3/users/me/personal-records', {
         method: 'POST',
@@ -369,24 +372,24 @@ async function toggleExercisePRTracking(baseName, bestWeight, bestUnit) {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-          pr_type: 'weight',
-          exercise_name: baseName,
-          value: value,
-          value_unit: bestUnit
-        })
+        body: JSON.stringify(payload)
       });
 
       if (response.ok) {
         const result = await response.json();
         const prId = result.pr_id;
+        if (!prId) {
+          console.error('[PR] Response missing pr_id:', result);
+          if (window.showToast) window.showToast('PR saved but ID missing', 'warning');
+          return;
+        }
 
         state.personalRecords.set(prId, {
           id: prId,
           pr_type: 'weight',
           exercise_name: baseName,
           value: value,
-          value_unit: bestUnit,
+          value_unit: unit,
           marked_at: new Date().toISOString(),
           is_manual: true
         });
@@ -395,6 +398,10 @@ async function toggleExercisePRTracking(baseName, bestWeight, bestUnit) {
         if (window.showToast) window.showToast(`PR tracking enabled for ${baseName}!`, 'success');
         renderExerciseTab();
         if (window.renderPRSection) window.renderPRSection();
+      } else {
+        const errBody = await response.text().catch(() => '');
+        console.error('[PR] Create failed:', response.status, errBody);
+        if (window.showToast) window.showToast('Failed to save PR', 'danger');
       }
     }
   } catch (error) {
