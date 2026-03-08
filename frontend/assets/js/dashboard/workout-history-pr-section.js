@@ -62,18 +62,13 @@ async function editPRValue(prId) {
   if (!pr) return;
 
   const newValue = await new Promise(resolve => {
-    if (window.ffnModalManager && window.ffnModalManager.prompt) {
-      window.ffnModalManager.prompt(
-        `Edit PR: ${pr.exercise_name}`,
-        `Enter new PR value (${pr.value_unit}):`,
-        pr.value,
-        (val) => resolve(val),
-        () => resolve(null)
-      );
-    } else {
-      const val = prompt(`Edit PR for ${pr.exercise_name} (${pr.value_unit}):`, pr.value);
-      resolve(val);
-    }
+    window.ffnModalManager.prompt(
+      `Edit PR: ${pr.exercise_name}`,
+      `Enter new PR value (${pr.value_unit}):`,
+      pr.value,
+      (val) => resolve(val),
+      () => resolve(null)
+    );
   });
 
   if (newValue === null || newValue.trim() === '' || newValue.trim() === pr.value) return;

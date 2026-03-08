@@ -270,6 +270,87 @@ class FFNModalManager {
     }
     
     /**
+     * Show a prompt dialog with text input
+     * @param {string} title - Dialog title
+     * @param {string} message - Label/description text
+     * @param {string} defaultValue - Pre-filled input value
+     * @param {Function} onConfirm - Callback receiving the input value string
+     * @param {Function} [onCancel] - Callback when cancelled
+     * @param {Object} [options] - Additional options
+     */
+    prompt(title, message, defaultValue = '', onConfirm, onCancel, options = {}) {
+        const id = `prompt-modal-${this.modalCounter++}`;
+        const inputId = `${id}-input`;
+        let pendingConfirm = null;
+
+        const body = `
+            <div class="mb-3">
+                <label for="${inputId}" class="form-label">${message}</label>
+                <input type="${options.inputType || 'text'}"
+                       class="form-control"
+                       id="${inputId}"
+                       value="${String(defaultValue).replace(/"/g, '&quot;')}"
+                       placeholder="${options.placeholder || ''}">
+            </div>
+        `;
+
+        const modal = this.create(id, {
+            title: title || 'Input',
+            body: body,
+            size: options.size || 'sm',
+            buttons: [
+                {
+                    text: options.cancelText || 'Cancel',
+                    class: 'btn-secondary',
+                    dismiss: true
+                },
+                {
+                    text: options.confirmText || 'Save',
+                    class: options.confirmClass || 'btn-primary',
+                    onClick: () => {
+                        const input = document.getElementById(inputId);
+                        pendingConfirm = input ? input.value : '';
+                        this.hide(id);
+                    }
+                }
+            ]
+        });
+
+        // Auto-focus and select input when modal is shown
+        modal.element.addEventListener('shown.bs.modal', () => {
+            const input = document.getElementById(inputId);
+            if (input) {
+                input.focus();
+                input.select();
+            }
+        }, { once: true });
+
+        // Allow Enter key to confirm
+        modal.element.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                const input = document.getElementById(inputId);
+                pendingConfirm = input ? input.value : '';
+                this.hide(id);
+            }
+        });
+
+        // Cleanup on close
+        modal.element.addEventListener('hidden.bs.modal', () => {
+            const value = pendingConfirm;
+            this.destroy(id);
+            if (value !== null) {
+                if (onConfirm) onConfirm(value);
+            } else {
+                if (onCancel) onCancel();
+            }
+        }, { once: true });
+
+        this.show(id);
+        return modal;
+    }
+
+    /**
      * Show an alert dialog
      * @param {string} title - Dialog title
      * @param {string} message - Dialog message

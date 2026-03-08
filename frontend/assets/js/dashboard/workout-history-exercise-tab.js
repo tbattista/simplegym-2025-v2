@@ -407,18 +407,14 @@ async function toggleExercisePRTracking(baseName, bestWeight, bestUnit) {
  */
 function _promptPRValue(exerciseName, prefill, unit) {
   return new Promise(resolve => {
-    if (window.ffnModalManager && window.ffnModalManager.prompt) {
-      window.ffnModalManager.prompt(
-        `Set PR for ${exerciseName}`,
-        `Enter your personal record value (${unit}):`,
-        prefill,
-        (val) => resolve(val),
-        () => resolve(null)
-      );
-    } else {
-      const val = prompt(`Set PR for ${exerciseName} (${unit}).\nLeave blank to use best weight from history (${prefill}):`, prefill);
-      resolve(val);
-    }
+    window.ffnModalManager.prompt(
+      `Set PR for ${exerciseName}`,
+      `Enter your personal record (${unit}):`,
+      prefill,
+      (val) => resolve(val),
+      () => resolve(null),
+      { placeholder: `e.g. ${prefill || '225'}` }
+    );
   });
 }
 
