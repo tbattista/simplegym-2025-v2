@@ -148,15 +148,13 @@ class AuthService {
                 console.log('✅ Google sign-in successful');
                 return userCredential.user;
             } catch (popupError) {
-                // Fallback to redirect for popup blockers or mobile browsers
-                if (popupError.code === 'auth/popup-blocked' ||
-                    popupError.code === 'auth/popup-closed-by-user' ||
-                    popupError.code === 'auth/cancelled-popup-request') {
-                    console.log('🔄 Popup failed, falling back to redirect sign-in...');
+                // Only fallback to redirect when popup was actually blocked by the browser
+                if (popupError.code === 'auth/popup-blocked') {
+                    console.log('🔄 Popup blocked, falling back to redirect sign-in...');
                     await signInWithRedirect(window.firebaseAuth, provider);
-                    // Page will redirect; no return needed
                     return null;
                 }
+                // User closed the popup themselves - just re-throw (not an error worth redirecting for)
                 throw popupError;
             }
 
