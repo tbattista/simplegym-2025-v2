@@ -116,19 +116,23 @@ function renderExerciseGroup(group) {
            role="button"
            aria-expanded="${isExpanded}"
            aria-controls="${groupId}">
-        <div class="exercise-group-header-left">
-          <button class="pr-toggle-btn ${isPR ? 'active' : ''}"
-                  onclick="event.stopPropagation(); toggleExercisePRTracking('${escapeHtml(group.baseName)}', ${bestWeight || 0}, '${escapeHtml(bestUnit)}')"
-                  title="${isPR ? 'Remove PR tracking' : 'Track PR for this exercise'}">
-            <i class="bx ${isPR ? 'bxs-trophy' : 'bx-trophy'} ${isPR ? 'text-warning' : ''}"></i>
-          </button>
-          <span class="exercise-group-name">${escapeHtml(group.baseName)}</span>
-          ${hasMultipleVariants ? `<span class="exercise-group-variant-count">${group.variants.length} variants</span>` : ''}
+        <div class="exercise-group-header-row1">
+          <div class="exercise-group-header-left">
+            <button class="pr-toggle-btn ${isPR ? 'active' : ''}"
+                    onclick="event.stopPropagation(); toggleExercisePRTracking('${escapeHtml(group.baseName)}', ${bestWeight || 0}, '${escapeHtml(bestUnit)}')"
+                    title="${isPR ? 'Remove PR tracking' : 'Track PR for this exercise'}">
+              <i class="bx ${isPR ? 'bxs-trophy' : 'bx-trophy'} ${isPR ? 'text-warning' : ''}"></i>
+            </button>
+            <span class="exercise-group-name">${escapeHtml(group.baseName)}</span>
+          </div>
+          <div class="exercise-group-header-right">
+            ${hasMultipleVariants ? `<span class="exercise-group-variant-count">${group.variants.length} variants</span>` : ''}
+            <i class="bx bx-chevron-down exercise-group-chevron ${isExpanded ? 'rotated' : ''}"></i>
+          </div>
         </div>
-        <div class="exercise-group-header-right">
+        <div class="exercise-group-meta">
           <span class="exercise-group-count">${sessionLabel}</span>
-          <span class="exercise-group-date">${lastDate}</span>
-          <i class="bx bx-chevron-down exercise-group-chevron ${isExpanded ? 'rotated' : ''}"></i>
+          ${lastDate ? `<span class="exercise-group-meta-sep">&middot;</span><span class="exercise-group-date">${lastDate}</span>` : ''}
         </div>
       </div>
       <div id="${groupId}" class="exercise-group-body" style="${isExpanded ? '' : 'display: none;'}">

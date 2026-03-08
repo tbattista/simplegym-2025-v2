@@ -66,15 +66,21 @@
 
 .exercise-group-header {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.75rem 0;
+  flex-direction: column;
+  padding: 0.875rem 0;
   cursor: pointer;
-  gap: 0.5rem;
+  gap: 0.25rem;
 }
 
 .exercise-group-header:active {
   opacity: 0.8;
+}
+
+.exercise-group-header-row1 {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .exercise-group-header-left {
@@ -110,6 +116,19 @@
   align-items: center;
   gap: 0.5rem;
   flex-shrink: 0;
+}
+
+/* Second line: session count + date */
+.exercise-group-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding-left: 2rem; /* align under name (past PR button) */
+}
+
+.exercise-group-meta-sep {
+  font-size: 0.75rem;
+  color: var(--bs-secondary-color);
 }
 
 .exercise-group-count {

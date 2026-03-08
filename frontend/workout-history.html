@@ -346,45 +346,51 @@
                           </div>
                         </div>
 
-                        <!-- Calendar Card (always visible on desktop) -->
-                        <div class="card desktop-calendar-card mb-4">
-                          <div class="card-header py-3 px-4">
-                            <h6 class="mb-0 fw-semibold">
-                              <i class="bx bx-calendar me-2"></i>Calendar
-                            </h6>
+                        <!-- Calendar + Exercises Tabbed Card -->
+                        <div class="card desktop-cal-exercise-card mb-4" id="desktopExerciseOverviewCardWrapper">
+                          <div class="card-header py-0 px-4">
+                            <ul class="nav nav-tabs card-header-tabs" role="tablist">
+                              <li class="nav-item">
+                                <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#desktopCalendarPane" role="tab">
+                                  <i class="bx bx-calendar me-1"></i>Calendar
+                                </button>
+                              </li>
+                              <li class="nav-item">
+                                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#desktopExercisePane" role="tab">
+                                  <i class="bx bx-dumbbell me-1"></i>Exercises
+                                </button>
+                              </li>
+                            </ul>
                           </div>
                           <div class="card-body py-3 px-4">
-                            <div class="calendar-panel" id="desktopHistoryCalendarCard">
-                              <div class="calendar-panel-header">
-                                <button id="desktopPrevMonth" class="btn btn-sm btn-icon btn-outline-secondary rounded-circle">
-                                  <i class="bx bx-chevron-left"></i>
-                                </button>
-                                <span id="desktopCurrentMonth" class="fw-medium">January 2026</span>
-                                <button id="desktopNextMonth" class="btn btn-sm btn-icon btn-outline-secondary rounded-circle">
-                                  <i class="bx bx-chevron-right"></i>
-                                </button>
-                              </div>
-                              <div id="desktopCalendarGrid" class="calendar-grid">
-                                <div class="text-center py-3">
-                                  <div class="spinner-border spinner-border-sm text-primary" role="status">
-                                    <span class="visually-hidden">Loading calendar...</span>
+                            <div class="tab-content">
+                              <div class="tab-pane fade show active" id="desktopCalendarPane" role="tabpanel">
+                                <div class="calendar-panel" id="desktopHistoryCalendarCard">
+                                  <div class="calendar-panel-header">
+                                    <button id="desktopPrevMonth" class="btn btn-sm btn-icon btn-outline-secondary rounded-circle">
+                                      <i class="bx bx-chevron-left"></i>
+                                    </button>
+                                    <span id="desktopCurrentMonth" class="fw-medium">January 2026</span>
+                                    <button id="desktopNextMonth" class="btn btn-sm btn-icon btn-outline-secondary rounded-circle">
+                                      <i class="bx bx-chevron-right"></i>
+                                    </button>
+                                  </div>
+                                  <div id="desktopCalendarGrid" class="calendar-grid">
+                                    <div class="text-center py-3">
+                                      <div class="spinner-border spinner-border-sm text-primary" role="status">
+                                        <span class="visually-hidden">Loading calendar...</span>
+                                      </div>
+                                    </div>
                                   </div>
                                 </div>
                               </div>
-                            </div>
-                          </div>
-                        </div>
-
-                        <!-- Exercise Overview Card (all sessions mode only) -->
-                        <div class="card desktop-exercise-overview-card mb-4" id="desktopExerciseOverviewCardWrapper" style="display: none;">
-                          <div class="card-header py-3 px-4">
-                            <h6 class="mb-0 fw-semibold">
-                              <i class="bx bx-dumbbell me-2"></i>Exercises
-                            </h6>
-                          </div>
-                          <div class="card-body py-3 px-4 desktop-exercise-overview-body">
-                            <div id="desktopExerciseTabContainer">
-                              <!-- Exercise groups rendered by JS -->
+                              <div class="tab-pane fade" id="desktopExercisePane" role="tabpanel">
+                                <div class="desktop-exercise-overview-body">
+                                  <div id="desktopExerciseTabContainer">
+                                    <!-- Exercise groups rendered by JS -->
+                                  </div>
+                                </div>
+                              </div>
                             </div>
                           </div>
                         </div>

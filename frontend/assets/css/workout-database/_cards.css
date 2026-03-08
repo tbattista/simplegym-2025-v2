@@ -2,11 +2,11 @@
    WORKOUT CARD STYLES - Mobile First
    ============================================ */
 
-/* Grid row - allow variable height cards (industry best practice) */
+/* Grid row - uniform card heights per row */
 #workoutCardsGrid.row {
     display: flex;
     flex-wrap: wrap;
-    align-items: flex-start;  /* Cards size to content, not row height */
+    align-items: stretch;  /* Cards match tallest in row */
 }
 
 #workoutCardsGrid > .col {
@@ -15,7 +15,7 @@
 }
 
 #workoutCardsGrid > .col > .workout-list-card {
-    flex: 0 1 auto;  /* Don't expand to fill column */
+    flex: 1 1 auto;  /* Stretch to fill column height */
     width: 100%;
 }
 
@@ -38,6 +38,13 @@
 .workout-list-card:hover {
     box-shadow: var(--wdb-card-shadow-hover);
     transform: translateY(-2px);
+}
+
+/* Focus-visible for keyboard navigation / accessibility */
+.workout-list-card:focus-visible {
+    outline: 2px solid var(--gs-primary);
+    outline-offset: 2px;
+    box-shadow: var(--wdb-card-shadow-hover);
 }
 
 /* Card body with consistent padding - sizes to content */

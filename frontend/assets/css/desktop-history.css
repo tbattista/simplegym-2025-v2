@@ -42,10 +42,41 @@
 }
 
 /* Calendar card - remove double border from inner panel */
-.desktop-calendar-card .calendar-panel {
+.desktop-calendar-card .calendar-panel,
+.desktop-cal-exercise-card .calendar-panel {
     border: none;
     padding: 0;
     background: transparent;
+}
+
+/* Tabbed calendar + exercises card */
+.desktop-cal-exercise-card .card-header {
+    border-bottom: none;
+}
+
+.desktop-cal-exercise-card .nav-tabs {
+    border-bottom: 1px solid var(--bs-border-color);
+}
+
+.desktop-cal-exercise-card .nav-tabs .nav-link {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    padding: 0.625rem 1rem;
+    color: var(--bs-secondary-color);
+    border: none;
+    border-bottom: 2px solid transparent;
+    border-radius: 0;
+}
+
+.desktop-cal-exercise-card .nav-tabs .nav-link.active {
+    color: var(--bs-primary);
+    border-bottom-color: var(--bs-primary);
+    background: transparent;
+}
+
+.desktop-cal-exercise-card .nav-tabs .nav-link:hover:not(.active) {
+    color: var(--bs-body-color);
+    border-bottom-color: var(--bs-border-color);
 }
 
 /* Exercise performance card - constrained height with scroll */
@@ -138,6 +169,7 @@
 
 [data-bs-theme="dark"] .desktop-stats-card,
 [data-bs-theme="dark"] .desktop-calendar-card,
-[data-bs-theme="dark"] .desktop-exercise-perf-card {
+[data-bs-theme="dark"] .desktop-exercise-perf-card,
+[data-bs-theme="dark"] .desktop-cal-exercise-card {
     border-color: var(--bs-gray-700);
 }

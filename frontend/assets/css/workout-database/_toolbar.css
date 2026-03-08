@@ -115,6 +115,21 @@
     line-height: 1.2;
 }
 
+/* Wider search on desktop */
+@media (min-width: 992px) {
+    .workout-toolbar-search {
+        max-width: 400px;
+    }
+}
+
+/* Results count in toolbar */
+.workout-toolbar-count {
+    font-size: var(--gs-text-sm);
+    color: var(--gs-gray-400);
+    white-space: nowrap;
+    margin-left: auto;
+}
+
 /* ============================================
    WORKOUT TOOLBAR - RESPONSIVE
    ============================================ */
@@ -133,13 +148,13 @@
     }
 
     .workout-toolbar-search input {
-        height: 2.25rem;
+        min-height: 44px;
     }
 
-    /* Buttons take equal width on mobile */
+    /* Buttons take equal width on mobile - 44px touch target */
     .workout-toolbar-btn {
         flex: 1;
-        height: 2.25rem;
+        min-height: 44px;
         padding: 0 0.5rem;
         justify-content: center;
     }

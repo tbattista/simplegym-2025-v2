@@ -455,7 +455,9 @@
             if (workoutGrid) {
                 workoutGrid.setData([]); // Show empty state
             }
-            alert('Failed to load workouts: ' + error.message);
+            if (window.toastNotifications) {
+                window.toastNotifications.error(error.message, 'Failed to load workouts');
+            }
         }
     }
 
@@ -482,7 +484,9 @@
             
         } catch (error) {
             console.error('❌ Error loading workout details:', error);
-            alert('Failed to load workout details: ' + error.message);
+            if (window.toastNotifications) {
+                window.toastNotifications.error(error.message, 'Failed to load workout details');
+            }
         }
     };
 
@@ -551,9 +555,21 @@
     function updateStats(total, showing) {
         const totalCountEl = document.getElementById('totalCount');
         const showingCountEl = document.getElementById('showingCount');
+        const toolbarCountEl = document.getElementById('toolbarCount');
 
         if (totalCountEl) totalCountEl.textContent = total;
         if (showingCountEl) showingCountEl.textContent = showing;
+
+        // Update toolbar results count
+        if (toolbarCountEl) {
+            if (total === 0) {
+                toolbarCountEl.textContent = '';
+            } else if (showing < total) {
+                toolbarCountEl.textContent = `${showing} of ${total} workouts`;
+            } else {
+                toolbarCountEl.textContent = `${total} ${total === 1 ? 'workout' : 'workouts'}`;
+            }
+        }
     }
 
     console.log('📦 Public Workouts page script loaded (v3.0 - using shared components)');

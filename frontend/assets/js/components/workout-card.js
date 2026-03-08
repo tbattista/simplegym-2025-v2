@@ -227,7 +227,7 @@ class WorkoutCard {
                         data-workout-id="${this.workout.id}"
                         title="Save to My Workouts"
                         style="position: absolute; top: 8px; right: 44px; z-index: 1050;">
-                    <i class="bx bx-copy"></i>
+                    <i class="bx bx-bookmark-plus"></i>
                 </button>
             `;
         }
