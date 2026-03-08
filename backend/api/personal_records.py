@@ -6,7 +6,7 @@ Handles marking, removing, and querying personal records
 from fastapi import APIRouter, Depends, HTTPException
 from typing import Dict, List
 import logging
-from ..models import PersonalRecordsResponse, MarkPersonalRecordRequest
+from ..models import PersonalRecordsResponse, MarkPersonalRecordRequest, UpdatePersonalRecordRequest
 from ..api.dependencies import get_personal_records_service, require_auth
 
 router = APIRouter(prefix="/api/v3/users/me", tags=["Personal Records"])
@@ -61,6 +61,33 @@ async def mark_personal_record(
     except Exception as e:
         logger.error(f"Error marking personal record: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error marking personal record: {str(e)}")
+
+
+@router.put("/personal-records/{pr_id}")
+async def update_personal_record(
+    pr_id: str,
+    request: UpdatePersonalRecordRequest,
+    user_id: str = Depends(require_auth),
+    pr_service=Depends(get_personal_records_service)
+):
+    """Update a personal record's value"""
+    try:
+        success = pr_service.update_personal_record_value(
+            user_id, pr_id, request.model_dump(exclude_none=True)
+        )
+        if not success:
+            raise HTTPException(status_code=404, detail="Personal record not found")
+
+        return {
+            "message": "Personal record updated",
+            "pr_id": pr_id
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating personal record: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error updating personal record: {str(e)}")
 
 
 @router.delete("/personal-records/{pr_id}")

@@ -96,7 +96,6 @@ test.describe('Workout History', () => {
     await page.waitForFunction(() => typeof window.aggregateExercisesFromSessions === 'function', { timeout: 10000 });
 
     const result = await page.evaluate(() => {
-      // Function expects exercises_performed array with exercise_name field
       const sessions = [
         {
           exercises_performed: [
@@ -110,7 +109,6 @@ test.describe('Workout History', () => {
     });
 
     expect(result.length).toBeGreaterThan(0);
-    // Both should be grouped under "Bench Press"
     const benchGroup = result.find(g => g.baseName === 'Bench Press');
     expect(benchGroup).toBeDefined();
     expect(benchGroup.variants.length).toBe(2);
@@ -121,14 +119,107 @@ test.describe('Workout History', () => {
     await waitForAppReady(page);
     await page.waitForTimeout(2000);
 
-    // Should show empty state or loading
     const emptyState = page.locator('#historyEmptyState, #desktopEmptyState');
     const sessionContainer = page.locator('#sessionHistoryContainer, #desktopSessionHistoryContainer');
 
     const hasEmpty = await emptyState.first().isVisible().catch(() => false);
     const containerText = await sessionContainer.first().textContent().catch(() => '');
 
-    // Either explicit empty state or container with no session cards
     expect(hasEmpty || containerText.trim().length === 0 || containerText.includes('No')).toBe(true);
+  });
+
+  test('PR section container exists in DOM', async ({ page }) => {
+    await page.goto(`${BASE}/workout-history.html`);
+    await waitForAppReady(page);
+
+    const prContainer = page.locator('#prSectionContainer, #desktopPrSectionContainer');
+    await expect(prContainer.first()).toBeAttached();
+  });
+
+  test('PR state is initialized in window.ffn.workoutHistory', async ({ page }) => {
+    await page.goto(`${BASE}/workout-history.html`);
+    await page.waitForFunction(() => window.ffn && window.ffn.workoutHistory, { timeout: 10000 });
+
+    const hasState = await page.evaluate(() => {
+      const state = window.ffn.workoutHistory;
+      return (
+        state.personalRecords instanceof Map &&
+        state.prExerciseNames instanceof Set
+      );
+    });
+
+    expect(hasState).toBe(true);
+  });
+
+  test('PR functions are exported to window', async ({ page }) => {
+    await page.goto(`${BASE}/workout-history.html`);
+    await page.waitForFunction(() => typeof window.renderPRSection === 'function', { timeout: 10000 });
+
+    const fnsExist = await page.evaluate(() => {
+      return (
+        typeof window.toggleExercisePRTracking === 'function' &&
+        typeof window.renderPRSection === 'function' &&
+        typeof window.editPRValue === 'function' &&
+        typeof window.fetchPersonalRecords === 'function'
+      );
+    });
+
+    expect(fnsExist).toBe(true);
+  });
+
+  test('renderPRSection hides container when no PRs', async ({ page }) => {
+    await page.goto(`${BASE}/workout-history.html`);
+    await page.waitForFunction(() => typeof window.renderPRSection === 'function', { timeout: 10000 });
+
+    await page.evaluate(() => {
+      window.ffn.workoutHistory.personalRecords.clear();
+      window.renderPRSection();
+    });
+
+    const prContainer = page.locator('#prSectionContainer, #desktopPrSectionContainer');
+    const isHidden = await prContainer.first().evaluate(el => el.style.display === 'none');
+    expect(isHidden).toBe(true);
+  });
+
+  test('renderPRSection shows horizontal chips when data exists', async ({ page }) => {
+    await page.goto(`${BASE}/workout-history.html`);
+    await page.waitForFunction(() => typeof window.renderPRSection === 'function', { timeout: 10000 });
+
+    await page.evaluate(() => {
+      const state = window.ffn.workoutHistory;
+      state.personalRecords.set('weight_bench_press', {
+        id: 'weight_bench_press',
+        pr_type: 'weight',
+        exercise_name: 'Bench Press',
+        value: '225',
+        value_unit: 'lbs',
+        session_id: 'test-session-1',
+        session_date: new Date().toISOString(),
+        marked_at: new Date().toISOString(),
+        is_manual: true
+      });
+      state.prExerciseNames.add('bench press');
+      window.renderPRSection();
+    });
+
+    // PR chips container is rendered in the DOM
+    const chipsContainer = page.locator('.pr-chips-container');
+    await expect(chipsContainer.first()).toBeAttached();
+
+    // PR chip exists with correct data
+    const prChip = page.locator('.pr-chip');
+    await expect(prChip.first()).toBeAttached();
+
+    const chipText = await prChip.first().textContent();
+    expect(chipText).toContain('Bench Press');
+    expect(chipText).toContain('225');
+  });
+
+  test('PR CSS file loads with correct styles', async ({ page }) => {
+    await page.goto(`${BASE}/workout-history.html`);
+    await waitForAppReady(page);
+
+    const cssLink = page.locator('link[href*="workout-history-pr.css"]');
+    await expect(cssLink).toBeAttached();
   });
 });

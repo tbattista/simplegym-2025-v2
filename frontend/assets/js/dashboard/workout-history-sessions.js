@@ -741,4 +741,4 @@ window.renderCardioHistoryEntry = renderCardioHistoryEntry;
 window.sessionToWorkoutData = sessionToWorkoutData;
 window.createTemplateFromSession = createTemplateFromSession;
 
-console.log('📦 Workout History Sessions module loaded (v1.2.0)');
+console.log('📦 Workout History Sessions module loaded (v1.4.0)');

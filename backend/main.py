@@ -63,7 +63,7 @@ app.include_router(cardio_sessions.router)  # Cardio session logging
 app.include_router(import_routes.router)  # Workout import parsing
 app.include_router(universal_log_routes.router)  # Universal Logger (AI session logging)
 
-logger.info("✅ All routers included successfully (18 routers total)")
+logger.info("✅ All routers included successfully (19 routers total)")
 
 # ============================================
 # SEO Routes (robots.txt, sitemap.xml, llms.txt)

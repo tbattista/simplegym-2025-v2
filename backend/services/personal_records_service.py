@@ -117,8 +117,8 @@ class PersonalRecordsService:
                 activity_type=pr_data.get('activity_type'),
                 value=pr_data['value'],
                 value_unit=pr_data.get('value_unit', 'lbs'),
-                session_id=pr_data['session_id'],
-                session_date=pr_data['session_date'],
+                session_id=pr_data.get('session_id'),
+                session_date=pr_data.get('session_date'),
                 workout_name=pr_data.get('workout_name'),
                 sets_reps=pr_data.get('sets_reps'),
                 marked_at=datetime.now(),
@@ -182,6 +182,43 @@ class PersonalRecordsService:
 
         except Exception as e:
             logger.error(f"Error removing personal record for user {user_id}: {str(e)}")
+            return False
+
+    def update_personal_record_value(self, user_id: str, pr_id: str, update_data: dict) -> bool:
+        """Update a personal record's value (for manual edits and auto-updates)"""
+        if not self.is_available():
+            return False
+
+        try:
+            doc_ref = self._get_doc_ref(user_id)
+            doc = doc_ref.get()
+
+            if not doc.exists:
+                return False
+
+            data = doc.to_dict()
+            if pr_id not in data.get('records', {}):
+                return False
+
+            # Build update fields
+            updates = {
+                f'records.{pr_id}.value': update_data['value'],
+                f'records.{pr_id}.marked_at': datetime.now().isoformat(),
+                'lastUpdated': firestore.SERVER_TIMESTAMP,
+            }
+            if 'value_unit' in update_data:
+                updates[f'records.{pr_id}.value_unit'] = update_data['value_unit']
+            if 'session_id' in update_data:
+                updates[f'records.{pr_id}.session_id'] = update_data['session_id']
+            if 'session_date' in update_data:
+                updates[f'records.{pr_id}.session_date'] = update_data['session_date']
+
+            doc_ref.update(updates)
+            logger.info(f"Updated PR value: {pr_id} for user {user_id}")
+            return True
+
+        except Exception as e:
+            logger.error(f"Error updating personal record for user {user_id}: {str(e)}")
             return False
 
     def bulk_check_personal_records(self, user_id: str, exercise_names: List[str]) -> Dict[str, dict]:

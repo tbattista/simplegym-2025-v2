@@ -204,6 +204,7 @@ class FirestoreSessionOps:
             # Update exercise histories
             if completed_session:
                 await self._update_exercise_histories_batch(user_id, completed_session)
+                await self._auto_update_personal_records(user_id, completed_session)
 
             logger.info(f"Completed workout session {session_id} for user {user_id}")
             return completed_session
@@ -276,6 +277,7 @@ class FirestoreSessionOps:
 
             # Update exercise histories
             await self._update_exercise_histories_batch(user_id, session)
+            await self._auto_update_personal_records(user_id, session)
 
             return session
 
@@ -546,4 +548,96 @@ class FirestoreSessionOps:
 
         except Exception as e:
             logger.error(f"Failed to batch update exercise histories: {str(e)}")
+            return False
+
+    async def _auto_update_personal_records(self, user_id: str, session: Any) -> bool:
+        """
+        Auto-update personal records if any exercise in this session exceeds tracked PR values.
+        Only updates exercises that are already PR-tracked by the user.
+        """
+        if not self.is_available():
+            return False
+
+        try:
+            import re
+
+            # Read user's PR document
+            pr_doc_ref = (self.db.collection('users')
+                          .document(user_id)
+                          .collection('data')
+                          .document('personal_records'))
+            pr_doc = pr_doc_ref.get()
+
+            if not pr_doc.exists:
+                return False
+
+            pr_data = pr_doc.to_dict()
+            records = pr_data.get('records', {})
+
+            if not records:
+                return False
+
+            # Build lookup: normalized exercise name -> pr_id for weight PRs
+            name_to_pr = {}
+            for pr_id, pr in records.items():
+                if pr.get('pr_type') == 'weight':
+                    normalized = pr.get('exercise_name', '').lower()
+                    name_to_pr[normalized] = (pr_id, pr)
+
+            if not name_to_pr:
+                return False
+
+            updates = {}
+            session_date = getattr(session, 'completed_at', None) or getattr(session, 'started_at', None)
+
+            for exercise in session.exercises_performed:
+                if not exercise.exercise_name or exercise.is_skipped:
+                    continue
+
+                ex_name_lower = exercise.exercise_name.lower()
+
+                # Check exact match first, then try base name (strip equipment prefix)
+                match = name_to_pr.get(ex_name_lower)
+                if not match:
+                    # Try stripping equipment prefix to match base name
+                    from .personal_records_service import _normalize_pr_id
+                    # Check if any tracked PR base name matches
+                    for tracked_name, (pr_id, pr) in name_to_pr.items():
+                        if tracked_name in ex_name_lower or ex_name_lower in tracked_name:
+                            match = (pr_id, pr)
+                            break
+
+                if not match:
+                    continue
+
+                pr_id, current_pr = match
+                new_weight = exercise.weight
+
+                if new_weight is None:
+                    continue
+
+                try:
+                    new_w = float(new_weight)
+                    current_w = float(current_pr.get('value', 0))
+                except (ValueError, TypeError):
+                    continue
+
+                if new_w > current_w:
+                    updates[f'records.{pr_id}.value'] = str(new_weight)
+                    updates[f'records.{pr_id}.session_id'] = session.id
+                    if session_date:
+                        updates[f'records.{pr_id}.session_date'] = session_date
+                    updates[f'records.{pr_id}.marked_at'] = datetime.now().isoformat()
+                    updates[f'records.{pr_id}.is_manual'] = False
+                    logger.info(f"Auto-updating PR {pr_id}: {current_w} -> {new_w} for user {user_id}")
+
+            if updates:
+                updates['lastUpdated'] = firestore.SERVER_TIMESTAMP
+                pr_doc_ref.update(updates)
+                logger.info(f"Auto-updated {len([k for k in updates if k.startswith('records.') and k.endswith('.value')])} PRs for user {user_id}")
+
+            return True
+
+        except Exception as e:
+            logger.error(f"Failed to auto-update personal records: {str(e)}")
             return False

@@ -64,7 +64,6 @@ window.ffn.workoutHistory = {
   // Personal Records
   personalRecords: new Map(),     // PR ID -> PR data
   prExerciseNames: new Set(),     // exercise names (lowercased) that have PRs
-  prSessionIndex: new Map(),      // session_id -> Set of exercise names with PRs
 
   // Statistics
   statistics: {

@@ -147,6 +147,21 @@ body.menu-open {
 }
 
 /* ============================================
+   DIM SIDEBAR WHEN OFFCANVAS IS OPEN
+   ============================================ */
+
+@media (min-width: 1200px) {
+    body:has(.offcanvas.show, .offcanvas.showing) .layout-menu::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1100;
+        pointer-events: none;
+    }
+}
+
+/* ============================================
    DARK MODE - MOBILE MENU
    ============================================ */
 

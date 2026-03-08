@@ -1019,8 +1019,8 @@ class PersonalRecord(BaseModel):
     activity_type: Optional[str] = Field(None, description="Cardio activity type if applicable")
     value: str = Field(..., description="The PR value as string (e.g., '225', '5.0', '45', '7:30')")
     value_unit: str = Field(default="lbs", description="Unit: 'lbs', 'kg', 'mi', 'km', 'min', 'min/mi', etc.")
-    session_id: str = Field(..., description="Session ID where PR was achieved")
-    session_date: datetime = Field(..., description="Date of the session")
+    session_id: Optional[str] = Field(None, description="Session ID where PR was achieved")
+    session_date: Optional[datetime] = Field(None, description="Date of the session")
     workout_name: Optional[str] = Field(None, description="Workout name for display")
     sets_reps: Optional[str] = Field(None, description="Sets x Reps context (e.g., '3x8')")
     marked_at: datetime = Field(default_factory=datetime.now, description="When user marked this as PR")
@@ -1044,10 +1044,19 @@ class MarkPersonalRecordRequest(BaseModel):
     activity_type: Optional[str] = Field(None, description="Cardio activity type")
     value: str = Field(..., description="The PR value")
     value_unit: str = Field(default="lbs", description="Unit for the value")
-    session_id: str = Field(..., description="Session ID where PR was achieved")
-    session_date: datetime = Field(..., description="Date of the session")
+    session_id: Optional[str] = Field(None, description="Session ID where PR was achieved")
+    session_date: Optional[datetime] = Field(None, description="Date of the session")
     workout_name: Optional[str] = Field(None, description="Workout name")
     sets_reps: Optional[str] = Field(None, description="Sets x Reps context")
+
+
+class UpdatePersonalRecordRequest(BaseModel):
+    """Request model for updating a PR value"""
+
+    value: str = Field(..., description="The new PR value")
+    value_unit: Optional[str] = Field(None, description="Unit for the value (optional, keeps existing if not provided)")
+    session_id: Optional[str] = Field(None, description="Session ID if from a session")
+    session_date: Optional[datetime] = Field(None, description="Date of the session")
 
 
 class PersonalRecordsResponse(BaseModel):

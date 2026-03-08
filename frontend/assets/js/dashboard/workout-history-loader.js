@@ -53,10 +53,11 @@ async function loadWorkoutHistory(workoutId) {
   try {
     showLoading();
 
-    // Fetch sessions and exercise history in parallel
+    // Fetch sessions, exercise history, and personal records in parallel
     const [sessionsData, exerciseData] = await Promise.all([
       fetchWorkoutSessions(workoutId),
-      fetchExerciseHistory(workoutId)
+      fetchExerciseHistory(workoutId),
+      fetchPersonalRecords() // Fire-and-forget, populates state directly
     ]);
 
     // Update state
@@ -79,6 +80,7 @@ async function loadWorkoutHistory(workoutId) {
     renderStatistics();
     renderSessionHistory();
     renderExercisePerformance();
+    if (window.renderPRSection) renderPRSection();
     initHistoryCalendar();
 
     // Show content
@@ -121,14 +123,15 @@ async function loadAllSessions(scrollToSessionId = null) {
     const token = await window.dataManager.getAuthToken();
     if (window.mobileDebugLog) window.mobileDebugLog('Token: ' + (token ? token.substring(0, 20) + '...' : 'NO TOKEN'));
 
-    // Fetch workout sessions and cardio sessions in parallel
+    // Fetch workout sessions, cardio sessions, and personal records in parallel
     const [workoutResponse, cardioResponse] = await Promise.all([
       fetch('/api/v3/workout-sessions?status=completed&page_size=100&sort=desc', {
         headers: { 'Authorization': `Bearer ${token}` }
       }),
       fetch('/api/v3/cardio-sessions?page_size=100', {
         headers: { 'Authorization': `Bearer ${token}` }
-      }).catch(() => null) // Don't fail if cardio endpoint errors
+      }).catch(() => null), // Don't fail if cardio endpoint errors
+      fetchPersonalRecords() // Fire-and-forget, populates state directly
     ]);
 
     console.log('🔍 [HISTORY] Workout response status:', workoutResponse.status);
@@ -205,6 +208,9 @@ function renderAllModeUI() {
   renderWorkoutInfo();
   renderStatistics();
   renderSessionHistory();
+
+  // Render PR section at top
+  if (window.renderPRSection) renderPRSection();
 
   // Aggregate and render exercise overview (All Sessions mode)
   aggregateAndRenderExercises();
@@ -336,17 +342,10 @@ async function fetchPersonalRecords() {
     // Clear and rebuild indexes
     state.personalRecords.clear();
     state.prExerciseNames.clear();
-    state.prSessionIndex.clear();
 
     (data.records || []).forEach(pr => {
       state.personalRecords.set(pr.id, pr);
       state.prExerciseNames.add(pr.exercise_name.toLowerCase());
-
-      // Build session index
-      if (!state.prSessionIndex.has(pr.session_id)) {
-        state.prSessionIndex.set(pr.session_id, new Set());
-      }
-      state.prSessionIndex.get(pr.session_id).add(pr.exercise_name.toLowerCase());
     });
 
     console.log(`📊 Loaded ${state.personalRecords.size} personal records`);
@@ -396,5 +395,6 @@ window.aggregateAndRenderExercises = aggregateAndRenderExercises;
 window.fetchWorkoutSessions = fetchWorkoutSessions;
 window.fetchExerciseHistory = fetchExerciseHistory;
 window.extractUniqueWorkouts = extractUniqueWorkouts;
+window.fetchPersonalRecords = fetchPersonalRecords;
 
 console.log('📦 Workout History Loader module loaded (v1.0.0)');

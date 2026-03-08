@@ -93,6 +93,9 @@ frontend/js/
 /*.pdf
 /*.xlsx
 
+# UX review screenshots (ephemeral analysis)
+frontend/assets/img/ux-review/
+
 # Analysis results
 backend/scripts/analysis_results/*.json
 backend/scripts/analysis_results/*.xlsx

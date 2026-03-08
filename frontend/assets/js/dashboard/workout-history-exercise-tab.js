@@ -99,6 +99,16 @@ function renderExerciseGroup(group) {
   const lastDate = group.lastDate ? formatExerciseDate(group.lastDate) : '';
   const hasMultipleVariants = group.variants.length > 1;
 
+  // PR tracking: check if this exercise has a PR
+  const isPR = state.prExerciseNames.has(group.baseName.toLowerCase());
+  // Get best weight across all variants for pre-fill
+  const bestVariant = group.variants.reduce((best, v) => {
+    const bw = parseFloat(v.bestWeight) || 0;
+    return bw > (parseFloat(best.bestWeight) || 0) ? v : best;
+  }, group.variants[0]);
+  const bestWeight = bestVariant?.bestWeight || '';
+  const bestUnit = bestVariant?.lastWeightUnit || 'lbs';
+
   let html = `
     <div class="exercise-group-item">
       <div class="exercise-group-header"
@@ -107,6 +117,11 @@ function renderExerciseGroup(group) {
            aria-expanded="${isExpanded}"
            aria-controls="${groupId}">
         <div class="exercise-group-header-left">
+          <button class="pr-toggle-btn ${isPR ? 'active' : ''}"
+                  onclick="event.stopPropagation(); toggleExercisePRTracking('${escapeHtml(group.baseName)}', ${bestWeight || 0}, '${escapeHtml(bestUnit)}')"
+                  title="${isPR ? 'Remove PR tracking' : 'Track PR for this exercise'}">
+            <i class="bx ${isPR ? 'bxs-trophy' : 'bx-trophy'} ${isPR ? 'text-warning' : ''}"></i>
+          </button>
           <span class="exercise-group-name">${escapeHtml(group.baseName)}</span>
           ${hasMultipleVariants ? `<span class="exercise-group-variant-count">${group.variants.length} variants</span>` : ''}
         </div>
@@ -283,6 +298,131 @@ function initExerciseTabVisibility() {
 }
 
 /* ============================================
+   PR TRACKING TOGGLE
+   ============================================ */
+
+/**
+ * Toggle PR tracking for an exercise from the Exercises tab
+ * If enabling: shows an input for initial PR value (pre-filled with best weight)
+ * If disabling: confirms and removes
+ */
+async function toggleExercisePRTracking(baseName, bestWeight, bestUnit) {
+  const state = window.ffn.workoutHistory;
+  const exNameLower = baseName.toLowerCase();
+  const isPR = state.prExerciseNames.has(exNameLower);
+
+  if (!window.dataManager) return;
+
+  try {
+    const token = await window.dataManager.getAuthToken();
+
+    if (isPR) {
+      // Remove PR tracking
+      let prId = null;
+      for (const [id, pr] of state.personalRecords) {
+        if (pr.exercise_name.toLowerCase() === exNameLower) {
+          prId = id;
+          break;
+        }
+      }
+      if (!prId) return;
+
+      const confirmed = await new Promise(resolve => {
+        if (window.ffnModalManager && window.ffnModalManager.confirm) {
+          window.ffnModalManager.confirm(
+            'Remove PR Tracking?',
+            `Stop tracking PR for <strong>${baseName}</strong>?`,
+            () => resolve(true),
+            () => resolve(false)
+          );
+        } else {
+          resolve(confirm(`Stop tracking PR for ${baseName}?`));
+        }
+      });
+      if (!confirmed) return;
+
+      const response = await fetch(`/api/v3/users/me/personal-records/${prId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      if (response.ok) {
+        state.personalRecords.delete(prId);
+        state.prExerciseNames.delete(exNameLower);
+        if (window.showToast) window.showToast(`PR tracking removed for ${baseName}`, 'info');
+        renderExerciseTab();
+        if (window.renderPRSection) window.renderPRSection();
+      }
+    } else {
+      // Enable PR tracking — prompt for initial value
+      const prefill = bestWeight || '';
+      const userValue = await _promptPRValue(baseName, prefill, bestUnit);
+      if (userValue === null) return; // Cancelled
+
+      const value = userValue.trim() || String(bestWeight || 0);
+
+      const response = await fetch('/api/v3/users/me/personal-records', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          pr_type: 'weight',
+          exercise_name: baseName,
+          value: value,
+          value_unit: bestUnit
+        })
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        const prId = result.pr_id;
+
+        state.personalRecords.set(prId, {
+          id: prId,
+          pr_type: 'weight',
+          exercise_name: baseName,
+          value: value,
+          value_unit: bestUnit,
+          marked_at: new Date().toISOString(),
+          is_manual: true
+        });
+        state.prExerciseNames.add(exNameLower);
+
+        if (window.showToast) window.showToast(`PR tracking enabled for ${baseName}!`, 'success');
+        renderExerciseTab();
+        if (window.renderPRSection) window.renderPRSection();
+      }
+    }
+  } catch (error) {
+    console.error('Error toggling PR tracking:', error);
+    if (window.showToast) window.showToast('Failed to update PR', 'danger');
+  }
+}
+
+/**
+ * Show a prompt for the user to enter/confirm a PR value
+ * Returns the entered value string, or null if cancelled
+ */
+function _promptPRValue(exerciseName, prefill, unit) {
+  return new Promise(resolve => {
+    if (window.ffnModalManager && window.ffnModalManager.prompt) {
+      window.ffnModalManager.prompt(
+        `Set PR for ${exerciseName}`,
+        `Enter your personal record value (${unit}):`,
+        prefill,
+        (val) => resolve(val),
+        () => resolve(null)
+      );
+    } else {
+      const val = prompt(`Set PR for ${exerciseName} (${unit}).\nLeave blank to use best weight from history (${prefill}):`, prefill);
+      resolve(val);
+    }
+  });
+}
+
+/* ============================================
    EXPORTS
    ============================================ */
 
@@ -291,5 +431,6 @@ window.toggleExerciseGroup = toggleExerciseGroup;
 window.handleExerciseTabSearch = handleExerciseTabSearch;
 window.cycleExerciseTabSort = cycleExerciseTabSort;
 window.initExerciseTabVisibility = initExerciseTabVisibility;
+window.toggleExercisePRTracking = toggleExercisePRTracking;
 
-console.log('Workout History Exercise Tab module loaded (v1.0.0)');
+console.log('Workout History Exercise Tab module loaded (v1.1.0)');
