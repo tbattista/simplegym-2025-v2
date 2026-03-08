@@ -243,20 +243,24 @@ class FFNBasePage {
         return window.firebaseAuth?.currentUser || window.dataManager?.currentUser || null;
     }
     
-    async getAuthToken() {
+    async getAuthToken(forceRefresh = false) {
         if (!this.isAuthenticated()) {
             throw new Error('User not authenticated');
         }
-        
+
+        if (forceRefresh && window.authService?.getIdToken) {
+            return await window.authService.getIdToken(true);
+        }
+
         if (window.dataManager?.getAuthToken) {
             return await window.dataManager.getAuthToken();
         }
-        
+
         const user = this.getCurrentUser();
         if (user && user.getIdToken) {
-            return await user.getIdToken();
+            return await user.getIdToken(forceRefresh);
         }
-        
+
         throw new Error('Unable to get auth token');
     }
     
@@ -315,7 +319,7 @@ class FFNBasePage {
                     'Content-Type': 'application/json'
                 }
             };
-            
+
             // Add auth token if authenticated
             if (this.isAuthenticated()) {
                 try {
@@ -325,7 +329,7 @@ class FFNBasePage {
                     console.warn('⚠️ Could not get auth token:', error);
                 }
             }
-            
+
             const response = await fetch(url, {
                 ...defaultOptions,
                 ...options,
@@ -334,14 +338,31 @@ class FFNBasePage {
                     ...(options.headers || {})
                 }
             });
-            
+
+            // Auto-retry on 401 with a force-refreshed token (handles expired tokens)
+            if (response.status === 401 && this.isAuthenticated() && !options._isRetry) {
+                try {
+                    const freshToken = await this.getAuthToken(true);
+                    return await this.apiRequest(url, {
+                        ...options,
+                        _isRetry: true,
+                        headers: {
+                            ...(options.headers || {}),
+                            'Authorization': `Bearer ${freshToken}`
+                        }
+                    });
+                } catch (retryError) {
+                    console.warn('⚠️ Token refresh retry failed:', retryError);
+                }
+            }
+
             if (!response.ok) {
                 const error = await response.json().catch(() => ({}));
                 throw new Error(error.detail || error.message || `Request failed: ${response.status}`);
             }
-            
+
             return await response.json();
-            
+
         } catch (error) {
             console.error('❌ API request failed:', error);
             throw error;

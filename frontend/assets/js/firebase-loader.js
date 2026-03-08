@@ -20,12 +20,23 @@
         return;
     }
     
+    // Helper to retry CDN imports once on failure
+    async function importWithRetry(url) {
+        try {
+            return await import(url);
+        } catch (error) {
+            console.warn(`⚠️ Failed to load ${url}, retrying in 2s...`);
+            await new Promise(r => setTimeout(r, 2000));
+            return await import(url);
+        }
+    }
+
     try {
         console.log('🔥 Loading Firebase SDK...');
-        
-        // Dynamic import Firebase SDK from CDN
-        const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js');
-        const { 
+
+        // Dynamic import Firebase SDK from CDN (with retry on failure)
+        const { initializeApp } = await importWithRetry('https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js');
+        const {
             getAuth,
             signInWithEmailAndPassword,
             createUserWithEmailAndPassword,
@@ -39,7 +50,7 @@
             sendEmailVerification,
             sendPasswordResetEmail,
             updateProfile
-        } = await import('https://www.gstatic.com/firebasejs/10.5.0/firebase-auth.js');
+        } = await importWithRetry('https://www.gstatic.com/firebasejs/10.5.0/firebase-auth.js');
         const {
             getFirestore,
             collection,
@@ -54,7 +65,7 @@
             orderBy,
             serverTimestamp,
             Timestamp
-        } = await import('https://www.gstatic.com/firebasejs/10.5.0/firebase-firestore.js');
+        } = await importWithRetry('https://www.gstatic.com/firebasejs/10.5.0/firebase-firestore.js');
         
         // Initialize Firebase with centralized config
         const app = initializeApp(window.config.firebase);
@@ -112,5 +123,9 @@
     } catch (error) {
         console.error('❌ Firebase initialization failed:', error);
         console.error('Stack:', error.stack);
+        window.dispatchEvent(new Event('firebaseLoadFailed'));
+        if (window.showToast) {
+            window.showToast('Unable to connect to authentication service. Some features may be unavailable.', 'warning');
+        }
     }
 })();

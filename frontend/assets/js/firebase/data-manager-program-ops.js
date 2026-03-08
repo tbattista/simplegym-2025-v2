@@ -57,11 +57,7 @@ const DataManagerProgramOps = {
         return this.deduplicatedFetch(url, async () => {
             console.log('🔍 DEBUG: Fetching programs from:', url);
 
-            const response = await fetch(url, {
-                headers: {
-                    'Authorization': `Bearer ${await this.getAuthToken()}`
-                }
-            });
+            const response = await this.authenticatedFetch(url);
 
             if (!response.ok) {
                 throw new Error('Failed to fetch programs from Firestore');
@@ -119,12 +115,9 @@ const DataManagerProgramOps = {
             const url = window.config.api.getUrl('/api/v3/firebase/programs');
             console.log('🔍 DEBUG: Creating program at:', url);
 
-            const response = await fetch(url, {
+            const response = await this.authenticatedFetch(url, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${await this.getAuthToken()}`
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(programData)
             });
 
@@ -188,12 +181,9 @@ const DataManagerProgramOps = {
             const url = window.config.api.getUrl(`/api/v3/firebase/programs/${programId}`);
             console.log('🔍 DEBUG: Updating program at:', url);
 
-            const response = await fetch(url, {
+            const response = await this.authenticatedFetch(url, {
                 method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${await this.getAuthToken()}`
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(programData)
             });
 
@@ -263,11 +253,8 @@ const DataManagerProgramOps = {
             const url = window.config.api.getUrl(`/api/v3/firebase/programs/${programId}`);
             console.log('🔍 DEBUG: Deleting program at:', url);
 
-            const response = await fetch(url, {
-                method: 'DELETE',
-                headers: {
-                    'Authorization': `Bearer ${await this.getAuthToken()}`
-                }
+            const response = await this.authenticatedFetch(url, {
+                method: 'DELETE'
             });
 
             if (!response.ok) {

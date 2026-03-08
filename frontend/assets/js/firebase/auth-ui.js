@@ -6,8 +6,10 @@
 class AuthUI {
     constructor() {
         this.authModal = null;
+        this.bsModalInstance = null;
         this.currentMode = 'signin'; // 'signin' or 'signup'
         this.isProcessing = false;
+        this.processingTimeout = null;
         
         this.init();
     }
@@ -95,6 +97,12 @@ class AuthUI {
             menuSignOutBtn.addEventListener('click', () => this.handleSignOut());
         }
         
+        // Auto-clear error messages when user starts typing
+        ['signinEmail', 'signinPassword', 'signupName', 'signupEmail', 'signupPassword', 'signupPasswordConfirm'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.addEventListener('input', () => this.clearErrors());
+        });
+
         // Tab switching
         const signinTab = document.getElementById('signin-tab');
         const signupTab = document.getElementById('signup-tab');
@@ -213,9 +221,11 @@ class AuthUI {
             signupTab.click();
         }
         
-        // Show modal
-        const modal = new bootstrap.Modal(this.authModal);
-        modal.show();
+        // Show modal (reuse cached instance to prevent memory leaks)
+        if (!this.bsModalInstance) {
+            this.bsModalInstance = new bootstrap.Modal(this.authModal);
+        }
+        this.bsModalInstance.show();
     }
     
     hideAuthModal() {
@@ -343,7 +353,7 @@ class AuthUI {
             
         } catch (error) {
             console.error('Anonymous sign-in failed:', error);
-            this.hideAuthModal(); // Continue anyway
+            this.showError('Could not continue without an account. Please try signing in.');
         } finally {
             this.setProcessing(false);
         }
@@ -387,10 +397,20 @@ class AuthUI {
     
     setProcessing(processing) {
         this.isProcessing = processing;
-        
+
+        // Safety timeout to prevent permanently stuck loading state
+        if (processing) {
+            this.processingTimeout = setTimeout(() => {
+                console.warn('⚠️ Auth processing timed out, resetting UI');
+                this.setProcessing(false);
+            }, 15000);
+        } else {
+            clearTimeout(this.processingTimeout);
+        }
+
         const loadingDiv = document.getElementById('authLoading');
         const tabContent = document.getElementById('authTabContent');
-        
+
         if (loadingDiv && tabContent) {
             if (processing) {
                 loadingDiv.classList.remove('d-none');

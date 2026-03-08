@@ -86,11 +86,7 @@ const DataManagerWorkoutOps = {
                 console.log('🔍 DEBUG: Token preview:', tokenPreview);
                 if (window.mobileDebugLog) window.mobileDebugLog('Token: ' + tokenPreview);
 
-                const response = await fetch(url, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
+                const response = await this.authenticatedFetch(url);
 
                 console.log('🔍 DEBUG: Response status:', response.status);
                 if (window.mobileDebugLog) window.mobileDebugLog('Response status: ' + response.status);
@@ -193,12 +189,9 @@ const DataManagerWorkoutOps = {
             const url = window.config.api.getUrl('/api/v3/firebase/workouts');
             console.log('🔍 DEBUG: Creating workout at:', url);
 
-            const response = await fetch(url, {
+            const response = await this.authenticatedFetch(url, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${await this.getAuthToken()}`
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(workoutData)
             });
 
@@ -265,12 +258,9 @@ const DataManagerWorkoutOps = {
             const url = window.config.api.getUrl(`/api/v3/firebase/workouts/${workoutId}`);
             console.log('🔍 DEBUG: Updating workout at:', url);
 
-            const response = await fetch(url, {
+            const response = await this.authenticatedFetch(url, {
                 method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${await this.getAuthToken()}`
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(workoutData)
             });
 
@@ -375,11 +365,8 @@ const DataManagerWorkoutOps = {
             const url = window.config.api.getUrl(`/api/v3/firebase/workouts/${workoutId}`);
             console.log('🔍 DEBUG: Deleting workout at:', url);
 
-            const response = await fetch(url, {
-                method: 'DELETE',
-                headers: {
-                    'Authorization': `Bearer ${await this.getAuthToken()}`
-                }
+            const response = await this.authenticatedFetch(url, {
+                method: 'DELETE'
             });
 
             if (!response.ok) {
@@ -439,11 +426,8 @@ const DataManagerWorkoutOps = {
     async restoreFirestoreWorkout(workoutId) {
         try {
             const url = window.config.api.getUrl(`/api/v3/firebase/workouts/${workoutId}/restore`);
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${await this.getAuthToken()}`
-                }
+            const response = await this.authenticatedFetch(url, {
+                method: 'POST'
             });
 
             if (!response.ok) {
@@ -501,11 +485,8 @@ const DataManagerWorkoutOps = {
     async permanentDeleteFirestoreWorkout(workoutId) {
         try {
             const url = window.config.api.getUrl(`/api/v3/firebase/workouts/${workoutId}/permanent`);
-            const response = await fetch(url, {
-                method: 'DELETE',
-                headers: {
-                    'Authorization': `Bearer ${await this.getAuthToken()}`
-                }
+            const response = await this.authenticatedFetch(url, {
+                method: 'DELETE'
             });
 
             if (!response.ok) {

@@ -285,6 +285,9 @@ function initializeNavbarAuth() {
                     window.location.href = '/';
                 } catch (error) {
                     console.error('❌ Sign out error:', error);
+                    if (window.showToast) {
+                        window.showToast('Sign out failed. Please try again.', 'danger');
+                    }
                 }
             } else {
                 console.warn('⚠️ authService not available');

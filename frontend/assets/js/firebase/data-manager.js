@@ -235,7 +235,7 @@ class FirebaseDataManager {
 
     // Utility Methods
 
-    async getAuthToken() {
+    async getAuthToken(forceRefresh = false) {
         // Use getFirebaseUser() to get the source of truth, avoiding mobile race conditions
         const user = this.getFirebaseUser();
         if (!user) {
@@ -243,11 +243,44 @@ class FirebaseDataManager {
         }
 
         try {
-            return await user.getIdToken();
+            return await user.getIdToken(forceRefresh);
         } catch (error) {
             console.error('❌ Error getting auth token:', error);
             throw error;
         }
+    }
+
+    /**
+     * Fetch wrapper that auto-retries on 401 with a force-refreshed token.
+     * Use this instead of direct fetch() for authenticated API calls.
+     */
+    async authenticatedFetch(url, options = {}) {
+        const token = await this.getAuthToken();
+        const headers = {
+            ...(options.headers || {}),
+            'Authorization': `Bearer ${token}`
+        };
+
+        const response = await fetch(url, { ...options, headers });
+
+        // On 401, force-refresh token and retry once
+        if (response.status === 401 && !options._isRetry) {
+            try {
+                const freshToken = await this.getAuthToken(true);
+                return await fetch(url, {
+                    ...options,
+                    _isRetry: true,
+                    headers: {
+                        ...(options.headers || {}),
+                        'Authorization': `Bearer ${freshToken}`
+                    }
+                });
+            } catch (retryError) {
+                console.warn('⚠️ Token refresh retry failed:', retryError);
+            }
+        }
+
+        return response;
     }
 
     notifyAuthStateChange(user) {

@@ -24,6 +24,10 @@ class AuthService {
     }
     
     initialize() {
+        // Guard against duplicate initialization (both flag check and event can trigger this)
+        if (this._initializing || this.initialized) return;
+        this._initializing = true;
+
         try {
             if (!window.firebaseAuth || !window.firebaseAuthFunctions) {
                 throw new Error('Firebase Auth not available');
@@ -45,6 +49,10 @@ class AuthService {
                 }).catch((error) => {
                     if (error.code !== 'auth/popup-closed-by-user') {
                         console.error('❌ Redirect sign-in error:', error);
+                        const userMessage = this.formatAuthError(error).message;
+                        if (window.showToast) {
+                            window.showToast(userMessage, 'danger');
+                        }
                     }
                 });
             }
@@ -55,6 +63,7 @@ class AuthService {
         } catch (error) {
             console.error('⚠️ Firebase Auth initialization failed:', error.message);
             this.initialized = false;
+            this._initializing = false;
         }
     }
     
