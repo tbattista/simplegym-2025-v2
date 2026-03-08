@@ -30,7 +30,11 @@ function escapeHtml(text) {
  * @returns {number} Number of calendar days ago (0 = today, 1 = yesterday, etc.)
  */
 function getCalendarDaysAgo(dateString) {
-    const date = new Date(dateString);
+    // Normalize UTC dates without timezone markers (e.g. from API) to avoid treating UTC as local time
+    const normalized = (typeof dateString === 'string' && dateString.includes('T') && !dateString.endsWith('Z') && !/[+-]\d{2}:\d{2}$/.test(dateString))
+        ? dateString + 'Z'
+        : dateString;
+    const date = new Date(normalized);
     const now = new Date();
     const dateDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());

@@ -549,7 +549,8 @@ function setupWizardLogic(el, { onSaveComplete, prefillText, prefillImages, auto
 
         const now = new Date();
         now.setSeconds(0, 0);
-        sessionDateEl.value = now.toISOString().slice(0, 16);
+        const pad = n => String(n).padStart(2, '0');
+        sessionDateEl.value = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
 
         // Reset RPE
         selectedRpe = null;
