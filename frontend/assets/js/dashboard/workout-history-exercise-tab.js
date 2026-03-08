@@ -117,16 +117,14 @@ function renderExerciseGroup(group) {
            aria-expanded="${isExpanded}"
            aria-controls="${groupId}">
         <div class="exercise-group-header-row1">
-          <div class="exercise-group-header-left">
+          <span class="exercise-group-name">${escapeHtml(group.baseName)}</span>
+          <div class="exercise-group-header-right">
+            ${hasMultipleVariants ? `<span class="exercise-group-variant-count">${group.variants.length} variants</span>` : ''}
             <button class="pr-toggle-btn ${isPR ? 'active' : ''}"
                     onclick="event.stopPropagation(); toggleExercisePRTracking('${escapeHtml(group.baseName)}', ${bestWeight || 0}, '${escapeHtml(bestUnit)}')"
                     title="${isPR ? 'Remove PR tracking' : 'Track PR for this exercise'}">
               <i class="bx ${isPR ? 'bxs-trophy' : 'bx-trophy'} ${isPR ? 'text-warning' : ''}"></i>
             </button>
-            <span class="exercise-group-name">${escapeHtml(group.baseName)}</span>
-          </div>
-          <div class="exercise-group-header-right">
-            ${hasMultipleVariants ? `<span class="exercise-group-variant-count">${group.variants.length} variants</span>` : ''}
             <i class="bx bx-chevron-down exercise-group-chevron ${isExpanded ? 'rotated' : ''}"></i>
           </div>
         </div>
