@@ -51,6 +51,9 @@
             await openWorkoutDetail(workoutId);
         }
 
+        // Show share button if user is authenticated
+        showShareButtonIfAuth();
+
         // Load workouts
         await loadPublicWorkouts();
 
@@ -570,6 +573,161 @@
                 toolbarCountEl.textContent = `${total} ${total === 1 ? 'workout' : 'workouts'}`;
             }
         }
+    }
+
+    /**
+     * Show the "Share a Workout" button if user is authenticated
+     */
+    function showShareButtonIfAuth() {
+        const btn = document.getElementById('shareWorkoutBtn');
+        if (!btn) return;
+
+        if (window.dataManager && window.dataManager.isUserAuthenticated()) {
+            btn.classList.remove('d-none');
+        }
+
+        // Also listen for auth state changes
+        window.addEventListener('authStateChanged', (e) => {
+            if (e.detail && e.detail.isAuthenticated) {
+                btn.classList.remove('d-none');
+            } else {
+                btn.classList.add('d-none');
+            }
+        });
+    }
+
+    /**
+     * Initialize share picker offcanvas - load user workouts when opened
+     */
+    const sharePickerEl = document.getElementById('sharePickerOffcanvas');
+    if (sharePickerEl) {
+        sharePickerEl.addEventListener('show.bs.offcanvas', loadSharePickerWorkouts);
+    }
+
+    async function loadSharePickerWorkouts() {
+        const loadingEl = document.getElementById('sharePickerLoading');
+        const emptyEl = document.getElementById('sharePickerEmpty');
+        const listEl = document.getElementById('sharePickerList');
+        const optionsEl = document.getElementById('sharePickerOptions');
+
+        // Show loading
+        loadingEl.style.display = 'block';
+        emptyEl.style.display = 'none';
+        listEl.style.display = 'none';
+        optionsEl.style.display = 'none';
+
+        try {
+            if (!window.dataManager || !window.dataManager.getWorkouts) {
+                throw new Error('Data manager not available');
+            }
+
+            const workouts = await window.dataManager.getWorkouts();
+
+            loadingEl.style.display = 'none';
+
+            if (!workouts || workouts.length === 0) {
+                emptyEl.style.display = 'block';
+                return;
+            }
+
+            // Render workout list
+            listEl.innerHTML = '';
+            workouts.forEach(w => {
+                const workoutData = w.workout_data || w;
+                const name = workoutData.name || w.name || 'Untitled Workout';
+                const exerciseCount = window.ExerciseDataUtils
+                    ? ExerciseDataUtils.getExerciseCount(workoutData)
+                    : 0;
+
+                const item = document.createElement('button');
+                item.type = 'button';
+                item.className = 'list-group-item list-group-item-action d-flex justify-content-between align-items-center';
+                item.innerHTML = `
+                    <div>
+                        <div class="fw-semibold">${escapeHtml(name)}</div>
+                        <small class="text-muted">${exerciseCount} exercise${exerciseCount !== 1 ? 's' : ''}</small>
+                    </div>
+                    <i class="bx bx-chevron-right text-muted"></i>
+                `;
+                item.addEventListener('click', () => handleSharePickerSelect(w));
+                listEl.appendChild(item);
+            });
+
+            listEl.style.display = 'block';
+            optionsEl.style.display = 'block';
+
+        } catch (error) {
+            console.error('❌ Error loading workouts for share picker:', error);
+            loadingEl.style.display = 'none';
+            emptyEl.style.display = 'block';
+            emptyEl.querySelector('p').textContent = 'Failed to load your workouts.';
+        }
+    }
+
+    async function handleSharePickerSelect(workout) {
+        const showName = document.getElementById('sharePickerShowName')?.checked ?? true;
+
+        try {
+            if (!window.dataManager || !window.dataManager.isUserAuthenticated()) {
+                if (window.toastNotifications) {
+                    window.toastNotifications.warning('Please sign in to share workouts');
+                }
+                return;
+            }
+
+            const authToken = await window.dataManager.getAuthToken();
+
+            const response = await fetch('/api/v3/sharing/share-public', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${authToken}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    workout_id: workout.id,
+                    show_creator_name: showName
+                })
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.detail || 'Failed to share workout');
+            }
+
+            const publicWorkout = await response.json();
+            console.log('✅ Workout shared publicly:', publicWorkout);
+
+            // Close offcanvas
+            const offcanvasInstance = bootstrap.Offcanvas.getInstance(document.getElementById('sharePickerOffcanvas'));
+            if (offcanvasInstance) offcanvasInstance.hide();
+
+            // Show success toast
+            const workoutData = workout.workout_data || workout;
+            const name = workoutData.name || workout.name || 'Workout';
+            if (window.toastNotifications) {
+                window.toastNotifications.success(
+                    `"${name}" is now shared publicly!`,
+                    'Workout Shared'
+                );
+            }
+
+            // Reload the public workouts list
+            currentPage = 1;
+            await loadPublicWorkouts();
+
+        } catch (error) {
+            console.error('❌ Error sharing workout:', error);
+            if (window.toastNotifications) {
+                window.toastNotifications.error(error.message, 'Share Failed');
+            }
+        }
+    }
+
+    function escapeHtml(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
     }
 
     console.log('📦 Public Workouts page script loaded (v3.0 - using shared components)');

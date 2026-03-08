@@ -128,11 +128,19 @@
             <div class="container-xxl flex-grow-1 container-p-y">
               
               <!-- Header -->
-              <div class="mb-4">
-                <h4 class="mb-1" style="font-size: var(--gs-text-xl); font-weight: var(--gs-font-semibold);">
-                  Discover Shared Workouts
-                </h4>
-                <p class="text-muted mb-0" style="font-size: var(--gs-text-base);">Browse and save workouts shared by the community</p>
+              <div class="d-flex justify-content-between align-items-start mb-4">
+                <div>
+                  <h4 class="mb-1" style="font-size: var(--gs-text-xl); font-weight: var(--gs-font-semibold);">
+                    Discover Shared Workouts
+                  </h4>
+                  <p class="text-muted mb-0" style="font-size: var(--gs-text-base);">Browse and save workouts shared by the community</p>
+                </div>
+                <button class="btn btn-primary btn-sm d-none" id="shareWorkoutBtn" type="button"
+                        data-bs-toggle="offcanvas" data-bs-target="#sharePickerOffcanvas">
+                  <i class="bx bx-upload me-1"></i>
+                  <span class="d-none d-sm-inline">Share a Workout</span>
+                  <span class="d-inline d-sm-none">Share</span>
+                </button>
               </div>
 
               <!-- Workout Toolbar -->
@@ -192,6 +200,46 @@
       <div class="layout-overlay layout-menu-toggle"></div>
     </div>
     <!-- / Layout wrapper -->
+
+    <!-- Share Picker Offcanvas (Bottom) -->
+    <div class="offcanvas offcanvas-bottom offcanvas-bottom-base" tabindex="-1" id="sharePickerOffcanvas" aria-labelledby="sharePickerLabel" data-bs-scroll="false" style="height: 60vh;">
+      <div class="offcanvas-header">
+        <h5 class="offcanvas-title" id="sharePickerLabel">
+          <i class="bx bx-upload me-2"></i>
+          Share a Workout
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+      </div>
+      <div class="offcanvas-body">
+        <p class="text-muted small mb-3">Select a workout from your library to share publicly.</p>
+
+        <!-- Loading State -->
+        <div id="sharePickerLoading" class="text-center py-4">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+        </div>
+
+        <!-- Empty State -->
+        <div id="sharePickerEmpty" class="text-center py-4" style="display: none;">
+          <i class="bx bx-dumbbell display-4 text-muted"></i>
+          <p class="text-muted mt-2">You don't have any workouts yet.<br>Create one first in the Workout Builder.</p>
+        </div>
+
+        <!-- Workout List -->
+        <div id="sharePickerList" class="list-group" style="display: none; max-height: 300px; overflow-y: auto;"></div>
+
+        <!-- Show Creator Name Toggle -->
+        <div id="sharePickerOptions" class="border-top pt-3 mt-3" style="display: none;">
+          <div class="form-check form-switch mb-2">
+            <input class="form-check-input" type="checkbox" id="sharePickerShowName" checked>
+            <label class="form-check-label" for="sharePickerShowName">
+              Show my name on the shared workout
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <!-- Filters Offcanvas (Bottom) -->
     <div class="offcanvas offcanvas-bottom offcanvas-bottom-base" tabindex="-1" id="filtersOffcanvas" aria-labelledby="filtersOffcanvasLabel" data-bs-scroll="false" style="height: 60vh;">
