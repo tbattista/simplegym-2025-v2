@@ -30,14 +30,19 @@ function renderPRSection() {
     return dateB - dateA;
   });
 
+  // Check stored visibility preference
+  const isCollapsed = localStorage.getItem('ffn_pr_section_visible') === 'false';
+
   const chips = records.map(pr => {
     const dateStr = _formatPRDate(pr.session_date || pr.marked_at);
     const prId = pr.id;
 
     return `
       <div class="pr-chip" onclick="editPRValue('${escapeHtml(prId)}')" role="button" title="Click to edit PR value">
-        <i class="bx bxs-trophy text-warning"></i>
-        <span class="pr-chip-name">${escapeHtml(pr.exercise_name)}</span>
+        <div class="pr-chip-top">
+          <i class="bx bxs-trophy text-warning"></i>
+          <span class="pr-chip-name">${escapeHtml(pr.exercise_name)}</span>
+        </div>
         <span class="pr-chip-value">${escapeHtml(pr.value)} ${escapeHtml(pr.value_unit)}</span>
         ${dateStr ? `<span class="pr-chip-date">${dateStr}</span>` : ''}
       </div>
@@ -45,9 +50,19 @@ function renderPRSection() {
   }).join('');
 
   container.innerHTML = `
-    <div class="pr-chips-container">
-      <div class="pr-chips-scroll">
-        ${chips}
+    <div class="pr-section-header">
+      <span class="pr-section-label">
+        <i class="bx bxs-trophy"></i> Personal Records
+      </span>
+      <button class="pr-collapse-btn" onclick="togglePRSection()" title="Toggle PR section">
+        <i class="bx ${isCollapsed ? 'bx-chevron-down' : 'bx-chevron-up'}"></i>
+      </button>
+    </div>
+    <div class="pr-chips-collapsible${isCollapsed ? ' collapsed' : ''}">
+      <div class="pr-chips-container">
+        <div class="pr-chips-scroll">
+          ${chips}
+        </div>
       </div>
     </div>
   `;
@@ -124,8 +139,23 @@ function _formatPRDate(dateStr) {
   }
 }
 
+/**
+ * Toggle the PR chips section visibility
+ */
+function togglePRSection() {
+  const collapsible = document.querySelector('.pr-chips-collapsible');
+  const icon = document.querySelector('.pr-collapse-btn i');
+  if (!collapsible || !icon) return;
+
+  const isCollapsing = !collapsible.classList.contains('collapsed');
+  collapsible.classList.toggle('collapsed');
+  icon.className = isCollapsing ? 'bx bx-chevron-down' : 'bx bx-chevron-up';
+  localStorage.setItem('ffn_pr_section_visible', !isCollapsing ? 'true' : 'false');
+}
+
 // Exports
 window.renderPRSection = renderPRSection;
 window.editPRValue = editPRValue;
+window.togglePRSection = togglePRSection;
 
 console.log('Workout History PR Section module loaded (v2.0.0)');
