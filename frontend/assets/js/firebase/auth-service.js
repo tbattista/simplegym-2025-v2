@@ -30,12 +30,25 @@ class AuthService {
             }
             
             // Set up auth state listener
-            const { onAuthStateChanged } = window.firebaseAuthFunctions;
-            
+            const { onAuthStateChanged, getRedirectResult } = window.firebaseAuthFunctions;
+
             onAuthStateChanged(window.firebaseAuth, (user) => {
                 this.handleAuthStateChange(user);
             });
-            
+
+            // Handle redirect result (from fallback sign-in)
+            if (getRedirectResult) {
+                getRedirectResult(window.firebaseAuth).then((result) => {
+                    if (result && result.user) {
+                        console.log('✅ Google redirect sign-in successful');
+                    }
+                }).catch((error) => {
+                    if (error.code !== 'auth/popup-closed-by-user') {
+                        console.error('❌ Redirect sign-in error:', error);
+                    }
+                });
+            }
+
             this.initialized = true;
             console.log('✅ Firebase Auth Service initialized');
             
@@ -125,16 +138,28 @@ class AuthService {
         if (!this.initialized || !window.firebaseAuthFunctions) {
             throw new Error('Auth service not initialized');
         }
-        
+
         try {
-            const { signInWithPopup, GoogleAuthProvider } = window.firebaseAuthFunctions;
+            const { signInWithPopup, signInWithRedirect, GoogleAuthProvider } = window.firebaseAuthFunctions;
             const provider = new GoogleAuthProvider();
-            
-            const userCredential = await signInWithPopup(window.firebaseAuth, provider);
-            
-            console.log('✅ Google sign-in successful');
-            return userCredential.user;
-            
+
+            try {
+                const userCredential = await signInWithPopup(window.firebaseAuth, provider);
+                console.log('✅ Google sign-in successful');
+                return userCredential.user;
+            } catch (popupError) {
+                // Fallback to redirect for popup blockers or mobile browsers
+                if (popupError.code === 'auth/popup-blocked' ||
+                    popupError.code === 'auth/popup-closed-by-user' ||
+                    popupError.code === 'auth/cancelled-popup-request') {
+                    console.log('🔄 Popup failed, falling back to redirect sign-in...');
+                    await signInWithRedirect(window.firebaseAuth, provider);
+                    // Page will redirect; no return needed
+                    return null;
+                }
+                throw popupError;
+            }
+
         } catch (error) {
             console.error('❌ Google sign-in failed:', error);
             throw this.formatAuthError(error);
