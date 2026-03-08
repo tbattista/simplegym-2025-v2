@@ -50,6 +50,10 @@
 }
 
 /* Tabbed calendar + exercises card */
+.desktop-cal-exercise-card > .card-body {
+    padding: 0.75rem 0.75rem;
+}
+
 .desktop-cal-exercise-card .card-header {
     border-bottom: none;
 }

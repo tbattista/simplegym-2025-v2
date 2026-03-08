@@ -383,7 +383,7 @@ def seed_public_workouts(dry_run=False):
             'creator_name': 'Fitness Field Notes',
             'source_workout_id': workout_data['id'],
             'created_at': firestore.SERVER_TIMESTAMP,
-            'is_moderated': True,
+            'is_moderated': False,
             'stats': {
                 'view_count': 0,
                 'save_count': 0,
