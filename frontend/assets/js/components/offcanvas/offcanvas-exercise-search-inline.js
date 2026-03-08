@@ -285,12 +285,12 @@ export function showExerciseSearchInEditor(config, onSelectExercise) {
         }
     });
 
-    // Load exercises
-    searchCore.loadExercises().then(() => {
-        if (initialQuery) {
-            searchCore.setSearchQuery(initialQuery);
-        }
-    });
+    // Pre-set the search query so filterExercises() inside loadExercises uses it
+    // immediately — avoids a flash of all exercises before the filter applies
+    if (initialQuery) {
+        searchCore.state.searchQuery = initialQuery;
+    }
+    searchCore.loadExercises();
 
     // --- POP: Restore editor content ---
     const restoreEditor = () => {

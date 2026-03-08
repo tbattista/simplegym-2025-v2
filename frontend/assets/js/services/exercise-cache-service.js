@@ -282,41 +282,99 @@ class ExerciseCacheService {
             filters = {},
             useFuzzy = true
         } = options;
-        
+
         const allExercises = [...this.exercises, ...this.customExercises];
-        
+
         if (!query || query.trim().length < 2) {
             let results = [...allExercises];
             results = this.applyFilters(results, filters);
             results = this.applyRankingBoost(results);
             return results.slice(0, limit);
         }
-        
-        let results;
-        
+
+        // Hybrid search: combine Fuse fuzzy results with word-based substring matches.
+        // Fuse handles typos (e.g. "bnech press" → "Bench Press") while substring
+        // handles natural multi-word queries (e.g. "standard pushups" → "Push-up").
+        const fuseResults = new Map();
+        const substringResults = new Map();
+
+        // 1. Fuse fuzzy search (typo tolerance)
         if (useFuzzy && this.fuseIndex) {
-            const fuseResults = this.fuseIndex.search(query, { limit: limit * 2 });
-            results = fuseResults.map(r => ({
-                ...r.item,
-                _searchScore: r.score,
-                _matchedBy: 'fuzzy'
-            }));
-        } else {
-            const lowerQuery = query.toLowerCase();
-            results = allExercises.filter(ex =>
-                ex.name?.toLowerCase().includes(lowerQuery) ||
-                ex.targetMuscleGroup?.toLowerCase().includes(lowerQuery) ||
-                ex.primaryEquipment?.toLowerCase().includes(lowerQuery)
-            );
+            const hits = this.fuseIndex.search(query, { limit: limit * 2 });
+            for (const r of hits) {
+                // Only accept good fuzzy matches (lower score = better in Fuse)
+                if (r.score <= 0.35) {
+                    const id = r.item.id || r.item.name;
+                    fuseResults.set(id, {
+                        ...r.item,
+                        _searchScore: r.score,
+                        _matchedBy: 'fuzzy'
+                    });
+                }
+            }
         }
-        
+
+        // 2. Word-based substring search (handles "standard pushups" → matches "Push-up")
+        // Normalize: remove hyphens, strip trailing s/es for basic depluralization
+        const normalize = (s) => s.replace(/[-]/g, '').replace(/(?:es|s)$/i, '');
+        const queryWords = query.toLowerCase().split(/\s+/).filter(w => w.length >= 2);
+        const lowerQuery = query.toLowerCase();
+
+        for (const ex of allExercises) {
+            const id = ex.id || ex.name;
+            if (fuseResults.has(id)) continue; // already found by Fuse
+
+            const name = (ex.name || '').toLowerCase();
+            const muscle = (ex.targetMuscleGroup || '').toLowerCase();
+            const equip = (ex.primaryEquipment || '').toLowerCase();
+            const searchable = `${name} ${muscle} ${equip}`;
+
+            // Check full query as substring first
+            if (searchable.includes(lowerQuery)) {
+                substringResults.set(id, { ...ex, _searchScore: 0.05, _matchedBy: 'exact' });
+                continue;
+            }
+
+            // Check individual words — normalize hyphens and plurals for comparison
+            const nameNormalized = normalize(name);
+            // Split exercise name into words and normalize each for matching
+            const exWords = name.split(/[\s\-]+/).map(w => normalize(w));
+            const searchableNormalized = `${nameNormalized} ${normalize(muscle)} ${normalize(equip)}`;
+
+            let wordMatches = 0;
+            for (const word of queryWords) {
+                const wordNorm = normalize(word);
+                if (searchableNormalized.includes(wordNorm) ||
+                    searchableNormalized.includes(word) ||
+                    exWords.some(ew => {
+                        // Only allow substring matches when the shorter string is >= 4 chars
+                        // to avoid "up" matching inside "pushup"
+                        const shorter = ew.length < wordNorm.length ? ew : wordNorm;
+                        return shorter.length >= 4 && (ew.includes(wordNorm) || wordNorm.includes(ew));
+                    })) {
+                    wordMatches++;
+                }
+            }
+
+            if (wordMatches > 0) {
+                // Score based on proportion of matched words (lower = better)
+                const score = 0.1 + (1 - wordMatches / queryWords.length) * 0.3;
+                substringResults.set(id, { ...ex, _searchScore: score, _matchedBy: 'substring' });
+            }
+        }
+
+        // 3. Merge: Fuse results first (sorted by score), then substring matches
+        let results = [
+            ...Array.from(fuseResults.values()).sort((a, b) => a._searchScore - b._searchScore),
+            ...Array.from(substringResults.values()).sort((a, b) => a._searchScore - b._searchScore)
+        ];
+
         results = this.applyFilters(results, filters);
-        results = this.applyRankingBoost(results);
-        
+
         if (!this.isFullDataLoaded && results.length < 10) {
             results._moreResultsPending = true;
         }
-        
+
         return results.slice(0, limit);
     }
     
