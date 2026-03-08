@@ -24,7 +24,7 @@ window.EXERCISE_SEED_DATA = [
       "intermediate",
       "essential"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/EIeI8Vf.gif",
+    "gifUrl": "/api/v3/exercise-image/EIeI8Vf.gif",
     "exerciseDbId": "EIeI8Vf"
   },
   {
@@ -47,7 +47,7 @@ window.EXERCISE_SEED_DATA = [
       "intermediate",
       "essential"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/qXTaZnJ.gif",
+    "gifUrl": "/api/v3/exercise-image/qXTaZnJ.gif",
     "exerciseDbId": "qXTaZnJ"
   },
   {
@@ -70,7 +70,7 @@ window.EXERCISE_SEED_DATA = [
       "intermediate",
       "essential"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/ila4NZS.gif",
+    "gifUrl": "/api/v3/exercise-image/ila4NZS.gif",
     "exerciseDbId": "ila4NZS"
   },
   {
@@ -93,7 +93,7 @@ window.EXERCISE_SEED_DATA = [
       "intermediate",
       "essential"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/SpYC0Kp.gif",
+    "gifUrl": "/api/v3/exercise-image/SpYC0Kp.gif",
     "exerciseDbId": "SpYC0Kp"
   },
   {
@@ -116,7 +116,7 @@ window.EXERCISE_SEED_DATA = [
       "beginner",
       "essential"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/I4hDWkc.gif",
+    "gifUrl": "/api/v3/exercise-image/I4hDWkc.gif",
     "exerciseDbId": "I4hDWkc"
   },
   {
@@ -139,7 +139,7 @@ window.EXERCISE_SEED_DATA = [
       "beginner",
       "essential"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/lBDjFxJ.gif",
+    "gifUrl": "/api/v3/exercise-image/lBDjFxJ.gif",
     "exerciseDbId": "lBDjFxJ"
   },
   {
@@ -162,7 +162,7 @@ window.EXERCISE_SEED_DATA = [
       "intermediate",
       "essential"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/PzQanLE.gif",
+    "gifUrl": "/api/v3/exercise-image/PzQanLE.gif",
     "exerciseDbId": "PzQanLE"
   },
   {
@@ -185,7 +185,7 @@ window.EXERCISE_SEED_DATA = [
       "intermediate",
       "essential"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/BU15nH4.gif",
+    "gifUrl": "/api/v3/exercise-image/BU15nH4.gif",
     "exerciseDbId": "BU15nH4"
   },
   {
@@ -208,7 +208,7 @@ window.EXERCISE_SEED_DATA = [
       "intermediate",
       "essential"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/eZyBC3j.gif",
+    "gifUrl": "/api/v3/exercise-image/eZyBC3j.gif",
     "exerciseDbId": "eZyBC3j"
   },
   {
@@ -231,7 +231,7 @@ window.EXERCISE_SEED_DATA = [
       "intermediate",
       "essential"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/3TZduzM.gif",
+    "gifUrl": "/api/v3/exercise-image/3TZduzM.gif",
     "exerciseDbId": "3TZduzM"
   },
   {
@@ -254,7 +254,7 @@ window.EXERCISE_SEED_DATA = [
       "intermediate",
       "essential"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/ns0SIbU.gif",
+    "gifUrl": "/api/v3/exercise-image/ns0SIbU.gif",
     "exerciseDbId": "ns0SIbU"
   },
   {
@@ -277,7 +277,7 @@ window.EXERCISE_SEED_DATA = [
       "intermediate",
       "essential"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/yn2lLSI.gif",
+    "gifUrl": "/api/v3/exercise-image/yn2lLSI.gif",
     "exerciseDbId": "yn2lLSI"
   },
   {
@@ -300,7 +300,7 @@ window.EXERCISE_SEED_DATA = [
       "intermediate",
       "essential"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/25GPyDY.gif",
+    "gifUrl": "/api/v3/exercise-image/25GPyDY.gif",
     "exerciseDbId": "25GPyDY"
   },
   {
@@ -323,7 +323,7 @@ window.EXERCISE_SEED_DATA = [
       "beginner",
       "essential"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/9WTm7dq.gif",
+    "gifUrl": "/api/v3/exercise-image/9WTm7dq.gif",
     "exerciseDbId": "9WTm7dq"
   },
   {
@@ -346,7 +346,7 @@ window.EXERCISE_SEED_DATA = [
       "intermediate",
       "essential"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/qdRxqCj.gif",
+    "gifUrl": "/api/v3/exercise-image/qdRxqCj.gif",
     "exerciseDbId": "qdRxqCj"
   },
   {
@@ -369,7 +369,7 @@ window.EXERCISE_SEED_DATA = [
       "intermediate",
       "essential"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/zG0zs85.gif",
+    "gifUrl": "/api/v3/exercise-image/zG0zs85.gif",
     "exerciseDbId": "zG0zs85"
   },
   {
@@ -392,7 +392,7 @@ window.EXERCISE_SEED_DATA = [
       "intermediate",
       "essential"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/jQGwmxN.gif",
+    "gifUrl": "/api/v3/exercise-image/jQGwmxN.gif",
     "exerciseDbId": "jQGwmxN"
   },
   {
@@ -415,7 +415,7 @@ window.EXERCISE_SEED_DATA = [
       "intermediate",
       "essential"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/znQUdHY.gif",
+    "gifUrl": "/api/v3/exercise-image/znQUdHY.gif",
     "exerciseDbId": "znQUdHY"
   },
   {
@@ -438,7 +438,7 @@ window.EXERCISE_SEED_DATA = [
       "intermediate",
       "essential"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/dG7tG5y.gif",
+    "gifUrl": "/api/v3/exercise-image/dG7tG5y.gif",
     "exerciseDbId": "dG7tG5y"
   },
   {
@@ -461,7 +461,7 @@ window.EXERCISE_SEED_DATA = [
       "intermediate",
       "essential"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/my33uHU.gif",
+    "gifUrl": "/api/v3/exercise-image/my33uHU.gif",
     "exerciseDbId": "my33uHU"
   },
   {
@@ -484,7 +484,7 @@ window.EXERCISE_SEED_DATA = [
       "beginner",
       "essential"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/T2mxWqc.gif",
+    "gifUrl": "/api/v3/exercise-image/T2mxWqc.gif",
     "exerciseDbId": "T2mxWqc"
   },
   {
@@ -507,7 +507,7 @@ window.EXERCISE_SEED_DATA = [
       "intermediate",
       "essential"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/wQ2c4XD.gif",
+    "gifUrl": "/api/v3/exercise-image/wQ2c4XD.gif",
     "exerciseDbId": "wQ2c4XD"
   },
   {
@@ -530,7 +530,7 @@ window.EXERCISE_SEED_DATA = [
       "intermediate",
       "essential"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/DsgkuIt.gif",
+    "gifUrl": "/api/v3/exercise-image/DsgkuIt.gif",
     "exerciseDbId": "DsgkuIt"
   },
   {
@@ -553,7 +553,7 @@ window.EXERCISE_SEED_DATA = [
       "intermediate",
       "essential"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/BJ0Hz5L.gif",
+    "gifUrl": "/api/v3/exercise-image/BJ0Hz5L.gif",
     "exerciseDbId": "BJ0Hz5L"
   },
   {
@@ -576,7 +576,7 @@ window.EXERCISE_SEED_DATA = [
       "intermediate",
       "essential"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/SiWCcTN.gif",
+    "gifUrl": "/api/v3/exercise-image/SiWCcTN.gif",
     "exerciseDbId": "SiWCcTN"
   },
   {
@@ -599,7 +599,7 @@ window.EXERCISE_SEED_DATA = [
       "advanced",
       "essential"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/9KU9TYF.gif",
+    "gifUrl": "/api/v3/exercise-image/9KU9TYF.gif",
     "exerciseDbId": "9KU9TYF"
   },
   {
@@ -622,7 +622,7 @@ window.EXERCISE_SEED_DATA = [
       "intermediate",
       "essential"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/CggQhII.gif",
+    "gifUrl": "/api/v3/exercise-image/CggQhII.gif",
     "exerciseDbId": "CggQhII"
   },
   {
@@ -645,7 +645,7 @@ window.EXERCISE_SEED_DATA = [
       "intermediate",
       "essential"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/fUBheHs.gif",
+    "gifUrl": "/api/v3/exercise-image/fUBheHs.gif",
     "exerciseDbId": "fUBheHs"
   },
   {
@@ -668,7 +668,7 @@ window.EXERCISE_SEED_DATA = [
       "advanced",
       "essential"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/qRZ5S1N.gif",
+    "gifUrl": "/api/v3/exercise-image/qRZ5S1N.gif",
     "exerciseDbId": "qRZ5S1N"
   },
   {
@@ -691,7 +691,7 @@ window.EXERCISE_SEED_DATA = [
       "intermediate",
       "essential"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/DOoWcnA.gif",
+    "gifUrl": "/api/v3/exercise-image/DOoWcnA.gif",
     "exerciseDbId": "DOoWcnA"
   },
   {
@@ -714,7 +714,7 @@ window.EXERCISE_SEED_DATA = [
       "intermediate",
       "essential"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/KgI0tqW.gif",
+    "gifUrl": "/api/v3/exercise-image/KgI0tqW.gif",
     "exerciseDbId": "KgI0tqW"
   },
   {
@@ -737,7 +737,7 @@ window.EXERCISE_SEED_DATA = [
       "intermediate",
       "essential"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/slDvUAU.gif",
+    "gifUrl": "/api/v3/exercise-image/slDvUAU.gif",
     "exerciseDbId": "slDvUAU"
   },
   {
@@ -760,7 +760,7 @@ window.EXERCISE_SEED_DATA = [
       "advanced",
       "essential"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/yJUHKTn.gif",
+    "gifUrl": "/api/v3/exercise-image/yJUHKTn.gif",
     "exerciseDbId": "yJUHKTn"
   },
   {
@@ -783,7 +783,7 @@ window.EXERCISE_SEED_DATA = [
       "intermediate",
       "essential"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/Qa55kX1.gif",
+    "gifUrl": "/api/v3/exercise-image/Qa55kX1.gif",
     "exerciseDbId": "Qa55kX1"
   },
   {
@@ -806,7 +806,7 @@ window.EXERCISE_SEED_DATA = [
       "beginner",
       "essential"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/mbkgB44.gif",
+    "gifUrl": "/api/v3/exercise-image/mbkgB44.gif",
     "exerciseDbId": "mbkgB44"
   },
   {
@@ -829,7 +829,7 @@ window.EXERCISE_SEED_DATA = [
       "beginner",
       "essential"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/kjJ3VoQ.gif",
+    "gifUrl": "/api/v3/exercise-image/kjJ3VoQ.gif",
     "exerciseDbId": "kjJ3VoQ"
   },
   {
@@ -852,7 +852,7 @@ window.EXERCISE_SEED_DATA = [
       "beginner",
       "essential"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/3xK09Sk.gif",
+    "gifUrl": "/api/v3/exercise-image/3xK09Sk.gif",
     "exerciseDbId": "3xK09Sk"
   },
   {
@@ -875,7 +875,7 @@ window.EXERCISE_SEED_DATA = [
       "intermediate",
       "essential"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/qx4fgX7.gif",
+    "gifUrl": "/api/v3/exercise-image/qx4fgX7.gif",
     "exerciseDbId": "qx4fgX7"
   },
   {
@@ -898,7 +898,7 @@ window.EXERCISE_SEED_DATA = [
       "beginner",
       "essential"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/wDN97Ca.gif",
+    "gifUrl": "/api/v3/exercise-image/wDN97Ca.gif",
     "exerciseDbId": "wDN97Ca"
   },
   {
@@ -921,7 +921,7 @@ window.EXERCISE_SEED_DATA = [
       "advanced",
       "essential"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/vzAxBtt.gif",
+    "gifUrl": "/api/v3/exercise-image/vzAxBtt.gif",
     "exerciseDbId": "vzAxBtt"
   },
   {
@@ -944,7 +944,7 @@ window.EXERCISE_SEED_DATA = [
       "intermediate",
       "essential"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/J6Dx1Mu.gif",
+    "gifUrl": "/api/v3/exercise-image/J6Dx1Mu.gif",
     "exerciseDbId": "J6Dx1Mu"
   },
   {
@@ -967,7 +967,7 @@ window.EXERCISE_SEED_DATA = [
       "intermediate",
       "essential"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/EMpUwRI.gif",
+    "gifUrl": "/api/v3/exercise-image/EMpUwRI.gif",
     "exerciseDbId": "EMpUwRI"
   },
   {
@@ -990,7 +990,7 @@ window.EXERCISE_SEED_DATA = [
       "intermediate",
       "essential"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/Zg3XY7P.gif",
+    "gifUrl": "/api/v3/exercise-image/Zg3XY7P.gif",
     "exerciseDbId": "Zg3XY7P"
   },
   {
@@ -1013,7 +1013,7 @@ window.EXERCISE_SEED_DATA = [
       "advanced",
       "essential"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/xHKN2s8.gif",
+    "gifUrl": "/api/v3/exercise-image/xHKN2s8.gif",
     "exerciseDbId": "xHKN2s8"
   },
   {
@@ -1036,7 +1036,7 @@ window.EXERCISE_SEED_DATA = [
       "intermediate",
       "essential"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/6TG6x2w.gif",
+    "gifUrl": "/api/v3/exercise-image/6TG6x2w.gif",
     "exerciseDbId": "6TG6x2w"
   },
   {
@@ -1059,7 +1059,7 @@ window.EXERCISE_SEED_DATA = [
       "beginner",
       "essential"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/xUwnBMT.gif",
+    "gifUrl": "/api/v3/exercise-image/xUwnBMT.gif",
     "exerciseDbId": "xUwnBMT"
   },
   {
@@ -1082,7 +1082,7 @@ window.EXERCISE_SEED_DATA = [
       "intermediate",
       "essential"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/jivWf8n.gif",
+    "gifUrl": "/api/v3/exercise-image/jivWf8n.gif",
     "exerciseDbId": "jivWf8n"
   },
   {
@@ -1104,7 +1104,7 @@ window.EXERCISE_SEED_DATA = [
       "lower-body",
       "intermediate"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/yn8yg1r.gif",
+    "gifUrl": "/api/v3/exercise-image/yn8yg1r.gif",
     "exerciseDbId": "yn8yg1r"
   },
   {
@@ -1126,7 +1126,7 @@ window.EXERCISE_SEED_DATA = [
       "upper-body",
       "intermediate"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/aaXr7ld.gif",
+    "gifUrl": "/api/v3/exercise-image/aaXr7ld.gif",
     "exerciseDbId": "aaXr7ld"
   },
   {
@@ -1148,7 +1148,7 @@ window.EXERCISE_SEED_DATA = [
       "lower-body",
       "intermediate"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/17lJ1kr.gif",
+    "gifUrl": "/api/v3/exercise-image/17lJ1kr.gif",
     "exerciseDbId": "17lJ1kr"
   },
   {
@@ -1170,7 +1170,7 @@ window.EXERCISE_SEED_DATA = [
       "upper-body",
       "beginner"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/mExgrF9.gif",
+    "gifUrl": "/api/v3/exercise-image/mExgrF9.gif",
     "exerciseDbId": "mExgrF9"
   },
   {
@@ -1192,7 +1192,7 @@ window.EXERCISE_SEED_DATA = [
       "lower-body",
       "beginner"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/IeDEXTe.gif",
+    "gifUrl": "/api/v3/exercise-image/IeDEXTe.gif",
     "exerciseDbId": "IeDEXTe"
   },
   {
@@ -1214,7 +1214,7 @@ window.EXERCISE_SEED_DATA = [
       "upper-body",
       "intermediate"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/yz9nUhF.gif",
+    "gifUrl": "/api/v3/exercise-image/yz9nUhF.gif",
     "exerciseDbId": "yz9nUhF"
   },
   {
@@ -1236,7 +1236,7 @@ window.EXERCISE_SEED_DATA = [
       "upper-body",
       "intermediate"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/FS63wTN.gif",
+    "gifUrl": "/api/v3/exercise-image/FS63wTN.gif",
     "exerciseDbId": "FS63wTN"
   },
   {
@@ -1258,7 +1258,7 @@ window.EXERCISE_SEED_DATA = [
       "lower-body",
       "intermediate"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/oHsrypV.gif",
+    "gifUrl": "/api/v3/exercise-image/oHsrypV.gif",
     "exerciseDbId": "oHsrypV"
   },
   {
@@ -1280,7 +1280,7 @@ window.EXERCISE_SEED_DATA = [
       "upper-body",
       "beginner"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/soIB2rj.gif",
+    "gifUrl": "/api/v3/exercise-image/soIB2rj.gif",
     "exerciseDbId": "soIB2rj"
   },
   {
@@ -1302,7 +1302,7 @@ window.EXERCISE_SEED_DATA = [
       "upper-body",
       "intermediate"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/NJzBsGJ.gif",
+    "gifUrl": "/api/v3/exercise-image/NJzBsGJ.gif",
     "exerciseDbId": "NJzBsGJ"
   },
   {
@@ -1324,7 +1324,7 @@ window.EXERCISE_SEED_DATA = [
       "upper-body",
       "beginner"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/trqKQv2.gif",
+    "gifUrl": "/api/v3/exercise-image/trqKQv2.gif",
     "exerciseDbId": "trqKQv2"
   },
   {
@@ -1346,7 +1346,7 @@ window.EXERCISE_SEED_DATA = [
       "upper-body",
       "intermediate"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/GrO65fd.gif",
+    "gifUrl": "/api/v3/exercise-image/GrO65fd.gif",
     "exerciseDbId": "GrO65fd"
   },
   {
@@ -1368,7 +1368,7 @@ window.EXERCISE_SEED_DATA = [
       "lower-body",
       "intermediate"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/RRWFUcw.gif",
+    "gifUrl": "/api/v3/exercise-image/RRWFUcw.gif",
     "exerciseDbId": "RRWFUcw"
   },
   {
@@ -1390,7 +1390,7 @@ window.EXERCISE_SEED_DATA = [
       "upper-body",
       "intermediate"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/nZZZy9m.gif",
+    "gifUrl": "/api/v3/exercise-image/nZZZy9m.gif",
     "exerciseDbId": "nZZZy9m"
   },
   {
@@ -1412,7 +1412,7 @@ window.EXERCISE_SEED_DATA = [
       "lower-body",
       "intermediate"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/oR7O9LW.gif",
+    "gifUrl": "/api/v3/exercise-image/oR7O9LW.gif",
     "exerciseDbId": "oR7O9LW"
   },
   {
@@ -1434,7 +1434,7 @@ window.EXERCISE_SEED_DATA = [
       "core",
       "beginner"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/I3tsCnC.gif",
+    "gifUrl": "/api/v3/exercise-image/I3tsCnC.gif",
     "exerciseDbId": "I3tsCnC"
   },
   {
@@ -1456,7 +1456,7 @@ window.EXERCISE_SEED_DATA = [
       "upper-body",
       "intermediate"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/dmgMp3n.gif",
+    "gifUrl": "/api/v3/exercise-image/dmgMp3n.gif",
     "exerciseDbId": "dmgMp3n"
   },
   {
@@ -1478,7 +1478,7 @@ window.EXERCISE_SEED_DATA = [
       "upper-body",
       "intermediate"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/NN8nSNT.gif",
+    "gifUrl": "/api/v3/exercise-image/NN8nSNT.gif",
     "exerciseDbId": "NN8nSNT"
   },
   {
@@ -1500,7 +1500,7 @@ window.EXERCISE_SEED_DATA = [
       "lower-body",
       "intermediate"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/rR0LJzx.gif",
+    "gifUrl": "/api/v3/exercise-image/rR0LJzx.gif",
     "exerciseDbId": "rR0LJzx"
   },
   {
@@ -1522,7 +1522,7 @@ window.EXERCISE_SEED_DATA = [
       "lower-body",
       "intermediate"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/SGY8Zui.gif",
+    "gifUrl": "/api/v3/exercise-image/SGY8Zui.gif",
     "exerciseDbId": "SGY8Zui"
   },
   {
@@ -1544,7 +1544,7 @@ window.EXERCISE_SEED_DATA = [
       "upper-body",
       "advanced"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/nAuHPcD.gif",
+    "gifUrl": "/api/v3/exercise-image/nAuHPcD.gif",
     "exerciseDbId": "nAuHPcD"
   },
   {
@@ -1566,7 +1566,7 @@ window.EXERCISE_SEED_DATA = [
       "lower-body",
       "beginner"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/NNoHCEA.gif",
+    "gifUrl": "/api/v3/exercise-image/NNoHCEA.gif",
     "exerciseDbId": "NNoHCEA"
   },
   {
@@ -1588,7 +1588,7 @@ window.EXERCISE_SEED_DATA = [
       "lower-body",
       "intermediate"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/za9Ni4z.gif",
+    "gifUrl": "/api/v3/exercise-image/za9Ni4z.gif",
     "exerciseDbId": "za9Ni4z"
   },
   {
@@ -1610,7 +1610,7 @@ window.EXERCISE_SEED_DATA = [
       "upper-body",
       "intermediate"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/r0z6xzQ.gif",
+    "gifUrl": "/api/v3/exercise-image/r0z6xzQ.gif",
     "exerciseDbId": "r0z6xzQ"
   },
   {
@@ -1632,7 +1632,7 @@ window.EXERCISE_SEED_DATA = [
       "upper-body",
       "intermediate"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/ae9UoXQ.gif",
+    "gifUrl": "/api/v3/exercise-image/ae9UoXQ.gif",
     "exerciseDbId": "ae9UoXQ"
   },
   {
@@ -1654,7 +1654,7 @@ window.EXERCISE_SEED_DATA = [
       "lower-body",
       "intermediate"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/bOOdeyc.gif",
+    "gifUrl": "/api/v3/exercise-image/bOOdeyc.gif",
     "exerciseDbId": "bOOdeyc"
   },
   {
@@ -1676,7 +1676,7 @@ window.EXERCISE_SEED_DATA = [
       "upper-body",
       "intermediate"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/G08RZcQ.gif",
+    "gifUrl": "/api/v3/exercise-image/G08RZcQ.gif",
     "exerciseDbId": "G08RZcQ"
   },
   {
@@ -1698,7 +1698,7 @@ window.EXERCISE_SEED_DATA = [
       "lower-body",
       "intermediate"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/V07qpXy.gif",
+    "gifUrl": "/api/v3/exercise-image/V07qpXy.gif",
     "exerciseDbId": "V07qpXy"
   },
   {
@@ -1720,7 +1720,7 @@ window.EXERCISE_SEED_DATA = [
       "upper-body",
       "beginner"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/ecpY0rH.gif",
+    "gifUrl": "/api/v3/exercise-image/ecpY0rH.gif",
     "exerciseDbId": "ecpY0rH"
   },
   {
@@ -1742,7 +1742,7 @@ window.EXERCISE_SEED_DATA = [
       "upper-body",
       "intermediate"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/UDlhcO8.gif",
+    "gifUrl": "/api/v3/exercise-image/UDlhcO8.gif",
     "exerciseDbId": "UDlhcO8"
   },
   {
@@ -1764,7 +1764,7 @@ window.EXERCISE_SEED_DATA = [
       "lower-body",
       "intermediate"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/LSTChY9.gif",
+    "gifUrl": "/api/v3/exercise-image/LSTChY9.gif",
     "exerciseDbId": "LSTChY9"
   },
   {
@@ -1786,7 +1786,7 @@ window.EXERCISE_SEED_DATA = [
       "upper-body",
       "beginner"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/zILLZ98.gif",
+    "gifUrl": "/api/v3/exercise-image/zILLZ98.gif",
     "exerciseDbId": "zILLZ98"
   },
   {
@@ -1808,7 +1808,7 @@ window.EXERCISE_SEED_DATA = [
       "lower-body",
       "beginner"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/kuMiR2T.gif",
+    "gifUrl": "/api/v3/exercise-image/kuMiR2T.gif",
     "exerciseDbId": "kuMiR2T"
   },
   {
@@ -1830,7 +1830,7 @@ window.EXERCISE_SEED_DATA = [
       "lower-body",
       "intermediate"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/1gFNTZV.gif",
+    "gifUrl": "/api/v3/exercise-image/1gFNTZV.gif",
     "exerciseDbId": "1gFNTZV"
   },
   {
@@ -1852,7 +1852,7 @@ window.EXERCISE_SEED_DATA = [
       "upper-body",
       "intermediate"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/goJ6ezq.gif",
+    "gifUrl": "/api/v3/exercise-image/goJ6ezq.gif",
     "exerciseDbId": "goJ6ezq"
   },
   {
@@ -1874,7 +1874,7 @@ window.EXERCISE_SEED_DATA = [
       "lower-body",
       "intermediate"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/LHWF7us.gif",
+    "gifUrl": "/api/v3/exercise-image/LHWF7us.gif",
     "exerciseDbId": "LHWF7us"
   },
   {
@@ -1896,7 +1896,7 @@ window.EXERCISE_SEED_DATA = [
       "upper-body",
       "intermediate"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/Xy4jlWA.gif",
+    "gifUrl": "/api/v3/exercise-image/Xy4jlWA.gif",
     "exerciseDbId": "Xy4jlWA"
   },
   {
@@ -1918,7 +1918,7 @@ window.EXERCISE_SEED_DATA = [
       "upper-body",
       "intermediate"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/ESOd5Pl.gif",
+    "gifUrl": "/api/v3/exercise-image/ESOd5Pl.gif",
     "exerciseDbId": "ESOd5Pl"
   },
   {
@@ -1940,7 +1940,7 @@ window.EXERCISE_SEED_DATA = [
       "upper-body",
       "intermediate"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/v1qBec9.gif",
+    "gifUrl": "/api/v3/exercise-image/v1qBec9.gif",
     "exerciseDbId": "v1qBec9"
   },
   {
@@ -1962,7 +1962,7 @@ window.EXERCISE_SEED_DATA = [
       "upper-body",
       "intermediate"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/gvsWLQw.gif",
+    "gifUrl": "/api/v3/exercise-image/gvsWLQw.gif",
     "exerciseDbId": "gvsWLQw"
   },
   {
@@ -1984,7 +1984,7 @@ window.EXERCISE_SEED_DATA = [
       "upper-body",
       "beginner"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/qLpO4vV.gif",
+    "gifUrl": "/api/v3/exercise-image/qLpO4vV.gif",
     "exerciseDbId": "qLpO4vV"
   },
   {
@@ -2006,7 +2006,7 @@ window.EXERCISE_SEED_DATA = [
       "upper-body",
       "beginner"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/i5cEhka.gif",
+    "gifUrl": "/api/v3/exercise-image/i5cEhka.gif",
     "exerciseDbId": "i5cEhka"
   },
   {
@@ -2028,7 +2028,7 @@ window.EXERCISE_SEED_DATA = [
       "core",
       "intermediate"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/WW95auq.gif",
+    "gifUrl": "/api/v3/exercise-image/WW95auq.gif",
     "exerciseDbId": "WW95auq"
   },
   {
@@ -2050,7 +2050,7 @@ window.EXERCISE_SEED_DATA = [
       "upper-body",
       "intermediate"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/BRImeP8.gif",
+    "gifUrl": "/api/v3/exercise-image/BRImeP8.gif",
     "exerciseDbId": "BRImeP8"
   },
   {
@@ -2072,7 +2072,7 @@ window.EXERCISE_SEED_DATA = [
       "upper-body",
       "intermediate"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/3eGE2JC.gif",
+    "gifUrl": "/api/v3/exercise-image/3eGE2JC.gif",
     "exerciseDbId": "3eGE2JC"
   },
   {
@@ -2094,7 +2094,7 @@ window.EXERCISE_SEED_DATA = [
       "upper-body",
       "intermediate"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/ZujAdR9.gif",
+    "gifUrl": "/api/v3/exercise-image/ZujAdR9.gif",
     "exerciseDbId": "ZujAdR9"
   },
   {
@@ -2116,7 +2116,7 @@ window.EXERCISE_SEED_DATA = [
       "upper-body",
       "beginner"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/CbFSYC1.gif",
+    "gifUrl": "/api/v3/exercise-image/CbFSYC1.gif",
     "exerciseDbId": "CbFSYC1"
   },
   {
@@ -2138,7 +2138,7 @@ window.EXERCISE_SEED_DATA = [
       "lower-body",
       "intermediate"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/XlZ4lAC.gif",
+    "gifUrl": "/api/v3/exercise-image/XlZ4lAC.gif",
     "exerciseDbId": "XlZ4lAC"
   },
   {
@@ -2160,7 +2160,7 @@ window.EXERCISE_SEED_DATA = [
       "upper-body",
       "advanced"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/vtusOWT.gif",
+    "gifUrl": "/api/v3/exercise-image/vtusOWT.gif",
     "exerciseDbId": "vtusOWT"
   },
   {
@@ -2182,7 +2182,7 @@ window.EXERCISE_SEED_DATA = [
       "upper-body",
       "intermediate"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/9XjtHvS.gif",
+    "gifUrl": "/api/v3/exercise-image/9XjtHvS.gif",
     "exerciseDbId": "9XjtHvS"
   },
   {
@@ -2204,7 +2204,7 @@ window.EXERCISE_SEED_DATA = [
       "lower-body",
       "intermediate"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/CHpahtl.gif",
+    "gifUrl": "/api/v3/exercise-image/CHpahtl.gif",
     "exerciseDbId": "CHpahtl"
   },
   {
@@ -2226,7 +2226,7 @@ window.EXERCISE_SEED_DATA = [
       "upper-body",
       "advanced"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/jDnrkar.gif",
+    "gifUrl": "/api/v3/exercise-image/jDnrkar.gif",
     "exerciseDbId": "jDnrkar"
   },
   {
@@ -2248,7 +2248,7 @@ window.EXERCISE_SEED_DATA = [
       "upper-body",
       "intermediate"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/27NNGFr.gif",
+    "gifUrl": "/api/v3/exercise-image/27NNGFr.gif",
     "exerciseDbId": "27NNGFr"
   },
   {
@@ -2270,7 +2270,7 @@ window.EXERCISE_SEED_DATA = [
       "lower-body",
       "intermediate"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/gGNQmVt.gif",
+    "gifUrl": "/api/v3/exercise-image/gGNQmVt.gif",
     "exerciseDbId": "gGNQmVt"
   },
   {
@@ -2292,7 +2292,7 @@ window.EXERCISE_SEED_DATA = [
       "lower-body",
       "intermediate"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/t8iSghb.gif",
+    "gifUrl": "/api/v3/exercise-image/t8iSghb.gif",
     "exerciseDbId": "t8iSghb"
   },
   {
@@ -2314,7 +2314,7 @@ window.EXERCISE_SEED_DATA = [
       "upper-body",
       "advanced"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/XooAdhl.gif",
+    "gifUrl": "/api/v3/exercise-image/XooAdhl.gif",
     "exerciseDbId": "XooAdhl"
   },
   {
@@ -2336,7 +2336,7 @@ window.EXERCISE_SEED_DATA = [
       "lower-body",
       "intermediate"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/HsvHqgf.gif",
+    "gifUrl": "/api/v3/exercise-image/HsvHqgf.gif",
     "exerciseDbId": "HsvHqgf"
   },
   {
@@ -2358,7 +2358,7 @@ window.EXERCISE_SEED_DATA = [
       "full-body",
       "beginner"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/dK9394r.gif",
+    "gifUrl": "/api/v3/exercise-image/dK9394r.gif",
     "exerciseDbId": "dK9394r"
   },
   {
@@ -2380,7 +2380,7 @@ window.EXERCISE_SEED_DATA = [
       "upper-body",
       "intermediate"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/f7Y9eDZ.gif",
+    "gifUrl": "/api/v3/exercise-image/f7Y9eDZ.gif",
     "exerciseDbId": "f7Y9eDZ"
   },
   {
@@ -2402,7 +2402,7 @@ window.EXERCISE_SEED_DATA = [
       "upper-body",
       "intermediate"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/qOgPVf6.gif",
+    "gifUrl": "/api/v3/exercise-image/qOgPVf6.gif",
     "exerciseDbId": "qOgPVf6"
   },
   {
@@ -2424,7 +2424,7 @@ window.EXERCISE_SEED_DATA = [
       "upper-body",
       "intermediate"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/82LxxkW.gif",
+    "gifUrl": "/api/v3/exercise-image/82LxxkW.gif",
     "exerciseDbId": "82LxxkW"
   },
   {
@@ -2446,7 +2446,7 @@ window.EXERCISE_SEED_DATA = [
       "lower-body",
       "intermediate"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/ipvgBnC.gif",
+    "gifUrl": "/api/v3/exercise-image/ipvgBnC.gif",
     "exerciseDbId": "ipvgBnC"
   },
   {
@@ -2468,7 +2468,7 @@ window.EXERCISE_SEED_DATA = [
       "lower-body",
       "beginner"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/6HmFgmx.gif",
+    "gifUrl": "/api/v3/exercise-image/6HmFgmx.gif",
     "exerciseDbId": "6HmFgmx"
   },
   {
@@ -2490,7 +2490,7 @@ window.EXERCISE_SEED_DATA = [
       "upper-body",
       "beginner"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/x6KpKpq.gif",
+    "gifUrl": "/api/v3/exercise-image/x6KpKpq.gif",
     "exerciseDbId": "x6KpKpq"
   },
   {
@@ -2512,7 +2512,7 @@ window.EXERCISE_SEED_DATA = [
       "lower-body",
       "intermediate"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/gfk9kD4.gif",
+    "gifUrl": "/api/v3/exercise-image/gfk9kD4.gif",
     "exerciseDbId": "gfk9kD4"
   },
   {
@@ -2534,7 +2534,7 @@ window.EXERCISE_SEED_DATA = [
       "core",
       "beginner"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/XVDdcoj.gif",
+    "gifUrl": "/api/v3/exercise-image/XVDdcoj.gif",
     "exerciseDbId": "XVDdcoj"
   },
   {
@@ -2556,7 +2556,7 @@ window.EXERCISE_SEED_DATA = [
       "upper-body",
       "intermediate"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/L2V5Nan.gif",
+    "gifUrl": "/api/v3/exercise-image/L2V5Nan.gif",
     "exerciseDbId": "L2V5Nan"
   },
   {
@@ -2578,7 +2578,7 @@ window.EXERCISE_SEED_DATA = [
       "core",
       "beginner"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/9Ap7miY.gif",
+    "gifUrl": "/api/v3/exercise-image/9Ap7miY.gif",
     "exerciseDbId": "9Ap7miY"
   },
   {
@@ -2600,7 +2600,7 @@ window.EXERCISE_SEED_DATA = [
       "lower-body",
       "intermediate"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/qKBpF7I.gif",
+    "gifUrl": "/api/v3/exercise-image/qKBpF7I.gif",
     "exerciseDbId": "qKBpF7I"
   },
   {
@@ -2622,7 +2622,7 @@ window.EXERCISE_SEED_DATA = [
       "core",
       "beginner"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/9IxJdtC.gif",
+    "gifUrl": "/api/v3/exercise-image/9IxJdtC.gif",
     "exerciseDbId": "9IxJdtC"
   },
   {
@@ -2644,7 +2644,7 @@ window.EXERCISE_SEED_DATA = [
       "upper-body",
       "intermediate"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/1xHyxys.gif",
+    "gifUrl": "/api/v3/exercise-image/1xHyxys.gif",
     "exerciseDbId": "1xHyxys"
   },
   {
@@ -2666,7 +2666,7 @@ window.EXERCISE_SEED_DATA = [
       "upper-body",
       "beginner"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/gtO1ErP.gif",
+    "gifUrl": "/api/v3/exercise-image/gtO1ErP.gif",
     "exerciseDbId": "gtO1ErP"
   },
   {
@@ -2688,7 +2688,7 @@ window.EXERCISE_SEED_DATA = [
       "lower-body",
       "advanced"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/6pTkI99.gif",
+    "gifUrl": "/api/v3/exercise-image/6pTkI99.gif",
     "exerciseDbId": "6pTkI99"
   },
   {
@@ -2710,7 +2710,7 @@ window.EXERCISE_SEED_DATA = [
       "lower-body",
       "beginner"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/QpXqiq8.gif",
+    "gifUrl": "/api/v3/exercise-image/QpXqiq8.gif",
     "exerciseDbId": "QpXqiq8"
   },
   {
@@ -2732,7 +2732,7 @@ window.EXERCISE_SEED_DATA = [
       "upper-body",
       "intermediate"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/myfUsKf.gif",
+    "gifUrl": "/api/v3/exercise-image/myfUsKf.gif",
     "exerciseDbId": "myfUsKf"
   },
   {
@@ -2754,7 +2754,7 @@ window.EXERCISE_SEED_DATA = [
       "upper-body",
       "beginner"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/Gpn4ADc.gif",
+    "gifUrl": "/api/v3/exercise-image/Gpn4ADc.gif",
     "exerciseDbId": "Gpn4ADc"
   },
   {
@@ -2776,7 +2776,7 @@ window.EXERCISE_SEED_DATA = [
       "lower-body",
       "intermediate"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/nUwVh7b.gif",
+    "gifUrl": "/api/v3/exercise-image/nUwVh7b.gif",
     "exerciseDbId": "nUwVh7b"
   },
   {
@@ -2798,7 +2798,7 @@ window.EXERCISE_SEED_DATA = [
       "upper-body",
       "intermediate"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/PQcUlDi.gif",
+    "gifUrl": "/api/v3/exercise-image/PQcUlDi.gif",
     "exerciseDbId": "PQcUlDi"
   },
   {
@@ -2820,7 +2820,7 @@ window.EXERCISE_SEED_DATA = [
       "upper-body",
       "beginner"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/wbUYILZ.gif",
+    "gifUrl": "/api/v3/exercise-image/wbUYILZ.gif",
     "exerciseDbId": "wbUYILZ"
   },
   {
@@ -2842,7 +2842,7 @@ window.EXERCISE_SEED_DATA = [
       "lower-body",
       "beginner"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/LIlE5Tn.gif",
+    "gifUrl": "/api/v3/exercise-image/LIlE5Tn.gif",
     "exerciseDbId": "LIlE5Tn"
   },
   {
@@ -2864,7 +2864,7 @@ window.EXERCISE_SEED_DATA = [
       "upper-body",
       "intermediate"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/c9MnDRp.gif",
+    "gifUrl": "/api/v3/exercise-image/c9MnDRp.gif",
     "exerciseDbId": "c9MnDRp"
   },
   {
@@ -2886,7 +2886,7 @@ window.EXERCISE_SEED_DATA = [
       "upper-body",
       "intermediate"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/W6PxUkg.gif",
+    "gifUrl": "/api/v3/exercise-image/W6PxUkg.gif",
     "exerciseDbId": "W6PxUkg"
   },
   {
@@ -2908,7 +2908,7 @@ window.EXERCISE_SEED_DATA = [
       "lower-body",
       "beginner"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/xdYPUtE.gif",
+    "gifUrl": "/api/v3/exercise-image/xdYPUtE.gif",
     "exerciseDbId": "xdYPUtE"
   },
   {
@@ -2930,7 +2930,7 @@ window.EXERCISE_SEED_DATA = [
       "upper-body",
       "intermediate"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/xNrS20v.gif",
+    "gifUrl": "/api/v3/exercise-image/xNrS20v.gif",
     "exerciseDbId": "xNrS20v"
   },
   {
@@ -2952,7 +2952,7 @@ window.EXERCISE_SEED_DATA = [
       "upper-body",
       "intermediate"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/DwhEmmE.gif",
+    "gifUrl": "/api/v3/exercise-image/DwhEmmE.gif",
     "exerciseDbId": "DwhEmmE"
   },
   {
@@ -2974,7 +2974,7 @@ window.EXERCISE_SEED_DATA = [
       "upper-body",
       "intermediate"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/RxayqAZ.gif",
+    "gifUrl": "/api/v3/exercise-image/RxayqAZ.gif",
     "exerciseDbId": "RxayqAZ"
   },
   {
@@ -2996,7 +2996,7 @@ window.EXERCISE_SEED_DATA = [
       "lower-body",
       "intermediate"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/XDOiFns.gif",
+    "gifUrl": "/api/v3/exercise-image/XDOiFns.gif",
     "exerciseDbId": "XDOiFns"
   },
   {
@@ -3018,7 +3018,7 @@ window.EXERCISE_SEED_DATA = [
       "upper-body",
       "beginner"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/B1EVP9F.gif",
+    "gifUrl": "/api/v3/exercise-image/B1EVP9F.gif",
     "exerciseDbId": "B1EVP9F"
   },
   {
@@ -3040,7 +3040,7 @@ window.EXERCISE_SEED_DATA = [
       "upper-body",
       "advanced"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/bWxq4op.gif",
+    "gifUrl": "/api/v3/exercise-image/bWxq4op.gif",
     "exerciseDbId": "bWxq4op"
   },
   {
@@ -3062,7 +3062,7 @@ window.EXERCISE_SEED_DATA = [
       "upper-body",
       "intermediate"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/YqJw82s.gif",
+    "gifUrl": "/api/v3/exercise-image/YqJw82s.gif",
     "exerciseDbId": "YqJw82s"
   },
   {
@@ -3084,7 +3084,7 @@ window.EXERCISE_SEED_DATA = [
       "lower-body",
       "beginner"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/C5jncD2.gif",
+    "gifUrl": "/api/v3/exercise-image/C5jncD2.gif",
     "exerciseDbId": "C5jncD2"
   },
   {
@@ -3106,7 +3106,7 @@ window.EXERCISE_SEED_DATA = [
       "lower-body",
       "intermediate"
     ],
-    "gifUrl": "https://static.exercisedb.dev/media/OM46QHm.gif",
+    "gifUrl": "/api/v3/exercise-image/OM46QHm.gif",
     "exerciseDbId": "OM46QHm"
   }
 ];

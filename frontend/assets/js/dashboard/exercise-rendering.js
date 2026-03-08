@@ -170,8 +170,9 @@ function _buildExerciseDetailHTML(exercise) {
         return equip + (count ? ` (${count})` : '');
     };
 
-    // GIF URL: use linked if custom has none
-    const gifUrl = exercise.gifUrl || (linked && linked.gifUrl);
+    // GIF URL: use linked if custom has none, rewrite external CDN to local proxy
+    const rawGifUrl = exercise.gifUrl || (linked && linked.gifUrl);
+    const gifUrl = rawGifUrl ? rawGifUrl.replace('https://static.exercisedb.dev/media/', '/api/v3/exercise-image/') : null;
 
     // Instructions: use linked if custom has none
     const instructions = exercise.instructions?.length > 0

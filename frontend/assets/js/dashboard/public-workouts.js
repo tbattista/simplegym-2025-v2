@@ -81,6 +81,14 @@
                     icon: 'bx-bookmark',
                     variant: 'primary',
                     onClick: (workout) => saveWorkout(workout)
+                },
+                {
+                    id: 'do-once',
+                    label: 'Do Once',
+                    icon: 'bx-play-circle',
+                    variant: 'success',
+                    primary: true,
+                    onClick: (workout) => doOnceWorkout(workout)
                 }
             ]
         });
@@ -265,6 +273,86 @@
                     'Save Failed'
                 );
             }
+        }
+    }
+
+    /**
+     * Load a public workout into workout mode for a single session
+     * Saves as archived so it exists in Firestore but stays hidden from library
+     */
+    async function doOnceWorkout(workout) {
+        console.log('🏋️ Do Once workout:', workout);
+
+        try {
+            // Check if user is authenticated
+            if (!window.dataManager || !window.dataManager.isUserAuthenticated()) {
+                if (window.toastNotifications) {
+                    window.toastNotifications.warning('Please sign in to start a workout');
+                }
+                const loginModal = document.getElementById('authModal');
+                if (loginModal) {
+                    const modal = new bootstrap.Modal(loginModal);
+                    modal.show();
+                }
+                return;
+            }
+
+            // Show loading state
+            const doOnceBtn = document.querySelector('[data-action="do-once"]');
+            const saveBtn = document.querySelector('[data-action="save"]');
+            if (doOnceBtn) {
+                doOnceBtn.disabled = true;
+                doOnceBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Starting...';
+            }
+            if (saveBtn) saveBtn.disabled = true;
+
+            // Get auth token
+            const authToken = await window.dataManager.getAuthToken();
+
+            // Save workout to user's library
+            const url = window.config.api.getUrl(`/api/v3/sharing/public-workouts/${workout.id}/save`);
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${authToken}`
+                },
+                body: JSON.stringify({ custom_name: null })
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.detail || `Failed to load workout (${response.status})`);
+            }
+
+            const savedWorkout = await response.json();
+            console.log('✅ Workout saved for Do Once:', savedWorkout);
+
+            // Archive it so it doesn't appear in library
+            await window.dataManager.updateWorkout(savedWorkout.id, { is_archived: true });
+            console.log('📦 Workout archived:', savedWorkout.id);
+
+            // Navigate to workout mode
+            window.location.href = `workout-mode.html?id=${savedWorkout.id}`;
+
+        } catch (error) {
+            console.error('❌ Error starting Do Once workout:', error);
+
+            if (window.toastNotifications) {
+                window.toastNotifications.error(
+                    error.message || 'Failed to start workout. Please try again.',
+                    'Start Failed'
+                );
+            }
+
+            // Restore button states
+            const doOnceBtn = document.querySelector('[data-action="do-once"]');
+            const saveBtn = document.querySelector('[data-action="save"]');
+            if (doOnceBtn) {
+                doOnceBtn.disabled = false;
+                doOnceBtn.innerHTML = '<i class="bx bx-play-circle me-1"></i>Do Once';
+            }
+            if (saveBtn) saveBtn.disabled = false;
         }
     }
 

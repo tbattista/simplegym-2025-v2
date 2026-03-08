@@ -4,6 +4,12 @@
  * @version 2.1.0
  */
 
+/** Rewrite external ExerciseDB CDN URLs to local proxy */
+function _proxyGifUrl(url) {
+  if (!url) return url;
+  return url.replace('https://static.exercisedb.dev/media/', '/api/v3/exercise-image/');
+}
+
 /** Cache of exercise name -> gifUrl lookups */
 let _prGifCache = {};
 let _exerciseCacheReady = false;
@@ -44,8 +50,9 @@ function _lookupGifUrl(exerciseName) {
     const matchLower = match.name.toLowerCase();
     // Accept: exact match, or PR name is contained in DB name (e.g. "Bench Press" in "Barbell Bench Press")
     if (matchLower === nameLower || matchLower.includes(nameLower) || nameLower.includes(matchLower)) {
-      _prGifCache[exerciseName] = match.gifUrl;
-      return match.gifUrl;
+      const proxied = _proxyGifUrl(match.gifUrl);
+      _prGifCache[exerciseName] = proxied;
+      return proxied;
     }
   }
   _prGifCache[exerciseName] = null;
