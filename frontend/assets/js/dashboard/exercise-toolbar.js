@@ -100,6 +100,7 @@ function updateFilterBadge() {
     let filterCount = 0;
     const filters = window.currentFilters;
 
+    if (filters.category) filterCount++;
     if (filters.muscleGroup) filterCount++;
     if (filters.equipment && filters.equipment.length > 0) filterCount++;
     if (filters.difficulty) filterCount++;
@@ -188,6 +189,51 @@ function initCustomToggle() {
 }
 
 /**
+ * Initialize category filter chips
+ */
+function initCategoryChips() {
+    const container = document.getElementById('categoryChips');
+    if (!container) return;
+
+    const chips = container.querySelectorAll('.category-chip');
+    chips.forEach(chip => {
+        chip.addEventListener('click', () => {
+            const category = chip.dataset.category;
+            const isActive = chip.classList.contains('active');
+
+            // Deactivate all chips
+            chips.forEach(c => c.classList.remove('active'));
+
+            if (isActive) {
+                // Toggle off - clear category filter
+                window.currentFilters.category = '';
+            } else {
+                // Activate this chip
+                chip.classList.add('active');
+                window.currentFilters.category = category;
+                // Clear offcanvas muscle group filter since category supersedes it
+                window.currentFilters.muscleGroup = '';
+            }
+
+            if (window.applyFiltersAndRender) {
+                window.applyFiltersAndRender(window.currentFilters);
+            }
+        });
+    });
+
+    console.log('✅ Category chips initialized');
+}
+
+/**
+ * Deactivate all category chips (called when offcanvas muscle filter is set)
+ */
+function clearCategoryChips() {
+    const chips = document.querySelectorAll('.category-chip');
+    chips.forEach(c => c.classList.remove('active'));
+    window.currentFilters.category = '';
+}
+
+/**
  * Initialize all toolbar components
  */
 function initExerciseToolbar() {
@@ -195,6 +241,7 @@ function initExerciseToolbar() {
     initSortButton();
     initFilterButton();
     initCustomToggle();
+    initCategoryChips();
     console.log('✅ Exercise toolbar initialized');
 }
 
@@ -205,6 +252,8 @@ window.updateFilterBadge = updateFilterBadge;
 window.initFilterButton = initFilterButton;
 window.initSortButton = initSortButton;
 window.initCustomToggle = initCustomToggle;
+window.initCategoryChips = initCategoryChips;
+window.clearCategoryChips = clearCategoryChips;
 window.initExerciseToolbar = initExerciseToolbar;
 window.SORT_OPTIONS = SORT_OPTIONS;
 

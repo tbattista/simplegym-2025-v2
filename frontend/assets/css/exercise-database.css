@@ -788,11 +788,84 @@
 }
 
 /* ============================================
+   CATEGORY FILTER CHIPS
+   Quick-filter chips below the toolbar
+   ============================================ */
+
+.category-chips {
+    display: flex;
+    gap: 0.375rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+}
+
+.category-chips::-webkit-scrollbar {
+    display: none;
+}
+
+.category-chip {
+    display: inline-flex;
+    align-items: center;
+    white-space: nowrap;
+    height: 1.75rem;
+    padding: 0 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    line-height: 1;
+    color: var(--bs-secondary);
+    background-color: var(--bs-body-bg);
+    border: 1px solid var(--bs-border-color);
+    border-radius: 1rem;
+    cursor: pointer;
+    transition: all 0.15s ease-in-out;
+    flex-shrink: 0;
+}
+
+.category-chip:hover {
+    color: var(--bs-primary);
+    border-color: var(--bs-primary);
+    background-color: rgba(var(--bs-primary-rgb), 0.05);
+}
+
+.category-chip.active {
+    color: #fff;
+    background-color: var(--bs-primary);
+    border-color: var(--bs-primary);
+}
+
+.category-chip.active:hover {
+    opacity: 0.9;
+}
+
+/* Dark mode */
+[data-bs-theme="dark"] .category-chip {
+    background-color: var(--bs-gray-900);
+    border-color: var(--bs-gray-600);
+    color: var(--bs-gray-400);
+}
+
+[data-bs-theme="dark"] .category-chip:hover {
+    color: var(--bs-primary);
+    border-color: var(--bs-primary);
+    background-color: rgba(var(--bs-primary-rgb), 0.1);
+}
+
+[data-bs-theme="dark"] .category-chip.active {
+    color: #fff;
+    background-color: var(--bs-primary);
+    border-color: var(--bs-primary);
+}
+
+/* ============================================
    EXERCISE TOOLBAR - PRINT
    ============================================ */
 
 @media print {
-    .exercise-toolbar {
+    .exercise-toolbar,
+    .category-chips {
         display: none;
     }
 }

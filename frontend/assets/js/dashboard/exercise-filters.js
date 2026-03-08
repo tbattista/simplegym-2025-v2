@@ -7,6 +7,18 @@
  */
 
 /**
+ * Category-to-muscle-group mapping for quick filter chips
+ */
+const CATEGORY_MAP = {
+    'Upper Body': ['Chest', 'Back', 'Shoulders'],
+    'Lower Body': ['Glutes', 'Quadriceps', 'Hamstrings', 'Calves', 'Adductors', 'Abductors'],
+    'Chest': ['Chest'],
+    'Back': ['Back'],
+    'Arms': ['Biceps', 'Triceps', 'Forearms'],
+    'Core': ['Abdominals']
+};
+
+/**
  * Apply filters and render table
  * @param {Object} filters - Filter configuration
  */
@@ -26,6 +38,12 @@ function applyFiltersAndRender(filters) {
     // Apply muscle group filter
     if (filters.muscleGroup) {
         allExercises = allExercises.filter(e => e.targetMuscleGroup === filters.muscleGroup);
+    }
+
+    // Apply category chip filter
+    if (filters.category && CATEGORY_MAP[filters.category]) {
+        const muscleGroups = CATEGORY_MAP[filters.category];
+        allExercises = allExercises.filter(e => muscleGroups.includes(e.targetMuscleGroup));
     }
 
     // Apply equipment filter (supports multi-select with OR logic)
@@ -124,6 +142,10 @@ function updateFilterFeedback(filters) {
         activeFilters.push(`<strong>Search:</strong> "${filters.search}"`);
     }
 
+    if (filters.category) {
+        activeFilters.push(`<strong>Category:</strong> ${filters.category}`);
+    }
+
     if (filters.muscleGroup) {
         activeFilters.push(`<strong>Muscle:</strong> ${filters.muscleGroup}`);
     }
@@ -180,6 +202,7 @@ function getUniqueEquipment() {
 }
 
 // Export for global access
+window.CATEGORY_MAP = CATEGORY_MAP;
 window.applyFiltersAndRender = applyFiltersAndRender;
 window.sortExercises = sortExercises;
 window.updateFilterFeedback = updateFilterFeedback;
