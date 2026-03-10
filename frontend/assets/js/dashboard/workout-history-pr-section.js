@@ -176,10 +176,10 @@ async function renderPRSection() {
 
   container.style.display = '';
 
-  // Sort: most recent first
+  // Sort: most recently achieved first (prefer session_date over marked_at)
   records.sort((a, b) => {
-    const dateA = new Date(a.marked_at || a.session_date || 0);
-    const dateB = new Date(b.marked_at || b.session_date || 0);
+    const dateA = new Date(a.session_date || a.marked_at || 0);
+    const dateB = new Date(b.session_date || b.marked_at || 0);
     return dateB - dateA;
   });
 
@@ -234,28 +234,121 @@ async function renderPRSection() {
 }
 
 /**
- * Edit a PR value inline — click on a chip to change the value
+ * Format a date value for a date input (YYYY-MM-DD)
+ */
+function _toDateInputValue(dateStr) {
+  if (!dateStr) return '';
+  try {
+    const d = new Date(dateStr);
+    if (isNaN(d)) return '';
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
+  } catch { return ''; }
+}
+
+/**
+ * Edit a PR — click on a chip to change value and/or date
  */
 async function editPRValue(prId) {
   const state = window.ffn.workoutHistory;
   const pr = state.personalRecords.get(prId);
   if (!pr) return;
+  if (!window.ffnModalManager) return;
 
-  const newValue = await new Promise(resolve => {
-    window.ffnModalManager.prompt(
-      `Edit PR: ${pr.exercise_name}`,
-      `Enter new PR value (${pr.value_unit}):`,
-      pr.value,
-      (val) => resolve(val),
-      () => resolve(null)
-    );
+  const currentDate = pr.session_date || pr.marked_at || '';
+  const currentDateInput = _toDateInputValue(currentDate);
+  const currentDateDisplay = _formatPRDate(currentDate);
+
+  const result = await new Promise(resolve => {
+    const id = `pr-edit-modal-${Date.now()}`;
+    const valueId = `${id}-value`;
+    const dateId = `${id}-date`;
+
+    const body = `
+      <div class="mb-3">
+        <label for="${valueId}" class="form-label">PR Value (${escapeHtml(pr.value_unit)})</label>
+        <input type="text" class="form-control" id="${valueId}"
+               value="${String(pr.value).replace(/"/g, '&quot;')}">
+      </div>
+      <div class="mb-2">
+        <label for="${dateId}" class="form-label">PR Date</label>
+        <input type="date" class="form-control" id="${dateId}"
+               value="${currentDateInput}">
+        ${currentDateDisplay ? `<div class="form-text">Current: ${currentDateDisplay}</div>` : ''}
+      </div>
+    `;
+
+    let pendingResult = null;
+
+    const modal = window.ffnModalManager.create(id, {
+      title: `Edit PR: ${pr.exercise_name}`,
+      body: body,
+      size: 'sm',
+      buttons: [
+        { text: 'Cancel', class: 'btn-secondary', dismiss: true },
+        {
+          text: 'Save',
+          class: 'btn-primary',
+          onClick: () => {
+            const valInput = document.getElementById(valueId);
+            const dateInput = document.getElementById(dateId);
+            pendingResult = {
+              value: valInput ? valInput.value : '',
+              date: dateInput ? dateInput.value : ''
+            };
+            window.ffnModalManager.hide(id);
+          }
+        }
+      ]
+    });
+
+    modal.element.addEventListener('shown.bs.modal', () => {
+      const input = document.getElementById(valueId);
+      if (input) { input.focus(); input.select(); }
+    }, { once: true });
+
+    modal.element.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        const valInput = document.getElementById(valueId);
+        const dateInput = document.getElementById(dateId);
+        pendingResult = {
+          value: valInput ? valInput.value : '',
+          date: dateInput ? dateInput.value : ''
+        };
+        window.ffnModalManager.hide(id);
+      }
+    });
+
+    modal.element.addEventListener('hidden.bs.modal', () => {
+      window.ffnModalManager.destroy(id);
+      resolve(pendingResult);
+    }, { once: true });
+
+    window.ffnModalManager.show(id);
   });
 
-  if (newValue === null || newValue.trim() === '' || newValue.trim() === pr.value) return;
+  if (!result) return;
+
+  const newValue = result.value.trim();
+  const newDate = result.date; // YYYY-MM-DD or empty
+  if (!newValue) return;
+
+  // Check if anything actually changed
+  const valueChanged = newValue !== pr.value;
+  const dateChanged = newDate && newDate !== currentDateInput;
+  if (!valueChanged && !dateChanged) return;
 
   try {
     if (!window.dataManager) return;
     const token = await window.dataManager.getAuthToken();
+
+    const payload = { value: newValue, value_unit: pr.value_unit };
+    if (dateChanged) {
+      payload.session_date = new Date(newDate + 'T12:00:00').toISOString();
+    }
 
     const response = await fetch(`/api/v3/users/me/personal-records/${prId}`, {
       method: 'PUT',
@@ -263,20 +356,20 @@ async function editPRValue(prId) {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({
-        value: newValue.trim(),
-        value_unit: pr.value_unit
-      })
+      body: JSON.stringify(payload)
     });
 
     if (response.ok) {
       // Update local state
-      pr.value = newValue.trim();
-      pr.marked_at = new Date().toISOString();
+      if (valueChanged) pr.value = newValue;
+      if (dateChanged) {
+        const isoDate = new Date(newDate + 'T12:00:00').toISOString();
+        pr.session_date = isoDate;
+        pr.marked_at = isoDate;
+      }
 
       if (window.showToast) window.showToast(`PR updated for ${pr.exercise_name}!`, 'success');
       renderPRSection();
-      // Re-render exercise tab to reflect any changes
       if (window.renderExerciseTab) window.renderExerciseTab();
     } else {
       if (window.showToast) window.showToast('Failed to update PR', 'danger');
@@ -291,14 +384,33 @@ function _formatPRDate(dateStr) {
   if (!dateStr) return '';
   try {
     const date = new Date(dateStr);
+    if (isNaN(date)) return '';
+
+    // Format as mm/dd/yy
+    const mm = String(date.getMonth() + 1).padStart(2, '0');
+    const dd = String(date.getDate()).padStart(2, '0');
+    const yy = String(date.getFullYear()).slice(-2);
+    const dateFormatted = `${mm}/${dd}/${yy}`;
+
+    // Calculate relative time
     const now = new Date();
-    const diffDays = Math.floor((now - date) / (1000 * 60 * 60 * 24));
+    const diffMs = now - date;
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
-    if (diffDays === 0) return 'Today';
-    if (diffDays === 1) return 'Yesterday';
-    if (diffDays < 7) return `${diffDays}d ago`;
+    let relative;
+    if (diffDays === 0) relative = 'today';
+    else if (diffDays === 1) relative = '1 day ago';
+    else if (diffDays < 7) relative = `${diffDays} days ago`;
+    else {
+      const diffWeeks = Math.floor(diffDays / 7);
+      if (diffWeeks < 5) relative = diffWeeks === 1 ? '1 week ago' : `${diffWeeks} weeks ago`;
+      else {
+        const diffMonths = Math.floor(diffDays / 30);
+        relative = diffMonths <= 1 ? '1 month ago' : `${diffMonths} months ago`;
+      }
+    }
 
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    return `${dateFormatted} - ${relative}`;
   } catch {
     return '';
   }

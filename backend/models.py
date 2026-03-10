@@ -1472,7 +1472,7 @@ class CardioSession(BaseModel):
     external_id: Optional[str] = Field(None, description="ID from external source for deduplication")
 
     # Metadata
-    created_at: datetime = Field(default_factory=datetime.now, description="When this record was created")
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc), description="When this record was created")
     status: str = Field(default="completed", description="Session status: 'completed' or 'abandoned'")
 
 

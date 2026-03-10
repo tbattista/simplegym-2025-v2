@@ -125,6 +125,8 @@ function renderExerciseGroup(group) {
   }, group.variants[0]);
   const prefillWeight = mostRecentVariant?.lastWeight || mostRecentVariant?.bestWeight || '';
   const bestUnit = mostRecentVariant?.lastWeightUnit || 'lbs';
+  // Find the earliest date the best weight was first achieved (across all variants)
+  const bestWeightDate = mostRecentVariant?.bestWeightDate || '';
 
   let html = `
     <div class="exercise-group-item">
@@ -138,7 +140,7 @@ function renderExerciseGroup(group) {
           <div class="exercise-group-header-right">
             ${hasMultipleVariants ? `<span class="exercise-group-variant-count">${group.variants.length} variants</span>` : ''}
             <button class="pr-toggle-btn ${isPR ? 'active' : ''}"
-                    onclick="event.stopPropagation(); toggleExercisePRTracking('${escapeHtml(group.baseName)}', '${escapeHtml(String(prefillWeight))}', '${escapeHtml(bestUnit)}')"
+                    onclick="event.stopPropagation(); toggleExercisePRTracking('${escapeHtml(group.baseName)}', '${escapeHtml(String(prefillWeight))}', '${escapeHtml(bestUnit)}', '${escapeHtml(bestWeightDate)}')"
                     title="${isPR ? 'Remove PR tracking' : 'Track PR for this exercise'}">
               <i class="bx ${isPR ? 'bxs-trophy' : 'bx-trophy'} ${isPR ? 'text-warning' : ''}"></i>
             </button>
@@ -325,7 +327,7 @@ function initExerciseTabVisibility() {
  * If enabling: shows an input for initial PR value (pre-filled with best weight)
  * If disabling: confirms and removes
  */
-async function toggleExercisePRTracking(baseName, bestWeight, bestUnit) {
+async function toggleExercisePRTracking(baseName, bestWeight, bestUnit, bestWeightDate) {
   const state = window.ffn.workoutHistory;
   const exNameLower = baseName.toLowerCase();
   const isPR = state.prExerciseNames.has(exNameLower);
@@ -380,6 +382,7 @@ async function toggleExercisePRTracking(baseName, bestWeight, bestUnit) {
       const value = String(userValue.trim() || bestWeight || 0);
       const unit = String(bestUnit || 'lbs');
       const payload = { pr_type: 'weight', exercise_name: baseName, value, value_unit: unit };
+      if (bestWeightDate) payload.session_date = bestWeightDate;
       console.log('[PR] Creating PR:', payload);
 
       const response = await fetch('/api/v3/users/me/personal-records', {
