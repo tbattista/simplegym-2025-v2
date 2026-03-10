@@ -110,6 +110,16 @@ class PersonalRecordsService:
         try:
             pr_id = _normalize_pr_id(pr_data['pr_type'], pr_data['exercise_name'])
 
+            # Use session_date as marked_at if provided (reflects when PR was first achieved)
+            session_date = pr_data.get('session_date')
+            if session_date and isinstance(session_date, str):
+                try:
+                    marked_at = datetime.fromisoformat(session_date.replace('Z', '+00:00'))
+                except (ValueError, TypeError):
+                    marked_at = datetime.now()
+            else:
+                marked_at = datetime.now()
+
             record = PersonalRecord(
                 id=pr_id,
                 pr_type=pr_data['pr_type'],
@@ -118,10 +128,10 @@ class PersonalRecordsService:
                 value=pr_data['value'],
                 value_unit=pr_data.get('value_unit', 'lbs'),
                 session_id=pr_data.get('session_id'),
-                session_date=pr_data.get('session_date'),
+                session_date=session_date,
                 workout_name=pr_data.get('workout_name'),
                 sets_reps=pr_data.get('sets_reps'),
-                marked_at=datetime.now(),
+                marked_at=marked_at,
                 is_manual=True
             )
 

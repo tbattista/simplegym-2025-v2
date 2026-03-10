@@ -135,6 +135,8 @@ function aggregateExercisesFromSessions(sessions) {
       const totalSessions = variant.sessionDates.size;
       const lastEntry = deduped[0];
       const bestWeight = getBestWeight(deduped);
+      // Find the earliest date the best weight was first achieved (before truncating)
+      const bestWeightDate = getBestWeightFirstDate(deduped, bestWeight);
 
       variantArray.push({
         fullName: variant.fullName,
@@ -145,7 +147,8 @@ function aggregateExercisesFromSessions(sessions) {
         lastWeightUnit: lastEntry?.weightUnit || 'lbs',
         lastReps: lastEntry?.reps || '',
         lastDate: lastEntry?.date || null,
-        bestWeight
+        bestWeight,
+        bestWeightDate
       });
 
       groupTotalSessions += totalSessions;
@@ -201,6 +204,22 @@ function getBestWeight(entries) {
     if (!isNaN(w) && w > best) best = w;
   }
   return best > 0 ? best : null;
+}
+
+/**
+ * Find the earliest date the best weight was achieved.
+ * Entries are sorted newest-first, so iterate to find the oldest match.
+ */
+function getBestWeightFirstDate(entries, bestWeight) {
+  if (!bestWeight) return null;
+  let oldestDate = null;
+  for (const entry of entries) {
+    const w = parseFloat(entry.weight);
+    if (w === bestWeight && entry.date) {
+      oldestDate = entry.date;
+    }
+  }
+  return oldestDate;
 }
 
 /* ============================================

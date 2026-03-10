@@ -176,10 +176,10 @@ async function renderPRSection() {
 
   container.style.display = '';
 
-  // Sort: most recent first
+  // Sort: most recently achieved first (prefer session_date over marked_at)
   records.sort((a, b) => {
-    const dateA = new Date(a.marked_at || a.session_date || 0);
-    const dateB = new Date(b.marked_at || b.session_date || 0);
+    const dateA = new Date(a.session_date || a.marked_at || 0);
+    const dateB = new Date(b.session_date || b.marked_at || 0);
     return dateB - dateA;
   });
 
@@ -291,14 +291,33 @@ function _formatPRDate(dateStr) {
   if (!dateStr) return '';
   try {
     const date = new Date(dateStr);
+    if (isNaN(date)) return '';
+
+    // Format as mm/dd/yy
+    const mm = String(date.getMonth() + 1).padStart(2, '0');
+    const dd = String(date.getDate()).padStart(2, '0');
+    const yy = String(date.getFullYear()).slice(-2);
+    const dateFormatted = `${mm}/${dd}/${yy}`;
+
+    // Calculate relative time
     const now = new Date();
-    const diffDays = Math.floor((now - date) / (1000 * 60 * 60 * 24));
+    const diffMs = now - date;
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
-    if (diffDays === 0) return 'Today';
-    if (diffDays === 1) return 'Yesterday';
-    if (diffDays < 7) return `${diffDays}d ago`;
+    let relative;
+    if (diffDays === 0) relative = 'today';
+    else if (diffDays === 1) relative = '1 day ago';
+    else if (diffDays < 7) relative = `${diffDays} days ago`;
+    else {
+      const diffWeeks = Math.floor(diffDays / 7);
+      if (diffWeeks < 5) relative = diffWeeks === 1 ? '1 week ago' : `${diffWeeks} weeks ago`;
+      else {
+        const diffMonths = Math.floor(diffDays / 30);
+        relative = diffMonths <= 1 ? '1 month ago' : `${diffMonths} months ago`;
+      }
+    }
 
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    return `${dateFormatted} - ${relative}`;
   } catch {
     return '';
   }
