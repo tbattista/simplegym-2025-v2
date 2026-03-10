@@ -1067,10 +1067,17 @@ class UpdatePersonalRecordRequest(BaseModel):
     session_date: Optional[datetime] = Field(None, description="Date of the session")
 
 
+class ReorderPersonalRecordsRequest(BaseModel):
+    """Request model for reordering personal records"""
+
+    recordIds: List[str] = Field(..., description="Ordered list of PR IDs")
+
+
 class PersonalRecordsResponse(BaseModel):
     """Response model for user's personal records"""
 
     records: List[PersonalRecord] = Field(..., description="List of personal records")
+    recordIds: List[str] = Field(default_factory=list, description="Ordered list of PR IDs for display order")
     count: int = Field(..., description="Total number of PRs")
     lastUpdated: datetime = Field(..., description="When PRs were last updated")
 
