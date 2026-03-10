@@ -81,17 +81,48 @@ async def serve_robots():
         # Fallback robots.txt
         return PlainTextResponse(content="User-agent: *\nAllow: /\n")
 
+_sitemap_cache = {"xml": None, "generated_at": 0}
+SITEMAP_CACHE_TTL = 3600  # 1 hour
+
 @app.get("/sitemap.xml")
 async def serve_sitemap():
-    """Serve sitemap.xml for search engine indexing"""
+    """Serve dynamic sitemap.xml with static pages + public workouts"""
+    import time
+
+    now = time.time()
+    if _sitemap_cache["xml"] and (now - _sitemap_cache["generated_at"]) < SITEMAP_CACHE_TTL:
+        return Response(content=_sitemap_cache["xml"], media_type="application/xml")
+
+    base_url = os.getenv("RAILWAY_PUBLIC_DOMAIN", "fitnessfieldnotes.com")
+    base_url = f"https://{base_url}" if not base_url.startswith("http") else base_url
+
+    # Static pages
+    urls = [
+        f'  <url><loc>{base_url}/</loc><priority>1.0</priority><changefreq>weekly</changefreq></url>',
+        f'  <url><loc>{base_url}/launch</loc><priority>0.9</priority><changefreq>monthly</changefreq></url>',
+        f'  <url><loc>{base_url}/public-workouts</loc><priority>0.8</priority><changefreq>daily</changefreq></url>',
+    ]
+
+    # Add public workouts dynamically
     try:
-        with open("frontend/sitemap.xml", "r", encoding="utf-8") as f:
-            return Response(content=f.read(), media_type="application/xml")
-    except FileNotFoundError:
-        return Response(
-            content='<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"></urlset>',
-            media_type="application/xml"
-        )
+        result = await sharing_service.get_public_workouts(page=1, page_size=500)
+        for workout in result.get("workouts", []):
+            workout_id = workout.id if hasattr(workout, 'id') else workout.get('id', '')
+            if workout_id:
+                urls.append(f'  <url><loc>{base_url}/workout-builder.html?share_id={workout_id}</loc><priority>0.6</priority><changefreq>weekly</changefreq></url>')
+        logger.info(f"Sitemap generated with {len(urls)} URLs ({len(result.get('workouts', []))} public workouts)")
+    except Exception as e:
+        logger.warning(f"Could not fetch public workouts for sitemap: {e}")
+
+    xml = '<?xml version="1.0" encoding="UTF-8"?>\n'
+    xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+    xml += '\n'.join(urls)
+    xml += '\n</urlset>'
+
+    _sitemap_cache["xml"] = xml
+    _sitemap_cache["generated_at"] = now
+
+    return Response(content=xml, media_type="application/xml")
 
 @app.get("/llms.txt", response_class=PlainTextResponse)
 async def serve_llms_txt():
@@ -102,7 +133,16 @@ async def serve_llms_txt():
     except FileNotFoundError:
         return PlainTextResponse(content="# Fitness Field Notes\nA minimalist workout tracking application.\n")
 
-logger.info("✅ SEO routes registered (robots.txt, sitemap.xml, llms.txt)")
+@app.get("/manifest.json")
+async def serve_manifest():
+    """Serve PWA manifest.json"""
+    try:
+        with open("frontend/manifest.json", "r", encoding="utf-8") as f:
+            return Response(content=f.read(), media_type="application/manifest+json")
+    except FileNotFoundError:
+        return Response(content="{}", media_type="application/manifest+json")
+
+logger.info("✅ SEO routes registered (robots.txt, sitemap.xml, llms.txt, manifest.json)")
 
 # Create necessary directories
 os.makedirs("backend/uploads", exist_ok=True)

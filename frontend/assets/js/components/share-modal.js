@@ -114,6 +114,11 @@
                                         </button>
                                     </div>
 
+                                    <button type="button" class="btn btn-primary w-100 mb-2" id="publicNativeShareBtn" style="display: none;">
+                                        <i class="bx bx-share me-1"></i>
+                                        Share via...
+                                    </button>
+
                                     <button type="button" class="btn btn-outline-primary w-100" id="shareAnotherPublicBtn">
                                         <i class="bx bx-refresh me-1"></i>
                                         Update Share Settings
@@ -180,6 +185,11 @@
                                             <i class="bx bx-copy"></i>
                                         </button>
                                     </div>
+
+                                    <button type="button" class="btn btn-primary w-100 mb-2" id="privateNativeShareBtn" style="display: none;">
+                                        <i class="bx bx-share me-1"></i>
+                                        Share via...
+                                    </button>
 
                                     <div class="d-flex gap-2">
                                         <button type="button" class="btn btn-outline-danger flex-fill" id="deletePrivateShareBtn">
@@ -438,6 +448,10 @@
                 const publicWorkout = await response.json();
                 console.log('✅ Workout shared publicly:', publicWorkout);
 
+                if (window.analyticsService) {
+                    window.analyticsService.trackShare('public', this.currentWorkout?.name);
+                }
+
                 // Show success state
                 this.showPublicSuccess(publicWorkout);
 
@@ -490,6 +504,10 @@
 
                 const shareData = await response.json();
                 console.log('✅ Private link created:', shareData);
+
+                if (window.analyticsService) {
+                    window.analyticsService.trackShare('private', this.currentWorkout?.name);
+                }
 
                 // Show success state
                 this.showPrivateSuccess(shareData);
@@ -593,6 +611,9 @@
                 a.remove();
 
                 this.showExportStatus('Image downloaded successfully!', 'success');
+                if (window.analyticsService) {
+                    window.analyticsService.trackExport('image', this.currentWorkout?.name);
+                }
                 console.log('✅ Image exported');
 
             } catch (error) {
@@ -638,6 +659,9 @@
                 btn.classList.add('btn-success');
 
                 this.showExportStatus('Text copied to clipboard!', 'success');
+                if (window.analyticsService) {
+                    window.analyticsService.trackExport('text', this.currentWorkout?.name);
+                }
                 console.log('✅ Text exported and copied');
 
                 setTimeout(() => {
@@ -690,6 +714,9 @@
                 a.remove();
 
                 this.showExportStatus('PDF downloaded successfully!', 'success');
+                if (window.analyticsService) {
+                    window.analyticsService.trackExport('pdf', this.currentWorkout?.name);
+                }
                 console.log('✅ PDF exported');
 
             } catch (error) {
@@ -736,6 +763,9 @@
                 a.remove();
 
                 this.showExportStatus('Gym log PDF downloaded!', 'success');
+                if (window.analyticsService) {
+                    window.analyticsService.trackExport('gym-log', this.currentWorkout?.name);
+                }
                 console.log('✅ Gym log PDF exported');
 
             } catch (error) {
@@ -776,6 +806,9 @@
             const shareUrl = `${window.location.origin}/workout-builder.html?share_id=${publicWorkout.id}`;
             document.getElementById('publicShareUrl').value = shareUrl;
 
+            // Show native share button if available
+            this.updateNativeShareButton('publicNativeShareBtn', shareUrl);
+
             console.log('✅ Public share success displayed');
         }
 
@@ -803,7 +836,38 @@
                 expirationInfo.style.display = 'block';
             }
 
+            // Show native share button if available
+            this.updateNativeShareButton('privateNativeShareBtn', shareUrl);
+
             console.log('✅ Private share success displayed');
+        }
+
+        updateNativeShareButton(buttonId, shareUrl) {
+            const btn = document.getElementById(buttonId);
+            if (!btn) return;
+
+            if (navigator.share) {
+                btn.style.display = 'block';
+                btn.onclick = async () => {
+                    try {
+                        await navigator.share({
+                            title: this.currentWorkout?.name || 'Workout',
+                            text: `Check out this workout: ${this.currentWorkout?.name || 'Workout'}`,
+                            url: shareUrl
+                        });
+                        if (window.analyticsService) {
+                            window.analyticsService.trackShare('native', this.currentWorkout?.name);
+                        }
+                        console.log('✅ Native share completed');
+                    } catch (err) {
+                        if (err.name !== 'AbortError') {
+                            console.error('❌ Native share failed:', err);
+                        }
+                    }
+                };
+            } else {
+                btn.style.display = 'none';
+            }
         }
 
         resetPublicForm() {
@@ -853,6 +917,9 @@
                     button.classList.add('btn-outline-secondary');
                 }, 2000);
 
+                if (window.analyticsService) {
+                    window.analyticsService.trackCopyUrl(inputId.includes('public') ? 'public' : 'private');
+                }
                 console.log('✅ URL copied to clipboard');
 
             } catch (error) {

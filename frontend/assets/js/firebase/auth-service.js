@@ -71,9 +71,14 @@ class AuthService {
         const wasAuthenticated = this.isAuthenticated;
         this.currentUser = user;
         this.isAuthenticated = !!user;
-        
+
         console.log(`🔄 Auth state changed: ${this.isAuthenticated ? 'authenticated' : 'anonymous'}`);
-        
+
+        // Create/update user document in Firestore (fire-and-forget)
+        if (user && !user.isAnonymous && window.firebaseDb && window.firestoreFunctions) {
+            this._ensureUserDocument(user);
+        }
+
         // Notify all listeners
         this.authStateListeners.forEach(callback => {
             try {
@@ -82,11 +87,34 @@ class AuthService {
                 console.error('❌ Error in auth state listener:', error);
             }
         });
-        
+
         // Dispatch global event
         window.dispatchEvent(new CustomEvent('authStateChanged', {
             detail: { user, isAuthenticated: this.isAuthenticated }
         }));
+    }
+
+    async _ensureUserDocument(user) {
+        try {
+            const { doc, getDoc, setDoc, serverTimestamp } = window.firestoreFunctions;
+            const userDocRef = doc(window.firebaseDb, 'users', user.uid);
+            const docSnap = await getDoc(userDocRef);
+
+            const userData = {
+                email: user.email,
+                displayName: user.displayName || null,
+                last_login: serverTimestamp()
+            };
+
+            if (!docSnap.exists()) {
+                userData.created_at = serverTimestamp();
+            }
+
+            await setDoc(userDocRef, userData, { merge: true });
+            console.log('👤 User document synced');
+        } catch (error) {
+            console.warn('⚠️ Could not sync user document:', error.message);
+        }
     }
     
     // Public API Methods

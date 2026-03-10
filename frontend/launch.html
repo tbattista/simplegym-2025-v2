@@ -33,9 +33,31 @@
     "url": "https://fitnessfieldnotes.com"
   }
   </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Fitness Field Notes",
+    "description": "A minimalist workout log for lifters who just want to write down what they did. Build programs, track sessions, and see your progress.",
+    "url": "https://fitnessfieldnotes.com",
+    "applicationCategory": "HealthApplication",
+    "operatingSystem": "Web",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    },
+    "featureList": ["Workout Builder", "Live Session Tracking", "AI-Powered Logging", "Exercise Database", "Programs", "Export & Share"]
+  }
+  </script>
 
   <!-- Favicon -->
   <link rel="icon" type="image/svg+xml" href="/static/assets/img/favicon/favicon.svg">
+  <!-- PWA -->
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#C97C5D">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
 
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -405,6 +427,8 @@
     </div>
   </footer>
 
+  <!-- Analytics Service -->
+  <script defer src="/static/assets/js/services/analytics-service.js"></script>
   <!-- Animations JS (deferred) -->
   <script defer src="/static/assets/js/pages/landing-page-animations.js"></script>
 

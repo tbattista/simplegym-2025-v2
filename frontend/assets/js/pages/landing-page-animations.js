@@ -70,4 +70,24 @@
       }
     });
   });
+  // --- Analytics: Scroll Depth & CTA Tracking ---
+  if (window.analyticsService) {
+    // Track scroll depth through key sections
+    window.analyticsService.trackScrollDepth({
+      'features': 'features',
+      'how-it-works': 'how-it-works',
+      '.lp-cta': 'cta'
+    });
+
+    // Track CTA button clicks
+    document.querySelectorAll('.lp-btn-primary').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const section = btn.closest('section');
+        const location = section?.className?.includes('lp-hero') ? 'hero'
+          : section?.className?.includes('lp-cta') ? 'footer-cta'
+          : 'nav';
+        window.analyticsService.trackEvent('landing', 'cta-click', location);
+      });
+    });
+  }
 })();

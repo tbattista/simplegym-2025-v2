@@ -1,0 +1,39 @@
+{
+  "name": "Fitness Field Notes",
+  "short_name": "FFN",
+  "description": "Your digital gym notebook. A minimalist workout log for lifters who just want to write down what they did.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#C97C5D",
+  "icons": [
+    {
+      "src": "/static/assets/img/favicon/favicon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any"
+    },
+    {
+      "src": "/static/assets/img/favicon/icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/static/assets/img/favicon/icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    },
+    {
+      "src": "/static/assets/img/favicon/icon-maskable-192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/static/assets/img/favicon/icon-maskable-512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "maskable"
+    }
+  ],
+  "categories": ["fitness", "health", "sports"]
+}
