@@ -158,6 +158,72 @@ function _lookupGifUrl(exerciseName) {
 }
 
 /**
+ * Default PR display order by exercise name keywords.
+ * PRs matching these keywords (case-insensitive) are placed first in this order.
+ */
+const DEFAULT_PR_ORDER = ['bench', 'deadlift', 'squat', 'overhead press'];
+
+/**
+ * Get ordered records using: saved order from API > default keyword order > remaining alphabetically
+ */
+function _getOrderedRecords(records, savedRecordIds) {
+  if (!records || records.length === 0) return [];
+
+  // If we have a saved order from the backend, use it
+  if (savedRecordIds && savedRecordIds.length > 0) {
+    const recordMap = new Map(records.map(r => [r.id, r]));
+    const ordered = [];
+
+    // Add records in saved order
+    for (const id of savedRecordIds) {
+      const rec = recordMap.get(id);
+      if (rec) {
+        ordered.push(rec);
+        recordMap.delete(id);
+      }
+    }
+
+    // Append any remaining records not in the saved order
+    for (const rec of recordMap.values()) {
+      ordered.push(rec);
+    }
+
+    return ordered;
+  }
+
+  // No saved order — apply default keyword ordering
+  const nameLower = r => (r.exercise_name || '').toLowerCase();
+  const defaultMatched = [];
+  const remaining = [];
+
+  // Create slots for each default keyword
+  const slots = DEFAULT_PR_ORDER.map(() => []);
+
+  for (const rec of records) {
+    const name = nameLower(rec);
+    let matched = false;
+    for (let i = 0; i < DEFAULT_PR_ORDER.length; i++) {
+      if (name.includes(DEFAULT_PR_ORDER[i])) {
+        slots[i].push(rec);
+        matched = true;
+        break;
+      }
+    }
+    if (!matched) {
+      remaining.push(rec);
+    }
+  }
+
+  // Flatten slots then append remaining sorted alphabetically
+  const ordered = slots.flat();
+  remaining.sort((a, b) => (a.exercise_name || '').localeCompare(b.exercise_name || ''));
+  return ordered.concat(remaining);
+}
+
+/** Track drag-and-drop reorder mode */
+let _prReorderMode = false;
+
+/**
  * Render the PR chips section at the top of the history page
  * Called on page load and whenever PRs change
  */
@@ -176,12 +242,8 @@ async function renderPRSection() {
 
   container.style.display = '';
 
-  // Sort: most recent first
-  records.sort((a, b) => {
-    const dateA = new Date(a.marked_at || a.session_date || 0);
-    const dateB = new Date(b.marked_at || b.session_date || 0);
-    return dateB - dateA;
-  });
+  // Order records by saved order or default
+  const orderedRecords = _getOrderedRecords(records, state.prRecordIds);
 
   // Initialize exercise cache for GIF lookups
   await _initExerciseCacheForPR();
@@ -189,7 +251,7 @@ async function renderPRSection() {
   // Check stored visibility preference
   const isCollapsed = localStorage.getItem('ffn_pr_section_visible') === 'false';
 
-  const chips = records.map(pr => {
+  const chips = orderedRecords.map(pr => {
     const dateStr = _formatPRDate(pr.session_date || pr.marked_at);
     const prId = pr.id;
     const media = _lookupGifUrl(pr.exercise_name);
@@ -202,9 +264,12 @@ async function renderPRSection() {
     }
 
     return `
-      <div class="pr-chip" onclick="editPRValue('${escapeHtml(prId)}')" role="button" title="Click to edit PR value">
+      <div class="pr-chip${_prReorderMode ? ' pr-chip-reorder' : ''}" data-pr-id="${escapeHtml(prId)}"
+           ${_prReorderMode ? 'draggable="true"' : ''}
+           onclick="${_prReorderMode ? '' : `editPRValue('${escapeHtml(prId)}')`}"
+           role="button" title="${_prReorderMode ? 'Drag to reorder' : 'Click to edit PR value'}">
         <div class="pr-chip-top">
-          <i class="bx bxs-trophy text-warning"></i>
+          ${_prReorderMode ? '<i class="bx bx-grid-vertical text-secondary pr-drag-handle"></i>' : '<i class="bx bxs-trophy text-warning"></i>'}
           <span class="pr-chip-name">${escapeHtml(pr.exercise_name)}</span>
         </div>
         ${mediaHtml}
@@ -214,48 +279,345 @@ async function renderPRSection() {
     `;
   }).join('');
 
+  const reorderBtnClass = _prReorderMode ? 'btn-warning' : 'btn-outline-secondary';
+  const reorderBtnIcon = _prReorderMode ? 'bx-check' : 'bx-sort-alt-2';
+  const reorderBtnTitle = _prReorderMode ? 'Save order' : 'Reorder PRs';
+
   container.innerHTML = `
     <div class="pr-section-header">
       <span class="pr-section-label">
         <i class="bx bxs-trophy"></i> Personal Records
       </span>
-      <button class="pr-collapse-btn" onclick="togglePRSection()" title="Toggle PR section">
-        <i class="bx ${isCollapsed ? 'bx-chevron-down' : 'bx-chevron-up'}"></i>
-      </button>
+      <div class="d-flex align-items-center gap-1">
+        <button class="btn btn-xs ${reorderBtnClass} pr-reorder-btn" onclick="togglePRReorderMode()" title="${reorderBtnTitle}">
+          <i class="bx ${reorderBtnIcon}"></i>
+        </button>
+        <button class="pr-collapse-btn" onclick="togglePRSection()" title="Toggle PR section">
+          <i class="bx ${isCollapsed ? 'bx-chevron-down' : 'bx-chevron-up'}"></i>
+        </button>
+      </div>
     </div>
     <div class="pr-chips-collapsible${isCollapsed ? ' collapsed' : ''}">
       <div class="pr-chips-container">
-        <div class="pr-chips-scroll">
+        <div class="pr-chips-scroll" id="prChipsScroll">
           ${chips}
         </div>
       </div>
     </div>
   `;
+
+  // Attach drag-and-drop handlers if in reorder mode
+  if (_prReorderMode) {
+    _initPRDragAndDrop();
+  }
 }
 
 /**
- * Edit a PR value inline — click on a chip to change the value
+ * Toggle reorder mode on/off. When turning off, save the new order.
+ */
+async function togglePRReorderMode() {
+  if (_prReorderMode) {
+    // Turning off — save the current order
+    const scrollContainer = document.getElementById('prChipsScroll');
+    if (scrollContainer) {
+      const chips = scrollContainer.querySelectorAll('.pr-chip[data-pr-id]');
+      const newOrder = Array.from(chips).map(c => c.dataset.prId);
+      await _savePROrder(newOrder);
+    }
+    _prReorderMode = false;
+  } else {
+    _prReorderMode = true;
+  }
+  renderPRSection();
+}
+
+/**
+ * Save PR order to the backend
+ */
+async function _savePROrder(recordIds) {
+  try {
+    if (!window.dataManager) return;
+    const token = await window.dataManager.getAuthToken();
+
+    const response = await fetch('/api/v3/users/me/personal-records/reorder', {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ recordIds })
+    });
+
+    if (response.ok) {
+      // Update local state
+      const state = window.ffn.workoutHistory;
+      state.prRecordIds = recordIds;
+      if (window.showToast) window.showToast('PR order saved!', 'success');
+    } else {
+      if (window.showToast) window.showToast('Failed to save PR order', 'danger');
+    }
+  } catch (error) {
+    console.error('Error saving PR order:', error);
+    if (window.showToast) window.showToast('Failed to save PR order', 'danger');
+  }
+}
+
+/**
+ * Initialize drag-and-drop for PR chips reordering
+ */
+function _initPRDragAndDrop() {
+  const scrollContainer = document.getElementById('prChipsScroll');
+  if (!scrollContainer) return;
+
+  let draggedEl = null;
+
+  scrollContainer.addEventListener('dragstart', (e) => {
+    const chip = e.target.closest('.pr-chip[data-pr-id]');
+    if (!chip) return;
+    draggedEl = chip;
+    chip.classList.add('pr-chip-dragging');
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', chip.dataset.prId);
+  });
+
+  scrollContainer.addEventListener('dragend', (e) => {
+    if (draggedEl) {
+      draggedEl.classList.remove('pr-chip-dragging');
+      draggedEl = null;
+    }
+    // Remove all drop indicators
+    scrollContainer.querySelectorAll('.pr-chip-drag-over').forEach(el => {
+      el.classList.remove('pr-chip-drag-over');
+    });
+  });
+
+  scrollContainer.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+
+    const chip = e.target.closest('.pr-chip[data-pr-id]');
+    if (!chip || chip === draggedEl) return;
+
+    // Remove previous indicators
+    scrollContainer.querySelectorAll('.pr-chip-drag-over').forEach(el => {
+      el.classList.remove('pr-chip-drag-over');
+    });
+    chip.classList.add('pr-chip-drag-over');
+  });
+
+  scrollContainer.addEventListener('drop', (e) => {
+    e.preventDefault();
+    const targetChip = e.target.closest('.pr-chip[data-pr-id]');
+    if (!targetChip || !draggedEl || targetChip === draggedEl) return;
+
+    // Determine drop position (before or after target)
+    const rect = targetChip.getBoundingClientRect();
+    const midX = rect.left + rect.width / 2;
+    if (e.clientX < midX) {
+      scrollContainer.insertBefore(draggedEl, targetChip);
+    } else {
+      scrollContainer.insertBefore(draggedEl, targetChip.nextSibling);
+    }
+
+    targetChip.classList.remove('pr-chip-drag-over');
+  });
+
+  // Touch drag support for mobile
+  let touchDragEl = null;
+  let touchClone = null;
+  let touchStartX = 0;
+  let touchStartY = 0;
+
+  scrollContainer.addEventListener('touchstart', (e) => {
+    const chip = e.target.closest('.pr-chip[data-pr-id]');
+    if (!chip || !_prReorderMode) return;
+    touchDragEl = chip;
+    touchStartX = e.touches[0].clientX;
+    touchStartY = e.touches[0].clientY;
+  }, { passive: true });
+
+  scrollContainer.addEventListener('touchmove', (e) => {
+    if (!touchDragEl) return;
+
+    const dx = Math.abs(e.touches[0].clientX - touchStartX);
+    const dy = Math.abs(e.touches[0].clientY - touchStartY);
+
+    // Only start drag if horizontal movement exceeds threshold
+    if (dx < 10 && !touchClone) return;
+
+    e.preventDefault();
+
+    if (!touchClone) {
+      touchDragEl.classList.add('pr-chip-dragging');
+      touchClone = touchDragEl.cloneNode(true);
+      touchClone.classList.add('pr-chip-touch-clone');
+      document.body.appendChild(touchClone);
+    }
+
+    touchClone.style.left = (e.touches[0].clientX - 65) + 'px';
+    touchClone.style.top = (e.touches[0].clientY - 40) + 'px';
+
+    // Find drop target
+    const elemBelow = document.elementFromPoint(e.touches[0].clientX, e.touches[0].clientY);
+    const targetChip = elemBelow ? elemBelow.closest('.pr-chip[data-pr-id]') : null;
+
+    scrollContainer.querySelectorAll('.pr-chip-drag-over').forEach(el => {
+      el.classList.remove('pr-chip-drag-over');
+    });
+
+    if (targetChip && targetChip !== touchDragEl) {
+      targetChip.classList.add('pr-chip-drag-over');
+    }
+  }, { passive: false });
+
+  scrollContainer.addEventListener('touchend', (e) => {
+    if (!touchDragEl) return;
+
+    if (touchClone) {
+      // Find drop target
+      const lastTouch = e.changedTouches[0];
+      const elemBelow = document.elementFromPoint(lastTouch.clientX, lastTouch.clientY);
+      const targetChip = elemBelow ? elemBelow.closest('.pr-chip[data-pr-id]') : null;
+
+      if (targetChip && targetChip !== touchDragEl) {
+        const rect = targetChip.getBoundingClientRect();
+        const midX = rect.left + rect.width / 2;
+        if (lastTouch.clientX < midX) {
+          scrollContainer.insertBefore(touchDragEl, targetChip);
+        } else {
+          scrollContainer.insertBefore(touchDragEl, targetChip.nextSibling);
+        }
+      }
+
+      touchClone.remove();
+      touchClone = null;
+    }
+
+    touchDragEl.classList.remove('pr-chip-dragging');
+    scrollContainer.querySelectorAll('.pr-chip-drag-over').forEach(el => {
+      el.classList.remove('pr-chip-drag-over');
+    });
+
+    touchDragEl = null;
+  });
+}
+
+/**
+ * Format a date value for a date input (YYYY-MM-DD)
+ */
+function _toDateInputValue(dateStr) {
+  if (!dateStr) return '';
+  try {
+    const d = new Date(dateStr);
+    if (isNaN(d)) return '';
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
+  } catch { return ''; }
+}
+
+/**
+ * Edit a PR — click on a chip to change value and/or date
  */
 async function editPRValue(prId) {
   const state = window.ffn.workoutHistory;
   const pr = state.personalRecords.get(prId);
   if (!pr) return;
+  if (!window.ffnModalManager) return;
 
-  const newValue = await new Promise(resolve => {
-    window.ffnModalManager.prompt(
-      `Edit PR: ${pr.exercise_name}`,
-      `Enter new PR value (${pr.value_unit}):`,
-      pr.value,
-      (val) => resolve(val),
-      () => resolve(null)
-    );
+  const currentDate = pr.session_date || pr.marked_at || '';
+  const currentDateInput = _toDateInputValue(currentDate);
+  const currentDateDisplay = _formatPRDate(currentDate);
+
+  const result = await new Promise(resolve => {
+    const id = `pr-edit-modal-${Date.now()}`;
+    const valueId = `${id}-value`;
+    const dateId = `${id}-date`;
+
+    const body = `
+      <div class="mb-3">
+        <label for="${valueId}" class="form-label">PR Value (${escapeHtml(pr.value_unit)})</label>
+        <input type="text" class="form-control" id="${valueId}"
+               value="${String(pr.value).replace(/"/g, '&quot;')}">
+      </div>
+      <div class="mb-2">
+        <label for="${dateId}" class="form-label">PR Date</label>
+        <input type="date" class="form-control" id="${dateId}"
+               value="${currentDateInput}">
+        ${currentDateDisplay ? `<div class="form-text">Current: ${currentDateDisplay}</div>` : ''}
+      </div>
+    `;
+
+    let pendingResult = null;
+
+    const modal = window.ffnModalManager.create(id, {
+      title: `Edit PR: ${pr.exercise_name}`,
+      body: body,
+      size: 'sm',
+      buttons: [
+        { text: 'Cancel', class: 'btn-secondary', dismiss: true },
+        {
+          text: 'Save',
+          class: 'btn-primary',
+          onClick: () => {
+            const valInput = document.getElementById(valueId);
+            const dateInput = document.getElementById(dateId);
+            pendingResult = {
+              value: valInput ? valInput.value : '',
+              date: dateInput ? dateInput.value : ''
+            };
+            window.ffnModalManager.hide(id);
+          }
+        }
+      ]
+    });
+
+    modal.element.addEventListener('shown.bs.modal', () => {
+      const input = document.getElementById(valueId);
+      if (input) { input.focus(); input.select(); }
+    }, { once: true });
+
+    modal.element.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        const valInput = document.getElementById(valueId);
+        const dateInput = document.getElementById(dateId);
+        pendingResult = {
+          value: valInput ? valInput.value : '',
+          date: dateInput ? dateInput.value : ''
+        };
+        window.ffnModalManager.hide(id);
+      }
+    });
+
+    modal.element.addEventListener('hidden.bs.modal', () => {
+      window.ffnModalManager.destroy(id);
+      resolve(pendingResult);
+    }, { once: true });
+
+    window.ffnModalManager.show(id);
   });
 
-  if (newValue === null || newValue.trim() === '' || newValue.trim() === pr.value) return;
+  if (!result) return;
+
+  const newValue = result.value.trim();
+  const newDate = result.date; // YYYY-MM-DD or empty
+  if (!newValue) return;
+
+  // Check if anything actually changed
+  const valueChanged = newValue !== pr.value;
+  const dateChanged = newDate && newDate !== currentDateInput;
+  if (!valueChanged && !dateChanged) return;
 
   try {
     if (!window.dataManager) return;
     const token = await window.dataManager.getAuthToken();
+
+    const payload = { value: newValue, value_unit: pr.value_unit };
+    if (dateChanged) {
+      payload.session_date = new Date(newDate + 'T12:00:00').toISOString();
+    }
 
     const response = await fetch(`/api/v3/users/me/personal-records/${prId}`, {
       method: 'PUT',
@@ -263,20 +625,20 @@ async function editPRValue(prId) {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({
-        value: newValue.trim(),
-        value_unit: pr.value_unit
-      })
+      body: JSON.stringify(payload)
     });
 
     if (response.ok) {
       // Update local state
-      pr.value = newValue.trim();
-      pr.marked_at = new Date().toISOString();
+      if (valueChanged) pr.value = newValue;
+      if (dateChanged) {
+        const isoDate = new Date(newDate + 'T12:00:00').toISOString();
+        pr.session_date = isoDate;
+        pr.marked_at = isoDate;
+      }
 
       if (window.showToast) window.showToast(`PR updated for ${pr.exercise_name}!`, 'success');
       renderPRSection();
-      // Re-render exercise tab to reflect any changes
       if (window.renderExerciseTab) window.renderExerciseTab();
     } else {
       if (window.showToast) window.showToast('Failed to update PR', 'danger');
@@ -291,14 +653,33 @@ function _formatPRDate(dateStr) {
   if (!dateStr) return '';
   try {
     const date = new Date(dateStr);
+    if (isNaN(date)) return '';
+
+    // Format as mm/dd/yy
+    const mm = String(date.getMonth() + 1).padStart(2, '0');
+    const dd = String(date.getDate()).padStart(2, '0');
+    const yy = String(date.getFullYear()).slice(-2);
+    const dateFormatted = `${mm}/${dd}/${yy}`;
+
+    // Calculate relative time
     const now = new Date();
-    const diffDays = Math.floor((now - date) / (1000 * 60 * 60 * 24));
+    const diffMs = now - date;
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
-    if (diffDays === 0) return 'Today';
-    if (diffDays === 1) return 'Yesterday';
-    if (diffDays < 7) return `${diffDays}d ago`;
+    let relative;
+    if (diffDays === 0) relative = 'today';
+    else if (diffDays === 1) relative = '1 day ago';
+    else if (diffDays < 7) relative = `${diffDays} days ago`;
+    else {
+      const diffWeeks = Math.floor(diffDays / 7);
+      if (diffWeeks < 5) relative = diffWeeks === 1 ? '1 week ago' : `${diffWeeks} weeks ago`;
+      else {
+        const diffMonths = Math.floor(diffDays / 30);
+        relative = diffMonths <= 1 ? '1 month ago' : `${diffMonths} months ago`;
+      }
+    }
 
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    return `${dateFormatted} - ${relative}`;
   } catch {
     return '';
   }
@@ -322,5 +703,6 @@ function togglePRSection() {
 window.renderPRSection = renderPRSection;
 window.editPRValue = editPRValue;
 window.togglePRSection = togglePRSection;
+window.togglePRReorderMode = togglePRReorderMode;
 
-console.log('Workout History PR Section module loaded (v2.1.0)');
+console.log('Workout History PR Section module loaded (v3.0.0)');

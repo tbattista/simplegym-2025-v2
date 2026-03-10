@@ -5,6 +5,17 @@
  */
 
 /**
+ * Normalize a date string to ensure UTC dates without timezone markers
+ * are treated as UTC (append 'Z') rather than local time.
+ */
+function normalizeUtcDate(dateStr) {
+    if (typeof dateStr === 'string' && dateStr.includes('T') && !dateStr.endsWith('Z') && !/[+-]\d{2}:\d{2}$/.test(dateStr)) {
+        return dateStr + 'Z';
+    }
+    return dateStr;
+}
+
+/**
  * Load all recent sessions (cardio + workout) from the API
  */
 async function loadRecentCardioSessions() {
@@ -42,8 +53,8 @@ async function loadRecentCardioSessions() {
 
         // Merge and sort by date descending
         const sessions = [...cardioSessions, ...workoutSessions].sort((a, b) => {
-            const dateA = new Date(a.started_at || a.created_at);
-            const dateB = new Date(b.started_at || b.created_at);
+            const dateA = new Date(normalizeUtcDate(a.started_at || a.created_at));
+            const dateB = new Date(normalizeUtcDate(b.started_at || b.created_at));
             return dateB - dateA;
         });
 
@@ -172,7 +183,7 @@ function groupSessionsByTimePeriod(sessions) {
     const groupMap = {};
 
     sessions.forEach(session => {
-        const sessionDate = new Date(session.started_at || session.created_at);
+        const sessionDate = new Date(normalizeUtcDate(session.started_at || session.created_at));
         const label = getTimePeriodLabel(sessionDate, now);
 
         if (!groupMap[label]) {
@@ -437,7 +448,7 @@ function formatCardioExerciseDuration(ex) {
  * Format session date for display
  */
 function formatSessionDate(dateStr) {
-    const date = new Date(dateStr);
+    const date = new Date(normalizeUtcDate(dateStr));
     const diffDays = getCalendarDaysAgo(dateStr);
 
     if (diffDays === 0) {

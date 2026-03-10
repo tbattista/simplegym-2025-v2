@@ -194,6 +194,50 @@
 }
 
 /* ============================================
+   Reorder Mode & Drag-and-Drop
+   ============================================ */
+
+.pr-reorder-btn {
+  padding: 0.1rem 0.35rem;
+  font-size: 0.8rem;
+  line-height: 1;
+  border-radius: 0.25rem;
+}
+
+.pr-chip-reorder {
+  cursor: grab;
+  border-style: dashed;
+}
+
+.pr-chip-reorder:active {
+  cursor: grabbing;
+}
+
+.pr-drag-handle {
+  font-size: 1rem;
+  cursor: grab;
+}
+
+.pr-chip-dragging {
+  opacity: 0.4;
+  transform: scale(0.95);
+}
+
+.pr-chip-drag-over {
+  border-left: 3px solid #007bff !important;
+  box-shadow: -2px 0 8px rgba(0, 123, 255, 0.3);
+}
+
+.pr-chip-touch-clone {
+  position: fixed;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0.85;
+  transform: scale(1.05);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+}
+
+/* ============================================
    Dark Theme
    ============================================ */
 

@@ -1067,10 +1067,17 @@ class UpdatePersonalRecordRequest(BaseModel):
     session_date: Optional[datetime] = Field(None, description="Date of the session")
 
 
+class ReorderPersonalRecordsRequest(BaseModel):
+    """Request model for reordering personal records"""
+
+    recordIds: List[str] = Field(..., description="Ordered list of PR IDs")
+
+
 class PersonalRecordsResponse(BaseModel):
     """Response model for user's personal records"""
 
     records: List[PersonalRecord] = Field(..., description="List of personal records")
+    recordIds: List[str] = Field(default_factory=list, description="Ordered list of PR IDs for display order")
     count: int = Field(..., description="Total number of PRs")
     lastUpdated: datetime = Field(..., description="When PRs were last updated")
 
@@ -1472,7 +1479,7 @@ class CardioSession(BaseModel):
     external_id: Optional[str] = Field(None, description="ID from external source for deduplication")
 
     # Metadata
-    created_at: datetime = Field(default_factory=datetime.now, description="When this record was created")
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc), description="When this record was created")
     status: str = Field(default="completed", description="Session status: 'completed' or 'abandoned'")
 
 
