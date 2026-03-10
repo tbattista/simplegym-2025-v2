@@ -576,9 +576,12 @@
             updateStats(data.total_count, data.workouts.length);
             updateFilterBadge();
 
-            // Use WorkoutGrid component to render
+            // Use WorkoutGrid component to render with server-side pagination info
             if (workoutGrid) {
-                workoutGrid.setData(data.workouts);
+                workoutGrid.setData(data.workouts, {
+                    totalItems: data.total_count,
+                    currentPage: data.page
+                });
             }
 
         } catch (error) {

@@ -37,6 +37,7 @@ class WorkoutGrid {
         // State
         this.workouts = [];
         this.currentPage = 1;
+        this.totalItems = null; // For server-side pagination (null = use workouts.length)
         this.cards = [];
         
         // DOM elements
@@ -126,10 +127,19 @@ class WorkoutGrid {
     /**
      * Set workout data
      * @param {Array} workouts
+     * @param {Object} [paginationInfo] - Server-side pagination info
+     * @param {number} [paginationInfo.totalItems] - Total items on server
+     * @param {number} [paginationInfo.currentPage] - Current page from server
      */
-    setData(workouts) {
+    setData(workouts, paginationInfo = null) {
         this.workouts = workouts;
-        this.currentPage = 1;
+        if (paginationInfo) {
+            this.totalItems = paginationInfo.totalItems ?? null;
+            this.currentPage = paginationInfo.currentPage ?? 1;
+        } else {
+            this.totalItems = null;
+            this.currentPage = 1;
+        }
         this.render();
     }
     
@@ -140,15 +150,15 @@ class WorkoutGrid {
     setPage(page) {
         const totalPages = this.getTotalPages();
         if (page < 1 || page > totalPages) return;
-        
+
         this.currentPage = page;
-        this.render();
-        
-        // Scroll to top of grid
-        this.container.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        
+
         if (this.config.onPageChange) {
+            // For server-side pagination, the callback will reload data
             this.config.onPageChange(page);
+        } else {
+            // Client-side pagination - re-render locally
+            this.render();
         }
     }
     
@@ -212,10 +222,16 @@ class WorkoutGrid {
         this.cards = [];
         this.elements.grid.innerHTML = '';
 
-        // Calculate pagination
-        const startIndex = (this.currentPage - 1) * this.config.pageSize;
-        const endIndex = startIndex + this.config.pageSize;
-        const pageWorkouts = this.workouts.slice(startIndex, endIndex);
+        // If server-side pagination, use all workouts (already paged by server)
+        // Otherwise, slice for client-side pagination
+        let pageWorkouts;
+        if (this.totalItems !== null) {
+            pageWorkouts = this.workouts;
+        } else {
+            const startIndex = (this.currentPage - 1) * this.config.pageSize;
+            const endIndex = startIndex + this.config.pageSize;
+            pageWorkouts = this.workouts.slice(startIndex, endIndex);
+        }
 
         // Create and render cards (wrapped in column divs for proper grid stretching)
         pageWorkouts.forEach(workout => {
@@ -374,7 +390,8 @@ class WorkoutGrid {
      * @returns {number}
      */
     getTotalPages() {
-        return Math.ceil(this.workouts.length / this.config.pageSize);
+        const total = this.totalItems !== null ? this.totalItems : this.workouts.length;
+        return Math.ceil(total / this.config.pageSize);
     }
     
     /**
@@ -382,6 +399,9 @@ class WorkoutGrid {
      * @returns {Array}
      */
     getDisplayedData() {
+        if (this.totalItems !== null) {
+            return this.workouts; // Already paged by server
+        }
         const startIndex = (this.currentPage - 1) * this.config.pageSize;
         const endIndex = startIndex + this.config.pageSize;
         return this.workouts.slice(startIndex, endIndex);
