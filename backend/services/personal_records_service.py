@@ -238,6 +238,45 @@ class PersonalRecordsService:
             logger.error(f"Error updating personal record for user {user_id}: {str(e)}")
             return False
 
+    def reorder_personal_records(self, user_id: str, record_ids: List[str]) -> bool:
+        """Reorder personal records by updating the recordIds array"""
+        if not self.is_available():
+            return False
+
+        try:
+            doc_ref = self._get_doc_ref(user_id)
+            doc = doc_ref.get()
+
+            if not doc.exists:
+                return False
+
+            data = doc.to_dict()
+            existing_ids = set(data.get('recordIds', []))
+
+            # Validate all provided IDs exist
+            for pr_id in record_ids:
+                if pr_id not in existing_ids:
+                    logger.warning(f"Reorder: PR ID {pr_id} not found for user {user_id}")
+                    return False
+
+            # Append any existing IDs not in the new order (safety net)
+            final_order = list(record_ids)
+            for existing_id in data.get('recordIds', []):
+                if existing_id not in final_order:
+                    final_order.append(existing_id)
+
+            doc_ref.update({
+                'recordIds': final_order,
+                'lastUpdated': firestore.SERVER_TIMESTAMP,
+            })
+
+            logger.info(f"Reordered PRs for user {user_id}: {final_order}")
+            return True
+
+        except Exception as e:
+            logger.error(f"Error reordering personal records for user {user_id}: {str(e)}")
+            return False
+
     def bulk_check_personal_records(self, user_id: str, exercise_names: List[str]) -> Dict[str, dict]:
         """
         Check PR status for multiple exercise names.

@@ -6,7 +6,7 @@ Handles marking, removing, and querying personal records
 from fastapi import APIRouter, Depends, HTTPException
 from typing import Dict, List
 import logging
-from ..models import PersonalRecordsResponse, MarkPersonalRecordRequest, UpdatePersonalRecordRequest
+from ..models import PersonalRecordsResponse, MarkPersonalRecordRequest, UpdatePersonalRecordRequest, ReorderPersonalRecordsRequest
 from ..api.dependencies import get_personal_records_service, require_auth
 
 router = APIRouter(prefix="/api/v3/users/me", tags=["Personal Records"])
@@ -24,6 +24,7 @@ async def get_user_personal_records(
         prs = pr_service.get_user_personal_records(user_id)
         return PersonalRecordsResponse(
             records=list(prs.records.values()),
+            recordIds=prs.recordIds,
             count=prs.count,
             lastUpdated=prs.lastUpdated
         )
@@ -112,6 +113,27 @@ async def remove_personal_record(
     except Exception as e:
         logger.error(f"Error removing personal record: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error removing personal record: {str(e)}")
+
+
+@router.put("/personal-records/reorder")
+async def reorder_personal_records(
+    request: ReorderPersonalRecordsRequest,
+    user_id: str = Depends(require_auth),
+    pr_service=Depends(get_personal_records_service)
+):
+    """Reorder personal records display order"""
+    try:
+        success = pr_service.reorder_personal_records(user_id, request.recordIds)
+        if not success:
+            raise HTTPException(status_code=400, detail="Failed to reorder personal records")
+
+        return {"message": "Personal records reordered", "recordIds": request.recordIds}
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error reordering personal records: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error reordering personal records: {str(e)}")
 
 
 @router.post("/personal-records/check")

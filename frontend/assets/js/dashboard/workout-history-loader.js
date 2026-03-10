@@ -348,6 +348,9 @@ async function fetchPersonalRecords() {
       state.prExerciseNames.add(pr.exercise_name.toLowerCase());
     });
 
+    // Store ordered record IDs for display order
+    state.prRecordIds = data.recordIds || [];
+
     console.log(`📊 Loaded ${state.personalRecords.size} personal records`);
   } catch (error) {
     console.warn('Could not load personal records:', error.message);
