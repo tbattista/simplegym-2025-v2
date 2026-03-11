@@ -198,9 +198,9 @@
                   <button id="homePrimaryCTA" class="btn btn-primary flex-fill py-3 home-primary-cta" onclick="handlePrimaryCTA()">
                     Start Training
                   </button>
-                  <a href="activity-log.html" class="btn btn-outline-primary flex-fill py-3">
+                  <button type="button" id="homeQuickLogBtn" class="btn btn-outline-primary flex-fill py-3">
                     <i class="bx bx-edit me-1"></i>Quick Log
-                  </a>
+                  </button>
                 </div>
 
                 <!-- Section 5: Favorites -->
@@ -812,10 +812,31 @@
     <!-- Activity Block Chart Component -->
     <script src="/static/assets/js/components/activity-block-chart.js"></script>
 
+    <!-- Quick Log (Universal Logger) dependencies -->
+    <script src="/static/assets/js/services/activity-type-registry.js?v=1.0.0"></script>
+    <script src="/static/assets/js/services/universal-log-service.js?v=1"></script>
+    <script type="module" src="/static/assets/js/components/offcanvas/offcanvas-universal-logger.js?v=1.1"></script>
+
     <!-- Home Page Logic (extracted from inline) -->
     <script src="/static/assets/js/pages/home-page.js?v=20260216-02"></script>
 
     <!-- Desktop Home Adapter (must load after home-page.js) -->
     <script src="/static/assets/js/pages/desktop-home-adapter.js?v=20260216-02"></script>
+
+    <!-- Quick Log button handler -->
+    <script type="module">
+      document.getElementById('homeQuickLogBtn')?.addEventListener('click', () => {
+        if (typeof window.createUniversalLogger === 'function') {
+          const { offcanvas } = window.createUniversalLogger({
+            onSaveComplete: () => {
+              // Refresh recent activity after logging
+              if (typeof window.loadRecentActivity === 'function') window.loadRecentActivity();
+              if (typeof window.loadWeeklyProgress === 'function') window.loadWeeklyProgress();
+            }
+          });
+          if (offcanvas) offcanvas.show();
+        }
+      });
+    </script>
   </body>
 </html>

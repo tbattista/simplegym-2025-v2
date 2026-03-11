@@ -64,6 +64,49 @@ async def mark_personal_record(
         raise HTTPException(status_code=500, detail=f"Error marking personal record: {str(e)}")
 
 
+@router.put("/personal-records/reorder")
+async def reorder_personal_records(
+    request: ReorderPersonalRecordsRequest,
+    user_id: str = Depends(require_auth),
+    pr_service=Depends(get_personal_records_service)
+):
+    """Reorder personal records display order"""
+    try:
+        success = pr_service.reorder_personal_records(user_id, request.recordIds)
+        if not success:
+            raise HTTPException(status_code=400, detail="Failed to reorder personal records")
+
+        return {"message": "Personal records reordered", "recordIds": request.recordIds}
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error reordering personal records: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error reordering personal records: {str(e)}")
+
+
+@router.post("/personal-records/check")
+async def check_personal_records(
+    request: Dict[str, List[str]],
+    user_id: str = Depends(require_auth),
+    pr_service=Depends(get_personal_records_service)
+):
+    """Bulk check which exercises have personal records"""
+    try:
+        exercise_names = request.get('exerciseNames', [])
+        if not exercise_names:
+            raise HTTPException(status_code=400, detail="exerciseNames array is required")
+
+        result = pr_service.bulk_check_personal_records(user_id, exercise_names)
+        return {"personalRecords": result}
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error checking personal records: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error checking personal records: {str(e)}")
+
+
 @router.put("/personal-records/{pr_id}")
 async def update_personal_record(
     pr_id: str,
@@ -113,46 +156,3 @@ async def remove_personal_record(
     except Exception as e:
         logger.error(f"Error removing personal record: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error removing personal record: {str(e)}")
-
-
-@router.put("/personal-records/reorder")
-async def reorder_personal_records(
-    request: ReorderPersonalRecordsRequest,
-    user_id: str = Depends(require_auth),
-    pr_service=Depends(get_personal_records_service)
-):
-    """Reorder personal records display order"""
-    try:
-        success = pr_service.reorder_personal_records(user_id, request.recordIds)
-        if not success:
-            raise HTTPException(status_code=400, detail="Failed to reorder personal records")
-
-        return {"message": "Personal records reordered", "recordIds": request.recordIds}
-
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"Error reordering personal records: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Error reordering personal records: {str(e)}")
-
-
-@router.post("/personal-records/check")
-async def check_personal_records(
-    request: Dict[str, List[str]],
-    user_id: str = Depends(require_auth),
-    pr_service=Depends(get_personal_records_service)
-):
-    """Bulk check which exercises have personal records"""
-    try:
-        exercise_names = request.get('exerciseNames', [])
-        if not exercise_names:
-            raise HTTPException(status_code=400, detail="exerciseNames array is required")
-
-        result = pr_service.bulk_check_personal_records(user_id, exercise_names)
-        return {"personalRecords": result}
-
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"Error checking personal records: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Error checking personal records: {str(e)}")
