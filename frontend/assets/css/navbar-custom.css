@@ -859,7 +859,23 @@ body.mobile-search-active {
 
 @media (max-width: 575.98px) {
     .navbar-cta-btn {
-        font-size: 0.75rem;
-        padding: 0.25rem 0.75rem;
+        font-size: 0.6875rem;
+        padding: 0.25rem 0.625rem;
+    }
+}
+
+/* ============================================
+   LANDING PAGE NAVBAR OVERRIDES
+   Hide hamburger menu when sidebar is removed
+   ============================================ */
+
+html.layout-without-menu .layout-menu-toggle {
+    display: none !important;
+}
+
+/* Give brand text more room on mobile when CTA is present */
+@media (max-width: 575.98px) {
+    html.layout-without-menu .navbar-brand-text {
+        font-size: 0.875rem;
     }
 }

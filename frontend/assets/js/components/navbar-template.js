@@ -85,9 +85,9 @@ function getNavbarHTML(pageTitle = 'Fitness Field Notes', pageIcon = 'bx-home', 
                 
                 <!-- Landing CTA (visible only when signed out) -->
                 <li class="nav-item me-2 auth-sign-in">
-                    <button class="btn btn-primary btn-sm navbar-cta-btn" onclick="showAuthModal('signup')">
+                    <a href="/workout-builder.html" class="btn btn-primary btn-sm navbar-cta-btn">
                         Start Logging Free
-                    </button>
+                    </a>
                 </li>
 
                 <!-- Feedback Button (hidden when signed out) -->
@@ -101,11 +101,11 @@ function getNavbarHTML(pageTitle = 'Fitness Field Notes', pageIcon = 'bx-home', 
                     </a>
                 </li>
                 
-                <!-- Dark Mode Toggle -->
-                <li class="nav-item me-2 me-xl-3">
-                    <a class="nav-link style-switcher-toggle hide-arrow" 
-                       href="javascript:void(0);" 
-                       id="navbarDarkModeToggle" 
+                <!-- Dark Mode Toggle (hidden when signed out) -->
+                <li class="nav-item me-2 me-xl-3 auth-sign-out d-none">
+                    <a class="nav-link style-switcher-toggle hide-arrow"
+                       href="javascript:void(0);"
+                       id="navbarDarkModeToggle"
                        title="Toggle theme">
                         <i class="bx bx-sm" id="navbarThemeIcon"></i>
                     </a>
