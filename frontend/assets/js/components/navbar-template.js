@@ -85,8 +85,8 @@ function getNavbarHTML(pageTitle = 'Fitness Field Notes', pageIcon = 'bx-home', 
                 
                 <!-- Landing CTA (visible only when signed out) -->
                 <li class="nav-item me-2 auth-sign-in">
-                    <a href="/workout-builder.html" class="btn btn-primary btn-sm navbar-cta-btn">
-                        Start Logging Free
+                    <a href="/public-workouts.html" class="btn btn-primary btn-sm navbar-cta-btn">
+                        Browse Workouts
                     </a>
                 </li>
 
