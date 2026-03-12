@@ -83,8 +83,15 @@ function getNavbarHTML(pageTitle = 'Fitness Field Notes', pageIcon = 'bx-home', 
                 <!-- Right Section: Utility Icons -->
                 <ul class="navbar-nav flex-row align-items-center ms-auto">
                 
-                <!-- Feedback Button -->
-                <li class="nav-item me-2 me-xl-3">
+                <!-- Landing CTA (visible only when signed out) -->
+                <li class="nav-item me-2 auth-sign-in">
+                    <button class="btn btn-primary btn-sm navbar-cta-btn" onclick="showAuthModal('signup')">
+                        Start Logging Free
+                    </button>
+                </li>
+
+                <!-- Feedback Button (hidden when signed out) -->
+                <li class="nav-item me-2 me-xl-3 auth-sign-out d-none">
                     <a class="nav-link hide-arrow"
                        href="javascript:void(0);"
                        id="navbarFeedbackBtn"

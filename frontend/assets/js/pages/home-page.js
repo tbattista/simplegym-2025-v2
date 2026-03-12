@@ -19,6 +19,22 @@
     let workoutDetailOffcanvas = null;
     let activityBlockChart = null;
 
+    // --- Landing Layout (sidebar toggle for unauthenticated visitors) ---
+    function updateLandingLayout(isAuthenticated) {
+        const layoutMenu = document.getElementById('layout-menu');
+        const menuToggle = document.querySelector('.layout-menu-toggle');
+
+        if (isAuthenticated) {
+            document.documentElement.classList.remove('layout-without-menu');
+            if (layoutMenu) layoutMenu.style.display = '';
+            if (menuToggle) menuToggle.style.display = '';
+        } else {
+            document.documentElement.classList.add('layout-without-menu');
+            if (layoutMenu) layoutMenu.style.display = 'none';
+            if (menuToggle) menuToggle.style.display = 'none';
+        }
+    }
+
     // --- Initialization ---
     async function initHomePage() {
         console.log('Initializing Home Page...');
@@ -42,6 +58,7 @@
         // Check auth state
         const checkAuthAndRender = async () => {
             const user = window.firebaseAuth.currentUser;
+            updateLandingLayout(!!user);
 
             if (user) {
                 authenticatedDashboard.style.display = 'block';

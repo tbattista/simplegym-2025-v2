@@ -107,6 +107,10 @@
       (function() {
         if (window.innerWidth >= 992) document.documentElement.classList.add('desktop-view');
         else document.documentElement.classList.add('mobile-view');
+        // Hide sidebar by default on home page until auth resolves (prevents FOUC)
+        var p = window.location.pathname;
+        if (p === '/' || p.endsWith('index.html') || p.endsWith('/'))
+          document.documentElement.classList.add('layout-without-menu');
       })();
     </script>
 
@@ -256,115 +260,55 @@
               <div id="unauthenticatedWelcome" style="display: none;">
 
                 <!-- Hero -->
-                <div class="text-center mb-4 pt-5">
-                  <span class="badge rounded-pill bg-label-primary landing-hero-badge mb-3 px-3 py-2">Your Digital Gym Notebook</span>
-                  <h1 class="fw-bold mb-2" style="font-size: 1.75rem;">Track Workouts Like You Would on Paper</h1>
-                  <p class="text-muted mb-4 px-2">A minimalist workout log for lifters who just want to write down what they did. Build programs, track sessions, and see your progress over time.</p>
-                  <div class="d-flex gap-2 justify-content-center flex-wrap">
-                    <button class="btn btn-primary btn-lg" onclick="showAuthModal('signup')">
-                      <i class="bx bx-play me-1"></i> Get Started Free
-                    </button>
-                    <a href="workout-builder.html" class="btn btn-outline-secondary btn-lg">Try It Out</a>
-                  </div>
+                <div class="landing-hero text-center pt-5 pb-4 px-2">
+                  <h1 class="landing-hero-headline fw-bold mb-3">
+                    Track workouts like a notebook.<br>But smarter.
+                  </h1>
+                  <p class="text-muted mb-4 landing-hero-subtext">
+                    The fastest way to log workouts without complicated apps.
+                  </p>
+                  <button class="btn btn-primary btn-lg landing-cta-primary" onclick="showAuthModal('signup')">
+                    Start Logging Free
+                  </button>
                 </div>
 
-                <!-- Stats Bar -->
-                <div class="card mb-4">
-                  <div class="card-body py-3">
-                    <div class="row text-center g-0">
-                      <div class="col-4">
-                        <div class="fw-bold fs-5">1,600+</div>
-                        <small class="text-muted">Exercises</small>
-                      </div>
-                      <div class="col-4 border-start border-end">
-                        <div class="fw-bold fs-5">100%</div>
-                        <small class="text-muted">Free Forever</small>
-                      </div>
-                      <div class="col-4">
-                        <div class="fw-bold fs-5">No</div>
-                        <small class="text-muted">Account Needed</small>
-                      </div>
+                <!-- Product Preview -->
+                <div class="landing-product-preview mb-5">
+                  <div class="landing-screenshot-container">
+                    <div class="landing-screenshot-placeholder">
+                      <i class="bx bx-devices" style="font-size: 3rem; opacity: 0.3;"></i>
+                      <p class="text-muted small mb-0 mt-2">Dashboard preview coming soon</p>
                     </div>
                   </div>
                 </div>
 
-                <!-- Feature Grid -->
-                <h5 class="text-center fw-bold mb-3">Everything you need to train smarter</h5>
-                <div class="row g-3 mb-4">
-                  <div class="col-12">
-                    <div class="card landing-inline-feature">
-                      <div class="card-body py-3 px-3">
-                        <div class="d-flex align-items-center gap-3">
-                          <div class="landing-icon-badge landing-icon-badge-clay"><i class="bx bx-edit-alt"></i></div>
-                          <div>
-                            <h6 class="mb-1 fw-semibold">Workout Builder</h6>
-                            <p class="text-muted small mb-0">Create custom templates with exercises, sets, reps, and rest times.</p>
-                          </div>
+                <!-- 3 Core Benefits -->
+                <div class="mb-5">
+                  <div class="row g-3">
+                    <div class="col-12">
+                      <div class="landing-benefit-card d-flex align-items-center gap-3 p-3">
+                        <div class="landing-icon-badge landing-icon-badge-clay"><i class="bx bx-timer"></i></div>
+                        <div>
+                          <h6 class="fw-semibold mb-1">Log workouts in seconds</h6>
+                          <p class="text-muted small mb-0">Quick entry designed for the gym floor. No fumbling with complicated menus.</p>
                         </div>
                       </div>
                     </div>
-                  </div>
-                  <div class="col-12">
-                    <div class="card landing-inline-feature">
-                      <div class="card-body py-3 px-3">
-                        <div class="d-flex align-items-center gap-3">
-                          <div class="landing-icon-badge landing-icon-badge-sage"><i class="bx bx-timer"></i></div>
-                          <div>
-                            <h6 class="mb-1 fw-semibold">Live Session Tracking</h6>
-                            <p class="text-muted small mb-0">Track every rep with rest timers, weight progression, and auto-complete.</p>
-                          </div>
+                    <div class="col-12">
+                      <div class="landing-benefit-card d-flex align-items-center gap-3 p-3">
+                        <div class="landing-icon-badge landing-icon-badge-sage"><i class="bx bx-line-chart"></i></div>
+                        <div>
+                          <h6 class="fw-semibold mb-1">Track your strength progress</h6>
+                          <p class="text-muted small mb-0">See your lifts grow over time with automatic progress tracking.</p>
                         </div>
                       </div>
                     </div>
-                  </div>
-                  <div class="col-12">
-                    <div class="card landing-inline-feature">
-                      <div class="card-body py-3 px-3">
-                        <div class="d-flex align-items-center gap-3">
-                          <div class="landing-icon-badge landing-icon-badge-amber"><i class="bx bx-brain"></i></div>
-                          <div>
-                            <h6 class="mb-1 fw-semibold">AI-Powered Logging</h6>
-                            <p class="text-muted small mb-0">Snap a photo and AI turns it into a structured workout log.</p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="col-12">
-                    <div class="card landing-inline-feature">
-                      <div class="card-body py-3 px-3">
-                        <div class="d-flex align-items-center gap-3">
-                          <div class="landing-icon-badge landing-icon-badge-slate"><i class="bx bx-search-alt"></i></div>
-                          <div>
-                            <h6 class="mb-1 fw-semibold">Exercise Database</h6>
-                            <p class="text-muted small mb-0">Browse 1,600+ exercises by muscle group, equipment, and difficulty.</p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="col-12">
-                    <div class="card landing-inline-feature">
-                      <div class="card-body py-3 px-3">
-                        <div class="d-flex align-items-center gap-3">
-                          <div class="landing-icon-badge landing-icon-badge-clay"><i class="bx bx-folder"></i></div>
-                          <div>
-                            <h6 class="mb-1 fw-semibold">Programs</h6>
-                            <p class="text-muted small mb-0">Organize workouts into structured training programs.</p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="col-12">
-                    <div class="card landing-inline-feature">
-                      <div class="card-body py-3 px-3">
-                        <div class="d-flex align-items-center gap-3">
-                          <div class="landing-icon-badge landing-icon-badge-sage"><i class="bx bx-share-alt"></i></div>
-                          <div>
-                            <h6 class="mb-1 fw-semibold">Export & Share</h6>
-                            <p class="text-muted small mb-0">Share as PDF, printable logs, social images, or plain text.</p>
-                          </div>
+                    <div class="col-12">
+                      <div class="landing-benefit-card d-flex align-items-center gap-3 p-3">
+                        <div class="landing-icon-badge landing-icon-badge-amber"><i class="bx bx-folder"></i></div>
+                        <div>
+                          <h6 class="fw-semibold mb-1">Build training programs</h6>
+                          <p class="text-muted small mb-0">Organize workouts into structured programs that match your goals.</p>
                         </div>
                       </div>
                     </div>
@@ -372,36 +316,62 @@
                 </div>
 
                 <!-- How It Works -->
-                <h5 class="text-center fw-bold mb-3">Start logging in 3 steps</h5>
-                <div class="row g-3 mb-4">
+                <div class="text-center mb-4">
+                  <h3 class="fw-bold mb-1">How it works</h3>
+                </div>
+                <div class="row g-3 mb-5">
                   <div class="col-4 text-center">
                     <div class="landing-step-number mx-auto"><i class="bx bx-dumbbell"></i></div>
                     <h6 class="fw-semibold mb-1 small">Create a workout</h6>
                   </div>
                   <div class="col-4 text-center">
                     <div class="landing-step-number mx-auto"><i class="bx bx-play-circle"></i></div>
-                    <h6 class="fw-semibold mb-1 small">Hit the gym</h6>
+                    <h6 class="fw-semibold mb-1 small">Log sets at the gym</h6>
                   </div>
                   <div class="col-4 text-center">
                     <div class="landing-step-number mx-auto"><i class="bx bx-line-chart"></i></div>
-                    <h6 class="fw-semibold mb-1 small">Track progress</h6>
+                    <h6 class="fw-semibold mb-1 small">Watch your progress grow</h6>
+                  </div>
+                </div>
+
+                <!-- Mid-page CTA -->
+                <div class="text-center mb-5">
+                  <button class="btn btn-primary btn-lg landing-cta-primary" onclick="showAuthModal('signup')">
+                    Start Logging Free
+                  </button>
+                </div>
+
+                <!-- Social Proof -->
+                <div class="mb-5">
+                  <h5 class="text-center fw-bold mb-4">What lifters are saying</h5>
+                  <div class="row g-3">
+                    <div class="col-12">
+                      <div class="landing-testimonial-card p-3">
+                        <p class="mb-2 fst-italic">"Finally a workout app that doesn't try to do everything. I just log my sets and go."</p>
+                        <small class="text-muted fw-semibold">— Alex R., Intermediate Lifter</small>
+                      </div>
+                    </div>
+                    <div class="col-12">
+                      <div class="landing-testimonial-card p-3">
+                        <p class="mb-2 fst-italic">"I switched from a spreadsheet and never looked back. So much faster."</p>
+                        <small class="text-muted fw-semibold">— Jamie T., Powerlifter</small>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
                 <!-- Final CTA -->
-                <div class="card landing-cta-card">
-                  <div class="card-body text-center py-4">
-                    <h5 class="fw-bold mb-2">Start tracking your workouts today</h5>
-                    <p class="text-muted mb-3">Free forever. No credit card required.</p>
-                    <button class="btn btn-primary btn-lg" onclick="showAuthModal('signup')">
-                      <i class="bx bx-play me-1"></i> Get Started Free
-                    </button>
-                    <div class="mt-3">
-                      <small class="text-muted">
-                        Already have an account?
-                        <a href="#" onclick="showAuthModal('signin'); return false;" class="text-decoration-none fw-semibold">Sign in</a>
-                      </small>
-                    </div>
+                <div class="landing-final-cta text-center py-5 mb-4">
+                  <h4 class="fw-bold mb-2">Start tracking your workouts today</h4>
+                  <p class="text-muted mb-4">Free forever. No credit card required.</p>
+                  <button class="btn btn-primary btn-lg landing-cta-primary" onclick="showAuthModal('signup')">
+                    Start Logging Free
+                  </button>
+                  <div class="mt-3">
+                    <small class="text-muted">
+                      Already have an account?
+                      <a href="#" onclick="showAuthModal('signin'); return false;" class="text-decoration-none fw-semibold">Sign in</a>
+                    </small>
                   </div>
                 </div>
 
@@ -566,95 +536,50 @@
                 <div id="desktopUnauthWelcome" style="display: none;">
 
                   <!-- Hero -->
-                  <div class="text-center mb-5 pt-5" style="max-width: 700px; margin-left: auto; margin-right: auto;">
-                    <span class="badge rounded-pill bg-label-primary landing-hero-badge mb-3 px-3 py-2">Your Digital Gym Notebook</span>
-                    <h1 class="fw-bold mb-3" style="font-size: 2.5rem;">Track Workouts Like You Would on Paper</h1>
-                    <p class="text-muted mb-4 fs-5">A minimalist workout log for lifters who just want to write down what they did. Build programs, track sessions, and see your progress over time.</p>
-                    <div class="d-flex gap-2 justify-content-center">
-                      <button class="btn btn-primary btn-lg" onclick="showAuthModal('signup')">
-                        <i class="bx bx-play me-1"></i> Get Started Free
-                      </button>
-                      <a href="workout-builder.html" class="btn btn-outline-secondary btn-lg">Try It Out</a>
-                    </div>
+                  <div class="landing-hero text-center mb-5 pt-5" style="max-width: 800px; margin-left: auto; margin-right: auto;">
+                    <h1 class="landing-hero-headline fw-bold mb-3">
+                      Track workouts like a notebook.<br>But smarter.
+                    </h1>
+                    <p class="text-muted mb-4 landing-hero-subtext">
+                      The fastest way to log workouts without complicated apps.
+                    </p>
+                    <button class="btn btn-primary btn-lg landing-cta-primary" onclick="showAuthModal('signup')">
+                      Start Logging Free
+                    </button>
                   </div>
 
-                  <!-- Stats Bar -->
-                  <div class="card mb-5">
-                    <div class="card-body py-3">
-                      <div class="row text-center g-0">
-                        <div class="col-4">
-                          <div class="fw-bold fs-4">1,600+</div>
-                          <small class="text-muted">Exercises</small>
-                        </div>
-                        <div class="col-4 border-start border-end">
-                          <div class="fw-bold fs-4">100%</div>
-                          <small class="text-muted">Free Forever</small>
-                        </div>
-                        <div class="col-4">
-                          <div class="fw-bold fs-4">No</div>
-                          <small class="text-muted">Account Needed</small>
-                        </div>
+                  <!-- Product Preview -->
+                  <div class="landing-product-preview mb-5">
+                    <div class="landing-screenshot-container">
+                      <div class="landing-screenshot-placeholder">
+                        <i class="bx bx-devices" style="font-size: 3rem; opacity: 0.3;"></i>
+                        <p class="text-muted small mb-0 mt-2">Dashboard preview coming soon</p>
                       </div>
                     </div>
                   </div>
 
-                  <!-- Feature Grid -->
-                  <div class="text-center mb-3">
-                    <h3 class="fw-bold mb-1">Everything you need to train smarter</h3>
-                    <p class="text-muted">Simple tools that stay out of your way so you can focus on what matters.</p>
-                  </div>
-                  <div class="row g-4 mb-5">
-                    <div class="col-lg-4">
-                      <div class="card landing-inline-feature h-100">
-                        <div class="card-body py-4 text-center">
-                          <div class="landing-icon-badge landing-icon-badge-clay mx-auto mb-3"><i class="bx bx-edit-alt"></i></div>
-                          <h6 class="fw-semibold mb-1">Workout Builder</h6>
-                          <p class="text-muted small mb-0">Create custom templates with exercises, sets, reps, and rest times.</p>
+                  <!-- 3 Core Benefits -->
+                  <div class="mb-5">
+                    <div class="row g-4">
+                      <div class="col-lg-4">
+                        <div class="landing-benefit-card text-center p-4 h-100">
+                          <div class="landing-icon-badge landing-icon-badge-clay mx-auto mb-3"><i class="bx bx-timer"></i></div>
+                          <h6 class="fw-semibold mb-1">Log workouts in seconds</h6>
+                          <p class="text-muted small mb-0">Quick entry designed for the gym floor. No fumbling with complicated menus.</p>
                         </div>
                       </div>
-                    </div>
-                    <div class="col-lg-4">
-                      <div class="card landing-inline-feature h-100">
-                        <div class="card-body py-4 text-center">
-                          <div class="landing-icon-badge landing-icon-badge-sage mx-auto mb-3"><i class="bx bx-timer"></i></div>
-                          <h6 class="fw-semibold mb-1">Live Session Tracking</h6>
-                          <p class="text-muted small mb-0">Track every rep with rest timers, weight progression, and auto-complete.</p>
+                      <div class="col-lg-4">
+                        <div class="landing-benefit-card text-center p-4 h-100">
+                          <div class="landing-icon-badge landing-icon-badge-sage mx-auto mb-3"><i class="bx bx-line-chart"></i></div>
+                          <h6 class="fw-semibold mb-1">Track your strength progress</h6>
+                          <p class="text-muted small mb-0">See your lifts grow over time with automatic progress tracking.</p>
                         </div>
                       </div>
-                    </div>
-                    <div class="col-lg-4">
-                      <div class="card landing-inline-feature h-100">
-                        <div class="card-body py-4 text-center">
-                          <div class="landing-icon-badge landing-icon-badge-amber mx-auto mb-3"><i class="bx bx-brain"></i></div>
-                          <h6 class="fw-semibold mb-1">AI-Powered Logging</h6>
-                          <p class="text-muted small mb-0">Snap a photo and AI turns it into a structured workout log.</p>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="col-lg-4">
-                      <div class="card landing-inline-feature h-100">
-                        <div class="card-body py-4 text-center">
-                          <div class="landing-icon-badge landing-icon-badge-slate mx-auto mb-3"><i class="bx bx-search-alt"></i></div>
-                          <h6 class="fw-semibold mb-1">Exercise Database</h6>
-                          <p class="text-muted small mb-0">Browse 1,600+ exercises by muscle group, equipment, and difficulty.</p>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="col-lg-4">
-                      <div class="card landing-inline-feature h-100">
-                        <div class="card-body py-4 text-center">
-                          <div class="landing-icon-badge landing-icon-badge-clay mx-auto mb-3"><i class="bx bx-folder"></i></div>
-                          <h6 class="fw-semibold mb-1">Programs</h6>
-                          <p class="text-muted small mb-0">Organize workouts into structured training programs.</p>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="col-lg-4">
-                      <div class="card landing-inline-feature h-100">
-                        <div class="card-body py-4 text-center">
-                          <div class="landing-icon-badge landing-icon-badge-sage mx-auto mb-3"><i class="bx bx-share-alt"></i></div>
-                          <h6 class="fw-semibold mb-1">Export & Share</h6>
-                          <p class="text-muted small mb-0">Share as PDF, printable logs, social images, or plain text.</p>
+                      <div class="col-lg-4">
+                        <div class="landing-benefit-card text-center p-4 h-100">
+                          <div class="landing-icon-badge landing-icon-badge-amber mx-auto mb-3"><i class="bx bx-folder"></i></div>
+                          <h6 class="fw-semibold mb-1">Build training programs</h6>
+                          <p class="text-muted small mb-0">Organize workouts into structured programs that match your goals.</p>
                         </div>
                       </div>
                     </div>
@@ -662,7 +587,7 @@
 
                   <!-- How It Works -->
                   <div class="text-center mb-3">
-                    <h3 class="fw-bold mb-1">Start logging in 3 steps</h3>
+                    <h3 class="fw-bold mb-1">How it works</h3>
                     <p class="text-muted">No setup required. Open the app and start training.</p>
                   </div>
                   <div class="row g-4 mb-5">
@@ -673,32 +598,56 @@
                     </div>
                     <div class="col-lg-4 text-center landing-step-connector">
                       <div class="landing-step-number mx-auto"><i class="bx bx-play-circle"></i></div>
-                      <h6 class="fw-semibold mb-1">Hit the gym</h6>
+                      <h6 class="fw-semibold mb-1">Log sets at the gym</h6>
                       <p class="text-muted small mb-0">Start a session and log weights and reps in real time.</p>
                     </div>
                     <div class="col-lg-4 text-center">
                       <div class="landing-step-number mx-auto"><i class="bx bx-line-chart"></i></div>
-                      <h6 class="fw-semibold mb-1">Track your progress</h6>
+                      <h6 class="fw-semibold mb-1">Watch your progress grow</h6>
                       <p class="text-muted small mb-0">Review history, see streaks, and share with friends.</p>
+                    </div>
+                  </div>
+
+                  <!-- Mid-page CTA -->
+                  <div class="text-center mb-5">
+                    <button class="btn btn-primary btn-lg landing-cta-primary" onclick="showAuthModal('signup')">
+                      Start Logging Free
+                    </button>
+                  </div>
+
+                  <!-- Social Proof -->
+                  <div class="mb-5">
+                    <h4 class="text-center fw-bold mb-4">What lifters are saying</h4>
+                    <div class="row g-4 justify-content-center">
+                      <div class="col-lg-5">
+                        <div class="landing-testimonial-card p-4">
+                          <p class="mb-2 fst-italic">"Finally a workout app that doesn't try to do everything. I just log my sets and go."</p>
+                          <small class="text-muted fw-semibold">— Alex R., Intermediate Lifter</small>
+                        </div>
+                      </div>
+                      <div class="col-lg-5">
+                        <div class="landing-testimonial-card p-4">
+                          <p class="mb-2 fst-italic">"I switched from a spreadsheet and never looked back. So much faster."</p>
+                          <small class="text-muted fw-semibold">— Jamie T., Powerlifter</small>
+                        </div>
+                      </div>
                     </div>
                   </div>
 
                   <!-- Final CTA -->
                   <div class="row justify-content-center mb-4">
                     <div class="col-lg-6">
-                      <div class="card landing-cta-card">
-                        <div class="card-body text-center py-5">
-                          <h4 class="fw-bold mb-2">Start tracking your workouts today</h4>
-                          <p class="text-muted mb-4">Free forever. No credit card required.</p>
-                          <button class="btn btn-primary btn-lg" onclick="showAuthModal('signup')">
-                            <i class="bx bx-play me-1"></i> Get Started Free
-                          </button>
-                          <div class="mt-3">
-                            <small class="text-muted">
-                              Already have an account?
-                              <a href="#" onclick="showAuthModal('signin'); return false;" class="text-decoration-none fw-semibold">Sign in</a>
-                            </small>
-                          </div>
+                      <div class="landing-final-cta text-center py-5">
+                        <h4 class="fw-bold mb-2">Start tracking your workouts today</h4>
+                        <p class="text-muted mb-4">Free forever. No credit card required.</p>
+                        <button class="btn btn-primary btn-lg landing-cta-primary" onclick="showAuthModal('signup')">
+                          Start Logging Free
+                        </button>
+                        <div class="mt-3">
+                          <small class="text-muted">
+                            Already have an account?
+                            <a href="#" onclick="showAuthModal('signin'); return false;" class="text-decoration-none fw-semibold">Sign in</a>
+                          </small>
                         </div>
                       </div>
                     </div>

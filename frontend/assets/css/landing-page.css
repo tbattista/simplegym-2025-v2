@@ -1,6 +1,6 @@
 /**
- * In-App Landing Page Styles
- * Shown to non-logged-in users within the app shell (navbar + sidebar)
+ * Landing Page Styles (Conversion-Focused)
+ * Shown to non-logged-in users — full-width layout without sidebar
  */
 
 /* Pull landing page up to counteract container padding */
@@ -8,15 +8,64 @@
   margin-top: -1rem;
 }
 
-/* Hero badge pill */
-.landing-hero-badge {
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
+/* ============================================
+   HERO
+   ============================================ */
+
+.landing-hero-headline {
+  font-size: 2rem;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
 }
 
-/* Icon badges (colored circles for features) */
+.landing-hero-subtext {
+  font-size: 1.0625rem;
+  max-width: 480px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* ============================================
+   PRIMARY CTA (reused in hero, mid-page, bottom)
+   ============================================ */
+
+.landing-cta-primary {
+  font-weight: 600;
+  padding: 0.75rem 2rem;
+  font-size: 1.0625rem;
+  border-radius: 0.5rem;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.landing-cta-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(var(--gs-primary-rgb), 0.3);
+}
+
+/* ============================================
+   PRODUCT SCREENSHOT PREVIEW
+   ============================================ */
+
+.landing-screenshot-container {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.landing-screenshot-placeholder {
+  background: var(--bs-tertiary-bg, #f8f9fa);
+  border: 2px dashed var(--bs-border-color);
+  border-radius: 0.75rem;
+  padding: 4rem 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ============================================
+   ICON BADGES (colored circles for benefits)
+   ============================================ */
+
 .landing-icon-badge {
   width: 48px;
   height: 48px;
@@ -48,17 +97,26 @@
   color: var(--gs-secondary);
 }
 
-/* Feature cards */
-.landing-inline-feature {
+/* ============================================
+   BENEFIT CARDS (minimal border, hover lift)
+   ============================================ */
+
+.landing-benefit-card {
+  background: var(--bs-card-bg);
+  border: 1px solid var(--bs-border-color);
+  border-radius: 0.75rem;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.landing-inline-feature:hover {
+.landing-benefit-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(67, 89, 113, 0.16);
+  box-shadow: 0 4px 12px rgba(67, 89, 113, 0.12);
 }
 
-/* How-it-works step number */
+/* ============================================
+   HOW-IT-WORKS STEPS
+   ============================================ */
+
 .landing-step-number {
   width: 48px;
   height: 48px;
@@ -90,19 +148,53 @@
   }
 }
 
-/* CTA Card */
-.landing-cta-card {
+/* ============================================
+   TESTIMONIAL CARDS
+   ============================================ */
+
+.landing-testimonial-card {
   background: var(--bs-card-bg);
   border: 1px solid var(--bs-border-color);
+  border-radius: 0.75rem;
+  border-left: 3px solid var(--gs-primary);
 }
 
-/* CTA button hover */
-.landing-cta-card .btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 16px rgba(var(--gs-primary-rgb), 0.3);
+/* ============================================
+   FINAL CTA SECTION
+   ============================================ */
+
+.landing-final-cta {
+  background: rgba(var(--gs-primary-rgb), 0.04);
+  border-radius: 1rem;
 }
 
-/* Dark mode adjustments */
+/* ============================================
+   DESKTOP OVERRIDES
+   ============================================ */
+
+@media (min-width: 992px) {
+  .landing-hero-headline {
+    font-size: 3.25rem;
+  }
+
+  .landing-hero-subtext {
+    font-size: 1.25rem;
+    max-width: 560px;
+  }
+
+  .landing-screenshot-container {
+    max-width: 900px;
+  }
+
+  .landing-screenshot-placeholder {
+    padding: 6rem 3rem;
+  }
+}
+
+/* ============================================
+   DARK MODE
+   ============================================ */
+
 [data-bs-theme="dark"] .landing-icon-badge-clay {
   background: rgba(var(--gs-primary-rgb), 0.18);
 }
@@ -123,8 +215,21 @@
   background: rgba(var(--gs-primary-rgb), 0.18);
 }
 
-[data-bs-theme="dark"] .landing-inline-feature:hover {
+[data-bs-theme="dark"] .landing-benefit-card:hover {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+[data-bs-theme="dark"] .landing-testimonial-card {
+  border-left-color: var(--gs-primary);
+}
+
+[data-bs-theme="dark"] .landing-final-cta {
+  background: rgba(var(--gs-primary-rgb), 0.08);
+}
+
+[data-bs-theme="dark"] .landing-screenshot-placeholder {
+  background: var(--bs-tertiary-bg, #2b2c40);
+  border-color: var(--bs-border-color);
 }
 
 /* ============================================================================
