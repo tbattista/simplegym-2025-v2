@@ -1138,6 +1138,9 @@ class ExercisePerformance(BaseModel):
     original_sets: Optional[str] = Field(None, description="Original template sets before modification")
     original_reps: Optional[str] = Field(None, description="Original template reps before modification")
 
+    # Exercise Notes
+    notes: Optional[str] = Field(None, max_length=500, description="User notes for this exercise during session")
+
     # Metadata
     order_index: int = Field(..., ge=0, description="Position in workout (0-based)")
 

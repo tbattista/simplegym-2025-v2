@@ -156,6 +156,14 @@ class WorkoutSessionService {
         return this.exerciseStateService.updateExerciseDetails(exerciseName, details);
     }
 
+    updateExerciseNotes(exerciseName, notes) {
+        return this.exerciseStateService.updateExerciseNotes(exerciseName, notes);
+    }
+
+    updatePreSessionNotes(exerciseName, notes) {
+        return this.exerciseStateService.updatePreSessionNotes(exerciseName, notes);
+    }
+
     skipExercise(exerciseName, reason = '') {
         return this.exerciseStateService.skipExercise(exerciseName, reason);
     }

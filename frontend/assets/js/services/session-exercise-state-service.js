@@ -112,6 +112,58 @@ class SessionExerciseStateService {
     }
 
     /**
+     * Update exercise notes in current session
+     * @param {string} exerciseName - Exercise name
+     * @param {string} notes - Note text
+     */
+    updateExerciseNotes(exerciseName, notes) {
+        const currentSession = this.onGetCurrentSession();
+        if (!currentSession) {
+            console.warn('⚠️ No active session to update notes');
+            return;
+        }
+
+        if (!currentSession.exercises) {
+            currentSession.exercises = {};
+        }
+
+        const existingData = currentSession.exercises[exerciseName] || {};
+        currentSession.exercises[exerciseName] = {
+            ...existingData,
+            notes: notes || null
+        };
+
+        console.log('📝 Updated exercise notes:', exerciseName);
+        this.onPersist();
+    }
+
+    /**
+     * Update exercise notes before session starts (pre-session edits)
+     * @param {string} exerciseName - Exercise name
+     * @param {string} notes - Note text
+     */
+    updatePreSessionNotes(exerciseName, notes) {
+        const currentSession = this.onGetCurrentSession();
+        if (!currentSession) {
+            console.warn('⚠️ No active session to update pre-session notes');
+            return;
+        }
+
+        if (!currentSession.exercises) {
+            currentSession.exercises = {};
+        }
+
+        const existingData = currentSession.exercises[exerciseName] || {};
+        currentSession.exercises[exerciseName] = {
+            ...existingData,
+            notes: notes || null
+        };
+
+        console.log('📝 Updated pre-session notes:', exerciseName);
+        this.onPersist();
+    }
+
+    /**
      * Mark exercise as skipped
      * @param {string} exerciseName - Exercise name
      * @param {string} reason - Optional reason for skipping (max 200 chars)
