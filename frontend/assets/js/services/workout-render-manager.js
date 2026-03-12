@@ -426,6 +426,8 @@ class WorkoutRenderManager {
     renderCardioCard(group, index, totalCards) {
         const config = group.cardio_config || {};
         const activityType = config.activity_type || '';
+        const exercises = group.exercises || {};
+        const exerciseName = exercises.a || activityType || 'Activity';
 
         // Get icon and display name from activity type registry
         let iconClass = 'bx-heart-circle';
@@ -434,6 +436,11 @@ class WorkoutRenderManager {
             iconClass = window.ActivityTypeRegistry.getIcon(activityType) || 'bx-heart-circle';
             activityName = window.ActivityTypeRegistry.getName(activityType) || activityType;
         }
+
+        // Session and completion state
+        const isSessionActive = this.sessionService?.isSessionActive();
+        const exerciseData = this.sessionService?.getExerciseWeight(exerciseName);
+        const isCompleted = exerciseData?.is_completed || false;
 
         // Build meta parts
         const metaParts = [];
@@ -453,10 +460,33 @@ class WorkoutRenderManager {
         };
 
         const displayName = activityName || 'Activity';
+        const escapedName = escapeHtml(exerciseName);
+
+        // Completion button (same pattern as standard exercise cards)
+        let completionButtonHtml = '';
+        if (isSessionActive) {
+            if (isCompleted) {
+                completionButtonHtml = `
+                    <div class="workout-actions">
+                        <button class="workout-primary-action completed"
+                                onclick="window.workoutModeController?.handleUncompleteExercise?.('${escapedName}', ${index}); event.stopPropagation();">
+                            <i class="bx bx-check"></i> Completed
+                        </button>
+                    </div>`;
+            } else {
+                completionButtonHtml = `
+                    <div class="workout-actions">
+                        <button class="workout-primary-action save"
+                                onclick="window.workoutModeController?.handleCompleteExercise?.('${escapedName}', ${index}); event.stopPropagation();">
+                            Mark Done
+                        </button>
+                    </div>`;
+            }
+        }
 
         return `
-            <div class="workout-card" data-exercise-index="${index}" data-card-type="cardio"
-                 onclick="if(!event.target.closest('.workout-more-btn')) { this.classList.toggle('expanded'); }">
+            <div class="workout-card${isCompleted ? ' completed' : ''}" data-exercise-index="${index}" data-card-type="cardio"
+                 onclick="if(!event.target.closest('.workout-more-btn') && !event.target.closest('.workout-primary-action')) { this.classList.toggle('expanded'); }">
                 <div class="workout-card-header">
                     <div class="workout-exercise-name-row">
                         <div class="workout-exercise-name">
@@ -470,6 +500,7 @@ class WorkoutRenderManager {
                         <span class="workout-meta">${metaText || 'Activity'}</span>
                     </div>
                 </div>
+                ${completionButtonHtml}
                 <div class="workout-card-body">
                     <div class="p-3 text-muted small">
                         ${config.duration_minutes ? `<div><strong>Duration:</strong> ${config.duration_minutes} min</div>` : ''}
