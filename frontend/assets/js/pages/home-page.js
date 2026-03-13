@@ -67,6 +67,7 @@
             } else {
                 authenticatedDashboard.style.display = 'none';
                 unauthenticatedWelcome.style.display = 'block';
+                if (window.initLandingAnimations) window.initLandingAnimations();
             }
         };
 

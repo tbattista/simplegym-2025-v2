@@ -1,7 +1,7 @@
 /**
  * Landing Marketing Page Styles
- * Standalone CSS for the /launch marketing page.
- * Does NOT depend on Bootstrap/Sneat — only design-system.css tokens.
+ * Used for the unauthenticated landing page on index.html.
+ * Depends on design-system.css tokens (--gs-*) loaded via components.css.
  */
 
 /* ============================================
@@ -13,7 +13,7 @@
   --lp-section-light: #FBFAF8;
   --lp-section-subtle: rgba(201, 124, 93, 0.03);
   --lp-stats-bg: #ffffff;
-  --lp-nav-height: 72px;
+  --lp-nav-height: 62px;
   --lp-container-max: 1200px;
   --lp-container-pad: 1.5rem;
 
@@ -32,38 +32,33 @@
   --lp-font: 'Public Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-
 /* ============================================
-   RESET & BASE
+   LANDING ROOT (scoping styles inside index.html)
    ============================================ */
-*, *::before, *::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-html {
-  scroll-behavior: smooth;
-  -webkit-text-size-adjust: 100%;
-}
-
-body {
+.lp-landing-root {
   font-family: var(--lp-font);
   color: var(--lp-text-body);
   line-height: 1.6;
-  background: var(--lp-section-light);
   overflow-x: hidden;
 }
 
-img {
+.lp-landing-root img {
   max-width: 100%;
   height: auto;
   display: block;
 }
 
-a {
+.lp-landing-root a {
   color: inherit;
   text-decoration: none;
+}
+
+/* Breakout from Sneat container-xxl */
+#unauthenticatedWelcome {
+  margin-left: calc(-50vw + 50%);
+  margin-right: calc(-50vw + 50%);
+  width: 100vw;
+  overflow-x: hidden;
 }
 
 /* ============================================
@@ -77,75 +72,8 @@ a {
 }
 
 /* ============================================
-   NAVIGATION
+   BUTTONS
    ============================================ */
-.lp-nav {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: var(--lp-nav-height);
-  z-index: 1000;
-  transition: background-color 0.3s ease, box-shadow 0.3s ease;
-}
-
-.lp-nav.scrolled {
-  background: rgba(245, 245, 249, 0.92);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  box-shadow: 0 2px 6px rgba(67, 89, 113, 0.12);
-}
-
-.lp-nav-inner {
-  max-width: var(--lp-container-max);
-  margin: 0 auto;
-  padding: 0 var(--lp-container-pad);
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.lp-nav-logo {
-  display: flex;
-  align-items: center;
-  gap: 0.625rem;
-  color: var(--lp-text-heading);
-  font-weight: 700;
-  font-size: 1.125rem;
-  text-decoration: none;
-}
-
-.lp-nav-logo img {
-  width: 28px;
-  height: 28px;
-}
-
-.lp-nav-links {
-  display: none;
-  align-items: center;
-  gap: 2rem;
-  list-style: none;
-}
-
-.lp-nav-links a {
-  color: var(--lp-text-muted);
-  font-size: 0.9rem;
-  font-weight: 500;
-  transition: color 0.2s;
-}
-
-.lp-nav-links a:hover {
-  color: var(--lp-text-heading);
-}
-
-.lp-nav-actions {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-
 .lp-btn {
   display: inline-flex;
   align-items: center;
@@ -178,6 +106,7 @@ a {
 .lp-btn-primary:hover {
   background: var(--gs-primary-hover);
   box-shadow: 0 4px 16px rgba(201, 124, 93, 0.35);
+  color: #fff;
 }
 
 .lp-btn-ghost {
@@ -189,6 +118,7 @@ a {
 .lp-btn-ghost:hover {
   border-color: var(--lp-text-muted);
   background: rgba(67, 89, 113, 0.04);
+  color: var(--lp-text-heading);
 }
 
 .lp-btn-sm {
@@ -201,66 +131,12 @@ a {
   font-size: 1rem;
 }
 
-/* Mobile menu toggle */
-.lp-nav-mobile-toggle {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: none;
-  border: none;
-  color: var(--lp-text-muted);
-  cursor: pointer;
-  width: 36px;
-  height: 36px;
-  font-size: 1.4rem;
-}
-
-/* Mobile menu drawer */
-.lp-mobile-menu {
-  display: none;
-  position: fixed;
-  top: var(--lp-nav-height);
-  left: 0;
-  right: 0;
-  background: rgba(255, 255, 255, 0.97);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  padding: 1.5rem;
-  z-index: 999;
-  flex-direction: column;
-  gap: 0.5rem;
-  border-bottom: 1px solid var(--lp-card-border);
-  box-shadow: 0 4px 12px rgba(67, 89, 113, 0.10);
-}
-
-.lp-mobile-menu.open {
-  display: flex;
-}
-
-.lp-mobile-menu a {
-  color: var(--lp-text-body);
-  font-size: 1rem;
-  font-weight: 500;
-  padding: 0.75rem 0;
-  border-bottom: 1px solid var(--lp-card-border);
-  transition: color 0.2s;
-}
-
-.lp-mobile-menu a:last-child {
-  border-bottom: none;
-}
-
-.lp-mobile-menu a:hover {
-  color: var(--gs-primary);
-}
-
 /* ============================================
    HERO
    ============================================ */
 .lp-hero {
   background: radial-gradient(ellipse at 50% 80%, var(--lp-hero-glow) 0%, var(--lp-hero-bg) 60%);
-  padding: calc(var(--lp-nav-height) + 4rem) 0 5rem;
-  min-height: 100vh;
+  padding: 4rem 0 5rem;
   display: flex;
   align-items: center;
   overflow: hidden;
@@ -360,6 +236,69 @@ a {
 }
 
 /* ============================================
+   LAPTOP MOCKUP (CSS Device Frame)
+   ============================================ */
+.lp-laptop-frame {
+  background: #1F2937;
+  border-radius: 12px 12px 0 0;
+  padding: 8px 8px 0;
+  box-shadow:
+    0 8px 32px rgba(67, 89, 113, 0.20),
+    0 2px 8px rgba(67, 89, 113, 0.10);
+  position: relative;
+}
+
+/* Browser chrome dots */
+.lp-laptop-frame::before {
+  content: '';
+  display: block;
+  height: 24px;
+  margin-bottom: 4px;
+  background:
+    radial-gradient(circle at 16px 12px, #FF5F57 5px, transparent 5px),
+    radial-gradient(circle at 36px 12px, #FEBC2E 5px, transparent 5px),
+    radial-gradient(circle at 56px 12px, #28C840 5px, transparent 5px);
+  border-radius: 8px 8px 0 0;
+}
+
+/* Laptop base/chin */
+.lp-laptop-frame::after {
+  content: '';
+  display: block;
+  height: 16px;
+  background: #374151;
+  border-radius: 0 0 8px 8px;
+  margin: 0 -8px;
+}
+
+.lp-laptop-screen {
+  border-radius: 4px;
+  overflow: hidden;
+  background: #fff;
+  aspect-ratio: 16 / 10;
+}
+
+.lp-laptop-screen img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+}
+
+/* Mockup pair layout */
+.lp-mockup-pair {
+  position: relative;
+}
+
+.lp-mockup-pair .lp-laptop-frame {
+  display: none;
+}
+
+.lp-mockup-pair .lp-phone-overlay {
+  /* Phone shown on mobile by default */
+}
+
+/* ============================================
    STATS BAR
    ============================================ */
 .lp-stats {
@@ -448,11 +387,16 @@ a {
   padding: 1.75rem;
   box-shadow: var(--lp-card-shadow);
   transition: transform 0.25s ease, box-shadow 0.25s ease;
+  display: block;
+  color: inherit;
+  text-decoration: none;
 }
 
 .lp-feature-card:hover {
   transform: translateY(-3px);
   box-shadow: var(--lp-card-shadow-hover);
+  color: inherit;
+  text-decoration: none;
 }
 
 .lp-feature-icon {
@@ -497,6 +441,7 @@ a {
   font-size: 0.9rem;
   color: var(--lp-text-muted);
   line-height: 1.5;
+  margin-bottom: 0;
 }
 
 /* ============================================
@@ -537,6 +482,8 @@ a {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+  padding: 0;
+  margin: 0 0 1rem;
 }
 
 .lp-showcase-list li {
@@ -561,6 +508,23 @@ a {
 /* Reversed layout */
 .lp-showcase-reversed .lp-showcase-inner {
   flex-direction: row-reverse;
+}
+
+/* Try-it link */
+.lp-showcase-try {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  color: var(--gs-primary);
+  font-weight: 600;
+  font-size: 0.9375rem;
+  text-decoration: none;
+  transition: gap 0.2s;
+}
+
+.lp-showcase-try:hover {
+  gap: 0.625rem;
+  color: var(--gs-primary-hover);
 }
 
 /* ============================================
@@ -706,6 +670,8 @@ a {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  padding: 0;
+  margin: 0;
 }
 
 .lp-footer-links a {
@@ -729,27 +695,27 @@ a {
 /* ============================================
    SCROLL REVEAL ANIMATIONS
    ============================================ */
-[data-reveal] {
+.lp-landing-root [data-reveal] {
   opacity: 0;
   transform: translateY(24px);
   transition: opacity 0.6s ease, transform 0.6s ease;
 }
 
-[data-reveal].revealed {
+.lp-landing-root [data-reveal].revealed {
   opacity: 1;
   transform: translateY(0);
 }
 
 /* Stagger delays */
-[data-reveal-delay="100"] { transition-delay: 100ms; }
-[data-reveal-delay="200"] { transition-delay: 200ms; }
-[data-reveal-delay="300"] { transition-delay: 300ms; }
-[data-reveal-delay="400"] { transition-delay: 400ms; }
-[data-reveal-delay="500"] { transition-delay: 500ms; }
+.lp-landing-root [data-reveal-delay="100"] { transition-delay: 100ms; }
+.lp-landing-root [data-reveal-delay="200"] { transition-delay: 200ms; }
+.lp-landing-root [data-reveal-delay="300"] { transition-delay: 300ms; }
+.lp-landing-root [data-reveal-delay="400"] { transition-delay: 400ms; }
+.lp-landing-root [data-reveal-delay="500"] { transition-delay: 500ms; }
 
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
-  [data-reveal] {
+  .lp-landing-root [data-reveal] {
     opacity: 1;
     transform: none;
     transition: none;
@@ -761,14 +727,6 @@ a {
    RESPONSIVE - TABLET (768px+)
    ============================================ */
 @media (min-width: 768px) {
-  .lp-nav-links {
-    display: flex;
-  }
-
-  .lp-nav-mobile-toggle {
-    display: none;
-  }
-
   .lp-hero h1 {
     font-size: 3rem;
   }
@@ -831,6 +789,23 @@ a {
   .lp-stat-number {
     font-size: 1.75rem;
   }
+
+  /* Mockup pair: show both laptop and phone */
+  .lp-mockup-pair .lp-laptop-frame {
+    display: block;
+  }
+
+  .lp-mockup-pair .lp-phone-overlay {
+    position: absolute;
+    bottom: -10%;
+    right: -10%;
+    width: 35%;
+    z-index: 2;
+  }
+
+  .lp-hero-mockup {
+    flex: 0 0 420px;
+  }
 }
 
 /* ============================================
@@ -838,7 +813,7 @@ a {
    ============================================ */
 @media (min-width: 1200px) {
   .lp-hero {
-    padding-top: calc(var(--lp-nav-height) + 6rem);
+    padding-top: 5rem;
     padding-bottom: 6rem;
   }
 
@@ -847,7 +822,7 @@ a {
   }
 
   .lp-hero-mockup {
-    flex: 0 0 360px;
+    flex: 0 0 500px;
   }
 
   .lp-feature-grid {
@@ -868,9 +843,8 @@ a {
    ============================================ */
 @media (max-width: 767px) {
   .lp-hero {
-    padding-top: calc(var(--lp-nav-height) + 3rem);
+    padding-top: 3rem;
     padding-bottom: 3rem;
-    min-height: auto;
   }
 
   .lp-hero-inner {
@@ -956,4 +930,3 @@ a {
   font-weight: 500;
   aspect-ratio: 390 / 844;
 }
-

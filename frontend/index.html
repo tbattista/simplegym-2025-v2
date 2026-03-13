@@ -43,6 +43,25 @@
     }
     </script>
 
+    <!-- Structured Data - SoftwareApplication -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Fitness Field Notes",
+      "description": "A minimalist workout log for lifters who just want to write down what they did. Build programs, track sessions, and see your progress.",
+      "url": "https://fitnessfieldnotes.com",
+      "applicationCategory": "HealthApplication",
+      "operatingSystem": "Web",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "featureList": ["Workout Builder", "Live Session Tracking", "AI-Powered Logging", "Exercise Database", "Programs", "Export & Share"]
+    }
+    </script>
+
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="/static/assets/img/favicon/favicon.svg" />
   <!-- PWA -->
@@ -78,6 +97,9 @@
     
     <!-- Landing Page CSS -->
     <link rel="stylesheet" href="/static/assets/css/landing-page.css" />
+
+    <!-- Landing Marketing CSS (for unauthenticated landing page) -->
+    <link rel="stylesheet" href="/static/assets/css/landing-marketing.css" />
 
     <!-- Dashboard CSS (for Recent Session Cards) -->
     <link rel="stylesheet" href="/static/assets/css/dashboard-demo.css" />
@@ -155,6 +177,314 @@
           <div class="content-wrapper">
             <!-- Content -->
             <div class="container-xxl flex-grow-1 container-p-y pt-0">
+
+              <!-- ============================================ -->
+              <!-- UNAUTHENTICATED LANDING PAGE                -->
+              <!-- (single responsive block, outside data-view) -->
+              <!-- ============================================ -->
+              <div id="unauthenticatedWelcome" style="display: none;">
+                <div class="lp-landing-root">
+
+                  <!-- HERO -->
+                  <section class="lp-hero">
+                    <div class="lp-container">
+                      <div class="lp-hero-inner">
+                        <div class="lp-hero-content" data-reveal>
+                          <span class="lp-hero-badge">Your Digital Gym Notebook</span>
+                          <h1>Track Workouts Like You Would on Paper</h1>
+                          <p class="lp-hero-subtitle">
+                            A minimalist workout log for lifters who just want to write down what they did. Build programs, track sessions, and see your progress over time.
+                          </p>
+                          <div class="lp-hero-buttons">
+                            <a href="/public-workouts.html" class="lp-btn lp-btn-primary lp-btn-lg">
+                              <i class="bx bx-play"></i> Browse Workouts
+                            </a>
+                            <a href="#features" class="lp-btn lp-btn-ghost lp-btn-lg">
+                              See How It Works
+                            </a>
+                          </div>
+                        </div>
+
+                        <div class="lp-hero-mockup" data-reveal data-reveal-delay="200">
+                          <div class="lp-mockup-pair">
+                            <div class="lp-laptop-frame">
+                              <div class="lp-laptop-screen">
+                                <img src="/static/assets/img/landing-dashboard-preview.png"
+                                     alt="Fitness Field Notes desktop dashboard"
+                                     loading="eager"
+                                     onerror="this.parentElement.innerHTML='<div class=lp-screenshot-placeholder>Dashboard</div>'">
+                              </div>
+                            </div>
+                            <div class="lp-phone-frame lp-phone-overlay">
+                              <div class="lp-phone-screen">
+                                <img src="/static/assets/img/landing/landing-hero-workout-mode.png"
+                                     alt="Fitness Field Notes workout mode on mobile"
+                                     loading="eager"
+                                     onerror="this.parentElement.innerHTML='<div class=lp-screenshot-placeholder>Workout Mode</div>'">
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </section>
+
+                  <!-- STATS BAR -->
+                  <section class="lp-stats">
+                    <div class="lp-container">
+                      <div class="lp-stats-grid" data-reveal>
+                        <div class="lp-stat-item">
+                          <span class="lp-stat-number">1,600+</span>
+                          <span class="lp-stat-label">Exercises</span>
+                        </div>
+                        <div class="lp-stat-item">
+                          <span class="lp-stat-number">100%</span>
+                          <span class="lp-stat-label">Free Forever</span>
+                        </div>
+                        <div class="lp-stat-item">
+                          <span class="lp-stat-number">No</span>
+                          <span class="lp-stat-label">Account Needed</span>
+                        </div>
+                      </div>
+                    </div>
+                  </section>
+
+                  <!-- FEATURES -->
+                  <section class="lp-section lp-section-light" id="features">
+                    <div class="lp-container">
+                      <div class="lp-section-heading" data-reveal>
+                        <h2>Everything you need to train smarter</h2>
+                        <p>Simple tools that stay out of your way so you can focus on what matters — the workout.</p>
+                      </div>
+
+                      <div class="lp-feature-grid">
+                        <a href="/workout-builder.html" class="lp-feature-card" data-reveal data-reveal-delay="100">
+                          <div class="lp-feature-icon lp-feature-icon-clay">
+                            <i class="bx bx-edit-alt"></i>
+                          </div>
+                          <h3>Workout Builder</h3>
+                          <p>Create custom workout templates with exercises, sets, reps, and rest times. Flexible format — numbers, ranges, or AMRAP.</p>
+                        </a>
+
+                        <a href="/workout-mode.html" class="lp-feature-card" data-reveal data-reveal-delay="200">
+                          <div class="lp-feature-icon lp-feature-icon-sage">
+                            <i class="bx bx-timer"></i>
+                          </div>
+                          <h3>Live Session Tracking</h3>
+                          <p>Track every rep in real time with built-in rest timers, weight progression indicators, and auto-complete sets.</p>
+                        </a>
+
+                        <a href="/workout-mode.html" class="lp-feature-card" data-reveal data-reveal-delay="300">
+                          <div class="lp-feature-icon lp-feature-icon-amber">
+                            <i class="bx bx-brain"></i>
+                          </div>
+                          <h3>AI-Powered Logging</h3>
+                          <p>Snap a photo of your gym whiteboard or watch screen. AI turns it into a structured workout log instantly.</p>
+                        </a>
+
+                        <a href="/exercise-database.html" class="lp-feature-card" data-reveal data-reveal-delay="100">
+                          <div class="lp-feature-icon lp-feature-icon-slate">
+                            <i class="bx bx-search-alt"></i>
+                          </div>
+                          <h3>Exercise Database</h3>
+                          <p>Browse 1,600+ exercises filterable by muscle group, equipment, and difficulty. Or create your own custom exercises.</p>
+                        </a>
+
+                        <a href="/programs.html" class="lp-feature-card" data-reveal data-reveal-delay="200">
+                          <div class="lp-feature-icon lp-feature-icon-clay">
+                            <i class="bx bx-folder"></i>
+                          </div>
+                          <h3>Programs</h3>
+                          <p>Organize workouts into structured training programs. Follow a plan, track completion, and stay consistent.</p>
+                        </a>
+
+                        <a href="/public-workouts.html" class="lp-feature-card" data-reveal data-reveal-delay="300">
+                          <div class="lp-feature-icon lp-feature-icon-sage">
+                            <i class="bx bx-share-alt"></i>
+                          </div>
+                          <h3>Export &amp; Share</h3>
+                          <p>Share workouts as PDF reference sheets, printable 4-week gym logs, social media images, or plain text.</p>
+                        </a>
+                      </div>
+                    </div>
+                  </section>
+
+                  <!-- SHOWCASE 1: WORKOUT BUILDER -->
+                  <section class="lp-showcase lp-section-subtle">
+                    <div class="lp-container">
+                      <div class="lp-showcase-inner" data-reveal>
+                        <div class="lp-showcase-image">
+                          <div class="lp-phone-frame">
+                            <div class="lp-phone-screen">
+                              <img src="/static/assets/img/landing/landing-feature-builder.png"
+                                   alt="Workout builder showing exercises and sets"
+                                   loading="lazy"
+                                   onerror="this.parentElement.innerHTML='<div class=lp-screenshot-placeholder>Workout Builder</div>'">
+                            </div>
+                          </div>
+                        </div>
+                        <div class="lp-showcase-text">
+                          <h3>Build your perfect workout</h3>
+                          <p>Create workout templates your way. Add exercises from our database or your own custom movements, then configure sets and reps in any format you prefer.</p>
+                          <ul class="lp-showcase-list">
+                            <li><i class="bx bx-check"></i> Flexible sets/reps — numbers, ranges, or "AMRAP"</li>
+                            <li><i class="bx bx-check"></i> Exercise groups with alternates for equipment swaps</li>
+                            <li><i class="bx bx-check"></i> Bonus exercises for supplemental work</li>
+                            <li><i class="bx bx-check"></i> Drag-to-reorder exercises</li>
+                          </ul>
+                          <a href="/workout-builder.html" class="lp-showcase-try">Try it <i class="bx bx-right-arrow-alt"></i></a>
+                        </div>
+                      </div>
+                    </div>
+                  </section>
+
+                  <!-- SHOWCASE 2: WORKOUT MODE -->
+                  <section class="lp-showcase lp-section-light lp-showcase-reversed">
+                    <div class="lp-container">
+                      <div class="lp-showcase-inner" data-reveal>
+                        <div class="lp-showcase-image">
+                          <div class="lp-phone-frame">
+                            <div class="lp-phone-screen">
+                              <img src="/static/assets/img/landing/landing-feature-session.png"
+                                   alt="Live workout session with timer and weight tracking"
+                                   loading="lazy"
+                                   onerror="this.parentElement.innerHTML='<div class=lp-screenshot-placeholder>Workout Mode</div>'">
+                            </div>
+                          </div>
+                        </div>
+                        <div class="lp-showcase-text">
+                          <h3>Track every rep in real time</h3>
+                          <p>Start a session and log weights, reps, and rest times as you go. See your last performance to know exactly what to beat.</p>
+                          <ul class="lp-showcase-list">
+                            <li><i class="bx bx-check"></i> Built-in rest timer between sets</li>
+                            <li><i class="bx bx-check"></i> Weight progression color indicators</li>
+                            <li><i class="bx bx-check"></i> Quick log mode for rapid data entry</li>
+                            <li><i class="bx bx-check"></i> Session history and performance tracking</li>
+                          </ul>
+                          <a href="/workout-mode.html" class="lp-showcase-try">Try it <i class="bx bx-right-arrow-alt"></i></a>
+                        </div>
+                      </div>
+                    </div>
+                  </section>
+
+                  <!-- SHOWCASE 3: AI LOGGER -->
+                  <section class="lp-showcase lp-section-subtle">
+                    <div class="lp-container">
+                      <div class="lp-showcase-inner" data-reveal>
+                        <div class="lp-showcase-image">
+                          <div class="lp-phone-frame">
+                            <div class="lp-phone-screen">
+                              <img src="/static/assets/img/landing/landing-feature-ai-logger.png"
+                                   alt="AI-powered workout logging from photo"
+                                   loading="lazy"
+                                   onerror="this.parentElement.innerHTML='<div class=lp-screenshot-placeholder>AI Logger</div>'">
+                            </div>
+                          </div>
+                        </div>
+                        <div class="lp-showcase-text">
+                          <h3>Log workouts with AI</h3>
+                          <p>Take a photo of your gym whiteboard, Apple Watch, or handwritten notes. Our AI parses it into structured workout data — strength or cardio.</p>
+                          <ul class="lp-showcase-list">
+                            <li><i class="bx bx-check"></i> Upload photos or describe your session in text</li>
+                            <li><i class="bx bx-check"></i> Supports both strength and cardio activities</li>
+                            <li><i class="bx bx-check"></i> Clarifying questions when data is ambiguous</li>
+                            <li><i class="bx bx-check"></i> Optionally save as a reusable template</li>
+                          </ul>
+                          <a href="/workout-mode.html" class="lp-showcase-try">Try it <i class="bx bx-right-arrow-alt"></i></a>
+                        </div>
+                      </div>
+                    </div>
+                  </section>
+
+                  <!-- HOW IT WORKS -->
+                  <section class="lp-section lp-section-light" id="how-it-works">
+                    <div class="lp-container">
+                      <div class="lp-section-heading" data-reveal>
+                        <h2>Start logging in 3 steps</h2>
+                        <p>No setup required. Open the app and start training.</p>
+                      </div>
+
+                      <div class="lp-steps-grid">
+                        <div class="lp-step-connector" aria-hidden="true"></div>
+                        <div class="lp-step-connector" aria-hidden="true"></div>
+
+                        <div class="lp-step" data-reveal data-reveal-delay="100">
+                          <div class="lp-step-number">
+                            <i class="bx bx-dumbbell"></i>
+                          </div>
+                          <h3>Create a workout</h3>
+                          <p>Build a template with your exercises, sets, and reps — or import one.</p>
+                        </div>
+
+                        <div class="lp-step" data-reveal data-reveal-delay="200">
+                          <div class="lp-step-number">
+                            <i class="bx bx-play-circle"></i>
+                          </div>
+                          <h3>Hit the gym</h3>
+                          <p>Start a session and log your weights and reps in real time.</p>
+                        </div>
+
+                        <div class="lp-step" data-reveal data-reveal-delay="300">
+                          <div class="lp-step-number">
+                            <i class="bx bx-line-chart"></i>
+                          </div>
+                          <h3>Track your progress</h3>
+                          <p>Review your history, see streaks, and share workouts with friends.</p>
+                        </div>
+                      </div>
+                    </div>
+                  </section>
+
+                  <!-- CTA -->
+                  <section class="lp-cta">
+                    <div class="lp-container" data-reveal>
+                      <h2>Start tracking your workouts today</h2>
+                      <p>Free forever. No credit card required.</p>
+                      <a href="/public-workouts.html" class="lp-btn lp-btn-primary lp-btn-lg">
+                        <i class="bx bx-play"></i> Browse Workouts
+                      </a>
+                      <div class="lp-cta-secondary">
+                        Already have an account? <a href="#" onclick="showAuthModal('signin'); return false;">Sign in</a>
+                      </div>
+                    </div>
+                  </section>
+
+                  <!-- FOOTER -->
+                  <footer class="lp-footer">
+                    <div class="lp-container">
+                      <div class="lp-footer-grid">
+                        <div class="lp-footer-brand">
+                          <div class="lp-footer-brand-name">
+                            <img src="/static/assets/img/favicon/favicon.svg" alt="" width="24" height="24">
+                            Fitness Field Notes
+                          </div>
+                          <p>Your gym journal, digitized. A minimalist workout tracker for lifters who want to focus on training.</p>
+                        </div>
+                        <div class="lp-footer-links">
+                          <h4>App</h4>
+                          <ul>
+                            <li><a href="/">Dashboard</a></li>
+                            <li><a href="/exercise-database">Exercise Database</a></li>
+                            <li><a href="/public-workouts">Public Workouts</a></li>
+                          </ul>
+                        </div>
+                        <div class="lp-footer-links">
+                          <h4>Links</h4>
+                          <ul>
+                            <li><a href="#features">Features</a></li>
+                            <li><a href="#how-it-works">How It Works</a></li>
+                            <li><a href="/feedback-voting">Feature Requests</a></li>
+                          </ul>
+                        </div>
+                      </div>
+                      <div class="lp-footer-bottom">
+                        &copy; 2026 Fitness Field Notes. All rights reserved.
+                      </div>
+                    </div>
+                  </footer>
+
+                </div>
+              </div>
 
               <!-- ============================================ -->
               <!-- MOBILE VIEW (hidden on desktop via CSS)      -->
@@ -256,119 +586,6 @@
 
               </div>
 
-              <!-- Unauthenticated Landing Page -->
-              <div id="unauthenticatedWelcome" style="display: none;">
-
-                <!-- Hero -->
-                <div class="landing-hero text-center pt-5 pb-4 px-2">
-                  <h1 class="landing-hero-headline fw-bold mb-3">
-                    Track workouts like a notebook.<br>But smarter.
-                  </h1>
-                  <p class="text-muted mb-4 landing-hero-subtext">
-                    The fastest way to log workouts without complicated apps.
-                  </p>
-                  <a href="public-workouts.html" class="btn btn-primary btn-lg landing-cta-primary">
-                    Browse Workouts
-                  </a>
-                </div>
-
-                <!-- Product Preview -->
-                <div class="landing-product-preview mb-5">
-                  <div class="landing-screenshot-container">
-                    <img src="/static/assets/img/landing-dashboard-preview.png"
-                         alt="Fitness Field Notes dashboard showing weekly progress, recent workouts, and favorites"
-                         class="landing-screenshot-img"
-                         loading="lazy" />
-                  </div>
-                </div>
-
-                <!-- 3 Core Benefits -->
-                <div class="mb-5">
-                  <div class="row g-3">
-                    <div class="col-12">
-                      <div class="landing-benefit-card d-flex align-items-center gap-3 p-3">
-                        <div class="landing-icon-badge landing-icon-badge-clay"><i class="bx bx-timer"></i></div>
-                        <div>
-                          <h6 class="fw-semibold mb-1">Log workouts in seconds</h6>
-                          <p class="text-muted small mb-0">Quick entry designed for the gym floor. No fumbling with complicated menus.</p>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="col-12">
-                      <div class="landing-benefit-card d-flex align-items-center gap-3 p-3">
-                        <div class="landing-icon-badge landing-icon-badge-sage"><i class="bx bx-line-chart"></i></div>
-                        <div>
-                          <h6 class="fw-semibold mb-1">Track your strength progress</h6>
-                          <p class="text-muted small mb-0">See your lifts grow over time with automatic progress tracking.</p>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="col-12">
-                      <div class="landing-benefit-card d-flex align-items-center gap-3 p-3">
-                        <div class="landing-icon-badge landing-icon-badge-amber"><i class="bx bx-folder"></i></div>
-                        <div>
-                          <h6 class="fw-semibold mb-1">Build training programs</h6>
-                          <p class="text-muted small mb-0">Organize workouts into structured programs that match your goals.</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- How It Works -->
-                <div class="text-center mb-4">
-                  <h3 class="fw-bold mb-1">How it works</h3>
-                </div>
-                <div class="row g-3 mb-5">
-                  <div class="col-4 text-center">
-                    <div class="landing-step-number mx-auto"><i class="bx bx-dumbbell"></i></div>
-                    <h6 class="fw-semibold mb-1 small">Create a workout</h6>
-                  </div>
-                  <div class="col-4 text-center">
-                    <div class="landing-step-number mx-auto"><i class="bx bx-play-circle"></i></div>
-                    <h6 class="fw-semibold mb-1 small">Log sets at the gym</h6>
-                  </div>
-                  <div class="col-4 text-center">
-                    <div class="landing-step-number mx-auto"><i class="bx bx-line-chart"></i></div>
-                    <h6 class="fw-semibold mb-1 small">Watch your progress grow</h6>
-                  </div>
-                </div>
-
-                <!-- Social Proof -->
-                <div class="mb-5">
-                  <h5 class="text-center fw-bold mb-4">What lifters are saying</h5>
-                  <div class="row g-3">
-                    <div class="col-12">
-                      <div class="landing-testimonial-card p-3">
-                        <p class="mb-2 fst-italic">"Finally a workout app that doesn't try to do everything. I just log my sets and go."</p>
-                        <small class="text-muted fw-semibold">— Alex R., Intermediate Lifter</small>
-                      </div>
-                    </div>
-                    <div class="col-12">
-                      <div class="landing-testimonial-card p-3">
-                        <p class="mb-2 fst-italic">"I switched from a spreadsheet and never looked back. So much faster."</p>
-                        <small class="text-muted fw-semibold">— Jamie T., Powerlifter</small>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Final CTA -->
-                <div class="landing-final-cta text-center py-5 mb-4">
-                  <h4 class="fw-bold mb-2">Ready to start tracking?</h4>
-                  <p class="text-muted mb-3">Free forever. No account required.</p>
-                  <a href="public-workouts.html" class="btn btn-primary btn-lg landing-cta-primary">
-                    Browse Workouts
-                  </a>
-                  <div class="mt-3">
-                    <small class="text-muted">
-                      Already have an account?
-                      <a href="#" onclick="showAuthModal('signin'); return false;" class="text-decoration-none fw-semibold">Sign in</a>
-                    </small>
-                  </div>
-                </div>
-
-              </div>
 
               </div>
               <!-- / MOBILE VIEW -->
@@ -525,122 +742,6 @@
                 </div>
                 <!-- / Desktop Authenticated Dashboard -->
 
-                <!-- Desktop Unauthenticated Landing -->
-                <div id="desktopUnauthWelcome" style="display: none;">
-
-                  <!-- Hero -->
-                  <div class="landing-hero text-center mb-5 pt-5" style="max-width: 800px; margin-left: auto; margin-right: auto;">
-                    <h1 class="landing-hero-headline fw-bold mb-3">
-                      Track workouts like a notebook.<br>But smarter.
-                    </h1>
-                    <p class="text-muted mb-4 landing-hero-subtext">
-                      The fastest way to log workouts without complicated apps.
-                    </p>
-                    <a href="public-workouts.html" class="btn btn-primary btn-lg landing-cta-primary">
-                      Browse Workouts
-                    </a>
-                  </div>
-
-                  <!-- Product Preview -->
-                  <div class="landing-product-preview mb-5">
-                    <div class="landing-screenshot-container">
-                      <img src="/static/assets/img/landing-dashboard-preview.png"
-                           alt="Fitness Field Notes dashboard showing weekly progress, recent workouts, and favorites"
-                           class="landing-screenshot-img"
-                           loading="lazy" />
-                    </div>
-                  </div>
-
-                  <!-- 3 Core Benefits -->
-                  <div class="mb-5">
-                    <div class="row g-4">
-                      <div class="col-lg-4">
-                        <div class="landing-benefit-card text-center p-4 h-100">
-                          <div class="landing-icon-badge landing-icon-badge-clay mx-auto mb-3"><i class="bx bx-timer"></i></div>
-                          <h6 class="fw-semibold mb-1">Log workouts in seconds</h6>
-                          <p class="text-muted small mb-0">Quick entry designed for the gym floor. No fumbling with complicated menus.</p>
-                        </div>
-                      </div>
-                      <div class="col-lg-4">
-                        <div class="landing-benefit-card text-center p-4 h-100">
-                          <div class="landing-icon-badge landing-icon-badge-sage mx-auto mb-3"><i class="bx bx-line-chart"></i></div>
-                          <h6 class="fw-semibold mb-1">Track your strength progress</h6>
-                          <p class="text-muted small mb-0">See your lifts grow over time with automatic progress tracking.</p>
-                        </div>
-                      </div>
-                      <div class="col-lg-4">
-                        <div class="landing-benefit-card text-center p-4 h-100">
-                          <div class="landing-icon-badge landing-icon-badge-amber mx-auto mb-3"><i class="bx bx-folder"></i></div>
-                          <h6 class="fw-semibold mb-1">Build training programs</h6>
-                          <p class="text-muted small mb-0">Organize workouts into structured programs that match your goals.</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- How It Works -->
-                  <div class="text-center mb-3">
-                    <h3 class="fw-bold mb-1">How it works</h3>
-                    <p class="text-muted">No setup required. Open the app and start training.</p>
-                  </div>
-                  <div class="row g-4 mb-5">
-                    <div class="col-lg-4 text-center landing-step-connector">
-                      <div class="landing-step-number mx-auto"><i class="bx bx-dumbbell"></i></div>
-                      <h6 class="fw-semibold mb-1">Create a workout</h6>
-                      <p class="text-muted small mb-0">Build a template with exercises, sets, and reps.</p>
-                    </div>
-                    <div class="col-lg-4 text-center landing-step-connector">
-                      <div class="landing-step-number mx-auto"><i class="bx bx-play-circle"></i></div>
-                      <h6 class="fw-semibold mb-1">Log sets at the gym</h6>
-                      <p class="text-muted small mb-0">Start a session and log weights and reps in real time.</p>
-                    </div>
-                    <div class="col-lg-4 text-center">
-                      <div class="landing-step-number mx-auto"><i class="bx bx-line-chart"></i></div>
-                      <h6 class="fw-semibold mb-1">Watch your progress grow</h6>
-                      <p class="text-muted small mb-0">Review history, see streaks, and share with friends.</p>
-                    </div>
-                  </div>
-
-                  <!-- Social Proof -->
-                  <div class="mb-5">
-                    <h4 class="text-center fw-bold mb-4">What lifters are saying</h4>
-                    <div class="row g-4 justify-content-center">
-                      <div class="col-lg-5">
-                        <div class="landing-testimonial-card p-4">
-                          <p class="mb-2 fst-italic">"Finally a workout app that doesn't try to do everything. I just log my sets and go."</p>
-                          <small class="text-muted fw-semibold">— Alex R., Intermediate Lifter</small>
-                        </div>
-                      </div>
-                      <div class="col-lg-5">
-                        <div class="landing-testimonial-card p-4">
-                          <p class="mb-2 fst-italic">"I switched from a spreadsheet and never looked back. So much faster."</p>
-                          <small class="text-muted fw-semibold">— Jamie T., Powerlifter</small>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Final CTA -->
-                  <div class="row justify-content-center mb-4">
-                    <div class="col-lg-6">
-                      <div class="landing-final-cta text-center py-5">
-                        <h4 class="fw-bold mb-2">Ready to start tracking?</h4>
-                        <p class="text-muted mb-3">Free forever. No account required.</p>
-                        <a href="public-workouts.html" class="btn btn-primary btn-lg landing-cta-primary">
-                          Browse Workouts
-                        </a>
-                        <div class="mt-3">
-                          <small class="text-muted">
-                            Already have an account?
-                            <a href="#" onclick="showAuthModal('signin'); return false;" class="text-decoration-none fw-semibold">Sign in</a>
-                          </small>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                </div>
-                <!-- / Desktop Unauthenticated Landing -->
 
               </div>
               <!-- / DESKTOP VIEW -->
@@ -666,7 +767,6 @@
       if (document.documentElement.classList.contains('desktop-view')) {
         var _swaps = [
           ['authenticatedDashboard', 'desktopAuthDashboard'],
-          ['unauthenticatedWelcome', 'desktopUnauthWelcome'],
           ['homeDate', 'desktopHomeDate'],
           ['homeGreeting', 'desktopHomeGreeting'],
           ['weeklyStatText', 'desktopWeeklyStatText'],
@@ -751,6 +851,9 @@
     <script src="/static/assets/js/services/activity-type-registry.js?v=1.0.0"></script>
     <script src="/static/assets/js/services/universal-log-service.js?v=1"></script>
     <script type="module" src="/static/assets/js/components/offcanvas/offcanvas-universal-logger.js?v=1.1"></script>
+
+    <!-- Landing Page Animations (scroll reveal) -->
+    <script defer src="/static/assets/js/pages/landing-page-animations.js"></script>
 
     <!-- Home Page Logic (extracted from inline) -->
     <script src="/static/assets/js/pages/home-page.js?v=20260216-02"></script>

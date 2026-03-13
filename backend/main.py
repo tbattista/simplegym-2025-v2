@@ -99,7 +99,6 @@ async def serve_sitemap():
     # Static pages
     urls = [
         f'  <url><loc>{base_url}/</loc><priority>1.0</priority><changefreq>weekly</changefreq></url>',
-        f'  <url><loc>{base_url}/launch</loc><priority>0.9</priority><changefreq>monthly</changefreq></url>',
         f'  <url><loc>{base_url}/public-workouts</loc><priority>0.8</priority><changefreq>daily</changefreq></url>',
     ]
 
@@ -397,18 +396,12 @@ async def serve_exercise_history_demo():
         )
 
 
-@app.get("/launch", response_class=HTMLResponse)
-@app.get("/launch.html", response_class=HTMLResponse)
+@app.get("/launch")
+@app.get("/launch.html")
 async def serve_launch_page():
-    """Serve the pre-launch landing page for email signups"""
-    try:
-        with open("frontend/launch.html", "r", encoding="utf-8") as f:
-            return HTMLResponse(content=f.read())
-    except FileNotFoundError:
-        return HTMLResponse(
-            content="<h1>Launch page not found</h1><p>Please ensure frontend/launch.html exists</p>",
-            status_code=404
-        )
+    """Redirect old launch page to home page"""
+    from fastapi.responses import RedirectResponse
+    return RedirectResponse(url="/", status_code=301)
 
 @app.get("/share/{token}", response_class=HTMLResponse)
 async def serve_share_page(token: str):

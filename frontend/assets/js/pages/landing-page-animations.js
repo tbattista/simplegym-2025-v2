@@ -1,18 +1,18 @@
 /**
  * Landing Page Animations & Interactions
  * - Scroll-triggered reveal animations (IntersectionObserver)
- * - Sticky nav background transition
- * - Mobile menu toggle
+ * - Smooth scroll for anchor links
+ * - Analytics tracking
+ *
+ * Exposes window.initLandingAnimations() for use in index.html
+ * where the landing section starts hidden until auth resolves.
  */
 
-(function () {
+window.initLandingAnimations = function () {
   'use strict';
 
-  // Force light mode on the landing page
-  document.documentElement.setAttribute('data-bs-theme', 'light');
-
   // --- Scroll Reveal ---
-  const revealElements = document.querySelectorAll('[data-reveal]');
+  const revealElements = document.querySelectorAll('[data-reveal]:not(.revealed)');
   if (revealElements.length && 'IntersectionObserver' in window) {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -31,7 +31,7 @@
     revealElements.forEach((el) => el.classList.add('revealed'));
   }
 
-  // --- Sticky Nav ---
+  // --- Sticky Nav (only on standalone launch page) ---
   const nav = document.querySelector('.lp-nav');
   if (nav) {
     const onScroll = () => {
@@ -41,7 +41,7 @@
     onScroll();
   }
 
-  // --- Mobile Menu Toggle ---
+  // --- Mobile Menu Toggle (only on standalone launch page) ---
   const menuToggle = document.getElementById('mobileMenuToggle');
   const mobileMenu = document.getElementById('mobileMenu');
   if (menuToggle && mobileMenu) {
@@ -70,6 +70,7 @@
       }
     });
   });
+
   // --- Analytics: Scroll Depth & CTA Tracking ---
   if (window.analyticsService) {
     // Track scroll depth through key sections
@@ -90,4 +91,18 @@
       });
     });
   }
-})();
+};
+
+// Auto-init on standalone launch page (DOMContentLoaded)
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', function () {
+    // Only auto-init if this is the standalone launch page (has .lp-nav)
+    if (document.querySelector('.lp-nav')) {
+      window.initLandingAnimations();
+    }
+  });
+} else {
+  if (document.querySelector('.lp-nav')) {
+    window.initLandingAnimations();
+  }
+}
