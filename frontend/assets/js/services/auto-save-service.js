@@ -35,6 +35,14 @@ class AutoSaveService {
 
             console.log('💾 Auto-saving session...');
 
+            // Local-only sessions: skip API call, just persist to localStorage
+            if (currentSession.id.startsWith('local-')) {
+                console.log('💾 Local session - persisting to localStorage only');
+                this.onPersist();
+                this.onNotify('sessionSaved', { sessionId: currentSession.id });
+                return;
+            }
+
             // Get auth token
             const token = await window.authService.getIdToken();
             if (!token) {

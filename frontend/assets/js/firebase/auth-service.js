@@ -219,6 +219,22 @@ class AuthService {
         }
     }
     
+    async signInWithCustomToken(token) {
+        if (!this.initialized || !window.firebaseAuthFunctions) {
+            throw new Error('Auth service not initialized');
+        }
+
+        try {
+            const { signInWithCustomToken } = window.firebaseAuthFunctions;
+            const userCredential = await signInWithCustomToken(window.firebaseAuth, token);
+            console.log('Review token sign-in successful');
+            return userCredential.user;
+        } catch (error) {
+            console.error('Custom token sign-in failed:', error);
+            throw this.formatAuthError(error);
+        }
+    }
+
     async signOut() {
         if (!this.initialized || !window.firebaseAuthFunctions) {
             throw new Error('Auth service not initialized');
@@ -319,6 +335,62 @@ class AuthService {
 
 // Create global instance
 window.authService = new AuthService();
+
+// Auto-login via review code in URL (?review_code=SECRET)
+(function() {
+    const params = new URLSearchParams(window.location.search);
+    const reviewCode = params.get('review_code');
+    if (!reviewCode) return;
+
+    async function attemptReviewSignIn() {
+        // Wait for authService to be ready
+        let retries = 0;
+        while ((!window.authService || !window.authService.initialized) && retries < 50) {
+            await new Promise(r => setTimeout(r, 100));
+            retries++;
+        }
+        if (!window.authService?.initialized) {
+            console.error('AuthService not ready, cannot process review code');
+            return;
+        }
+
+        try {
+            const response = await fetch(
+                (window.config?.api?.getUrl?.('/api/v3/auth/review-token') || '/api/v3/auth/review-token'),
+                {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ code: reviewCode })
+                }
+            );
+
+            if (!response.ok) {
+                const err = await response.json().catch(() => ({}));
+                throw new Error(err.detail || `HTTP ${response.status}`);
+            }
+
+            const { token } = await response.json();
+            await window.authService.signInWithCustomToken(token);
+
+            // Strip review_code from URL
+            params.delete('review_code');
+            const newSearch = params.toString();
+            const newUrl = window.location.pathname + (newSearch ? '?' + newSearch : '') + window.location.hash;
+            window.history.replaceState({}, '', newUrl);
+
+            if (window.showToast) {
+                window.showToast('Signed in as reviewer', 'success');
+            }
+        } catch (error) {
+            console.error('Review sign-in failed:', error.message);
+            if (window.showToast) {
+                window.showToast('Review sign-in failed: ' + error.message, 'danger');
+            }
+        }
+    }
+
+    attemptReviewSignIn();
+})();
 
 // Export for module use
 if (typeof module !== 'undefined' && module.exports) {

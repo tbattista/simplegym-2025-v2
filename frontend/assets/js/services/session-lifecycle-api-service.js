@@ -52,6 +52,39 @@ class SessionLifecycleApiService {
             const modeIcon = sessionMode === 'quick_log' ? '\ud83d\udcdd' : '\ud83c\udfcb\ufe0f';
             console.log(`${modeIcon} Starting ${sessionMode} workout session:`, workoutName);
 
+            // Local-only session for anonymous users
+            if (!window.authService?.isUserAuthenticated()) {
+                console.log('👤 Creating local-only session (anonymous user)');
+                const localSession = {
+                    id: `local-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+                    workoutId: workoutId,
+                    workoutName: workoutName,
+                    startedAt: new Date(),
+                    status: 'in_progress',
+                    sessionMode: sessionMode,
+                    exercises: {}
+                };
+
+                if (workoutData) {
+                    localSession.exercises = this._initializeExercisesFromTemplate(workoutData);
+                    console.log('✅ Pre-populated', Object.keys(localSession.exercises).length, 'exercises from template');
+                }
+
+                this.onSetCurrentSession(localSession);
+
+                const preSessionEditingService = this.onGetPreSessionEditingService();
+                if (preSessionEditingService && (preSessionEditingService.hasEdits() || preSessionEditingService.hasSkips())) {
+                    preSessionEditingService.applyAllToSession(localSession);
+                }
+
+                console.log('✅ Local workout session started:', localSession.id);
+                this.onNotify('sessionStarted', localSession);
+                window.dispatchEvent(new CustomEvent('sessionStateChanged', { detail: { type: 'started' } }));
+                this.onPersist();
+
+                return localSession;
+            }
+
             const token = await window.authService.getIdToken();
             if (!token) {
                 throw new Error('Authentication required. Please log in to track your workout.');
@@ -179,6 +212,35 @@ class SessionLifecycleApiService {
             }
 
             console.log('\ud83c\udfc1 Completing workout session:', currentSession.id);
+
+            // Local-only session completion for anonymous users
+            if (currentSession.id.startsWith('local-')) {
+                console.log('👤 Completing local-only session (anonymous user)');
+                const completedAt = new Date();
+                const durationMs = completedAt.getTime() - new Date(currentSession.startedAt).getTime();
+                const actualDuration = durationMinutes || Math.round(durationMs / 60000);
+
+                const completedSession = {
+                    id: currentSession.id,
+                    workout_id: currentSession.workoutId,
+                    workout_name: currentSession.workoutName,
+                    started_at: currentSession.startedAt instanceof Date ? currentSession.startedAt.toISOString() : currentSession.startedAt,
+                    completed_at: completedAt.toISOString(),
+                    duration_minutes: actualDuration,
+                    exercises_performed: exercisesPerformed,
+                    status: 'completed'
+                };
+
+                currentSession.status = 'completed';
+                currentSession.completedAt = completedAt;
+
+                console.log('✅ Local workout session completed:', currentSession.id);
+                this.onNotify('sessionCompleted', completedSession);
+                window.dispatchEvent(new CustomEvent('sessionStateChanged', { detail: { type: 'completed' } }));
+                this.onClearPersistedSession();
+
+                return completedSession;
+            }
 
             const token = await window.authService.getIdToken();
             if (!token) {

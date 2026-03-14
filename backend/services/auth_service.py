@@ -132,7 +132,7 @@ class AuthService:
         try:
             custom_token = auth.create_custom_token(uid, additional_claims, app=self.app)
             logger.info(f"✅ Custom token created for user: {uid}")
-            return custom_token.decode('utf-8')
+            return custom_token if isinstance(custom_token, str) else custom_token.decode('utf-8')
             
         except Exception as e:
             logger.error(f"❌ Error creating custom token: {e}")

@@ -76,7 +76,10 @@ class WorkoutLifecycleManager {
         }
 
         // Check if user is authenticated
-        if (!this.authService.isUserAuthenticated()) {
+        // Allow anonymous users through if they came from public workouts (source=public)
+        const urlParams = new URLSearchParams(window.location.search);
+        const isPublicSource = urlParams.get('source') === 'public';
+        if (!this.authService.isUserAuthenticated() && !isPublicSource) {
             this.showLoginPrompt();
             return false;
         }
@@ -301,6 +304,17 @@ class WorkoutLifecycleManager {
                         console.log('✅ Workout saved as template:', templateOpts.templateName);
                     } catch (err) {
                         console.error('⚠️ Failed to save workout as template:', err);
+                    }
+                }
+
+                // Clean up temporary localStorage workout for anonymous "Do Once" sessions
+                const completionUrlParams = new URLSearchParams(window.location.search);
+                if (completionUrlParams.get('source') === 'public' && this.currentWorkout?.id) {
+                    try {
+                        await window.dataManager.deleteWorkout(this.currentWorkout.id);
+                        console.log('🧹 Cleaned up temporary Do Once workout:', this.currentWorkout.id);
+                    } catch (cleanupErr) {
+                        console.warn('⚠️ Failed to clean up temporary workout:', cleanupErr);
                     }
                 }
 

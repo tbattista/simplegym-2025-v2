@@ -5,8 +5,10 @@ Handles user authentication, profile creation, and data migration
 
 from fastapi import APIRouter, Depends, HTTPException
 from typing import Dict, Any
+import os
 import logging
 from ..services.firebase_service import firebase_service
+from ..services.auth_service import auth_service
 from ..middleware.auth import get_current_user, extract_user_id
 
 router = APIRouter(prefix="/api/v3/auth", tags=["Authentication"])
@@ -105,3 +107,29 @@ async def create_user_profile(
     except Exception as e:
         logger.error(f"Error creating user profile: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error creating user profile: {str(e)}")
+
+
+@router.post("/review-token")
+async def get_review_token(payload: Dict[str, Any]):
+    """Exchange a review secret code for a Firebase custom token.
+    Allows a reviewer to authenticate without creating an account."""
+    code = payload.get("code", "")
+    expected_code = os.getenv("REVIEW_SECRET_CODE")
+
+    if not expected_code:
+        raise HTTPException(status_code=404, detail="Not found")
+
+    if code != expected_code:
+        logger.warning("Invalid review code attempt")
+        raise HTTPException(status_code=403, detail="Invalid review code")
+
+    reviewer_uid = os.getenv("REVIEWER_UID", "reviewer-demo-user")
+    custom_token = await auth_service.create_custom_token(
+        reviewer_uid,
+        {"reviewer": True, "displayName": "Reviewer"}
+    )
+
+    if not custom_token:
+        raise HTTPException(status_code=500, detail="Could not generate review token")
+
+    return {"token": custom_token}

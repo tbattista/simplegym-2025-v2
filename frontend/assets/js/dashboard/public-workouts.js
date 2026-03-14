@@ -284,19 +284,6 @@
         console.log('🏋️ Do Once workout:', workout);
 
         try {
-            // Check if user is authenticated
-            if (!window.dataManager || !window.dataManager.isUserAuthenticated()) {
-                if (window.toastNotifications) {
-                    window.toastNotifications.warning('Please sign in to start a workout');
-                }
-                const loginModal = document.getElementById('authModal');
-                if (loginModal) {
-                    const modal = new bootstrap.Modal(loginModal);
-                    modal.show();
-                }
-                return;
-            }
-
             // Show loading state
             const doOnceBtn = document.querySelector('[data-action="do-once"]');
             const saveBtn = document.querySelector('[data-action="save"]');
@@ -306,34 +293,51 @@
             }
             if (saveBtn) saveBtn.disabled = true;
 
-            // Get auth token
-            const authToken = await window.dataManager.getAuthToken();
+            const isAuthenticated = window.dataManager && window.dataManager.isUserAuthenticated();
 
-            // Save workout to user's library
-            const url = window.config.api.getUrl(`/api/v3/sharing/public-workouts/${workout.id}/save`);
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${authToken}`
-                },
-                body: JSON.stringify({ custom_name: null })
-            });
+            if (isAuthenticated) {
+                // Authenticated flow: save via API, archive, navigate
+                const authToken = await window.dataManager.getAuthToken();
 
-            if (!response.ok) {
-                const errorData = await response.json().catch(() => ({}));
-                throw new Error(errorData.detail || `Failed to load workout (${response.status})`);
+                const url = window.config.api.getUrl(`/api/v3/sharing/public-workouts/${workout.id}/save`);
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({ custom_name: null })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.detail || `Failed to load workout (${response.status})`);
+                }
+
+                const savedWorkout = await response.json();
+                console.log('✅ Workout saved for Do Once:', savedWorkout);
+
+                await window.dataManager.updateWorkout(savedWorkout.id, { is_archived: true });
+                console.log('📦 Workout archived:', savedWorkout.id);
+
+                window.location.href = `workout-mode.html?id=${savedWorkout.id}`;
+            } else {
+                // Anonymous flow: save to localStorage, navigate with source=public
+                console.log('👤 Anonymous Do Once - saving to localStorage');
+
+                const workoutData = {
+                    name: workout.name,
+                    description: workout.description || '',
+                    exercise_groups: workout.exercise_groups || [],
+                    tags: workout.tags || [],
+                    is_archived: true
+                };
+
+                const localWorkout = window.dataManager.createLocalStorageWorkout(workoutData);
+                console.log('✅ Workout saved to localStorage for Do Once:', localWorkout.id);
+
+                window.location.href = `workout-mode.html?id=${localWorkout.id}&source=public`;
             }
-
-            const savedWorkout = await response.json();
-            console.log('✅ Workout saved for Do Once:', savedWorkout);
-
-            // Archive it so it doesn't appear in library
-            await window.dataManager.updateWorkout(savedWorkout.id, { is_archived: true });
-            console.log('📦 Workout archived:', savedWorkout.id);
-
-            // Navigate to workout mode
-            window.location.href = `workout-mode.html?id=${savedWorkout.id}`;
 
         } catch (error) {
             console.error('❌ Error starting Do Once workout:', error);

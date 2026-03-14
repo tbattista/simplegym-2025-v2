@@ -49,7 +49,8 @@
             onAuthStateChanged,
             sendEmailVerification,
             sendPasswordResetEmail,
-            updateProfile
+            updateProfile,
+            signInWithCustomToken,
         } = await importWithRetry('https://www.gstatic.com/firebasejs/10.5.0/firebase-auth.js');
         const {
             getFirestore,
@@ -109,6 +110,7 @@
             sendEmailVerification,
             sendPasswordResetEmail,
             updateProfile,
+            signInWithCustomToken,
             // authStateReady returns a Promise that resolves when initial auth state is determined
             // This is the recommended way to wait for auth initialization (Firebase v9.16.0+)
             authStateReady: () => auth.authStateReady()
