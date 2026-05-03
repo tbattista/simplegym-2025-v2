@@ -118,7 +118,9 @@
 }
 
 /* Large screens (tablets landscape + desktop): two-column layout
-   Timer + details on the left, full segment list on the right */
+   Timer + details on the left, full segment list on the right.
+   The segment list is capped to the viewport so it scrolls independently
+   instead of pushing the page down past the timer. */
 @media (min-width: 992px) {
   .spin-ride-layout {
     flex-direction: row;
@@ -141,6 +143,9 @@
     flex: 1 1 0;
     min-width: 0;
     max-width: 520px;
+    max-height: calc(100vh - 220px);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
   .spin-ride-segments-col .spin-plan-card {
@@ -165,7 +170,8 @@
     flex: 1 1 0;
     min-width: 0;
     overflow-y: auto;
-    max-height: 70vh;
+    -webkit-overflow-scrolling: touch;
+    max-height: calc(100vh - 60px);
   }
 
   .spin-timer-container {

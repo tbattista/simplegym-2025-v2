@@ -19,6 +19,7 @@
   let segments = [];
   let segmentOffsets = [];    // Cumulative start-time (seconds) of each segment
   let currentSegmentIndex = 0;
+  let lastScrolledIndex = -1; // Tracks last segment index we auto-scrolled to in the side list
   let segmentRemaining = 0;
   let totalRemaining = 0;
   let timerInterval = null;
@@ -325,15 +326,33 @@
     // Highlight active + next in full list. Current row is emphasized most,
     // the next row slightly emphasized, others use the base font size.
     const rows = els.segmentList.querySelectorAll('.spin-segment-row');
+    let activeRow = null;
     rows.forEach((row, i) => {
-      row.classList.toggle('active', i === currentSegmentIndex);
+      const isActive = i === currentSegmentIndex;
+      row.classList.toggle('active', isActive);
       row.classList.toggle('next', i === currentSegmentIndex + 1);
       row.classList.toggle('completed', i < currentSegmentIndex);
+      if (isActive) activeRow = row;
     });
+
+    // Keep the active row visible when the list scrolls within its column.
+    // Only scroll within the segments column itself — never the page — so
+    // the stacked mobile layout doesn't jump on segment transitions.
+    if (activeRow && currentSegmentIndex !== lastScrolledIndex) {
+      lastScrolledIndex = currentSegmentIndex;
+      const col = activeRow.closest('.spin-ride-segments-col');
+      if (col && col.scrollHeight > col.clientHeight + 1) {
+        const colRect = col.getBoundingClientRect();
+        const rowRect = activeRow.getBoundingClientRect();
+        const offset = (rowRect.top - colRect.top) - (col.clientHeight / 2 - activeRow.clientHeight / 2);
+        col.scrollBy({ top: offset, behavior: 'smooth' });
+      }
+    }
   }
 
   function renderSegmentList() {
     els.segmentList.innerHTML = segments.map((seg, i) => segmentRowHtml(seg, i)).join('');
+    lastScrolledIndex = -1;
   }
 
   // ── Session Persistence ─────────────────────────────────────────────────

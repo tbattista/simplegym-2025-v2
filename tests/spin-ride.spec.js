@@ -777,6 +777,77 @@ test.describe('Spin Ride Page', () => {
     expect(savedBody.calories).toBe(275);
   });
 
+  test('segment list scrolls independently on wide screens with long rides', async ({ page }) => {
+    // Wide viewport so the side-by-side layout (min-width: 992px) kicks in.
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto(`${BASE}/spin-ride`);
+    await page.waitForLoadState('domcontentloaded');
+
+    // Seed a long ride with many segments so the list overflows the timer.
+    const now = Date.now();
+    const segs = [];
+    for (let i = 0; i < 25; i++) {
+      segs.push({
+        name: `Seg ${i + 1}`,
+        segment_type: i % 2 ? 'climb' : 'recovery',
+        duration_seconds: 60,
+        resistance: 5,
+        rpm_low: 70,
+        rpm_high: 85,
+        cue: 'Steady',
+      });
+    }
+    const fakeSession = {
+      ridePlan: {
+        title: 'Long Ride Scroll Test',
+        duration_minutes: 25,
+        total_seconds: 1500,
+        difficulty: 'moderate',
+        estimated_calories: 200,
+        segments: segs,
+      },
+      rideStartedAt: new Date(now - 30000).toISOString(),
+      pausedAt: new Date(now).toISOString(),
+      timerRunning: false,
+      savedAt: now,
+    };
+    await page.evaluate((session) => {
+      sessionStorage.setItem('spinRideSession', JSON.stringify(session));
+    }, fakeSession);
+
+    await page.reload();
+    await page.waitForLoadState('domcontentloaded');
+    await page.waitForTimeout(4000);
+
+    const rideVisible = await page.locator('#rideState').isVisible();
+    if (!rideVisible) return; // Auth not available — skip
+
+    const segCol = page.locator('.spin-ride-segments-col');
+
+    // The segments column has a max-height and scrollable content.
+    const metrics = await segCol.evaluate((el) => ({
+      clientHeight: el.clientHeight,
+      scrollHeight: el.scrollHeight,
+      overflowY: getComputedStyle(el).overflowY,
+    }));
+    expect(metrics.overflowY).toBe('auto');
+    // List must have more content than the visible column — i.e., it scrolls.
+    expect(metrics.scrollHeight).toBeGreaterThan(metrics.clientHeight);
+
+    // Column shouldn't dominate the page — it's capped at viewport height.
+    expect(metrics.clientHeight).toBeLessThan(800);
+
+    // Scrolling the segment column shouldn't shift the page itself.
+    const pageScrollBefore = await page.evaluate(() => window.scrollY);
+    await segCol.evaluate((el) => { el.scrollTop = 200; });
+    await page.waitForTimeout(100);
+    const pageScrollAfter = await page.evaluate(() => window.scrollY);
+    expect(pageScrollAfter).toBe(pageScrollBefore);
+
+    const segScroll = await segCol.evaluate((el) => el.scrollTop);
+    expect(segScroll).toBeGreaterThan(0);
+  });
+
   test('CTA bar is inline at the bottom (not fixed) on mobile', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto(`${BASE}/spin-ride`);
