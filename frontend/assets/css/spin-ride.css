@@ -447,6 +447,82 @@
   /* No scroll — fits content so the page scrolls naturally on mobile */
 }
 
+/* ── Windowed view ────────────────────────────────────────────────────────
+   Default mode on every screen — show the just-completed row, the current
+   segment, and the next few upcoming. Everything else collapses into the
+   summary pills above and below the visible window so the list doesn't
+   overwhelm the screen on tablets and phones. */
+
+.spin-segment-summary {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.6rem;
+  border-radius: 0.375rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--gs-gray-500, #64748b);
+  background: rgba(0, 0, 0, 0.03);
+  margin: 0.25rem 0;
+}
+
+.spin-segment-summary i {
+  font-size: 0.95rem;
+  flex-shrink: 0;
+}
+
+[data-bs-theme="dark"] .spin-segment-summary {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+/* Hide summaries entirely in full mode — they only make sense when the
+   window is collapsed. */
+.spin-segment-list:not(.windowed) .spin-segment-summary {
+  display: none;
+}
+
+/* In windowed mode, hide every completed row except the one tagged as the
+   "last finished" anchor by the controller. */
+.spin-segment-list.windowed .spin-segment-row.completed:not(.last-completed) {
+  display: none;
+}
+
+/* In windowed mode, hide every row after the active row, then re-show the
+   first three upcoming via adjacent-sibling chains. The longer chains
+   override the broader ~ rule because they're declared later. */
+.spin-segment-list.windowed .spin-segment-row.active ~ .spin-segment-row {
+  display: none;
+}
+.spin-segment-list.windowed .spin-segment-row.active + .spin-segment-row,
+.spin-segment-list.windowed .spin-segment-row.active + .spin-segment-row + .spin-segment-row,
+.spin-segment-list.windowed .spin-segment-row.active + .spin-segment-row + .spin-segment-row + .spin-segment-row {
+  display: flex;
+}
+
+/* Toggle button below the list */
+.spin-window-toggle-wrap {
+  display: flex;
+  justify-content: center;
+  margin-top: 0.25rem;
+}
+
+.spin-window-toggle {
+  font-size: 0.8rem;
+  text-decoration: none;
+  color: var(--gs-gray-500, #64748b);
+  font-weight: 500;
+  padding: 0.25rem 0.75rem;
+}
+
+.spin-window-toggle:hover {
+  color: var(--gs-primary, #C97C5D);
+  text-decoration: none;
+}
+
+[data-bs-theme="dark"] .spin-window-toggle {
+  color: var(--bs-secondary-color, #9ca3af);
+}
+
 .spin-segment-row {
   display: flex;
   align-items: center;

@@ -33,6 +33,16 @@
   const BIKE_GEARS_KEY = 'spinRideBikeGears';
   const INCLUDE_ALL_OUTS_KEY = 'spinRideIncludeAllOuts';
   const DIFFICULTY_KEY = 'spinRideDifficulty';
+  const WINDOW_MODE_KEY = 'spinRideWindowMode';
+
+  // Number of upcoming segments visible in windowed mode (kept in sync with
+  // the adjacent-sibling chains in spin-ride.css).
+  const WINDOW_AHEAD = 3;
+
+  let windowMode = (() => {
+    try { return localStorage.getItem(WINDOW_MODE_KEY) === 'full' ? 'full' : 'windowed'; }
+    catch (e) { return 'windowed'; }
+  })();
 
   const DIFFICULTY_DESCRIPTIONS = {
     easy: 'Gentle rolling hills. Comfortable the whole time. Great for beginners or recovery days.',
@@ -122,6 +132,8 @@
       segmentRpm: $('segmentRpm'),
       segmentCue: $('segmentCue'),
       segmentList: $('segmentList'),
+      windowToggleWrap: $('windowToggleWrap'),
+      windowToggleBtn: $('windowToggleBtn'),
       startBtn: $('startBtn'),
       pauseBtn: $('pauseBtn'),
       resumeBtn: $('resumeBtn'),
@@ -332,8 +344,13 @@
       row.classList.toggle('active', isActive);
       row.classList.toggle('next', i === currentSegmentIndex + 1);
       row.classList.toggle('completed', i < currentSegmentIndex);
+      // Tag the most recent completed row so windowed mode can keep it visible
+      // as a "last finished" anchor.
+      row.classList.toggle('last-completed', i === currentSegmentIndex - 1);
       if (isActive) activeRow = row;
     });
+
+    updateSegmentSummaries();
 
     // Keep the active row visible when the list scrolls within its column.
     // Only scroll within the segments column itself — never the page — so
@@ -351,8 +368,59 @@
   }
 
   function renderSegmentList() {
-    els.segmentList.innerHTML = segments.map((seg, i) => segmentRowHtml(seg, i)).join('');
+    const completedSummary = `<div class="spin-segment-summary spin-segment-summary-completed d-none" id="completedSummary">
+        <i class="bx bx-check"></i><span class="spin-segment-summary-text">0 completed</span>
+      </div>`;
+    const upcomingSummary = `<div class="spin-segment-summary spin-segment-summary-upcoming d-none" id="upcomingSummary">
+        <i class="bx bx-time-five"></i><span class="spin-segment-summary-text">+0 more upcoming</span>
+      </div>`;
+    const rows = segments.map((seg, i) => segmentRowHtml(seg, i)).join('');
+    els.segmentList.innerHTML = completedSummary + rows + upcomingSummary;
+    els.segmentList.classList.toggle('windowed', windowMode === 'windowed');
+    els.windowToggleWrap.classList.toggle('d-none', segments.length <= WINDOW_AHEAD + 2);
+    updateWindowToggleLabel();
     lastScrolledIndex = -1;
+    updateSegmentSummaries();
+  }
+
+  function updateSegmentSummaries() {
+    const completedSummaryEl = document.getElementById('completedSummary');
+    const upcomingSummaryEl = document.getElementById('upcomingSummary');
+    if (!completedSummaryEl || !upcomingSummaryEl) return;
+
+    const completedCount = Math.max(0, currentSegmentIndex);
+    // In windowed mode we keep one completed row visible (the last one), so
+    // the "completed" pill should reflect what's collapsed — count - 1.
+    const completedHidden = Math.max(0, completedCount - 1);
+    const upcomingHidden = Math.max(0, segments.length - currentSegmentIndex - 1 - WINDOW_AHEAD);
+
+    completedSummaryEl.classList.toggle('d-none', completedHidden === 0);
+    completedSummaryEl.querySelector('.spin-segment-summary-text').textContent =
+      `${completedHidden} completed`;
+
+    upcomingSummaryEl.classList.toggle('d-none', upcomingHidden === 0);
+    upcomingSummaryEl.querySelector('.spin-segment-summary-text').textContent =
+      `+${upcomingHidden} more upcoming`;
+  }
+
+  function updateWindowToggleLabel() {
+    if (!els.windowToggleBtn) return;
+    const isWindowed = windowMode === 'windowed';
+    const icon = els.windowToggleBtn.querySelector('i');
+    const text = els.windowToggleBtn.querySelector('.spin-window-toggle-text');
+    if (icon) icon.className = `bx ${isWindowed ? 'bx-chevron-down' : 'bx-chevron-up'} me-1`;
+    if (text) text.textContent = isWindowed ? 'Show full plan' : 'Show focused view';
+  }
+
+  function setWindowMode(mode) {
+    windowMode = mode === 'full' ? 'full' : 'windowed';
+    try { localStorage.setItem(WINDOW_MODE_KEY, windowMode); } catch (e) { /* ignore */ }
+    els.segmentList.classList.toggle('windowed', windowMode === 'windowed');
+    updateWindowToggleLabel();
+    updateSegmentSummaries();
+    // Re-trigger auto-scroll on the newly-laid-out list.
+    lastScrolledIndex = -1;
+    updateSegmentDisplay();
   }
 
   // ── Session Persistence ─────────────────────────────────────────────────
@@ -931,6 +999,13 @@
 
     // Error retry
     els.errorRetryBtn.addEventListener('click', resetToSelection);
+
+    // Toggle between focused (windowed) and full segment list views
+    if (els.windowToggleBtn) {
+      els.windowToggleBtn.addEventListener('click', () => {
+        setWindowMode(windowMode === 'windowed' ? 'full' : 'windowed');
+      });
+    }
 
     // Catch up timer when returning from background (mobile tab switch, screen off, etc.)
     document.addEventListener('visibilitychange', onVisibilityChange);

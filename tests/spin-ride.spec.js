@@ -783,6 +783,12 @@ test.describe('Spin Ride Page', () => {
     await page.goto(`${BASE}/spin-ride`);
     await page.waitForLoadState('domcontentloaded');
 
+    // The windowed view is the default — this test exercises the "full"
+    // expanded view, so opt in via the persisted preference key.
+    await page.evaluate(() => {
+      localStorage.setItem('spinRideWindowMode', 'full');
+    });
+
     // Seed a long ride with many segments so the list overflows the timer.
     const now = Date.now();
     const segs = [];
@@ -846,6 +852,101 @@ test.describe('Spin Ride Page', () => {
 
     const segScroll = await segCol.evaluate((el) => el.scrollTop);
     expect(segScroll).toBeGreaterThan(0);
+  });
+
+  test('windowed view shows last completed + current + next 3 with summary pills', async ({ page }) => {
+    await page.setViewportSize({ width: 820, height: 1180 }); // iPad portrait-ish
+    await page.goto(`${BASE}/spin-ride`);
+    await page.waitForLoadState('domcontentloaded');
+
+    // Make sure we're in the default windowed mode for this test.
+    await page.evaluate(() => {
+      localStorage.removeItem('spinRideWindowMode');
+    });
+
+    // Build a long ride and start it 7 segments in so we have completeds before
+    // the active row and plenty of upcoming.
+    const now = Date.now();
+    const segs = [];
+    for (let i = 0; i < 15; i++) {
+      segs.push({
+        name: `Seg ${i + 1}`,
+        segment_type: i % 2 ? 'climb' : 'recovery',
+        duration_seconds: 60,
+        resistance: 5,
+        rpm_low: 70,
+        rpm_high: 85,
+        cue: 'Steady',
+      });
+    }
+    const fakeSession = {
+      ridePlan: {
+        title: 'Windowed View Test',
+        duration_minutes: 15,
+        total_seconds: 900,
+        difficulty: 'moderate',
+        estimated_calories: 150,
+        segments: segs,
+      },
+      // 7 segments * 60s + 30s into the 8th = 450s elapsed → currentSegmentIndex = 7.
+      rideStartedAt: new Date(now - 450000).toISOString(),
+      pausedAt: new Date(now).toISOString(),
+      timerRunning: false,
+      savedAt: now,
+    };
+    await page.evaluate((session) => {
+      sessionStorage.setItem('spinRideSession', JSON.stringify(session));
+    }, fakeSession);
+
+    await page.reload();
+    await page.waitForLoadState('domcontentloaded');
+    await page.waitForTimeout(4000);
+
+    const rideVisible = await page.locator('#rideState').isVisible();
+    if (!rideVisible) return;
+
+    // Active row is index 7 ("Seg 8").
+    await expect(page.locator('.spin-segment-row.active')).toContainText('Seg 8');
+
+    // Visible-row count check via getBoundingClientRect — windowed mode
+    // hides every completed except the one immediately before active, plus
+    // limits upcoming to 3. So we expect 1 + 1 + 3 = 5 visible segment rows.
+    const visibleCount = await page.locator('.spin-segment-row').evaluateAll((rows) =>
+      rows.filter((r) => r.offsetParent !== null).length
+    );
+    expect(visibleCount).toBe(5);
+
+    // Last completed (Seg 7) should be visible; earlier completeds (Seg 1-6) hidden.
+    const seg1 = page.locator('.spin-segment-row').nth(0);
+    const seg6 = page.locator('.spin-segment-row').nth(5);
+    const seg7 = page.locator('.spin-segment-row').nth(6);
+    expect(await seg1.evaluate((el) => el.offsetParent !== null)).toBe(false);
+    expect(await seg6.evaluate((el) => el.offsetParent !== null)).toBe(false);
+    expect(await seg7.evaluate((el) => el.offsetParent !== null)).toBe(true);
+
+    // Summary pills reflect the hidden counts: 6 completed collapsed (1..6),
+    // and 4 upcoming collapsed (Seg 12..15 — first 3 upcoming Seg 9-11 are visible).
+    const completedSummary = page.locator('#completedSummary');
+    const upcomingSummary = page.locator('#upcomingSummary');
+    await expect(completedSummary).toBeVisible();
+    await expect(completedSummary).toContainText('6 completed');
+    await expect(upcomingSummary).toBeVisible();
+    await expect(upcomingSummary).toContainText('+4 more upcoming');
+
+    // Toggle expands to the full plan: every row is visible and pills hide.
+    await page.locator('#windowToggleBtn').click();
+    await page.waitForTimeout(150);
+    const fullVisibleCount = await page.locator('.spin-segment-row').evaluateAll((rows) =>
+      rows.filter((r) => r.offsetParent !== null).length
+    );
+    expect(fullVisibleCount).toBe(15);
+    await expect(completedSummary).toBeHidden();
+    await expect(upcomingSummary).toBeHidden();
+    await expect(page.locator('#windowToggleBtn')).toContainText('Show focused view');
+
+    // Preference persists.
+    const stored = await page.evaluate(() => localStorage.getItem('spinRideWindowMode'));
+    expect(stored).toBe('full');
   });
 
   test('CTA bar is inline at the bottom (not fixed) on mobile', async ({ page }) => {
